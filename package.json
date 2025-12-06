@@ -4,10 +4,6 @@
   "private": true,
   "type": "module",
   "homepage": "https://mateuscotrim.github.io/layerForge",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mateuscotrim/layerForge.git"
-  },
   "author": "Mateus C.",
   "license": "MIT",
   "scripts": {
