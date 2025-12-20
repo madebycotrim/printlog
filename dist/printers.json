@@ -1,0 +1,182 @@
+[
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V2",
+    "name": "Creality Ender-3 V2",
+    "thumbnail": "/thumbs/ender3v2.png",
+    "consumoKw": 0.10,
+    "type": "FDM",
+    "description": "A impressora mais popular do Brasil. Ótimo custo-benefício."
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 S1",
+    "name": "Creality Ender-3 S1",
+    "thumbnail": "/thumbs/ender3s1.png",
+    "consumoKw": 0.11,
+    "type": "FDM",
+    "description": "Extrusora direta, nivelamento automático e ótima qualidade."
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 S1 Pro",
+    "name": "Creality Ender-3 S1 Pro",
+    "thumbnail": "/thumbs/ender3s1pro.png",
+    "consumoKw": 0.12,
+    "type": "FDM",
+    "description": "Versão premium muito popular no Brasil."
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 SE",
+    "name": "Creality Ender-3 V3 SE",
+    "thumbnail": "/thumbs/ender3v3se.png",
+    "consumoKw": 0.11,
+    "type": "FDM",
+    "description": "Linha V3 — muito popular em 2024–2025 no Brasil."
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 KE",
+    "name": "Creality Ender-3 V3 KE",
+    "thumbnail": "/thumbs/ender3v3ke.png",
+    "consumoKw": 0.11,
+    "type": "FDM",
+    "description": "Versão atualizada com velocidade e recursos modernos."
+  },
+  {
+    "brand": "Creality",
+    "model": "K1",
+    "name": "Creality K1",
+    "thumbnail": "/thumbs/k1.png",
+    "consumoKw": 0.14,
+    "type": "CoreXY",
+    "description": "Uma das CoreXY mais famosas e usadas no Brasil."
+  },
+  {
+    "brand": "Creality",
+    "model": "K1 Max",
+    "name": "Creality K1 Max",
+    "thumbnail": "/thumbs/k1max.png",
+    "consumoKw": 0.16,
+    "type": "CoreXY",
+    "description": "Muito popular por causa do grande volume."
+  },
+  {
+    "brand": "Creality",
+    "model": "K1C",
+    "name": "Creality K1C",
+    "thumbnail": "/thumbs/k1c.png",
+    "consumoKw": 0.15,
+    "type": "CoreXY",
+    "description": "Nova linha K-series, muito forte no Brasil."
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "A1 Mini",
+    "name": "Bambu Lab A1 Mini",
+    "thumbnail": "/thumbs/a1mini.png",
+    "consumoKw": 0.08,
+    "type": "CoreXY",
+    "description": "A impressora mais popular da Bambu Lab no Brasil."
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "A1",
+    "name": "Bambu Lab A1",
+    "thumbnail": "/thumbs/a1.png",
+    "consumoKw": 0.10,
+    "type": "CoreXY",
+    "description": "Excelente custo-performance, muito usada em 2024–2025."
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "P1P",
+    "name": "Bambu Lab P1P",
+    "thumbnail": "/thumbs/p1p.png",
+    "consumoKw": 0.12,
+    "type": "CoreXY",
+    "description": "A porta de entrada para impressoras rápidas."
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "P1S",
+    "name": "Bambu Lab P1S",
+    "thumbnail": "/thumbs/p1s.png",
+    "consumoKw": 0.13,
+    "type": "CoreXY Enclosed",
+    "description": "Muito popular no Brasil por suportar ABS/PC."
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "X1 Carbon",
+    "name": "Bambu Lab X1 Carbon",
+    "thumbnail": "/thumbs/x1c.png",
+    "consumoKw": 0.16,
+    "type": "CoreXY Premium",
+    "description": "Uma das impressoras mais famosas do mundo."
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Kobra 2 Neo",
+    "name": "Anycubic Kobra 2 Neo",
+    "thumbnail": "/thumbs/kobra2neo.png",
+    "consumoKw": 0.10,
+    "type": "FDM",
+    "description": "Muito vendida no Brasil pela facilidade de uso."
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Kobra 3",
+    "name": "Anycubic Kobra 3",
+    "thumbnail": "/thumbs/kobra3.png",
+    "consumoKw": 0.11,
+    "type": "FDM",
+    "description": "Nova geração, bastante popular."
+  },
+  {
+    "brand": "Sovol",
+    "model": "SV06",
+    "name": "Sovol SV06",
+    "thumbnail": "/thumbs/sv06.png",
+    "consumoKw": 0.10,
+    "type": "FDM",
+    "description": "Muito popular pela comunidade brasileira."
+  },
+  {
+    "brand": "Sovol",
+    "model": "SV07",
+    "name": "Sovol SV07",
+    "thumbnail": "/thumbs/sv07.png",
+    "consumoKw": 0.12,
+    "type": "CoreXY",
+    "description": "Uma das mais rápidas e acessíveis no Brasil."
+  },
+  {
+    "brand": "Artillery",
+    "model": "Sidewinder X2",
+    "name": "Artillery Sidewinder X2",
+    "thumbnail": "/thumbs/sidewinderx2.png",
+    "consumoKw": 0.14,
+    "type": "FDM",
+    "description": "Muito usada por makers brasileiros."
+  },
+  {
+    "brand": "Prusa",
+    "model": "MK3S+",
+    "name": "Prusa MK3S+",
+    "thumbnail": "/thumbs/mk3splus.png",
+    "consumoKw": 0.12,
+    "type": "FDM Premium",
+    "description": "Extremamente famosa pela confiabilidade."
+  },
+  {
+    "brand": "Prusa",
+    "model": "MK4",
+    "name": "Prusa MK4",
+    "thumbnail": "/thumbs/mk4.png",
+    "consumoKw": 0.14,
+    "type": "FDM Premium",
+    "description": "Uma das mais avançadas e respeitadas."
+  }
+]

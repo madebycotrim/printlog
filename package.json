@@ -1,10 +1,10 @@
 {
-  "name": "layerforge",
+  "name": "printlog",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "homepage": "https://mateuscotrim.github.io/layerForge",
-  "author": "Cotrim",
+  "homepage": "https://madebycotrim.github.io/printlog",
+  "author": "COTRIM",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "framer-motion": "^12.23.26",
-    "lucide-react": "^0.561.0",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.1.17",

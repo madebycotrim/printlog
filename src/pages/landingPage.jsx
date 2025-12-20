@@ -178,8 +178,8 @@ export default function LandingPage() {
             <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0, 0)}>
-                        <img src={logo} alt="LayerForge" className="w-8 h-8 object-contain opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
-                        <span className="text-sm font-bold tracking-tight text-white">LayerForge</span>
+                        <img src={logo} alt="PrintLog" className="w-8 h-8 object-contain opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+                        <span className="text-sm font-bold tracking-tight text-white">PrintLog</span>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -637,7 +637,7 @@ export default function LandingPage() {
             <footer className="py-8 border-t border-white/5 bg-[#050505] text-center">
                 <div className="flex justify-center items-center gap-2 mb-2 opacity-50">
                     <img src={logo} alt="LayerForge" className="w-4 h-4" />
-                    <span className="text-xs font-bold text-zinc-400">LayerForge</span>
+                    <span className="text-xs font-bold text-zinc-400">PrintLog</span>
                 </div>
                 <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">
                     &copy; 2024 • Feito por Makers, para Makers
