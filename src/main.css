@@ -64,4 +64,8 @@ body {
   margin: 0;
 }
 
+@media print {
+    .adsbygoogle, amp-auto-ads, ins { display: none !important; }
+}
+
  

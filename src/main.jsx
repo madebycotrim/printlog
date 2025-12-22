@@ -4,29 +4,15 @@ import { Router, Switch, Route } from "wouter";
 import { ClerkProvider } from "@clerk/clerk-react";
 
 import "./main.css";
-
-// -------------------------
-// Utils / Guards
-// -------------------------
+import PageLoading from "./components/Loading";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// -------------------------
-// Env
-// -------------------------
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!CLERK_PUBLISHABLE_KEY) {
   throw new Error("VITE_CLERK_PUBLISHABLE_KEY is missing");
 }
 
-// -------------------------
-// Loading UI
-// -------------------------
-const PageLoading = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-[#050506]">
-    <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-sky-500" />
-  </div>
-);
 
 // -------------------------
 // Lazy Pages
@@ -44,7 +30,7 @@ const Impressoras = lazy(() => import("./pages/Impressoras"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Ajuda = lazy(() => import("./pages/centralMaker"));
 
-const CalculadoraPreview = lazy(() => import("./pages/calculadoraFree"));
+const CalculadoraPreview = lazy(() => import("./pages/calculadoraPreview"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // -------------------------
