@@ -1,113 +1,141 @@
+// --- FILE: src/pages/CalculadoraPreview.jsx ---
 import React, { useState, useMemo } from "react";
 import {
-    ArrowLeft, Package, Zap, Clock, DollarSign,
-    TrendingUp, Info, Printer, Save, History, Crown
+    Package, Zap, Clock, DollarSign,
+    TrendingUp, Printer, ChevronLeft, Info,
+    HardHat, FileEdit, Save, History, Crown, Activity,
+    ClipboardCheck, Boxes, Cpu
 } from "lucide-react";
 import { Link } from "wouter";
-import logo from '../assets/logo.png';
 
 /* =============================
-   LAYOUT DE IMPRESSÃO (PROFISSIONAL)
-   Otimizado para gerar PDF para o Cliente
+   LAYOUT PDF: MEMORIAL DE MANUFATURA MAKER
 ============================== */
-const PrintLayout = ({ dados, inputs }) => {
+const PrintLayout = ({ dados, inputs, nomeProjeto }) => {
     const date = new Date().toLocaleDateString('pt-BR');
+    const validade = new Date();
+    validade.setDate(validade.getDate() + 7);
 
     return (
-        <div id="print-area" className="hidden print:flex flex-col p-12 bg-white text-black h-screen w-full fixed top-0 left-0 z-[9999]">
-            {/* Cabeçalho do Relatório */}
-            <div className="flex justify-between items-start border-b-2 border-zinc-200 pb-8 mb-8">
-                <div className="flex items-center gap-5">
-                    <img src={logo} alt="LayerForge" className="w-14 h-14 object-contain grayscale" />
-                    <div>
-                        <h1 className="text-2xl font-black uppercase tracking-tighter text-zinc-900">Orçamento de Impressão 3D</h1>
-                        <p className="text-sm text-zinc-500 font-medium">Emitido em {date}</p>
+        <div id="print-area" className="hidden print:block bg-white text-black font-mono text-[11px] p-10 w-[210mm] mx-auto min-h-screen">
+            <div className="border-[3px] border-black p-1">
+                <div className="border border-black p-8 relative min-h-[260mm] flex flex-col">
+
+                    {/* Selo de Autenticidade */}
+                    <div className="absolute top-12 right-10 border-2 border-black px-4 py-1 rotate-12 font-black uppercase text-xl opacity-10">
+                        DOCUMENTO ORIGINAL
                     </div>
-                </div>
-                <div className="text-right">
-                    <h2 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">ID do Documento</h2>
-                    <p className="text-lg font-mono font-bold text-zinc-900">#{Math.floor(Math.random() * 90000) + 10000}</p>
-                </div>
-            </div>
 
-            {/* Especificações Técnicas */}
-            <div className="mb-10 p-6 bg-zinc-50 rounded-2xl border border-zinc-100 grid grid-cols-3 gap-8">
-                <div>
-                    <span className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Material Estimado</span>
-                    <span className="block text-lg font-bold text-zinc-800">{inputs.peso}g <span className="text-sm font-normal text-zinc-500">(Incluso suportes)</span></span>
-                </div>
-                <div>
-                    <span className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Tempo de Máquina</span>
-                    <span className="block text-lg font-bold text-zinc-800">
-                        {inputs.horas}h {inputs.minutos}m
-                    </span>
-                </div>
-                <div>
-                    <span className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Processo</span>
-                    <span className="block text-lg font-bold text-zinc-800">FDM / Resina</span>
-                </div>
-            </div>
-
-            {/* Tabela de Composição de Preço */}
-            <div className="flex-1">
-                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 ml-1">Discriminação do Serviço</h3>
-                <table className="w-full text-sm text-left border-collapse">
-                    <thead>
-                        <tr className="bg-zinc-900 text-white">
-                            <th className="py-4 px-6 rounded-l-xl font-bold">Item / Descrição do Serviço</th>
-                            <th className="py-4 px-6 rounded-r-xl text-right font-bold">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody className="text-zinc-700">
-                        <tr className="border-b border-zinc-100">
-                            <td className="py-6 px-6">
-                                <span className="font-bold block">Insumos e Matéria-prima</span>
-                                <span className="text-xs text-zinc-500">Filamento de engenharia e materiais de consumo.</span>
-                            </td>
-                            <td className="py-6 px-6 text-right font-mono text-base">{formatBRL(dados.custoMaterial)}</td>
-                        </tr>
-                        <tr className="border-b border-zinc-100">
-                            <td className="py-6 px-6">
-                                <span className="font-bold block">Custos Operacionais</span>
-                                <span className="text-xs text-zinc-500">Depreciação de hardware, energia elétrica e manutenção técnica.</span>
-                            </td>
-                            <td className="py-6 px-6 text-right font-mono text-base">{formatBRL(dados.custoEnergia)}</td>
-                        </tr>
-                        <tr className="border-b border-zinc-100">
-                            <td className="py-6 px-6">
-                                <span className="font-bold block">Mão de Obra e Setup</span>
-                                <span className="text-xs text-zinc-500">Fatiamento, preparação de mesa e pós-processamento manual.</span>
-                            </td>
-                            <td className="py-6 px-6 text-right font-mono text-base">{formatBRL(dados.custoMaoDeObra + dados.lucroLiquido)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Totalizador Principal */}
-            <div className="mt-10 flex justify-end">
-                <div className="w-80 bg-zinc-900 text-white p-8 rounded-3xl shadow-xl flex flex-col items-end">
-                    <span className="text-xs text-zinc-400 uppercase font-bold tracking-widest mb-1">Investimento Total</span>
-                    <span className="text-4xl font-black font-mono">{formatBRL(dados.precoVenda)}</span>
-                    <div className="mt-4 pt-4 border-t border-white/10 w-full text-right">
-                        <span className="text-[10px] text-zinc-500">Pagamento conforme condições acordadas.</span>
+                    {/* Cabeçalho Industrial */}
+                    <div className="flex justify-between items-start border-b-4 border-black pb-6 mb-10">
+                        <div>
+                            <h1 className="text-4xl font-[1000] uppercase tracking-tighter italic leading-none mb-2">
+                                ORÇAMENTO <span className="text-zinc-400">TÉCNICO</span>
+                            </h1>
+                            <p className="text-[10px] font-bold bg-black text-white px-2 py-0.5 inline-block">
+                                REGISTRO-MAKER: #{Math.floor(Math.random() * 90000 + 10000)}
+                            </p>
+                        </div>
+                        <div className="text-right uppercase">
+                            <p className="font-black text-lg leading-none">PrintLog</p>
+                            <p className="text-[9px] font-bold text-zinc-500 italic">Calculadora Maker</p>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Rodapé Legal */}
-            <div className="mt-auto pt-8 border-t border-zinc-100 flex justify-between items-end">
-                <div className="max-w-md">
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2">Observações Importantes</p>
-                    <ul className="text-[9px] text-zinc-500 space-y-1 leading-tight">
-                        <li>• Este orçamento possui validade de 5 dias corridos.</li>
-                        <li>• O prazo de entrega inicia-se após a aprovação do modelo e pagamento.</li>
-                        <li>• Pequenas variações de textura são inerentes ao processo de impressão 3D.</li>
-                    </ul>
-                </div>
-                <div className="text-right">
-                    <p className="text-[10px] font-bold text-zinc-800 uppercase tracking-widest">Documento Gerado via LayerForge</p>
-                    <p className="text-[9px] text-zinc-400">Plataforma de Gestão para Makers 3D</p>
+                    {/* Detalhes do Projeto */}
+                    <div className="mb-12">
+                        <p className="text-[8px] font-black uppercase text-zinc-400 mb-1">Descrição do Projeto / Referência</p>
+                        <p className="text-3xl font-[1000] uppercase border-b-2 border-black pb-2 italic leading-none">
+                            {nomeProjeto || "PROJETO_NAO_IDENTIFICADO"}
+                        </p>
+                        <div className="flex gap-8 mt-4 text-[9px] font-bold uppercase text-zinc-600">
+                            <span>Data de Emissão: {date}</span>
+                            <span>Orçamento Válido até: {validade.toLocaleDateString('pt-BR')}</span>
+                        </div>
+                    </div>
+
+                    {/* Parâmetros Técnicos (Grid Retocado) */}
+                    <div className="mb-12">
+                        <h3 className="bg-black text-white text-[10px] font-black px-3 py-1.5 uppercase tracking-widest mb-4 italic inline-block">
+                            01. Especificações de Operação
+                        </h3>
+                        <div className="grid grid-cols-3 gap-0 border-2 border-black divide-x-2 divide-black">
+                            <div className="p-6 text-center">
+                                <p className="text-[8px] font-black uppercase text-zinc-400 mb-2">Massa Estimada</p>
+                                <p className="text-3xl font-black">{inputs.peso}<span className="text-sm ml-1">g</span></p>
+                            </div>
+                            <div className="p-6 text-center">
+                                <p className="text-[8px] font-black uppercase text-zinc-400 mb-2">Tempo de Impressão</p>
+                                <p className="text-3xl font-black">{inputs.horas}h {inputs.minutos}m</p>
+                            </div>
+                            <div className="p-6 text-center bg-zinc-50">
+                                <p className="text-[8px] font-black uppercase text-zinc-400 mb-2">Consumo Nominal</p>
+                                <p className="text-3xl font-black">{inputs.consumo}<span className="text-sm ml-1">W</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Detalhamento de Custos */}
+                    <div className="flex-1">
+                        <h3 className="bg-black text-white text-[10px] font-black px-3 py-1.5 uppercase tracking-widest mb-4 italic inline-block">
+                            02. Composição de Valores
+                        </h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center border-b border-zinc-200 pb-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-black rotate-45" />
+                                    <span className="font-bold uppercase italic">Logística de Insumos e Polímeros</span>
+                                </div>
+                                <span className="font-black text-sm">{formatBRL(dados.custoMaterial + dados.custoEnergia)}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-zinc-200 pb-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-black rotate-45" />
+                                    <span className="font-bold uppercase italic">Preparação e Hora Técnica (MDO)</span>
+                                </div>
+                                <span className="font-black text-sm">{formatBRL(dados.custoMaoDeObra)}</span>
+                            </div>
+
+                            {/* VALOR FINAL PREMIUM */}
+                            <div className="mt-12 bg-zinc-900 text-white p-8 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -rotate-45 translate-x-16 -translate-y-16" />
+                                <div className="flex justify-between items-center relative z-10">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 text-[#10b981]">Investimento Total</p>
+                                        <p className="text-[8px] font-bold uppercase italic opacity-60">Condições válidas por 7 dias corridos</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="flex items-start justify-end gap-2">
+                                            <span className="text-2xl font-black mt-2">R$</span>
+                                            <span className="text-7xl font-[1000] italic tracking-tighter leading-none">
+                                                {formatBRL(dados.precoVenda).replace("R$", "").trim()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Termos e Rodapé */}
+                    <div className="mt-auto pt-8 border-t-2 border-black">
+                        <div className="grid grid-cols-[1fr_220px] gap-10 items-end">
+                            <div>
+                                <p className="text-[9px] font-black uppercase mb-3 underline decoration-2">Termos e Notas Técnicas:</p>
+                                <p className="text-[8px] leading-relaxed text-zinc-600 uppercase font-bold italic text-justify">
+                                    * Peças produzidas via manufatura aditiva apresentam linhas de camada inerentes ao processo de deposição (FDM).
+                                    * A resistência mecânica e térmica varia conforme a natureza técnica do insumo. Evite exposição direta a fontes de calor intenso ou luz solar prolongada para prevenir deformações.
+                                    * Variações de tonalidade e textura superficial podem ocorrer entre diferentes lotes de matéria-prima.
+                                    * Este orçamento contempla a depreciação de bicos e partes móveis do hardware utilizado.
+                                </p>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="w-full border-b-2 border-black mb-3"></div>
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em]">Assinatura Maker</p>
+                                <p className="text-[7px] text-zinc-400 mt-1 uppercase font-bold">Responsável Técnico // PrintLog</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,68 +143,50 @@ const PrintLayout = ({ dados, inputs }) => {
 };
 
 /* =============================
-   COMPONENTES UI AUXILIARES
+   COMPONENTES UI DASHBOARD (TRADUZIDOS)
 ============================== */
-const AdPlaceholder = ({ label = "Publicidade", className = "", width = "w-[160px]", height = "h-[600px]" }) => (
-    <div className={`${width} ${height} flex flex-col items-center justify-center bg-[#09090b] border border-zinc-800 rounded-lg relative overflow-hidden shrink-0 ${className}`}>
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#52525b 1px, transparent 1px)', backgroundSize: '12px 12px' }}></div>
-        <div className="z-10 flex flex-col items-center gap-2 opacity-50">
-            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border border-zinc-700 px-2 py-0.5 rounded">{label}</div>
-            <span className="text-[9px] text-zinc-600">Espaço Reservado</span>
-        </div>
-    </div>
+
+const ProButton = ({ icon: Icon, label }) => (
+    <button className="flex-1 bg-zinc-900/40 border border-white/5 rounded-xl py-3 px-4 flex items-center justify-center gap-2 text-zinc-500 hover:text-[#10b981] transition-all hover:bg-zinc-900 group">
+        <Icon size={14} className="opacity-50 group-hover:opacity-100" />
+        <span className="text-[9px] font-black uppercase tracking-[0.12em]">{label}</span>
+        <Crown size={10} className="text-orange-500" />
+    </button>
 );
 
 const Card = ({ title, icon: Icon, children }) => (
-    <div className="bg-[#0e0e11] border border-white/5 rounded-2xl p-5 flex flex-col gap-4 hover:border-white/10 transition-all duration-300 shadow-sm group">
-        <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-sky-500 transition-colors">
-                <Icon size={16} />
+    <div className="bg-[#0e0e11] border border-white/5 rounded-3xl p-6 flex flex-col gap-5 hover:border-white/10 transition-all shadow-xl h-fit">
+        <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-zinc-900/50 flex items-center justify-center text-[#10b981] border border-white/5 shadow-inner">
+                <Icon size={18} />
             </div>
-            <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-widest">{title}</h3>
+            <h3 className="text-[10px] font-[1000] text-zinc-500 uppercase tracking-[0.15em] italic">{title}</h3>
         </div>
-        <div className="grid gap-4">{children}</div>
+        <div className="flex flex-col gap-4">{children}</div>
     </div>
 );
 
-const InputGroup = ({ label, suffix, value, onChange, placeholder, icon: Icon }) => (
-    <div className="flex flex-col gap-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide ml-1">{label}</label>
+const InputGroup = ({ label, suffix, value, onChange, placeholder }) => (
+    <div className="flex flex-col gap-2">
+        <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">{label}</label>
         <div className="relative group">
-            {Icon && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors">
-                    <Icon size={14} />
-                </div>
-            )}
             <input
                 type="number"
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className={`w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 text-sm font-mono text-zinc-200 placeholder-zinc-800 outline-none transition-all focus:border-sky-500 focus:ring-1 focus:ring-sky-500/10 hover:border-zinc-700 ${Icon ? "pl-9" : "pl-3"} ${suffix ? "pr-10" : "pr-3"}`}
+                className="w-full bg-black border border-white/5 rounded-xl py-3.5 px-5 text-sm font-mono text-zinc-100 outline-none transition-all focus:border-[#10b981]/40 focus:ring-4 focus:ring-[#10b981]/5 placeholder:text-zinc-900"
             />
-            {suffix && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-600 pointer-events-none">{suffix}</div>
-            )}
+            {suffix && <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[9px] font-black text-zinc-700 uppercase italic pointer-events-none group-focus-within:text-[#10b981] transition-colors">{suffix}</div>}
         </div>
     </div>
 );
 
-const SummaryRow = ({ label, value }) => (
-    <div className="flex justify-between items-center text-sm py-1.5 border-b border-white/5 last:border-0">
-        <span className="text-zinc-500 text-xs font-medium">{label}</span>
-        <span className="font-mono font-bold text-zinc-200">{formatBRL(value)}</span>
-    </div>
-);
-
-const parseNumber = (value) => (!value ? 0 : Number(value.toString().replace(",", ".")) || 0);
 const formatBRL = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+const parseNumber = (value) => (!value ? 0 : Number(value.toString().replace(",", ".")) || 0);
 
-/* =============================
-   PÁGINA PRINCIPAL
-============================== */
-export default function CalculadoraFree() {
-    // Estados dos Inputs
+export default function CalculadoraPreview() {
+    const [nomeProjeto, setNomeProjeto] = useState("");
     const [precoFilamento, setPrecoFilamento] = useState("");
     const [pesoPeca, setPesoPeca] = useState("");
     const [tempoHoras, setTempoHoras] = useState("");
@@ -187,8 +197,7 @@ export default function CalculadoraFree() {
     const [horasTrabalhadas, setHorasTrabalhadas] = useState("");
     const [margemLucro, setMargemLucro] = useState("100");
 
-    // Lógica de Cálculo
-    const resultado = useMemo(() => {
+    const res = useMemo(() => {
         const pKg = parseNumber(precoFilamento);
         const peso = parseNumber(pesoPeca);
         const tHoras = parseNumber(tempoHoras);
@@ -201,169 +210,172 @@ export default function CalculadoraFree() {
 
         const tempoTotalHoras = tHoras + (tMin / 60);
         const custoMaterial = (peso / 1000) * pKg;
-
-        // Fator de carga média da impressora (70% do pico)
         const consumoKwhTotal = ((watts * 0.7) / 1000) * tempoTotalHoras;
-        const custoEnergia = consumoKwhTotal * kwhPrice;
-
+        const custoEnergia = (consumoKwhTotal * kwhPrice) + (tempoTotalHoras > 0 ? tempoTotalHoras * 0.15 : 0);
         const custoMaoDeObra = moTempo * moHora;
         const custoTotal = custoMaterial + custoEnergia + custoMaoDeObra;
-        const lucroDesejado = custoTotal * (margem / 100);
-        const precoVenda = custoTotal + lucroDesejado;
+        const precoVenda = custoTotal + (custoTotal * (margem / 100));
 
-        return { custoMaterial, custoEnergia, custoMaoDeObra, custoTotal, precoVenda, lucroLiquido: lucroDesejado };
+        return { custoMaterial, custoEnergia, custoMaoDeObra, custoTotal, precoVenda, lucroReal: precoVenda - custoTotal };
     }, [precoFilamento, pesoPeca, tempoHoras, tempoMinutos, consumoWatts, valorKwh, maoDeObraHora, horasTrabalhadas, margemLucro]);
 
-    const isEmpty = resultado.custoTotal <= 0.01;
+    const hasValue = res.custoTotal > 0.1;
 
     return (
-        <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans selection:bg-sky-500/30 overflow-x-hidden flex flex-col">
+        <div className="h-screen w-full bg-[#050505] text-zinc-100 font-sans overflow-hidden flex flex-col relative">
+
+            {/* GRID BACKGROUND */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]"
+                style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+            />
+            <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#10b981]/5 rounded-full blur-[100px] pointer-events-none" />
 
             <style>{`
                 @media print {
                     body * { visibility: hidden; }
                     #print-area, #print-area * { visibility: visible; }
-                    #print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; background: white; }
-                    @page { margin: 0; size: auto; }
+                    #print-area { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white !important; }
+                    @page { margin: 0; }
                 }
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
             `}</style>
 
             <PrintLayout
-                dados={resultado}
-                inputs={{ peso: pesoPeca || '0', horas: tempoHoras || '0', minutos: tempoMinutos || '0' }}
+                dados={res}
+                inputs={{ peso: pesoPeca, horas: tempoHoras, minutos: tempoMinutos, consumo: consumoWatts }}
+                nomeProjeto={nomeProjeto}
             />
 
-            {/* Background Grid */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]"
-                style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-            </div>
+            <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-8 py-8 relative z-10 min-h-0">
 
-            <header className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-white/5 print:hidden">
-                <div className="max-w-[1800px] mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                {/* HEADER REDUZIDO */}
+                <header className="flex items-center justify-between mb-8 shrink-0">
+                    <div className="flex items-center gap-5">
                         <Link href="/">
-                            <button className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-white transition-colors cursor-pointer">
-                                <ArrowLeft size={16} />
+                            <button className="p-3.5 bg-[#0e0e11] border border-white/5 rounded-xl hover:bg-zinc-900 text-zinc-500 hover:text-[#10b981] transition-all shadow-xl">
+                                <ChevronLeft size={20} />
                             </button>
                         </Link>
                         <div>
-                            <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                                Orçamento Rápido<span className="px-1.5 py-0.5 rounded text-[9px] bg-sky-500/10 text-sky-500 border border-sky-500/20 uppercase font-bold">Free</span>
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
+                                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-500">Modo de Visualização</span>
+                            </div>
+                            <h1 className="text-4xl font-[1000] tracking-tighter italic uppercase leading-none">
+                                CALCULADORA <span className="text-[#10b981]">MAKER</span>
                             </h1>
                         </div>
                     </div>
-                </div>
-            </header>
 
-            <div className="flex-1 flex justify-center py-10 px-4 gap-8 relative z-10 print:hidden">
-                {/* Banner Lateral Esquerdo (Publicidade) */}
-                <aside className="hidden 2xl:flex flex-col gap-4 sticky top-24 h-fit">
-                    <AdPlaceholder width="w-[160px]" height="h-[600px]" />
-                </aside>
+                    <div className="flex-1 max-w-sm ml-10 relative group">
+                        <FileEdit size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-[#10b981] transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="NOME DO PROJETO (EX: SAMURAI V2)"
+                            value={nomeProjeto}
+                            onChange={(e) => setNomeProjeto(e.target.value.toUpperCase())}
+                            className="w-full bg-[#0e0e11] border border-white/5 rounded-xl py-3.5 pl-14 pr-5 text-[9px] font-[1000] tracking-widest uppercase outline-none focus:border-[#10b981]/30 transition-all placeholder:text-zinc-900 shadow-xl"
+                        />
+                    </div>
+                </header>
 
-                <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 h-fit">
-                    <div className="space-y-6">
-                        <Card title="Material & Insumos" icon={Package}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputGroup label="Preço do Rolo" suffix="R$/kg" placeholder="120,00" value={precoFilamento} onChange={setPrecoFilamento} />
-                                <InputGroup label="Peso da Peça" suffix="g" placeholder="Ex: 45" value={pesoPeca} onChange={setPesoPeca} />
-                            </div>
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 min-h-0">
+
+                    {/* ENTRADAS */}
+                    <div className="grid grid-cols-2 gap-5 auto-rows-min overflow-y-auto pr-3 custom-scrollbar items-start pb-8">
+                        <Card title="Materiais e Insumos" icon={Package}>
+                            <InputGroup label="Preço do Rolo (KG)" suffix="R$" placeholder="120.00" value={precoFilamento} onChange={setPrecoFilamento} />
+                            <InputGroup label="Peso Final da Peça" suffix="GRAMAS" placeholder="450" value={pesoPeca} onChange={setPesoPeca} />
                         </Card>
 
-                        <Card title="Tempo & Consumo Elétrico" icon={Clock}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputGroup label="Duração Estimada" suffix="h" placeholder="0" value={tempoHoras} onChange={setTempoHoras} />
-                                <InputGroup label="Minutos Adicionais" suffix="min" placeholder="0" value={tempoMinutos} onChange={setTempoMinutos} />
+                        <Card title="Tempo de Impressão" icon={Zap}>
+                            <div className="grid grid-cols-2 gap-3">
+                                <InputGroup label="Horas" suffix="H" value={tempoHoras} onChange={setTempoHoras} />
+                                <InputGroup label="Minutos" suffix="M" value={tempoMinutos} onChange={setTempoMinutos} />
                             </div>
-                            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/5">
-                                <InputGroup label="Potência da Impressora" suffix="W" placeholder="300" value={consumoWatts} onChange={setConsumoWatts} icon={Zap} />
-                                <InputGroup label="Custo do KWh" suffix="R$/kWh" placeholder="0.95" value={valorKwh} onChange={setValorKwh} />
-                            </div>
+                            <InputGroup label="Energia (KWh)" suffix="R$" value={valorKwh} onChange={setValorKwh} />
                         </Card>
 
-                        <Card title="Hora Técnica & Margem" icon={DollarSign}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputGroup label="Valor da sua Hora" suffix="R$/h" placeholder="20,00" value={maoDeObraHora} onChange={setMaoDeObraHora} />
-                                <InputGroup label="Tempo de Trabalho" suffix="h" placeholder="Ex: 0.5" value={horasTrabalhadas} onChange={setHorasTrabalhadas} />
-                            </div>
-                            <div className="pt-2 border-t border-white/5">
-                                <InputGroup label="Margem de Lucro" suffix="%" placeholder="100" value={margemLucro} onChange={setMargemLucro} icon={TrendingUp} />
-                            </div>
+                        <Card title="Mão de Obra" icon={HardHat}>
+                            <InputGroup label="Sua Hora Técnica" suffix="R$/H" value={maoDeObraHora} onChange={setMaoDeObraHora} />
+                            <InputGroup label="Tempo de Preparação" suffix="H" value={horasTrabalhadas} onChange={setHorasTrabalhadas} />
+                        </Card>
+
+                        <Card title="Margem" icon={TrendingUp}>
+                            <InputGroup label="Margem de Lucro" suffix="%" value={margemLucro} onChange={setMargemLucro} />
                         </Card>
                     </div>
 
-                    <aside className="lg:sticky lg:top-24 h-fit space-y-6">
-                        {/* Widget de Preço Sugerido */}
-                        <div className="bg-[#0e0e11] border border-white/5 rounded-3xl p-8 relative overflow-hidden group shadow-2xl">
-                            <div className={`absolute -top-20 -right-20 w-64 h-64 blur-[80px] rounded-full transition-all duration-1000 ${isEmpty ? 'bg-zinc-800/20' : 'bg-sky-500/20 group-hover:bg-sky-500/30'}`}></div>
-                            <div className="relative z-10 text-center">
-                                <h2 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Sugerido para Venda</h2>
-                                <div className="flex items-center justify-center gap-1 mb-2">
-                                    <span className="text-xl text-zinc-600 font-light mt-2">R$</span>
-                                    <span className={`text-5xl font-bold tracking-tighter font-mono ${isEmpty ? 'text-zinc-700' : 'text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]'}`}>
-                                        {isEmpty ? "0,00" : formatBRL(resultado.precoVenda).replace("R$", "").trim()}
+                    {/* RESULTADOS */}
+                    <aside className="flex flex-col gap-5 overflow-hidden">
+
+                        {/* WIDGET PREÇO */}
+                        <div className="bg-[#0e0e11] border border-white/5 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden h-fit shrink-0">
+                            <div className="flex justify-between items-start mb-6">
+                                <span className="text-[10px] font-[1000] uppercase tracking-[0.3em] text-zinc-600 italic">Sugestão de Venda</span>
+                                <Activity size={18} className="text-zinc-800" />
+                            </div>
+                            <div className="flex items-end gap-2 mb-6">
+                                <span className="text-2xl font-black italic text-[#10b981] mb-1.5 leading-none">R$</span>
+                                <span className="text-6xl font-[1000] tracking-tighter font-mono italic text-white leading-none">
+                                    {res.precoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            </div>
+
+                            {hasValue && (
+                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981]">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+                                    <span className="text-[10px] font-[1000] uppercase tracking-widest italic leading-none">
+                                        Lucro Real: {formatBRL(res.lucroReal)}
                                     </span>
                                 </div>
-                                {!isEmpty && (
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold mt-2">
-                                        <TrendingUp size={12} />
-                                        Lucro: {formatBRL(resultado.lucroLiquido)}
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
 
-                        {/* Detalhamento de Custos */}
-                        <div className="bg-[#0e0e11] border border-white/5 rounded-2xl p-5 shadow-lg">
-                            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <Info size={14} className="text-sky-500" /> Detalhes do Custo
-                            </h3>
-                            <div className="space-y-2">
-                                <SummaryRow label="Material" value={resultado.custoMaterial} />
-                                <SummaryRow label="Energia" value={resultado.custoEnergia} />
-                                <SummaryRow label="Hora Técnica" value={resultado.custoMaoDeObra} />
-                                <div className="h-px bg-zinc-800 my-2"></div>
-                                <div className="flex justify-between items-center py-1">
-                                    <span className="text-xs font-bold text-zinc-400 uppercase">Total de Custo</span>
-                                    <span className="font-mono font-bold text-zinc-200">{formatBRL(resultado.custoTotal)}</span>
+                        {/* ANALÍTICO E AÇÕES */}
+                        <div className="bg-[#0e0e11] border border-white/5 rounded-[2rem] p-7 flex flex-col gap-6 shadow-xl">
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-zinc-500 uppercase font-black text-[10px] tracking-widest italic leading-none">
+                                    <span>Custo de Produção:</span>
+                                    <span className="text-zinc-200 text-xl font-mono">{formatBRL(res.custoTotal)}</span>
+                                </div>
+                                <div className="space-y-2.5 border-t border-white/5 pt-4">
+                                    {res.custoMaterial > 0 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Polímeros e Insumos</span><span>{formatBRL(res.custoMaterial)}</span></div>}
+                                    {res.custoEnergia > 0.05 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Energia e Amortização</span><span>{formatBRL(res.custoEnergia)}</span></div>}
+                                    {res.custoMaoDeObra > 0 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Preparação Técnica</span><span>{formatBRL(res.custoMaoDeObra)}</span></div>}
                                 </div>
                             </div>
+
+                            <button
+                                onClick={() => window.print()}
+                                disabled={!hasValue}
+                                className={`w-full h-16 rounded-2xl font-[1000] text-base uppercase tracking-[0.12em] italic transition-all flex items-center justify-center gap-3 active:scale-95 ${hasValue
+                                    ? 'bg-[#10b981] text-black shadow-lg hover:brightness-110'
+                                    : 'bg-zinc-900 text-zinc-800 cursor-not-allowed border border-white/5 opacity-50'
+                                    }`}
+                            >
+                                <Printer size={20} />
+                                GERAR ORÇAMENTO
+                            </button>
+
+                            <div className="flex gap-3">
+                                <ProButton icon={Save} label="Salvar" />
+                                <ProButton icon={History} label="Histórico" />
+                            </div>
                         </div>
 
-                        {/* Ação de Impressão */}
-                        <button
-                            onClick={() => window.print()}
-                            disabled={isEmpty}
-                            className="w-full h-12 bg-zinc-100 hover:bg-white text-black disabled:bg-zinc-800 disabled:text-zinc-500 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg"
-                        >
-                            <Printer size={16} /> Gerar PDF Profissional
-                        </button>
-
-                        {/* Upsell / Pro Features */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <Link href="/register" className="w-full group">
-                                <button className="w-full h-11 bg-[#09090b] border border-zinc-800 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest hover:border-zinc-700 hover:text-zinc-300 transition-all shadow-sm">
-                                    <Save size={14} /> Salvar <Crown size={12} className="text-amber-600/80 group-hover:text-amber-500 transition-colors" />
-                                </button>
-                            </Link>
-                            <Link href="/register" className="w-full group">
-                                <button className="w-full h-11 bg-[#09090b] border border-zinc-800 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest hover:border-zinc-700 hover:text-zinc-300 transition-all shadow-sm">
-                                    <History size={14} /> Histórico <Crown size={12} className="text-amber-600/80 group-hover:text-amber-500 transition-colors" />
-                                </button>
-                            </Link>
+                        {/* NOTA TÉCNICA */}
+                        <div className="p-5 rounded-2xl border border-dashed border-zinc-800 flex gap-3 items-start bg-zinc-900/5 h-fit">
+                            <Info size={18} className="text-[#10b981] shrink-0 mt-0.5" />
+                            <p className="text-[10px] text-zinc-600 leading-relaxed italic font-[1000] uppercase tracking-tight">
+                                * Inclui taxa de depreciação de <span className="text-zinc-400">R$0,15/h</span> para manutenção de bicos e correias.
+                            </p>
                         </div>
                     </aside>
-                </main>
-
-                {/* Banner Lateral Direito (Publicidade) */}
-                <aside className="hidden xl:flex flex-col gap-4 sticky top-24 h-fit">
-                    <AdPlaceholder width="w-[160px]" height="h-[600px]" label="Patrocinado" />
-                </aside>
+                </div>
             </div>
-
-            <footer className="py-8 text-center border-t border-white/5 bg-[#050505] print:hidden">
-                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">LayerForge &copy; 2025 - Ferramentas para Impressão 3D</p>
-            </footer>
         </div>
     );
 }
