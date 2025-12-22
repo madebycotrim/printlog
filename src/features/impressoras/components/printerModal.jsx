@@ -24,16 +24,16 @@ const parseNumeric = (v) => {
     return isNaN(parsed) ? 0 : parsed;
 };
 
-/* ---------- ICON INPUT COMPACTO ---------- */
+/* ---------- INPUT DA OFICINA ---------- */
 const HUDInput = ({ label, icon: Icon, value, onChange, placeholder, suffix, sectionColor, type = "text" }) => {
     const [focused, setFocused] = useState(false);
     return (
         <div className="space-y-1 w-full group">
-            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-500 ml-1 group-hover:text-zinc-300 transition-colors">
+            <label className="text-[8px] font-bold uppercase tracking-widest text-zinc-500 ml-1 group-hover:text-zinc-300 transition-colors">
                 {label}
             </label>
             <div
-                className={`relative rounded-lg border transition-all duration-300 bg-black/40 ${focused ? "ring-1 ring-offset-0" : "border-zinc-800"}`}
+                className={`relative rounded-lg border transition-all duration-300 bg-black/40 ${focused ? "ring-1" : "border-zinc-800"}`}
                 style={focused ? { borderColor: sectionColor || '#0ea5e9', boxShadow: `0 0 10px ${sectionColor || '#0ea5e9'}20` } : {}}
             >
                 <div className="absolute left-2.5 top-1/2 -translate-y-1/2 py-0.5 pr-2 border-r border-zinc-800">
@@ -42,9 +42,9 @@ const HUDInput = ({ label, icon: Icon, value, onChange, placeholder, suffix, sec
                 <input
                     type={type} value={value} onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                    className="w-full bg-transparent border-none rounded-lg pl-10 pr-10 py-2 text-[11px] text-zinc-100 outline-none font-mono placeholder:text-zinc-800"
+                    className="w-full bg-transparent border-none rounded-lg pl-10 pr-10 py-2 text-[11px] text-zinc-100 outline-none font-bold placeholder:text-zinc-800"
                 />
-                {suffix && <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[8px] font-black text-zinc-700 font-mono uppercase">{suffix}</span>}
+                {suffix && <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[8px] font-bold text-zinc-700 uppercase">{suffix}</span>}
             </div>
         </div>
     );
@@ -76,13 +76,13 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
     const brandOptions = useMemo(() => {
         const brands = [...new Set(database.map(p => p.brand))].sort();
-        return [{ group: "Fabricantes Homologados", items: brands.map(b => ({ value: b, label: b })) }];
+        return [{ group: "Marcas conhecidas", items: brands.map(b => ({ value: b, label: b })) }];
     }, [database]);
 
     const modelOptions = useMemo(() => {
         if (!form.brand) return [];
         const models = database.filter(p => p.brand.toLowerCase() === form.brand.toLowerCase());
-        return [{ group: `Modelos ${form.brand}`, items: models.map(m => ({ value: m.model, label: m.model, data: m })) }];
+        return [{ group: `Modelos da ${form.brand}`, items: models.map(m => ({ value: m.model, label: m.model, data: m })) }];
     }, [database, form.brand]);
 
     const custoHora = useMemo(() => {
@@ -106,14 +106,14 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
             <div className="relative bg-[#080808] border border-zinc-800 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh]">
                 
-                {/* --- LADO ESQUERDO: SCANNER --- */}
+                {/* --- LADO ESQUERDO: RESUMO --- */}
                 <div className="w-full md:w-[280px] bg-black/40 border-b md:border-b-0 md:border-r border-zinc-800/60 p-6 flex flex-col items-center justify-between shrink-0">
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
                     <div className="relative z-10 w-full text-center">
                         <div className="flex items-center gap-2 mb-6 justify-center">
-                            <Activity size={12} className="text-emerald-500 animate-pulse" />
-                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em]">Unit_Diagnostics_v4</span>
+                            <Activity size={12} className="text-emerald-500" />
+                            <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Dados da Máquina</span>
                         </div>
                         
                         <div className="flex justify-center py-4 relative">
@@ -123,20 +123,20 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                             </div>
                         </div>
 
-                        <h3 className="text-base font-black text-white tracking-tighter uppercase truncate mt-4">{form.name || "UNNAMED_UNIT"}</h3>
+                        <h3 className="text-base font-bold text-white uppercase truncate mt-4">{form.name || "Nova Impressora"}</h3>
                         <div className="flex items-center justify-center gap-2 mt-1">
-                            <span className="text-[7px] font-mono font-black bg-zinc-900 text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded uppercase">{form.brand || "NO_DATA"}</span>
+                            <span className="text-[7px] font-bold bg-zinc-900 text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded uppercase">{form.brand || "Sem Marca"}</span>
                         </div>
                     </div>
 
                     <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-3 backdrop-blur-md w-full">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">Dprc_Cyc_Hour</span>
+                            <span className="text-[7px] font-bold text-zinc-600 uppercase">Custo por Hora</span>
                             <ShieldCheck size={10} className="text-emerald-500" />
                         </div>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-lg font-mono font-black text-emerald-500">R$ {custoHora}</span>
-                            <span className="text-[8px] font-bold text-zinc-700 uppercase">/hr</span>
+                            <span className="text-lg font-mono font-bold text-emerald-500">R$ {custoHora}</span>
+                            <span className="text-[8px] font-bold text-zinc-700 uppercase">/h</span>
                         </div>
                     </div>
                 </div>
@@ -146,70 +146,70 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                     <header className="px-6 py-4 border-b border-white/5 bg-zinc-900/20 flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-black border border-zinc-800 text-sky-500"><Binary size={16} /></div>
-                            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{dadosIniciais ? "Patch_Unit_Parameters" : "Initialize_New_Unit"}</h3>
+                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">{dadosIniciais ? "Editar Impressora" : "Cadastrar Nova Impressora"}</h3>
                         </div>
                         <button onClick={aoFechar} className="p-1 text-zinc-600 hover:text-white transition-colors"><X size={18} /></button>
                     </header>
 
                     <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
                         
-                        {/* MÓDULO 01: IDENTIFICAÇÃO */}
+                        {/* MÓDULO 01: QUEM É ELA */}
                         <section className="space-y-4">
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-sky-500 font-mono">[ 01 ]</span>
-                                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Módulo_de_Identificação</h4>
+                                <span className="text-[10px] font-bold text-sky-500 font-mono">[ 01 ]</span>
+                                <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Identificação</h4>
                                 <div className="h-px bg-zinc-800/50 flex-1" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <div className="flex justify-between items-center px-1">
-                                        <label className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Manufacturer</label>
-                                        <button type="button" onClick={() => setManualEntry(p => ({...p, brand: !p.brand}))} className="text-[7px] font-bold text-sky-500 uppercase">{manualEntry.brand ? "[ List ]" : "[ Typ ]"}</button>
+                                        <label className="text-[8px] font-bold text-zinc-500 uppercase">Fabricante</label>
+                                        <button type="button" onClick={() => setManualEntry(p => ({...p, brand: !p.brand}))} className="text-[7px] font-bold text-sky-500 uppercase">{manualEntry.brand ? "[ Ver Lista ]" : "[ Digitar ]"}</button>
                                     </div>
-                                    {manualEntry.brand ? <input value={form.brand} onChange={e => setForm({...form, brand: e.target.value, model: ""})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white font-mono outline-none focus:border-sky-500" placeholder="Brand..." /> : <SearchSelect value={form.brand} onChange={v => setForm({...form, brand: v, model: ""})} options={brandOptions} searchable placeholder="Select..." />}
+                                    {manualEntry.brand ? <input value={form.brand} onChange={e => setForm({...form, brand: e.target.value, model: ""})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white outline-none focus:border-sky-500" placeholder="Ex: Creality..." /> : <SearchSelect value={form.brand} onChange={v => setForm({...form, brand: v, model: ""})} options={brandOptions} searchable placeholder="Escolha..." />}
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex justify-between items-center px-1">
-                                        <label className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Model_Node</label>
-                                        <button type="button" onClick={() => setManualEntry(p => ({...p, model: !p.model}))} className="text-[7px] font-bold text-sky-500 uppercase">{manualEntry.model ? "[ List ]" : "[ Typ ]"}</button>
+                                        <label className="text-[8px] font-bold text-zinc-500 uppercase">Modelo</label>
+                                        <button type="button" onClick={() => setManualEntry(p => ({...p, model: !p.model}))} className="text-[7px] font-bold text-sky-500 uppercase">{manualEntry.model ? "[ Ver Lista ]" : "[ Digitar ]"}</button>
                                     </div>
-                                    {manualEntry.model ? <input value={form.model} onChange={e => setForm({...form, model: e.target.value})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white font-mono outline-none focus:border-sky-500" placeholder="Model..." /> : <SearchSelect value={form.model} onChange={(val, extra) => setForm(prev => ({...prev, model: val, power: extra?.consumoKw ? Math.round(extra.consumoKw * 1000) : prev.power, name: prev.name || `${prev.brand} ${val}`}))} options={modelOptions} searchable placeholder="Select..." />}
+                                    {manualEntry.model ? <input value={form.model} onChange={e => setForm({...form, model: e.target.value})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white outline-none focus:border-sky-500" placeholder="Ex: Ender 3 S1..." /> : <SearchSelect value={form.model} onChange={(val, extra) => setForm(prev => ({...prev, model: val, power: extra?.consumoKw ? Math.round(extra.consumoKw * 1000) : prev.power, name: prev.name || `${prev.brand} ${val}`}))} options={modelOptions} searchable placeholder="Escolha..." />}
                                 </div>
                             </div>
-                            <HUDInput label="Alias_Definition" icon={Tag} value={form.name} onChange={v => setForm({...form, name: v})} placeholder="Ex: PRINTER_ALPHA_01" sectionColor="#0ea5e9" />
+                            <HUDInput label="Apelido da Máquina" icon={Tag} value={form.name} onChange={v => setForm({...form, name: v})} placeholder="Ex: Ender da Esquerda" sectionColor="#0ea5e9" />
                         </section>
 
-                        {/* MÓDULO 02: HARDWARE */}
+                        {/* MÓDULO 02: ENERGIA E CUSTO */}
                         <section className="space-y-4">
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-amber-500 font-mono">[ 02 ]</span>
-                                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Especificações_de_Carga</h4>
+                                <span className="text-[10px] font-bold text-amber-500 font-mono">[ 02 ]</span>
+                                <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Energia e Preço</h4>
                                 <div className="h-px bg-zinc-800/50 flex-1" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <HUDInput label="Nominal_Power" icon={Zap} value={form.power} onChange={v => setForm({...form, power: v})} suffix="WATTS" sectionColor="#f59e0b" />
-                                <HUDInput label="Acquisition_Cost" icon={DollarSign} value={form.price} onChange={v => setForm({...form, price: v})} suffix="BRL" sectionColor="#10b981" />
+                                <HUDInput label="Consumo Médio" icon={Zap} value={form.power} onChange={v => setForm({...form, power: v})} suffix="Watts" sectionColor="#f59e0b" />
+                                <HUDInput label="Preço de Compra" icon={DollarSign} value={form.price} onChange={v => setForm({...form, price: v})} suffix="BRL" sectionColor="#10b981" />
                             </div>
                         </section>
 
-                        {/* MÓDULO 03: CICLO DE VIDA */}
+                        {/* MÓDULO 03: USO E MANUTENÇÃO */}
                         <section className="space-y-4">
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-orange-500 font-mono">[ 03 ]</span>
-                                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Manutenção_e_Telemetria</h4>
+                                <span className="text-[10px] font-bold text-orange-500 font-mono">[ 03 ]</span>
+                                <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Tempo e Manutenção</h4>
                                 <div className="h-px bg-zinc-800/50 flex-1" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <HUDInput label="Current_Odometer" icon={Timer} value={form.totalHours} onChange={v => setForm({...form, totalHours: v})} suffix="HRS" sectionColor="#f97316" />
-                                <HUDInput label="Revision_Window" icon={Activity} value={form.maintenanceInterval} onChange={v => setForm({...form, maintenanceInterval: v})} suffix="HRS" sectionColor="#f97316" />
+                                <HUDInput label="Horas já trabalhadas" icon={Timer} value={form.totalHours} onChange={v => setForm({...form, totalHours: v})} suffix="Horas" sectionColor="#f97316" />
+                                <HUDInput label="Revisar a cada" icon={Activity} value={form.maintenanceInterval} onChange={v => setForm({...form, maintenanceInterval: v})} suffix="Horas" sectionColor="#f97316" />
                             </div>
                         </section>
                     </div>
 
                     <footer className="p-6 border-t border-white/5 bg-zinc-950/50 flex gap-3 mt-auto">
-                        <button onClick={aoFechar} className="flex-1 py-2.5 rounded-lg border border-zinc-800 text-[9px] font-black uppercase text-zinc-600 hover:text-white transition-all">Abort_Task</button>
-                        <button disabled={!isValid} onClick={handleSalvar} className={`flex-[2] py-2.5 rounded-lg text-[9px] font-black uppercase flex items-center justify-center gap-2 transition-all ${isValid ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg" : "bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800"}`}>
-                            <Terminal size={14} /> {dadosIniciais ? "Patch_Configuration" : "Finalize_Unit"}
+                        <button onClick={aoFechar} className="flex-1 py-2.5 rounded-lg border border-zinc-800 text-[9px] font-bold uppercase text-zinc-600 hover:text-white transition-all">Cancelar</button>
+                        <button disabled={!isValid} onClick={handleSalvar} className={`flex-[2] py-2.5 rounded-lg text-[9px] font-bold uppercase flex items-center justify-center gap-2 transition-all ${isValid ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20" : "bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800"}`}>
+                            <Terminal size={14} /> {dadosIniciais ? "Salvar Alterações" : "Adicionar à Oficina"}
                         </button>
                     </footer>
                 </div>

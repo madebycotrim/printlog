@@ -6,15 +6,14 @@ export default function StatCard({
   title,
   value,
   icon: Icon,
-  colorClass = "text-sky-500", // Ex: text-sky-500
+  colorClass = "text-sky-500", 
   subtext
 }) {
   const IconComponent = Icon || HelpCircle;
 
-  // --- LÓGICA DE TEMA (Smart Color) ---
-  // Extrai a cor base da classe (ex: 'sky-500' de 'text-sky-500') para aplicar em bordas/bg
+  // --- CORES DO TEMA (Estilo da Oficina) ---
   const theme = useMemo(() => {
-    // Mapeamento simples para garantir consistência visual
+    // Cores simplificadas para facilitar a leitura rápida na bancada
     if (colorClass.includes("rose") || colorClass.includes("red")) {
       return {
         bgHover: "hover:bg-rose-500/5",
@@ -39,7 +38,7 @@ export default function StatCard({
         badge: "bg-amber-500/10 text-amber-400 border-amber-500/20"
       };
     }
-    // Default (Sky/Blue/Zinc)
+    // Padrão Azul/Sky (Cor da PrintLog)
     return {
       bgHover: "hover:bg-sky-500/5",
       borderHover: "hover:border-sky-500/50",
@@ -59,8 +58,8 @@ export default function StatCard({
         flex flex-col justify-between min-h-[140px]
       `}
     >
-      {/* --- BACKGROUND FX --- */}
-      {/* Marca d'água gigante */}
+      {/* --- EFEITO VISUAL --- */}
+      {/* Ícone de fundo gigante para dar estilo ao card */}
       <div
         className={`
           absolute -right-6 -top-6
@@ -74,13 +73,10 @@ export default function StatCard({
         <IconComponent size={140} strokeWidth={1.5} />
       </div>
 
-      {/* Glow radial sutil no centro ao passar o mouse */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
       {/* --- CONTEÚDO --- */}
       <div className="relative z-10 flex flex-col h-full justify-between">
 
-        {/* Header: Ícone + Título */}
+        {/* Topo: Ícone + Título Simples */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div
@@ -97,7 +93,7 @@ export default function StatCard({
             </span>
           </div>
 
-          {/* Indicador de Tendência (Opcional - Visual apenas) */}
+          {/* Indicador visual de status */}
           <div className="opacity-0 group-hover:opacity-100 transition-opacity -mr-2">
             <div className="bg-zinc-900/50 p-1 rounded-md border border-zinc-800 text-zinc-500">
               <Minus size={12} />
@@ -105,20 +101,22 @@ export default function StatCard({
           </div>
         </div>
 
-        {/* Valor Principal */}
+        {/* Resultado Principal */}
         <div>
           <h3 className="text-2xl lg:text-3xl font-bold text-zinc-100 font-mono tracking-tighter leading-none group-hover:text-white transition-colors">
             {value}
           </h3>
 
-          {/* Subtexto / Badge */}
+          {/* Legenda ou Status em destaque */}
           {subtext && (
             <div className="mt-3 flex items-center">
               <span
                 className={`
-                  text-[10px] font-mono font-bold px-2 py-0.5 rounded border
+                  text-[10px] font-bold px-2 py-0.5 rounded border
                   transition-colors duration-300
-                  ${subtext.toString().includes('%') || subtext.toString().includes('Abaixo') ? theme.badge : 'text-zinc-500 border-transparent px-0'}
+                  ${subtext.toString().includes('%') || subtext.toString().includes('Abaixo') || subtext.toString().includes('Pouco') 
+                    ? theme.badge 
+                    : 'text-zinc-500 border-transparent px-0'}
                 `}
               >
                 {subtext}

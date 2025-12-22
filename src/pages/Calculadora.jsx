@@ -90,7 +90,7 @@ export default function CalculadoraPage() {
   // Venda, Marketplace & Logística
   const [canalVenda, setCanalVenda] = useState("loja");
   const [taxaMarketplace, setTaxaMarketplace] = useState("0");
-  const [custoFixo, setCustoFixo] = useState(""); 
+  const [custoFixo, setCustoFixo] = useState("");
 
   const [custoEmbalagem, setCustoEmbalagem] = useState("");
   const [custoFrete, setCustoFrete] = useState("");
@@ -227,18 +227,19 @@ export default function CalculadoraPage() {
 
   return (
     <div className="flex h-screen bg-[#050505] text-zinc-100 font-sans overflow-hidden selection:bg-sky-500/30 selection:text-sky-200 ">
-
-      {/* Grid de Fundo (Vibe Tech/Engineering) */}
-      <div className="absolute inset-x-0 top-0 h-[500px] z-0 pointer-events-none opacity-[0.03]"
-        style={{
-          backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          maskImage: 'linear-gradient(to bottom, black, transparent)'
-        }}
-      />
+      
       <MainSidebar onCollapseChange={(collapsed) => setSidebarWidth(collapsed ? 72 : 256)} />
 
       <main className="flex-1 flex flex-row relative h-full min-w-0 z-10 transition-all duration-300" style={{ marginLeft: `${sidebarWidth}px` }}>
+
+        {/* GRID DE FUNDO */}
+        <div className="absolute inset-x-0 top-0 h-[500px] z-0 pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+            maskImage: 'linear-gradient(to bottom, black, transparent)'
+          }}
+        />
 
         {/* === COLUNA DE INPUTS (ESQUERDA) === */}
         <div className="flex-1 flex flex-col h-full min-w-0">
@@ -263,12 +264,12 @@ export default function CalculadoraPage() {
 
               {/* Título do Projeto */}
               <div className="relative mb-6 mt-4 animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
-                <input 
-                  id="nomeProjeto" 
-                  value={nomeProjeto} 
-                  onChange={(e) => setNomeProjeto(e.target.value)} 
+                <input
+                  id="nomeProjeto"
+                  value={nomeProjeto}
+                  onChange={(e) => setNomeProjeto(e.target.value)}
                   placeholder="Nome do Projeto (Ex: Action Figure Batman)"
-                  className="w-full bg-transparent py-1 text-4xl font-bold text-white placeholder:text-zinc-700 outline-none font-mono tracking-tighter border-b border-zinc-800/40 focus:border-zinc-600 transition-colors" 
+                  className="w-full bg-transparent py-1 text-4xl font-bold text-white placeholder:text-zinc-700 outline-none font-mono tracking-tighter border-b border-zinc-800/40 focus:border-zinc-600 transition-colors"
                 />
               </div>
 
