@@ -1,7 +1,29 @@
 {
   "name": "printlog",
   "compatibility_date": "2025-12-19",
+  "compatibility_flags": [
+    "nodejs_compat" // Essencial se você usar bibliotecas modernas ou Node.js APIs
+  ],
   "assets": {
-    "directory": "./dist"
-  }
+    "directory": "./dist",
+    "binding": "ASSETS" // Permite acessar arquivos estáticos dentro do Worker se necessário
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1 // Envia logs para o dashboard da Cloudflare (muito útil para debug)
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "API_URL": "https://api.printlog.com.br"
+  },
+  // Se você for salvar dados das impressoras, você precisará de um Banco de Dados (D1)
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "printlog-db",
+  //     "database_id": "seu-id-aqui"
+  //   }
+  // ],
+  "minify": true,
+  "upload_source_maps": true
 }

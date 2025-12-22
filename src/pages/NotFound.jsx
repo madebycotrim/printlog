@@ -146,27 +146,6 @@ export default function NotFound() {
                     PrintLog • Sistema de Erros
                 </p>
             </footer>
-
-            <style>{`
-                @keyframes pulse-slow {
-                    0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-                    50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); }
-                }
-                @keyframes glitch {
-                    0%, 90%, 100% { transform: translateX(2rem); }
-                    2% { transform: translateX(2.1rem); }
-                    4% { transform: translateX(1.9rem); }
-                    92% { transform: translateX(1.8rem); }
-                    94% { transform: translateX(2.2rem); }
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-pulse-slow {
-                    animation: pulse-slow 6s ease-in-out infinite;
-                }
-            `}</style>
         </div>
     );
 }
