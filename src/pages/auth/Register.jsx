@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
+import { useSignUp, useAuth } from "@clerk/clerk-react";
 import {
-    User, Mail, Lock, ArrowLeft, Github, Chrome, Check, Package,
-    PieChart, AlertTriangle, Database, CheckCircle2,
-    TrendingUp, ShieldCheck, X // Adicionado X para fechar o modal
+    Mail, ArrowLeft, Chrome, Database,
+    User, Package, Send, Lock, Eye, EyeOff,
+    KeyRound, AlertTriangle, ShieldCheck,
+    Zap, Fingerprint, Layout,
+    Layers, Cpu, BoxSelect, Activity
 } from 'lucide-react';
 import logo from '../../assets/logo-branca.png';
-
-import { TERMS_CONTENT, PRIVACY_CONTENT } from '../../constants/legalContent';
 
 // --- COMPONENTES DE UI ---
 
@@ -15,91 +16,68 @@ const Badge = ({ icon: Icon, label, color = "sky" }) => {
     const variants = {
         emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
         sky: "text-sky-400 bg-sky-500/10 border-sky-500/20",
-        amber: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-        rose: "text-rose-400 bg-rose-500/10 border-rose-500/20",
     };
     return (
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${variants[color]} backdrop-blur-md w-fit`}>
-            {Icon && <Icon size={10} strokeWidth={3} />}
-            <span className="text-[9px] font-black uppercase tracking-[0.15em]">{label}</span>
+            {Icon && <Icon size={12} strokeWidth={2.5} />}
+            <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
         </div>
     );
 };
 
-const PrimaryButton = ({ children, onClick, icon: Icon, variant = "primary", className = "", disabled, type = "button" }) => {
+const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", className = "", disabled, type = "button", isLoading }) => {
     const styles = {
-        primary: "bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5",
-        sky: "bg-sky-600 text-white hover:bg-sky-500 shadow-xl shadow-sky-900/20",
-        outline: "bg-transparent border border-white/10 text-white hover:bg-white/5",
+        sky: "bg-sky-600 text-white hover:bg-sky-500 shadow-lg shadow-sky-500/20",
+        white: "bg-white text-black hover:bg-zinc-200 shadow-xl",
     };
     return (
         <button
             type={type}
-            disabled={disabled}
+            disabled={disabled || isLoading}
             onClick={onClick}
-            className={`h-14 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed ${styles[variant]} ${className}`}
+            className={`h-14 px-8 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 ${styles[variant]} ${className}`}
         >
-            {children}
-            {Icon && <Icon size={18} strokeWidth={2.5} />}
-        </button>
-    );
-};
-
-// Componente Modal Reutilizável
-const Modal = ({ title, isOpen, onClose, children }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
-            <div className="relative w-full max-w-2xl bg-[#0c0c0e] border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-8 border-b border-white/5 flex justify-between items-center">
-                    <h3 className="text-xl font-black uppercase tracking-tighter text-white">{title}</h3>
-                    <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all">
-                        <X size={20} />
-                    </button>
+            {isLoading ? (
+                <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Processando...</span>
                 </div>
-                <div className="p-8 overflow-y-auto custom-scrollbar text-zinc-400 text-sm leading-relaxed space-y-4 font-medium">
+            ) : (
+                <>
                     {children}
-                </div>
-                <div className="p-6 border-t border-white/5 bg-zinc-900/20">
-                    <button onClick={onClose} className="w-full py-4 bg-white text-black font-black uppercase tracking-widest text-[11px] rounded-2xl hover:bg-zinc-200 transition-all">
-                        Entendi e concordo
-                    </button>
-                </div>
-            </div>
-        </div>
+                    {Icon ? <Icon size={18} strokeWidth={2.5} /> : <Send size={18} strokeWidth={2.5} />}
+                </>
+            )}
+        </button>
     );
 };
 
 // --- WIDGETS DE PREVIEW (LADO DIREITO) ---
 
 const InventoryWidget = () => (
-    <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transform hover:scale-[1.02] transition-all duration-700">
+    <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
-                <Badge label="Estoque Inteligente" color="sky" icon={Database} />
-                <h4 className="text-white font-bold text-lg mt-2 tracking-tight">Insumos em Tempo Real</h4>
+                <Badge label="Meu Estoque" color="sky" icon={Database} />
+                <h4 className="text-white font-bold text-lg mt-2">Filamentos</h4>
             </div>
-            <div className="bg-sky-500/10 p-3 rounded-2xl text-sky-500 border border-sky-500/20">
-                <Package size={20} />
-            </div>
+            <Package className="text-zinc-700" size={20} />
         </div>
-
-        <div className="space-y-5">
+        <div className="space-y-4">
             {[
-                { name: 'PLA Silk Gold', weight: '820g', color: 'bg-amber-400', percent: 'w-[82%]' },
-                { name: 'PETG Black CF', weight: '120g', color: 'bg-rose-500', percent: 'w-[12%]', alert: true },
+                { name: 'PETG Carbono', weight: '820g', color: 'bg-sky-500', percent: 'w-[82%]' },
+                { name: 'PLA Silk Dourado', weight: '150g', color: 'bg-amber-400', percent: 'w-[15%]', alert: true },
             ].map((item, i) => (
                 <div key={i} className="space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                        <span className="text-zinc-500 flex items-center gap-2">
-                            {item.alert && <AlertTriangle size={12} className="text-rose-500 animate-pulse" />}
+                    <div className="flex justify-between items-center text-[11px] font-medium">
+                        <span className="text-zinc-400 flex items-center gap-2">
+                            {item.alert && <AlertTriangle size={12} className="text-amber-500" />}
                             {item.name}
                         </span>
-                        <span className={item.alert ? "text-rose-500" : "text-white"}>{item.weight}</span>
+                        <span className={item.alert ? "text-amber-500" : "text-white"}>{item.weight}</span>
                     </div>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                        <div className={`h-full ${item.percent} ${item.color} rounded-full shadow-[0_0_8px_rgba(255,255,255,0.1)]`} />
+                    <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                        <div className={`h-full ${item.percent} ${item.color} rounded-full`} />
                     </div>
                 </div>
             ))}
@@ -107,208 +85,230 @@ const InventoryWidget = () => (
     </div>
 );
 
-const ProfitWidget = () => (
-    <div className="bg-[#0c0c0e]/90 backdrop-blur-xl border border-emerald-500/20 rounded-[2rem] p-6 shadow-2xl animate-float-slow ml-auto -mt-12 mr-[-30px] relative z-20 w-60">
-        <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                <TrendingUp size={20} />
-            </div>
-            <div className="flex flex-col">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500">Lucro Médio</span>
-                <span className="text-[11px] font-bold text-white">Por Impressão</span>
-            </div>
-        </div>
-        <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-black text-white font-mono tracking-tighter">64</span>
-            <span className="text-xl font-black text-white/50 font-mono">%</span>
-            <span className="ml-auto text-[10px] text-emerald-400 font-black uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded">Alta</span>
-        </div>
-    </div>
-);
-
-// --- COMPONENTE PRINCIPAL ---
-
 export default function RegisterPage() {
+    const { isLoaded, signUp, setActive } = useSignUp();
+    const { isSignedIn } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [termsAccepted, setTermsAccepted] = useState(false);
-    const [activeModal, setActiveModal] = useState(null); // Estado para controlar popups
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [isSent, setIsSent] = useState(false);
+    const [pendingVerification, setPendingVerification] = useState(false);
+    const [code, setCode] = useState("");
+
+    const [regMode, setRegMode] = useState('magic');
+    const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+    const [error, setError] = useState("");
     const [, setLocation] = useLocation();
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        if (isLoaded && isSignedIn) setLocation("/dashboard");
+    }, [isLoaded, isSignedIn, setLocation]);
+
+    const handleClerkError = (err) => {
+        const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Erro ao criar conta.";
+        setError(msg);
+    };
+
+    const signUpWithGoogle = async () => {
+        if (!isLoaded) return;
+        setIsGoogleLoading(true);
+        try {
+            await signUp.authenticateWithRedirect({
+                strategy: "oauth_google",
+                redirectUrl: "/sso-callback",
+                redirectUrlComplete: "/dashboard",
+            });
+        } catch (err) { setIsGoogleLoading(false); handleClerkError(err); }
+    };
+
+    const handlePasswordSignUp = async (e) => {
         e.preventDefault();
-        if (!termsAccepted) return;
+        if (!isLoaded) return;
         setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            setLocation('/dashboard');
-        }, 2000);
+        setError("");
+        try {
+            await signUp.create({ emailAddress: email, password, firstName: name });
+            await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+            setPendingVerification(true);
+        } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
+    };
+
+    const handleMagicLinkSignUp = async (e) => {
+        e.preventDefault();
+        if (!isLoaded) return;
+        setIsLoading(true);
+        setError("");
+        try {
+            await signUp.create({ emailAddress: email, firstName: name });
+            await signUp.prepareEmailAddressVerification({
+                strategy: 'email_link',
+                redirectUrl: `${window.location.origin}/dashboard`,
+            });
+            setIsSent(true);
+        } catch (err) { handleClerkError(err); setIsSent(false); } finally { setIsLoading(false); }
     };
 
     return (
         <div className="min-h-screen bg-[#050506] text-zinc-100 font-sans flex overflow-hidden">
-
-            {/* LADO ESQUERDO: FORMULÁRIO */}
             <div className="flex-1 flex flex-col justify-center items-center p-8 relative z-10 w-full lg:w-1/2">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/5 blur-[120px] pointer-events-none" />
 
                 <div className="absolute top-10 left-10">
-                    <button onClick={() => setLocation('/')} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all group">
-                        <div className="p-2 rounded-xl border border-white/5 bg-zinc-900 group-hover:border-white/20 group-hover:scale-110 transition-all">
-                            <ArrowLeft size={14} />
-                        </div>
-                        Voltar para Início
+                    <button onClick={() => setLocation('/')} className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white transition-all">
+                        <ArrowLeft size={16} />
+                        Voltar ao início
                     </button>
                 </div>
 
-                <div className="w-full max-w-md space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                <div className="w-full max-w-md space-y-10">
                     <div className="space-y-4 text-center sm:text-left">
                         <div className="flex items-center gap-3 justify-center sm:justify-start">
-                            <img src={logo} alt="PrintLog" className="w-10 h-10" />
-                            <span className="text-xl font-black tracking-tighter uppercase text-white">PrintLog</span>
+                            <img src={logo} alt="PrintLog" className="w-10 h-10 object-contain" />
+                            <span className="text-xl font-bold text-white">PrintLog <span className="text-sky-500 text-[10px] uppercase ml-1">Maker</span></span>
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.9] text-white">
-                                COMECE A <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-sky-600 italic">LUCRAR REAL.</span>
+                            {/* TEXTO EXATO DA IMAGEM */}
+                            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.95] text-white uppercase">
+                                {pendingVerification ? "VERIFIQUE SEU" : "CRIE SUA"} <br />
+                                <span className="text-sky-500 italic">{pendingVerification ? "E-MAIL." : "FARM AGORA."}</span>
                             </h2>
-                            <p className="text-zinc-500 text-sm font-medium">Junte-se a centenas de makers que profissionalizaram sua gestão.</p>
+                            <p className="text-zinc-500 text-sm font-medium">
+                                Acesse a plataforma de gestão para especialistas em impressão 3D.
+                            </p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="space-y-2 group">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1 group-focus-within:text-sky-500 transition-colors">Nome do Maker / Farm</label>
-                            <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                <input type="text" required className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all font-medium text-white placeholder:text-zinc-800" placeholder="Ex: Oficina do Vader" />
-                            </div>
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium">
+                            <AlertTriangle size={16} className="shrink-0" />
+                            <span>{error}</span>
                         </div>
+                    )}
 
-                        <div className="space-y-2 group">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1 group-focus-within:text-sky-500 transition-colors">E-mail Profissional</label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                <input type="email" required className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all font-medium text-white placeholder:text-zinc-800" placeholder="seu@email.com" />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {!isSent && !pendingVerification ? (
+                        <form onSubmit={regMode === 'magic' ? handleMagicLinkSignUp : handlePasswordSignUp} className="space-y-5">
                             <div className="space-y-2 group">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1 group-focus-within:text-sky-500 transition-colors">Senha</label>
+                                <label className="text-xs font-bold text-zinc-500 ml-1">Seu Nome ou Oficina</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                    <input type="password" required className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all font-medium text-white placeholder:text-zinc-800" placeholder="••••••••" />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                                    <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 transition-all text-white placeholder:text-zinc-800" placeholder="Ex: João ou Oficina3D" />
                                 </div>
                             </div>
+
                             <div className="space-y-2 group">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1 group-focus-within:text-sky-500 transition-colors">Confirmar</label>
+                                <label className="text-xs font-bold text-zinc-500 ml-1">E-mail</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                    <input type="password" required className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all font-medium text-white placeholder:text-zinc-800" placeholder="••••••••" />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 transition-all text-white placeholder:text-zinc-800" placeholder="seu@email.com" />
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="pt-2">
-                            <label className="flex items-start gap-3 cursor-pointer group">
-                                <div className="relative flex items-center shrink-0 mt-0.5">
-                                    <input
-                                        type="checkbox"
-                                        className="peer appearance-none w-5 h-5 rounded-lg border border-white/10 bg-zinc-900 checked:bg-sky-600 checked:border-sky-600 transition-all cursor-pointer"
-                                        checked={termsAccepted}
-                                        onChange={(e) => setTermsAccepted(e.target.checked)}
-                                    />
-                                    <Check size={12} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" strokeWidth={4} />
+                            {regMode === 'password' && (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                    <label className="text-xs font-bold text-zinc-500 ml-1">Crie uma senha</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                                        <input
+                                            type={showPassword ? "text" : "password"} required value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500/50 transition-all text-white placeholder:text-zinc-800"
+                                            placeholder="Mínimo 8 caracteres"
+                                        />
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-white">
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
+                            )}
 
-                                <span className="text-[11px] text-zinc-500 leading-relaxed group-hover:text-zinc-400 transition-colors font-medium">
-                                    Estou de acordo com os{' '}
-                                    <button type="button" onClick={() => setActiveModal('terms')} className="text-sky-500 hover:text-sky-400 underline underline-offset-4 transition-colors font-bold italic">Termos de Uso</button>
-                                    {' '}e a{' '}
-                                    <button type="button" onClick={() => setActiveModal('privacy')} className="text-sky-500 hover:text-sky-400 underline underline-offset-4 transition-colors font-bold italic">Política de Privacidade</button> para profissionalizar minha gestão.
-                                </span>
-                            </label>
+                            <div className="space-y-4 pt-2">
+                                <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={Zap}>
+                                    {regMode === 'magic' ? "Enviar link de acesso" : "Criar minha conta"}
+                                </PrimaryButton>
+
+                                <button type="button" onClick={() => { setRegMode(regMode === 'magic' ? 'password' : 'magic'); setError(""); }} className="flex items-center gap-2 mx-auto text-xs font-bold text-zinc-500 hover:text-white transition-colors">
+                                    <KeyRound size={14} className="text-sky-500" />
+                                    {regMode === 'magic' ? "Prefiro usar uma senha" : "Usar link rápido por e-mail"}
+                                </button>
+                            </div>
+                        </form>
+                    ) : pendingVerification ? (
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            setIsLoading(true);
+                            try {
+                                const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
+                                if (completeSignUp.status === "complete") {
+                                    await setActive({ session: completeSignUp.createdSessionId });
+                                    setLocation("/dashboard");
+                                }
+                            } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
+                        }} className="space-y-6">
+                            <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
+                                <label className="text-xs font-bold uppercase text-sky-500 block">Código de Verificação</label>
+                                <input
+                                    type="text" maxLength={6} required value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 text-center text-3xl font-mono font-bold tracking-[0.4em] text-white outline-none focus:border-sky-500 transition-all"
+                                    placeholder="000000"
+                                />
+                                <p className="text-[11px] text-zinc-500 font-medium">Digite o código enviado para o seu e-mail.</p>
+                            </div>
+                            <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={ShieldCheck}>Confirmar Código</PrimaryButton>
+                            <button onClick={() => setPendingVerification(false)} className="block mx-auto text-zinc-500 text-xs font-bold hover:text-white">Voltar e corrigir</button>
+                        </form>
+                    ) : (
+                        <div className="bg-sky-500/5 border border-sky-500/20 rounded-[2.5rem] p-10 text-center space-y-6">
+                            <div className="relative mx-auto w-16 h-16 bg-sky-500/20 rounded-full flex items-center justify-center text-sky-400">
+                                <Send size={30} />
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-white font-bold text-xl uppercase">E-mail enviado!</h3>
+                                <p className="text-zinc-400 text-sm">Verifique sua caixa de entrada em <strong>{email}</strong> para ativar sua farm.</p>
+                            </div>
+                            <button onClick={() => setIsSent(false)} className="text-zinc-500 text-xs font-bold uppercase hover:text-white transition-colors">← Tentar outro método</button>
                         </div>
-
-                        <PrimaryButton type="submit" variant="sky" className="w-full h-16 mt-4" disabled={isLoading || !termsAccepted}>
-                            {isLoading ? "Criando seu império..." : "Criar minha conta grátis"}
-                        </PrimaryButton>
-                    </form>
+                    )}
 
                     <div className="space-y-6">
                         <div className="relative flex items-center justify-center">
                             <div className="absolute inset-0 border-t border-white/5" />
-                            <span className="relative bg-[#050506] px-4 text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700">Ou continue com</span>
+                            <span className="relative bg-[#050506] px-4 text-[10px] font-bold uppercase text-zinc-600">Ou use sua conta</span>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <button className="flex items-center justify-center gap-3 h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all font-black text-[10px] uppercase tracking-widest text-white">
-                                <Chrome size={18} /> Google
-                            </button>
-                            <button className="flex items-center justify-center gap-3 h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all font-black text-[10px] uppercase tracking-widest text-white">
-                                <Github size={18} /> GitHub
-                            </button>
-                        </div>
-
-                        <div className="text-center pt-4">
-                            <p className="text-zinc-500 text-xs font-medium">
-                                Já profissionalizou sua farm?{' '}
-                                <button onClick={() => setLocation('/login')} className="text-white font-black uppercase tracking-widest text-[10px] hover:text-sky-400 transition-colors ml-2 underline underline-offset-8">
-                                    Fazer Login
-                                </button>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* LADO DIREITO: VISUAL */}
-            <div className="hidden lg:flex flex-1 bg-[#09090b] border-l border-white/5 relative items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-sky-500/10 blur-[120px] rounded-full animate-pulse-slow" />
-
-                <div className="relative z-10 space-y-0">
-                    <div className="translate-x-[-20px]"><InventoryWidget /></div>
-                    <ProfitWidget />
-
-                    <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-max text-center space-y-4">
-                        <div className="flex items-center justify-center gap-8">
-                            <div className="flex items-center gap-2 text-zinc-500 shrink-0">
-                                <ShieldCheck size={16} className="text-sky-500 shrink-0" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Dados Criptografados</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-zinc-500 shrink-0">
-                                <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Sincronia Nuvem</span>
-                            </div>
-                        </div>
-                        <p className="text-xs text-zinc-600 font-medium max-w-[320px] mx-auto leading-relaxed shrink-0">
-                            Acesse seu estoque, ordens de serviço e precificação de qualquer lugar do mundo.
+                        <button onClick={signUpWithGoogle} disabled={isGoogleLoading || isLoading} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all font-bold text-sm text-white disabled:opacity-50">
+                            {isGoogleLoading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Chrome size={20} /> Cadastrar com Google</>}
+                        </button>
+                        <p className="text-center text-zinc-500 text-sm">
+                            Já tem uma conta? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Fazer Login</button>
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* MODAIS (DENTRO DO COMPONENTE) */}
-            <Modal title="Termos de Uso" isOpen={activeModal === 'terms'} onClose={() => setActiveModal(null)}>
-                {TERMS_CONTENT}
-            </Modal>
+            <div className="hidden lg:flex flex-1 bg-[#09090b] border-l border-white/5 relative items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-500/10 blur-[180px] rounded-full" />
+                
+                <div className="relative z-10 scale-110">
+                    <div className="translate-x-[-30px]"><InventoryWidget /></div>
 
-            <Modal title="Privacidade & Segurança" isOpen={activeModal === 'privacy'} onClose={() => setActiveModal(null)}>
-                {PRIVACY_CONTENT}
-            </Modal>
+                    <div className="bg-[#0c0c0e]/90 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl ml-auto -mt-12 mr-[-40px] relative z-20 w-64 text-center">
+                        <div className="w-12 h-12 bg-sky-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-sky-500/20 text-sky-500">
+                            <Layout size={24} />
+                        </div>
+                        <span className="text-sm font-bold text-white block uppercase">Sua Oficina Online</span>
+                        <span className="text-[11px] text-zinc-500 block mt-1">Gerencie tudo em um só lugar</span>
+                    </div>
 
-            <style>{`
-                @keyframes float-slow {
-                    0%, 100% { transform: translateY(0px) rotate(0deg); }
-                    50% { transform: translateY(-20px) rotate(1deg); }
-                }
-                .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
-                .animate-pulse-slow { animation: pulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
-            `}</style>
+                    <div className="absolute -bottom-40 -left-20 opacity-10 font-mono text-[10px] text-sky-500 space-y-1 text-left">
+                        <p>G28 ; Iniciar Home</p>
+                        <p>M104 S210 ; Aquecer Bico</p>
+                        <p>G1 Z15 F3000</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
