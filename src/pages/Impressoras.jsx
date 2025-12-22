@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Link } from "wouter";
+import React, { useState, useEffect, useMemo } from "react";
+import { useLocation } from "wouter";
 import {
-    ChevronLeft, Plus, Search, Printer, Wrench,
-    CheckCircle2, AlertTriangle, Timer, Crosshair,
-    Activity, MousePointer2, Database, Zap, Scan, Cpu,
-    Radio, Network
+    ChevronLeft, Plus, Search, CheckCircle2,
+    Timer, Cpu, Scan, Activity
 } from "lucide-react";
 
 // --- COMPONENTES ---
 import MainSidebar from "../components/MainSidebar";
 import PrinterCard from "../features/impressoras/components/printerCard";
 import PrinterModal from "../features/impressoras/components/printerModal";
-import MakerCoreIA from "../features/impressoras/components/makerIA"; // Sua IA funcional
+import MakerCoreIA from "../features/impressoras/components/makerIA";
 import DiagnosticsModal from "../features/impressoras/components/diagnosticsModal";
 
 // --- LÓGICA ---
@@ -21,269 +19,265 @@ import { getPrinters, savePrinter, deletePrinter, resetMaintenance, updateStatus
 // --- UTILITÁRIOS ---
 const formatBigNumber = (num) => {
     if (!num || isNaN(num)) return "0";
-    if (num > 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num > 1000) return (num / 1000).toFixed(1) + "k";
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "k";
     return Math.floor(num).toString();
 };
 
-// --- COMPONENTE: TECH STAT CARD (Industrial v4) ---
-const TechStatCard = ({ title, value, icon: Icon, colorClass, subtext, alertMode = false, secondaryLabel, secondaryValue }) => {
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const cardRef = useRef(null);
-
-    const handleMouseMove = (e) => {
-        if (!cardRef.current) return;
-        const rect = cardRef.current.getBoundingClientRect();
-        setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    };
-
+const TechStatCard = ({ title, value, icon: Icon, colorClass, secondaryLabel, secondaryValue }) => {
     return (
-        <div
-            ref={cardRef}
-            onMouseMove={handleMouseMove}
-            className="group relative h-[180px] p-6 rounded-2xl bg-[#09090b] border border-zinc-800/50 overflow-hidden flex flex-col justify-between transition-all hover:border-zinc-700/60 shadow-lg"
-        >
-            <div
-                className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-500"
-                style={{
-                    background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.04), transparent 40%)`,
-                }}
-            />
-
+        <div className="group relative h-[160px] p-6 rounded-2xl bg-[#09090b] border border-zinc-800/50 overflow-hidden flex flex-col justify-between transition-all hover:border-zinc-700/60 shadow-2xl">
             <div className="relative z-10 flex justify-between items-start">
                 <div className={`p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-inner ${colorClass}`}>
-                    <Icon size={20} />
+                    <Icon size={18} strokeWidth={2.5} />
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">{title}</p>
-                    <div className="flex items-center justify-end gap-2">
-                        <h3 className="text-2xl font-black text-zinc-100 font-mono tracking-tighter">{value}</h3>
-                        {alertMode && <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-ping shadow-[0_0_10px_rgba(244,63,94,0.5)]" />}
-                    </div>
+                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5">{title}</p>
+                    <h3 className="text-2xl font-black text-zinc-100 font-mono tracking-tighter leading-none">{value}</h3>
                 </div>
             </div>
-
-            <div className="relative z-10 pt-4 border-t border-white/5 flex justify-between items-end">
+            <div className="relative z-10 pt-4 border-t border-white/5 flex justify-between items-center">
                 <div className="flex flex-col">
-                    <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-wider">{secondaryLabel}</span>
-                    <span className="text-xs font-bold text-zinc-300">{secondaryValue}</span>
+                    <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest leading-none mb-1">{secondaryLabel}</span>
+                    <span className="text-[11px] font-bold text-zinc-400 font-mono leading-none">{secondaryValue}</span>
                 </div>
-                <p className="text-[10px] text-zinc-600 font-medium italic max-w-[100px] text-right leading-tight">
-                    {subtext}
-                </p>
+                <div className="h-1 w-8 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className={`h-full bg-current ${colorClass} opacity-30 animate-pulse`} style={{ width: '60%' }}></div>
+                </div>
             </div>
         </div>
     );
 };
 
 export default function ImpressorasPage() {
+    const [, setLocation] = useLocation();
     const [larguraSidebar, setLarguraSidebar] = useState(72);
     const [printers, setPrinters] = useState([]);
     const [busca, setBusca] = useState("");
-    const [filtroStatus, setFiltroStatus] = useState("all");
+
     const [modalAberto, setModalAberto] = useState(false);
     const [itemEdicao, setItemEdicao] = useState(null);
     const [printerEmDiagnostico, setPrinterEmDiagnostico] = useState(null);
-    const [hoverManutencao, setHoverManutencao] = useState(false);
-    const [highlightedId, setHighlightedId] = useState(null);
 
-    useEffect(() => { setPrinters(getPrinters()); }, []);
+    // --- PERSISTÊNCIA DO CHECKLIST (ID -> Array de labels concluídos) ---
+    const [checklists, setChecklists] = useState({});
 
-    // --- LÓGICA ---
-    const abrirDiagnostico = (id) => { const p = printers.find(p => p.id === id); if (p) setPrinterEmDiagnostico(p); };
-    const resolverManutencao = (id) => { setPrinters(resetMaintenance(id)); setPrinterEmDiagnostico(null); };
-    const aoSalvar = (dados) => { setPrinters(savePrinter(dados)); setItemEdicao(null); setModalAberto(false); };
-    const aoDeletar = (id) => { if (window.confirm("Remover Ativo?")) setPrinters(deletePrinter(id)); };
+    // Carregamento inicial com garantia de IDs únicos
+    useEffect(() => {
+        const rawData = getPrinters() || [];
+        const cleanData = Array.from(new Map(rawData.map(item => [item.id, item])).values());
+        setPrinters(cleanData);
+    }, []);
 
-    const handleToggleStatus = (printer) => {
-        const flow = { 'idle': 'printing', 'printing': 'maintenance', 'maintenance': 'idle' };
-        setPrinters(updateStatus(printer.id, flow[printer.status || 'idle']));
+    // --- HANDLERS ---
+    const handleToggleTask = (printerId, taskLabel) => {
+        if (!printerId) return;
+        setChecklists(prev => {
+            const currentTasks = prev[printerId] || [];
+            const newTasks = currentTasks.includes(taskLabel)
+                ? currentTasks.filter(t => t !== taskLabel)
+                : [...currentTasks, taskLabel];
+            return { ...prev, [printerId]: newTasks };
+        });
     };
 
-    const focarNaImpressora = (id) => {
-        const element = document.getElementById(`printer-card-${id}`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setHighlightedId(id);
-            setTimeout(() => setHighlightedId(null), 3000);
-            setHoverManutencao(false);
+    const aoSalvar = (dados) => {
+        const novaLista = savePrinter(dados);
+        setPrinters([...novaLista]);
+        setModalAberto(false);
+        setItemEdicao(null);
+    };
+
+    const aoDeletar = (id) => {
+        if (window.confirm("Remover este ativo do sistema?")) {
+            const novaLista = deletePrinter(id);
+            setPrinters([...novaLista]);
         }
     };
 
-    const filteredPrinters = useMemo(() => {
-        return printers.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(busca.toLowerCase());
-            const matchesStatus = filtroStatus === "all" || p.status === filtroStatus;
-            return matchesSearch && matchesStatus;
-        });
-    }, [printers, busca, filtroStatus]);
+    const alternarStatus = (id, statusAtual) => {
+        const flow = { 'idle': 'printing', 'printing': 'maintenance', 'maintenance': 'idle' };
+        const novaLista = updateStatus(id, flow[statusAtual || 'idle']);
+        setPrinters([...novaLista]);
+    };
 
-    const criticalPrinters = printers.filter(p => analyzePrinterHealth(p).length > 0);
-    const totalPrints = printers.reduce((acc, curr) => acc + (curr.history?.length || 0), 0);
-    const totalHoursFarm = printers.reduce((acc, curr) => acc + (curr.totalHours || 0), 0);
-    const totalFilament = (totalHoursFarm * 0.012).toFixed(2);
+    const finalizarReparo = (id) => {
+        const novaLista = resetMaintenance(id);
+        setPrinters([...novaLista]);
+
+        // Limpa o checklist persistido após o reparo ser concluído
+        setChecklists(prev => {
+            const novo = { ...prev };
+            delete novo[id];
+            return novo;
+        });
+
+        setPrinterEmDiagnostico(null);
+    };
+
+    // --- MEMOS ---
+    const stats = useMemo(() => {
+        const filtered = printers.filter(p =>
+            p.name?.toLowerCase().includes(busca.toLowerCase()) ||
+            p.id?.toString().includes(busca)
+        );
+        const activeCount = printers.filter(p => p.status === 'printing').length;
+        const totalHours = printers.reduce((acc, curr) => acc + (Number(curr.totalHours) || 0), 0);
+        const totalPrints = printers.reduce((acc, curr) => acc + (curr.history?.length || 0), 0);
+
+        return {
+            filtered,
+            activeCount,
+            totalPrints,
+            filament: (totalHours * 0.012).toFixed(2),
+        };
+    }, [printers, busca]);
 
     return (
-        <div className="flex h-screen bg-[#050505] text-zinc-100 font-sans overflow-hidden">
-            <MainSidebar onCollapseChange={(c) => setLarguraSidebar(c ? 72 : 256)} />
+        <div className="flex h-screen w-full bg-[#050505] text-zinc-100 font-sans overflow-hidden">
 
-            <main className="flex-1 flex flex-col relative transition-all duration-300" style={{ marginLeft: `${larguraSidebar}px` }}>
-                <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+            <MainSidebar onCollapseChange={(collapsed) => setLarguraSidebar(collapsed ? 72 : 256)} />
+
+            <main
+                className="flex-1 flex flex-col relative transition-all duration-300 ease-in-out overflow-hidden"
+                style={{ marginLeft: `${larguraSidebar}px` }}
+            >
+
+                {/* GRID DE FUNDO */}
+                <div className="absolute inset-x-0 top-0 h-[500px] z-0 pointer-events-none opacity-[0.03]"
+                    style={{
+                        backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+                        backgroundSize: '40px 40px',
+                        maskImage: 'linear-gradient(to bottom, black, transparent)'
+                    }}
+                />
 
                 {/* HEADER */}
-                <header className="h-20 px-8 flex items-center justify-between border-b border-white/5 bg-[#050505]/95 backdrop-blur-3xl z-40 sticky top-0">
+                <header className="h-20 min-h-[5rem] px-8 flex items-center justify-between border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-40 relative">
                     <div className="flex items-center gap-6">
-                        <Link href="/"><button className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-emerald-500 transition-all active:scale-95 shadow-lg"><ChevronLeft size={18} /></button></Link>
-                        <div className="flex flex-col">
-                            <h1 className="text-lg font-black text-white uppercase tracking-tighter font-mono flex items-center gap-3">
-                                <span className="text-zinc-600">/</span> DASHBOARD <span className="text-emerald-500 text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 tracking-widest font-bold">FARM_PRO_V3</span>
-                            </h1>
-                            <span className="text-[10px] text-zinc-500 font-bold font-mono tracking-[0.2em] flex items-center gap-2 mt-0.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> SISTEMA OPERACIONAL
-                            </span>
+
+                        <div className="flex flex-col justify-center">
+                            <h1 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-400 leading-none mb-1.5">Hub de Ativos</h1>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-0.5">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className={`h-1 w-3 rounded-full ${i <= (stats.activeCount > 0 ? 3 : 1) ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
+                                    ))}
+                                </div>
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase">{stats.activeCount} ONLINE</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
-                        <div className="relative group hidden lg:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-emerald-500 transition-colors" size={14} />
+                    <div className="flex items-center gap-4">
+                        <div className="relative group">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-emerald-500 transition-colors" size={14} />
                             <input
-                                className="w-80 bg-zinc-900/50 border border-zinc-800 rounded-xl py-2.5 pl-10 text-[11px] text-white focus:border-emerald-500/40 outline-none font-mono placeholder:text-zinc-700 transition-all"
-                                placeholder="LOCALIZAR_SERIAL_ID..."
+                                className="w-72 bg-zinc-900/40 border border-zinc-800/60 rounded-xl py-2.5 pl-10 pr-4 text-[11px] font-mono text-white focus:border-emerald-500/40 focus:bg-zinc-900/80 outline-none transition-all placeholder:text-zinc-700"
+                                placeholder="IDENTIFICAR_SERIAL..."
                                 value={busca}
                                 onChange={e => setBusca(e.target.value)}
                             />
                         </div>
-                        <button onClick={() => { setItemEdicao(null); setModalAberto(true); }} className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase flex items-center gap-3 shadow-xl shadow-emerald-900/20 active:scale-95 transition-all">
-                            <Plus size={16} strokeWidth={4} /> ADICIONAR MÁQUINA
+                        <button
+                            onClick={() => { setItemEdicao(null); setModalAberto(true); }}
+                            className="h-[40px] px-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase flex items-center gap-3 shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"
+                        >
+                            <Plus size={16} strokeWidth={3} /> ADICIONAR MÁQUINA
                         </button>
                     </div>
                 </header>
 
+                {/* CONTEÚDO SCROLLÁVEL */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-8 relative z-10">
                     <div className="max-w-[1600px] mx-auto space-y-12">
 
                         {/* KPI GRID */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
-                            <MakerCoreIA printers={printers} onFixRequest={abrirDiagnostico} setPrinters={setPrinters} />
-
-                            <TechStatCard
-                                title="Peças Finalizadas"
-                                value={formatBigNumber(totalPrints)}
-                                icon={CheckCircle2}
-                                colorClass="text-emerald-500"
-                                subtext="Volume total de saída da farm"
-                                secondaryLabel="Taxa de Sucesso"
-                                secondaryValue="94.2%"
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <MakerCoreIA
+                                printers={printers}
+                                setPrinters={setPrinters}
+                                onFixRequest={(id) => {
+                                    const p = printers.find(x => x.id === id);
+                                    if (p) setPrinterEmDiagnostico(p);
+                                }}
                             />
 
-                            <div className="relative" onMouseEnter={() => setHoverManutencao(true)} onMouseLeave={() => setHoverManutencao(false)}>
-                                <TechStatCard
-                                    title="Saúde da Farm"
-                                    value={criticalPrinters.length > 0 ? `${criticalPrinters.length} ALERTAS` : "NOMINAL"}
-                                    icon={Activity}
-                                    colorClass={criticalPrinters.length > 0 ? "text-rose-500" : "text-sky-400"}
-                                    subtext="Integridade de bicos e nivelamento"
-                                    alertMode={criticalPrinters.length > 0}
-                                    secondaryLabel="Preventiva"
-                                    secondaryValue="Ender-3 (12h)"
-                                />
-                                {/* Tooltip de Falhas (Omitido para brevidade, mas mantido via hoverManutencao) */}
-                            </div>
+                            <TechStatCard
+                                title="Output de Produção"
+                                value={formatBigNumber(stats.totalPrints)}
+                                icon={CheckCircle2}
+                                colorClass="text-emerald-500"
+                                secondaryLabel="Status de Entrega"
+                                secondaryValue="OTIMIZADO"
+                            />
 
                             <TechStatCard
-                                title="Tempo de Extrusão"
-                                value={`${formatBigNumber(totalHoursFarm)}h`}
+                                title="Massa Extrudada"
+                                value={`${stats.filament}kg`}
                                 icon={Timer}
                                 colorClass="text-amber-500"
-                                subtext="Ciclo total da frota ativa"
-                                secondaryLabel="Consumo Filamento"
-                                secondaryValue={`${totalFilament}kg`}
+                                secondaryLabel="Consumo de Ciclo"
+                                secondaryValue="NOMINAL"
                             />
                         </div>
 
-                        {/* LISTAGEM PRINCIPAL */}
-                        <div className="space-y-8">
-                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/5 pb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2.5 bg-zinc-900 rounded-xl border border-zinc-800 text-emerald-500 ring-1 ring-emerald-500/10"><Cpu size={20} /></div>
-                                    <div className="flex flex-col">
-                                        <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 font-mono">Unidades Conectadas</h2>
-                                        <span className="text-xl font-black text-zinc-200 tracking-tighter uppercase">Gestão de Ativos</span>
-                                    </div>
+                        {/* INVENTÁRIO (Estilo Filamento) */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 py-2">
+                                <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-500 shadow-inner">
+                                    <Cpu size={16} />
                                 </div>
-
-                                <div className="flex bg-zinc-900/40 p-1 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
-                                    {[
-                                        { id: 'all', l: 'GLOBAL' },
-                                        { id: 'printing', l: 'IMPRIMINDO' },
-                                        { id: 'idle', l: 'OCIOSA' },
-                                        { id: 'maintenance', l: 'REPARO' }
-                                    ].map((s) => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => setFiltroStatus(s.id)}
-                                            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${filtroStatus === s.id ? 'bg-emerald-500 text-[#050505] shadow-lg' : 'text-zinc-500 hover:text-zinc-200'}`}
-                                        >
-                                            {s.l}
-                                        </button>
-                                    ))}
+                                <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-zinc-100">Inventário</h2>
+                                <div className="h-[1px] bg-gradient-to-r from-zinc-800 to-transparent flex-1 mx-4" />
+                                <div className="flex items-center gap-3 text-[10px] font-mono bg-zinc-900/50 border border-zinc-800/50 px-4 py-1.5 rounded-full">
+                                    <span className="text-zinc-500 uppercase tracking-tighter">Total_Unidades</span>
+                                    <span className="text-emerald-500 font-bold">{stats.filtered.length}</span>
                                 </div>
                             </div>
 
                             {/* GRID DE CARDS */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
-                                {filteredPrinters.map((printer) => (
-                                    <div
-                                        key={printer.id}
-                                        id={`printer-card-${printer.id}`}
-                                        className={`relative transition-all duration-300 ${highlightedId === printer.id ? "z-30 scale-[1.02]" : ""}`}
-                                    >
-                                        {highlightedId === printer.id && <div className="absolute -inset-2 bg-emerald-500/20 blur-3xl rounded-[2.5rem] animate-pulse" />}
-                                        <PrinterCard
-                                            printer={printer}
-                                            onEdit={(p) => { setItemEdicao(p); setModalAberto(true); }}
-                                            onDelete={aoDeletar}
-                                            onResetMaint={() => abrirDiagnostico(printer.id)}
-                                            onToggleStatus={() => handleToggleStatus(printer)}
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-stretch">
+                                {stats.filtered.map((printer) => (
+                                    <PrinterCard
+                                        key={`card-${printer.id}`}
+                                        printer={printer}
+                                        onEdit={(p) => { setItemEdicao(p); setModalAberto(true); }}
+                                        onDelete={aoDeletar}
+                                        onResetMaint={() => setPrinterEmDiagnostico(printer)}
+                                        onToggleStatus={() => alternarStatus(printer.id, printer.status)}
+                                    />
                                 ))}
                             </div>
 
-                            {/* SCANNER DE REDE (ESTADO VAZIO) */}
-                            {filteredPrinters.length === 0 && (
-                                <div className="relative py-32 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800/50 rounded-[3rem] bg-zinc-900/5 overflow-hidden group">
-                                    <div className="absolute inset-0 pointer-events-none opacity-20">
-                                        <div className="w-full h-[2px] bg-emerald-500/50 blur-sm shadow-[0_0_15px_#10b981] animate-bounce" style={{ animationDuration: '4s' }} />
-                                    </div>
-                                    <div className="relative mb-10 flex items-center justify-center">
-                                        <div className="absolute size-40 rounded-full border border-emerald-500/20 animate-ping" />
-                                        <div className="absolute size-24 rounded-full border border-emerald-500/10 animate-pulse" />
-                                        <div className="relative w-20 h-20 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center text-zinc-600 shadow-2xl transition-all group-hover:border-emerald-500/50 group-hover:text-emerald-500">
-                                            <Scan size={36} strokeWidth={1.5} className="animate-pulse" />
-                                        </div>
-                                    </div>
-                                    <div className="text-center space-y-3 relative z-10 px-6">
-                                        <h3 className="text-zinc-400 font-black font-mono uppercase tracking-[0.4em] text-sm">Perímetro Vazio</h3>
-                                        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-3 justify-center">
-                                            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" /> Buscando sinal de hardware na rede local
-                                        </p>
-                                        <span className="text-[9px] text-zinc-800 font-mono uppercase">Protocolo: 802.11ax // SSID: Farm_Pro_Node</span>
-                                        <div className="pt-6">
-                                            <button onClick={() => { setItemEdicao(null); setModalAberto(true); }} className="px-6 py-2 border border-zinc-800 hover:border-emerald-500/50 bg-zinc-900/50 hover:bg-emerald-500/5 text-zinc-500 hover:text-emerald-500 rounded-xl text-[9px] font-black uppercase transition-all flex items-center gap-3 mx-auto">
-                                                <Plus size={14} /> Sincronizar Primeira Unidade
-                                            </button>
-                                        </div>
-                                    </div>
+                            {/* ESTADO VAZIO */}
+                            {stats.filtered.length === 0 && (
+                                <div className="py-32 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800/40 rounded-[3rem] bg-zinc-900/5">
+                                    <Scan size={48} className="text-zinc-800 mb-4 animate-pulse" />
+                                    <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em]">Nenhum registro no perímetro</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <PrinterModal aberto={modalAberto} aoFechar={() => setModalAberto(false)} aoSalvar={aoSalvar} dadosIniciais={itemEdicao} />
-                {printerEmDiagnostico && <DiagnosticsModal printer={printerEmDiagnostico} onClose={() => setPrinterEmDiagnostico(null)} onResolve={resolverManutencao} />}
+                {/* MODAIS */}
+                <PrinterModal
+                    aberto={modalAberto}
+                    aoFechar={() => setModalAberto(false)}
+                    aoSalvar={aoSalvar}
+                    dadosIniciais={itemEdicao}
+                />
+
+                {printerEmDiagnostico && (
+                    <DiagnosticsModal
+                        printer={printerEmDiagnostico}
+                        completedTasks={new Set(checklists[printerEmDiagnostico.id] || [])}
+                        onToggleTask={(label) => handleToggleTask(printerEmDiagnostico.id, label)}
+                        onClose={() => setPrinterEmDiagnostico(null)}
+                        onResolve={finalizarReparo}
+                    />
+                )}
             </main>
         </div>
     );

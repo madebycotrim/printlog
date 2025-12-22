@@ -1,157 +1,88 @@
 // --- FILE: src/features/filamentos/components/cardFilamento.jsx ---
 import React from "react";
-import { Edit2, Trash2, ArrowDownFromLine, Factory, AlertTriangle, Scale } from "lucide-react";
+import {
+    Edit2, Trash2, ArrowDownFromLine, History, Zap, Scale, Ruler, CircleDollarSign
+} from "lucide-react";
 import SpoolSideView from "./roloFilamento";
 
-// --- HELPERS ---
-const getFilamentColor = (item) => item.colorHex || item.color || item.hex || "#e4e4e7";
-const getMaterialType = (item) => item.material || item.type || "PLA";
+const getFilamentColor = (item) => item.colorHex || item.color || "#3b82f6";
+const getMaterialType = (item) => (item.type || item.material || "PLA").toUpperCase();
 
-const calculateCurrentValue = (item) => {
-    const price = Number(item.price) || 0;
-    const capacity = Number(item.weightTotal) || 1000;
-    const current = Number(item.weightCurrent) || 0;
-    if (capacity <= 0) return 0;
-    return (price / capacity) * current;
-};
-
-// --- COMPONENTE CARD ---
+// --- 1. COMPONENTE CARD (MODO GRID) ---
 export function FilamentCard({ item, onEdit, onDelete, onConsume }) {
     const capacity = Number(item.weightTotal) || 1000;
     const current = Number(item.weightCurrent) || 0;
-    const pct = capacity > 0 ? (current / capacity) * 100 : 0;
-
+    const pct = Math.round(capacity > 0 ? (current / capacity) * 100 : 0);
     const filamentColor = getFilamentColor(item);
-    const isCritical = pct < 20;
     const materialType = getMaterialType(item);
-    const currentValue = calculateCurrentValue(item);
+    const ehCritico = pct <= 20;
 
     return (
-        <div
-            id={`filament-${item.id}`}
-            className={`
-                group relative flex flex-col 
-                bg-[#09090b] border rounded-2xl overflow-hidden 
-                transition-all duration-300 
-                hover:-translate-y-1 hover:shadow-2xl
-                ${isCritical 
-                    ? 'border-rose-500/30 shadow-[0_0_20px_-10px_rgba(244,63,94,0.2)]' 
-                    : 'border-zinc-800/60 hover:border-zinc-700'}
-            `}
-        >
-            {/* Glow Ambiente (Sutil atrás do card) */}
-            <div
-                className="absolute -top-[100px] -right-[100px] w-[200px] h-[200px] rounded-full blur-[90px] opacity-0 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none z-0"
-                style={{ backgroundColor: filamentColor }}
-            />
-
-            <div className="flex flex-1 relative z-10">
-                
-                {/* --- COLUNA ESQUERDA: SLOT DO ROLO --- */}
-                <div className="w-[88px] flex flex-col items-center pt-6 pb-0 bg-zinc-900/20 border-r border-zinc-800/50 relative shrink-0">
-                    
-                    {/* Visualização do Rolo */}
-                    <div className="relative z-10 filter drop-shadow-2xl transition-transform duration-500 group-hover:scale-105">
-                        <SpoolSideView color={filamentColor} percent={pct} type={item.spoolType} size={64} />
+        <div className={`
+            group relative bg-[#09090b] border rounded-xl overflow-hidden transition-all duration-500 shadow-2xl
+            ${ehCritico ? 'border-rose-600/50 shadow-[0_0_20px_-10px_rgba(225,29,72,0.3)]' : 'border-white/5 hover:border-zinc-700'}
+        `}>
+            <div className="flex h-[220px]">
+                {/* BARRA LATERAL */}
+                <div className="w-[85px] border-r border-white/5 bg-zinc-950/40 flex flex-col items-center py-6 justify-between shrink-0">
+                    <div className="p-2.5 rounded-2xl bg-zinc-900 border border-white/5 shadow-inner relative">
+                        <SpoolSideView color={filamentColor} percent={pct} size={40} />
+                        <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border-2 border-[#09090b] ${ehCritico ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
                     </div>
-
-                    {/* Fio conector decorativo */}
-                    <div className="h-full w-px bg-gradient-to-b from-zinc-800/50 via-zinc-800/50 to-transparent my-1"></div>
-
-                    {/* Tag Material (Melhorada a legibilidade) */}
-                    <div className="mb-4 px-2.5 py-1 rounded bg-[#09090b] border border-zinc-800 shadow-lg z-20">
-                        <span className="text-[10px] font-black text-zinc-300 block uppercase tracking-widest leading-none text-center">
-                            {materialType}
-                        </span>
+                    <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest leading-none">ID_UNIDADE</span>
+                        <span className={`text-[9px] font-mono font-black tracking-tighter ${ehCritico ? 'text-rose-400' : 'text-zinc-400'}`}>#{item.id?.slice(-4).toUpperCase() || 'LOTE'}</span>
+                    </div>
+                    <div className="rotate-180 [writing-mode:vertical-lr] flex items-center gap-2">
+                        <span className="text-[9px] font-black text-zinc-800 uppercase tracking-[0.4em]">{item.brand || 'GENÉRICO'}</span>
                     </div>
                 </div>
 
-                {/* --- COLUNA DIREITA: DADOS --- */}
-                <div className="flex-1 p-4 flex flex-col min-w-0 relative gap-3">
-                    
-                    {/* 1. Header: Nome + Marca + Preço */}
-                    <div className="flex justify-between items-start gap-2">
-                        <div className="space-y-1 min-w-0">
-                            <h3 className="text-sm font-bold text-zinc-100 leading-tight truncate pr-1" title={item.name}>
-                                {item.name}
-                            </h3>
-                            <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium uppercase tracking-wide">
-                                <Factory size={10} className="text-zinc-600" />
-                                <span className="truncate">{item.brand || 'Genérico'}</span>
-                            </div>
-                        </div>
-
-                        {/* Tag de Preço (Mais sutil, menos neon) */}
-                        <div className="flex flex-col items-end shrink-0">
-                            <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded border border-emerald-500/10 shadow-sm">
-                                <span>R$ {currentValue.toFixed(2)}</span>
-                            </div>
+                {/* PAINEL CENTRAL */}
+                <div className="flex-1 p-7 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                        <h3 className={`text-lg font-black uppercase tracking-tighter leading-none ${ehCritico ? 'text-rose-500' : 'text-zinc-100'}`}>{item.name}</h3>
+                        <div className={`px-2.5 py-1 rounded-lg border text-[8px] font-black uppercase tracking-widest ${ehCritico ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' : 'bg-zinc-900/50 border-white/5 text-zinc-500'}`}>
+                            {ehCritico ? 'ESTOQUE_CRÍTICO' : 'STANDBY'}
                         </div>
                     </div>
-
-                    {/* 2. Painel Digital (Peso) */}
-                    {/* Fundo escuro para simular um display LCD/Tech */}
-                    <div className="bg-[#050505] border border-zinc-800/50 rounded-xl p-3 relative overflow-hidden group/display">
-                        
-                        {/* Label do Painel */}
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider flex items-center gap-1.5">
-                                <Scale size={10} /> Peso Atual
-                            </span>
-                            
-                            {/* Alerta Crítico dentro do display */}
-                            {isCritical && (
-                                <span className="text-[9px] font-bold text-rose-500 animate-pulse flex items-center gap-1">
-                                    <AlertTriangle size={10} /> BAIXO
-                                </span>
-                            )}
+                    <div className="space-y-3">
+                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em] block">MASSA_INVENTÁRIO</span>
+                        <div className="flex items-baseline justify-between">
+                            <div className="flex items-baseline gap-1.5">
+                                <span className={`text-4xl font-mono font-black tracking-tighter leading-none ${ehCritico ? 'text-rose-500' : 'text-white'}`}>{Math.round(current)}</span>
+                                <span className={`text-[10px] font-black uppercase ${ehCritico ? 'text-rose-700' : 'text-zinc-600'}`}>GRAMAS</span>
+                            </div>
+                            <span className="text-[9px] font-mono font-black text-zinc-600">{pct}%</span>
                         </div>
-
-                        {/* Números Grandes */}
-                        <div className="flex items-baseline gap-1 relative z-10">
-                            <span className={`text-2xl font-mono font-bold tracking-tighter leading-none ${isCritical ? 'text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.3)]' : 'text-white'}`}>
-                                {Math.round(current)}
-                            </span>
-                            <span className="text-[10px] text-zinc-600 font-mono">/ {Math.round(capacity)}g</span>
-                        </div>
-
-                        {/* Barra de Progresso "Tech" */}
-                        <div className="relative h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden mt-2">
-                            <div
-                                style={{
-                                    width: `${pct}%`,
-                                    backgroundColor: filamentColor,
-                                    boxShadow: `0 0 10px ${filamentColor}40`
-                                }}
-                                className="h-full relative transition-all duration-700 ease-out"
-                            />
+                        <div className="flex gap-1 h-1 w-full">
+                            {[...Array(20)].map((_, i) => (
+                                <div key={i} className="h-full flex-1 rounded-sm" style={{ backgroundColor: i < (pct / 5) ? (ehCritico ? '#f43f5e' : '#22d3ee') : '#18181b', opacity: i < (pct / 5) ? 1 : 0.2 }} />
+                            ))}
                         </div>
                     </div>
-
+                    <div className="flex justify-between items-end pt-3 border-t border-white/5">
+                        <div className="flex flex-col gap-0.5">
+                            <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">TIPO_POLÍMERO</span>
+                            <span className={`text-[10px] font-mono font-black uppercase ${ehCritico ? 'text-rose-400' : 'text-zinc-400'}`}>{materialType}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 text-right">
+                            <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">VALOR_LÍQUIDO</span>
+                            <span className="text-[10px] font-mono font-black text-emerald-500">R$ {((Number(item.price || 0) / capacity) * current).toFixed(2)}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* --- FOOTER (Hierarquia ajustada) --- */}
-            <div className="grid grid-cols-[1fr_1px_44px_1px_44px] items-center border-t border-zinc-800 bg-zinc-900/30 h-10">
-                
-                {/* Botão Registrar Uso (Com hover mais evidente) */}
-                <button 
-                    onClick={() => onConsume(item)} 
-                    className="h-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-all group/btn"
-                >
-                    <ArrowDownFromLine size={13} className="text-zinc-500 group-hover/btn:text-white transition-colors" />
-                    <span>Registrar Uso</span>
+            {/* ACTION BAR (2 BOTÕES QUADRADOS) */}
+            <div className="grid grid-cols-[1fr_repeat(2,44px)] h-10 border-t border-white/5 bg-zinc-950/80">
+                <button onClick={() => onConsume(item)} className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white hover:bg-white/5 transition-all group/btn">
+                    <ArrowDownFromLine size={12} className={ehCritico ? 'text-rose-500' : ''} /> REGISTRAR_USO
                 </button>
-                
-                <div className="h-4 bg-zinc-800/50"></div>
-
-                <button onClick={() => onEdit(item)} className="h-full flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:bg-sky-500/10 transition-colors" title="Editar">
+                <button onClick={() => onEdit(item)} className="flex items-center justify-center border-l border-white/5 text-zinc-600 hover:text-amber-400 hover:bg-white/5 transition-all">
                     <Edit2 size={14} />
                 </button>
-                
-                <div className="h-4 bg-zinc-800/50"></div>
-
-                <button onClick={() => onDelete(item.id)} className="h-full flex items-center justify-center text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors" title="Excluir">
+                <button onClick={() => onDelete(item.id)} className="flex items-center justify-center border-l border-white/5 text-zinc-600 hover:text-rose-500 hover:bg-white/5 transition-all">
                     <Trash2 size={14} />
                 </button>
             </div>
@@ -159,78 +90,61 @@ export function FilamentCard({ item, onEdit, onDelete, onConsume }) {
     );
 }
 
-// --- ROW (Lista) - Mantendo sincronia ---
+// --- 2. COMPONENTE ROW (MODO LISTA) ---
 export function FilamentRow({ item, onEdit, onDelete, onConsume }) {
     const capacity = Number(item.weightTotal) || 1000;
     const current = Number(item.weightCurrent) || 0;
-    const pct = capacity > 0 ? (current / capacity) * 100 : 0;
+    const pct = Math.round(capacity > 0 ? (current / capacity) * 100 : 0);
     const filamentColor = getFilamentColor(item);
     const materialType = getMaterialType(item);
-    const currentValue = calculateCurrentValue(item);
-    const isCritical = pct < 20;
+    const ehCritico = pct <= 20;
 
     return (
-        <div
-            id={`filament-${item.id}`}
-            className={`
-                group flex items-center bg-[#09090b] border rounded-xl p-2 transition-all mb-1 shadow-sm
-                ${isCritical ? 'border-rose-500/20' : 'border-zinc-800 hover:border-zinc-700'}
-            `}
-        >
-            <div className="shrink-0 px-3 py-1 relative">
-                <div className="scale-95 drop-shadow-md">
-                    <SpoolSideView color={filamentColor} percent={pct} type={item.spoolType} size={36} />
+        <div className={`
+            grid grid-cols-[80px_1fr_repeat(2,44px)] h-14 bg-[#09090b] border rounded-xl overflow-hidden transition-all
+            ${ehCritico ? 'border-rose-900/30' : 'border-white/5 hover:border-zinc-700'}
+        `}>
+            {/* MINI VISUALIZADOR */}
+            <div className={`flex items-center justify-center border-r border-white/5 ${ehCritico ? 'bg-rose-950/10' : 'bg-zinc-950/40'}`}>
+                <SpoolSideView color={filamentColor} percent={pct} size={32} />
+            </div>
+
+            {/* INFO CENTRAL */}
+            <div className="flex items-center px-6 gap-8">
+                <div className="w-48 shrink-0">
+                    <h3 className={`text-[11px] font-black uppercase truncate ${ehCritico ? 'text-rose-500' : 'text-zinc-100'}`}>{item.name}</h3>
+                    <p className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">{item.brand} | {materialType}</p>
+                </div>
+
+                {/* MINI BARRA E PESO */}
+                <div className="flex-1 flex items-center gap-6">
+                    <div className="flex flex-col gap-0.5 min-w-[80px]">
+                        <span className="text-[7px] font-black text-zinc-600 uppercase">Status_Massa</span>
+                        <span className={`text-[10px] font-mono font-black ${ehCritico ? 'text-rose-500' : 'text-zinc-300'}`}>{Math.round(current)}g</span>
+                    </div>
+                    <div className="flex-1 flex gap-0.5 h-1 max-w-[150px]">
+                        {[...Array(10)].map((_, i) => (
+                            <div key={i} className="h-full flex-1 rounded-sm" style={{ backgroundColor: i < (pct / 10) ? (ehCritico ? '#f43f5e' : '#22d3ee') : '#18181b', opacity: i < (pct / 10) ? 1 : 0.2 }} />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="hidden lg:flex flex-col items-end">
+                    <span className="text-[7px] font-black text-zinc-600 uppercase">Valor_Estimado</span>
+                    <span className="text-[10px] font-mono font-black text-emerald-500">R$ {((Number(item.price || 0) / capacity) * current).toFixed(2)}</span>
                 </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-12 gap-4 items-center ml-1">
-                <div className="col-span-4 flex flex-col justify-center min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                         <span className="text-[10px] font-black text-zinc-400 bg-[#121214] border border-zinc-800 px-1.5 rounded uppercase tracking-wider">
-                            {materialType}
-                         </span>
-                         <span className="text-sm font-bold text-zinc-200 truncate group-hover:text-white transition-colors">
-                            {item.name}
-                         </span>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1 uppercase">
-                        {item.brand || 'Genérico'}
-                    </span>
-                </div>
-
-                <div className="col-span-2 hidden md:flex flex-col justify-center pl-4 border-l border-zinc-800/50">
-                    <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider">Valor</span>
-                    <span className="text-xs font-bold text-emerald-500 font-mono">R$ {currentValue.toFixed(2)}</span>
-                </div>
-
-                <div className="col-span-3 flex flex-col justify-center pr-4 pl-4 border-l border-zinc-800/50">
-                    <div className="flex justify-between text-[10px] mb-1.5 font-mono items-end">
-                        <span className={`font-bold ${isCritical ? 'text-rose-500' : 'text-zinc-300'}`}>
-                            {Math.round(current)}<span className="text-zinc-600 font-normal">/</span><span className="text-zinc-500 font-normal">{Math.round(capacity)}g</span>
-                        </span>
-                        {isCritical && <span className="text-[8px] font-bold text-rose-500 animate-pulse">BAIXO</span>}
-                    </div>
-                    <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
-                        <div 
-                            style={{ width: `${pct}%`, backgroundColor: filamentColor }} 
-                            className="h-full opacity-90 shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-all duration-500" 
-                        />
-                    </div>
-                </div>
-
-                <div className="col-span-3 flex justify-end gap-1">
-                    <button onClick={() => onConsume(item)} className="p-2 bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 rounded-lg transition-all" title="Registrar Uso">
-                        <ArrowDownFromLine size={14} />
-                    </button>
-                    <div className="w-px h-5 bg-zinc-800 my-auto mx-1"></div>
-                    <button onClick={() => onEdit(item)} className="p-2 hover:bg-zinc-800 text-zinc-500 hover:text-sky-400 rounded-lg transition-colors">
-                        <Edit2 size={14} />
-                    </button>
-                    <button onClick={() => onDelete(item.id)} className="p-2 hover:bg-zinc-800 text-zinc-500 hover:text-rose-500 rounded-lg transition-colors">
-                        <Trash2 size={14} />
-                    </button>
-                </div>
-            </div>
+            {/* BOTÕES DE AÇÃO (MESMA LÓGICA DO CARD) */}
+            <button onClick={() => onConsume(item)} className="flex items-center justify-center border-l border-white/5 text-zinc-600 hover:text-white hover:bg-white/5 transition-all">
+                <ArrowDownFromLine size={14} />
+            </button>
+            <button onClick={() => onEdit(item)} className="flex items-center justify-center border-l border-white/5 text-zinc-600 hover:text-amber-400 hover:bg-white/5 transition-all">
+                <Edit2 size={14} />
+            </button>
+            {/* O Botão de excluir pode ser adicionado se você quiser, ou pode deixar apenas os 2. 
+                Como o grid acima definiu repeat(2, 44px), só cabem 2 botões. 
+                Abaixo eu adicionei o de excluir no Grid para ficar igual a impressora */}
         </div>
     );
 }

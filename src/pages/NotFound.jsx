@@ -165,7 +165,7 @@ export default function NotFound() {
             {/* --- FOOTER --- */}
             <footer className="py-4 border-t border-white/5 bg-[#050505]/80 backdrop-blur text-center z-10">
                 <p className="text-[10px] text-zinc-700 font-bold uppercase tracking-[0.3em]">
-                    LayerForge • Error Handler System
+                    PrintLog • Error Handler System
                 </p>
             </footer>
 

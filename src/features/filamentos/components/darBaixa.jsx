@@ -1,268 +1,191 @@
-// --- FILE: src/features/filamentos/components/baixaEstoque.jsx ---
 import React, { useState, useEffect } from "react";
-import { X, ArrowRight, AlertTriangle, Scale, History, Factory, Fuel } from "lucide-react";
+import { 
+    X, ArrowRight, AlertTriangle, Scale, History, 
+    Fuel, Activity, Binary, Box, Zap
+} from "lucide-react";
 import SpoolSideView from "./roloFilamento";
 
-// --- HELPERS VISUAIS ---
+// --- HELPER VISUAL PARA CONTRASTE ---
 const isColorDark = (color) => {
     if (!color) return false;
     let hex = color.replace('#', '');
     if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-    if (hex.length !== 6) return false;
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 4), 16);
     const b = parseInt(hex.substr(4, 6), 16);
-    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return luma < 140;
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 140;
 };
 
 export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const [consumo, setConsumo] = useState("");
 
-    // Reset ao abrir
     useEffect(() => {
         if (aberto) setConsumo("");
     }, [aberto]);
 
     if (!aberto || !item) return null;
 
-    // --- CÁLCULOS EM TEMPO REAL ---
     const capacidade = Number(item.weightTotal) || 1000;
     const pesoAtual = Number(item.weightCurrent) || 0;
     const qtdConsumo = Number(consumo);
-
-    // Saldo Futuro (Previsto)
     const pesoFinal = Math.max(0, pesoAtual - qtdConsumo);
-    
-    // Porcentagens
-    const pctAtual = (pesoAtual / capacidade) * 100;
-    
-    // ESTA é a variável mágica: ela calcula a % baseada no input e atualiza o rolo
     const pctFinal = capacidade > 0 ? (pesoFinal / capacidade) * 100 : 0;
 
-    // Validações
     const erroSaldo = (pesoAtual - qtdConsumo) < 0 && qtdConsumo > 0;
     const inputValido = consumo !== "" && qtdConsumo > 0;
-
-    // Cores e Dados
-    const corFilamento = item.colorHex || item.color || "#e4e4e7";
+    const corFilamento = item.colorHex || item.color || "#3b82f6";
     const textoEscuro = isColorDark(corFilamento);
 
-    // Ação
     const confirmar = () => {
         if (!inputValido || erroSaldo) return;
-        aoSalvar({
-            ...item,
-            weightCurrent: pesoFinal
-        });
+        aoSalvar({ ...item, weightCurrent: pesoFinal });
         aoFechar();
     };
 
-    // Botões de atalho
-    const addConsumo = (valor) => {
-        setConsumo(prev => {
-            const atual = Number(prev) || 0;
-            return (atual + valor).toString();
-        });
-    };
-
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="absolute inset-0" onClick={aoFechar}></div>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="absolute inset-0 z-0" onClick={aoFechar} />
 
-            <div className="relative bg-[#09090b] border border-zinc-800 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
-
-                {/* --- COLUNA ESQUERDA: PREVIEW AO VIVO --- */}
-                <div className="w-full md:w-[320px] bg-zinc-900/40 border-b md:border-b-0 md:border-r border-zinc-800 p-8 flex flex-col items-center justify-center relative shrink-0 transition-all duration-300">
-
-                    {/* Tag "Preview" para indicar simulação */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 border border-zinc-800 backdrop-blur-sm px-3 py-1 rounded-full z-20">
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
-                            <History size={10} /> Simulação
-                        </span>
-                    </div>
-
-                    {/* Glow Effect Dinâmico (Diminui se o rolo ficar vazio) */}
-                    <div
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[90px] pointer-events-none transition-all duration-500"
-                        style={{ 
-                            backgroundColor: corFilamento,
-                            opacity: pctFinal < 5 ? 0.05 : 0.2 // Glow diminui se acabar o fio
-                        }}
+            <div className="relative bg-[#080808] border border-zinc-800 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh] z-10">
+                
+                {/* --- LADO ESQUERDO: SCANNER (COMPACTO) --- */}
+                <div className="w-full md:w-[280px] bg-black/40 border-b md:border-b-0 md:border-r border-zinc-800/60 p-6 flex flex-col items-center justify-between shrink-0">
+                    <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+                        style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }}
                     />
 
-                    {/* Rolo: Atualiza o tamanho conforme digita (pctFinal) */}
-                    <div className="relative z-10 scale-125 mb-8 drop-shadow-2xl transition-all duration-500 ease-out">
-                        <SpoolSideView
-                            color={corFilamento}
-                            percent={pctFinal} // <--- O SEGREDO ESTÁ AQUI
-                            type={item.spoolType || "plastic"}
-                            size={120}
-                        />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[80px] opacity-10 transition-all duration-700"
+                        style={{ backgroundColor: corFilamento }}
+                    />
+
+                    <div className="relative z-10 w-full">
+                        <div className="flex items-center gap-2 mb-4 justify-center">
+                            <Activity size={12} className="text-sky-500 animate-pulse" />
+                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em]">Visual_Delta_Sim</span>
+                        </div>
+
+                        <div className="flex justify-center py-2">
+                            <SpoolSideView color={corFilamento} percent={pctFinal} size={130} />
+                        </div>
                     </div>
 
-                    {/* Infos do Material */}
-                    <div className="z-10 text-center space-y-3 w-full">
-                        <h3 className="text-zinc-100 font-bold text-xl leading-tight break-words px-4">
-                            {item.name}
-                        </h3>
-
-                        <div className="flex flex-col items-center gap-2">
-                             <div className="px-3 py-1 rounded bg-[#09090b] border border-zinc-800 shadow-sm">
-                                <span className="text-[10px] font-black text-zinc-300 block uppercase tracking-widest leading-none">
-                                    {item.material || item.type}
-                                </span>
-                            </div>
-                            
-                            <div className="flex items-center gap-1.5 text-zinc-500">
-                                <Factory size={10} />
-                                <span className="text-xs font-mono uppercase tracking-wide">
+                    <div className="relative z-10 w-full space-y-4">
+                        <div className="text-center">
+                            <h3 className="text-base font-black text-white tracking-tighter uppercase truncate mb-1">{item.name || "UNNAMED"}</h3>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-[7px] font-mono font-black bg-zinc-900 text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded uppercase">
                                     {item.brand}
+                                </span>
+                                <span className="text-[7px] font-mono font-black bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded uppercase">
+                                    {item.type || item.material}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* --- COLUNA DIREITA: INPUTS --- */}
-                <div className="flex-1 flex flex-col min-w-0 bg-zinc-950">
-
-                    {/* Header */}
-                    <div className="px-8 py-6 border-b border-zinc-800 bg-zinc-900/20 flex justify-between items-center">
-                        <div>
-                            <h3 className="text-zinc-100 font-bold text-sm uppercase tracking-wide flex items-center gap-2">
-                                <Fuel size={16} className="text-zinc-400" />
-                                Registrar Consumo
-                            </h3>
-                            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">O rolo ao lado simula o resultado final.</p>
+                {/* --- LADO DIREITO: FORMULÁRIO --- */}
+                <div className="flex-1 flex flex-col">
+                    
+                    <header className="px-6 py-4 border-b border-white/5 bg-zinc-900/20 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-black border border-zinc-800 text-amber-500">
+                                <Fuel size={16} />
+                            </div>
+                            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Inventory_Reduction_Node</h3>
                         </div>
-                        <button onClick={aoFechar} className="text-zinc-500 hover:text-zinc-200 p-2 rounded-lg hover:bg-zinc-800 transition-colors">
-                            <X size={20} />
-                        </button>
-                    </div>
+                        <button onClick={aoFechar} className="p-1 text-zinc-600 hover:text-white transition-colors"><X size={18} /></button>
+                    </header>
 
-                    {/* Body */}
-                    <div className="p-8 flex-1 flex flex-col justify-center space-y-8">
-
-                        {/* Input Area */}
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase flex items-center gap-1.5">
-                                <Scale size={12} /> Quantidade utilizada (gramas)
-                            </label>
+                    <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
+                        
+                        {/* MÓDULO 01: ENTRADA DE CARGA */}
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-sky-500 font-mono">[ 01 ]</span>
+                                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Input_Mass_Delta</h4>
+                                <div className="h-px bg-zinc-800/50 flex-1" />
+                            </div>
 
                             <div className="relative group">
                                 <input
-                                    autoFocus
-                                    type="number"
-                                    min="0"
-                                    value={consumo}
+                                    autoFocus type="number" value={consumo}
                                     onChange={e => setConsumo(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && confirmar()}
-                                    placeholder="0"
-                                    className={`
-                                        no-spinner w-full bg-[#050505] border-2 rounded-2xl py-5 px-4 text-center text-5xl font-mono font-bold text-white outline-none transition-all
-                                        placeholder:text-zinc-800 shadow-inner
-                                        ${erroSaldo ? 'border-rose-900/50 focus:border-rose-500 text-rose-500' : 'border-zinc-800 focus:border-zinc-600'}
-                                    `}
+                                    placeholder="000"
+                                    className={`w-full bg-zinc-900/20 border-2 rounded-2xl py-6 px-6 text-5xl font-mono font-black text-center outline-none transition-all duration-300
+                                        ${erroSaldo ? 'border-rose-500/40 text-rose-500' : 'border-zinc-800/80 text-white focus:border-sky-500/50 shadow-inner'}`}
                                 />
-                                <span className="absolute right-6 bottom-6 text-zinc-700 font-mono text-sm pointer-events-none font-bold">g</span>
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-700 font-black text-sm font-mono opacity-40 uppercase">Grams</div>
                             </div>
 
-                            {/* Botões de Atalho */}
-                            <div className="grid grid-cols-4 gap-3 pt-2">
-                                {[10, 25, 50, 100].map(val => (
+                            <div className="grid grid-cols-4 gap-2">
+                                {[10, 50, 100, 250].map(val => (
                                     <button
                                         key={val}
-                                        onClick={() => addConsumo(val)}
-                                        className="py-2.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800 rounded-xl text-xs font-mono font-bold text-zinc-400 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm"
+                                        onClick={() => setConsumo(prev => (Number(prev) + val).toString())}
+                                        className="py-2 bg-zinc-900/50 border border-zinc-800 hover:border-zinc-600 text-[9px] font-mono font-bold text-zinc-500 hover:text-zinc-100 rounded-lg transition-all"
                                     >
                                         +{val}g
                                     </button>
                                 ))}
                             </div>
-                        </div>
+                        </section>
 
-                        {/* Barra de Saldo Restante */}
-                        <div className="bg-zinc-900/30 rounded-xl p-5 border border-zinc-800/50 space-y-3 relative overflow-hidden">
-                            <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider relative z-10">
-                                <span className="text-zinc-500">Saldo Previsto</span>
-                                {erroSaldo ? (
-                                    <span className="text-rose-500 flex items-center gap-1 animate-pulse">
-                                        <AlertTriangle size={12} /> Saldo Insuficiente
-                                    </span>
-                                ) : (
-                                    <div className="flex items-center gap-2 font-mono">
-                                        <span className="text-zinc-500 line-through decoration-zinc-700 decoration-2 opacity-50">
-                                            {Math.round(pesoAtual)}g
-                                        </span>
-                                        <ArrowRight size={12} className="text-zinc-600" />
-                                        <span className="text-white text-sm font-bold scale-110">
-                                            {Math.round(pesoFinal)}g
-                                        </span>
+                        {/* MÓDULO 02: TELEMETRIA RESIDUAL */}
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-emerald-500 font-mono">[ 02 ]</span>
+                                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Residual_Telemetry</h4>
+                                <div className="h-px bg-zinc-800/50 flex-1" />
+                            </div>
+
+                            <div className="p-4 bg-zinc-900/20 border border-zinc-800/60 rounded-xl space-y-4">
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <p className="text-[7px] font-black text-zinc-600 uppercase tracking-widest mb-1">Massa_Líquida_Restante</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className={`text-2xl font-mono font-black ${erroSaldo ? 'text-rose-500' : 'text-zinc-100'}`}>
+                                                {Math.round(pesoFinal)}
+                                            </span>
+                                            <span className="text-[9px] font-bold text-zinc-600 uppercase">g</span>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
+                                    
+                                    {erroSaldo && (
+                                        <div className="flex items-center gap-1.5 text-rose-500 animate-pulse mb-1">
+                                            <AlertTriangle size={12} />
+                                            <span className="text-[8px] font-black uppercase">Low_Storage_Error</span>
+                                        </div>
+                                    )}
+                                </div>
 
-                            <div className="h-3 w-full bg-zinc-950 rounded-full overflow-hidden border border-zinc-800 relative">
-                                {/* Fundo (Peso Atual - "Fantasma") */}
-                                <div
-                                    style={{ width: `${pctAtual}%` }}
-                                    className="absolute top-0 left-0 h-full bg-zinc-800 transition-all duration-300"
-                                />
-                                
-                                {/* Frente (Peso Final - Colorido) */}
-                                <div
-                                    style={{
-                                        width: `${pctFinal}%`,
-                                        backgroundColor: erroSaldo ? '#f43f5e' : corFilamento,
-                                        boxShadow: `0 0 10px ${corFilamento}50`
-                                    }}
-                                    className="absolute top-0 left-0 h-full transition-all duration-300 ease-out z-10"
-                                />
-
-                                {/* Diferença (Consumo - Vermelho) */}
-                                <div 
-                                    className="absolute top-0 h-full bg-rose-500/20 z-0 border-l border-rose-500/50"
-                                    style={{
-                                        left: `${pctFinal}%`,
-                                        width: `${Math.max(0, pctAtual - pctFinal)}%`,
-                                        display: erroSaldo ? 'none' : 'block'
-                                    }}
-                                />
+                                <div className="h-1.5 w-full bg-zinc-950 rounded-full border border-zinc-800/50 overflow-hidden">
+                                    <div className="h-full transition-all duration-700 ease-out"
+                                        style={{ width: `${pctFinal}%`, backgroundColor: corFilamento, boxShadow: `0 0 10px ${corFilamento}40` }} 
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        </section>
                     </div>
 
-                    {/* Footer */}
-                    <div className="p-6 border-t border-zinc-800 bg-zinc-900/30 flex justify-end gap-3">
+                    <footer className="p-6 border-t border-white/5 bg-zinc-950/50 flex gap-3">
+                        <button onClick={aoFechar} className="flex-1 py-2.5 rounded-lg border border-zinc-800 text-[9px] font-black uppercase text-zinc-600 hover:text-white transition-all">Abort_Task</button>
                         <button
-                            onClick={aoFechar}
-                            className="px-6 py-3 rounded-xl border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-xs font-bold uppercase transition-colors"
-                        >
-                            Cancelar
-                        </button>
-
-                        <button
-                            onClick={confirmar}
                             disabled={!inputValido || erroSaldo}
-                            className={`
-                                px-8 py-3 rounded-xl text-xs font-bold uppercase flex items-center gap-2 shadow-xl transition-all
-                                ${(!inputValido || erroSaldo)
-                                    ? 'opacity-50 cursor-not-allowed bg-zinc-800 text-zinc-500'
-                                    : 'hover:brightness-110 active:scale-95 transform'}
-                            `}
+                            onClick={confirmar}
+                            className={`flex-[2] py-2.5 rounded-lg text-[9px] font-black uppercase flex items-center justify-center gap-2 transition-all
+                                ${(!inputValido || erroSaldo) ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800' : 'hover:brightness-110 active:scale-[0.98]'}`}
                             style={(!inputValido || erroSaldo) ? {} : {
                                 backgroundColor: corFilamento,
-                                color: textoEscuro ? '#ffffff' : '#09090b',
-                                boxShadow: `0 0 25px -5px ${corFilamento}50`
+                                color: textoEscuro ? '#ffffff' : '#050505',
+                                boxShadow: `0 8px 20px -6px ${corFilamento}60`
                             }}
                         >
-                            <History size={16} />
-                            Confirmar Baixa
+                            <History size={14} /> Commit_Asset_Reduction
                         </button>
-                    </div>
+                    </footer>
                 </div>
             </div>
         </div>
     );
-};
+}

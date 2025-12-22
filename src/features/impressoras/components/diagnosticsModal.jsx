@@ -1,187 +1,102 @@
 import React from "react";
-import { Wrench, X, Activity, Play, AlertTriangle, Terminal, Clock, CheckCircle2 } from "lucide-react";
+import { X, Play, Check, ShieldAlert, Binary, Clock } from "lucide-react";
 import { analyzePrinterHealth } from "../logic/diagnostics"; 
 
-const DiagnosticsModal = ({ printer, onClose, onResolve }) => {
+const DiagnosticsModal = ({ printer, onClose, onResolve, completedTasks = new Set(), onToggleTask }) => {
+    // PROTEÇÃO 1: Se não houver impressora, não renderiza nada
     if (!printer) return null;
     
-    const tasks = analyzePrinterHealth(printer);
+    // PROTEÇÃO 2: Garantir que analyzePrinterHealth retorne um array
+    const tasks = analyzePrinterHealth(printer) || [];
     const hasIssues = tasks.length > 0;
-    
-    // Contadores
     const criticalCount = tasks.filter(t => t.severity === 'critical').length;
     const estimatedTimeMin = tasks.length * 15; 
 
-    // Define a cor de destaque do modal baseado na gravidade
-    const modalAccent = criticalCount > 0 ? 'rose' : hasIssues ? 'amber' : 'emerald';
-    
-    // Mapeamento de cores para Tailwind (safelist logic)
+    const theme = criticalCount > 0 ? 'rose' : hasIssues ? 'amber' : 'emerald';
     const colors = {
-        rose: { border: 'border-rose-900/50', text: 'text-rose-500', glow: 'shadow-[0_0_50px_-12px_rgba(244,63,94,0.3)]', bg: 'bg-rose-500/10' },
-        amber: { border: 'border-amber-900/50', text: 'text-amber-500', glow: 'shadow-[0_0_50px_-12px_rgba(245,158,11,0.2)]', bg: 'bg-amber-500/10' },
-        emerald: { border: 'border-emerald-900/50', text: 'text-emerald-500', glow: 'shadow-[0_0_50px_-12px_rgba(16,185,129,0.2)]', bg: 'bg-emerald-500/10' }
-    };
-
-    const style = colors[modalAccent];
-
-    const getSeverityBadge = (severity) => {
-        switch (severity) {
-            case 'critical': return <span className="text-[10px] bg-rose-500 text-black font-bold px-1.5 py-0.5 rounded-sm">CRÍTICO</span>;
-            case 'high': return <span className="text-[10px] bg-orange-500 text-black font-bold px-1.5 py-0.5 rounded-sm">ALTA</span>;
-            case 'medium': return <span className="text-[10px] bg-amber-500 text-black font-bold px-1.5 py-0.5 rounded-sm">MÉDIA</span>;
-            default: return <span className="text-[10px] bg-zinc-700 text-zinc-300 font-bold px-1.5 py-0.5 rounded-sm">ROTINA</span>;
-        }
-    };
+        rose: { text: 'text-rose-500', border: 'border-rose-500/30', accent: 'bg-rose-500' },
+        amber: { text: 'text-amber-500', border: 'border-amber-500/30', accent: 'bg-amber-500' },
+        emerald: { text: 'text-emerald-500', border: 'border-emerald-500/30', accent: 'bg-emerald-500' }
+    }[theme];
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
-            <div className={`
-                relative bg-black w-full max-w-3xl rounded-xl border-2 ${style.border} ${style.glow}
-                shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-all
-            `}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md font-mono animate-in fade-in duration-200">
+            <div className={`relative bg-[#030303] w-full max-w-4xl h-[85vh] rounded-xl border ${colors.border} shadow-2xl flex flex-col overflow-hidden`}>
                 
-                {/* Background Scanlines (Igual ao MakerBot) */}
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(18,18,18,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 bg-[length:100%_4px,6px_100%] pointer-events-none opacity-40"></div>
-
-                {/* --- HEADER TIPO TERMINAL --- */}
-                <div className="relative z-10 flex justify-between items-center p-3 border-b border-zinc-800 bg-zinc-900/90">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-md border border-white/10 bg-black`}>
-                            <Terminal size={16} className={style.text} />
+                {/* HUD HEADER */}
+                <header className="px-8 py-5 border-b border-white/5 bg-zinc-900/10 flex justify-between items-center">
+                    <div className="flex items-center gap-5">
+                        <div className={`p-2 rounded-lg bg-black border ${colors.border} ${colors.text}`}>
+                            <ShieldAlert size={20} />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-bold text-zinc-100 font-mono tracking-wider">DIAGNOSTICS_PANEL // {printer.name.toUpperCase()}</span>
-                            <span className="text-[10px] text-zinc-500 font-mono">ID: {printer.id.slice(0,8)} | FW: 4.2.1</span>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Protocolo_Inspeção // CORE_v4</h2>
+                                <span className="text-[9px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded border border-white/5 font-bold uppercase">Auto-Save: OK</span>
+                            </div>
+                            <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest mt-1">ID: {printer.id} • HW: {printer.name}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors hover:bg-zinc-800 p-1.5 rounded">
-                        <X size={18}/>
-                    </button>
+                    <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={20} /></button>
+                </header>
+
+                {/* METRICS */}
+                <div className="grid grid-cols-4 gap-px bg-white/5 border-b border-white/5">
+                    {[
+                        { k: "STATUS", v: hasIssues ? "[ REPARO ]" : "[ OK ]", c: colors.text },
+                        { k: "PROGRESSO", v: `${completedTasks.size} / ${tasks.length}`, c: "text-zinc-100" },
+                        { k: "ESTIMATIVA", v: `${Math.max(0, estimatedTimeMin - (completedTasks.size * 15))}m`, c: "text-zinc-100" },
+                        { k: "HORÍMETRO", v: `${Math.floor(printer.totalHours || 0)}h`, c: "text-zinc-100" }
+                    ].map((s, i) => (
+                        <div key={i} className="bg-zinc-950/40 p-5">
+                            <div className="text-[8px] text-zinc-600 font-black mb-1 uppercase">{s.k}</div>
+                            <div className={`text-xs font-bold font-mono ${s.c}`}>{s.v}</div>
+                        </div>
+                    ))}
                 </div>
 
-                {/* --- CONTEÚDO PRINCIPAL --- */}
-                <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar p-6">
-                    
-                    {/* Status Dashboard */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        {/* Box 1 */}
-                        <div className="bg-zinc-950/50 border border-zinc-800 p-3 rounded-lg">
-                            <div className="text-[10px] text-zinc-500 font-mono uppercase mb-1">Status Geral</div>
-                            <div className={`text-lg font-bold font-mono ${style.text} flex items-center gap-2`}>
-                                {hasIssues ? <AlertTriangle size={18}/> : <CheckCircle2 size={18}/>}
-                                {hasIssues ? "ATENÇÃO" : "NOMINAL"}
-                            </div>
-                        </div>
-                        {/* Box 2 */}
-                        <div className="bg-zinc-950/50 border border-zinc-800 p-3 rounded-lg">
-                            <div className="text-[10px] text-zinc-500 font-mono uppercase mb-1">Pendências</div>
-                            <div className="text-lg font-bold text-white font-mono">{tasks.length} <span className="text-sm text-zinc-600">itens</span></div>
-                        </div>
-                        {/* Box 3 */}
-                        <div className="bg-zinc-950/50 border border-zinc-800 p-3 rounded-lg">
-                            <div className="text-[10px] text-zinc-500 font-mono uppercase mb-1">Tempo Est.</div>
-                            <div className="text-lg font-bold text-white font-mono">~{estimatedTimeMin}m</div>
-                        </div>
-                        {/* Box 4 */}
-                        <div className="bg-zinc-950/50 border border-zinc-800 p-3 rounded-lg">
-                            <div className="text-[10px] text-zinc-500 font-mono uppercase mb-1">Horímetro</div>
-                            <div className="text-lg font-bold text-white font-mono">{Math.floor(printer.totalHours)}h</div>
-                        </div>
-                    </div>
-
-                    {/* Lista de Protocolos */}
-                    {hasIssues ? (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
-                                <h4 className="text-xs font-bold text-zinc-400 font-mono uppercase tracking-widest flex items-center gap-2">
-                                    <Activity size={14} /> Protocolos de Manutenção
-                                </h4>
-                                <span className="text-[10px] text-zinc-600 font-mono">PRIORIDADE ORDENADA</span>
-                            </div>
-
-                            {tasks.map((task, idx) => {
-                                const Icon = task.icon;
-                                const isCritical = task.severity === 'critical';
-                                
-                                return (
-                                    <div key={idx} className={`
-                                        group relative flex gap-4 p-4 rounded-lg border transition-all
-                                        ${isCritical ? 'bg-rose-950/10 border-rose-900/40 hover:border-rose-700/50' : 'bg-zinc-900/30 border-zinc-800 hover:border-zinc-700'}
-                                    `}>
-                                        {/* Ícone Lateral */}
-                                        <div className={`
-                                            flex flex-col items-center justify-center w-12 h-12 rounded border shrink-0
-                                            ${isCritical ? 'bg-rose-950/30 border-rose-900/50 text-rose-500' : 'bg-zinc-950 border-zinc-800 text-zinc-400'}
-                                        `}>
-                                            <Icon size={20} />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <div className="flex items-center gap-3">
-                                                    <h5 className={`text-sm font-bold ${isCritical ? 'text-rose-100' : 'text-zinc-200'}`}>
-                                                        {task.label}
-                                                    </h5>
-                                                    {getSeverityBadge(task.severity)}
-                                                </div>
-                                                <span className={`text-xs font-mono font-bold ${isCritical ? 'text-rose-400' : 'text-zinc-500'}`}>
-                                                    +{Math.floor(task.overdue)}h
-                                                </span>
-                                            </div>
-                                            
-                                            <p className="text-xs text-zinc-400 leading-relaxed font-mono border-l border-zinc-700 pl-3 py-1 mb-2">
-                                                {task.action}
-                                            </p>
-
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                                                    <div className={`h-full ${isCritical ? 'bg-rose-500' : 'bg-amber-500'}`} style={{width: '100%'}}></div>
-                                                </div>
-                                                <span className="text-[9px] text-zinc-600 font-mono uppercase">Vencido</span>
-                                            </div>
-                                        </div>
+                {/* TASKS */}
+                <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                    <div className="space-y-4">
+                        {tasks.map((task, idx) => {
+                            // PROTEÇÃO 3: Verificação de existência da tarefa e label
+                            const isDone = completedTasks.has(task.label);
+                            return (
+                                <div key={idx} onClick={() => onToggleTask(task.label)} className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all ${isDone ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-zinc-900/20 border-zinc-800/40'}`}>
+                                    <div className={`w-6 h-6 rounded border flex items-center justify-center ${isDone ? 'bg-emerald-500 border-emerald-400 text-black' : 'border-zinc-700 bg-black'}`}>
+                                        {isDone && <Check size={14} strokeWidth={4} />}
                                     </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        // Estado Vazio (Sucesso)
-                        <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-                            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 mb-4 animate-pulse">
-                                <CheckCircle2 size={40} className="text-emerald-500" />
-                            </div>
-                            <h3 className="text-lg font-bold text-white font-mono">SISTEMA 100% OPERACIONAL</h3>
-                            <p className="text-zinc-500 text-xs mt-1 max-w-xs text-center">Nenhum protocolo de manutenção pendente. A unidade está pronta para produção.</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* --- FOOTER DE AÇÃO --- */}
-                <div className="relative z-10 p-4 border-t border-zinc-800 bg-black/80 flex justify-between items-center">
-                    <div className="flex items-center gap-2 text-[10px] text-zinc-600 font-mono">
-                        <Clock size={12} />
-                        <span>SESSÃO DIAGNÓSTICA ATIVA</span>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-[10px] font-bold ${isDone ? 'text-emerald-500' : 'text-zinc-200'} uppercase`}>{task.label}</span>
+                                            <span className="text-[9px] text-zinc-600 font-mono">+{Math.floor(task.overdue)}H</span>
+                                        </div>
+                                        <p className="text-[9px] text-zinc-500 font-mono uppercase mt-1">{">"} {task.action}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                    
-                    <div className="flex gap-3">
+                </main>
+
+                {/* FOOTER */}
+                <footer className="p-6 border-t border-white/5 bg-zinc-950/80 flex justify-between items-center">
+                    <div className="flex gap-1">
+                        {tasks.map((t, i) => (
+                            <div key={i} className={`h-1 w-4 rounded-full ${completedTasks.has(t.label) ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
+                        ))}
+                    </div>
+                    <div className="flex gap-4">
+                        <button onClick={onClose} className="px-6 py-2 text-[10px] font-black uppercase text-zinc-500 hover:text-white transition-colors">[ Fechar ]</button>
                         <button 
-                            onClick={onClose} 
-                            className="px-4 py-2 rounded border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 text-xs font-bold uppercase tracking-wider transition-colors"
+                            disabled={tasks.length > 0 && completedTasks.size < tasks.length}
+                            onClick={() => onResolve(printer.id)} 
+                            className={`px-8 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${completedTasks.size === tasks.length ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-50'}`}
                         >
-                            Cancelar
+                            Finalizar_Reparo_Global
                         </button>
-                        {hasIssues && (
-                            <button 
-                                onClick={() => { onResolve(printer.id); onClose(); }} 
-                                className="px-5 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all active:scale-95 group"
-                            >
-                                <Play size={12} fill="currentColor" className="group-hover:translate-x-0.5 transition-transform" />
-                                Confirmar Reparo
-                            </button>
-                        )}
                     </div>
-                </div>
-
+                </footer>
             </div>
         </div>
     );

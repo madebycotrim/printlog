@@ -56,7 +56,7 @@ createRoot(document.getElementById("root")).render(
           <Impressoras />
         </Route>
 
-        <Route path="/calculadoraFree">
+        <Route path="/preview">
           <CalculadoraFree />
         </Route>
 

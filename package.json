@@ -3,8 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+<<<<<<< HEAD
   "homepage": "https://madebycotrim.github.io/printlog",
   "author": "COTRIM",
+=======
+  "homepage": "https://mateuscotrim.github.io/layerForge",
+  "author": "Mateus C.",
+>>>>>>> 7a99311 (remove repository field from package.json)
   "license": "MIT",
   "scripts": {
     "dev": "vite",

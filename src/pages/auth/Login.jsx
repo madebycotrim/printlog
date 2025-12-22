@@ -1,296 +1,238 @@
-// --- START OF FILE src/pages/Login.jsx ---
-
 import React, { useState } from 'react';
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import {
-    Mail, Lock, ArrowRight, Eye, EyeOff, ArrowLeft,
-    Github, Chrome, CheckCircle2, Calculator,
-    Package, TrendingUp, Zap, AlertCircle
+    Mail, Lock, ArrowLeft, Github, Chrome, Activity,
+    BarChart3, CheckCircle2, ShieldCheck, Eye, EyeOff,
+    TrendingUp, LayoutDashboard
 } from 'lucide-react';
-import logo from '../../assets/logo-branca.png'; // Garanta que o caminho esteja correto
+import logo from '../../assets/logo-branca.png';
 
-// --- WIDGETS DE EXEMPLO (LADO DIREITO) ---
+// --- COMPONENTES DE UI (IDÊNTICOS AO REGISTER) ---
 
-// 1. Cartão de Precificação (Simulando o resultado da Calculadora)
-const PricingWidget = () => (
-    <div className="w-80 bg-[#09090b]/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 shadow-2xl relative z-10 animate-in slide-in-from-bottom-8 duration-700">
-        {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                    <Calculator size={20} />
-                </div>
-                <div>
-                    <h3 className="text-sm font-bold text-white">Precificação</h3>
-                    <p className="text-[10px] text-zinc-500 font-medium">IronMan_Helmet_v3.stl</p>
-                </div>
-            </div>
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
-                Aprovado
-            </span>
-        </div>
-
-        {/* Valor Principal */}
-        <div className="mb-6 text-center relative">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest block mb-1">Preço Sugerido</span>
-            <div className="text-4xl font-bold text-white font-mono tracking-tighter drop-shadow-lg">
-                R$ 184,90
-            </div>
-            <div className="absolute top-1/2 -right-2 -translate-y-1/2 translate-x-full">
-                <div className="flex flex-col items-center gap-1 animate-pulse">
-                    <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-                    <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-                    <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-                </div>
-            </div>
-        </div>
-
-        {/* Breakdown Visual */}
-        <div className="space-y-3">
-            {/* Barra de Lucro */}
-            <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-bold uppercase">
-                    <span className="text-zinc-400">Lucro Líquido</span>
-                    <span className="text-emerald-400">R$ 82,40 (45%)</span>
-                </div>
-                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 w-[45%] shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                </div>
-            </div>
-
-            {/* Custos Resumidos */}
-            <div className="grid grid-cols-2 gap-2 mt-4">
-                <div className="bg-zinc-900/50 rounded-lg p-2 border border-zinc-800 flex items-center gap-2">
-                    <Package size={12} className="text-sky-500" />
-                    <div className="flex flex-col">
-                        <span className="text-[8px] text-zinc-500 uppercase font-bold">Material</span>
-                        <span className="text-[10px] text-zinc-300 font-mono font-bold">R$ 42,10</span>
-                    </div>
-                </div>
-                <div className="bg-zinc-900/50 rounded-lg p-2 border border-zinc-800 flex items-center gap-2">
-                    <Zap size={12} className="text-amber-500" />
-                    <div className="flex flex-col">
-                        <span className="text-[8px] text-zinc-500 uppercase font-bold">Energia</span>
-                        <span className="text-[10px] text-zinc-300 font-mono font-bold">R$ 12,50</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-);
-
-// 2. Cartão de Filamento (Simulando Estoque - Flutuante)
-const FilamentWidget = () => (
-    <div className="absolute -right-12 bottom-12 w-64 bg-[#0e0e11] border border-zinc-700/50 rounded-2xl p-4 shadow-2xl z-20 animate-float">
-        <div className="flex justify-between items-start mb-3">
-            <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-500">
-                    <Package size={16} />
-                </div>
-                <div>
-                    <h4 className="text-xs font-bold text-white">PLA Silk Blue</h4>
-                    <p className="text-[9px] text-zinc-500 font-mono">Voolt3D • Lote #902</p>
-                </div>
-            </div>
-        </div>
-        
-        <div className="space-y-2">
-            <div className="flex justify-between items-end">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase">Restante</span>
-                <span className="text-sm font-mono font-bold text-sky-400">120g <span className="text-zinc-600 text-[10px]">/ 1kg</span></span>
-            </div>
-            {/* Visualização do Carretel (Barra) */}
-            <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden flex">
-                <div className="h-full bg-sky-500 w-[12%]"></div>
-                <div className="h-full bg-zinc-700 w-[88%] opacity-20"></div>
-            </div>
-            
-            <div className="flex items-center gap-1.5 mt-1">
-                <AlertCircle size={10} className="text-amber-500" />
-                <span className="text-[9px] text-amber-500 font-bold">Estoque Baixo - Repor logo</span>
-            </div>
-        </div>
-    </div>
-);
-
-// --- COMPONENTES UI PADRÃO ---
-const Button = ({ children, variant = 'primary', className = '', ...props }) => {
-    const baseStyle = "w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] uppercase tracking-wide";
+const Badge = ({ icon: Icon, label, color = "sky" }) => {
     const variants = {
-        primary: "bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-900/20 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-sky-500/20",
-        outline: "border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white bg-transparent",
-        social: "bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs"
+        emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+        sky: "text-sky-400 bg-sky-500/10 border-sky-500/20",
     };
-    return <button className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>{children}</button>;
-};
-
-const InputField = ({ label, icon: Icon, type = "text", placeholder, ...props }) => {
-    const [showPassword, setShowPassword] = useState(false);
-    const isPassword = type === "password";
-    const inputType = isPassword ? (showPassword ? "text" : "password") : type;
-    
     return (
-        <div className="space-y-1.5 group">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1 group-focus-within:text-sky-500 transition-colors">
-                {label}
-            </label>
-            <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors">
-                    <Icon size={18} />
-                </div>
-                <input 
-                    type={inputType} 
-                    className="w-full bg-[#09090b] border border-zinc-800 text-zinc-100 rounded-xl pl-10 pr-10 py-3.5 text-sm outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 transition-all placeholder:text-zinc-800 hover:border-zinc-700 font-medium" 
-                    placeholder={placeholder} 
-                    {...props} 
-                />
-                {isPassword && (
-                    <button 
-                        type="button" 
-                        onClick={() => setShowPassword(!showPassword)} 
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors p-1"
-                    >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                )}
-            </div>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${variants[color]} backdrop-blur-md w-fit`}>
+            {Icon && <Icon size={10} strokeWidth={3} />}
+            <span className="text-[9px] font-black uppercase tracking-[0.15em]">{label}</span>
         </div>
     );
 };
 
+const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", className = "", disabled, type = "button", isLoading }) => {
+    const styles = {
+        sky: "bg-sky-600 text-white hover:bg-sky-500 shadow-xl shadow-sky-900/20",
+        white: "bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5",
+    };
+    return (
+        <button
+            type={type}
+            disabled={disabled || isLoading}
+            onClick={onClick}
+            className={`h-16 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed ${styles[variant]} ${className}`}
+        >
+            {isLoading ? "Autenticando..." : children}
+            {!isLoading && (Icon ? <Icon size={18} strokeWidth={2.5} /> : <TrendingUp size={18} strokeWidth={2.5} />)}
+        </button>
+    );
+};
+
+// --- WIDGETS DE PREVIEW (LADO DIREITO) ---
+
+const StatusWidget = () => (
+    <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transform hover:scale-[1.02] transition-all duration-700">
+        <div className="flex justify-between items-start mb-6">
+            <div className="space-y-1">
+                <Badge label="Farm Online" color="emerald" icon={Activity} />
+                <h4 className="text-white font-bold text-lg mt-2 tracking-tight">Status do Ecossistema</h4>
+            </div>
+        </div>
+
+        <div className="space-y-4">
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    <span>Impressoras Ativas</span>
+                    <span className="text-emerald-400">12 / 12</span>
+                </div>
+                <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5">
+                    <div className="h-full w-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" />
+                </div>
+            </div>
+            <div className="flex items-center gap-3 px-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Sincronização em tempo real</span>
+            </div>
+        </div>
+    </div>
+);
+
+const BalanceWidget = () => (
+    <div className="bg-[#0c0c0e]/90 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl animate-float-slow ml-auto -mt-12 mr-[-30px] relative z-20 w-64">
+        <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 border border-sky-500/20">
+                <BarChart3 size={20} />
+            </div>
+            <div className="flex flex-col">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-500">Saldo</span>
+                <span className="text-[11px] font-bold text-white">Disponível</span>
+            </div>
+        </div>
+        <div className="flex items-baseline gap-1">
+            <span className="text-[10px] font-bold text-zinc-500">R$</span>
+            <span className="text-3xl font-black text-white font-mono tracking-tighter">4.210</span>
+            <span className="text-xl font-black text-white/50 font-mono">,00</span>
+        </div>
+    </div>
+);
+
+// --- COMPONENTE PRINCIPAL ---
+
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [, setLocation] = useLocation();
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 2000);
+        setTimeout(() => {
+            setIsLoading(false);
+            setLocation('/dashboard');
+        }, 2000);
     };
 
     return (
-        <div className="min-h-screen w-full bg-[#050505] text-zinc-100 font-sans selection:bg-sky-500/30 selection:text-sky-200 flex overflow-hidden">
-            
+        <div className="min-h-screen bg-[#050506] text-zinc-100 font-sans flex overflow-hidden">
+
             {/* LADO ESQUERDO: FORMULÁRIO */}
-            <div className="flex-1 flex flex-col justify-center items-center p-6 relative z-10 w-full max-w-xl mx-auto lg:mx-0 lg:max-w-none lg:w-1/2 xl:w-[45%]">
-                
-                {/* Background Noise Mobile */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none lg:hidden"></div>
-                
-                <div className="absolute top-8 left-8">
-                    <Link href="/">
-                        <a className="group flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-wide">
-                            <div className="p-1.5 rounded-lg border border-zinc-800 bg-zinc-900 group-hover:border-zinc-700 transition-colors">
-                                <ArrowLeft size={14} />
-                            </div>
-                            Voltar
-                        </a>
-                    </Link>
+            <div className="flex-1 flex flex-col justify-center items-center p-8 relative z-10 w-full lg:w-1/2">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/5 blur-[120px] pointer-events-none" />
+
+                <div className="absolute top-10 left-10">
+                    <button onClick={() => setLocation('/')} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all group">
+                        <div className="p-2 rounded-xl border border-white/5 bg-zinc-900 group-hover:border-white/20 group-hover:scale-110 transition-all">
+                            <ArrowLeft size={14} />
+                        </div>
+                        Voltar para Início
+                    </button>
                 </div>
 
-                <div className="w-full max-w-sm animate-in fade-in slide-in-from-left-8 duration-700">
-                    <div className="mb-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <img src={logo} alt="LayerForge" className="w-10 h-10 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
-                            <span className="text-xl font-bold tracking-tight text-white">LayerForge</span>
+                <div className="w-full max-w-md space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                    <div className="space-y-4 text-center sm:text-left">
+                        <div className="flex items-center gap-3 justify-center sm:justify-start">
+                            <img src={logo} alt="PrintLog" className="w-10 h-10" />
+                            <span className="text-xl font-black tracking-tighter uppercase text-white">PrintLog</span>
                         </div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Bem-vindo de volta</h1>
-                        <p className="text-zinc-400 text-sm leading-relaxed">
-                            O sistema operacional da sua farm de impressão 3D.
-                        </p>
+                        <div className="space-y-2">
+                            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.9] text-white uppercase">
+                                ACESSE SEU <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-sky-600 italic">COMANDO.</span>
+                            </h2>
+                            <p className="text-zinc-500 text-sm font-medium">Bem-vindo de volta ao centro de operações da sua farm.</p>
+                        </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <InputField label="E-mail" icon={Mail} type="email" placeholder="seu@email.com" required />
-                        
-                        <div className="space-y-2">
-                            <InputField label="Senha" icon={Lock} type="password" placeholder="••••••••" required />
-                            <div className="flex justify-between items-center px-1">
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-900 text-sky-500 focus:ring-0 focus:ring-offset-0" />
-                                    <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">Lembrar de mim</span>
-                                </label>
-                                <Link href="/forgot-password">
-                                    <a className="text-xs font-bold text-sky-500 hover:text-sky-400 transition-colors">Recuperar senha?</a>
-                                </Link>
+                        <div className="space-y-2 group">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 ml-1 group-focus-within:text-sky-500 transition-colors">E-mail de Acesso</label>
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <input type="email" required className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all font-medium text-white placeholder:text-zinc-800" placeholder="seu@email.com" />
                             </div>
                         </div>
 
-                        <Button type="submit" disabled={isLoading} className="mt-4">
-                            {isLoading ? "Acessando..." : <>Acessar Painel <ArrowRight size={16} /></>}
-                        </Button>
+                        <div className="space-y-2 group">
+                            <div className="flex justify-between items-center px-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 group-focus-within:text-sky-500 transition-colors">Senha</label>
+                                <button type="button" className="text-[9px] font-black uppercase tracking-widest text-sky-500 hover:text-sky-400 transition-colors" onClick={() => setLocation('/forgot-password')}>Esqueceu?</button>
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all font-medium text-white placeholder:text-zinc-800"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-white transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <PrimaryButton type="submit" variant="sky" className="w-full mt-4" isLoading={isLoading} icon={LayoutDashboard}>
+                            Entrar no Dashboard
+                        </PrimaryButton>
                     </form>
 
-                    <div className="relative my-8">
-                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"></div></div>
-                        <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest"><span className="bg-[#050505] px-4 text-zinc-600">Ou entre com</span></div>
-                    </div>
+                    <div className="space-y-6">
+                        <div className="relative flex items-center justify-center">
+                            <div className="absolute inset-0 border-t border-white/5" />
+                            <span className="relative bg-[#050506] px-4 text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700">Ou entre com</span>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <Button variant="social"><Chrome size={16} /> Google</Button>
-                        <Button variant="social"><Github size={16} /> GitHub</Button>
-                    </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button className="flex items-center justify-center gap-3 h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all font-black text-[10px] uppercase tracking-widest text-white">
+                                <Chrome size={18} /> Google
+                            </button>
+                            <button className="flex items-center justify-center gap-3 h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all font-black text-[10px] uppercase tracking-widest text-white">
+                                <Github size={18} /> GitHub
+                            </button>
+                        </div>
 
-                    <p className="mt-8 text-center text-xs text-zinc-500">
-                        Ainda não tem conta?{' '}
-                        <Link href="/register">
-                            <a className="font-bold text-sky-500 hover:text-sky-400 hover:underline transition-colors">Criar conta grátis</a>
-                        </Link>
-                    </p>
+                        <div className="text-center pt-4">
+                            <p className="text-zinc-500 text-xs font-medium">
+                                Novo por aqui?{' '}
+                                <button onClick={() => setLocation('/register')} className="text-white font-black uppercase tracking-widest text-[10px] hover:text-sky-400 transition-colors ml-2 underline underline-offset-8">
+                                    Criar conta grátis
+                                </button>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* LADO DIREITO: SHOWCASE (VISUAL) */}
-            <div className="hidden lg:flex flex-1 relative bg-[#09090b] items-center justify-center overflow-hidden border-l border-white/5">
-                
-                {/* Background Grid */}
-                <div className="absolute inset-0 opacity-20"
-                    style={{ 
-                        backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', 
-                        backgroundSize: '40px 40px',
-                        maskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)'
-                    }}>
-                </div>
-                
-                {/* Luzes Ambientais */}
-                <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] animate-pulse-slow"></div>
-                <div className="absolute bottom-1/3 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+            {/* LADO DIREITO: VISUAL */}
+            <div className="hidden lg:flex flex-1 bg-[#09090b] border-l border-white/5 relative items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-sky-500/10 blur-[150px] rounded-full animate-pulse-slow" />
 
-                {/* Container Central dos Widgets */}
-                <div className="relative z-10 scale-110 xl:scale-125 transition-transform duration-700">
-                    
-                    {/* Widget Principal: Calculadora */}
-                    <PricingWidget />
+                <div className="relative z-10 space-y-0">
+                    <div className="translate-x-[-20px]"><StatusWidget /></div>
+                    <BalanceWidget />
 
-                    {/* Widget Secundário: Filamento (Flutuando) */}
-                    <FilamentWidget />
-                    
-                    {/* Texto de Apoio */}
-                    <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-full text-center">
-                        <div className="flex items-center justify-center gap-2 text-zinc-500 mb-2">
-                            <CheckCircle2 size={14} className="text-emerald-500" />
-                            <span className="text-xs font-bold uppercase tracking-widest">Sem planilhas complexas</span>
+                    <div className="absolute -bottom-32 left-0 right-0 text-center space-y-4">
+                        <div className="flex items-center justify-center gap-6">
+                            <div className="flex items-center gap-2 text-zinc-500">
+                                <ShieldCheck size={16} className="text-sky-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sessão Segura</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-zinc-500">
+                                <CheckCircle2 size={16} className="text-emerald-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em]">Servidores Online</span>
+                            </div>
                         </div>
-                        <p className="text-zinc-400 text-xs">Cálculo de custo real & gestão de estoque</p>
+                        <p className="text-xs text-zinc-600 font-medium max-w-xs mx-auto leading-relaxed">
+                            Controle sua produção de qualquer lugar do mundo com segurança de ponta a ponta.
+                        </p>
                     </div>
                 </div>
-
             </div>
 
             <style>{`
-                @keyframes float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-15px); }
+                @keyframes float-slow {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(1deg); }
                 }
-                .animate-float {
-                    animation: float 6s ease-in-out infinite;
-                }
-                @keyframes pulse-slow {
-                    0%, 100% { opacity: 0.5; transform: scale(1); }
-                    50% { opacity: 0.8; transform: scale(1.1); }
-                }
-                .animate-pulse-slow {
-                    animation: pulse-slow 8s ease-in-out infinite;
-                }
+                .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+                .animate-pulse-slow { animation: pulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
             `}</style>
         </div>
     );

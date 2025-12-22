@@ -1,5 +1,4 @@
 // src/components/BaseSearchSelect.jsx
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search, Check } from "lucide-react";
 
@@ -7,8 +6,8 @@ export default function SearchSelect({
   value,
   onChange,
   options = [],
-  renderValue,
-  renderOption,
+  renderValue = (item) => item?.label, // Fallback caso não seja passado
+  renderOption = (item) => item?.label, // Fallback caso não seja passado
   placeholder = "Selecione...",
   searchable = false,
   zIndex = "z-[9999]",
@@ -19,12 +18,13 @@ export default function SearchSelect({
 
   /* ---------- CLICK FORA ---------- */
   useEffect(() => {
-    const handleMouseDown = (e) => {
-      if (ref.current && ref.current.contains(e.target)) return;
-      setOpen(false);
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   /* ---------- LIMPAR BUSCA AO FECHAR ---------- */
@@ -32,16 +32,15 @@ export default function SearchSelect({
     if (!open) setSearch("");
   }, [open]);
 
-  /* ---------- FECHA SE VALUE MUDAR EXTERNAMENTE ---------- */
-  useEffect(() => {
-    setOpen(false);
-  }, [value]);
-
   /* ---------- ITEM SELECIONADO ---------- */
   const selectedItem = useMemo(() => {
-    return options
-      .flatMap((g) => g.items || [])
-      .find((i) => i.value === value);
+    if (!value) return null;
+    // Percorre os grupos e procura o item pelo value
+    for (const group of options) {
+      const found = (group.items || []).find((i) => String(i.value) === String(value));
+      if (found) return found;
+    }
+    return null;
   }, [options, value]);
 
   /* ---------- FILTRO ---------- */
@@ -59,32 +58,28 @@ export default function SearchSelect({
   }, [options, search, searchable]);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative w-full font-mono">
       {/* TRIGGER */}
       <div
-        onMouseDown={(e) => {
-          e.preventDefault();
-          setOpen((prev) => !prev);
-        }}
+        onClick={() => setOpen(!open)}
         className={`
           w-full h-11 px-3
-          bg-zinc-950 border rounded-xl
+          bg-black/40 border rounded-xl
           flex items-center justify-between cursor-pointer
-          transition-all
+          transition-all duration-200
           ${open
-            ? "border-sky-500 ring-1 ring-sky-500/20"
+            ? "border-sky-500 ring-1 ring-sky-500/20 shadow-[0_0_15px_rgba(14,165,233,0.1)]"
             : "border-zinc-800 hover:border-zinc-700"
           }
         `}
       >
-        <div className="truncate text-xs text-zinc-300">
-          {selectedItem ? renderValue(selectedItem) : placeholder}
+        <div className="truncate text-xs text-zinc-300 uppercase tracking-tighter">
+          {selectedItem ? renderValue(selectedItem) : <span className="text-zinc-600">{placeholder}</span>}
         </div>
 
         <ChevronDown
           size={14}
-          className={`text-zinc-500 transition-transform duration-200 ${open ? "rotate-180" : ""
-            }`}
+          className={`text-zinc-500 transition-transform duration-300 ${open ? "rotate-180 text-sky-500" : ""}`}
         />
       </div>
 
@@ -92,34 +87,35 @@ export default function SearchSelect({
       {open && (
         <div
           className={`
-            absolute top-[calc(100%+4px)] left-0 w-full
-            bg-zinc-950 border border-zinc-800
-            rounded-xl shadow-2xl shadow-black/50
-            animate-in fade-in zoom-in-95 duration-100
+            absolute top-[calc(100%+6px)] left-0 w-full
+            bg-[#080808] border border-zinc-800
+            rounded-xl shadow-2xl shadow-black
+            animate-in fade-in zoom-in-95 duration-150
+            overflow-hidden
             ${zIndex}
           `}
         >
           {/* SEARCH */}
           {searchable && (
-            <div className="p-2 border-b border-zinc-800">
+            <div className="p-2 border-b border-white/5 bg-zinc-900/20">
               <div className="relative">
                 <Search
                   size={12}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600"
                 />
                 <input
                   autoFocus
                   value={search}
-                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()} // Importante para não fechar ao clicar no input
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar..."
+                  placeholder="FILTRAR..."
                   className="
                     w-full h-8 rounded-lg
-                    bg-zinc-950 border border-zinc-800
-                    pl-8 pr-2 text-[11px] text-zinc-300
+                    bg-black border border-zinc-800
+                    pl-8 pr-2 text-[10px] text-zinc-300
                     outline-none transition-all
-                    placeholder:text-zinc-600
-                    focus:border-zinc-700
+                    placeholder:text-zinc-700 uppercase
+                    focus:border-sky-500/50
                   "
                 />
               </div>
@@ -127,45 +123,41 @@ export default function SearchSelect({
           )}
 
           {/* OPTIONS */}
-          <div
-            className="max-h-56 overflow-y-auto custom-scrollbar p-1 pr-2"
-            style={{ scrollbarGutter: "stable" }}
-          >
+          <div className="max-h-60 overflow-y-auto custom-scrollbar p-1">
             {filteredOptions.map((group, gi) => (
-              <div key={`${group.group || "group"}-${gi}`}>
+              <div key={gi} className="mb-2 last:mb-0">
                 {group.group && (
-                  <div className="px-2 py-1.5 text-[9px] font-bold text-zinc-500 uppercase">
+                  <div className="px-3 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] bg-white/[0.02] rounded-md mb-1">
                     {group.group}
                   </div>
                 )}
 
-                {(group.items || []).map((item) => (
-                  <div
-                    key={item.value}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onChange(item.value);
-                      setOpen(false);
-                    }}
-                    className={`
-                      px-3 py-2 rounded-lg cursor-pointer
-                      flex items-center justify-between text-[11px] transition-colors
-                      ${value === item.value
-                        ? "bg-sky-500/10 text-sky-400 font-medium"
-                        : "text-zinc-300 hover:bg-zinc-800"
-                      }
-                    `}
-                  >
-                    {renderOption(item)}
-                    {value === item.value && <Check size={12} />}
-                  </div>
-                ))}
+                {(group.items || []).map((item) => {
+                  const isSelected = String(value) === String(item.value);
+                  return (
+                    <div
+                      key={item.value}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // AJUSTE: Passa o value e os dados originais (item.data) para o Modal
+                        onChange(item.value, item.data || item);
+                        setOpen(false);
+                      }}
+                      className={`px-3 py-2.5 rounded-lg cursor-pointer flex items-center justify-between text-[10px] transition-all mb-0.5 ${isSelected ? "bg-sky-500/10 text-sky-400 font-bold" : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"}`}
+                    >
+                      <div className="flex-1 uppercase tracking-tighter">
+                        {renderOption(item)}
+                      </div>
+                      {isSelected && <Check size={12} className="ml-2" />}
+                    </div>
+                  );
+                })}
               </div>
             ))}
 
             {filteredOptions.length === 0 && (
-              <div className="p-4 text-center text-[10px] text-zinc-500">
-                Nenhuma opção encontrada.
+              <div className="p-6 text-center text-[10px] text-zinc-700 uppercase font-black tracking-widest">
+                0_RESULTADOS_ENCONTRADOS
               </div>
             )}
           </div>

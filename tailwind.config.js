@@ -25,6 +25,15 @@ module.exports = {
             borderRadius: {
                 "xl-2": "1rem",
             },
+            keyframes: {
+                scan: {
+                    from: { transform: "translateY(-100%)" },
+                    to: { transform: "translateY(200%)" },
+                },
+            },
+            animation: {
+                scan: "scan 2s linear infinite",
+            },
         },
     },
     plugins: [],

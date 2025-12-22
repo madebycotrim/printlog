@@ -1,109 +1,104 @@
-// src/features/filamentos/components/DistributionCard.jsx
 import React, { useMemo } from "react";
-import { PieChart, AlertCircle } from "lucide-react";
+import { PieChart, Activity, Layers, CornerDownRight } from "lucide-react";
 
 export default function DistributionCard({ stats = [] }) {
     
-    // Processamento dos dados para exibição
     const { topStats, othersCount, materialDominante } = useMemo(() => {
-        if (!stats.length) return { topStats: [], othersCount: 0, materialDominante: null };
+        if (!stats || !stats.length) return { topStats: [], othersCount: 0, materialDominante: null };
 
-        // Ordena por porcentagem (garantia)
         const sorted = [...stats].sort((a, b) => b.percent - a.percent);
         
         return {
-            topStats: sorted.slice(0, 3), // Pega os top 3
+            topStats: sorted.slice(0, 3),
             othersCount: Math.max(0, sorted.length - 3),
-            materialDominante: sorted[0] // O primeiro é o dominante
+            materialDominante: sorted[0]
         };
     }, [stats]);
 
     return (
-        <div className="bg-[#0e0e11] border border-zinc-800/60 rounded-2xl p-4 flex flex-col justify-between h-full hover:border-zinc-700 transition-all relative overflow-hidden group shadow-lg">
+        <div className="group relative h-[150px] p-5 rounded-2xl bg-[#09090b] border border-zinc-800/50 overflow-hidden flex flex-col justify-between transition-all hover:border-zinc-700/60 shadow-2xl">
             
-            {/* Ícone de Fundo (Decorativo) */}
-            <div className="absolute -right-6 -bottom-6 text-indigo-500 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none rotate-12">
-                <PieChart size={100} />
+            {/* DECORAÇÃO TÉCNICA AO FUNDO */}
+            <div className="absolute -right-4 -top-4 text-sky-500 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none rotate-12">
+                <PieChart size={120} />
             </div>
 
-            {/* Cabeçalho */}
-            <div className="flex items-center gap-3 mb-3 relative z-10">
-                <div className="p-2 rounded-lg bg-zinc-900/50 border border-zinc-800 text-indigo-500 group-hover:text-indigo-400 transition-colors shadow-sm">
-                    <PieChart size={18} />
+            {/* HEADER TÉCNICO */}
+            <div className="relative z-10 flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 shadow-inner text-sky-500">
+                        <Activity size={18} strokeWidth={2.5} />
+                    </div>
+                    <div>
+                        <p className="text-[9px] text-zinc-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Composição_Métrica</p>
+                        <h3 className="text-sm font-mono font-bold text-zinc-300 flex items-center gap-1.5 uppercase tracking-tighter">
+                            {materialDominante ? (
+                                <>
+                                    <Layers size={12} className="text-sky-500" />
+                                    Dominância_{materialDominante.type}
+                                </>
+                            ) : "Aguardando_Dados"}
+                        </h3>
+                    </div>
                 </div>
-                <div>
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">DNA do Estoque</p>
-                    {materialDominante && (
-                        <p className="text-xs text-zinc-300 font-medium">
-                            Dominância: <span className="text-indigo-400 font-bold">{materialDominante.type}</span>
-                        </p>
-                    )}
-                </div>
-            </div>
-
-            {/* Corpo do Gráfico */}
-            <div className="relative z-10 flex-1 flex flex-col justify-center gap-3">
                 
-                {/* Texto Grande (Total de Tipos) */}
-                <div className="flex justify-between items-end">
-                    <span className="text-2xl font-bold text-white tracking-tight">
-                        {stats.length > 0 ? stats.length : 0} 
-                        <span className="text-sm font-normal text-zinc-500 ml-1.5">Materiais</span>
+                <div className="text-right">
+                    <span className="text-[10px] font-mono font-black text-zinc-600 uppercase bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800/50">
+                        {stats.length.toString().padStart(2, '0')}_Tipos
                     </span>
                 </div>
+            </div>
 
-                {/* Barra de Progresso Segmentada */}
-                <div className="h-3 w-full flex rounded-full overflow-hidden bg-zinc-900 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] ring-1 ring-white/5">
+            {/* VISUALIZER: BARRA DE COMPOSIÇÃO SEGMENTADA */}
+            <div className="relative z-10 space-y-2">
+                <div className="h-2 w-full flex rounded-full overflow-hidden bg-zinc-900/50 border border-white/5 shadow-inner">
                     {stats.length > 0 ? (
-                        stats.map((stat, index) => (
+                        stats.map((stat, idx) => (
                             <div 
                                 key={stat.type} 
                                 style={{ width: `${stat.percent}%` }} 
-                                className={`${stat.bg} hover:brightness-110 transition-all relative group/segment first:pl-0.5 last:pr-0.5`}
-                                title={`${stat.type}: ${stat.percent.toFixed(1)}%`}
+                                className={`${stat.bg} hover:brightness-125 transition-all relative group/segment`}
                             >
-                                {/* Separador visual entre segmentos */}
-                                {index !== stats.length - 1 && (
-                                    <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-black/40 z-10"></div>
-                                )}
+                                {/* Separadores ultra-finos entre segmentos */}
+                                {idx !== stats.length - 1 && <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-black/30" />}
                             </div>
                         ))
                     ) : (
-                        <div className="w-full h-full bg-zinc-800/20 flex items-center justify-center">
-                            <div className="w-full h-[1px] bg-zinc-800/50 rotate-45 transform scale-150"></div>
+                        <div className="w-full h-full bg-zinc-800/20 animate-pulse" />
+                    )}
+                </div>
+
+                {/* LEGENDA MONOESPAÇADA (TOP 3) */}
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-1 items-center gap-3">
+                        {topStats.map((stat) => (
+                            <div key={stat.type} className="flex items-center gap-1.5">
+                                <div className={`w-1.5 h-1.5 rounded-full ${stat.bg} shadow-[0_0_8px_rgba(255,255,255,0.1)]`} />
+                                <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-tighter">
+                                    {stat.type} <span className="text-zinc-700 ml-0.5">{Math.round(stat.percent)}%</span>
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* BADGE DE EXCEDENTE */}
+                    {othersCount > 0 && (
+                        <div className="flex items-center gap-1 text-[8px] font-black text-zinc-600 uppercase bg-zinc-900/80 px-1.5 py-0.5 rounded border border-zinc-800/50">
+                            <CornerDownRight size={8} />
+                            +{othersCount}_OUTROS
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Legenda */}
-            <div className="mt-3 relative z-10">
-                {stats.length > 0 ? (
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                        {topStats.map((stat) => (
-                            <div key={stat.type} className="flex items-center gap-1.5 group/legend cursor-help" title={`${stat.percent.toFixed(1)}% do estoque`}>
-                                <div className={`w-2 h-2 rounded-full ${stat.bg} shadow-[0_0_5px_rgba(0,0,0,0.5)] group-hover/legend:scale-125 transition-transform`}></div>
-                                <span className="text-[10px] font-mono font-medium text-zinc-400 group-hover/legend:text-zinc-200 transition-colors">
-                                    {stat.type} <span className="text-zinc-600 group-hover/legend:text-zinc-500">| {Math.round(stat.percent)}%</span>
-                                </span>
-                            </div>
-                        ))}
-                        
-                        {/* Indicador de "+X Outros" */}
-                        {othersCount > 0 && (
-                            <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-zinc-900/50 border border-zinc-800">
-                                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wide">
-                                    +{othersCount} Outros
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-2 text-zinc-600 text-xs">
-                        <AlertCircle size={12} />
-                        <span>Sem dados para exibir</span>
-                    </div>
-                )}
+            {/* RODAPÉ STATUS */}
+            <div className="relative z-10 pt-2 border-t border-white/5 flex justify-between items-center">
+                <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">Análise de Inventário</span>
+                <div className="flex gap-0.5">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className={`h-0.5 w-2 rounded-full ${i <= 3 ? 'bg-sky-500/40' : 'bg-zinc-800'}`} />
+                    ))}
+                </div>
             </div>
         </div>
     );

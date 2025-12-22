@@ -1,9 +1,9 @@
-// --- FILE: src/features/impressoras/components/PrinterCard.jsx ---
 import React from "react";
 import {
     Printer, Wrench, Zap, Edit2, Trash2,
-    RotateCcw, WifiOff, CheckCircle2, PauseCircle,
-    AlertOctagon, Power, Factory, History, Coins, TrendingUp
+    WifiOff, CheckCircle2, PauseCircle,
+    AlertOctagon, Power, History, TrendingUp,
+    Target, Cpu, Activity
 } from "lucide-react";
 
 /* ---------- HELPERS ---------- */
@@ -11,222 +11,166 @@ const calculateHealth = (printer) => {
     const total = Number(printer.totalHours) || 0;
     const last = Number(printer.lastMaintenanceHour) || 0;
     const interval = Number(printer.maintenanceInterval) || 300;
-
     const used = total - last;
-    const remaining = Math.max(0, interval - used);
     const pct = Math.max(0, Math.min(100, 100 - ((used / interval) * 100)));
-
-    return { remaining, pct, used };
+    return { remaining: Math.max(0, interval - used), pct };
 };
 
 const calculateFinance = (printer) => {
     const price = Number(printer.price) || 0;
     const yieldTotal = Number(printer.yieldTotal) || 0;
-
-    if (price <= 0) return { roiPct: 0, isPaid: false, profit: 0 };
-
-    const roiPct = Math.min(100, (yieldTotal / price) * 100);
-    const isPaid = yieldTotal >= price;
-    const profit = yieldTotal - price;
-
-    return { roiPct, isPaid, profit, price, yieldTotal };
+    if (price <= 0) return { roiPct: 0, isPaid: false };
+    return { roiPct: Math.min(100, (yieldTotal / price) * 100), isPaid: yieldTotal >= price };
 };
 
-/* ---------- CONFIG DE STATUS ---------- */
 const getStatusConfig = (status) => {
     const map = {
-        idle: { label: "Ociosa", color: "#a1a1aa", tw: "text-zinc-400", bg: "bg-zinc-500/10", border: "border-zinc-500/10", icon: Power },
-        printing: { label: "Imprimindo", color: "#22d3ee", tw: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/10", icon: Printer, animate: true },
-        paused: { label: "Pausada", color: "#fbbf24", tw: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/10", icon: PauseCircle },
-        completed: { label: "Concluído", color: "#34d399", tw: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/10", icon: CheckCircle2 },
-        maintenance: { label: "Manutenção", color: "#f43f5e", tw: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/10", icon: Wrench },
-        error: { label: "Erro", color: "#f43f5e", tw: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/10", icon: AlertOctagon },
-        offline: { label: "Offline", color: "#52525b", tw: "text-zinc-600", bg: "bg-zinc-800", border: "border-zinc-700", icon: WifiOff }
+        idle: { label: "Standby", color: "text-zinc-500", bg: "bg-zinc-500/10", border: "border-zinc-500/20", icon: Power },
+        printing: { label: "Printing", color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20", icon: Printer, animate: true },
+        paused: { label: "Paused", color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", icon: PauseCircle },
+        completed: { label: "Ready", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", icon: CheckCircle2 },
+        maintenance: { label: "Repair", color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20", icon: Wrench },
+        error: { label: "System Err", color: "text-rose-600", bg: "bg-rose-600/10", border: "border-rose-600/30", icon: AlertOctagon },
+        offline: { label: "Link Lost", color: "text-zinc-600", bg: "bg-zinc-800/50", border: "border-zinc-700/50", icon: WifiOff }
     };
     return map[status] || map.idle;
 };
 
-/* ---------- CARD PRINCIPAL ---------- */
 export default function PrinterCard({ printer, onEdit, onDelete, onResetMaint, onToggleStatus, onViewHistory }) {
     if (!printer) return null;
 
     const { remaining, pct } = calculateHealth(printer);
-    const { roiPct, isPaid, price, yieldTotal } = calculateFinance(printer);
-
+    const { roiPct, isPaid } = calculateFinance(printer);
     const statusConfig = getStatusConfig(printer.status);
     const StatusIcon = statusConfig.icon;
 
     const isCritical = pct < 20 || printer.status === 'error' || printer.status === 'maintenance';
-    const mainColor = isCritical ? "#f43f5e" : statusConfig.color;
+    const accentColor = isCritical ? 'rose' : 'cyan';
 
     return (
-        <div className="group relative flex flex-col bg-[#09090b]/80 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10 hover:shadow-2xl hover:-translate-y-1 hover:bg-[#09090b]">
-
-            {/* GLOW DE FUNDO */}
-            <div
-                className="absolute -top-[120px] -right-[120px] w-[250px] h-[250px] rounded-full blur-[90px] opacity-0 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none"
-                style={{ backgroundColor: mainColor }}
-            />
+        <div className={`group relative flex flex-col bg-[#0a0a0c] border ${isCritical ? 'border-rose-900/40 shadow-[0_0_25px_rgba(244,63,94,0.05)]' : 'border-zinc-800/50'} rounded-xl overflow-hidden transition-all duration-300 hover:border-zinc-600 hover:shadow-2xl`}>
+            
+            {/* HUD SCANLINE EFFECT */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0" />
 
             <div className="flex flex-1 relative z-10">
-
-                {/* --- SIDEBAR ESQUERDA --- */}
-                <div className="min-w-[100px] flex flex-col items-center pt-5 pb-4 bg-black/20 border-r border-white/5 relative shrink-0 px-2">
-
-                    <div className="relative z-10 filter drop-shadow-xl mb-1">
-                        <div className={`w-[64px] h-[64px] rounded-2xl flex items-center justify-center border bg-gradient-to-br from-white/5 to-transparent transition-colors duration-500 ${isCritical ? 'border-rose-500/30 shadow-[0_0_15px_-5px_rgba(244,63,94,0.3)]' : 'border-white/10'}`}>
-                            <StatusIcon
-                                size={32}
-                                className={`${isCritical ? 'text-rose-500' : 'text-zinc-400'} ${statusConfig.animate ? 'animate-pulse' : ''}`}
-                                strokeWidth={1.5}
-                            />
-                        </div>
+                {/* --- SIDEBAR TÉCNICA --- */}
+                <div className="w-[80px] flex flex-col items-center pt-4 pb-4 bg-zinc-950/50 border-r border-white/5 relative">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center border transition-all duration-500 ${isCritical ? 'bg-rose-500/10 border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.2)]' : 'bg-zinc-900 border-zinc-800'}`}>
+                        <StatusIcon size={24} className={`${isCritical ? 'text-rose-500' : statusConfig.color} ${statusConfig.animate ? 'animate-pulse' : ''}`} />
+                    </div>
+                    
+                    <div className="mt-4 flex flex-col items-center gap-1">
+                        <span className="text-[8px] font-black text-zinc-600 uppercase tracking-tighter">Unit_ID</span>
+                        <span className="text-[9px] font-mono text-zinc-400">#{printer.id?.slice(-4).toUpperCase() || '0000'}</span>
                     </div>
 
-                    <div className="h-6 w-px bg-white/5 my-0.5" />
-
-                    {/* BOX MODELO/MARCA */}
-                    <div className="w-full flex flex-col rounded bg-black/40 border border-white/5 shadow-sm overflow-hidden">
-                        <div className="bg-white/5 py-1 px-1 text-center">
-                            <span className="text-[10px] font-black text-zinc-300 block leading-tight tracking-wider uppercase break-words whitespace-normal">
-                                {printer.model || "Modelo"}
-                            </span>
-                        </div>
-                        <div className="py-1 px-1 flex justify-center items-center">
-                            <span className="text-[9px] font-mono text-zinc-500 uppercase text-center leading-none break-words w-full">
-                                {printer.brand || "Marca"}
-                            </span>
-                        </div>
+                    <div className="mt-auto rotate-180 flex items-center" style={{ writingMode: 'vertical-rl' }}>
+                        <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest">{printer.brand || 'GENERIC'}</span>
                     </div>
                 </div>
 
-                {/* --- CONTEÚDO DIREITA --- */}
-                <div className="flex-1 p-4 flex flex-col min-w-0">
-
-                    {/* HEADER: Nome + Potência + Status */}
-                    <div className="flex justify-between items-start mb-3 gap-2">
-                        <h3 className="text-sm font-bold text-zinc-100 leading-tight line-clamp-2" title={printer.name}>
-                            {printer.name}
-                        </h3>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                            {/* POTÊNCIA (MOVIDO PARA CÁ) */}
-                            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-900/50 border border-zinc-800 text-zinc-500">
-                                <Zap size={8} className="text-amber-500/80" />
-                                <span className="text-[9px] font-mono font-bold">{printer.power}W</span>
+                {/* --- CONTEÚDO PRINCIPAL --- */}
+                <div className="flex-1 p-5 flex flex-col min-w-0">
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="min-w-0">
+                            <h3 className="text-sm font-black text-zinc-100 uppercase tracking-tight truncate pr-2">
+                                {printer.name}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[9px] font-mono text-zinc-500 uppercase">{printer.model || 'CoreXY'}</span>
+                                <div className="h-1 w-1 rounded-full bg-zinc-800" />
+                                <div className="flex items-center gap-1">
+                                    <Zap size={8} className="text-amber-500" />
+                                    <span className="text-[9px] font-mono text-zinc-500">{printer.power}W</span>
+                                </div>
                             </div>
-
-                            {/* STATUS PILL */}
-                            <button
-                                onClick={() => onToggleStatus && onToggleStatus(printer)}
-                                className={`flex items-center gap-1.5 px-2 py-0.5 rounded border transition-all hover:brightness-110 ${statusConfig.bg} ${statusConfig.border} ${statusConfig.tw}`}
-                            >
-                                <StatusIcon size={10} className={statusConfig.animate ? "animate-spin-slow" : ""} />
-                                <span className="text-[10px] font-bold font-mono tracking-tight uppercase">
-                                    {statusConfig.label}
-                                </span>
-                            </button>
                         </div>
+
+                        <button 
+                            onClick={() => onToggleStatus && onToggleStatus(printer)}
+                            className={`px-2 py-1 rounded border text-[9px] font-black uppercase tracking-tighter transition-all hover:scale-105 ${statusConfig.bg} ${statusConfig.border} ${statusConfig.color}`}
+                        >
+                            {statusConfig.label}
+                        </button>
                     </div>
 
-                    {/* MANUTENÇÃO (Big Numbers) */}
-                    <div className="mt-auto mb-2">
-                        <div className="flex items-baseline gap-1 select-none">
-                            <span className={`text-3xl font-black tracking-tighter ${isCritical ? "text-rose-500" : "text-white"}`}>
-                                {Math.round(remaining)}
-                            </span>
-                            <span className="text-xs font-bold text-zinc-600 mb-1">h</span>
-                            <span className="text-[10px] text-zinc-700 ml-auto font-mono self-end mb-1">
-                                / {printer.maintenanceInterval}h
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* BARRA DE PROGRESSO */}
-                    <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-3">
-                        <div
-                            className="h-full relative transition-all duration-700 ease-out opacity-90"
-                            style={{
-                                width: `${pct}%`,
-                                backgroundColor: mainColor,
-                                boxShadow: `0 0 10px ${mainColor}40`,
-                            }}
-                        />
-                    </div>
-
-                    {/* ÁREA FINANCEIRA ou SAÚDE */}
-                    {price > 0 ? (
-                        <div className="pt-2 border-t border-white/5">
-                            <div className="flex justify-between items-end mb-1">
-                                <span className="text-[9px] text-zinc-500 font-bold uppercase flex items-center gap-1">
-                                    {isPaid ? <TrendingUp size={10} className="text-emerald-500" /> : <Coins size={10} />}
-                                    {isPaid ? "Lucro Puro" : "Payback"}
+                    {/* Telemetria de Manutenção */}
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-end">
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black text-zinc-600 uppercase mb-1 flex items-center gap-1">
+                                    <Activity size={8} /> Service_Life
                                 </span>
-                                <span className={`text-[9px] font-mono ${isPaid ? 'text-emerald-400 font-bold' : 'text-zinc-400'}`}>
-                                    {Math.round(roiPct)}%
-                                </span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className={`text-2xl font-mono font-black tracking-tighter ${isCritical ? "text-rose-500" : "text-white"}`}>
+                                        {Math.round(remaining).toString().padStart(3, '0')}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-zinc-600">HRS</span>
+                                </div>
                             </div>
+                            <div className="text-right">
+                                <span className="text-[10px] font-mono font-bold text-zinc-500">{Math.round(pct)}%</span>
+                            </div>
+                        </div>
 
-                            <div className="relative h-1 w-full bg-zinc-900 rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full transition-all duration-1000 ${isPaid ? 'bg-emerald-500' : 'bg-sky-600'}`}
-                                    style={{ width: `${roiPct}%` }}
+                        {/* Barra de Progresso Estilo Instrumento */}
+                        <div className="h-2 w-full bg-zinc-900 rounded-sm flex gap-0.5 p-0.5 overflow-hidden border border-white/5">
+                            {Array.from({ length: 20 }).map((_, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`h-full flex-1 transition-all duration-500 ${i < (pct / 5) ? (isCritical ? 'bg-rose-500' : 'bg-cyan-500') : 'bg-zinc-800/40'}`} 
                                 />
-                            </div>
-
-                            <div className="flex justify-between mt-1">
-                                <span className="text-[8px] font-mono text-zinc-600">
-                                    Gerado: R${yieldTotal.toLocaleString('pt-BR', { notation: 'compact' })}
-                                </span>
-                                <span className="text-[8px] font-mono text-zinc-600">
-                                    Custo: R${price.toLocaleString('pt-BR', { notation: 'compact' })}
-                                </span>
-                            </div>
+                            ))}
                         </div>
-                    ) : (
-                        // Se não tiver financeiro, mostra a Saúde alinhada à direita
-                        <div className="flex justify-end mt-1.5">
-                            <span className={`text-[9px] font-mono font-bold ${isCritical ? "text-rose-500" : "text-zinc-500"}`}>
-                                {Math.round(pct)}% Saúde
+                    </div>
+
+                    {/* Footer Financeiro HUD */}
+                    <div className="mt-5 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black text-zinc-600 uppercase mb-1 flex items-center gap-1">
+                                <History size={8} /> Production_Load
+                            </span>
+                            <span className="text-[10px] font-mono font-bold text-zinc-300">
+                                {printer.history?.length || 0} cycles
                             </span>
                         </div>
-                    )}
+                        <div className="flex flex-col items-end">
+                            <span className="text-[8px] font-black text-zinc-600 uppercase mb-1 flex items-center gap-1">
+                                <TrendingUp size={8} className={isPaid ? "text-emerald-500" : ""} /> ROI_INDEX
+                            </span>
+                            <span className={`text-[10px] font-mono font-bold ${isPaid ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                                {Math.round(roiPct)}% {isPaid ? '✓' : ''}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* FOOTER ACTIONS */}
-            <div className="grid grid-cols-[1fr_40px_40px_40px] border-t border-white/5 bg-white/[0.02]">
+            {/* ACTION BAR CLASSIFICADA */}
+            <div className="grid grid-cols-[1fr_repeat(3,44px)] h-10 border-t border-white/5 bg-zinc-950/80">
                 <button
                     onClick={() => onResetMaint(printer.id)}
-                    className="flex items-center justify-center gap-2 py-2.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-white hover:bg-white/5 transition-all group/btn"
+                    className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white hover:bg-white/5 transition-all group/btn"
                 >
-                    <Wrench size={12} className="group-hover/btn:rotate-45 transition-transform text-zinc-500 group-hover:text-white" />
-                    <span>Revisar</span>
+                    <Target size={12} className="group-hover/btn:scale-110 transition-transform" />
+                    System_Diagnostics
                 </button>
 
-                <button
-                    onClick={() => onViewHistory(printer)}
-                    className="flex items-center justify-center text-zinc-600 hover:text-sky-400 hover:bg-white/5 transition-colors border-l border-white/5"
-                    title="Histórico"
-                >
-                    <History size={12} />
-                </button>
-
-                <button
-                    onClick={() => onEdit(printer)}
-                    className="flex items-center justify-center text-zinc-600 hover:text-zinc-200 hover:bg-white/5 transition-colors border-l border-white/5"
-                    title="Editar"
-                >
-                    <Edit2 size={12} />
-                </button>
-
-                <button
-                    onClick={() => onDelete(printer.id)}
-                    className="flex items-center justify-center text-zinc-600 hover:text-rose-400 hover:bg-rose-500/10 transition-colors border-l border-white/5"
-                    title="Excluir"
-                >
-                    <Trash2 size={12} />
-                </button>
+                {[
+                    { icon: History, action: () => onViewHistory(printer), color: "hover:text-cyan-400" },
+                    { icon: Edit2, action: () => onEdit(printer), color: "hover:text-amber-400" },
+                    { icon: Trash2, action: () => onDelete(printer.id), color: "hover:text-rose-500" }
+                ].map((btn, i) => (
+                    <button
+                        key={i}
+                        onClick={btn.action}
+                        className={`flex items-center justify-center border-l border-white/5 text-zinc-600 ${btn.color} hover:bg-white/5 transition-all`}
+                    >
+                        <btn.icon size={14} />
+                    </button>
+                ))}
             </div>
         </div>
     );
