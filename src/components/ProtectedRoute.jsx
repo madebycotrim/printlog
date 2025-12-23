@@ -1,6 +1,6 @@
-// src/components/ProtectedRoute.jsx
 import { useAuth } from "@clerk/clerk-react";
 import { Route, Redirect } from "wouter";
+import PageLoading from "./Loading"; // Importe seu loading aqui
 
 const ProtectedRoute = ({ path, component: Component }) => {
   const { isLoaded, isSignedIn } = useAuth();
@@ -8,10 +8,10 @@ const ProtectedRoute = ({ path, component: Component }) => {
   return (
     <Route path={path}>
       {() => {
-        // Se ainda está carregando o status do usuário, mostra nada ou um loader
-        if (!isLoaded) return null; 
+        // Se ainda está carregando o status do usuário, mostra o seu componente de Loading
+        if (!isLoaded) return <PageLoading />;
 
-        // Se não estiver logado, redireciona para o login
+        // Se não estiver logado, manda para a SUA página de login interna
         if (!isSignedIn) {
           return <Redirect to="/login" />;
         }

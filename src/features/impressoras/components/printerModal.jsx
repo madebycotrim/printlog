@@ -24,7 +24,7 @@ const parseNumeric = (v) => {
     return isNaN(parsed) ? 0 : parsed;
 };
 
-/* ---------- INPUT DA OFICINA ---------- */
+/* ---------- INPUT DA OFICINA (DESIGN HUD ORIGINAL) ---------- */
 const HUDInput = ({ label, icon: Icon, value, onChange, placeholder, suffix, sectionColor, type = "text" }) => {
     const [focused, setFocused] = useState(false);
     return (
@@ -63,7 +63,10 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
     useEffect(() => {
         if (aberto && database.length === 0) {
-            fetch('/printers.json').then(res => res.json()).then(data => setDatabase(Array.isArray(data) ? data : [])).catch(() => {});
+            fetch('/printers.json')
+                .then(res => res.json())
+                .then(data => setDatabase(Array.isArray(data) ? data : []))
+                .catch(() => {});
         }
     }, [aberto, database.length]);
 
@@ -82,8 +85,27 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     const modelOptions = useMemo(() => {
         if (!form.brand) return [];
         const models = database.filter(p => p.brand.toLowerCase() === form.brand.toLowerCase());
-        return [{ group: `Modelos da ${form.brand}`, items: models.map(m => ({ value: m.model, label: m.model, data: m })) }];
+        return [{ 
+            group: `Modelos da ${form.brand}`, 
+            items: models.map(m => ({ 
+                value: m.model, 
+                label: m.model, 
+                data: m // Mantendo os dados para o auto-fill
+            })) 
+        }];
     }, [database, form.brand]);
+
+    // Lógica de preenchimento automático preservada
+    const handleModelChange = (val, item) => {
+        const printerInfo = item?.data || database.find(p => p.model === val && p.brand === form.brand);
+        
+        setForm(prev => ({
+            ...prev,
+            model: val,
+            power: printerInfo?.consumoKw ? Math.round(printerInfo.consumoKw * 1000).toString() : prev.power,
+            name: prev.name || `${prev.brand} ${val}`
+        }));
+    };
 
     const custoHora = useMemo(() => {
         const p = parseNumeric(form.price);
@@ -106,9 +128,11 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
             <div className="relative bg-[#080808] border border-zinc-800 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh]">
                 
-                {/* --- LADO ESQUERDO: RESUMO --- */}
+                {/* --- LADO ESQUERDO: DESIGN ORIGINAL RESTAURADO --- */}
                 <div className="w-full md:w-[280px] bg-black/40 border-b md:border-b-0 md:border-r border-zinc-800/60 p-6 flex flex-col items-center justify-between shrink-0">
-                    <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+                    <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+                        style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} 
+                    />
 
                     <div className="relative z-10 w-full text-center">
                         <div className="flex items-center gap-2 mb-6 justify-center">
@@ -141,7 +165,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                     </div>
                 </div>
 
-                {/* --- LADO DIREITO: FORMULÁRIO --- */}
+                {/* --- LADO DIREITO: FORMULÁRIO COM DESIGN ORIGINAL --- */}
                 <div className="flex-1 flex flex-col">
                     <header className="px-6 py-4 border-b border-white/5 bg-zinc-900/20 flex justify-between items-center">
                         <div className="flex items-center gap-3">
@@ -153,7 +177,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
                     <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
                         
-                        {/* MÓDULO 01: QUEM É ELA */}
                         <section className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-bold text-sky-500 font-mono">[ 01 ]</span>
@@ -166,20 +189,19 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                                         <label className="text-[8px] font-bold text-zinc-500 uppercase">Fabricante</label>
                                         <button type="button" onClick={() => setManualEntry(p => ({...p, brand: !p.brand}))} className="text-[7px] font-bold text-sky-500 uppercase">{manualEntry.brand ? "[ Ver Lista ]" : "[ Digitar ]"}</button>
                                     </div>
-                                    {manualEntry.brand ? <input value={form.brand} onChange={e => setForm({...form, brand: e.target.value, model: ""})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white outline-none focus:border-sky-500" placeholder="Ex: Creality..." /> : <SearchSelect value={form.brand} onChange={v => setForm({...form, brand: v, model: ""})} options={brandOptions} searchable placeholder="Escolha..." />}
+                                    {manualEntry.brand ? <input value={form.brand} onChange={e => setForm({...form, brand: e.target.value, model: ""})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white outline-none focus:border-sky-500" /> : <SearchSelect value={form.brand} onChange={v => setForm({...form, brand: v, model: ""})} options={brandOptions} searchable placeholder="Escolha..." />}
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex justify-between items-center px-1">
                                         <label className="text-[8px] font-bold text-zinc-500 uppercase">Modelo</label>
                                         <button type="button" onClick={() => setManualEntry(p => ({...p, model: !p.model}))} className="text-[7px] font-bold text-sky-500 uppercase">{manualEntry.model ? "[ Ver Lista ]" : "[ Digitar ]"}</button>
                                     </div>
-                                    {manualEntry.model ? <input value={form.model} onChange={e => setForm({...form, model: e.target.value})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white outline-none focus:border-sky-500" placeholder="Ex: Ender 3 S1..." /> : <SearchSelect value={form.model} onChange={(val, extra) => setForm(prev => ({...prev, model: val, power: extra?.consumoKw ? Math.round(extra.consumoKw * 1000) : prev.power, name: prev.name || `${prev.brand} ${val}`}))} options={modelOptions} searchable placeholder="Escolha..." />}
+                                    {manualEntry.model ? <input value={form.model} onChange={e => setForm({...form, model: e.target.value})} className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-[11px] text-white outline-none focus:border-sky-500" /> : <SearchSelect value={form.model} onChange={handleModelChange} options={modelOptions} searchable placeholder="Escolha..." />}
                                 </div>
                             </div>
                             <HUDInput label="Apelido da Máquina" icon={Tag} value={form.name} onChange={v => setForm({...form, name: v})} placeholder="Ex: Ender da Esquerda" sectionColor="#0ea5e9" />
                         </section>
 
-                        {/* MÓDULO 02: ENERGIA E CUSTO */}
                         <section className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-bold text-amber-500 font-mono">[ 02 ]</span>
@@ -192,7 +214,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                             </div>
                         </section>
 
-                        {/* MÓDULO 03: USO E MANUTENÇÃO */}
                         <section className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-bold text-orange-500 font-mono">[ 03 ]</span>

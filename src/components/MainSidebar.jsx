@@ -21,7 +21,7 @@ const MENU_ITEMS = [
     { href: "/impressoras", icon: Printer, label: "Impressoras", alertKey: 'maint' },
     { type: 'section', label: 'Sistema' },
     { href: "/configuracoes", icon: Settings, label: "Configurações" },
-    { href: "/ajuda", icon: HelpCircle, label: "Ajuda / Wiki" },
+    { href: "/central-maker", icon: HelpCircle, label: "Central Maker" },
 ];
 
 const SidebarItem = memo(({ href, icon: Icon, label, collapsed, badge }) => {

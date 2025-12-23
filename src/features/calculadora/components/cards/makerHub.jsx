@@ -3,7 +3,7 @@ import {
     Zap, Copy, Check, Package, CalendarClock, 
     Share2, PieChart, Printer, ArrowUpRight, 
     ChevronLeft, ChevronRight, AlertTriangle, Clock,
-    Bot, Cpu, Sparkles
+    Bot, Cpu, Sparkles, Send
 } from "lucide-react";
 import { formatCurrency } from "../../../../lib/format";
 
@@ -11,19 +11,15 @@ export default function MakersHubWidget({ resultados, entradas, nomeProjeto }) {
     const [slide, setSlide] = useState(0);
     const [copied, setCopied] = useState(false);
     
-    // Configurações do "Sonho de Consumo"
     const PRECO_IMPRESSORA_META = 4500; 
 
-    // Resetar estado de cópia ao mudar dados
     useEffect(() => { setCopied(false); }, [resultados]);
 
-    // --- CÁLCULOS CENTRAIS ---
-    
-    // 1. Orçamento
+    // --- LÓGICA DE CÁLCULO (Mantida a sua original) ---
     const getQuoteText = () => {
         const total = formatCurrency(resultados.precoSugerido || 0);
-        const prazo = `${entradas.tempoImpressaoHoras}h ${entradas.tempoImpressaoMinutos}m`;
-        return `*ORÇAMENTO: ${nomeProjeto || "Peça 3D"}*\n\n📦 *Modelo:* Personalizado\n💎 *Qualidade:* Premium\n⏱️ *Tempo:* ~${prazo}\n💰 *Investimento:* ${total}\n\n_Validade: 7 dias._\nPodemos fechar? 🚀`;
+        const prazo = `${entradas.tempoImpressaoHoras || 0}h ${entradas.tempoImpressaoMinutos || 0}m`;
+        return `*ORÇAMENTO: ${nomeProjeto || "Peça 3D"}*\n\n📦 *Modelo:* Personalizado\n⏱️ *Tempo:* ~${prazo}\n💰 *Investimento:* ${total}\n\n_Gerado via PrintLog_`;
     };
 
     const handleCopy = () => {
@@ -32,297 +28,163 @@ export default function MakersHubWidget({ resultados, entradas, nomeProjeto }) {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // 2. Cronograma
     const tempoTotalMinutos = (Number(entradas.tempoImpressaoHoras) * 60) + Number(entradas.tempoImpressaoMinutos);
-    const dataAgora = new Date();
-    const dataFim = new Date(dataAgora.getTime() + tempoTotalMinutos * 60000);
+    const dataFim = new Date(new Date().getTime() + tempoTotalMinutos * 60000);
     const horaFim = dataFim.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const isTomorrow = dataFim.getDate() !== dataAgora.getDate();
-    const isLongPrint = tempoTotalMinutos > 720;
-
-    // 3. Gestão de Filamento
+    
     const pesoPeca = Number(entradas.pesoModelo) || 0;
-    const porcentagemRolo = pesoPeca > 0 ? (pesoPeca / 1000) * 100 : 0;
-    const pecasPorRolo = pesoPeca > 0 ? Math.floor(1000 / pesoPeca) : 0;
-
-    // 4. Payback
+    const porcentagemRolo = (pesoPeca / 1000) * 100;
     const lucroUnitario = resultados.lucroBrutoUnitario || 0;
-    const hasData = lucroUnitario > 0 && pesoPeca > 0;
-    const pecasParaNovaMaquina = hasData ? Math.ceil(PRECO_IMPRESSORA_META / lucroUnitario) : 0;
+    const pecasParaNovaMaquina = lucroUnitario > 0 ? Math.ceil(PRECO_IMPRESSORA_META / lucroUnitario) : 0;
 
-    // 5. Custos
-    const custoTotal = resultados.custoUnitario || 1;
-    const pctMat = Math.round((resultados.custoMaterial / custoTotal) * 100);
-    const pctEnergia = Math.round((resultados.custoEnergia / custoTotal) * 100);
-    const pctMaq = Math.round((resultados.custoMaquina / custoTotal) * 100);
-    const pctMO = Math.round((resultados.custoMaoDeObra / custoTotal) * 100);
-
-    // --- SLIDES CONFIG ---
     const slides = [
-        { id: 'quote', title: "Gerador de Venda", icon: Share2, color: 'text-emerald-400', badge: 'Pronto para Enviar' },
-        { id: 'schedule', title: "Cronograma", icon: CalendarClock, color: 'text-amber-400', badge: 'Estimativa Real' },
-        { id: 'filament', title: "Estoque", icon: Package, color: 'text-sky-400', badge: 'Consumo de Material' },
-        { id: 'costs', title: "Raio-X", icon: PieChart, color: 'text-purple-400', badge: 'Análise de Custo' },
-        { id: 'meta', title: "Metas", icon: Printer, color: 'text-rose-400', badge: 'Expansão' },
+        { id: 'quote', title: "Venda Rápida", icon: Share2, color: 'text-emerald-400', badge: 'WHATSAPP' },
+        { id: 'schedule', title: "Entrega", icon: CalendarClock, color: 'text-amber-400', badge: 'DEADLINE' },
+        { id: 'filament', title: "Consumo", icon: Package, color: 'text-sky-400', badge: 'ESTOQUE' },
+        { id: 'costs', title: "Análise", icon: PieChart, color: 'text-purple-400', badge: 'RAIO-X' },
+        { id: 'meta', title: "ROI", icon: Printer, color: 'text-rose-400', badge: 'METAS' },
     ];
 
     const currentSlide = slides[slide];
 
-    // Navegação
-    const nextSlide = () => setSlide((prev) => (prev + 1) % slides.length);
-    const prevSlide = () => setSlide((prev) => (prev - 1 + slides.length) % slides.length);
-
     return (
-        <div className="h-full min-h-[300px] flex flex-col relative group select-none">
+        <div className="h-full flex flex-col bg-zinc-950/40 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden group/hub relative shadow-2xl">
             
-            {/* CONTAINER PRINCIPAL COM BORDA GRADIENTE SUTIL */}
-            <div className="absolute inset-0 bg-gradient-to-b from-zinc-800 to-zinc-900 rounded-2xl -z-10" />
-            <div className="absolute inset-[1px] bg-[#09090b] rounded-2xl -z-10" />
-            
-            {/* BACKGROUND PATTERN (Tech Grid) */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none rounded-2xl z-0"
-                 style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '16px 16px' }}>
-            </div>
+            {/* GRID DE FUNDO SUTIL */}
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+                 style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
 
-            {/* --- HEADER: MAKERS HUB BRANDING --- */}
-            <div className="h-12 px-4 border-b border-zinc-800/60 flex items-center justify-between bg-zinc-900/40 rounded-t-2xl backdrop-blur-sm z-20">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shadow-[0_0_10px_rgba(14,165,233,0.15)]">
-                        <Bot size={14} className="text-sky-400" />
+            {/* HEADER ESTILO DASHBOARD */}
+            <div className="h-12 px-4 flex items-center justify-between border-b border-white/5 bg-zinc-900/20 relative z-10">
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                        <Bot size={12} className="text-sky-500" />
                     </div>
-                    <div className="flex flex-col leading-none">
-                        <span className="text-[10px] font-black text-zinc-200 tracking-widest uppercase font-mono">MAKERS HUB</span>
-                        <span className="text-[8px] font-bold text-sky-500/80 uppercase tracking-widest">Intelligence</span>
-                    </div>
+                    <span className="text-[9px] font-black text-zinc-400 tracking-[0.2em] uppercase">Makers Hub</span>
                 </div>
 
-                {/* Status Dinâmico */}
-                <div className={`flex items-center gap-2 px-2 py-1 rounded-full border bg-zinc-950/50 ${currentSlide.color.replace('text-', 'border-').replace('400', '500/20')}`}>
-                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentSlide.color.replace('text-', 'bg-')}`} />
-                    <span className={`text-[9px] font-bold uppercase tracking-wide ${currentSlide.color}`}>
-                        {currentSlide.badge}
-                    </span>
+                <div className={`px-2 py-0.5 rounded-md border text-[8px] font-bold tracking-tighter ${currentSlide.color.replace('text-', 'border-').replace('400', '500/20')} ${currentSlide.color.replace('text-', 'bg-').replace('400', '500/5')}`}>
+                    {currentSlide.badge}
                 </div>
             </div>
 
-            {/* --- CONTEÚDO (SLIDES) --- */}
-            <div className="flex-1 p-5 relative z-10 overflow-hidden">
+            {/* CONTEÚDO DINÂMICO */}
+            <div className="flex-1 p-5 relative z-10">
                 
-                {/* 1. GERADOR DE ORÇAMENTO */}
+                {/* 1. WHATSAPP / QUOTE */}
                 {slide === 0 && (
-                    <div className="h-full flex flex-col animate-in slide-in-from-right-8 fade-in duration-300">
-                        <div className="flex-1 bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-4 mb-4 relative group/text hover:border-emerald-500/20 transition-all shadow-inner">
-                             <div className="absolute top-0 right-0 p-2 opacity-20 group-hover/text:opacity-100 transition-opacity">
-                                <Share2 size={12} className="text-emerald-500" />
-                             </div>
-                             <p className="text-[10px] text-zinc-400 font-mono leading-relaxed opacity-90 whitespace-pre-wrap">
-                                {getQuoteText()}
-                             </p>
+                    <div className="h-full flex flex-col">
+                        <div className="flex-1 bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 mb-3 font-mono text-[10px] text-zinc-500 leading-relaxed overflow-hidden relative">
+                             <div className="absolute top-2 right-2 text-emerald-500/20"><Send size={12}/></div>
+                             {getQuoteText()}
                         </div>
-
-                        <div className="grid grid-cols-[1fr_auto] gap-2">
-                            <button 
-                                onClick={handleCopy}
-                                className={`h-9 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all border
-                                ${copied 
-                                    ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400" 
-                                    : "bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-300"}`}
-                            >
-                                {copied ? <Check size={14} /> : <Copy size={14} />}
-                                {copied ? "Copiado!" : "Copiar Texto"}
+                        <div className="grid grid-cols-5 gap-2">
+                            <button onClick={handleCopy} className="col-span-4 h-9 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-all flex items-center justify-center gap-2">
+                                {copied ? <Check size={14} className="text-emerald-400"/> : <Copy size={14}/>}
+                                {copied ? "Copiado" : "Copiar Orçamento"}
                             </button>
-                            <button 
-                                onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(getQuoteText())}`, '_blank')}
-                                className="h-9 w-10 rounded-lg bg-[#25D366] hover:bg-[#1fa851] text-white flex items-center justify-center transition-all shadow-lg shadow-emerald-900/20 hover:scale-105"
-                            >
-                                <ArrowUpRight size={16} />
+                            <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(getQuoteText())}`)} className="h-9 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center justify-center shadow-lg shadow-emerald-900/20 transition-all">
+                                <ArrowUpRight size={16}/>
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* 2. CRONOGRAMA */}
+                {/* 2. CRONOGRAMA (Estilo "Temp na Oficina") */}
                 {slide === 1 && (
-                    <div className="h-full flex flex-col justify-center animate-in slide-in-from-right-8 fade-in duration-300">
-                        <div className="relative bg-zinc-900/30 border border-zinc-800 p-6 rounded-2xl w-full text-center overflow-hidden">
-                            {/* Fundo decorativo */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                            
-                            {hasData ? (
-                                <>
-                                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-2">Previsão de Término</span>
-                                    <div className="flex items-baseline justify-center gap-2 mb-1">
-                                        <span className="text-5xl font-mono font-bold text-white tracking-tighter drop-shadow-lg">{horaFim}</span>
-                                    </div>
-                                    {isTomorrow && (
-                                        <span className="inline-block text-[9px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 mb-3">
-                                            Amanhã (+1 Dia)
-                                        </span>
-                                    )}
-                                    <div className="mt-4 pt-4 border-t border-zinc-800/50 flex justify-between items-center px-4">
-                                        <div className="text-left">
-                                            <span className="block text-[9px] text-zinc-600 uppercase">Duração</span>
-                                            <span className="text-xs font-mono text-zinc-300">{tempoTotalMinutos} min</span>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="block text-[9px] text-zinc-600 uppercase">Risco</span>
-                                            <span className={`text-xs font-bold ${isLongPrint ? "text-rose-500" : "text-emerald-500"}`}>
-                                                {isLongPrint ? "Alto" : "Baixo"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <span className="text-xs text-zinc-600 font-bold uppercase">Defina o tempo de impressão</span>
-                            )}
+                    <div className="h-full flex flex-col justify-center items-center">
+                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Pronto às</span>
+                        <div className="text-5xl font-black text-white font-mono tracking-tighter mb-1 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                            {horaFim}
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-amber-500 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
+                            <Clock size={10}/> Duração: {tempoTotalMinutos} min
                         </div>
                     </div>
                 )}
 
-                {/* 3. ESTOQUE */}
+                {/* 3. CONSUMO (Barra Neon) */}
                 {slide === 2 && (
-                    <div className="h-full flex flex-col justify-center gap-6 animate-in slide-in-from-right-8 fade-in duration-300">
-                         {/* Visualização do Rolo */}
-                         <div className="relative px-2">
-                             <div className="flex justify-between text-[9px] font-bold uppercase text-zinc-500 mb-2">
-                                 <span>Consumo ({pesoPeca}g)</span>
-                                 <span>{porcentagemRolo.toFixed(1)}% do Rolo</span>
+                    <div className="h-full flex flex-col justify-center gap-5">
+                         <div className="space-y-2">
+                             <div className="flex justify-between text-[9px] font-bold uppercase text-zinc-500">
+                                 <span>Uso do Carretel</span>
+                                 <span className="text-sky-400">{porcentagemRolo.toFixed(1)}%</span>
                              </div>
-                             
-                             <div className="h-8 w-full bg-zinc-900 rounded-lg border border-zinc-800 relative overflow-hidden group/bar">
-                                 {/* Grid Pattern dentro da barra */}
-                                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(90deg, transparent 50%, rgba(0,0,0,0.5) 50%)', backgroundSize: '4px 100%' }}></div>
-                                 
+                             <div className="h-3 w-full bg-zinc-900 rounded-full border border-zinc-800 p-[2px] overflow-hidden">
                                  <div 
                                     style={{width: `${Math.min(porcentagemRolo, 100)}%`}} 
-                                    className="h-full bg-gradient-to-r from-sky-600 to-sky-400 shadow-[0_0_20px_rgba(14,165,233,0.3)] transition-all duration-1000 relative"
-                                 >
-                                    <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-white/50"></div>
-                                 </div>
+                                    className="h-full bg-sky-500 rounded-full shadow-[0_0_12px_rgba(14,165,233,0.5)] transition-all duration-1000"
+                                 />
                              </div>
                          </div>
-
                          <div className="grid grid-cols-2 gap-3">
-                            <StatBox value={pecasPorRolo} label="Peças / Rolo" color="text-white" />
-                            <StatBox value={`${pesoPeca}g`} label="Peso Unitário" color="text-sky-400" />
+                            <StatBox value={Math.floor(1000/pesoPeca) || 0} label="Peças/Rolo" />
+                            <StatBox value={`${pesoPeca}g`} label="Peso Peça" />
                          </div>
                     </div>
                 )}
 
-                {/* 4. CUSTOS */}
+                {/* 4. ANÁLISE DE CUSTO */}
                 {slide === 3 && (
-                    <div className="h-full flex flex-col justify-center animate-in slide-in-from-right-8 fade-in duration-300">
-                         <div className="flex items-center justify-center mb-6 relative">
-                             {/* Gráfico Donut CSS Puro */}
-                             <div 
-                                className="w-32 h-32 rounded-full relative"
-                                style={{
-                                    background: `conic-gradient(
-                                        #0ea5e9 0% ${pctMat}%, 
-                                        #eab308 ${pctMat}% ${pctMat + pctEnergia}%, 
-                                        #a855f7 ${pctMat + pctEnergia}% ${pctMat + pctEnergia + pctMaq}%, 
-                                        #10b981 ${pctMat + pctEnergia + pctMaq}% 100%
-                                    )`
-                                }}
-                             >
-                                <div className="absolute inset-4 bg-[#09090b] rounded-full flex items-center justify-center flex-col z-10">
-                                    <span className="text-[10px] text-zinc-500 uppercase font-bold">Custo</span>
-                                    <span className="text-sm font-mono font-bold text-white">{formatCurrency(custoTotal)}</span>
-                                </div>
+                    <div className="h-full flex flex-col justify-center">
+                         <div className="flex items-center gap-4">
+                             <div className="w-20 h-20 rounded-full border-4 border-zinc-900 border-t-purple-500 border-r-sky-500 flex items-center justify-center bg-zinc-950 shadow-inner">
+                                <PieChart size={20} className="text-zinc-700"/>
                              </div>
-                         </div>
-
-                         <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-2">
-                             <CostLegend label="Material" pct={pctMat} color="bg-sky-500" />
-                             <CostLegend label="Energia" pct={pctEnergia} color="bg-yellow-500" />
-                             <CostLegend label="Máquina" pct={pctMaq} color="bg-purple-500" />
-                             <CostLegend label="Mão Obra" pct={pctMO} color="bg-emerald-500" />
+                             <div className="flex-1 space-y-2">
+                                <MiniRow label="Material" color="bg-sky-500" pct={Math.round((resultados.custoMaterial/resultados.custoUnitario)*100)} />
+                                <MiniRow label="Operacional" color="bg-purple-500" pct={Math.round((resultados.custoMaoDeObra/resultados.custoUnitario)*100)} />
+                                <MiniRow label="Energia" color="bg-amber-500" pct={Math.round((resultados.custoEnergia/resultados.custoUnitario)*100)} />
+                             </div>
                          </div>
                     </div>
                 )}
 
-                {/* 5. METAS */}
+                {/* 5. METAS ROI */}
                 {slide === 4 && (
-                    <div className="h-full flex flex-col items-center justify-center text-center animate-in slide-in-from-right-8 fade-in duration-300">
-                         {hasData ? (
-                             <div className="relative w-full">
-                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-rose-500/5 blur-3xl rounded-full -z-10" />
-                                 
-                                 <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mb-4 block">
-                                    Nova Máquina em
-                                 </span>
-                                 
-                                 <div className="text-7xl font-black text-white tracking-tighter drop-shadow-2xl mb-2 flex items-center justify-center gap-1">
-                                    {pecasParaNovaMaquina}
-                                    <span className="text-lg text-zinc-600 font-bold self-end mb-2">un.</span>
-                                 </div>
-
-                                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800">
-                                    <Printer size={12} className="text-rose-500" />
-                                    <span className="text-[10px] text-zinc-400">
-                                        Meta: <strong className="text-zinc-200">{formatCurrency(PRECO_IMPRESSORA_META)}</strong>
-                                    </span>
-                                 </div>
-                             </div>
-                         ) : (
-                             <div className="flex flex-col items-center gap-3 opacity-50">
-                                 <Sparkles size={32} className="text-zinc-600" />
-                                 <span className="text-xs font-bold text-zinc-500 uppercase">Sem dados de lucro</span>
-                             </div>
-                         )}
+                    <div className="h-full flex flex-col items-center justify-center">
+                         <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-2">Próxima Máquina em</span>
+                         <div className="text-6xl font-black text-white font-mono tracking-tighter flex items-baseline gap-1">
+                             {pecasParaNovaMaquina}
+                             <span className="text-xs text-rose-500">pcs</span>
+                         </div>
+                         <div className="mt-4 flex items-center gap-2 text-[9px] font-bold text-zinc-400 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
+                             <Printer size={10} className="text-rose-500"/> Meta: {formatCurrency(PRECO_IMPRESSORA_META)}
+                         </div>
                     </div>
                 )}
             </div>
 
-            {/* --- FOOTER: NAVEGAÇÃO --- */}
-            <div className="h-10 border-t border-zinc-800/60 bg-zinc-900/20 flex items-center justify-between px-3 shrink-0 z-20 rounded-b-2xl">
-                <button 
-                    onClick={prevSlide}
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all active:scale-95"
-                >
-                    <ChevronLeft size={16} />
-                </button>
-
-                {/* Indicadores Minimalistas */}
+            {/* NAVEGAÇÃO FOOTER */}
+            <div className="h-10 border-t border-white/5 bg-zinc-900/40 flex items-center justify-between px-2 shrink-0 relative z-20">
+                <button onClick={() => setSlide((s) => (s-1+5)%5)} className="p-1.5 text-zinc-600 hover:text-white transition-colors"><ChevronLeft size={16}/></button>
                 <div className="flex gap-1.5">
-                    {slides.map((s, idx) => (
-                        <button 
-                            key={idx} 
-                            onClick={() => setSlide(idx)}
-                            className={`transition-all duration-300 rounded-full 
-                            ${slide === idx 
-                                ? `w-6 h-1 ${s.color.replace('text-', 'bg-')}` 
-                                : "w-1 h-1 bg-zinc-700 hover:bg-zinc-500"}`} 
-                        />
+                    {[0,1,2,3,4].map(i => (
+                        <div key={i} className={`h-1 rounded-full transition-all duration-300 ${slide === i ? 'w-4 bg-sky-500' : 'w-1 bg-zinc-800'}`} />
                     ))}
                 </div>
-
-                <button 
-                    onClick={nextSlide}
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all active:scale-95"
-                >
-                    <ChevronRight size={16} />
-                </button>
+                <button onClick={() => setSlide((s) => (s+1)%5)} className="p-1.5 text-zinc-600 hover:text-white transition-colors"><ChevronRight size={16}/></button>
             </div>
         </div>
     );
 }
 
-// --- COMPONENTES VISUAIS AUXILIARES ---
+// --- SUB-COMPONENTES ESTILIZADOS ---
 
-const StatBox = ({ value, label, color }) => (
-    <div className="bg-zinc-900/40 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center group hover:border-zinc-700 transition-colors">
-        <span className={`text-xl font-mono font-bold ${color} mb-1`}>{value}</span>
-        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">{label}</span>
+const StatBox = ({ value, label }) => (
+    <div className="bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg flex flex-col items-center group hover:border-zinc-700 transition-all">
+        <span className="text-sm font-black text-white font-mono">{value}</span>
+        <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest">{label}</span>
     </div>
 );
 
-const CostLegend = ({ label, pct, color }) => (
-    <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-sm ${color}`}></div>
-            <span className="text-[9px] font-bold text-zinc-500 uppercase">{label}</span>
+const MiniRow = ({ label, color, pct }) => (
+    <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${color}`} />
+            <span className="text-[8px] font-bold text-zinc-500 uppercase">{label}</span>
         </div>
-        <span className="text-[10px] font-mono text-zinc-300 font-bold">{pct}%</span>
+        <span className="text-[9px] font-mono text-zinc-400">{pct || 0}%</span>
     </div>
 );

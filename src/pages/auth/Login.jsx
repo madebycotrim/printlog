@@ -139,6 +139,8 @@ export default function LoginPage() {
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
                 setLocation("/dashboard");
+            } else {
+                console.log(result);
             }
         } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
     };
@@ -149,17 +151,32 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
         try {
-            const { startMagicLinkFlow } = signIn.createMagicLinkFlow();
-            setIsSent(true);
-            const result = await startMagicLinkFlow({
-                identifier: email,
-                redirectUrl: `${window.location.origin}/dashboard`,
-            });
-            if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                setLocation("/dashboard");
+            // 1. Inicia o processo de login
+            const { supportedFirstFactors } = await signIn.create({ identifier: email });
+
+            // 2. Localiza o fator de e-mail específico para obter o emailAddressId
+            const emailCodeFactor = supportedFirstFactors.find(
+                (f) => f.strategy === "email_link"
+            );
+
+            if (emailCodeFactor) {
+                // 3. Prepara o fator enviando o ID obrigatório
+                await signIn.prepareFirstFactor({
+                    strategy: "email_link",
+                    emailAddressId: emailCodeFactor.emailAddressId, // <--- O QUE ESTAVA FALTANDO
+                    redirectUrl: `${window.location.origin}/dashboard`,
+                });
+                setIsSent(true);
+            } else {
+                setError("Método de login por link não disponível para esta conta.");
             }
-        } catch (err) { handleClerkError(err); setIsSent(false); } finally { setIsLoading(false); }
+
+        } catch (err) {
+            handleClerkError(err);
+            setIsSent(false);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const signInWithGoogle = async () => {
@@ -171,7 +188,10 @@ export default function LoginPage() {
                 redirectUrl: "/sso-callback",
                 redirectUrlComplete: "/dashboard",
             });
-        } catch (err) { setIsGoogleLoading(false); handleClerkError(err); }
+        } catch (err) {
+            setIsGoogleLoading(false);
+            handleClerkError(err);
+        }
     };
 
     return (
@@ -193,7 +213,6 @@ export default function LoginPage() {
                             <span className="text-xl font-bold text-white">PrintLog <span className="text-sky-500 text-[10px] uppercase ml-1">Maker</span></span>
                         </div>
                         <div className="space-y-2">
-                            {/* TEXTO EXATO DA IMAGEM */}
                             <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.95] text-white uppercase">
                                 CONTROLE SUA FARM. <br />
                                 <span className="text-sky-500 italic">CAMADA POR CAMADA.</span>
@@ -288,8 +307,8 @@ export default function LoginPage() {
                             <span className="relative bg-[#050506] px-4 text-[10px] font-bold uppercase text-zinc-600">Ou use sua conta</span>
                         </div>
 
-                        <button 
-                            onClick={signInWithGoogle} 
+                        <button
+                            onClick={signInWithGoogle}
                             disabled={isGoogleLoading || isLoading}
                             className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all font-bold text-sm text-white disabled:opacity-50"
                         >
@@ -306,8 +325,8 @@ export default function LoginPage() {
                         <div className="text-center pt-6">
                             <p className="text-zinc-500 text-sm">
                                 Ainda não tem conta?
-                                <button 
-                                    onClick={() => setLocation('/register')} 
+                                <button
+                                    onClick={() => setLocation('/register')}
                                     className="text-sky-500 font-bold hover:text-sky-400 ml-2"
                                 >
                                     Criar agora
@@ -321,11 +340,11 @@ export default function LoginPage() {
             <div className="hidden lg:flex flex-1 bg-[#09090b] border-l border-white/5 relative items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-500/10 blur-[180px] rounded-full" />
-                
+
                 <div className="relative z-10 scale-110">
                     <div className="translate-x-[-30px]"><FarmStatusWidget /></div>
                     <ProductionWidget />
-                    
+
                     <div className="absolute -bottom-40 -left-20 opacity-10 font-mono text-[10px] text-sky-500 space-y-1 text-left">
                         <p>G1 X105.4 Y98.2 E0.0452</p>
                         <p>M106 S255 ; Ventoinha 100%</p>

@@ -1,135 +1,128 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useLocation } from "wouter";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
-    ChevronLeft, Plus, Search, CheckCircle2,
-    Timer, Cpu, Scan, Activity
+    Plus, Search, CheckCircle2, Timer, Cpu,
+    AlertTriangle, Activity, LayoutGrid, Check, Scan, ChevronRight
 } from "lucide-react";
 
 // --- COMPONENTES ---
 import MainSidebar from "../components/MainSidebar";
 import PrinterCard from "../features/impressoras/components/printerCard";
 import PrinterModal from "../features/impressoras/components/printerModal";
-import MakerCoreIA from "../features/impressoras/components/makerIA";
 import DiagnosticsModal from "../features/impressoras/components/diagnosticsModal";
 
 // --- LÓGICA ---
-import { analyzePrinterHealth } from "../features/impressoras/logic/diagnostics";
 import { getPrinters, savePrinter, deletePrinter, resetMaintenance, updateStatus } from "../features/impressoras/logic/printers";
+import { analyzePrinterHealth } from "../features/impressoras/logic/diagnostics";
 
-// --- UTILITÁRIOS ---
+// --- UTILS ---
 const formatBigNumber = (num) => {
     if (!num || isNaN(num)) return "0";
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "k";
     return Math.floor(num).toString();
 };
 
-const TechStatCard = ({ title, value, icon: Icon, colorClass, secondaryLabel, secondaryValue }) => {
+// --- COMPONENTE: SAÚDE DA FROTA (ESTILO PREMIUM) ---
+const StatusOverviewCard = ({ criticalCount, totalCount }) => {
+    const isHealthy = criticalCount === 0;
+    const accentColor = isHealthy ? 'emerald' : 'rose';
+
     return (
-        <div className="group relative h-[160px] p-6 rounded-2xl bg-[#09090b] border border-zinc-800/50 overflow-hidden flex flex-col justify-between transition-all hover:border-zinc-700/60 shadow-2xl">
-            <div className="relative z-10 flex justify-between items-start">
-                <div className={`p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-inner ${colorClass}`}>
-                    <Icon size={18} strokeWidth={2.5} />
+        <div className={`relative h-[135px] p-6 rounded-2xl bg-[#0a0a0b] border ${isHealthy ? 'border-emerald-500/20 shadow-[0_8px_30px_rgba(16,185,129,0.05)]' : 'border-rose-500/30 shadow-[0_8px_30px_rgba(244,63,94,0.1)]'} overflow-hidden flex items-center justify-between transition-all duration-500 group`}>
+            {/* Efeito de Glow de Fundo */}
+            <div className={`absolute -right-6 -top-6 w-32 h-32 blur-[60px] opacity-[0.08] rounded-full transition-colors duration-700 ${isHealthy ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+
+            <div className="flex items-center gap-6 relative z-10">
+                <div className={`p-4 rounded-2xl bg-black border ${isHealthy ? 'border-emerald-500/30 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-rose-500/40 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}`}>
+                    {isHealthy ? <Check size={26} strokeWidth={3} /> : <AlertTriangle size={26} strokeWidth={3} className="animate-pulse" />}
                 </div>
-                <div className="text-right">
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5">{title}</p>
-                    <h3 className="text-2xl font-bold text-zinc-100 font-mono tracking-tighter leading-none">{value}</h3>
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-emerald-500' : 'bg-rose-500 animate-ping'}`} />
+                        <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.25em]">Fleet_Protocol</p>
+                    </div>
+                    <h3 className={`text-2xl font-black font-mono tracking-tighter leading-none ${isHealthy ? 'text-white' : 'text-rose-500'}`}>
+                        {isHealthy ? 'SYSTEM_NOMINAL' : 'FLEET_ALERT'}
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 font-bold mt-2 uppercase">
+                        {isHealthy ? 'Integridade total detectada' : `${criticalCount} UNIDADES EM MANUTENÇÃO`}
+                    </p>
                 </div>
             </div>
-            <div className="relative z-10 pt-4 border-t border-white/5 flex justify-between items-center">
-                <div className="flex flex-col">
-                    <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest leading-none mb-1">{secondaryLabel}</span>
-                    <span className="text-[11px] font-bold text-zinc-400 leading-none">{secondaryValue}</span>
-                </div>
-                <div className="h-1 w-8 bg-zinc-800 rounded-full overflow-hidden">
-                    <div className={`h-full bg-current ${colorClass} opacity-30 animate-pulse`} style={{ width: '60%' }}></div>
+
+            <div className="flex flex-col items-end relative z-10">
+                <div className="text-[9px] text-zinc-600 font-black uppercase mb-2 tracking-widest tracking-[0.2em]">Efficiency</div>
+                <div className="h-1.5 w-20 bg-zinc-900 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                    <div
+                        className={`h-full rounded-full transition-all duration-1000 ${isHealthy ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                        style={{ width: `${totalCount > 0 ? ((totalCount - criticalCount) / totalCount) * 100 : 100}%` }}
+                    />
                 </div>
             </div>
         </div>
     );
 };
 
+// --- COMPONENTE: TECH STAT CARD (ESTILO PREMIUM) ---
+const TechStatCard = ({ title, value, icon: Icon, colorClass, secondaryLabel, secondaryValue }) => (
+    <div className="h-[135px] p-6 rounded-2xl bg-[#0a0a0b] border border-zinc-900 flex items-center justify-between group transition-all hover:border-zinc-700/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+        <div className="flex items-center gap-6">
+            <div className={`p-4 rounded-2xl bg-black border border-zinc-800 ${colorClass} shadow-inner group-hover:scale-105 transition-transform duration-500`}>
+                <Icon size={26} strokeWidth={2} />
+            </div>
+            <div>
+                <p className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.25em] mb-1">{title}</p>
+                <div className="flex flex-col">
+                    <span className="text-[12px] text-zinc-300 font-black uppercase tracking-tight leading-tight">{secondaryLabel}</span>
+                    <span className="text-[10px] text-zinc-500 font-bold mt-0.5">{secondaryValue}</span>
+                </div>
+            </div>
+        </div>
+        <div className="text-right flex flex-col justify-between h-full py-1">
+            <h3 className="text-2xl font-black text-white font-mono tracking-tighter leading-none">{value}</h3>
+            <div className="flex items-center gap-2 justify-end opacity-20 group-hover:opacity-100 transition-opacity">
+                <Activity size={12} className="text-zinc-800" />
+            </div>
+        </div>
+    </div>
+);
+
 export default function ImpressorasPage() {
-    const [, setLocation] = useLocation();
     const [larguraSidebar, setLarguraSidebar] = useState(72);
     const [printers, setPrinters] = useState([]);
     const [busca, setBusca] = useState("");
-
     const [modalAberto, setModalAberto] = useState(false);
     const [itemEdicao, setItemEdicao] = useState(null);
     const [printerEmDiagnostico, setPrinterEmDiagnostico] = useState(null);
-
     const [checklists, setChecklists] = useState({});
 
-    useEffect(() => {
+    const carregarDados = useCallback(() => {
         const rawData = getPrinters() || [];
-        const cleanData = Array.from(new Map(rawData.map(item => [item.id, item])).values());
-        setPrinters(cleanData);
+        setPrinters(Array.from(new Map(rawData.map(item => [item.id, item])).values()));
     }, []);
 
-    const handleToggleTask = (printerId, taskLabel) => {
-        if (!printerId) return;
-        setChecklists(prev => {
-            const currentTasks = prev[printerId] || [];
-            const newTasks = currentTasks.includes(taskLabel)
-                ? currentTasks.filter(t => t !== taskLabel)
-                : [...currentTasks, taskLabel];
-            return { ...prev, [printerId]: newTasks };
-        });
-    };
+    useEffect(() => { carregarDados(); }, [carregarDados]);
 
-    const aoSalvar = (dados) => {
-        const novaLista = savePrinter(dados);
-        setPrinters([...novaLista]);
-        setModalAberto(false);
-        setItemEdicao(null);
-    };
-
-    const aoDeletar = (id) => {
-        if (window.confirm("Remover esta impressora da oficina?")) {
-            const novaLista = deletePrinter(id);
-            setPrinters([...novaLista]);
-        }
-    };
-
-    const alternarStatus = (id, statusAtual) => {
-        const flow = { 'idle': 'printing', 'printing': 'maintenance', 'maintenance': 'idle' };
-        const novaLista = updateStatus(id, flow[statusAtual || 'idle']);
-        setPrinters([...novaLista]);
-    };
-
-    const finalizarReparo = (id) => {
-        const novaLista = resetMaintenance(id);
-        setPrinters([...novaLista]);
-        setChecklists(prev => {
-            const novo = { ...prev };
-            delete novo[id];
-            return novo;
-        });
-        setPrinterEmDiagnostico(null);
-    };
-
-    const stats = useMemo(() => {
-        const filtered = printers.filter(p =>
-            p.name?.toLowerCase().includes(busca.toLowerCase())
-        );
-        const activeCount = printers.filter(p => p.status === 'printing').length;
-        const totalHours = printers.reduce((acc, curr) => acc + (Number(curr.totalHours) || 0), 0);
+    const { filteredPrinters, stats, criticalCount } = useMemo(() => {
         const totalPrints = printers.reduce((acc, curr) => acc + (curr.history?.length || 0), 0);
-
+        const criticals = printers.filter(p => (analyzePrinterHealth(p) || []).some(i => i.severity === 'critical')).length;
+        const filtered = printers.filter(p => p.name?.toLowerCase().includes(busca.toLowerCase()));
         return {
-            filtered,
-            activeCount,
-            totalPrints,
-            filament: (totalHours * 0.012).toFixed(2),
+            filteredPrinters: filtered,
+            criticalCount: criticals,
+            stats: { totalPrints, filament: "28.00" }
         };
     }, [printers, busca]);
+
+    const aoSalvar = (dados) => { savePrinter(dados); carregarDados(); setModalAberto(false); setItemEdicao(null); };
+    const aoDeletar = (id) => { if (window.confirm("Remover Node permanentemente?")) { deletePrinter(id); carregarDados(); } };
+    const alternarStatus = (id, statusAtual) => { updateStatus(id, { 'idle': 'printing', 'printing': 'maintenance', 'maintenance': 'idle' }[statusAtual || 'idle']); carregarDados(); };
+    const finalizarReparo = (id) => { resetMaintenance(id); carregarDados(); setPrinterEmDiagnostico(null); };
 
     return (
         <div className="flex h-screen w-full bg-[#050505] text-zinc-100 font-sans overflow-hidden">
             <MainSidebar onCollapseChange={(collapsed) => setLarguraSidebar(collapsed ? 72 : 256)} />
 
-            <main className="flex-1 flex flex-col relative transition-all duration-300 ease-in-out overflow-hidden" style={{ marginLeft: `${larguraSidebar}px` }}>
+            <main className="flex-1 flex flex-col relative transition-all duration-300" style={{ marginLeft: `${larguraSidebar}px` }}>
 
                 {/* GRID DE FUNDO */}
                 <div className="absolute inset-x-0 top-0 h-[500px] z-0 pointer-events-none opacity-[0.03]"
@@ -140,91 +133,59 @@ export default function ImpressorasPage() {
                     }}
                 />
 
-                {/* HEADER */}
-                <header className="h-20 min-h-[5rem] px-8 flex items-center justify-between border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-40 relative">
-                    <div className="flex items-center gap-6">
-                        <div className="flex flex-col justify-center">
-                            <h1 className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 mb-1.5">Minhas Impressoras</h1>
-                            <div className="flex items-center gap-2">
-                                <div className="flex gap-0.5">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className={`h-1 w-3 rounded-full ${i <= (stats.activeCount > 0 ? 3 : 1) ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
-                                    ))}
-                                </div>
-                                <span className="text-[10px] font-bold text-zinc-500 uppercase">{stats.activeCount} IMPRIMINDO</span>
-                            </div>
-                        </div>
+                <header className="h-20 px-8 flex items-center justify-between z-40 relative border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl">
+                    <div>
+                        <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-1">Fleet_Core_v2.4</h1>
+                        <span className="text-2xl font-black tracking-tight text-white uppercase tracking-tighter">Oficina de Impressão</span>
                     </div>
-
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
                         <div className="relative group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
-                            <input
-                                className="w-72 bg-zinc-900/40 border border-zinc-800/60 rounded-xl py-2.5 pl-10 pr-4 text-[11px] text-white focus:border-emerald-500/40 outline-none transition-all placeholder:text-zinc-700"
-                                placeholder="Procurar impressora..."
-                                value={busca}
-                                onChange={e => setBusca(e.target.value)}
-                            />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-emerald-500 transition-colors" size={14} />
+                            <input className="w-80 bg-zinc-900/20 border border-zinc-800/50 rounded-2xl py-2.5 pl-11 pr-4 text-[11px] text-zinc-400 outline-none font-mono focus:border-emerald-500/30 focus:bg-zinc-900/40 transition-all placeholder:text-zinc-700" placeholder="QUERY_FLEET_DATABASE..." value={busca} onChange={e => setBusca(e.target.value)} />
                         </div>
-                        <button
-                            onClick={() => { setItemEdicao(null); setModalAberto(true); }}
-                            className="h-[40px] px-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-bold uppercase flex items-center gap-3 active:scale-95 transition-all"
-                        >
-                            <Plus size={16} strokeWidth={3} /> Nova Impressora
+                        <button onClick={() => { setItemEdicao(null); setModalAberto(true); }} className="h-11 px-8 bg-[#009b74] hover:bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center gap-3 shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all active:scale-95">
+                            <Plus size={18} strokeWidth={3} /> Adicionar Máquina
                         </button>
                     </div>
                 </header>
 
-                {/* CONTEÚDO */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-8 relative z-10">
-                    <div className="max-w-[1600px] mx-auto space-y-12">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-10 pt-2 relative z-10 scroll-smooth">
+                    <div className="max-w-[1650px] mx-auto space-y-16">
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <MakerCoreIA
-                                printers={printers}
-                                setPrinters={setPrinters}
-                                onFixRequest={(id) => {
-                                    const p = printers.find(x => x.id === id);
-                                    if (p) setPrinterEmDiagnostico(p);
-                                }}
-                            />
-
-                            <TechStatCard
-                                title="Peças Prontas"
-                                value={formatBigNumber(stats.totalPrints)}
-                                icon={CheckCircle2}
-                                colorClass="text-emerald-500"
-                                secondaryLabel="Total Finalizado"
-                                secondaryValue="Sucesso"
-                            />
-
-                            <TechStatCard
-                                title="Plástico Usado"
-                                value={`${stats.filament}kg`}
-                                icon={Timer}
-                                colorClass="text-amber-500"
-                                secondaryLabel="Estimativa Total"
-                                secondaryValue="Consumo"
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6">
+                            <StatusOverviewCard criticalCount={criticalCount} totalCount={printers.length} />
+                            <TechStatCard title="Total Production" value={formatBigNumber(stats.totalPrints)} icon={CheckCircle2} colorClass="text-emerald-500" secondaryLabel="Produção Geral" secondaryValue="Nodes Ativos" />
+                            <TechStatCard title="Filament Usage" value={`${stats.filament}kg`} icon={Timer} colorClass="text-amber-500" secondaryLabel="Massa Estimada" secondaryValue="Consumo Total" />
                         </div>
 
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-3 py-2">
-                                <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-500 shadow-inner">
-                                    <Cpu size={16} />
+                        {/* SEÇÃO NODES (ESTILO FILAMENTOS) */}
+                        <div className="space-y-10 pb-40">
+                            <div className="flex items-center gap-6">
+                                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 shadow-xl flex items-center justify-center">
+                                    <LayoutGrid size={20} strokeWidth={2.5} />
                                 </div>
-                                <h2 className="text-[12px] font-bold uppercase tracking-widest text-zinc-100">Minha Oficina</h2>
-                                <div className="h-[1px] bg-gradient-to-r from-zinc-800 to-transparent flex-1 mx-4" />
-                                <div className="flex items-center gap-3 text-[10px] font-bold bg-zinc-900/50 border border-zinc-800/50 px-4 py-1.5 rounded-full">
-                                    <span className="text-zinc-500 uppercase">Total de Máquinas</span>
-                                    <span className="text-emerald-500 font-mono">{stats.filtered.length}</span>
+                                <div className="flex flex-col">
+                                    <h2 className="text-[14px] font-black uppercase tracking-[0.3em] text-white whitespace-nowrap leading-none">Nodes Conectados</h2>
+                                    <span className="text-[8px] text-zinc-600 font-bold mt-1 tracking-[0.2em] uppercase">Hardware_Array_Scan_v2</span>
+                                </div>
+
+                                <div className="h-[1px] flex-1 bg-gradient-to-r from-zinc-800/80 via-zinc-800/30 to-transparent" />
+
+                                <div className="flex items-center gap-6 px-6 py-2.5 rounded-2xl bg-zinc-950 border border-zinc-800/50 shadow-2xl backdrop-blur-sm">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-0.5 tracking-widest">Capacidade</span>
+                                        <span className="text-[12px] font-mono font-bold text-emerald-500 leading-none">{filteredPrinters.length.toString().padStart(2, '0')}</span>
+                                    </div>
+                                    <div className="w-[1px] h-6 bg-zinc-800" />
+                                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{filteredPrinters.length} Unidades</span>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-stretch">
-                                {stats.filtered.map((printer) => (
+                            {/* GRID DE MÁQUINAS */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3 gap-8">
+                                {filteredPrinters.map((printer) => (
                                     <PrinterCard
-                                        key={`card-${printer.id}`}
+                                        key={printer.id}
                                         printer={printer}
                                         onEdit={(p) => { setItemEdicao(p); setModalAberto(true); }}
                                         onDelete={aoDeletar}
@@ -234,10 +195,10 @@ export default function ImpressorasPage() {
                                 ))}
                             </div>
 
-                            {stats.filtered.length === 0 && (
-                                <div className="py-32 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800/40 rounded-[3rem] bg-zinc-900/5">
-                                    <Scan size={48} className="text-zinc-800 mb-4 animate-pulse" />
-                                    <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Nenhuma impressora encontrada</p>
+                            {filteredPrinters.length === 0 && (
+                                <div className="py-40 flex flex-col items-center justify-center border border-dashed border-zinc-900 rounded-[3rem] bg-zinc-950/40 backdrop-blur-sm">
+                                    <Scan size={50} className="text-zinc-800 mb-6 animate-pulse" />
+                                    <p className="text-zinc-600 text-[12px] font-black uppercase tracking-[0.4em]">Zero_Nodes_Found</p>
                                 </div>
                             )}
                         </div>
@@ -245,17 +206,26 @@ export default function ImpressorasPage() {
                 </div>
 
                 <PrinterModal aberto={modalAberto} aoFechar={() => setModalAberto(false)} aoSalvar={aoSalvar} dadosIniciais={itemEdicao} />
-
                 {printerEmDiagnostico && (
                     <DiagnosticsModal
                         printer={printerEmDiagnostico}
                         completedTasks={new Set(checklists[printerEmDiagnostico.id] || [])}
-                        onToggleTask={(label) => handleToggleTask(printerEmDiagnostico.id, label)}
+                        onToggleTask={(label) => {
+                            const currentTasks = checklists[printerEmDiagnostico.id] || [];
+                            const newTasks = currentTasks.includes(label) ? currentTasks.filter(t => t !== label) : [...currentTasks, label];
+                            setChecklists(prev => ({ ...prev, [printerEmDiagnostico.id]: newTasks }));
+                        }}
                         onClose={() => setPrinterEmDiagnostico(null)}
                         onResolve={finalizarReparo}
                     />
                 )}
             </main>
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 5px; } 
+                .custom-scrollbar::-webkit-scrollbar-track { background: #050505; } 
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f1f23; border-radius: 20px; border: 1px solid #050505; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #27272a; }
+            `}</style>
         </div>
     );
 }

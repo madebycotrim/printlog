@@ -11,7 +11,7 @@ const AdSidebar = ({ slot }) => {
                 style={{ display: 'block', width: '160px', height: '600px' }}
                 data-ad-client="ca-pub-8379070221932445"
                 data-ad-slot={slot}
-                data-ad-format="vertical" // Força o formato em pé
+                data-ad-format="vertical"
                 data-full-width-responsive="false"></ins>
         </div>
     );

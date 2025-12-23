@@ -254,10 +254,14 @@ export default function CalculadoraPreview() {
 
             {/* CONTEÚDO CENTRAL DA CALCULADORA */}
             <div className="flex-1 flex flex-col max-w-6xl w-full px-4 py-8 relative z-10 mx-auto">
-
-                {/* GRID BACKGROUND */}
-                <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]"
-                    style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+                
+                {/* GRID DE FUNDO */}
+                <div className="fixed inset-x-0 top-0 h-[600px] z-0 pointer-events-none opacity-[0.03]"
+                    style={{
+                        backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+                        backgroundSize: '40px 40px',
+                        maskImage: 'linear-gradient(to bottom, black, transparent)'
+                    }}
                 />
 
                 <style>{`

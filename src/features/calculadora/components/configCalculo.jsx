@@ -26,7 +26,7 @@ const PortalTooltip = ({ text, targetRef, visible }) => {
 
     return createPortal(
         <div
-            className="fixed w-[200px] p-3 bg-zinc-950/95 backdrop-blur-md text-zinc-300 text-[10px] leading-relaxed rounded-xl border border-zinc-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-[9999] pointer-events-none animate-in fade-in duration-100"
+            className="fixed w-[200px] p-3 bg-zinc-950/95 backdrop-blur-md text-zinc-300 text-[10px] leading-relaxed rounded-xl border border-zinc-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] z-[9999] pointer-events-none "
             style={{ top: coords.top, left: coords.left, transform: 'translateY(-100%)' }}
         >
             <div className="flex gap-2.5 relative z-50">
@@ -199,7 +199,7 @@ export default function PainelConfiguracoesCalculo({
                         >
                             <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" />
                             {/* Dot indicador */}
-                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
                         </button>
                     )}
 
@@ -235,7 +235,7 @@ export default function PainelConfiguracoesCalculo({
 
             {/* ALERT DE BOAS-VINDAS */}
             {showWelcomeMessage && (
-                <div className="relative overflow-hidden bg-sky-500/5 border border-sky-500/10 rounded-xl p-4 flex gap-3 animate-in fade-in slide-in-from-top-2">
+                <div className="relative overflow-hidden bg-sky-500/5 border border-sky-500/10 rounded-xl p-4 flex gap-3">
                     <div className="absolute top-0 right-0 p-2">
                         <button onClick={() => setShowWelcomeMessage(false)} className="text-zinc-600 hover:text-zinc-400 transition-colors">
                             <X size={12} />

@@ -7,7 +7,7 @@ function gerarId() {
   return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 9);
 }
 
-/* Parse seguro para evitar crash se o localStorage for corrompido */
+/* Parse seguro para evitar crash */
 function parseSeguro(json) {
   try {
     return JSON.parse(json);
@@ -17,11 +17,9 @@ function parseSeguro(json) {
 }
 
 /* ========================================================
-   LER HISTÓRICO
-   Normaliza os dados para garantir que a UI sempre receba
-   client_id (snake_case) e data.inputs/results
+   FUNÇÃO: LER (getHistory / readHistory)
    ======================================================== */
-export function lerHistorico() {
+export function getHistory() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
@@ -29,17 +27,15 @@ export function lerHistorico() {
     const parsed = parseSeguro(raw);
     if (!Array.isArray(parsed)) return [];
 
-    // Normalização agressiva para garantir compatibilidade com versões anteriores
     return parsed.map((reg) => ({
-      // UI espera snake_case (client_id), mas aceita ler camelCase se existir
-      client_id: reg.client_id ?? reg.clientId ?? gerarId(),
-      label: reg.label ?? reg.name ?? "Sem Identificação",
-      created_at: reg.created_at ?? reg.createdAt ?? Date.now(),
-
-      // Padroniza estrutura de dados para inputs/results
+      id: reg.id ?? reg.client_id ?? gerarId(),
+      client_id: reg.client_id ?? reg.id,
+      label: reg.label ?? "Projeto sem nome",
+      timestamp: reg.timestamp ?? new Date(reg.created_at || Date.now()).toLocaleString(),
+      created_at: reg.created_at ?? Date.now(),
       data: {
-        inputs: reg.data?.inputs ?? reg.data?.entradas ?? {},
-        results: reg.data?.results ?? reg.data?.resultados ?? {},
+        entradas: reg.data?.inputs ?? reg.data?.entradas ?? {},
+        resultados: reg.data?.results ?? reg.data?.resultados ?? {},
       },
     }));
   } catch (err) {
@@ -49,13 +45,12 @@ export function lerHistorico() {
 }
 
 /* ========================================================
-   GRAVAR (SALVAR TUDO)
-   Usado internamente ou para deletar itens
+   FUNÇÃO: SOBRESCREVER (writeHistory / gravarHistorico)
    ======================================================== */
-export function gravarHistorico(arr = []) {
+export function writeHistory(novaLista = []) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    return arr;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(novaLista));
+    return novaLista;
   } catch (err) {
     console.error("Erro ao gravar histórico:", err);
     return [];
@@ -63,35 +58,26 @@ export function gravarHistorico(arr = []) {
 }
 
 /* ========================================================
-   ADICIONAR UM NOVO ITEM
-   Recebe { entradas, resultados } e salva como { inputs, results }
+   FUNÇÃO: ADICIONAR (addHistoryEntry)
    ======================================================== */
-export function adicionarAoHistorico({
-  label = "",
-  entradas = {},
-  resultados = {},
-} = {}) {
+export function addHistoryEntry({ label = "", entradas = {}, resultados = {} } = {}) {
   try {
-    const atual = lerHistorico();
+    const atual = getHistory();
 
     const novoRegistro = {
+      id: gerarId(),
       client_id: gerarId(),
       label: label || "Projeto sem nome",
       created_at: Date.now(),
+      timestamp: new Date().toLocaleString('pt-BR'),
       data: {
-        // Mapeia aqui para garantir que HistoryDrawer consiga ler
-        inputs: entradas,
-        results: resultados,
+        entradas: entradas,
+        resultados: resultados,
       },
     };
 
-    // Adiciona no topo da lista
-    const novaLista = [novoRegistro, ...atual];
-
-    // Limita a 100 itens para não estourar o localStorage
-    const listaLimitada = novaLista.slice(0, 100);
-
-    gravarHistorico(listaLimitada);
+    const novaLista = [novoRegistro, ...atual].slice(0, 100);
+    writeHistory(novaLista);
     return novoRegistro;
   } catch (err) {
     console.error("Erro ao adicionar ao histórico:", err);
@@ -100,9 +86,24 @@ export function adicionarAoHistorico({
 }
 
 /* ========================================================
-   LIMPAR
+   FUNÇÃO: REMOVER (removeHistoryEntry)
    ======================================================== */
-export function limparHistorico() {
+export function removeHistoryEntry(id) {
+    try {
+        const history = getHistory();
+        const updated = history.filter(item => item.id !== id && item.client_id !== id);
+        writeHistory(updated);
+        return true;
+    } catch (err) {
+        console.error("Erro ao remover item:", err);
+        return false;
+    }
+}
+
+/* ========================================================
+   FUNÇÃO: LIMPAR (clearHistory)
+   ======================================================== */
+export function clearHistory() {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (err) {
@@ -111,9 +112,17 @@ export function limparHistorico() {
 }
 
 /* ========================================================
-   ALIASES (Compatibilidade com importações antigas)
+   ALIASES PARA COMPATIBILIDADE TOTAL
+   Resolve os erros: 'readHistory', 'writeHistory', 'lerHistorico', etc.
    ======================================================== */
-export const readHistory = lerHistorico;
-export const writeHistory = gravarHistorico;
-export const addHistoryEntry = adicionarAoHistorico;
-export const clearHistory = limparHistorico;
+export const readHistory = getHistory;
+export const lerHistorico = getHistory;
+export const gravarHistorico = writeHistory;
+
+export const adicionarAoHistorico = addHistoryEntry;
+export const addHistoryRow = addHistoryEntry;
+
+export const limparHistorico = clearHistory;
+
+export const deleteHistoryEntry = removeHistoryEntry;
+export const removeHistoryRow = removeHistoryEntry;

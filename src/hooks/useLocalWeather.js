@@ -1,21 +1,28 @@
 // src/hooks/useLocalWeather.js
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export const useLocalWeather = () => {
     const [weather, setWeather] = useState({
-        temp: "--",
-        humidity: "--",
-        loading: false,
+        temp: null,
+        humidity: null,
+        loading: true,
         error: null
     });
 
-    const fetchWeather = () => {
+    const fetchWeather = useCallback(async () => {
         if (!navigator.geolocation) {
-            setWeather({ temp: "N/A", humidity: "N/A", loading: false, error: "unsupported" });
+            setWeather(prev => ({ 
+                ...prev, 
+                loading: false, 
+                error: "Geolocalização não suportada" 
+            }));
             return;
         }
 
-        setWeather(prev => ({ ...prev, loading: true }));
+        setWeather(prev => ({ ...prev, loading: true, error: null }));
+
+        // AbortController para cancelar a requisição se o componente for desmontado
+        const controller = new AbortController();
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
@@ -23,8 +30,12 @@ export const useLocalWeather = () => {
 
                 try {
                     const response = await fetch(
-                        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m`
+                        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m`,
+                        { signal: controller.signal }
                     );
+
+                    if (!response.ok) throw new Error("Falha na API");
+
                     const data = await response.json();
 
                     setWeather({
@@ -34,16 +45,35 @@ export const useLocalWeather = () => {
                         error: null
                     });
                 } catch (err) {
-                    setWeather({ temp: "Err", humidity: "Err", loading: false, error: "api" });
+                    if (err.name !== 'AbortError') {
+                        setWeather(prev => ({ 
+                            ...prev, 
+                            loading: false, 
+                            error: "Erro ao buscar dados do clima" 
+                        }));
+                    }
                 }
             },
-            () => {
-                // fallback se negar permissão
-                setWeather({ temp: 24, humidity: 45, loading: false, error: "denied" });
-            }
+            (geoError) => {
+                // Fallback amigável se o usuário negar ou houver erro de GPS
+                console.warn("Geolocalização negada ou falhou, usando padrão.");
+                setWeather({
+                    temp: 24,
+                    humidity: 45,
+                    loading: false,
+                    error: geoError.code === 1 ? "permission_denied" : "gps_error"
+                });
+            },
+            { timeout: 10000, enableHighAccuracy: false } // Opções de GPS
         );
-    };
+
+        return () => controller.abort();
+    }, []);
+
+    // Busca automaticamente ao montar o componente
+    useEffect(() => {
+        fetchWeather();
+    }, [fetchWeather]);
 
     return { ...weather, fetchWeather };
 };
- 

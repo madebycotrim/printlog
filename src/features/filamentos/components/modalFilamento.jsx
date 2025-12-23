@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { 
+import {
     X, Save, Palette, Layers,
     PaintbrushVertical, DollarSign,
     Box, Activity, ShieldCheck, Plus, Binary, Fingerprint
@@ -20,8 +20,8 @@ const INITIAL_FILAMENT_STATE = {
 };
 
 const CORES_MAIS_VENDIDAS = [
-    "#000000", "#ffffff", "#9ca3af", "#6b7280", "#ef4444", 
-    "#3b82f6", "#22c55e", "#eab308", "#f97316", "#d1d5db", 
+    "#000000", "#ffffff", "#9ca3af", "#6b7280", "#ef4444",
+    "#3b82f6", "#22c55e", "#eab308", "#f97316", "#d1d5db",
     "#facc15", "#78350f", "#8b5cf6", "#ec4899",
 ];
 
@@ -73,8 +73,8 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
     const marcasOptions = useMemo(() => [{
         group: "Marcas Comuns",
         items: [
-            "Voolt3D", "3D Lab", "Cliever", "Printalot", "GTMax3D", 
-            "F3D", "Creality", "Bambu Lab", "eSun", "Polymaker", 
+            "Voolt3D", "3D Lab", "Cliever", "Printalot", "GTMax3D",
+            "F3D", "Creality", "Bambu Lab", "eSun", "Polymaker",
             "Sunlu", "Overture", "Genérico"
         ].map(m => ({ value: m, label: m })),
     }], []);
@@ -82,7 +82,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
     const tiposOptions = useMemo(() => [{
         group: "Materiais",
         items: [
-            "PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "Nylon", 
+            "PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "Nylon",
             "PC", "Silk", "Mármore", "Madeira", "Fibra de Carbono", "Glow"
         ].map(t => ({ value: t, label: t })),
     }], []);

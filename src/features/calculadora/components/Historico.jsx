@@ -29,7 +29,7 @@ export default function GavetaHistorico({ aberta, aoFechar, aoRestaurar }) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={aoFechar} />
 
       {/* Drawer */}
-      <aside className="relative w-full max-w-md bg-[#09090b] border-l border-zinc-800 h-full shadow-2xl flex flex-col animate-slide-in">
+      <aside className="relative w-full max-w-md bg-[#09090b] border-l border-zinc-800 h-full shadow-2xl flex flex-col">
         
         {/* Header */}
         <div className="h-16 px-6 border-b border-zinc-800 flex justify-between items-center bg-[#09090b]">
