@@ -24,16 +24,16 @@ import useDebounce from "../hooks/useDebounce";
 import { calcularTudo } from "../features/calculadora/logic/calculator";
 import { getPrinters } from "../features/impressoras/logic/printers";
 
-// --- WRAPPER DE CARDS (CORRIGIDO PARA SELECTS) ---
+// --- WRAPPER DE CARDS (Design System Maker) ---
 const WrapperCard = ({ children, title, icon: Icon, step, className = "", zIndex = "" }) => (
   <div
-    style={{ zIndex: zIndex }} // Controla a prioridade para selects não ficarem por baixo
+    style={{ zIndex: zIndex }}
     className={`
       relative bg-[#09090b]/40 backdrop-blur-md
       border border-white/5 rounded-2xl p-5
       flex flex-col gap-5 hover:border-sky-500/20 
       transition-all duration-500 group shadow-2xl
-      overflow-visible 
+      overflow-visible animate-in fade-in zoom-in-95 duration-500
       ${className}
     `}
   >
@@ -60,7 +60,7 @@ export default function CalculadoraPage() {
   const [historicoAberto, setHistoricoAberto] = useState(false);
   const [needsConfig, setNeedsConfig] = useState(false);
 
-  // Estados dos Dados
+  // --- ESTADOS DOS INPUTS ---
   const [printers, setPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState(null);
   const [nomeProjeto, setNomeProjeto] = useState("");
@@ -88,6 +88,49 @@ export default function CalculadoraPage() {
   const [taxaSetup, setTaxaSetup] = useState("");
   const [consumoImpressoraKw, setConsumoImpressoraKw] = useState("");
 
+  // --- FUNÇÃO DE RESTAURAÇÃO (Puxa os dados para os inputs) ---
+  const restaurarDoHistorico = useCallback((registro) => {
+    if (!registro?.data?.entradas) return;
+    const e = registro.data.entradas;
+
+    // Preenche todos os campos
+    setNomeProjeto(registro.label || "");
+    setCustoRolo(e.custoRolo || "");
+    setPesoModelo(e.pesoModelo || "");
+    setQtdPecas(e.qtdPecas || "");
+    setSelectedFilamentId(e.selectedFilamentId || "manual");
+    setTempoImpressaoHoras(e.tempoImpressaoHoras || "");
+    setTempoImpressaoMinutos(e.tempoImpressaoMinutos || "");
+    setTempoTrabalhoHoras(e.tempoTrabalhoHoras || "");
+    setTempoTrabalhoMinutos(e.tempoTrabalhoMinutos || "");
+    setCanalVenda(e.canalVenda || "loja");
+    setTaxaMarketplace(e.taxaMarketplace || "0");
+    setCustoFixo(e.custoFixo || "");
+    setCustoEmbalagem(e.custoEmbalagem || "");
+    setCustoFrete(e.custoFrete || "");
+    setCustosExtras(e.custosExtras || "");
+    setMargemLucro(e.margemLucro || "");
+    setImposto(e.imposto || "");
+    setDesconto(e.desconto || "");
+    setTaxaFalha(e.taxaFalha || "");
+    
+    // Configurações Globais
+    if(e.custoKwh) setCustoKwh(e.custoKwh);
+    if(e.valorHoraHumana) setValorHoraHumana(e.valorHoraHumana);
+    if(e.custoHoraMaquina) setCustoHoraMaquina(e.custoHoraMaquina);
+    if(e.taxaSetup) setTaxaSetup(e.taxaSetup);
+    if(e.consumoImpressoraKw) setConsumoImpressoraKw(e.consumoImpressoraKw);
+
+    // Seleciona a impressora usada originalmente se ela ainda existir na lista
+    if (e.impressoraId) {
+        const match = printers.find(p => p.id === e.impressoraId);
+        if (match) setSelectedPrinter(match);
+    }
+
+    setHistoricoAberto(false);
+  }, [printers]);
+
+  // --- INICIALIZAÇÃO ---
   useEffect(() => {
     const list = getPrinters();
     setPrinters(list);
@@ -95,6 +138,13 @@ export default function CalculadoraPage() {
     const hasConfig = localStorage.getItem("layerforge_defaults");
     setNeedsConfig(!hasConfig);
   }, []);
+
+  useEffect(() => {
+    if (selectedPrinter) {
+      const powerWatts = Number(selectedPrinter.power) || Number(selectedPrinter.potencia) || 0;
+      if (powerWatts > 0) setConsumoImpressoraKw(String(powerWatts / 1000));
+    }
+  }, [selectedPrinter]);
 
   const handleCyclePrinter = useCallback(() => {
     if (printers.length <= 1) return;
@@ -112,6 +162,7 @@ export default function CalculadoraPage() {
     margemLucro, imposto, desconto, taxaFalha,
     custoKwh, valorHoraHumana, custoHoraMaquina, taxaSetup, consumoImpressoraKw,
     impressoraId: selectedPrinter?.id || "custom",
+    impressoraNome: selectedPrinter?.name || "Manual",
     selectedFilamentId
   }), [custoRolo, pesoModelo, qtdPecas, custosExtras, tempoImpressaoHoras, tempoImpressaoMinutos, tempoTrabalhoHoras, tempoTrabalhoMinutos, canalVenda, taxaMarketplace, custoFixo, custoEmbalagem, custoFrete, margemLucro, imposto, desconto, taxaFalha, custoKwh, valorHoraHumana, custoHoraMaquina, taxaSetup, consumoImpressoraKw, selectedPrinter, selectedFilamentId]);
 
@@ -153,7 +204,7 @@ export default function CalculadoraPage() {
           <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-10">
             <div className="max-w-7xl mx-auto">
               
-              <div className="relative mb-10 mt-8 ">
+              <div className="relative mb-10 mt-8">
                 <h2 className="text-[10px] font-black text-sky-500/50 uppercase tracking-[0.4em] mb-2 ml-1">Project_Identity</h2>
                 <input
                   id="nomeProjeto"
@@ -164,10 +215,8 @@ export default function CalculadoraPage() {
                 />
               </div>
 
-              {/* GRID COM CONTROLE DE Z-INDEX PARA SELECTS */}
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 
-                {/* COLUNA 01 (z-30: Prioridade máxima para o select de filamento) */}
                 <div className="flex flex-col gap-6 relative z-[30]">
                   <WrapperCard title="Material & Insumos" icon={Package} step="01" zIndex="50">
                     <CardMaterial custoRolo={custoRolo} setCustoRolo={setCustoRolo} pesoModelo={pesoModelo} setPesoModelo={setPesoModelo} qtdPecas={qtdPecas} setQtdPecas={setQtdPecas} selectedFilamentId={selectedFilamentId} setSelectedFilamentId={setSelectedFilamentId} />
@@ -177,7 +226,6 @@ export default function CalculadoraPage() {
                   </WrapperCard>
                 </div>
 
-                {/* COLUNA 02 (z-20) */}
                 <div className="flex flex-col gap-6 relative z-[20]">
                   <WrapperCard title="Canais de Venda" icon={ShoppingBag} step="03" zIndex="30">
                     <CardCanal canalVenda={canalVenda} setCanalVenda={setCanalVenda} taxaMarketplace={taxaMarketplace} setTaxaMarketplace={setTaxaMarketplace} custoFixo={custoFixo} setCustoFixo={setCustoFixo} />
@@ -187,7 +235,6 @@ export default function CalculadoraPage() {
                   </WrapperCard>
                 </div>
 
-                {/* COLUNA 03 (z-10) */}
                 <div className="flex flex-col gap-6 relative z-[10]">
                   <WrapperCard title="Financeiro" icon={Tag} step="05" zIndex="10">
                     <CardPreco margemLucro={margemLucro} setMargemLucro={setMargemLucro} imposto={imposto} setImposto={setImposto} desconto={desconto} setDesconto={setDesconto} taxaFalha={taxaFalha} setTaxaFalha={setTaxaFalha} />
@@ -200,7 +247,7 @@ export default function CalculadoraPage() {
           </div>
         </div>
 
-        {/* SIDEBAR DE RESULTADOS */}
+        {/* COLUNA DIREITA (SUMMARY) DE CIMA A BAIXO */}
         <aside className="w-[420px] h-full flex flex-col z-40 shrink-0">
           <div className="flex-1 flex flex-col bg-zinc-950/40 backdrop-blur-3xl border-l border-white/5 shadow-2xl overflow-hidden relative">
             
@@ -238,7 +285,11 @@ export default function CalculadoraPage() {
 
       </main>
 
-      <HistoryDrawer open={historicoAberto} onClose={() => setHistoricoAberto(false)} onRestore={() => {}} />
+      <HistoryDrawer 
+        open={historicoAberto} 
+        onClose={() => setHistoricoAberto(false)} 
+        onRestore={restaurarDoHistorico} 
+      />
 
     </div>
   );
