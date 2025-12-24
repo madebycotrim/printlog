@@ -1,15 +1,14 @@
-// src/features/filamentos/components/modalFilamento.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
     X, Save, Palette, Layers,
     PaintbrushVertical, DollarSign,
-    Box, Activity, ShieldCheck, Plus, Binary, Fingerprint
+    Box, Activity, Plus, Binary
 } from "lucide-react";
 
-import SearchSelect from "../../../components/SearchSelect";
+import { UnifiedInput } from "../../../components/formInputs"; // Seu componente unificado
 import SpoolSideView from "./roloFilamento";
 
-/* ---------- CONSTANTES ---------- */
+/* ---------- CONSTANTES E CONFIGURAÇÕES ---------- */
 const INITIAL_FILAMENT_STATE = {
     brand: "",
     name: "",
@@ -26,37 +25,19 @@ const CORES_MAIS_VENDIDAS = [
     "#facc15", "#78350f", "#8b5cf6", "#ec4899",
 ];
 
+const CONFIG = {
+    marca: { label: "Marca / Fabricante", type: "select", searchable: true, placeholder: "Ex: Voolt3D, 3D Lab..." },
+    tipo: { label: "Tipo de Material", type: "select" },
+    nome: { label: "Nome ou apelido do rolo", icon: PaintbrushVertical, placeholder: "Ex: PLA Preto - Aberto em Jan/25", type: "text" },
+    preco: { label: "Preço pago no rolo", icon: DollarSign, suffix: "R$", placeholder: "0.00", type: "number" },
+    peso: { label: "Peso Líquido", icon: Layers, suffix: "GRAMAS", placeholder: "1000", type: "number" }
+};
+
 const parseNumeric = (v) => {
     if (v === "" || v === undefined) return 0;
     const cleaned = String(v).replace(',', '.');
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
-};
-
-/* ---------- COMPONENTE DE INPUT ---------- */
-const TechInput = ({ label, icon: Icon, value, onChange, placeholder, suffix, sectionColor, type = "text" }) => {
-    const [focused, setFocused] = useState(false);
-    return (
-        <div className="space-y-1 w-full group">
-            <label className="text-[8px] font-bold uppercase tracking-widest text-zinc-500 ml-1 group-hover:text-zinc-300">
-                {label}
-            </label>
-            <div
-                className={`relative rounded-lg border transition-all duration-300 bg-black/40 ${focused ? "ring-1" : "border-zinc-800"}`}
-                style={focused ? { borderColor: sectionColor || '#0ea5e9', boxShadow: `0 0 10px ${sectionColor || '#0ea5e9'}20` } : {}}
-            >
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 py-0.5 pr-2 border-r border-zinc-800">
-                    <Icon size={11} className={focused ? "text-sky-500" : "text-zinc-600"} style={{ color: focused ? sectionColor : '' }} />
-                </div>
-                <input
-                    type={type} value={value} onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                    className="w-full bg-transparent border-none rounded-lg pl-10 pr-10 py-2 text-[11px] text-zinc-100 outline-none font-bold placeholder:text-zinc-800"
-                />
-                {suffix && <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[8px] font-bold text-zinc-700 uppercase">{suffix}</span>}
-            </div>
-        </div>
-    );
 };
 
 export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosIniciais }) {
@@ -71,21 +52,15 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         }
     }, [aberto, dadosIniciais]);
 
+    /* --- OPÇÕES DOS SELECTS --- */
     const marcasOptions = useMemo(() => [{
         group: "Marcas conhecidas",
-        items: [
-            "Voolt3D", "3D Lab", "Cliever", "Printalot", "GTMax3D",
-            "F3D", "Creality", "Bambu Lab", "eSun", "Polymaker",
-            "Sunlu", "Overture", "Outra"
-        ].map(m => ({ value: m, label: m })),
+        items: ["Voolt3D", "3D Lab", "Cliever", "Printalot", "GTMax3D", "F3D", "Creality", "Bambu Lab", "eSun", "Polymaker", "Sunlu", "Overture", "Outra"].map(m => ({ value: m, label: m })),
     }], []);
 
     const tiposOptions = useMemo(() => [{
         group: "Tipos de filamento",
-        items: [
-            "PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "Nylon",
-            "PC", "Silk", "Mármore", "Madeira", "Fibra de Carbono", "Glow"
-        ].map(t => ({ value: t, label: t })),
+        items: ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "Nylon", "PC", "Silk", "Mármore", "Madeira", "Fibra de Carbono", "Glow"].map(t => ({ value: t, label: t })),
     }], []);
 
     const custoG = useMemo(() => {
@@ -110,78 +85,58 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
 
             <div className="relative bg-[#080808] border border-zinc-800 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh]">
 
-                {/* --- LADO ESQUERDO: PREVIEW DO CARRETEL --- */}
+                {/* --- LADO ESQUERDO: PREVIEW --- */}
                 <div className="w-full md:w-[280px] bg-black/40 border-b md:border-b-0 md:border-r border-zinc-800/60 p-6 flex flex-col items-center justify-between shrink-0">
-                    <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[80px] opacity-10 transition-all duration-1000" style={{ backgroundColor: form.color }} />
-
-                    <div className="relative z-10 w-full">
+                    <div className="flex flex-col items-center w-full">
                         <div className="flex items-center gap-2 mb-4 justify-center">
                             <Activity size={12} className="text-emerald-500" />
-                            <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Visual do Rolo</span>
+                            <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Preview do Rolo</span>
                         </div>
-                        <div className="flex justify-center py-2">
-                            <SpoolSideView color={form.color} percent={100} size={130} />
-                        </div>
+                        <SpoolSideView color={form.color} percent={100} size={130} />
                     </div>
 
-                    <div className="relative z-10 w-full space-y-4">
+                    <div className="w-full space-y-4 relative z-10">
                         <div className="text-center">
-                            <h3 className="text-base font-bold text-white uppercase truncate mb-1">{form.name || "Filamento sem nome"}</h3>
+                            <h3 className="text-base font-bold text-white uppercase truncate mb-1">{form.name || "Sem nome"}</h3>
                             <div className="flex items-center justify-center gap-2">
                                 <span className="text-[7px] font-bold bg-zinc-900 text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded uppercase">{form.brand || "Marca?"}</span>
                                 <span className="text-[7px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 px-1.5 py-0.5 rounded uppercase">{form.type}</span>
                             </div>
                         </div>
                         <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-3 backdrop-blur-md">
-                            <span className="text-[7px] font-bold text-zinc-600 uppercase block mb-1">Preço por grama</span>
+                            <span className="text-[7px] font-bold text-zinc-600 uppercase block mb-1">Custo/g</span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-lg font-mono font-bold text-emerald-500">R$ {custoG}</span>
-                                <span className="text-[8px] font-bold text-zinc-700 uppercase">/g</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* --- LADO DIREITO: CADASTRO --- */}
+                {/* --- LADO DIREITO: FORMULÁRIO --- */}
                 <div className="flex-1 flex flex-col">
                     <header className="px-6 py-4 border-b border-white/5 bg-zinc-900/20 flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-black border border-zinc-800 text-sky-500"><Box size={16} /></div>
-                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">{dadosIniciais ? "Editar Informações" : "Adicionar novo rolo ao estoque"}</h3>
+                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">Cadastro de Material</h3>
                         </div>
-                        <button onClick={aoFechar} className="p-1 text-zinc-600 hover:text-white transition-colors"><X size={18} /></button>
+                        <button onClick={aoFechar} className="p-1 text-zinc-600 hover:text-white"><X size={18} /></button>
                     </header>
 
                     <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
 
-                        {/* SEÇÃO 01: ORIGEM */}
+                        {/* SEÇÃO 01: MARCA E TIPO (SELECTS UNIFICADOS) */}
                         <section className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-bold text-sky-500 font-mono">[ 01 ]</span>
-                                <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Marca e Material</h4>
-                                <div className="h-px bg-zinc-800/50 flex-1" />
-                            </div>
+                            <div className="flex items-center gap-3"><span className="text-[10px] font-bold text-sky-500 font-mono">[01]</span><h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Origem</h4><div className="h-px bg-zinc-800/50 flex-1" /></div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Marca / Fabricante</label>
-                                    <SearchSelect value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} searchable options={marcasOptions} placeholder="Ex: Voolt3D, 3D Lab..." />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Tipo de Material</label>
-                                    <SearchSelect value={form.type} onChange={(v) => setForm({ ...form, type: v })} options={tiposOptions} />
-                                </div>
+                                <UnifiedInput {...CONFIG.marca} options={marcasOptions} value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} />
+                                <UnifiedInput {...CONFIG.tipo} options={tiposOptions} value={form.type} onChange={(v) => setForm({ ...form, type: v })} />
                             </div>
                         </section>
 
-                        {/* SEÇÃO 02: IDENTIFICAÇÃO VISUAL */}
+                        {/* SEÇÃO 02: COR E NOME */}
                         <section className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-bold text-emerald-500 font-mono">[ 02 ]</span>
-                                <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Cor e Identificação</h4>
-                                <div className="h-px bg-zinc-800/50 flex-1" />
-                            </div>
-                            <div className="p-4 bg-zinc-900/20 border border-zinc-800/60 rounded-xl space-y-4">
+                            <div className="flex items-center gap-3"><span className="text-[10px] font-bold text-emerald-500 font-mono">[02]</span><h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Visual</h4><div className="h-px bg-zinc-800/50 flex-1" /></div>
+                            <div className="p-4 bg-zinc-900/20 border border-zinc-800/60 rounded-xl space-y-5">
                                 <div className="flex flex-wrap gap-2.5">
                                     {CORES_MAIS_VENDIDAS.map(c => (
                                         <button key={c} onClick={() => setForm(prev => ({ ...prev, color: c }))}
@@ -190,35 +145,31 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                                         />
                                     ))}
                                     <div className="relative w-6 h-6">
-                                        <div className={`w-full h-full rounded-md border flex items-center justify-center transition-all ${!isPresetColor ? "border-white scale-110" : "border-zinc-700 opacity-60"}`}
-                                            style={{ background: !isPresetColor ? form.color : 'conic-gradient(from 180deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)' }}>
-                                            {isPresetColor && <Plus size={10} className="text-white mix-blend-difference" />}
+                                        <div className={`w-full h-full rounded-md border flex items-center justify-center ${!isPresetColor ? "border-white scale-110" : "border-zinc-700 opacity-60"}`}
+                                            style={{ background: !isPresetColor ? form.color : 'conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)' }}>
+                                            <Plus size={10} className="text-white mix-blend-difference" />
                                         </div>
                                         <input type="color" value={form.color} onChange={(e) => setForm(prev => ({ ...prev, color: e.target.value }))} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     </div>
                                 </div>
-                                <TechInput label="Nome ou apelido do rolo" icon={PaintbrushVertical} placeholder="Ex: PLA Preto - Aberto em Jan/25" value={form.name} onChange={(v) => setForm({ ...form, name: v })} sectionColor={form.color} />
+                                <UnifiedInput {...CONFIG.nome} value={form.name} onChange={(v) => setForm({ ...form, name: v.target.value })} isLucro={!isPresetColor} />
                             </div>
                         </section>
 
                         {/* SEÇÃO 03: DADOS TÉCNICOS */}
                         <section className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-bold text-amber-500 font-mono">[ 03 ]</span>
-                                <h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Preço e Peso</h4>
-                                <div className="h-px bg-zinc-800/50 flex-1" />
-                            </div>
+                            <div className="flex items-center gap-3"><span className="text-[10px] font-bold text-amber-500 font-mono">[03]</span><h4 className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Financeiro</h4><div className="h-px bg-zinc-800/50 flex-1" /></div>
                             <div className="grid grid-cols-2 gap-4">
-                                <TechInput label="Preço pago no rolo" icon={DollarSign} value={form.price} onChange={(v) => setForm({ ...form, price: v })} suffix="R$" placeholder="0.00" sectionColor="#10b981" />
-                                <TechInput label="Peso Líquido" icon={Layers} value={form.weightTotal} onChange={(v) => setForm({ ...form, weightTotal: v })} suffix="GRAMAS" placeholder="1000" sectionColor="#f59e0b" />
+                                <UnifiedInput {...CONFIG.preco} value={form.price} onChange={(v) => setForm({ ...form, price: v.target.value })} />
+                                <UnifiedInput {...CONFIG.peso} value={form.weightTotal} onChange={(v) => setForm({ ...form, weightTotal: v.target.value })} />
                             </div>
                         </section>
                     </div>
 
-                    <footer className="p-6 border-t border-white/5 bg-zinc-950/50 flex gap-3 mt-auto">
+                    <footer className="p-6 border-t border-white/5 bg-zinc-950/50 flex gap-3">
                         <button onClick={aoFechar} className="flex-1 py-2.5 rounded-lg border border-zinc-800 text-[9px] font-bold uppercase text-zinc-600 hover:text-white transition-all">Cancelar</button>
-                        <button disabled={!isValid} onClick={handleSalvar} className={`flex-[2] py-2.5 rounded-lg text-[9px] font-bold uppercase flex items-center justify-center gap-2 transition-all ${isValid ? "bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-900/20" : "bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800"}`}>
-                            <Box size={14} /> {dadosIniciais ? "Salvar alterações" : "Confirmar entrada no estoque"}
+                        <button disabled={!isValid} onClick={handleSalvar} className={`flex-[2] py-2.5 rounded-lg text-[9px] font-bold uppercase flex items-center justify-center gap-2 transition-all ${isValid ? "bg-sky-600 hover:bg-sky-500 text-white" : "bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800"}`}>
+                             {dadosIniciais ? "Salvar alterações" : "Confirmar entrada"}
                         </button>
                     </footer>
                 </div>

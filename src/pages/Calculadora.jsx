@@ -12,11 +12,11 @@ import HistoryDrawer from "../features/calculadora/components/Historico.jsx";
 import PainelConfiguracoesCalculo from "../features/calculadora/components/configCalculo.jsx";
 
 // --- CARDS DE ENTRADA (INPUTS) ---
-import CardMaterial from "../features/calculadora/components/cards/material";
+import CardMaterial from "../features/calculadora/components/cards/materiaPrima.jsx";
 import CardTempo from "../features/calculadora/components/cards/tempo";
-import CardCanal from "../features/calculadora/components/cards/canalVendas";
-import CardEmbalagem from "../features/calculadora/components/cards/logisticos.jsx";
-import CardPreco from "../features/calculadora/components/cards/precificacao.jsx";
+import CardCanal from "../features/calculadora/components/cards/taxasVenda.jsx";
+import CardEmbalagem from "../features/calculadora/components/cards/custos.jsx";
+import CardPreco from "../features/calculadora/components/cards/lucrosDescontos.jsx";
 import MakersHubWidget from "../features/calculadora/components/cards/makerHub.jsx";
 
 // --- LÓGICA E HOOKS ---
@@ -84,11 +84,12 @@ export default function CalculadoraPage() {
   const [taxaMarketplaceFixa, setTaxaMarketplaceFixa] = useState(""); 
   const [custoEmbalagem, setCustoEmbalagem] = useState("");
   const [custoFrete, setCustoFrete] = useState("");
-  const [custosExtras, setCustosExtras] = useState("");
+const [custosExtras, setCustosExtras] = useState([{ nome: "", valor: "" }]);
   const [margemLucro, setMargemLucro] = useState("");
   const [imposto, setImposto] = useState("");
   const [desconto, setDesconto] = useState("");
   const [taxaFalha, setTaxaFalha] = useState("");
+  
 
   // Configurações Globais da Oficina
   const [custoKwh, setCustoKwh] = useState("");

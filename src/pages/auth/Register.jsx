@@ -6,11 +6,99 @@ import {
     User, Package, Send, Lock, Eye, EyeOff,
     KeyRound, AlertTriangle, ShieldCheck,
     Zap, Fingerprint, Layout,
-    Layers, Cpu, BoxSelect, Activity
+    Layers, Cpu, BoxSelect, Activity, X // Adicionei o X aqui
 } from 'lucide-react';
 import logo from '../../assets/logo-branca.png';
 
-// --- COMPONENTE: UI ---
+// --- CONTEÚDOS LEGAIS ---
+
+const TERMS_CONTENT = (
+    <div className="space-y-6">
+        <section className="space-y-2">
+            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                <Database size={14} className="text-sky-500" />
+                1. O que é o PrintLog
+            </h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+                O PrintLog é um sistema de gestão feito para makers e donos de
+                farms de impressão 3D que precisam organizar custos, processos e o histórico
+                de produção.
+            </p>
+        </section>
+        <section className="space-y-2">
+            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                <Cpu size={14} className="text-sky-500" />
+                2. Melhorias e Evolução
+            </h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+                O PrintLog está sempre recebendo atualizações. Podemos ajustar ou criar
+                novas funções para deixar o sistema mais útil para a sua produção.
+            </p>
+        </section>
+        <section className="space-y-2">
+            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                <AlertTriangle size={14} className="text-sky-500" />
+                3. Uso Correto
+            </h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+                O uso deve ser manual e focado na gestão da sua farm. Comportamentos abusivos podem gerar suspensão.
+            </p>
+        </section>
+    </div>
+);
+
+const PRIVACY_CONTENT = (
+    <div className="space-y-6">
+        <div className="flex items-center gap-3 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+            <ShieldCheck className="text-emerald-500" size={24} />
+            <div>
+                <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Segurança em primeiro lugar</p>
+                <p className="text-xs text-zinc-500">Sua farm, seus dados e sua privacidade.</p>
+            </div>
+        </div>
+        <section className="space-y-2">
+            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                <Lock size={14} className="text-sky-500" />
+                1. Dados Protegidos
+            </h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+                Seus custos e margens de lucro são protegidos com criptografia antes de entrarem no nosso banco de dados.
+            </p>
+        </section>
+        <section className="space-y-2">
+            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                <EyeOff size={14} className="text-sky-500" />
+                2. Seus dados são só seus
+            </h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+                O PrintLog não vende e não repassa seus dados para ninguém.
+            </p>
+        </section>
+    </div>
+);
+
+// --- COMPONENTE: MODAL ---
+
+const LegalModal = ({ isOpen, onClose, title, content }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-xl bg-[#0a0a0c] border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#0d0d0f]">
+                    <h3 className="text-lg font-bold text-white uppercase italic tracking-tighter">{title}</h3>
+                    <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={20} /></button>
+                </div>
+                <div className="p-8 overflow-y-auto">{content}</div>
+                <div className="p-6 border-t border-white/5 bg-[#0d0d0f] flex justify-end">
+                    <button onClick={onClose} className="px-6 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-sky-500 hover:text-white transition-all">Entendido</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- COMPONENTE: UI (Badges e Buttons) ---
 
 const Badge = ({ icon: Icon, label, color = "sky" }) => {
     const variants = {
@@ -93,7 +181,6 @@ export default function RegisterPage() {
     const [isSent, setIsSent] = useState(false);
     const [pendingVerification, setPendingVerification] = useState(false);
     const [code, setCode] = useState("");
-
     const [regMode, setRegMode] = useState('magic');
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
@@ -101,6 +188,9 @@ export default function RegisterPage() {
     const [name, setName] = useState("");
     const [error, setError] = useState("");
     const [, setLocation] = useLocation();
+
+    // ESTADO DO MODAL
+    const [modal, setModal] = useState({ isOpen: false, title: '', content: null });
 
     useEffect(() => {
         if (isLoaded && isSignedIn) setLocation("/dashboard");
@@ -152,6 +242,15 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen bg-[#050506] text-zinc-100 font-sans flex overflow-hidden">
+
+            {/* COMPONENTE MODAL CHAMADO AQUI */}
+            <LegalModal
+                isOpen={modal.isOpen}
+                title={modal.title}
+                content={modal.content}
+                onClose={() => setModal({ ...modal, isOpen: false })}
+            />
+
             <div className="flex-1 flex flex-col justify-center items-center p-8 relative z-10 w-full lg:w-1/2">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/5 blur-[120px] pointer-events-none" />
 
@@ -282,6 +381,24 @@ export default function RegisterPage() {
                         <p className="text-center text-zinc-500 text-sm">
                             Já tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
                         </p>
+
+                        {/* TEXTO DE CONCORDÂNCIA ATUALIZADO PARA ABRIR MODAL */}
+                        <p className="text-[10px] text-zinc-600 leading-relaxed uppercase tracking-wider max-w-[280px] mx-auto text-center">
+                            Ao criar sua conta, você concorda com nossos <br />
+                            <button
+                                onClick={() => setModal({ isOpen: true, title: 'Termos de Uso', content: TERMS_CONTENT })}
+                                className="text-zinc-400 hover:text-sky-500 underline decoration-zinc-800 underline-offset-4 transition-colors"
+                            >
+                                Termos de Uso
+                            </button>
+                            {' '} e {' '}
+                            <button
+                                onClick={() => setModal({ isOpen: true, title: 'Política de Privacidade', content: PRIVACY_CONTENT })}
+                                className="text-zinc-400 hover:text-sky-500 underline decoration-zinc-800 underline-offset-4 transition-colors"
+                            >
+                                Privacidade
+                            </button>.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -290,7 +407,7 @@ export default function RegisterPage() {
             <div className="hidden lg:flex flex-1 bg-[#09090b] border-l border-white/5 relative items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-500/10 blur-[180px] rounded-full" />
-                
+
                 <div className="relative z-10 scale-110">
                     <div className="translate-x-[-30px]"><InventoryWidget /></div>
 

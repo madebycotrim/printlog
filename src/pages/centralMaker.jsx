@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-    Search, ChevronRight, Settings, Layers, DollarSign,
+    Search, ChevronRight, Settings, DollarSign,
     Mail, Copy, CheckCircle2, X, ShieldCheck,
-    Terminal, Box, Activity, Camera,
-    Wrench, FlaskConical, Gauge, BoxSelect, Hash, Cpu, Zap,
-    Flame, MousePointer2, Share2, Ruler, Info
+    Terminal, Activity, Camera,
+    Wrench, FlaskConical, BoxSelect, Cpu, Zap,
+    Flame, MousePointer2, Clock
 } from 'lucide-react';
 
 import MainSidebar from "../components/MainSidebar";
@@ -282,7 +282,8 @@ export default function WikiPage() {
                     <p className="text-[8px] font-black text-zinc-800 uppercase tracking-[0.8em]">P R I N T L O G &nbsp; O F I C I N A &nbsp; T É C N I C A</p>
                 </footer>
             </main>
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .custom-scrollbar::-webkit-scrollbar { width: 5px; } 
                 .custom-scrollbar::-webkit-scrollbar-track { background: #050505; } 
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f1f23; border-radius: 20px; border: 1px solid #050505; }
