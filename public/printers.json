@@ -1,0 +1,275 @@
+[
+  {
+    "brand": "Creality",
+    "model": "Ender-3",
+    "name": "Creality Ender-3 Classic",
+    "consumoKw": 0.09,
+    "type": "FDM"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V2 Neo",
+    "name": "Creality Ender-3 V2 Neo",
+    "consumoKw": 0.10,
+    "type": "FDM"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 SE",
+    "name": "Creality Ender-3 V3 SE",
+    "consumoKw": 0.11,
+    "type": "FDM"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 KE",
+    "name": "Creality Ender-3 V3 KE",
+    "consumoKw": 0.11,
+    "type": "FDM"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3",
+    "name": "Creality Ender-3 V3 CoreXZ",
+    "consumoKw": 0.13,
+    "type": "CoreXZ"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-5 S1",
+    "name": "Creality Ender-5 S1",
+    "consumoKw": 0.15,
+    "type": "FDM (Cubic)"
+  },
+  {
+    "brand": "Creality",
+    "model": "K1C",
+    "name": "Creality K1C",
+    "consumoKw": 0.15,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Creality",
+    "model": "K1 Max",
+    "name": "Creality K1 Max",
+    "consumoKw": 0.16,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot Mage 8K",
+    "name": "Creality Halot Mage 8K",
+    "consumoKw": 0.08,
+    "type": "Resina"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "A1 Mini",
+    "name": "Bambu Lab A1 Mini",
+    "consumoKw": 0.08,
+    "type": "Bedslinger"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "A1",
+    "name": "Bambu Lab A1",
+    "consumoKw": 0.10,
+    "type": "Bedslinger"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "P1S",
+    "name": "Bambu Lab P1S",
+    "consumoKw": 0.13,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "X1 Carbon",
+    "name": "Bambu Lab X1 Carbon",
+    "consumoKw": 0.16,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4 Pro",
+    "name": "Elegoo Neptune 4 Pro",
+    "consumoKw": 0.12,
+    "type": "FDM"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4 Plus",
+    "name": "Elegoo Neptune 4 Plus",
+    "consumoKw": 0.18,
+    "type": "FDM (Large)"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4 Max",
+    "name": "Elegoo Neptune 4 Max",
+    "consumoKw": 0.22,
+    "type": "FDM (Large)"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 4",
+    "name": "Elegoo Mars 4",
+    "consumoKw": 0.06,
+    "type": "Resina"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Saturn 3 Ultra",
+    "name": "Elegoo Saturn 3 Ultra 12K",
+    "consumoKw": 0.09,
+    "type": "Resina"
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Kobra 2 Neo",
+    "name": "Anycubic Kobra 2 Neo",
+    "consumoKw": 0.10,
+    "type": "FDM"
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Kobra 2 Plus",
+    "name": "Anycubic Kobra 2 Plus",
+    "consumoKw": 0.16,
+    "type": "FDM"
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Photon Mono M5s",
+    "name": "Anycubic Photon Mono M5s",
+    "consumoKw": 0.07,
+    "type": "Resina"
+  },
+  {
+    "brand": "Artillery",
+    "model": "Sidewinder X4 Pro",
+    "name": "Artillery Sidewinder X4 Pro",
+    "consumoKw": 0.13,
+    "type": "FDM"
+  },
+  {
+    "brand": "Artillery",
+    "model": "Genius Pro",
+    "name": "Artillery Genius Pro",
+    "consumoKw": 0.10,
+    "type": "FDM"
+  },
+  {
+    "brand": "Kingroon",
+    "model": "KP3S Pro V2",
+    "name": "Kingroon KP3S Pro V2",
+    "consumoKw": 0.09,
+    "type": "FDM"
+  },
+  {
+    "brand": "Kingroon",
+    "model": "KLP1",
+    "name": "Kingroon KLP1",
+    "consumoKw": 0.14,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "Q1 Pro",
+    "name": "Qidi Tech Q1 Pro",
+    "consumoKw": 0.15,
+    "type": "CoreXY Enclosed"
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "X-Max 3",
+    "name": "Qidi Tech X-Max 3",
+    "consumoKw": 0.25,
+    "type": "CoreXY Enclosed"
+  },
+  {
+    "brand": "Sovol",
+    "model": "SV06 Plus",
+    "name": "Sovol SV06 Plus",
+    "consumoKw": 0.14,
+    "type": "FDM"
+  },
+  {
+    "brand": "Flashforge",
+    "model": "Adventurer 5M Pro",
+    "name": "Flashforge Adventurer 5M Pro",
+    "consumoKw": 0.14,
+    "type": "CoreXY Enclosed"
+  },
+  {
+    "brand": "Flying Bear",
+    "model": "Ghost 6",
+    "name": "Flying Bear Ghost 6",
+    "consumoKw": 0.12,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Two Trees",
+    "model": "SK1",
+    "name": "Two Trees SK1",
+    "consumoKw": 0.15,
+    "type": "CoreXY"
+  },
+  {
+    "brand": "Prusa",
+    "model": "MK4",
+    "name": "Prusa MK4",
+    "consumoKw": 0.14,
+    "type": "FDM"
+  },
+  {
+    "brand": "Sethi3D",
+    "model": "S3",
+    "name": "Sethi3D S3 (Nacional)",
+    "consumoKw": 0.15,
+    "type": "FDM Profissional"
+  },
+  {
+    "brand": "Sethi3D",
+    "model": "AiP",
+    "name": "Sethi3D AiP (Nacional)",
+    "consumoKw": 0.13,
+    "type": "FDM Profissional"
+  },
+  {
+    "brand": "GTMax3D",
+    "model": "Stratos S2",
+    "name": "GTMax3D Stratos S2 (Nacional)",
+    "consumoKw": 0.16,
+    "type": "CoreXY Profissional"
+  },
+  {
+    "brand": "GTMax3D",
+    "model": "Core A1",
+    "name": "GTMax3D Core A1 (Nacional)",
+    "consumoKw": 0.15,
+    "type": "CoreXY Profissional"
+  },
+  {
+    "brand": "Phrozen",
+    "model": "Sonic Mini 8K S",
+    "name": "Phrozen Sonic Mini 8K S",
+    "consumoKw": 0.05,
+    "type": "Resina"
+  },
+  {
+    "brand": "Voxelab",
+    "model": "Aquila X2",
+    "name": "Voxelab Aquila X2",
+    "consumoKw": 0.10,
+    "type": "FDM"
+  },
+  {
+    "brand": "Tronxy",
+    "model": "X5SA",
+    "name": "Tronxy X5SA",
+    "consumoKw": 0.18,
+    "type": "CoreXY DIY"
+  }
+]
