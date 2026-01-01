@@ -15,19 +15,19 @@ export async function onRequest(context) {
 
     if (method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-    if (!env.CLERK_SECRET_KEY || !env.CLERK_PUBLISHABLE_KEY) {
-        return Response.json({ error: "Configuração de API Clerk ausente." }, { status: 500, headers: corsHeaders });
-    }
-
     try {
-        const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY, publishableKey: env.CLERK_PUBLISHABLE_KEY });
+        const clerk = createClerkClient({ 
+            secretKey: env.CLERK_SECRET_KEY, 
+            publishableKey: env.CLERK_PUBLISHABLE_KEY 
+        });
+
         const authRequest = await clerk.authenticateRequest(request);
         if (!authRequest.isSignedIn) return Response.json({ error: "Não autorizado" }, { status: 401, headers: corsHeaders });
 
         const userId = authRequest.toAuth().userId;
         const db = env.DB;
 
-        // --- AUTO-MIGRAÇÃO ---
+        // --- MANUTENÇÃO AUTOMÁTICA ---
         await db.batch([
             db.prepare(`CREATE TABLE IF NOT EXISTS filaments (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, material TEXT, cor_hex TEXT, peso_total REAL, peso_atual REAL, preco REAL, data_abertura TEXT, favorito INTEGER DEFAULT 0)`),
             db.prepare(`CREATE TABLE IF NOT EXISTS printers (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, modelo TEXT, status TEXT DEFAULT 'idle', potencia REAL DEFAULT 0, preco REAL DEFAULT 0, rendimento_total REAL DEFAULT 0, horas_totais REAL DEFAULT 0, ultima_manutencao_hora REAL DEFAULT 0, intervalo_manutencao REAL DEFAULT 300, historico TEXT)`),
@@ -35,22 +35,27 @@ export async function onRequest(context) {
             db.prepare(`CREATE TABLE IF NOT EXISTS projects (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, label TEXT NOT NULL, data TEXT)`)
         ]);
 
-        // Fix de colunas faltantes (created_at)
-        for (const t of ['filaments', 'printers', 'projects']) {
-            try { await db.prepare(`ALTER TABLE ${t} ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`).run(); } catch(e){}
-        }
-
         // --- ROTEAMENTO ---
 
         // PROJECTS
         if (entity === 'projects') {
             if (method === 'GET') {
-                const { results } = await db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").bind(userId).all();
-                const formatted = results.map(r => ({
+                let results;
+                try {
+                    // Tenta ordenar por created_at
+                    const query = await db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").bind(userId).all();
+                    results = query.results;
+                } catch (e) {
+                    // Fallback caso a coluna ainda não tenha sido criada manualmente
+                    const query = await db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY id DESC").bind(userId).all();
+                    results = query.results;
+                }
+
+                const formatted = (results || []).map(r => ({
                     id: r.id,
                     label: r.label || r.nome || "Sem Nome",
                     data: JSON.parse(r.data || r.payload || "{}"),
-                    created_at: r.created_at
+                    created_at: r.created_at || ""
                 }));
                 return Response.json(formatted, { headers: corsHeaders });
             }
@@ -74,8 +79,8 @@ export async function onRequest(context) {
         // PRINTERS
         if (entity === 'printers' || entity === 'impressoras') {
             if (method === 'GET') {
-                const { results } = await db.prepare("SELECT * FROM printers WHERE user_id = ? ORDER BY nome ASC").bind(userId).all();
-                return Response.json(results, { headers: corsHeaders });
+                const { results } = await db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(userId).all();
+                return Response.json(results || [], { headers: corsHeaders });
             }
             if (method === 'POST') {
                 const p = await request.json();
@@ -83,7 +88,7 @@ export async function onRequest(context) {
                 const h = JSON.stringify(p.history || p.historico || []);
                 await db.prepare(`INSERT INTO printers (id, user_id, nome, marca, modelo, status, potencia, preco, rendimento_total, horas_totais, ultima_manutencao_hora, intervalo_manutencao, historico) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET nome=excluded.nome, status=excluded.status, horas_totais=excluded.horas_totais, historico=excluded.historico`)
-                    .bind(id, userId, p.nome || p.name, p.marca || p.brand, p.modelo || p.model, p.status || 'idle', Number(p.potencia || 0), Number(p.preco || 0), Number(p.rendimento_total || 0), Number(p.horas_totais || 0), Number(p.ultima_manutencao_hora || 0), Number(p.intervalo_manutencao || 300), h).run();
+                    .bind(id, userId, p.nome || p.name || "Impressora", p.marca || p.brand || "", p.modelo || p.model || "", p.status || 'idle', Number(p.potencia || 0), Number(p.preco || 0), Number(p.rendimento_total || 0), Number(p.horas_totais || 0), Number(p.ultima_manutencao_hora || 0), Number(p.intervalo_manutencao || 300), h).run();
                 return Response.json({ id, ...p }, { headers: corsHeaders });
             }
             if (method === 'DELETE') {
@@ -97,14 +102,14 @@ export async function onRequest(context) {
         if (entity === 'filaments' || entity === 'filamentos') {
             if (method === 'GET') {
                 const { results } = await db.prepare("SELECT * FROM filaments WHERE user_id = ? ORDER BY favorito DESC, nome ASC").bind(userId).all();
-                return Response.json(results, { headers: corsHeaders });
+                return Response.json(results || [], { headers: corsHeaders });
             }
             if (method === 'POST') {
                 const f = await request.json();
                 const id = f.id || crypto.randomUUID();
                 await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, peso_total, peso_atual, preco, data_abertura, favorito) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET nome=excluded.nome, peso_atual=excluded.peso_atual, favorito=excluded.favorito`)
-                    .bind(id, userId, f.nome, f.marca, f.material, f.cor_hex, Number(f.peso_total), Number(f.peso_atual), Number(f.preco), f.data_abertura, f.favorito ? 1 : 0).run();
+                    .bind(id, userId, f.nome, f.marca, f.material, f.cor_hex, Number(f.peso_total || 0), Number(f.peso_atual || 0), Number(f.preco || 0), f.data_abertura, f.favorito ? 1 : 0).run();
                 return Response.json({ id, ...f }, { headers: corsHeaders });
             }
             if (method === 'DELETE') {
@@ -124,7 +129,7 @@ export async function onRequest(context) {
                 const s = await request.json();
                 await db.prepare(`INSERT INTO calculator_settings (user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET custo_kwh=excluded.custo_kwh, margem_lucro=excluded.margem_lucro`)
-                    .bind(userId, s.custo_kwh, s.valor_hora_humana, s.custo_hora_maquina, s.taxa_setup, s.consumo_impressora_kw, s.margem_lucro, s.imposto, s.taxa_falha, s.desconto).run();
+                    .bind(userId, Number(s.custo_kwh || 0), Number(s.valor_hora_humana || 0), Number(s.custo_hora_maquina || 0), Number(s.taxa_setup || 0), Number(s.consumo_impressora_kw || 0), Number(s.margem_lucro || 0), Number(s.imposto || 0), Number(s.taxa_falha || 0), Number(s.desconto || 0)).run();
                 return Response.json({ success: true }, { headers: corsHeaders });
             }
         }
