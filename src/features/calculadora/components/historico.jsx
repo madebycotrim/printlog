@@ -170,13 +170,14 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
 
                                     {/* Indicador de Status Lateral Inteligente */}
                                     <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-r-full transition-all duration-500 ${isAprovado ? 'bg-sky-500 shadow-[2px_0_10px_rgba(14,165,233,0.4)]' :
-                                            margem >= MARGEM_MINIMA_IDEAL ? 'bg-emerald-500' : 'bg-red-500 animate-pulse shadow-[2px_0_10px_rgba(239,68,68,0.4)]'
+                                        margem >= MARGEM_MINIMA_IDEAL ? 'bg-emerald-500' : 'bg-red-500 animate-pulse shadow-[2px_0_10px_rgba(239,68,68,0.4)]'
                                         }`} />
 
                                     {/* Cabeçalho: Nome e Data */}
                                     <div className="flex justify-between items-start mb-3 pl-2">
                                         <div className="min-w-0">
-                                            <h3 className="text-xs font-bold text-white truncate pr-2 group-hover:text-sky-400 transition-colors">
+                                            <h3 className="text-xs font-bold text-white truncate pr-2
+                                            ">
                                                 {projeto.label || "Projeto sem nome"}
                                             </h3>
                                             <div className="flex items-center gap-1.5 text-zinc-500 mt-0.5">
@@ -228,8 +229,8 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                                                 type="button"
                                                 onClick={() => perguntarAprovacao(projeto, margem)}
                                                 className={`flex-1 h-9 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95 ${margem < MARGEM_MINIMA_IDEAL
-                                                        ? 'bg-red-600/10 border border-red-500/20 text-red-500 hover:bg-red-600 hover:text-white'
-                                                        : 'bg-emerald-600/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-600 hover:text-white'
+                                                    ? 'bg-red-600/10 border border-red-500/20 text-red-500 hover:bg-red-600 hover:text-white'
+                                                    : 'bg-emerald-600/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-600 hover:text-white'
                                                     }`}
                                             >
                                                 <Check size={14} strokeWidth={3} /> {margem < MARGEM_MINIMA_IDEAL ? 'Aprovar com Risco' : 'Aprovar'}
