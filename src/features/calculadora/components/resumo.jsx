@@ -4,7 +4,7 @@ import {
     Save, Calculator, FileText, Loader2, Wand2, X,
     MessageCircle, Target, Package, Zap, Clock, Wrench,
     Landmark, RotateCcw, Send, Copy, Check, Settings2,
-    Truck, ShoppingBag, Tag, ShieldAlert, Box
+    Truck, ShoppingBag, Tag, ShieldAlert, Box, AlertTriangle
 } from "lucide-react";
 
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
@@ -35,7 +35,7 @@ const AnimatedNumber = ({ value, duration = 800 }) => {
     return <span>{formatCurrency(displayValue)}</span>;
 };
 
-/* ---------- SUB-COMPONENTE: JANELA MODAL (POPUP) ---------- */
+/* ---------- SUB-COMPONENTE: JANELA MODAL ---------- */
 const Modal = ({ isOpen, onClose, title, children, actions }) => {
     if (!isOpen) return null;
     return (
@@ -66,11 +66,19 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
 
     const [estaSalvo, setEstaSalvo] = useState(false);
     const [estaGravando, setEstaGravando] = useState(false);
-    const [modalConfig, setModalConfig] = useState({ open: false, type: '' });
+    
+    // Estado de modal genérico para alertas
+    const [modalConfig, setModalConfig] = useState({ 
+        open: false, 
+        type: '', 
+        title: '', 
+        message: '',
+        onConfirm: null 
+    });
+
     const [precoArredondado, setPrecoArredondado] = useState(null);
     const [copiado, setCopiado] = useState(false);
     const [copiadoPreco, setCopiadoPreco] = useState(false);
-
     const [whatsappModal, setWhatsappModal] = useState(false);
     const [mensagemEditavel, setMensagemEditavel] = useState("");
 
@@ -96,18 +104,13 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
         return { label: "PROJETO SAUDÁVEL", color: "text-[#10b981]", bar: "bg-[#10b981]", dot: "bg-[#10b981]" };
     }, [temDados, margemEfetivaPct]);
 
+    // HANDLERS
     const handleSmartRound = () => {
         if (!temDados) return;
         const current = precoArredondado || precoBase;
         const valorInteiro = Math.floor(current);
         const centavos = Number((current % 1).toFixed(2));
-
-        let next;
-        if (centavos < 0.90) {
-            next = valorInteiro + 0.90;
-        } else {
-            next = valorInteiro + 1.90;
-        }
+        let next = centavos < 0.90 ? valorInteiro + 0.90 : valorInteiro + 1.90;
         setPrecoArredondado(next);
     };
 
@@ -120,15 +123,26 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
 
     const lidarSalvarResumo = async () => {
         if (!nomeProjeto.trim()) {
-            setModalConfig({ open: true, type: 'NAME_REQ' });
+            setModalConfig({ 
+                open: true, 
+                type: 'ALERT', 
+                title: 'Nome Obrigatório', 
+                message: 'Por favor, dê um nome para o seu projeto no topo da página antes de salvar.' 
+            });
             return;
         }
+
         setEstaGravando(true);
         try {
             await salvar();
             setEstaSalvo(true);
         } catch (error) {
-            console.error(error);
+            setModalConfig({ 
+                open: true, 
+                type: 'ERROR', 
+                title: 'Erro ao Salvar', 
+                message: 'Não foi possível salvar os dados. Verifique sua conexão e tente novamente.' 
+            });
         } finally {
             setEstaGravando(false);
         }
@@ -149,12 +163,6 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagemEditavel)}`;
         window.open(url, "_blank");
         setWhatsappModal(false);
-    };
-
-    const copiarMensagem = () => {
-        navigator.clipboard.writeText(mensagemEditavel);
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2000);
     };
 
     const composicaoItens = useMemo(() => {
@@ -219,7 +227,6 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                     <button
                         onClick={handleCopyPrice}
                         disabled={!temDados}
-                        title="Copiar Preço"
                         className={`p-2.5 rounded-xl border border-white/5 transition-all active:scale-90 disabled:opacity-20 ${copiadoPreco ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' : 'bg-zinc-900/50 text-zinc-600 hover:text-sky-400'}`}
                     >
                         {copiadoPreco ? <Check size={14} /> : <Copy size={14} />}
@@ -227,7 +234,6 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                     <button
                         onClick={handleSmartRound}
                         disabled={!temDados}
-                        title="Arredondar para ,90"
                         className={`p-2.5 rounded-xl border border-white/5 transition-all active:scale-90 disabled:opacity-20 ${precoArredondado ? 'bg-sky-500/20 text-sky-400 border-sky-500/30' : 'bg-zinc-900/50 text-zinc-600 hover:text-sky-400'}`}
                     >
                         <Wand2 size={14} />
@@ -301,7 +307,16 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                     </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2 h-10">
-                    <button onClick={() => setModalConfig({ open: true, type: 'RESET' })} className="rounded-xl bg-zinc-900 border border-white/[0.05] text-zinc-600 hover:text-zinc-300 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all">
+                    <button 
+                        onClick={() => setModalConfig({ 
+                            open: true, 
+                            type: 'CONFIRM', 
+                            title: 'Reiniciar Cálculo', 
+                            message: 'Deseja realmente apagar todos os dados inseridos? Esta ação não pode ser desfeita.',
+                            onConfirm: () => window.location.reload()
+                        })} 
+                        className="rounded-xl bg-zinc-900 border border-white/[0.05] text-zinc-600 hover:text-zinc-300 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all"
+                    >
                         <RotateCcw size={12} /> Reiniciar
                     </button>
                     <button onClick={() => generateProfessionalPDF(resultados, entradas, precoFinalVenda)} className="rounded-xl bg-zinc-900 border border-white/[0.05] text-zinc-600 hover:text-zinc-300 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all">
@@ -317,7 +332,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                 title="Personalizar Mensagem"
                 actions={
                     <div className="flex w-full gap-2">
-                        <button onClick={copiarMensagem} className="flex-1 bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-black uppercase px-4 py-2.5 rounded-xl flex items-center justify-center gap-2">
+                        <button onClick={() => { navigator.clipboard.writeText(mensagemEditavel); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }} className="flex-1 bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-black uppercase px-4 py-2.5 rounded-xl flex items-center justify-center gap-2">
                             {copiado ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                             {copiado ? "Copiado" : "Copiar"}
                         </button>
@@ -327,50 +342,35 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                     </div>
                 }
             >
-                <div className="space-y-4">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Visualização da Mensagem</label>
-                        <textarea
-                            className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs text-zinc-300 outline-none focus:border-emerald-500/50 transition-all resize-none font-sans leading-relaxed"
-                            value={mensagemEditavel}
-                            onChange={(e) => setMensagemEditavel(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        <p className="text-[8px] text-zinc-600 uppercase font-bold leading-tight">
-                            Dica: Você pode editar o texto acima livremente antes de enviar para o cliente.
-                        </p>
-                        <button
-                            onClick={() => { setWhatsappModal(false); onGoToSettings(); }}
-                            className="flex items-center gap-2 text-[8px] font-black text-zinc-500 hover:text-sky-400 uppercase tracking-widest transition-colors w-fit"
-                        >
-                            <Settings2 size={12} /> Alterar modelo padrão nas configurações
-                        </button>
-                    </div>
-                </div>
+                <textarea
+                    className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs text-zinc-300 outline-none focus:border-emerald-500/50 transition-all resize-none font-sans leading-relaxed"
+                    value={mensagemEditavel}
+                    onChange={(e) => setMensagemEditavel(e.target.value)}
+                />
             </Modal>
 
+            {/* MODAL DE ALERTA / ERRO / CONFIRMAÇÃO GENÉRICO */}
             <Modal
-                isOpen={modalConfig.open && modalConfig.type === 'NAME_REQ'}
-                onClose={() => setModalConfig({ open: false, type: '' })}
-                title="Ação Necessária"
-                actions={<button onClick={() => setModalConfig({ open: false, type: '' })} className="bg-[#0095ff] text-white text-[10px] font-black uppercase px-6 py-2.5 rounded-xl w-full">Entendi</button>}
-            >
-                Por favor, dê um nome para o seu projeto antes de salvar.
-            </Modal>
-
-            <Modal
-                isOpen={modalConfig.open && modalConfig.type === 'RESET'}
-                onClose={() => setModalConfig({ open: false, type: '' })}
-                title="Confirmação"
+                isOpen={modalConfig.open}
+                onClose={() => setModalConfig({ ...modalConfig, open: false })}
+                title={modalConfig.title}
                 actions={
-                    <>
-                        <button onClick={() => setModalConfig({ open: false, type: '' })} className="text-[10px] font-bold text-zinc-500 uppercase px-4">Cancelar</button>
-                        <button onClick={() => window.location.reload()} className="bg-rose-600 text-white text-[10px] font-black uppercase px-6 py-2.5 rounded-xl">Sim, apagar tudo</button>
-                    </>
+                    <div className="flex w-full gap-2">
+                        {modalConfig.type === 'CONFIRM' ? (
+                            <>
+                                <button onClick={() => setModalConfig({ ...modalConfig, open: false })} className="flex-1 text-[10px] font-bold text-zinc-500 uppercase px-4">Cancelar</button>
+                                <button onClick={modalConfig.onConfirm} className="flex-1 bg-rose-600 text-white text-[10px] font-black uppercase px-6 py-2.5 rounded-xl">Confirmar</button>
+                            </>
+                        ) : (
+                            <button onClick={() => setModalConfig({ ...modalConfig, open: false })} className="w-full bg-[#0095ff] text-white text-[10px] font-black uppercase px-6 py-2.5 rounded-xl">Entendi</button>
+                        )}
+                    </div>
                 }
             >
-                Deseja realmente apagar todos os dados deste cálculo?
+                <div className="flex flex-col items-center text-center gap-4">
+                    {modalConfig.type === 'ERROR' && <AlertTriangle size={32} className="text-rose-500 opacity-50" />}
+                    <p className="text-sm text-zinc-400">{modalConfig.message}</p>
+                </div>
             </Modal>
 
             <style dangerouslySetInnerHTML={{
