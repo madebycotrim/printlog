@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { Settings2, BarChart3, HelpCircle, ChevronRight } from "lucide-react";
+import {
+    Settings2, BarChart3, HelpCircle, ChevronRight,
+    X, CheckCircle2, AlertCircle, AlertTriangle
+} from "lucide-react";
 
 // Layout e Componentes
 import MainSidebar from "../layouts/mainSidebar.jsx";
@@ -24,9 +27,24 @@ import { useProjectsStore } from "../features/orcamentos/logic/projects.js";
 
 const CONFIG_SIDEBAR = { COLAPSADO: 68, EXPANDIDO: 256 };
 
-/**
- * WRAPPER CARD: Mantém a estrutura visual e gerencia as dicas de preenchimento.
- */
+/* ---------- SUB-COMPONENTE: JANELA MODAL PERSONALIZADA ---------- */
+const Modal = ({ isOpen, onClose, title, children, actions }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl scale-in-center">
+                <div className="px-6 py-4 border-b border-white/[0.03] flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{title}</span>
+                    <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors"><X size={16} /></button>
+                </div>
+                <div className="p-6 text-zinc-300 text-sm leading-relaxed">{children}</div>
+                {actions && <div className="px-6 py-4 bg-white/[0.02] flex gap-3 justify-end border-t border-white/[0.03]">{actions}</div>}
+            </div>
+        </div>
+    );
+};
+
+/* ---------- WRAPPER CARD: ESTRUTURA VISUAL ---------- */
 const WrapperCard = React.memo(({ children, title, step, className = "", zPriority = "z-10" }) => {
     const textosAjuda = {
         "01": "Defina o preço do seu filamento e o peso da peça (em gramas) que aparece no seu fatiador.",
@@ -39,7 +57,6 @@ const WrapperCard = React.memo(({ children, title, step, className = "", zPriori
     return (
         <div className={`relative ${zPriority} ${className}`}>
             <div className={`relative bg-zinc-900/20 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 flex flex-col gap-3 transition-all duration-300 group focus-within:z-50 focus-within:border-sky-500/30 hover:border-zinc-700/50`}>
-
                 <div className="flex items-center justify-between border-b border-zinc-800/50 pb-2">
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-[10px] font-black text-sky-500 shadow-sm">
@@ -47,83 +64,59 @@ const WrapperCard = React.memo(({ children, title, step, className = "", zPriori
                         </div>
                         <h3 className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{title}</h3>
                     </div>
-
                     <div className="group/info relative">
                         <HelpCircle size={12} className="text-zinc-700 hover:text-sky-500 cursor-help transition-colors" />
                         <div className="absolute right-0 top-6 w-48 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl invisible opacity-0 group-hover/info:visible group-hover/info:opacity-100 z-[110] transition-all pointer-events-none transform translate-y-1 group-hover/info:translate-y-0">
-                            <p className="text-[8px] text-zinc-400 uppercase font-bold leading-tight">
-                                {textosAjuda[step]}
-                            </p>
+                            <p className="text-[8px] text-zinc-400 uppercase font-bold leading-tight">{textosAjuda[step]}</p>
                         </div>
                     </div>
                 </div>
-
-                <div className="flex-1 overflow-visible">
-                    {children}
-                </div>
+                <div className="flex-1 overflow-visible">{children}</div>
             </div>
         </div>
     );
 });
 
-
+/* ---------- COMPONENTE PRINCIPAL DA PÁGINA ---------- */
 export default function CalculadoraPage() {
     const [larguraSidebar, setLarguraSidebar] = useState(CONFIG_SIDEBAR.COLAPSADO);
     const [abaAtiva, setAbaAtiva] = useState("resumo");
     const [historicoAberto, setHistoricoAberto] = useState(false);
     const [precisaConfigurar, setPrecisaConfigurar] = useState(false);
-
-    // Controle de ID para atualização de registros existentes
     const [idProjetoAtual, setIdProjetoAtual] = useState(null);
+
+    // Estado para Modais (Substitui o window.alert)
+    const [modalConfig, setModalConfig] = useState({
+        open: false, title: "", message: "", type: "info"
+    });
 
     const { printers: impressoras, fetchPrinters: buscarImpressoras } = usePrinterStore();
     const { settings: configuracoesGerais, fetchSettings: buscarConfiguracoes } = useSettingsStore();
     const { fetchHistory: buscarHistorico, addHistoryEntry: salvarNoBanco } = useProjectsStore();
 
-    // ESTADO CENTRALIZADO DO FORMULÁRIO (Fonte única de verdade)
     const [dadosFormulario, setDadosFormulario] = useState({
         nomeProjeto: "",
         qtdPecas: "1",
-        material: {
-            custoRolo: "",
-            pesoModelo: "",
-            selectedFilamentId: "manual",
-            slots: []
-        },
-        tempo: {
-            impressaoHoras: "", impressaoMinutos: "",
-            trabalhoHoras: "", trabalhoMinutos: ""
-        },
-        vendas: {
-            canal: "loja", taxaMarketplace: "",
-            taxaMarketplaceFixa: "", desconto: ""
-        },
-        custosExtras: {
-            embalagem: "", frete: "",
-            lista: []
-        },
+        material: { custoRolo: "", pesoModelo: "", selectedFilamentId: "manual", slots: [] },
+        tempo: { impressaoHoras: "", impressaoMinutos: "", trabalhoHoras: "", trabalhoMinutos: "" },
+        vendas: { canal: "loja", taxaMarketplace: "", taxaMarketplaceFixa: "", desconto: "" },
+        custosExtras: { embalagem: "", frete: "", lista: [] },
         config: {
-            margemLucro: "", imposto: "", taxaFalha: "",
-            custoKwh: "", valorHoraHumana: "",
-            custoHoraMaquina: "", taxaSetup: "", consumoKw: ""
+            margemLucro: "", imposto: "", taxaFalha: "", custoKwh: "",
+            valorHoraHumana: "", custoHoraMaquina: "", taxaSetup: "", consumoKw: ""
         }
     });
 
     const [hardwareSelecionado, setHardwareSelecionado] = useState(null);
     const [resultados, setResultados] = useState({});
 
-    // Função genérica de atualização de campos para evitar repetição de código
     const atualizarCampo = useCallback((categoria, campo, valor) => {
         setDadosFormulario(prev => {
             if (campo === null) return { ...prev, [categoria]: valor };
-            return {
-                ...prev,
-                [categoria]: { ...prev[categoria], [campo]: valor }
-            };
+            return { ...prev, [categoria]: { ...prev[categoria], [campo]: valor } };
         });
     }, []);
 
-    // 1. CARREGAMENTO INICIAL
     useEffect(() => {
         const inicializar = async () => {
             const [, , temConfig] = await Promise.all([
@@ -136,7 +129,6 @@ export default function CalculadoraPage() {
         inicializar();
     }, [buscarImpressoras, buscarHistorico, buscarConfiguracoes]);
 
-    // 2. SINCRONIZAÇÃO DA OFICINA (Configurações Gerais)
     useEffect(() => {
         if (configuracoesGerais && (configuracoesGerais.custoKwh || configuracoesGerais.valorHoraHumana)) {
             setDadosFormulario(prev => ({
@@ -157,16 +149,13 @@ export default function CalculadoraPage() {
         }
     }, [configuracoesGerais]);
 
-    // 3. SELEÇÃO DE HARDWARE (Impressoras)
     useEffect(() => {
         if (impressoras?.length > 0 && !hardwareSelecionado) {
             const ultimoId = localStorage.getItem("last_printer_id");
             const hardwareParaDefinir = impressoras.find(p => String(p.id) === ultimoId) || impressoras[0];
             setHardwareSelecionado(hardwareParaDefinir);
-
             const potencia = Number(hardwareParaDefinir.potencia || hardwareParaDefinir.power || 0);
-            const valorEmKw = potencia >= 2 ? potencia / 1000 : potencia;
-            atualizarCampo('config', 'consumoKw', String(valorEmKw));
+            atualizarCampo('config', 'consumoKw', String(potencia >= 2 ? potencia / 1000 : potencia));
         }
     }, [impressoras, hardwareSelecionado, atualizarCampo]);
 
@@ -174,35 +163,35 @@ export default function CalculadoraPage() {
         if (!impressoras || impressoras.length === 0) return;
         const indiceAtual = impressoras.findIndex(p => p.id === hardwareSelecionado?.id);
         const proximoHardware = impressoras[(indiceAtual + 1) % impressoras.length];
-
         setHardwareSelecionado(proximoHardware);
         localStorage.setItem("last_printer_id", proximoHardware.id);
-
         const potencia = Number(proximoHardware.potencia || proximoHardware.power || 0);
-        const valorEmKw = potencia >= 2 ? potencia / 1000 : potencia;
-
-        atualizarCampo('config', 'consumoKw', String(valorEmKw));
+        atualizarCampo('config', 'consumoKw', String(potencia >= 2 ? potencia / 1000 : potencia));
         const custoH = proximoHardware.custo_hora || proximoHardware.custo_hora_maquina;
-        if (custoH) {
-            atualizarCampo('config', 'custoHoraMaquina', String(custoH));
-        }
+        if (custoH) atualizarCampo('config', 'custoHoraMaquina', String(custoH));
     }, [impressoras, hardwareSelecionado, atualizarCampo]);
 
-    // 4. PROCESSAMENTO DO CÁLCULO (Com atraso para melhor performance)
     const entradasParaCalculo = useDebounce(dadosFormulario, 250);
     useEffect(() => {
         try {
             const res = calcularTudo(entradasParaCalculo);
             setResultados(res || {});
         } catch (erro) {
-            console.error("Erro crítico no motor de cálculo:", erro);
+            console.error("Erro no motor de cálculo:", erro);
             setResultados({});
         }
     }, [entradasParaCalculo]);
 
-    // 5. PERSISTÊNCIA NO HISTÓRICO (D1 Cloud)
     const lidarSalvarNoHistorico = useCallback(async () => {
-        if (!dadosFormulario.nomeProjeto.trim()) return alert("Por favor, dê um nome para o seu projeto antes de salvar.");
+        if (!dadosFormulario.nomeProjeto.trim()) {
+            setModalConfig({
+                open: true,
+                title: "Atenção",
+                message: "Por favor, dê um nome para o seu projeto no topo da página antes de salvar.",
+                type: "warning"
+            });
+            return;
+        }
 
         const resposta = await salvarNoBanco({
             id: idProjetoAtual,
@@ -213,24 +202,22 @@ export default function CalculadoraPage() {
 
         if (resposta) {
             setIdProjetoAtual(resposta.id);
-            alert("Prontinho! Orçamento salvo com sucesso.");
+            setModalConfig({
+                open: true,
+                title: "Sucesso",
+                message: "O orçamento foi salvo e atualizado com sucesso no seu histórico.",
+                type: "success"
+            });
         }
     }, [dadosFormulario, resultados, hardwareSelecionado, salvarNoBanco, idProjetoAtual]);
 
-    // 6. RESTAURAÇÃO DE CÁLCULOS ANTERIORES
     const lidarRestauracao = useCallback((registro) => {
         const payload = registro.data || registro.payload;
         if (payload?.entradas) {
             const dadosRestaurados = JSON.parse(JSON.stringify(payload.entradas));
-
-            // Garante consistência do modo multi-material
-            if (dadosRestaurados.material?.slots?.length > 0) {
-                dadosRestaurados.material.selectedFilamentId = 'multi';
-            }
-
+            if (dadosRestaurados.material?.slots?.length > 0) dadosRestaurados.material.selectedFilamentId = 'multi';
             setIdProjetoAtual(registro.id);
             setDadosFormulario(dadosRestaurados);
-
             if (dadosRestaurados.selectedPrinterId) {
                 const printer = impressoras.find(p => String(p.id) === String(dadosRestaurados.selectedPrinterId));
                 if (printer) setHardwareSelecionado(printer);
@@ -242,7 +229,6 @@ export default function CalculadoraPage() {
     const ehNeutro = !resultados.precoSugerido || resultados.precoSugerido <= 0;
     const corSaude = resultados.margemEfetivaPct <= 0 ? 'text-rose-500' : resultados.margemEfetivaPct < 15 ? 'text-amber-500' : 'text-emerald-500';
 
-    // HUD Flutuante no Cabeçalho
     const elementoHud = useMemo(() => {
         if (abaAtiva === 'resumo' || ehNeutro) return null;
         return (
@@ -263,14 +249,12 @@ export default function CalculadoraPage() {
         );
     }, [abaAtiva, ehNeutro, resultados, corSaude]);
 
-
     return (
         <div className="flex h-screen bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden">
             <MainSidebar onCollapseChange={(colapsado) => setLarguraSidebar(colapsado ? 68 : 256)} />
 
             <main className="flex-1 flex flex-row relative h-full overflow-hidden transition-all duration-300" style={{ marginLeft: `${larguraSidebar}px` }}>
 
-                {/* Grade de Fundo Decorativa */}
                 <div className="absolute inset-x-0 top-0 h-[500px] z-0 opacity-[0.05] pointer-events-none"
                     style={{ backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
@@ -290,73 +274,50 @@ export default function CalculadoraPage() {
                     <div className="flex-1 overflow-y-auto p-4 xl:p-6 custom-scrollbar">
                         <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-10">
 
-                            {/* COLUNA 1: MATERIAIS E TEMPO */}
                             <div className="flex flex-col gap-4 relative z-30">
                                 <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
                                     <CardMaterial
-                                        custoRolo={dadosFormulario.material.custoRolo}
-                                        setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
-                                        pesoModelo={dadosFormulario.material.pesoModelo}
-                                        setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
-                                        selectedFilamentId={dadosFormulario.material.selectedFilamentId}
-                                        setSelectedFilamentId={(v) => atualizarCampo('material', 'selectedFilamentId', v)}
-                                        materialSlots={dadosFormulario.material.slots}
-                                        setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
+                                        custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
+                                        pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
+                                        selectedFilamentId={dadosFormulario.material.selectedFilamentId} setSelectedFilamentId={(v) => atualizarCampo('material', 'selectedFilamentId', v)}
+                                        materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
                                     />
                                 </WrapperCard>
                                 <WrapperCard title="Tempo de Produção" step="02" zPriority="z-10">
                                     <CardTempo
-                                        tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras}
-                                        setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
-                                        tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos}
-                                        setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
-                                        tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras}
-                                        setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
-                                        tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos}
-                                        setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
+                                        tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras} setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
+                                        tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos} setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
+                                        tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras} setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
+                                        tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos} setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
                                     />
                                 </WrapperCard>
                             </div>
 
-                            {/* COLUNA 2: VENDAS E LOGÍSTICA */}
                             <div className="flex flex-col gap-4 relative z-20">
                                 <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
                                     <CardCanal
-                                        canalVenda={dadosFormulario.vendas.canal}
-                                        setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
-                                        taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
-                                        setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
-                                        taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa}
-                                        setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
+                                        canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
+                                        taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
+                                        taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa} setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
                                     />
                                 </WrapperCard>
                                 <WrapperCard title="Gastos Extras" step="04" zPriority="z-10">
                                     <CardEmbalagem
-                                        custoEmbalagem={dadosFormulario.custosExtras.embalagem}
-                                        setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
-                                        custoFrete={dadosFormulario.custosExtras.frete}
-                                        setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
-                                        custosExtras={dadosFormulario.custosExtras.lista}
-                                        setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
+                                        custoEmbalagem={dadosFormulario.custosExtras.embalagem} setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
+                                        custoFrete={dadosFormulario.custosExtras.frete} setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
+                                        custosExtras={dadosFormulario.custosExtras.lista} setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
                                     />
                                 </WrapperCard>
                             </div>
 
-                            {/* COLUNA 3: ESTRATÉGIA E WIDGET */}
                             <div className="flex flex-col gap-4 relative z-10">
                                 <WrapperCard title="Lucro e Estratégia" step="05">
                                     <CardPreco
-                                        margemLucro={dadosFormulario.config.margemLucro}
-                                        setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
-                                        imposto={dadosFormulario.config.imposto}
-                                        setImposto={(v) => atualizarCampo('config', 'imposto', v)}
-                                        desconto={dadosFormulario.vendas.desconto}
-                                        setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
-                                        taxaFalha={dadosFormulario.config.taxaFalha}
-                                        setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
-                                        taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
-                                        lucroRealItem={resultados.lucroBrutoUnitario}
-                                        tempoTotalHoras={resultados.tempoTotalHoras}
+                                        margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
+                                        imposto={dadosFormulario.config.imposto} setImposto={(v) => atualizarCampo('config', 'imposto', v)}
+                                        desconto={dadosFormulario.vendas.desconto} setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
+                                        taxaFalha={dadosFormulario.config.taxaFalha} setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
+                                        taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} lucroRealItem={resultados.lucroBrutoUnitario} tempoTotalHoras={resultados.tempoTotalHoras}
                                     />
                                 </WrapperCard>
                             </div>
@@ -364,16 +325,15 @@ export default function CalculadoraPage() {
                     </div>
                 </div>
 
-                {/* PAINEL LATERAL DIREITO: RESULTADOS / CONFIGURAÇÕES */}
                 <aside className="w-[400px] h-full bg-zinc-950/40 backdrop-blur-2xl flex flex-col z-20 border-l border-white/5">
                     <div className="h-[80px] border-b border-white/5 flex items-center px-4">
                         <div className="flex w-full h-12 bg-zinc-950 rounded-lg border border-zinc-800 p-1 shadow-inner">
                             <button type="button" onClick={() => setAbaAtiva('resumo')}
-                                className={`flex-1 rounded text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'bg-sky-600 text-white shadow-lg shadow-sky-900/40' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                className={`flex-1 rounded text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'bg-sky-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
                                 <BarChart3 size={14} /> Resultado
                             </button>
                             <button type="button" onClick={() => setAbaAtiva('config')}
-                                className={`flex-1 rounded text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'bg-sky-600 text-white shadow-lg shadow-sky-900/40' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                className={`flex-1 rounded text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'bg-sky-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
                                 <Settings2 size={14} /> Minha Oficina
                             </button>
                         </div>
@@ -381,24 +341,15 @@ export default function CalculadoraPage() {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
                         {abaAtiva === 'resumo' ? (
-                            <Summary resultados={resultados}
-                                entradas={dadosFormulario}
-                                salvar={lidarSalvarNoHistorico}
-                                onGoToSettings={() => setAbaAtiva('config')}
-                            />
+                            <Summary resultados={resultados} entradas={dadosFormulario} salvar={lidarSalvarNoHistorico} onGoToSettings={() => setAbaAtiva('config')} />
                         ) : (
                             <PainelConfiguracoesCalculo
                                 config={dadosFormulario.config}
-                                valorHoraHumana={dadosFormulario.config.valorHoraHumana}
-                                setValorHoraHumana={(v) => atualizarCampo('config', 'valorHoraHumana', v)}
-                                custoKwh={dadosFormulario.config.custoKwh}
-                                setCustoKwh={(v) => atualizarCampo('config', 'custoKwh', v)}
-                                consumoImpressoraKw={dadosFormulario.config.consumoKw}
-                                setConsumoImpressoraKw={(v) => atualizarCampo('config', 'consumoKw', v)}
-                                custoHoraMaquina={dadosFormulario.config.custoHoraMaquina}
-                                setCustoHoraMaquina={(v) => atualizarCampo('config', 'custoHoraMaquina', v)}
-                                taxaSetup={dadosFormulario.config.taxaSetup}
-                                setTaxaSetup={(v) => atualizarCampo('config', 'taxaSetup', v)}
+                                valorHoraHumana={dadosFormulario.config.valorHoraHumana} setValorHoraHumana={(v) => atualizarCampo('config', 'valorHoraHumana', v)}
+                                custoKwh={dadosFormulario.config.custoKwh} setCustoKwh={(v) => atualizarCampo('config', 'custoKwh', v)}
+                                consumoImpressoraKw={dadosFormulario.config.consumoKw} setConsumoImpressoraKw={(v) => atualizarCampo('config', 'consumoKw', v)}
+                                custoHoraMaquina={dadosFormulario.config.custoHoraMaquina} setCustoHoraMaquina={(v) => atualizarCampo('config', 'custoHoraMaquina', v)}
+                                taxaSetup={dadosFormulario.config.taxaSetup} setTaxaSetup={(v) => atualizarCampo('config', 'taxaSetup', v)}
                                 onSaved={buscarConfiguracoes}
                             />
                         )}
@@ -406,11 +357,28 @@ export default function CalculadoraPage() {
                 </aside>
             </main>
 
-            <HistoryDrawer
-                open={historicoAberto}
-                onClose={() => setHistoricoAberto(false)}
-                onRestore={lidarRestauracao}
-            />
+            <HistoryDrawer open={historicoAberto} onClose={() => setHistoricoAberto(false)} onRestore={lidarRestauracao} />
+
+            {/* MODAL GLOBAL DE MENSAGENS */}
+            <Modal
+                isOpen={modalConfig.open}
+                onClose={() => setModalConfig({ ...modalConfig, open: false })}
+                title={modalConfig.title}
+                actions={
+                    <button onClick={() => setModalConfig({ ...modalConfig, open: false })}
+                        className={`w-full text-[10px] font-black uppercase px-6 py-2.5 rounded-xl transition-all ${modalConfig.type === 'success' ? 'bg-emerald-600' : modalConfig.type === 'warning' ? 'bg-amber-600' : 'bg-sky-600'
+                            } text-white shadow-lg`}>
+                        Entendi
+                    </button>
+                }
+            >
+                <div className="flex flex-col items-center text-center gap-4">
+                    {modalConfig.type === 'success' && <CheckCircle2 size={40} className="text-emerald-500/50" />}
+                    {modalConfig.type === 'warning' && <AlertCircle size={40} className="text-amber-500/50" />}
+                    {modalConfig.type === 'error' && <AlertTriangle size={40} className="text-rose-500/50" />}
+                    <p className="text-sm text-zinc-400 font-medium">{modalConfig.message}</p>
+                </div>
+            </Modal>
         </div>
     );
 }

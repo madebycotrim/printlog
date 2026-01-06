@@ -1,13 +1,31 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     Search, ChevronRight, Mail, X, Terminal, Activity, AlertTriangle, 
-    Coins, Code, Send, Globe, Info, ClipboardCheck, Factory, CheckCircle2
+    Coins, Code, Send, Globe, Info, ClipboardCheck, Factory, CheckCircle2,
+    Copy, AlertCircle
 } from 'lucide-react';
 
 import { WIKI_DATA } from '../utils/wikiData';
 import MainSidebar from "../layouts/mainSidebar";
 
-// --- COMPONENTES VISUAIS (ESTILO HUD) ---
+// --- SUB-COMPONENTE: JANELA MODAL (PADRÃO HUD) ---
+const Modal = ({ isOpen, onClose, title, children, actions }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
+                <div className="px-6 py-4 border-b border-white/[0.03] flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{title}</span>
+                    <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors"><X size={16} /></button>
+                </div>
+                <div className="p-6 text-zinc-300 text-sm leading-relaxed">{children}</div>
+                {actions && <div className="px-6 py-4 bg-white/[0.02] flex gap-3 justify-end border-t border-white/[0.03]">{actions}</div>}
+            </div>
+        </div>
+    );
+};
+
+// --- COMPONENTES VISUAIS AUXILIARES ---
 
 const HUDOverlay = () => (
     <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]"
@@ -107,6 +125,11 @@ export default function WikiPage() {
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [copiado, setCopiado] = useState(false);
 
+    // Estado para Modais de Alerta
+    const [modalConfig, setModalConfig] = useState({ 
+        open: false, title: "", message: "", type: "info" 
+    });
+
     const phrases = useMemo(() => [
         { line1: "TRANSFORME", line2: "IDEIAS EM ATIVOS." },
         { line1: "EFICIÊNCIA", line2: "MÁXIMA NA FARM." },
@@ -121,6 +144,16 @@ export default function WikiPage() {
             return matchBusca && matchFiltro;
         });
     }, [busca, filtroAtivo]);
+
+    const handleCopyGCode = (code) => {
+        navigator.clipboard.writeText(code);
+        setModalConfig({
+            open: true,
+            title: "Terminal",
+            message: "Protocolo G-Code copiado para a área de transferência.",
+            type: "success"
+        });
+    };
 
     return (
         <div className="flex h-screen w-full bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden">
@@ -227,7 +260,7 @@ export default function WikiPage() {
                     </div>
                 </div>
 
-                {/* MODAL DETALHADO */}
+                {/* MODAL DETALHADO DO ARTIGO */}
                 {selectedArticle && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md">
                         <div className="absolute inset-0 bg-zinc-950/80" onClick={() => setSelectedArticle(null)} />
@@ -240,15 +273,18 @@ export default function WikiPage() {
                                 </div>
                                 <button onClick={() => setSelectedArticle(null)} className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-500 transition-all"><X size={20} /></button>
                             </div>
-                            <div className="p-10 flex-1 space-y-8">
+                            <div className="p-10 flex-1 space-y-8 overflow-y-auto custom-scrollbar">
                                 <p className="text-zinc-400 text-sm font-medium leading-relaxed border-l-2 border-sky-500/30 pl-6 uppercase tracking-wide">{selectedArticle.content}</p>
                                 {selectedArticle.gcode && (
                                     <div className="space-y-3">
                                         <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest ml-1">Comando de Terminal (G-Code):</p>
                                         <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 flex justify-between items-center group/code">
                                             <code className="text-sky-400 text-xs font-mono">{selectedArticle.gcode}</code>
-                                            <button onClick={() => { navigator.clipboard.writeText(selectedArticle.gcode); alert("Copiado!"); }} className="text-zinc-600 hover:text-zinc-100 transition-colors">
-                                                <Code size={16} />
+                                            <button 
+                                                onClick={() => handleCopyGCode(selectedArticle.gcode)} 
+                                                className="p-2 bg-zinc-900 rounded-lg text-zinc-600 hover:text-sky-400 transition-all active:scale-90"
+                                            >
+                                                <Copy size={16} />
                                             </button>
                                         </div>
                                     </div>
@@ -258,6 +294,28 @@ export default function WikiPage() {
                     </div>
                 )}
             </main>
+
+            {/* MODAL GLOBAL DE ALERTAS */}
+            <Modal
+                isOpen={modalConfig.open}
+                onClose={() => setModalConfig({ ...modalConfig, open: false })}
+                title={modalConfig.title}
+                actions={
+                    <button onClick={() => setModalConfig({ ...modalConfig, open: false })}
+                        className={`w-full text-[10px] font-black uppercase px-6 py-2.5 rounded-xl transition-all ${
+                            modalConfig.type === 'success' ? 'bg-emerald-600' : 'bg-sky-600'
+                        } text-white shadow-lg`}>
+                        Entendi
+                    </button>
+                }
+            >
+                <div className="flex flex-col items-center text-center gap-4">
+                    {modalConfig.type === 'success' && <CheckCircle2 size={40} className="text-emerald-500/50" />}
+                    {modalConfig.type === 'info' && <AlertCircle size={40} className="text-sky-500/50" />}
+                    <p className="text-sm text-zinc-400 font-medium">{modalConfig.message}</p>
+                </div>
+            </Modal>
+
         </div>
     );
 }

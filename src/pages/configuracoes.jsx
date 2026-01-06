@@ -1,14 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     User, Lock, Save, RefreshCw, Camera,
-    CheckCircle2, Database, Cloud, AlertTriangle, Trash2, Search, X
+    CheckCircle2, Database, Cloud, AlertTriangle, Trash2, Search, X,
+    AlertCircle, Info, LogOut
 } from 'lucide-react';
 import { useClerk, useUser } from "@clerk/clerk-react";
 
 import MainSidebar from "../layouts/mainSidebar";
 import Toast from "../components/Toast";
 
-// --- COMPONENTE: INPUT ESTILO HUD (REFINADO) ---
+// --- SUB-COMPONENTE: JANELA MODAL (ESTILO HUD) ---
+const Modal = ({ isOpen, onClose, title, children, actions }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-[#0c0c0e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
+                <div className="px-6 py-4 border-b border-white/[0.03] flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{title}</span>
+                    <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors"><X size={16} /></button>
+                </div>
+                <div className="p-6 text-zinc-300 text-sm leading-relaxed">{children}</div>
+                {actions && <div className="px-6 py-4 bg-white/[0.02] flex gap-3 justify-end border-t border-white/[0.03]">{actions}</div>}
+            </div>
+        </div>
+    );
+};
+
+// --- COMPONENTE: INPUT HUD ---
 const HUDInput = ({ label, value, onChange, placeholder, type = "text", info, disabled }) => (
     <div className="space-y-2 group">
         <div className="flex justify-between items-center px-1">
@@ -51,7 +69,11 @@ export default function ConfigPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [busca, setBusca] = useState("");
 
+    // Estado para Toasts e Modais
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [modalConfig, setModalConfig] = useState({ 
+        open: false, title: "", message: "", type: "info", onConfirm: null 
+    });
 
     const { signOut } = useClerk();
     const { user, isLoaded } = useUser();
@@ -77,18 +99,24 @@ export default function ConfigPage() {
         } finally { setIsSaving(false); }
     };
 
-    const handleDeleteAccount = async () => {
-        const confirmacao = window.confirm(
-            "ALERTA CRÍTICO: Esta ação é irreversível. Todos os seus dados de oficina serão apagados. Deseja encerrar sua conta?"
-        );
-        if (confirmacao) {
-            try {
-                setIsSaving(true);
-                await user.delete();
-            } catch (err) {
-                setToast({ show: true, message: "Erro ao processar exclusão.", type: 'error' });
-            } finally { setIsSaving(false); }
-        }
+    const confirmDeleteAccount = () => {
+        setModalConfig({
+            open: true,
+            title: "Protocolo de Rescisão",
+            message: "ALERTA CRÍTICO: Esta ação é irreversível. Todos os seus dados de oficina, históricos e filamentos serão apagados permanentemente. Deseja prosseguir?",
+            type: "danger",
+            onConfirm: async () => {
+                try {
+                    setIsSaving(true);
+                    await user.delete();
+                } catch (err) {
+                    setToast({ show: true, message: "Erro ao processar exclusão.", type: 'error' });
+                } finally { 
+                    setIsSaving(false); 
+                    setModalConfig(prev => ({ ...prev, open: false }));
+                }
+            }
+        });
     };
 
     const renderContent = () => {
@@ -99,7 +127,6 @@ export default function ConfigPage() {
                         {/* CARD DE PERFIL */}
                         <div className="relative p-10 rounded-[2.5rem] bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-sm shadow-sm overflow-hidden group">
                             <div className="absolute -right-10 -top-10 w-48 h-48 blur-[100px] opacity-10 rounded-full bg-sky-500" />
-
                             <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                                 <div className="relative">
                                     <div className="w-32 h-32 rounded-[2rem] bg-zinc-950 border-2 border-zinc-800 p-1.5 group/avatar">
@@ -122,7 +149,6 @@ export default function ConfigPage() {
                                         }
                                     }} className="hidden" accept="image/*" />
                                 </div>
-
                                 <div className="flex-1 space-y-4 text-center md:text-left">
                                     <div className="space-y-2">
                                         <p className="text-[10px] font-bold text-sky-400 uppercase tracking-[0.3em]">Farm Manager</p>
@@ -173,28 +199,20 @@ export default function ConfigPage() {
                             </div>
                         </ConfigSection>
 
-                        {/* ZONA CRÍTICA - ESTILO FILAMENTO (PERIGO) */}
                         <ConfigSection title="Protocolos de Rescisão" icon={AlertTriangle} badge="Zona Crítica">
                             <div className="bg-rose-500/5 p-10 rounded-[2.5rem] border border-rose-500/10 space-y-8 relative overflow-hidden">
                                 <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-rose-500/10 blur-[60px] pointer-events-none" />
-
                                 <div className="flex flex-col relative select-none">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-rose-500/60">
-                                            Danger Zone // Irreversible Action
-                                        </h1>
-                                    </div>
+                                    <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-rose-500/60 mb-1">Danger Zone // Irreversible Action</h1>
                                     <span className="text-xl font-black uppercase tracking-tighter text-white">
                                         Encerrar <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-red-600">Conta Maker</span>
                                     </span>
                                 </div>
-
                                 <p className="text-[11px] text-zinc-500 font-medium leading-relaxed max-w-xl uppercase tracking-wider">
                                     Ao encerrar sua conta, todos os registros de filamentos, logs e configurações serão <span className="text-rose-400">removidos permanentemente</span>.
                                 </p>
-
                                 <button
-                                    onClick={handleDeleteAccount}
+                                    onClick={confirmDeleteAccount}
                                     className="group flex items-center gap-3 px-6 py-4 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 hover:border-rose-500 rounded-2xl transition-all duration-300"
                                 >
                                     <Trash2 size={18} className="text-rose-500 group-hover:text-white transition-colors" />
@@ -224,34 +242,24 @@ export default function ConfigPage() {
 
             <main className="flex-1 flex flex-col relative transition-all duration-300 ease-in-out" style={{ marginLeft: `${larguraSidebar}px` }}>
 
-                {/* BACKGROUND DECORATIVO: BUILD PLATE */}
-                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none">
-                    <div className="absolute inset-0 opacity-[0.1]"
-                        style={{
-                            backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
-                            backgroundSize: '50px 50px',
-                            maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
-                        }}
-                    />
-                </div>
+                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none opacity-[0.1]"
+                    style={{
+                        backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
+                        backgroundSize: '50px 50px',
+                        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
+                    }}
+                />
 
-                {/* HEADER - ESTILO FILAMENTO / CENTRALMAKER */}
                 <header className="h-20 px-10 flex items-center justify-between z-40 relative border-b border-white/5 bg-zinc-950/50 backdrop-blur-xl">
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-cyan-700 via-sky-500 to-indigo-400 opacity-60" />
-
                     <div className="flex flex-col relative select-none">
-                        <div className="flex items-center gap-2 mb-0.5">
-                            <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
-                                Painel de Controle
-                            </h1>
-                        </div>
+                        <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Painel de Controle</h1>
                         <span className="text-xl font-black uppercase tracking-tighter text-white">
                             Ajustes da <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400">Oficina</span>
                         </span>
                     </div>
 
                     <div className="flex items-center gap-6">
-                        {/* BUSCA ESTILO TERMINAL */}
                         <div className="relative group hidden lg:block">
                             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 transition-colors ${busca && 'text-sky-400'}`} size={14} />
                             <input
@@ -261,7 +269,6 @@ export default function ConfigPage() {
                                 onChange={e => setBusca(e.target.value)}
                             />
                         </div>
-
                         <button
                             onClick={handleGlobalSave}
                             disabled={isSaving}
@@ -274,7 +281,6 @@ export default function ConfigPage() {
                 </header>
 
                 <div className="flex-1 flex overflow-hidden relative">
-                    {/* SIDEBAR DE ABAS */}
                     <aside className="w-80 border-r border-zinc-800/50 p-8 bg-zinc-900/10 relative z-40 flex flex-col justify-between shrink-0">
                         <div className="space-y-4">
                             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.3em] mb-8 px-4 border-l border-zinc-800">Menu de Preferências</p>
@@ -291,13 +297,11 @@ export default function ConfigPage() {
                                 </button>
                             ))}
                         </div>
-
                         <button onClick={() => signOut()} className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500/10 transition-all group">
-                            <Lock size={18} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" /> Encerrar Sessão
+                            <LogOut size={18} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" /> Encerrar Sessão
                         </button>
                     </aside>
 
-                    {/* ÁREA DE CONTEÚDO SCROLLABLE */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-12 lg:p-16 relative z-10 scroll-smooth">
                         <div className="max-w-4xl mx-auto ">
                             {renderContent()}
@@ -305,6 +309,30 @@ export default function ConfigPage() {
                     </div>
                 </div>
             </main>
+
+            {/* MODAL GLOBAL DE ALERTAS E CONFIRMAÇÕES */}
+            <Modal
+                isOpen={modalConfig.open}
+                onClose={() => setModalConfig({ ...modalConfig, open: false })}
+                title={modalConfig.title}
+                actions={
+                    <div className="flex w-full gap-2">
+                        {modalConfig.type === 'danger' ? (
+                            <>
+                                <button onClick={() => setModalConfig({ ...modalConfig, open: false })} className="flex-1 text-[10px] font-bold text-zinc-500 uppercase px-4">Cancelar</button>
+                                <button onClick={modalConfig.onConfirm} className="flex-1 bg-rose-600 text-white text-[10px] font-black uppercase px-6 py-2.5 rounded-xl">Excluir Tudo</button>
+                            </>
+                        ) : (
+                            <button onClick={() => setModalConfig({ ...modalConfig, open: false })} className="w-full bg-sky-600 text-white text-[10px] font-black uppercase px-6 py-2.5 rounded-xl">Entendi</button>
+                        )}
+                    </div>
+                }
+            >
+                <div className="flex flex-col items-center text-center gap-4">
+                    {modalConfig.type === 'danger' ? <AlertTriangle size={40} className="text-rose-500/50" /> : <Info size={40} className="text-sky-500/50" />}
+                    <p className="text-sm text-zinc-400 font-medium leading-relaxed">{modalConfig.message}</p>
+                </div>
+            </Modal>
         </div>
     );
 }
