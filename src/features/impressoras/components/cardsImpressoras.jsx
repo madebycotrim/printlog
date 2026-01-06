@@ -10,7 +10,7 @@ const SegmentedProgress = memo(({ pct, color, pulse }) => {
     const safePct = Math.max(0, Math.min(100, Number(pct) || 0));
 
     return (
-        <div
+        <div 
             className={`h-3 w-full bg-zinc-950 border border-zinc-800/50 rounded-full px-1 flex items-center gap-[2px] relative overflow-hidden ${pulse ? 'ring-1 ring-rose-500/20' : ''}`}
             title={`Saúde: ${safePct}%`}
         >
@@ -21,7 +21,7 @@ const SegmentedProgress = memo(({ pct, color, pulse }) => {
                         key={i}
                         className={`h-[4px] flex-1 rounded-full transition-all duration-700 ${pulse && isActive ? 'animate-pulse' : ''}`}
                         style={{
-                            backgroundColor: isActive ? color : '#27272a',
+                            backgroundColor: isActive ? color : '#27272a', 
                             boxShadow: isActive ? `0 0 8px ${color}40` : 'none',
                             opacity: isActive ? 1 : 0.2
                         }}
@@ -54,16 +54,16 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
         const hMaint = Number(printer?.lastMaintenanceHour || printer?.ultima_manutencao_hora || 0);
         const interval = Number(printer?.maintenanceInterval || printer?.intervalo_manutencao || 300);
         const rendimento = Number(printer?.yieldTotal || printer?.rendimento_total || 0);
-
+        
         const health = Math.max(0, Math.min(100, ((interval - (hTotais - hMaint)) / interval) * 100));
-
+        
         return {
             configStatus: obterConfiguracaoStatus(printer?.status),
-            stats: {
-                hTotais,
-                health,
+            stats: { 
+                hTotais, 
+                health, 
                 rendimento,
-                ehCritico: health < 15 || printer?.status === 'maintenance'
+                ehCritico: health < 15 || printer?.status === 'maintenance' 
             }
         };
     }, [printer]);
@@ -73,42 +73,31 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
     return (
         <div className={`
             group relative bg-zinc-900/40 backdrop-blur-sm rounded-2xl overflow-hidden transition-all duration-500
-            border ${stats.ehCritico
-                ? 'border-rose-500/40 bg-rose-500/[0.03] shadow-[0_0_20px_rgba(244,63,94,0.05)]'
+            border ${stats.ehCritico 
+                ? 'border-rose-500/40 bg-rose-500/[0.03] shadow-[0_0_20px_rgba(244,63,94,0.05)]' 
                 : 'border-zinc-800/60 hover:border-zinc-700/80 shadow-sm'}
         `}>
             <div className="flex h-[195px]">
-
+                
                 {/* BARRA LATERAL (75px) */}
-                <div className="w-[75px] bg-zinc-950/40 border-r border-zinc-800/50 flex flex-col items-center py-6 shrink-0">
-
-                    {/* BOTÃO DE STATUS */}
-                    <button
+                <div className="w-[75px] bg-zinc-950/40 border-r border-zinc-800/50 flex flex-col items-center py-6 justify-evenly shrink-0">
+                    <button 
                         onClick={() => onToggleStatus?.(printer.id, printer.status)}
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 border active:scale-90 ${printer.status === 'printing'
-                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-inner'
-                                : 'bg-zinc-900/50 border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:border-zinc-700'
-                            }`}
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 border active:scale-90 ${
+                            printer.status === 'printing' 
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-inner' 
+                            : 'bg-zinc-900/50 border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:border-zinc-700'
+                        }`}
                     >
-                        <IconeStatus
-                            size={24}
-                            strokeWidth={2}
-                            className={printer.status === 'printing' ? 'animate-pulse' : ''}
-                        />
+                        <IconeStatus size={24} strokeWidth={2} className={printer.status === 'printing' ? 'animate-pulse' : ''} />
                     </button>
 
-                    {/* ESPAÇADOR FLEX */}
-                    <div className="flex-1" />
-
-                    {/* MARCA / FABRICANTE */}
                     <div className="rotate-180 [writing-mode:vertical-lr] flex items-center opacity-40 group-hover:opacity-100 transition-opacity">
                         <span className="text-[9px] font-black uppercase tracking-[0.4em] whitespace-nowrap text-zinc-500">
                             {printer.brand || printer.marca || 'FABRICANTE'}
                         </span>
                     </div>
-
                 </div>
-
 
                 {/* PAINEL CENTRAL */}
                 <div className="flex-1 p-6 flex flex-col justify-between min-w-0">
@@ -122,8 +111,9 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
                                 SÉRIE: <span className="text-zinc-500">#{String(printer.id || '').slice(-6).toUpperCase()}</span>
                             </p>
                         </div>
-                        <div className={`shrink-0 px-2 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 ${stats.ehCritico ? 'bg-rose-500/20 border-rose-500/40 text-rose-400 animate-pulse' : 'bg-zinc-900 border-zinc-800 ' + configStatus.color
-                            }`}>
+                        <div className={`shrink-0 px-2 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
+                            stats.ehCritico ? 'bg-rose-500/20 border-rose-500/40 text-rose-400 animate-pulse' : 'bg-zinc-900 border-zinc-800 ' + configStatus.color
+                        }`}>
                             <div className={`h-1 w-1 rounded-full ${stats.ehCritico ? 'bg-rose-500' : configStatus.dot}`} />
                             {stats.ehCritico ? 'ALERTA TÉCNICO' : configStatus.label}
                         </div>
@@ -168,20 +158,20 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
 
             {/* AÇÕES DO RODAPÉ (h-11) */}
             <div className="grid grid-cols-[1fr_50px_50px] h-11 bg-zinc-950/60 border-t border-zinc-800/50">
-                <button onClick={() => onResetMaint?.(printer)}
+                <button  onClick={() => onResetMaint?.(printer)} 
                     className="flex items-center justify-center gap-2.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800/30 transition-all group/btn"
                 >
                     <Activity size={14} className={`transition-transform group-hover/btn:scale-110 ${stats.ehCritico ? 'text-rose-500 animate-pulse' : 'text-zinc-600'}`} />
                     Diagnóstico / Reset
                 </button>
-                <button
-                    onClick={() => onEdit?.(printer)}
+                <button 
+                    onClick={() => onEdit?.(printer)} 
                     className="flex items-center justify-center border-l border-zinc-800/50 text-zinc-600 hover:text-zinc-100 hover:bg-zinc-800/50 transition-all"
                 >
                     <Edit2 size={14} />
                 </button>
-                <button
-                    onClick={() => onDelete?.(printer.id)}
+                <button 
+                    onClick={() => onDelete?.(printer.id)} 
                     className="flex items-center justify-center border-l border-zinc-800/50 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 transition-all"
                 >
                     <Trash2 size={14} />
