@@ -3,10 +3,11 @@ import api from '../../../utils/api';
 import { parseNumber } from "../../../utils/numbers";
 
 /**
- * MOTOR DE CÁLCULO PROFISSIONAL (MÉTODO DO DIVISOR)
+ * MOTOR DE CÁLCULO PROFISSIONAL (MÉTODO COMERCIAL)
+ * O desconto aqui funciona como Redutor de Preço e Margem.
  */
 export function calcularTudo(dadosEntrada = {}) {
-    // Helper para extração segura de números
+    // Helper para extração segura de números e conversão de vírgula para ponto
     const obterValor = (caminho, caminhoAlternativo) => {
         const partes = caminho.split('.');
         let valor = dadosEntrada;
@@ -20,15 +21,6 @@ export function calcularTudo(dadosEntrada = {}) {
 
     const quantidade = Math.max(1, obterValor('qtdPecas', 'qtdPecas'));
 
-    // Soma de custos extras
-    const listaExtras = dadosEntrada.custosExtras?.lista || [];
-    const somaExtrasAdicionais = Array.isArray(listaExtras)
-        ? listaExtras.reduce((acumulado, item) => {
-            const val = parseFloat(String(item?.valor || "0").replace(',', '.')) || 0;
-            return acumulado + val;
-        }, 0)
-        : 0;
-
     // Parâmetros normalizados
     const p = {
         quantidade,
@@ -38,7 +30,9 @@ export function calcularTudo(dadosEntrada = {}) {
         taxaSetup: obterValor('config.taxaSetup', 'taxaSetup'),
         embalagem: obterValor('custosExtras.embalagem', 'custoEmbalagem'),
         frete: obterValor('custosExtras.frete', 'custoFrete'),
-        extras: somaExtrasAdicionais,
+        extras: Array.isArray(dadosEntrada.custosExtras?.lista)
+            ? dadosEntrada.custosExtras.lista.reduce((acc, item) => acc + (parseFloat(String(item?.valor || "0").replace(',', '.')) || 0), 0)
+            : 0,
         margemLucro: obterValor('config.margemLucro', 'margemLucro') / 100,
         imposto: obterValor('config.imposto', 'imposto') / 100,
         taxaMkt: obterValor('vendas.taxaMarketplace', 'taxaMarketplace') / 100,
@@ -48,31 +42,20 @@ export function calcularTudo(dadosEntrada = {}) {
 
         tempoImp: obterValor('tempo.impressaoHoras', 'tempoImpressaoHoras') + (obterValor('tempo.impressaoMinutos', 'tempoImpressaoMinutos') / 60),
         tempoTrab: obterValor('tempo.trabalhoHoras', 'tempoTrabalhoHoras') + (obterValor('tempo.trabalhoMinutos', 'tempoTrabalhoMinutos') / 60),
-
-        // CORREÇÃO: O valor vindo da config já deve estar em kW. 
-        // A lógica de ">= 2" foi movida exclusivamente para o componente de UI.
         consumoKw: obterValor('config.consumoKw', 'consumoImpressoraKw')
     };
 
     // --- CÁLCULO DE MATERIAIS ---
     let custoMaterialUnitario = 0;
     const slots = dadosEntrada.material?.slots || [];
-    const slotsValidos = slots.filter(s => {
-        const peso = parseFloat(String(s?.weight || "0").replace(',', '.'));
-        const preco = parseFloat(String(s?.priceKg || "0").replace(',', '.'));
-        return peso > 0 && preco > 0;
-    });
-
-    if (slotsValidos.length > 0) {
-        custoMaterialUnitario = slotsValidos.reduce((acc, slot) => {
-            const weight = parseFloat(String(slot.weight).replace(',', '.'));
-            const priceKg = parseFloat(String(slot.priceKg).replace(',', '.'));
+    if (slots.length > 0) {
+        custoMaterialUnitario = slots.reduce((acc, slot) => {
+            const weight = parseFloat(String(slot.weight || "0").replace(',', '.'));
+            const priceKg = parseFloat(String(slot.priceKg || "0").replace(',', '.'));
             return acc + ((priceKg / 1000) * weight);
         }, 0);
     } else {
-        const custoRolo = obterValor('material.custoRolo', 'custoRolo');
-        const pesoModelo = obterValor('material.pesoModelo', 'pesoModelo');
-        custoMaterialUnitario = (custoRolo / 1000) * pesoModelo;
+        custoMaterialUnitario = (obterValor('material.custoRolo', 'custoRolo') / 1000) * obterValor('material.pesoModelo', 'pesoModelo');
     }
 
     // --- CUSTOS OPERACIONAIS ---
@@ -91,19 +74,24 @@ export function calcularTudo(dadosEntrada = {}) {
     const custoFixoSaidaUnitario = p.embalagem + p.frete + (p.extras / p.quantidade);
     const custoTotalOperacional = custoComRisco + custoFixoSaidaUnitario;
 
-    // --- FORMAÇÃO DE PREÇO (MÉTODO DO DIVISOR) ---
+    // --- FORMAÇÃO DE PREÇO (VISÃO COMERCIAL) ---
+
+    // 1. O Divisor de Markup é calculado SEM o desconto para gerar o "Preço de Tabela"
     const somaTaxasELucro = p.imposto + p.taxaMkt + p.margemLucro;
     const divisor = Math.max(0.05, 1 - somaTaxasELucro);
 
-    let precoVendaFinal = (custoTotalOperacional + (p.taxaMktFixa / p.quantidade)) / divisor;
+    // 2. Preço Sugerido (Valor de Tabela / Sem desconto)
+    const precoSugerido = (custoTotalOperacional + (p.taxaMktFixa / p.quantidade)) / divisor;
 
-    const divisorDesconto = Math.max(0.01, 1 - p.desconto);
-    const precoSugerido = precoVendaFinal / divisorDesconto;
+    // 3. Preço com Desconto (O valor que o cliente realmente paga)
     const precoComDesconto = precoSugerido * (1 - p.desconto);
 
-    // --- RESULTADOS ---
+    // --- ANÁLISE REAL DE RESULTADOS ---
+    // Impostos e Marketplace incidem sobre o preço REAL praticado
     const impostoReal = precoComDesconto * p.imposto;
-    const taxaMktReal = (precoComDesconto * p.taxaMkt) + p.taxaMktFixa;
+    const taxaMktReal = (precoComDesconto * p.taxaMkt) + (p.taxaMktFixa / p.quantidade);
+
+    // Lucro Líquido Real: Pode ser negativo se o desconto for agressivo demais
     const lucroLiquidoReal = precoComDesconto - impostoReal - taxaMktReal - custoTotalOperacional;
     const margemEfetivaReal = precoComDesconto > 0 ? (lucroLiquidoReal / precoComDesconto) * 100 : 0;
 
@@ -123,8 +111,8 @@ export function calcularTudo(dadosEntrada = {}) {
         valorImpostos: arredondar(impostoReal),
         valorMarketplace: arredondar(taxaMktReal),
         custoUnitario: arredondar(custoTotalOperacional),
-        precoSugerido: arredondar(precoSugerido),
-        precoComDesconto: arredondar(precoComDesconto),
+        precoSugerido: arredondar(precoSugerido), // Este valor ficará fixo quando você mexer no desconto
+        precoComDesconto: arredondar(precoComDesconto), // Este valor vai cair quando você aumentar o %
         lucroBrutoUnitario: arredondar(lucroLiquidoReal),
         margemEfetivaPct: arredondar(margemEfetivaReal),
         tempoTotalHoras: arredondar(p.tempoImp),
@@ -167,7 +155,7 @@ export const useSettingsStore = create((set) => ({
                     imposto: String(d.imposto ?? ""),
                     taxaFalha: String(d.taxa_falha ?? ""),
                     desconto: String(d.desconto ?? ""),
-                    whatsappTemplate: d.whatsapp_template || "Segue o orçamento do projeto *{projeto}*:\n\n💰 Valor: *{valor}*\n⏱️ Tempo estimado: *{tempo}*\n\nPodemos fechar?"
+                    whatsapp_template: d.whatsapp_template || "Segue o orçamento do projeto *{projeto}*:\n\n💰 Valor: *{valor}*\n⏱️ Tempo estimado: *{tempo}*\n\nPodemos fechar?"
                 };
                 set({ settings: mapeado, isLoading: false });
                 return true;
@@ -182,7 +170,6 @@ export const useSettingsStore = create((set) => ({
     saveSettings: async (dados) => {
         set({ isLoading: true });
         try {
-            // CORREÇÃO: Garantindo que valores vazios ou indefinidos virem 0 para não quebrar o banco
             const paraEnviar = {
                 custo_kwh: parseNumber(String(dados.custoKwh || 0).replace(',', '.')),
                 valor_hora_humana: parseNumber(String(dados.valorHoraHumana || 0).replace(',', '.')),
