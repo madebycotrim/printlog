@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
     X, History, Package, RotateCcw, Trash2, Search,
     Database, Loader2, Calendar, TrendingUp, Clock, Check,
-    AlertTriangle, CheckCircle2, ExternalLink, DollarSign
+    AlertTriangle, CheckCircle2, ExternalLink
 } from "lucide-react";
 import { useProjectsStore } from "../../orcamentos/logic/projects";
 import { formatCurrency } from "../../../utils/numbers";
@@ -21,9 +21,8 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
     const [busca, setBusca] = useState("");
 
     // --- CONFIGURAÇÕES DO SISTEMA INTELIGENTE ---
-    const MARGEM_MINIMA_IDEAL = 20; // % abaixo disso o sistema ativa alertas de risco
+    const MARGEM_MINIMA_IDEAL = 20;
 
-    // Estado para o Popup de Confirmação Unificado
     const [confirmacao, setConfirmacao] = useState({
         open: false,
         title: "",
@@ -35,13 +34,11 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
 
     const fecharConfirmacao = () => setConfirmacao(prev => ({ ...prev, open: false }));
 
-    // Formatação de Data e Hora padrão Brasil (Brasília)
     const formatarDataLocal = (stringData) => {
         if (!stringData) return "Sem data";
         try {
             const data = new Date(stringData);
             if (isNaN(data.getTime())) return "Data inválida";
-
             return new Intl.DateTimeFormat('pt-BR', {
                 day: '2-digit',
                 month: '2-digit',
@@ -51,15 +48,11 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                 hour12: false,
                 timeZone: 'America/Sao_Paulo'
             }).format(data).replace(',', ' às');
-        } catch {
-            return "Erro na data";
-        }
+        } catch { return "Erro na data"; }
     };
 
-    // --- HANDLERS DE AÇÕES COM LÓGICA INTELIGENTE ---
     const perguntarAprovacao = (projeto, margem) => {
         const margemRiscada = margem < MARGEM_MINIMA_IDEAL;
-
         setConfirmacao({
             open: true,
             title: margemRiscada ? "Atenção: Margem Crítica" : "Confirmar Aprovação",
@@ -115,16 +108,13 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
 
     return (
         <>
-            {/* Backdrop de Fundo */}
             <div
                 className={`fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                 onClick={onClose}
             />
 
-            {/* Painel Lateral (Gaveta) */}
             <aside className={`fixed top-0 right-0 z-[101] h-screen w-full sm:w-[420px] bg-zinc-950 border-l border-white/10 shadow-2xl transition-transform duration-500 ease-in-out flex flex-col ${open ? "translate-x-0" : "translate-x-full"}`}>
 
-                {/* Header Compacto */}
                 <div className="h-20 px-6 border-b border-white/5 flex items-center justify-between bg-zinc-900/20">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-sky-500 shadow-inner">
@@ -140,12 +130,11 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                     </button>
                 </div>
 
-                {/* Campo de Busca */}
                 <div className="p-4">
                     <div className="relative group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={16} />
                         <input
-                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 h-11 text-xs font-medium text-zinc-200 outline-none focus:border-sky-500/40 focus:ring-4 focus:ring-sky-500/5 transition-all"
+                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 h-11 text-xs font-medium text-zinc-200 outline-none focus:border-sky-500/40 transition-all"
                             placeholder="Localizar orçamento no histórico..."
                             value={busca}
                             onChange={(e) => setBusca(e.target.value)}
@@ -153,7 +142,6 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                     </div>
                 </div>
 
-                {/* Lista de Projetos */}
                 <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 custom-scrollbar">
                     {projetosFiltrados.length > 0 ? (
                         projetosFiltrados.map((projeto) => {
@@ -161,23 +149,31 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                             const resultados = dados.resultados || {};
                             const status = projeto.status || dados.status || "rascunho";
                             const isAprovado = status === 'aprovado';
-                            const margem = Number(resultados.margemEfetivaPct || 0);
-                            const lucro = Number(resultados.lucroEstimado || resultados.lucroAbsoluto || 0);
+
+                            // --- LÓGICA DE EXTRAÇÃO E CÁLCULO DE LUCRO ---
                             const precoVenda = Number(resultados.precoComDesconto || resultados.precoSugerido || 0);
+                            const custoTotal = Number(resultados.custoTotal || 0);
+                            
+                            // Tenta pegar o lucro salvo, se não houver, calcula (Venda - Custo)
+                            const lucro = Number(
+                                resultados.lucro || 
+                                resultados.lucroEstimado || 
+                                resultados.lucroAbsoluto || 
+                                (precoVenda - custoTotal)
+                            );
+
+                            const margem = Number(resultados.margemEfetivaPct || resultados.margem || 0);
 
                             return (
                                 <div key={projeto.id} className="group relative bg-zinc-900/40 border border-white/5 rounded-2xl p-4 transition-all duration-300 hover:bg-zinc-900/60 hover:border-white/10">
 
-                                    {/* Indicador de Status Lateral Inteligente */}
                                     <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-r-full transition-all duration-500 ${isAprovado ? 'bg-sky-500 shadow-[2px_0_10px_rgba(14,165,233,0.4)]' :
                                         margem >= MARGEM_MINIMA_IDEAL ? 'bg-emerald-500' : 'bg-red-500 animate-pulse shadow-[2px_0_10px_rgba(239,68,68,0.4)]'
                                         }`} />
 
-                                    {/* Cabeçalho: Nome e Data */}
                                     <div className="flex justify-between items-start mb-3 pl-2">
                                         <div className="min-w-0">
-                                            <h3 className="text-xs font-bold text-white truncate pr-2
-                                            ">
+                                            <h3 className="text-xs font-bold text-white truncate pr-2">
                                                 {projeto.label || "Projeto sem nome"}
                                             </h3>
                                             <div className="flex items-center gap-1.5 text-zinc-500 mt-0.5">
@@ -188,7 +184,6 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                                             </div>
                                         </div>
 
-                                        {/* Preço, Margem e Lucro */}
                                         <div className="text-right shrink-0">
                                             <div className={`text-[9px] font-black flex items-center justify-end gap-1 mb-0.5 ${margem >= MARGEM_MINIMA_IDEAL ? 'text-emerald-400' : 'text-red-400'
                                                 }`}>
@@ -197,16 +192,17 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                                             <div className="text-sm font-black text-white font-mono leading-none">
                                                 {formatCurrency(precoVenda)}
                                             </div>
-                                            <div className="text-[9px] font-bold text-zinc-500 mt-1 uppercase tracking-tighter flex items-center justify-end gap-1">
-                                                <span className="opacity-50">LUCRO</span>
-                                                <span className={lucro > 0 ? "text-emerald-500/80" : "text-red-500/80"}>
+                                            
+                                            {/* ÁREA DO LUCRO - GARANTIDA */}
+                                            <div className="text-[10px] font-bold mt-1.5 flex items-center justify-end gap-1">
+                                                <span className="text-zinc-600 text-[8px] tracking-widest uppercase">Lucro</span>
+                                                <span className={lucro > 0 ? "text-emerald-500" : "text-red-500"}>
                                                     {formatCurrency(lucro)}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Detalhes Técnicos (Peso e Tempo) */}
                                     <div className="flex gap-4 mb-4 pl-2 text-zinc-500">
                                         <div className="flex items-center gap-1.5">
                                             <Package size={12} className="opacity-50" />
@@ -222,7 +218,6 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                                         </div>
                                     </div>
 
-                                    {/* Ações do Card */}
                                     <div className="flex gap-1.5">
                                         {!isAprovado ? (
                                             <button
@@ -233,7 +228,7 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                                                     : 'bg-emerald-600/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-600 hover:text-white'
                                                     }`}
                                             >
-                                                <Check size={14} strokeWidth={3} /> {margem < MARGEM_MINIMA_IDEAL ? 'Aprovar com Risco' : 'Aprovar'}
+                                                <Check size={14} strokeWidth={3} /> {margem < MARGEM_MINIMA_IDEAL ? 'Risco' : 'Aprovar'}
                                             </button>
                                         ) : (
                                             <button
@@ -274,7 +269,6 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                     )}
                 </div>
 
-                {/* Footer: Purgar Banco de Dados */}
                 {projetos.length > 0 && (
                     <div className="p-4 border-t border-white/5 bg-zinc-900/10">
                         <button
@@ -288,7 +282,6 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                 )}
             </aside>
 
-            {/* Popup de Confirmação Inteligente */}
             <Popup
                 isOpen={confirmacao.open}
                 onClose={fecharConfirmacao}
