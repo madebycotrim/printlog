@@ -3,7 +3,7 @@ import { Plus, Trash2, Package, DollarSign, Tag, Layers, Loader2 } from "lucide-
 import { useFilamentStore } from "../../../filamentos/logic/filaments";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 
-/* ---------- COMPONENTE: LINHA DE FILAMENTO ---------- */
+/* ---------- COMPONENTE: LINHA DE FILAMENTO (MODO MULTI) ---------- */
 const LinhaFilamento = ({ indice, total, dadosSlot, opcoesSelecao, aoAtualizar, aoRemover, podeRemover }) => {
     const ordemVisual = (total - indice) * 10;
 
@@ -62,7 +62,6 @@ export default function MaterialModule({
     materialSlots = [],
     setMaterialSlots
 }) {
-    // Modo de exibição: single (uma cor) ou multi (várias cores)
     const [modo, setModo] = useState(selectedFilamentId === "multi" ? "multi" : "single");
     const { filaments: filamentos, fetchFilaments: buscarFilamentos, loading: carregando } = useFilamentStore();
 
@@ -70,7 +69,6 @@ export default function MaterialModule({
         buscarFilamentos();
     }, [buscarFilamentos]);
 
-    // Sincroniza o modo visual caso o estado global mude (ex: carregar projeto salvo)
     useEffect(() => {
         if (selectedFilamentId === "multi") {
             setModo("multi");
@@ -79,7 +77,7 @@ export default function MaterialModule({
         }
     }, [selectedFilamentId]);
 
-    // Agrupa filamentos do estoque por tipo de material para o select
+    // Agrupa filamentos por tipo para o select
     const opcoesSelecao = useMemo(() => {
         const grupos = {};
         const lista = Array.isArray(filamentos) ? filamentos : [];
@@ -89,7 +87,7 @@ export default function MaterialModule({
             if (!grupos[tipoMaterial]) grupos[tipoMaterial] = [];
 
             grupos[tipoMaterial].push({
-                value: item.id,
+                value: String(item.id),
                 label: item.nome
             });
         });
@@ -103,7 +101,7 @@ export default function MaterialModule({
         ];
     }, [filamentos]);
 
-    // Atualiza um slot específico e auto-calcula o preço/kg se vier do estoque
+    // Atualiza slot no modo multi
     const lidarAtualizacaoSlot = (indice, novosDados) => {
         const slotsAtuais = Array.isArray(materialSlots) ? materialSlots : [];
         const novosSlots = [...slotsAtuais];
@@ -112,7 +110,6 @@ export default function MaterialModule({
         if (novosDados.id && novosDados.id !== "manual") {
             const itemEstoque = filamentos.find(f => String(f.id) === String(novosDados.id));
             if (itemEstoque && Number(itemEstoque.peso_total) > 0) {
-                // Cálculo: (Preço Total / Peso Total em g) * 1000 para ter preço por KG
                 const precoPorKg = ((Number(itemEstoque.preco) / Number(itemEstoque.peso_total)) * 1000).toFixed(2);
                 novosSlots[indice].priceKg = String(precoPorKg);
             }
@@ -121,10 +118,8 @@ export default function MaterialModule({
         setMaterialSlots(novosSlots);
     };
 
-    // Peso total somado (reativo para o cabeçalho)
     const pesoTotalSomado = useMemo(() => {
         if (modo === "single") return parseFloat(String(pesoModelo || "0").replace(',', '.')) || 0;
-
         const slotsSeguros = Array.isArray(materialSlots) ? materialSlots : [];
         return slotsSeguros.reduce((acc, s) => {
             const valor = parseFloat(String(s?.weight || "0").replace(',', '.'));
@@ -132,7 +127,6 @@ export default function MaterialModule({
         }, 0);
     }, [materialSlots, pesoModelo, modo]);
 
-    // Alterna entre modo Simples e Multi-Material
     const alternarModo = (novoModo) => {
         setModo(novoModo);
         if (novoModo === "multi") {
@@ -144,7 +138,6 @@ export default function MaterialModule({
 
     return (
         <div className="flex flex-col gap-5 animate-in fade-in duration-500">
-
             {/* SELETOR DE MODO */}
             <div className="flex bg-zinc-900/40 border border-zinc-800/60 p-1 rounded-xl">
                 {["single", "multi"].map(m => (
@@ -169,13 +162,14 @@ export default function MaterialModule({
                             icon={carregando ? Loader2 : Tag}
                             className={carregando ? "animate-spin" : ""}
                             options={opcoesSelecao}
-                            value={selectedFilamentId || "manual"}
+                            value={String(selectedFilamentId || "manual")}
                             onChange={(id) => {
                                 setSelectedFilamentId(id);
                                 if (id !== 'manual') {
                                     const item = filamentos.find(f => String(f.id) === String(id));
+                                    // CORREÇÃO AQUI: Usando 'item' corretamente em vez de 'itemEstoque'
                                     if (item && Number(item.peso_total) > 0) {
-                                        const precoPorKg = ((Number(itemEstoque.preco) / Number(itemEstoque.peso_total)) * 1000).toFixed(2);
+                                        const precoPorKg = ((Number(item.preco) / Number(item.peso_total)) * 1000).toFixed(2);
                                         setCustoRolo(String(precoPorKg));
                                     }
                                 }
@@ -205,6 +199,7 @@ export default function MaterialModule({
                     </div>
                 </div>
             ) : (
+                /* MODO MULTI MATERIAL */
                 <div className="space-y-3 relative z-10">
                     <div className="flex items-center justify-between px-1 border-b border-white/5 pb-2">
                         <div className="flex items-center gap-2">
