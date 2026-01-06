@@ -142,6 +142,7 @@ export const useSettingsStore = create((set) => ({
         set({ isLoading: true });
         try {
             const { data } = await api.get('/settings');
+            // O backend retorna snake_case, convertemos TUDO para camelCase aqui
             const d = Array.isArray(data) ? data[0] : (data?.results ? data.results[0] : data);
 
             if (d) {
@@ -155,7 +156,7 @@ export const useSettingsStore = create((set) => ({
                     imposto: String(d.imposto ?? ""),
                     taxaFalha: String(d.taxa_falha ?? ""),
                     desconto: String(d.desconto ?? ""),
-                    whatsapp_template: d.whatsapp_template || "Segue o orçamento do projeto *{projeto}*:\n\n💰 Valor: *{valor}*\n⏱️ Tempo estimado: *{tempo}*\n\nPodemos fechar?"
+                    whatsappTemplate: d.whatsapp_template || "Segue o orçamento..." // CORRIGIDO PARA camelCase
                 };
                 set({ settings: mapeado, isLoading: false });
                 return true;

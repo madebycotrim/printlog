@@ -147,6 +147,9 @@ export async function onRequest(context) {
             }
             if (method === 'POST' || method === 'PUT') {
                 const s = await request.json();
+                console.log("DADOS RECEBIDOS NO WORKER:", s); // <--- Adicione esse log
+                console.log("TIPO DO DADO:", typeof s); // <--- Verifique o tipo do dado
+                
                 await db.prepare(`INSERT INTO calculator_settings (user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET 
                     custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
