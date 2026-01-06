@@ -298,8 +298,50 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
             </Popup>
 
             {/* OUTROS POPUPS */}
-            <Popup isOpen={whatsappModal} onClose={() => setWhatsappModal(false)} title="Enviar WhatsApp" icon={MessageCircle} footer={<div className="flex w-full gap-2"><button onClick={() => { navigator.clipboard.writeText(mensagemEditavel); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }} className="flex-1 bg-zinc-900 border border-white/5 text-zinc-400 text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2">{copiado ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />} {copiado ? "Copiado" : "Copiar"}</button><button onClick={() => { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagemEditavel)}`, "_blank"); setWhatsappModal(false); }} className="flex-[2] bg-[#10b981] text-white text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg"><Send size={14} /> Enviar Agora</button></div>}><div className="p-6"><textarea className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs text-zinc-300 outline-none focus:border-emerald-500/50 transition-all resize-none font-sans" value={mensagemEditavel} onChange={(e) => setMensagemEditavel(e.target.value)} /></div></Popup>
-            <Popup isOpen={genericModal.open} onClose={() => setGenericModal({ ...genericModal, open: false })} title={genericModal.title} icon={genericModal.icon} footer={<div className="flex w-full gap-2">{genericModal.type === 'CONFIRM' ? (<><button onClick={() => setGenericModal({ ...genericModal, open: false })} className="flex-1 text-[10px] font-bold text-zinc-500 uppercase h-12">Cancelar</button><button onClick={genericModal.onConfirm} className="flex-1 bg-rose-600 text-white text-[10px] font-black uppercase h-12 rounded-xl">Confirmar</button></>) : (<button onClick={() => setGenericModal({ ...genericModal, open: false })} className="w-full bg-[#0095ff] text-white text-[10px] font-black uppercase h-12 rounded-xl">Entendi</button>)}</div>}><div className="p-8 text-center"><p className="text-sm text-zinc-400">{genericModal.message}</p></div></Popup>
+            <Popup isOpen={whatsappModal} onClose={() => setWhatsappModal(false)}
+                title="Enviar WhatsApp"
+                icon={MessageCircle}
+                footer={
+                    <div className="flex w-full gap-2">
+                        <button onClick={() => { navigator.clipboard.writeText(mensagemEditavel); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }} className="flex-1 bg-zinc-900 border border-white/5 text-zinc-400 text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2">
+                            {copiado ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                            {copiado ? "Copiado" : "Copiar"}
+                        </button>
+                        <button onClick={() => { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagemEditavel)}`, "_blank"); setWhatsappModal(false); }} className="flex-[2] bg-[#10b981] text-white text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg"><Send size={14} />
+                            Enviar Agora
+                        </button>
+                    </div>
+                }>
+                <div className="p-6">
+                    <textarea className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs text-zinc-300 outline-none focus:border-emerald-500/50 transition-all resize-none font-sans" value={mensagemEditavel} onChange={(e) => setMensagemEditavel(e.target.value)} />
+                </div>
+            </Popup>
+
+            <Popup isOpen={genericModal.open} onClose={() => setGenericModal({ ...genericModal, open: false })}
+                title={genericModal.title}
+                icon={genericModal.icon}
+                footer={
+                    <div className="flex w-full gap-2">
+                        {genericModal.type === 'CONFIRM' ? (
+                            <>
+                                <button onClick={() => setGenericModal({ ...genericModal, open: false })} className="flex-1 text-[10px] font-bold text-zinc-500 uppercase h-12">
+                                    Cancelar
+                                </button>
+                                <button onClick={genericModal.onConfirm} className="flex-1 bg-rose-600 text-white text-[10px] font-black uppercase h-12 rounded-xl">
+                                    Confirmar
+                                </button>
+                            </>
+                        ) : (
+                            <button onClick={() => setGenericModal({ ...genericModal, open: false })} className="w-full bg-[#0095ff] text-white text-[10px] font-black uppercase h-12 rounded-xl">
+                                Entendi
+                            </button>
+                        )}
+                    </div>
+                }>
+                <div className="p-8 text-center">
+                    <p className="text-sm text-zinc-400">{genericModal.message}</p>
+                </div>
+            </Popup>
         </div>
     );
 }
