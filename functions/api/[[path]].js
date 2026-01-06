@@ -4,10 +4,10 @@ export async function onRequest(context) {
     const { request, env, params } = context;
     const url = new URL(request.url);
     const pathArray = params.path || [];
-    const entity = pathArray[0];
+    const entity = pathArray[0]; // filaments, printers, settings, projects, etc.
     const method = request.method;
 
-    // 1. CORREÇÃO CORS: Adicionado PUT e PATCH
+    // 1. CONFIGURAÇÃO DE CORS
     const corsHeaders = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
@@ -17,21 +17,22 @@ export async function onRequest(context) {
     if (method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
     try {
+        // 2. AUTENTICAÇÃO COM CLERK
         const clerk = createClerkClient({
             secretKey: env.CLERK_SECRET_KEY,
             publishableKey: env.CLERK_PUBLISHABLE_KEY
         });
 
         const authRequest = await clerk.authenticateRequest(request);
-        if (!authRequest.isSignedIn) return Response.json({ error: "Não autorizado" }, { status: 401, headers: corsHeaders });
+        if (!authRequest.isSignedIn) {
+            return Response.json({ error: "Não autorizado" }, { status: 401, headers: corsHeaders });
+        }
 
         const userId = authRequest.toAuth().userId;
         const db = env.DB;
-
-        // Capturar ID da URL se existir (ex: /filaments/123 -> pathArray[1] é 123)
         const idFromPath = pathArray[1];
 
-        // --- MANUTENÇÃO DO SCHEMA ---
+        // 3. MANUTENÇÃO AUTOMÁTICA DO SCHEMA (Garante que as tabelas existam)
         await db.batch([
             db.prepare(`CREATE TABLE IF NOT EXISTS filaments (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, material TEXT, cor_hex TEXT, peso_total REAL, peso_atual REAL, preco REAL, data_abertura TEXT, favorito INTEGER DEFAULT 0)`),
             db.prepare(`CREATE TABLE IF NOT EXISTS printers (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, modelo TEXT, status TEXT DEFAULT 'idle', potencia REAL DEFAULT 0, preco REAL DEFAULT 0, rendimento_total REAL DEFAULT 0, horas_totais REAL DEFAULT 0, ultima_manutencao_hora REAL DEFAULT 0, intervalo_manutencao REAL DEFAULT 300, historico TEXT)`),
@@ -39,20 +40,20 @@ export async function onRequest(context) {
             db.prepare(`CREATE TABLE IF NOT EXISTS projects (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, label TEXT NOT NULL, data TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`)
         ]);
 
-        // --- ROTEAMENTO FILAMENTS ---
+        // ---------------------------------------------------------
+        // ROTEAMENTO: FILAMENTOS
+        // ---------------------------------------------------------
         if (entity === 'filaments' || entity === 'filamentos') {
             if (method === 'GET') {
                 const { results } = await db.prepare("SELECT * FROM filaments WHERE user_id = ? ORDER BY favorito DESC, nome ASC").bind(userId).all();
                 return Response.json(results || [], { headers: corsHeaders });
             }
 
-            // POST, PUT e PATCH (Salvar e Editar)
             if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
                 const f = await request.json();
                 const id = f.id || idFromPath || crypto.randomUUID();
 
                 if (method === 'PATCH') {
-                    // Atualização parcial (ex: apenas peso)
                     await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ? AND user_id = ?")
                         .bind(Number(f.peso_atual || 0), id, userId).run();
                     return Response.json({ success: true }, { headers: corsHeaders });
@@ -74,12 +75,50 @@ export async function onRequest(context) {
             }
         }
 
-        // --- ROTEAMENTO PRINTERS ---
+        // ---------------------------------------------------------
+        // ROTEAMENTO: CONFIGURAÇÕES (SETTINGS)
+        // ---------------------------------------------------------
+        if (entity === 'settings') {
+            if (method === 'GET') {
+                const data = await db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId).first();
+                return Response.json(data || {}, { headers: corsHeaders });
+            }
+
+            if (method === 'POST' || method === 'PUT') {
+                const s = await request.json();
+                
+                await db.prepare(`INSERT INTO calculator_settings (
+                    user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
+                    consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                ON CONFLICT(user_id) DO UPDATE SET 
+                    custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
+                    custo_hora_maquina=excluded.custo_hora_maquina, taxa_setup=excluded.taxa_setup, 
+                    consumo_impressora_kw=excluded.consumo_impressora_kw, margem_lucro=excluded.margem_lucro, 
+                    imposto=excluded.imposto, taxa_falha=excluded.taxa_falha, desconto=excluded.desconto,
+                    whatsapp_template=excluded.whatsapp_template`)
+                .bind(
+                    userId, 
+                    Number(s.custo_kwh ?? 0), Number(s.valor_hora_humana ?? 0),
+                    Number(s.custo_hora_maquina ?? 0), Number(s.taxa_setup ?? 0),
+                    Number(s.consumo_impressora_kw ?? 0), Number(s.margem_lucro ?? 0),
+                    Number(s.imposto ?? 0), Number(s.taxa_falha ?? 0), 
+                    Number(s.desconto ?? 0), String(s.whatsapp_template || "")
+                ).run();
+
+                return Response.json({ success: true }, { headers: corsHeaders });
+            }
+        }
+
+        // ---------------------------------------------------------
+        // ROTEAMENTO: IMPRESSORAS
+        // ---------------------------------------------------------
         if (entity === 'printers' || entity === 'impressoras') {
             if (method === 'GET') {
                 const { results } = await db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(userId).all();
                 return Response.json(results || [], { headers: corsHeaders });
             }
+
             if (method === 'POST' || method === 'PUT') {
                 const p = await request.json();
                 const id = p.id || idFromPath || crypto.randomUUID();
@@ -98,6 +137,7 @@ export async function onRequest(context) {
 
                 return Response.json({ id, ...p }, { headers: corsHeaders });
             }
+
             if (method === 'DELETE') {
                 const id = idFromPath || url.searchParams.get('id');
                 await db.prepare("DELETE FROM printers WHERE id = ? AND user_id = ?").bind(id, userId).run();
@@ -105,7 +145,9 @@ export async function onRequest(context) {
             }
         }
 
-        // --- ROTEAMENTO PROJECTS ---
+        // ---------------------------------------------------------
+        // ROTEAMENTO: PROJETOS (ORÇAMENTOS SALVOS)
+        // ---------------------------------------------------------
         if (entity === 'projects') {
             if (method === 'GET') {
                 const { results } = await db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").bind(userId).all();
@@ -117,17 +159,19 @@ export async function onRequest(context) {
                 }));
                 return Response.json(formatted, { headers: corsHeaders });
             }
+
             if (method === 'POST' || method === 'PUT') {
                 const p = await request.json();
                 const id = p.id || idFromPath || crypto.randomUUID();
                 const label = p.label || "Novo Orçamento";
-                const dataStr = JSON.stringify(p.entradas ? p : (p.data || p.payload || {}));
+                const dataStr = JSON.stringify(p.entradas ? p : (p.data || p.payload || p));
 
                 await db.prepare("INSERT INTO projects (id, user_id, label, data) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET label=excluded.label, data=excluded.data")
                     .bind(id, userId, label, dataStr).run();
 
                 return Response.json({ id, label, data: JSON.parse(dataStr) }, { headers: corsHeaders });
             }
+
             if (method === 'DELETE') {
                 const id = idFromPath || url.searchParams.get('id');
                 if (id) {
@@ -139,37 +183,13 @@ export async function onRequest(context) {
             }
         }
 
-        // --- ROTEAMENTO SETTINGS ---
-        if (entity === 'settings') {
-            if (method === 'GET') {
-                const data = await db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId).first();
-                return Response.json(data || {}, { headers: corsHeaders });
-            }
-            if (method === 'POST' || method === 'PUT') {
-                const s = await request.json();
-                console.log("DADOS RECEBIDOS NO WORKER:", s); // <--- Adicione esse log
-                console.log("TIPO DO DADO:", typeof s); // <--- Verifique o tipo do dado
-                
-                await db.prepare(`INSERT INTO calculator_settings (user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET 
-                    custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
-                    custo_hora_maquina=excluded.custo_hora_maquina, taxa_setup=excluded.taxa_setup, 
-                    consumo_impressora_kw=excluded.consumo_impressora_kw, margem_lucro=excluded.margem_lucro, 
-                    imposto=excluded.imposto, taxa_falha=excluded.taxa_falha, desconto=excluded.desconto,
-                    whatsapp_template=excluded.whatsapp_template`)
-                    .bind(userId, Number(s.custo_kwh || 0), Number(s.valor_hora_humana || 0),
-                        Number(s.custo_hora_maquina || 0), Number(s.taxa_setup || 0),
-                        Number(s.consumo_impressora_kw || 0), Number(s.margem_lucro || 0),
-                        Number(s.imposto || 0), Number(s.taxa_falha || 0), Number(s.desconto || 0), s.whatsapp_template || "").run();
-                return Response.json({ success: true }, { headers: corsHeaders });
-            }
-        }
-
-        // APPROVE BUDGET
+        // ---------------------------------------------------------
+        // ROTEAMENTO: APROVAR ORÇAMENTO (BAIXA NO ESTOQUE)
+        // ---------------------------------------------------------
         if (entity === 'approve-budget' && method === 'POST') {
             const { projectId, printerId, filaments, totalTime } = await request.json();
+            
             const project = await db.prepare("SELECT data FROM projects WHERE id = ? AND user_id = ?").bind(projectId, userId).first();
-
             if (!project) return Response.json({ error: "Projeto não encontrado" }, { status: 404, headers: corsHeaders });
 
             let pData = JSON.parse(project.data || "{}");
@@ -187,12 +207,18 @@ export async function onRequest(context) {
                     }
                 });
             }
+            
             await db.batch(batch);
             return Response.json({ success: true }, { headers: corsHeaders });
         }
 
         return Response.json({ error: "Rota não encontrada" }, { status: 404, headers: corsHeaders });
+
     } catch (err) {
-        return Response.json({ error: "Erro Interno", details: err.message }, { status: 500, headers: corsHeaders });
+        console.error("ERRO NO WORKER:", err.message);
+        return Response.json({ 
+            error: "Erro Interno no Servidor", 
+            details: err.message 
+        }, { status: 500, headers: corsHeaders });
     }
 }

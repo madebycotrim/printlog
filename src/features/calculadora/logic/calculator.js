@@ -4,7 +4,7 @@ import { parseNumber } from "../../../utils/numbers";
 
 /**
  * MOTOR DE CÁLCULO PROFISSIONAL (MÉTODO COMERCIAL)
- * O desconto aqui funciona como Redutor de Preço e Margem.
+ * Calcula custos, formação de preço por markup e análise de lucro real.
  */
 export function calcularTudo(dadosEntrada = {}) {
     // Helper para extração segura de números e conversão de vírgula para ponto
@@ -21,7 +21,7 @@ export function calcularTudo(dadosEntrada = {}) {
 
     const quantidade = Math.max(1, obterValor('qtdPecas', 'qtdPecas'));
 
-    // Parâmetros normalizados
+    // Parâmetros normalizados para o cálculo
     const p = {
         quantidade,
         custoKwh: obterValor('config.custoKwh', 'custoKwh'),
@@ -45,7 +45,7 @@ export function calcularTudo(dadosEntrada = {}) {
         consumoKw: obterValor('config.consumoKw', 'consumoImpressoraKw')
     };
 
-    // --- CÁLCULO DE MATERIAIS ---
+    // --- CÁLCULO DE MATERIAIS (Suporta Simples e Multi-Material) ---
     let custoMaterialUnitario = 0;
     const slots = dadosEntrada.material?.slots || [];
     if (slots.length > 0) {
@@ -58,15 +58,16 @@ export function calcularTudo(dadosEntrada = {}) {
         custoMaterialUnitario = (obterValor('material.custoRolo', 'custoRolo') / 1000) * obterValor('material.pesoModelo', 'pesoModelo');
     }
 
-    // --- CUSTOS OPERACIONAIS ---
+    // --- CUSTOS OPERACIONAIS UNITÁRIOS ---
     const custoEnergiaUnit = (p.tempoImp * p.consumoKw * p.custoKwh) / p.quantidade;
     const custoBaseMaquinaUnit = (p.tempoImp * p.custoHoraMaquina) / p.quantidade;
-    const reservaManutencaoUnit = custoBaseMaquinaUnit * 0.10;
+    const reservaManutencaoUnit = custoBaseMaquinaUnit * 0.10; // 10% de reserva padrão
     const custoMaoDeObraUnit = (p.tempoTrab * p.valorHoraHumana) / p.quantidade;
     const custoSetupUnit = p.taxaSetup / p.quantidade;
 
     const custoDiretoTotal = custoMaterialUnitario + custoEnergiaUnit + custoBaseMaquinaUnit + reservaManutencaoUnit + custoMaoDeObraUnit + custoSetupUnit;
 
+    // Aplicação da Taxa de Falha (Risco)
     const fatorFalhaSeguro = Math.min(p.taxaFalha, 0.95);
     const custoComRisco = custoDiretoTotal / (1 - fatorFalhaSeguro);
     const valorRiscoUnitario = custoComRisco - custoDiretoTotal;
@@ -74,24 +75,17 @@ export function calcularTudo(dadosEntrada = {}) {
     const custoFixoSaidaUnitario = p.embalagem + p.frete + (p.extras / p.quantidade);
     const custoTotalOperacional = custoComRisco + custoFixoSaidaUnitario;
 
-    // --- FORMAÇÃO DE PREÇO (VISÃO COMERCIAL) ---
-
-    // 1. O Divisor de Markup é calculado SEM o desconto para gerar o "Preço de Tabela"
+    // --- FORMAÇÃO DE PREÇO (DIVISOR DE MARKUP) ---
     const somaTaxasELucro = p.imposto + p.taxaMkt + p.margemLucro;
     const divisor = Math.max(0.05, 1 - somaTaxasELucro);
 
-    // 2. Preço Sugerido (Valor de Tabela / Sem desconto)
+    // Preço Sugerido (Tabela) e Preço Praticado (Com Desconto)
     const precoSugerido = (custoTotalOperacional + (p.taxaMktFixa / p.quantidade)) / divisor;
-
-    // 3. Preço com Desconto (O valor que o cliente realmente paga)
     const precoComDesconto = precoSugerido * (1 - p.desconto);
 
     // --- ANÁLISE REAL DE RESULTADOS ---
-    // Impostos e Marketplace incidem sobre o preço REAL praticado
     const impostoReal = precoComDesconto * p.imposto;
     const taxaMktReal = (precoComDesconto * p.taxaMkt) + (p.taxaMktFixa / p.quantidade);
-
-    // Lucro Líquido Real: Pode ser negativo se o desconto for agressivo demais
     const lucroLiquidoReal = precoComDesconto - impostoReal - taxaMktReal - custoTotalOperacional;
     const margemEfetivaReal = precoComDesconto > 0 ? (lucroLiquidoReal / precoComDesconto) * 100 : 0;
 
@@ -111,8 +105,8 @@ export function calcularTudo(dadosEntrada = {}) {
         valorImpostos: arredondar(impostoReal),
         valorMarketplace: arredondar(taxaMktReal),
         custoUnitario: arredondar(custoTotalOperacional),
-        precoSugerido: arredondar(precoSugerido), // Este valor ficará fixo quando você mexer no desconto
-        precoComDesconto: arredondar(precoComDesconto), // Este valor vai cair quando você aumentar o %
+        precoSugerido: arredondar(precoSugerido),
+        precoComDesconto: arredondar(precoComDesconto),
         lucroBrutoUnitario: arredondar(lucroLiquidoReal),
         margemEfetivaPct: arredondar(margemEfetivaReal),
         tempoTotalHoras: arredondar(p.tempoImp),
@@ -122,8 +116,9 @@ export function calcularTudo(dadosEntrada = {}) {
 
 /**
  * ZUSTAND STORE: CONFIGURAÇÕES
+ * Gerencia a persistência dos dados entre a interface e o banco de dados Cloudflare D1.
  */
-export const useSettingsStore = create((set) => ({
+export const useSettingsStore = create((set, get) => ({
     settings: {
         custoKwh: "",
         valorHoraHumana: "",
@@ -142,10 +137,10 @@ export const useSettingsStore = create((set) => ({
         set({ isLoading: true });
         try {
             const { data } = await api.get('/settings');
-            // O backend retorna snake_case, convertemos TUDO para camelCase aqui
             const d = Array.isArray(data) ? data[0] : (data?.results ? data.results[0] : data);
 
             if (d) {
+                // Converte de snake_case (Banco) para camelCase (Aplicação)
                 const mapeado = {
                     custoKwh: String(d.custo_kwh ?? ""),
                     valorHoraHumana: String(d.valor_hora_humana ?? ""),
@@ -156,7 +151,7 @@ export const useSettingsStore = create((set) => ({
                     imposto: String(d.imposto ?? ""),
                     taxaFalha: String(d.taxa_falha ?? ""),
                     desconto: String(d.desconto ?? ""),
-                    whatsappTemplate: d.whatsapp_template || "Segue o orçamento..." // CORRIGIDO PARA camelCase
+                    whatsappTemplate: d.whatsapp_template || "Segue o orçamento do projeto *{projeto}*:\n\n💰 Valor: *{valor}*\n⏱️ Tempo estimado: *{tempo}*\n\nPodemos fechar?"
                 };
                 set({ settings: mapeado, isLoading: false });
                 return true;
@@ -168,24 +163,31 @@ export const useSettingsStore = create((set) => ({
         return false;
     },
 
-    saveSettings: async (dados) => {
+    saveSettings: async (novosDados) => {
         set({ isLoading: true });
         try {
+            // MESCLAGEM: Importante para não perder campos que não estão no formulário atual
+            const dadosAtuais = get().settings;
+            const dadosCompletos = { ...dadosAtuais, ...novosDados };
+
+            // Prepara o objeto para o formato que o Cloudflare Worker espera (snake_case)
             const paraEnviar = {
-                custo_kwh: parseNumber(String(dados.custoKwh || 0).replace(',', '.')),
-                valor_hora_humana: parseNumber(String(dados.valorHoraHumana || 0).replace(',', '.')),
-                custo_hora_maquina: parseNumber(String(dados.custoHoraMaquina || 0).replace(',', '.')),
-                taxa_setup: parseNumber(String(dados.taxaSetup || 0).replace(',', '.')),
-                consumo_impressora_kw: parseNumber(String(dados.consumoKw || 0).replace(',', '.')),
-                margem_lucro: parseNumber(String(dados.margemLucro || 0).replace(',', '.')),
-                imposto: parseNumber(String(dados.imposto || 0).replace(',', '.')),
-                taxa_falha: parseNumber(String(dados.taxaFalha || 0).replace(',', '.')),
-                desconto: parseNumber(String(dados.desconto || 0).replace(',', '.')),
-                whatsapp_template: dados.whatsappTemplate || ""
+                custo_kwh: parseNumber(String(dadosCompletos.custoKwh || 0).replace(',', '.')),
+                valor_hora_humana: parseNumber(String(dadosCompletos.valorHoraHumana || 0).replace(',', '.')),
+                custo_hora_maquina: parseNumber(String(dadosCompletos.custoHoraMaquina || 0).replace(',', '.')),
+                taxa_setup: parseNumber(String(dadosCompletos.taxaSetup || 0).replace(',', '.')),
+                consumo_impressora_kw: parseNumber(String(dadosCompletos.consumoKw || 0).replace(',', '.')),
+                margem_lucro: parseNumber(String(dadosCompletos.margemLucro || 0).replace(',', '.')),
+                imposto: parseNumber(String(dadosCompletos.imposto || 0).replace(',', '.')),
+                taxa_falha: parseNumber(String(dadosCompletos.taxaFalha || 0).replace(',', '.')),
+                desconto: parseNumber(String(dadosCompletos.desconto || 0).replace(',', '.')),
+                whatsapp_template: dadosCompletos.whatsappTemplate || ""
             };
 
             await api.post('/settings', paraEnviar);
-            set({ settings: dados, isLoading: false });
+            
+            // Atualiza o estado global com os dados mesclados
+            set({ settings: dadosCompletos, isLoading: false });
             return true;
         } catch (error) {
             console.error("Erro ao salvar configurações:", error);
