@@ -75,9 +75,7 @@ export async function onRequest(context) {
             }
         }
 
-        // ---------------------------------------------------------
-        // ROTEAMENTO: CONFIGURAÇÕES (SETTINGS)
-        // ---------------------------------------------------------
+        // --- ROTEAMENTO SETTINGS (Versão Protegida contra NaN) ---
         if (entity === 'settings') {
             if (method === 'GET') {
                 const data = await db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId).first();
@@ -86,27 +84,52 @@ export async function onRequest(context) {
 
             if (method === 'POST' || method === 'PUT') {
                 const s = await request.json();
-                
-                await db.prepare(`INSERT INTO calculator_settings (
-                    user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
-                    consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
-                ON CONFLICT(user_id) DO UPDATE SET 
-                    custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
-                    custo_hora_maquina=excluded.custo_hora_maquina, taxa_setup=excluded.taxa_setup, 
-                    consumo_impressora_kw=excluded.consumo_impressora_kw, margem_lucro=excluded.margem_lucro, 
-                    imposto=excluded.imposto, taxa_falha=excluded.taxa_falha, desconto=excluded.desconto,
-                    whatsapp_template=excluded.whatsapp_template`)
-                .bind(
-                    userId, 
-                    Number(s.custo_kwh ?? 0), Number(s.valor_hora_humana ?? 0),
-                    Number(s.custo_hora_maquina ?? 0), Number(s.taxa_setup ?? 0),
-                    Number(s.consumo_impressora_kw ?? 0), Number(s.margem_lucro ?? 0),
-                    Number(s.imposto ?? 0), Number(s.taxa_falha ?? 0), 
-                    Number(s.desconto ?? 0), String(s.whatsapp_template || "")
-                ).run();
 
-                return Response.json({ success: true }, { headers: corsHeaders });
+                // Função interna para garantir que o valor seja um número válido para o SQLite
+                const v = (val) => {
+                    const n = Number(val);
+                    return isNaN(n) ? 0 : n;
+                };
+
+                try {
+                    await db.prepare(`INSERT INTO calculator_settings (
+                            user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
+                            consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                        ON CONFLICT(user_id) DO UPDATE SET 
+                            custo_kwh=excluded.custo_kwh, 
+                            valor_hora_humana=excluded.valor_hora_humana, 
+                            custo_hora_maquina=excluded.custo_hora_maquina, 
+                            taxa_setup=excluded.taxa_setup, 
+                            consumo_impressora_kw=excluded.consumo_impressora_kw, 
+                            margem_lucro=excluded.margem_lucro, 
+                            imposto=excluded.imposto, 
+                            taxa_falha=excluded.taxa_falha, 
+                            desconto=excluded.desconto,
+                            whatsapp_template=excluded.whatsapp_template`)
+                        .bind(
+                            userId,
+                            v(s.custo_kwh),
+                            v(s.valor_hora_humana),
+                            v(s.custo_hora_maquina),
+                            v(s.taxa_setup),
+                            v(s.consumo_impressora_kw),
+                            v(s.margem_lucro),
+                            v(s.imposto),
+                            v(s.taxa_falha),
+                            v(s.desconto),
+                            String(s.whatsapp_template || "")
+                        ).run();
+
+                    return Response.json({ success: true }, { headers: corsHeaders });
+                } catch (dbError) {
+                    // Se cair aqui, é provável que a coluna não exista no banco
+                    return Response.json({
+                        error: "Erro no Banco de Dados",
+                        details: "Provável schema desatualizado. Verifique se as colunas novas existem.",
+                        message: dbError.message
+                    }, { status: 500, headers: corsHeaders });
+                }
             }
         }
 
@@ -188,7 +211,7 @@ export async function onRequest(context) {
         // ---------------------------------------------------------
         if (entity === 'approve-budget' && method === 'POST') {
             const { projectId, printerId, filaments, totalTime } = await request.json();
-            
+
             const project = await db.prepare("SELECT data FROM projects WHERE id = ? AND user_id = ?").bind(projectId, userId).first();
             if (!project) return Response.json({ error: "Projeto não encontrado" }, { status: 404, headers: corsHeaders });
 
@@ -207,7 +230,7 @@ export async function onRequest(context) {
                     }
                 });
             }
-            
+
             await db.batch(batch);
             return Response.json({ success: true }, { headers: corsHeaders });
         }
@@ -216,9 +239,9 @@ export async function onRequest(context) {
 
     } catch (err) {
         console.error("ERRO NO WORKER:", err.message);
-        return Response.json({ 
-            error: "Erro Interno no Servidor", 
-            details: err.message 
+        return Response.json({
+            error: "Erro Interno no Servidor",
+            details: err.message
         }, { status: 500, headers: corsHeaders });
     }
 }

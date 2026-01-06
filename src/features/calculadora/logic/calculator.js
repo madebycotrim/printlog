@@ -172,20 +172,20 @@ export const useSettingsStore = create((set, get) => ({
 
             // Prepara o objeto para o formato que o Cloudflare Worker espera (snake_case)
             const paraEnviar = {
-                custo_kwh: parseNumber(String(dadosCompletos.custoKwh || 0).replace(',', '.')),
-                valor_hora_humana: parseNumber(String(dadosCompletos.valorHoraHumana || 0).replace(',', '.')),
-                custo_hora_maquina: parseNumber(String(dadosCompletos.custoHoraMaquina || 0).replace(',', '.')),
-                taxa_setup: parseNumber(String(dadosCompletos.taxaSetup || 0).replace(',', '.')),
-                consumo_impressora_kw: parseNumber(String(dadosCompletos.consumoKw || 0).replace(',', '.')),
-                margem_lucro: parseNumber(String(dadosCompletos.margemLucro || 0).replace(',', '.')),
-                imposto: parseNumber(String(dadosCompletos.imposto || 0).replace(',', '.')),
-                taxa_falha: parseNumber(String(dadosCompletos.taxaFalha || 0).replace(',', '.')),
-                desconto: parseNumber(String(dadosCompletos.desconto || 0).replace(',', '.')),
+                custo_kwh: parseNumber(String(dadosCompletos.custoKwh || 0).replace(',', '.')) || 0,
+                valor_hora_humana: parseNumber(String(dadosCompletos.valorHoraHumana || 0).replace(',', '.')) || 0,
+                custo_hora_maquina: parseNumber(String(dadosCompletos.custoHoraMaquina || 0).replace(',', '.')) || 0,
+                taxa_setup: parseNumber(String(dadosCompletos.taxaSetup || 0).replace(',', '.')) || 0,
+                consumo_impressora_kw: parseNumber(String(dadosCompletos.consumoKw || 0).replace(',', '.')) || 0,
+                margem_lucro: parseNumber(String(dadosCompletos.margemLucro || 0).replace(',', '.')) || 0,
+                imposto: parseNumber(String(dadosCompletos.imposto || 0).replace(',', '.')) || 0,
+                taxa_falha: parseNumber(String(dadosCompletos.taxaFalha || 0).replace(',', '.')) || 0,
+                desconto: parseNumber(String(dadosCompletos.desconto || 0).replace(',', '.')) || 0,
                 whatsapp_template: dadosCompletos.whatsappTemplate || ""
             };
 
             await api.post('/settings', paraEnviar);
-            
+
             // Atualiza o estado global com os dados mesclados
             set({ settings: dadosCompletos, isLoading: false });
             return true;
