@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useDeferredValue, useCallback } from "react";
-import { Scan, AlertTriangle } from "lucide-react";
+import { Scan, AlertTriangle, Trash2, X } from "lucide-react"; // Importei ícones extras
 // LAYOUT E COMPONENTES GLOBAIS
 import MainSidebar from "../layouts/mainSidebar";
 import Toast from "../components/Toast";
@@ -13,58 +13,55 @@ import SessaoFilamentos from "../features/filamentos/components/sessaoFilamentos
 import ModalFilamento from "../features/filamentos/components/modalFilamento.jsx";
 import ModalBaixaRapida from "../features/filamentos/components/modalBaixaEstoque.jsx";
 
-// Constantes para evitar textos soltos no código
 const VIEW_MODE_KEY = "printlog_filaments_view";
 const DEFAULT_VIEW_MODE = "grid";
 
 export default function FilamentosPage() {
-  // 1. Estados da Interface e Barra Lateral
   const [larguraSidebar, setLarguraSidebar] = useState(68);
   const [busca, setBusca] = useState("");
   const deferredBusca = useDeferredValue(busca);
 
-  // Hooks de Dados
   const { temp, humidity, loading: weatherLoading } = useLocalWeather();
   const { filaments, fetchFilaments, saveFilament, deleteFilament, loading } = useFilamentStore();
 
-  // Estados de Controle de Visualização e Modais
   const [viewMode, setViewMode] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
+  
+  // Estados de Controle de Modais
   const [modalAberto, setModalAberto] = useState(false);
   const [itemEdicao, setItemEdicao] = useState(null);
   const [itemConsumo, setItemConsumo] = useState(null);
+  
+  // NOVO: Estados para o Modal de Exclusão
+  const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
 
-  // Sistema de Notificações (Toast)
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ visible: true, message, type });
   }, []);
 
-  // Carregamento Inicial dos Dados
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
       try {
         await fetchFilaments();
       } catch (error) {
-        if (isMounted) showToast("Ops! Tivemos um problema ao carregar os filamentos. Dá uma olhadinha na sua conexão.", "error");
+        if (isMounted) showToast("Erro ao carregar os filamentos.", "error");
       }
     };
     loadData();
     return () => { isMounted = false; };
   }, [fetchFilaments, showToast]);
 
-  // Salva a preferência do modo de visualização
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
 
-  // 2. PROCESSAMENTO DE DADOS (Memoized)
+  // PROCESSAMENTO DE DADOS
   const { grupos, stats, lowStockCount } = useMemo(() => {
     const termo = deferredBusca.toLowerCase().trim();
     const listaOriginal = Array.isArray(filaments) ? filaments : [];
 
-    // Busca por Nome, Material ou Marca de um jeito seguro
     const filtrados = listaOriginal.filter(f => {
       const nome = (f.nome || "").toLowerCase();
       const material = (f.material || "").toLowerCase();
@@ -80,18 +77,11 @@ export default function FilamentosPage() {
       const atual = Number(f.peso_atual) || 0;
       const total = Math.max(1, Number(f.peso_total) || 1000);
       const preco = Number(f.preco) || 0;
-
-      // Estatísticas Gerais
       totalG += atual;
       valorTotalAcumulado += (preco / total) * atual;
-
-      // Alerta de Estoque Baixo (<= 20% OU menos de 150g)
-      if ((atual / total) <= 0.2 || atual < 150) {
-        lowStock++;
-      }
+      if ((atual / total) <= 0.2 || atual < 150) lowStock++;
     });
 
-    // Organizando por tipo de Material
     const map = filtrados.reduce((acc, f) => {
       const materialKey = (f.material || "OUTROS").toUpperCase().trim();
       if (!acc[materialKey]) acc[materialKey] = [];
@@ -99,10 +89,7 @@ export default function FilamentosPage() {
       return acc;
     }, {});
 
-    // Colocando em ordem alfabética dentro dos grupos
-    Object.keys(map).forEach(key => {
-      map[key].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
-    });
+    Object.keys(map).forEach(key => map[key].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")));
 
     return {
       grupos: map,
@@ -111,12 +98,12 @@ export default function FilamentosPage() {
     };
   }, [filaments, deferredBusca]);
 
-  // 3. AÇÕES DE SALVAMENTO (Handlers)
-
+  // HANDLERS
   const fecharModais = useCallback(() => {
     setModalAberto(false);
     setItemEdicao(null);
     setItemConsumo(null);
+    setConfirmacaoExclusao({ aberta: false, item: null }); // Fecha modal de exclusão
   }, []);
 
   const aoSalvarFilamento = async (dados) => {
@@ -124,28 +111,30 @@ export default function FilamentosPage() {
       const isEdicao = !!(dados.id || itemEdicao?.id);
       await saveFilament(dados);
       fecharModais();
-      showToast(isEdicao ? "Alterações salvas com sucesso!" : "Novo material adicionado ao seu estoque!");
+      showToast(isEdicao ? "Alterações salvas!" : "Novo material adicionado!");
     } catch (e) {
-      showToast(e.message || "Tivemos um problema ao falar com o servidor. Tenta de novo?", "error");
+      showToast("Tivemos um problema ao salvar.", "error");
     }
   };
 
-  const aoDeletarFilamento = async (id) => {
-    if (!id) return;
+  // Gatilho que abre o modal de confirmação
+  const handleOpenDeleteModal = (id) => {
+    const item = filaments.find(f => f.id === id);
+    if (item) setConfirmacaoExclusao({ aberta: true, item });
+  };
 
-    // Confirmação para evitar exclusão acidental
-    const materialParaDeletar = filaments.find(f => f.id === id);
-    const confirmacao = window.confirm(
-      `Tem certeza que quer excluir o filamento "${materialParaDeletar?.nome || 'esse material'}"?\nEssa ação não pode ser desfeita.`
-    );
+  // Execução real da exclusão
+  const aoConfirmarExclusao = async () => {
+    const { item } = confirmacaoExclusao;
+    if (!item) return;
 
-    if (confirmacao) {
-      try {
-        await deleteFilament(id);
-        showToast("Material removido com sucesso.");
-      } catch (e) {
-        showToast("Não conseguimos excluir o material agora. Tenta mais tarde?", "error");
-      }
+    try {
+      await deleteFilament(item.id);
+      showToast("Material removido com sucesso.");
+    } catch (e) {
+      showToast("Erro ao excluir o material.", "error");
+    } finally {
+      fecharModais();
     }
   };
 
@@ -172,9 +161,6 @@ export default function FilamentosPage() {
             backgroundSize: '50px 50px',
             maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
           }} />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-full">
-            <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-sky-500/30 via-transparent to-transparent" />
-          </div>
         </div>
 
         <FilamentHeader
@@ -187,8 +173,6 @@ export default function FilamentosPage() {
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 xl:p-12 relative z-10 scroll-smooth">
           <div className="max-w-[1600px] mx-auto space-y-16">
-
-            {/* Painel de Métricas */}
             <div className="animate-in fade-in slide-in-from-top-4 duration-700">
               <StatusFilamentos
                 totalWeight={stats.pesoKg}
@@ -198,7 +182,6 @@ export default function FilamentosPage() {
               />
             </div>
 
-            {/* Lista Organizada por Material */}
             {Object.entries(grupos).length > 0 ? (
               <div className="space-y-24 pb-40 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                 {Object.entries(grupos).map(([tipo, items]) => (
@@ -210,7 +193,7 @@ export default function FilamentosPage() {
                     currentHumidity={humidity}
                     acoes={{
                       onEdit: (item) => { setItemEdicao(item); setModalAberto(true); },
-                      onDelete: aoDeletarFilamento,
+                      onDelete: handleOpenDeleteModal, // Alterado aqui
                       onConsume: setItemConsumo
                     }}
                   />
@@ -219,25 +202,15 @@ export default function FilamentosPage() {
             ) : (
               !loading && (
                 <div className="py-24 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-[2rem] bg-zinc-900/10">
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 bg-sky-500/10 blur-2xl rounded-full" />
-                    <Scan size={48} strokeWidth={1.2} className="text-sky-500/40 relative z-10" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-zinc-300 text-xs font-bold uppercase tracking-[0.2em]">
-                      {busca ? "Nenhum resultado encontrado" : "Seu estoque está vazio"}
-                    </h3>
-                    <p className="text-zinc-600 text-[10px] uppercase mt-2 tracking-widest">
-                      {busca ? "Tenta mudar o termo da sua pesquisa" : "Comece adicionando materiais ao seu inventário"}
-                    </p>
-                  </div>
+                   <Scan size={48} strokeWidth={1.2} className="text-sky-500/40" />
                 </div>
               )
             )}
           </div>
         </div>
 
-        {/* JANELAS (MODAIS) */}
+        {/* --- MODAIS --- */}
+        
         <ModalFilamento
           aberto={modalAberto}
           aoFechar={fecharModais}
@@ -251,6 +224,44 @@ export default function FilamentosPage() {
           item={itemConsumo}
           aoSalvar={aoSalvarFilamento}
         />
+
+        {/* NOVO: Modal de Confirmação de Exclusão Customizado */}
+        {confirmacaoExclusao.aberta && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+              <div className="p-8">
+                <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-red-500/10 mx-auto">
+                  <AlertTriangle className="text-red-500" size={32} />
+                </div>
+                
+                <h3 className="text-xl font-bold text-center text-zinc-100 mb-2">
+                  Excluir Material?
+                </h3>
+                
+                <p className="text-center text-zinc-400 text-sm leading-relaxed">
+                  Você está prestes a remover <span className="text-zinc-200 font-semibold">"{confirmacaoExclusao.item?.nome}"</span>. 
+                  Essa ação é permanente e não poderá ser desfeita.
+                </p>
+              </div>
+
+              <div className="flex gap-3 p-6 bg-zinc-900/50 border-t border-zinc-800">
+                <button
+                  onClick={fecharModais}
+                  className="flex-1 px-6 py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold uppercase tracking-widest transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={aoConfirmarExclusao}
+                  className="flex-1 px-6 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
