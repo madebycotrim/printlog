@@ -80,7 +80,7 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
             <div className="flex h-[195px]">
                 
                 {/* BARRA LATERAL (75px) */}
-                <div className="h-full w-[75px] bg-zinc-950/40 border-r border-zinc-800/50 flex flex-col items-center py-6 justify-between shrink-0">
+                <div className="h-screen w-[75px] bg-zinc-950/40 border-r border-zinc-800/50 flex flex-col items-center py-6 justify-between shrink-0">
                     <button 
                         onClick={() => onToggleStatus?.(printer.id, printer.status)}
                         className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 border active:scale-90 ${
