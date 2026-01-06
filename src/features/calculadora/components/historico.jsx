@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
     X, History, Package, RotateCcw, Trash2, Search,
-    Database, Loader2, Calendar, TrendingUp, Clock, Check, AlertTriangle
+    Database, Loader2, Calendar, TrendingUp, Clock, Check, AlertTriangle, CheckCircle2
 } from "lucide-react";
 import { useProjectsStore } from "../../orcamentos/logic/projects";
 import { formatCurrency } from "../../../utils/numbers";
