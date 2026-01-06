@@ -21,9 +21,9 @@ const CONFIG_SIDEBAR = { RECOLHIDA: 68, EXPANDIDA: 256 };
 const SessaoImpressoras = ({ titulo, items, acoes }) => {
     const [estaAberto, setEstaAberto] = useState(true);
 
-    const totalHorasGrupo = useMemo(() => 
-        items.reduce((acumulador, imp) => acumulador + Number(imp.horas_totais || imp.totalHours || 0), 0), 
-    [items]);
+    const totalHorasGrupo = useMemo(() =>
+        items.reduce((acumulador, imp) => acumulador + Number(imp.horas_totais || imp.totalHours || 0), 0),
+        [items]);
 
     return (
         <section className="space-y-8">
@@ -71,13 +71,13 @@ const SessaoImpressoras = ({ titulo, items, acoes }) => {
             {estaAberto && (
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,380px),1fr))] gap-6 animate-in fade-in slide-in-from-top-2 duration-500">
                     {items.map((imp) => (
-                        <PrinterCard 
-                            key={imp.id} 
-                            printer={imp} 
-                            onEdit={acoes.onEdit} 
-                            onDelete={acoes.onDelete} 
-                            onResetMaint={() => acoes.onResetMaint(imp)} 
-                            onToggleStatus={acoes.onToggleStatus} 
+                        <PrinterCard
+                            key={imp.id}
+                            printer={imp}
+                            onEdit={acoes.onEdit}
+                            onDelete={acoes.onDelete}
+                            onResetMaint={() => acoes.onResetMaint(imp)}
+                            onToggleStatus={acoes.onToggleStatus}
                         />
                     ))}
                 </div>
@@ -97,7 +97,7 @@ export default function ImpressorasPage() {
     const [itemParaEdicao, setItemParaEdicao] = useState(null);
     const [impressoraEmDiagnostico, setImpressoraEmDiagnostico] = useState(null);
     const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
-    
+
     const [checklists, setChecklists] = useState({});
     const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
@@ -197,13 +197,19 @@ export default function ImpressorasPage() {
             )}
 
             <main className="flex-1 flex flex-col relative transition-all duration-300 ease-in-out" style={{ marginLeft: `${larguraSidebar}px` }}>
-                
+
                 {/* FUNDO DECORATIVO */}
-                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none opacity-[0.1]" style={{
-                    backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
-                    backgroundSize: '50px 50px',
-                    maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
-                }} />
+                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none">
+                    <div className="absolute inset-0 opacity-[0.1]" style={{
+                        backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
+                        backgroundSize: '50px 50px',
+                        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
+                    }} />
+
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-full">
+                        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-emerald-500/30 via-transparent to-transparent" />
+                    </div>
+                </div>
 
                 <HeaderImpressoras busca={busca} setBusca={setBusca} onAddClick={() => { setItemParaEdicao(null); setModalAberto(true); }} />
 
@@ -249,9 +255,9 @@ export default function ImpressorasPage() {
                 <PrinterModal aberto={modalAberto} aoFechar={() => { setModalAberto(false); setItemParaEdicao(null); }} aoSalvar={aoSalvar} dadosIniciais={itemParaEdicao} />
 
                 {impressoraEmDiagnostico && (
-                    <DiagnosticsModal 
-                        printer={impressoraEmDiagnostico} 
-                        completedTasks={new Set(checklists[impressoraEmDiagnostico.id] || [])} 
+                    <DiagnosticsModal
+                        printer={impressoraEmDiagnostico}
+                        completedTasks={new Set(checklists[impressoraEmDiagnostico.id] || [])}
                         onToggleTask={(label) => {
                             setChecklists(prev => {
                                 const atual = new Set(prev[impressoraEmDiagnostico.id] || []);
@@ -290,7 +296,7 @@ export default function ImpressorasPage() {
                 >
                     <div className="p-8 text-center space-y-4">
                         <p className="text-zinc-400 text-sm font-medium leading-relaxed">
-                            Você está prestes a remover a impressora <br/>
+                            Você está prestes a remover a impressora <br />
                             <span className="text-zinc-100 font-bold uppercase tracking-tight">
                                 "{confirmacaoExclusao.item?.name || confirmacaoExclusao.item?.nome}"
                             </span>
