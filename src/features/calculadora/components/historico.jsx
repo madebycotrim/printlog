@@ -216,14 +216,14 @@ export default function GavetaHistorico({ open, onClose, onRestore }) {
                                             <button
                                                 type="button"
                                                 onClick={() => perguntarAprovacao(projeto)}
-                                                className={`flex-1 h-10 rounded-xl text-white text-[10px] font-black uppercase tracking-widest 
-        flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95
+                                                className={`flex-1 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest 
+        flex items-center justify-center gap-2 transition-all active:scale-95
         ${margemEfetiva > 20
-                                                        ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20'
-                                                        : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/20'
+                                                        ? 'bg-emerald-600/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-600 hover:text-white'
+                                                        : 'bg-amber-600/10 border border-amber-500/20 text-amber-500 hover:bg-amber-600 hover:text-white'
                                                     }`}
                                             >
-                                                <Check size={14} strokeWidth={3} /> Aprovar Projeto
+                                                <Check size={14} strokeWidth={3} /> Aprovar Orçamento
                                             </button>
                                         ) : (
                                             <div className="flex-1 h-10 rounded-xl bg-zinc-950/50 border border-white/5 text-zinc-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
