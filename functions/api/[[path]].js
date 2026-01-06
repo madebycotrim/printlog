@@ -7,9 +7,10 @@ export async function onRequest(context) {
     const entity = pathArray[0];
     const method = request.method;
 
+    // 1. CORREÇÃO CORS: Adicionado PUT e PATCH
     const corsHeaders = {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
 
@@ -27,8 +28,10 @@ export async function onRequest(context) {
         const userId = authRequest.toAuth().userId;
         const db = env.DB;
 
-        // --- MANUTENÇÃO AUTOMÁTICA DO SCHEMA ---
-        // DICA: Em produção, o ideal é rodar isso via Migrations, mas aqui garante que o DB esteja sempre pronto.
+        // Capturar ID da URL se existir (ex: /filaments/123 -> pathArray[1] é 123)
+        const idFromPath = pathArray[1];
+
+        // --- MANUTENÇÃO DO SCHEMA ---
         await db.batch([
             db.prepare(`CREATE TABLE IF NOT EXISTS filaments (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, material TEXT, cor_hex TEXT, peso_total REAL, peso_atual REAL, preco REAL, data_abertura TEXT, favorito INTEGER DEFAULT 0)`),
             db.prepare(`CREATE TABLE IF NOT EXISTS printers (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, modelo TEXT, status TEXT DEFAULT 'idle', potencia REAL DEFAULT 0, preco REAL DEFAULT 0, rendimento_total REAL DEFAULT 0, horas_totais REAL DEFAULT 0, ultima_manutencao_hora REAL DEFAULT 0, intervalo_manutencao REAL DEFAULT 300, historico TEXT)`),
@@ -36,54 +39,52 @@ export async function onRequest(context) {
             db.prepare(`CREATE TABLE IF NOT EXISTS projects (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, label TEXT NOT NULL, data TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`)
         ]);
 
-        // --- ROTEAMENTO ---
-
-        // PROJECTS (ORÇAMENTOS)
-        if (entity === 'projects') {
+        // --- ROTEAMENTO FILAMENTS ---
+        if (entity === 'filaments' || entity === 'filamentos') {
             if (method === 'GET') {
-                const { results } = await db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").bind(userId).all();
-                const formatted = (results || []).map(r => ({
-                    id: r.id,
-                    label: r.label || "Sem Nome",
-                    data: JSON.parse(r.data || "{}"),
-                    created_at: r.created_at
-                }));
-                return Response.json(formatted, { headers: corsHeaders });
+                const { results } = await db.prepare("SELECT * FROM filaments WHERE user_id = ? ORDER BY favorito DESC, nome ASC").bind(userId).all();
+                return Response.json(results || [], { headers: corsHeaders });
             }
-            if (method === 'POST') {
-                const p = await request.json();
-                const id = p.id || crypto.randomUUID();
-                const label = p.label || "Novo Orçamento";
-                const dataStr = JSON.stringify(p.entradas ? p : (p.data || p.payload || {}));
 
-                await db.prepare("INSERT INTO projects (id, user_id, label, data) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET label=excluded.label, data=excluded.data")
-                    .bind(id, userId, label, dataStr).run();
+            // POST, PUT e PATCH (Salvar e Editar)
+            if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+                const f = await request.json();
+                const id = f.id || idFromPath || crypto.randomUUID();
 
-                return Response.json({ id, label, data: JSON.parse(dataStr) }, { headers: corsHeaders });
-            }
-            if (method === 'DELETE') {
-                const id = url.searchParams.get('id');
-                if (id) {
-                    await db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").bind(id, userId).run();
-                } else {
-                    await db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId).run();
+                if (method === 'PATCH') {
+                    // Atualização parcial (ex: apenas peso)
+                    await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ? AND user_id = ?")
+                        .bind(Number(f.peso_atual || 0), id, userId).run();
+                    return Response.json({ success: true }, { headers: corsHeaders });
                 }
-                return Response.json({ success: true }, { headers: corsHeaders });
+
+                await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, peso_total, peso_atual, preco, data_abertura, favorito) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
+                    nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex,
+                    peso_total=excluded.peso_total, peso_atual=excluded.peso_atual, favorito=excluded.favorito, preco=excluded.preco`)
+                    .bind(id, userId, f.nome, f.marca, f.material, f.cor_hex, Number(f.peso_total || 0),
+                        Number(f.peso_atual || 0), Number(f.preco || 0), f.data_abertura, f.favorito ? 1 : 0).run();
+                return Response.json({ id, ...f }, { headers: corsHeaders });
+            }
+
+            if (method === 'DELETE') {
+                const id = idFromPath || url.searchParams.get('id');
+                await db.prepare("DELETE FROM filaments WHERE id = ? AND user_id = ?").bind(id, userId).run();
+                return new Response(null, { status: 204, headers: corsHeaders });
             }
         }
 
-        // PRINTERS (IMPRESSORAS)
+        // --- ROTEAMENTO PRINTERS ---
         if (entity === 'printers' || entity === 'impressoras') {
             if (method === 'GET') {
                 const { results } = await db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(userId).all();
                 return Response.json(results || [], { headers: corsHeaders });
             }
-            if (method === 'POST') {
+            if (method === 'POST' || method === 'PUT') {
                 const p = await request.json();
-                const id = p.id || crypto.randomUUID();
+                const id = p.id || idFromPath || crypto.randomUUID();
                 const historico = JSON.stringify(p.historico || []);
 
-                // AJUSTE: Incluídos campos que faltavam no UPDATE (como rendimento e intervalos)
                 await db.prepare(`INSERT INTO printers (id, user_id, nome, marca, modelo, status, potencia, preco, rendimento_total, horas_totais, ultima_manutencao_hora, intervalo_manutencao, historico) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
                     nome=excluded.nome, marca=excluded.marca, modelo=excluded.modelo, status=excluded.status, 
@@ -98,46 +99,54 @@ export async function onRequest(context) {
                 return Response.json({ id, ...p }, { headers: corsHeaders });
             }
             if (method === 'DELETE') {
-                const id = url.searchParams.get('id');
+                const id = idFromPath || url.searchParams.get('id');
                 await db.prepare("DELETE FROM printers WHERE id = ? AND user_id = ?").bind(id, userId).run();
                 return new Response(null, { status: 204, headers: corsHeaders });
             }
         }
 
-        // FILAMENTS (ESTOQUE)
-        if (entity === 'filaments' || entity === 'filamentos') {
+        // --- ROTEAMENTO PROJECTS ---
+        if (entity === 'projects') {
             if (method === 'GET') {
-                const { results } = await db.prepare("SELECT * FROM filaments WHERE user_id = ? ORDER BY favorito DESC, nome ASC").bind(userId).all();
-                return Response.json(results || [], { headers: corsHeaders });
+                const { results } = await db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").bind(userId).all();
+                const formatted = (results || []).map(r => ({
+                    id: r.id,
+                    label: r.label || "Sem Nome",
+                    data: JSON.parse(r.data || "{}"),
+                    created_at: r.created_at
+                }));
+                return Response.json(formatted, { headers: corsHeaders });
             }
-            if (method === 'POST') {
-                const f = await request.json();
-                const id = f.id || crypto.randomUUID();
-                // AJUSTE: Adicionados marca, material e cor_hex ao DO UPDATE SET
-                await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, peso_total, peso_atual, preco, data_abertura, favorito) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
-                    nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex,
-                    peso_atual=excluded.peso_atual, favorito=excluded.favorito, preco=excluded.preco`)
-                    .bind(id, userId, f.nome, f.marca, f.material, f.cor_hex, Number(f.peso_total || 0),
-                        Number(f.peso_atual || 0), Number(f.preco || 0), f.data_abertura, f.favorito ? 1 : 0).run();
-                return Response.json({ id, ...f }, { headers: corsHeaders });
+            if (method === 'POST' || method === 'PUT') {
+                const p = await request.json();
+                const id = p.id || idFromPath || crypto.randomUUID();
+                const label = p.label || "Novo Orçamento";
+                const dataStr = JSON.stringify(p.entradas ? p : (p.data || p.payload || {}));
+
+                await db.prepare("INSERT INTO projects (id, user_id, label, data) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET label=excluded.label, data=excluded.data")
+                    .bind(id, userId, label, dataStr).run();
+
+                return Response.json({ id, label, data: JSON.parse(dataStr) }, { headers: corsHeaders });
             }
             if (method === 'DELETE') {
-                const id = url.searchParams.get('id');
-                await db.prepare("DELETE FROM filaments WHERE id = ? AND user_id = ?").bind(id, userId).run();
-                return new Response(null, { status: 204, headers: corsHeaders });
+                const id = idFromPath || url.searchParams.get('id');
+                if (id) {
+                    await db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").bind(id, userId).run();
+                } else {
+                    await db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId).run();
+                }
+                return Response.json({ success: true }, { headers: corsHeaders });
             }
         }
 
-        // SETTINGS (CONFIGURAÇÕES DA OFICINA)
+        // --- ROTEAMENTO SETTINGS ---
         if (entity === 'settings') {
             if (method === 'GET') {
                 const data = await db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId).first();
                 return Response.json(data || {}, { headers: corsHeaders });
             }
-            if (method === 'POST') {
+            if (method === 'POST' || method === 'PUT') {
                 const s = await request.json();
-                // O Frontend agora envia sempre em kW, o backend apenas salva o REAL.
                 await db.prepare(`INSERT INTO calculator_settings (user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET 
                     custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
@@ -153,7 +162,7 @@ export async function onRequest(context) {
             }
         }
 
-        // APPROVE BUDGET (APROVAÇÃO DE PROJETO E DEDUÇÃO DE ESTOQUE)
+        // APPROVE BUDGET
         if (entity === 'approve-budget' && method === 'POST') {
             const { projectId, printerId, filaments, totalTime } = await request.json();
             const project = await db.prepare("SELECT data FROM projects WHERE id = ? AND user_id = ?").bind(projectId, userId).first();
@@ -171,7 +180,6 @@ export async function onRequest(context) {
             if (Array.isArray(filaments)) {
                 filaments.forEach(f => {
                     if (f.id && f.id !== 'manual') {
-                        // DICA: Math.max garante que o estoque não fique negativo se houver erro de cálculo
                         batch.push(db.prepare("UPDATE filaments SET peso_atual = MAX(0, peso_atual - ?) WHERE id = ? AND user_id = ?").bind(Number(f.peso || f.weight || 0), f.id, userId));
                     }
                 });
