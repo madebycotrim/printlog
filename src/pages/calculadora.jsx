@@ -168,6 +168,7 @@ export default function CalculadoraPage() {
     }, [entradasParaCalculo]);
 
     const lidarSalvarNoHistorico = useCallback(async () => {
+        // 1. Validação de Nome
         if (!dadosFormulario.nomeProjeto.trim()) {
             setModalConfig({
                 open: true,
@@ -176,28 +177,37 @@ export default function CalculadoraPage() {
                 icon: AlertCircle,
                 color: "text-amber-500"
             });
-            return;
+            return false; // Summary recebe false e não abre o popup de sucesso
         }
 
-        const resposta = await salvarNoBanco({
-            id: idProjetoAtual,
-            label: dadosFormulario.nomeProjeto,
-            entradas: { ...dadosFormulario, selectedPrinterId: hardwareSelecionado?.id },
-            resultados
-        });
-
-        if (resposta) {
-            setIdProjetoAtual(resposta.id);
-            setModalConfig({
-                open: true,
-                title: "Sucesso",
-                message: "Orçamento salvo e atualizado com sucesso no seu histórico cloud.",
-                icon: CheckCircle2,
-                color: "text-emerald-500"
+        // 2. Tentativa de Salvamento
+        try {
+            const resposta = await salvarNoBanco({
+                id: idProjetoAtual,
+                label: dadosFormulario.nomeProjeto,
+                entradas: { ...dadosFormulario, selectedPrinterId: hardwareSelecionado?.id },
+                resultados
             });
-        }
-    }, [dadosFormulario, resultados, hardwareSelecionado, salvarNoBanco, idProjetoAtual]);
 
+            if (resposta) {
+                setIdProjetoAtual(resposta.id);
+                return true; // SUCESSO! Summary receberá true e abrirá o popup dele
+            }
+        } catch (error) {
+            console.error("Erro ao salvar:", error);
+        }
+
+        // 3. Caso de Erro (API ou Banco)
+        setModalConfig({
+            open: true,
+            title: "Erro de Sincronização",
+            message: "Não foi possível salvar na nuvem. Verifique sua conexão.",
+            icon: AlertTriangle,
+            color: "text-rose-500"
+        });
+        return false;
+    }, [dadosFormulario, resultados, hardwareSelecionado, salvarNoBanco, idProjetoAtual]);
+    
     const lidarRestauracao = useCallback((registro) => {
         const payload = registro.data || registro.payload;
         if (payload?.entradas) {
@@ -349,64 +359,28 @@ export default function CalculadoraPage() {
             <HistoryDrawer open={historicoAberto} onClose={() => setHistoricoAberto(false)} onRestore={lidarRestauracao} />
 
             {/* POPUP GLOBAL DE MENSAGENS (Unificado) */}
-            {/* POPUP GLOBAL DE MENSAGENS (Estilo HUD Sincronizado com o Resumo) */}
             <Popup
                 isOpen={modalConfig.open}
                 onClose={() => setModalConfig({ ...modalConfig, open: false })}
                 title={modalConfig.title}
-                subtitle="MakersLog Cloud"
+                subtitle="Notificação de Sistema"
                 icon={modalConfig.icon}
                 footer={
                     <button
                         onClick={() => setModalConfig({ ...modalConfig, open: false })}
-                        className={`w-full h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 text-white ${modalConfig.icon === CheckCircle2
-                                ? 'bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20'
-                                : 'bg-sky-600 hover:bg-sky-500 shadow-lg shadow-sky-900/20'
+                        className={`w-full h-12 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg active:scale-95 text-white ${modalConfig.icon === CheckCircle2 ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' :
+                            modalConfig.icon === AlertTriangle ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20' :
+                                'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
                             }`}
                     >
-                        Confirmar e Fechar
+                        Entendi, fechar aviso
                     </button>
                 }
             >
-                <div className="p-6">
-                    {/* Container Estilo "Card do Resumo" */}
-                    <div className="bg-[#0c0c0e] border border-white/[0.05] rounded-[2rem] p-8 flex flex-col items-center text-center relative overflow-hidden">
-
-                        {/* Efeito de luz de fundo (igual ao resumo) */}
-                        <div className={`absolute -top-10 -right-10 w-32 h-32 blur-[50px] opacity-10 rounded-full ${modalConfig.icon === CheckCircle2 ? 'bg-emerald-500' : 'bg-sky-500'}`} />
-
-                        {/* Badge de Status Superior */}
-                        <div className="flex items-center gap-2 mb-6">
-                            <div className={`w-2 h-2 rounded-full ${modalConfig.icon === CheckCircle2 ? 'bg-emerald-500' : 'bg-sky-500'} animate-pulse shadow-[0_0_8px_currentColor]`} />
-                            <span className={`text-[9px] font-black uppercase tracking-[0.3em] ${modalConfig.icon === CheckCircle2 ? 'text-emerald-500' : 'text-sky-500'}`}>
-                                Sincronização Ativa
-                            </span>
-                        </div>
-
-                        {/* Ícone Central */}
-                        <div className={`mb-4 ${modalConfig.icon === CheckCircle2 ? 'text-emerald-500' : 'text-sky-500'} opacity-80`}>
-                            {modalConfig.icon === CheckCircle2 ? (
-                                <CheckCircle2 size={48} strokeWidth={1.5} />
-                            ) : (
-                                <AlertCircle size={48} strokeWidth={1.5} />
-                            )}
-                        </div>
-
-                        {/* Texto Principal */}
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">
-                            {modalConfig.title}
-                        </h3>
-
-                        <p className="text-sm font-medium text-zinc-400 leading-relaxed max-w-[240px]">
-                            {modalConfig.message}
-                        </p>
-
-                        {/* Rodapé Interno do Card (Visual) */}
-                        <div className="mt-8 pt-6 border-t border-white/[0.03] w-full flex justify-between items-center">
-                            <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Protocolo D1-Cloud</span>
-                            <span className="text-[10px] font-mono font-bold text-zinc-500">#{Math.floor(Math.random() * 90000) + 10000}</span>
-                        </div>
-                    </div>
+                <div className="p-8 flex flex-col items-center text-center gap-4">
+                    <p className="text-sm text-zinc-400 font-medium leading-relaxed">
+                        {modalConfig.message}
+                    </p>
                 </div>
             </Popup>
         </div>
