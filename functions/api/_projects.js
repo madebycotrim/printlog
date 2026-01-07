@@ -26,20 +26,17 @@ export async function handleProjects(method, url, idFromPath, db, userId, reques
     }
     if (method === 'DELETE') {
         const id = url.searchParams.get('id');
-        if (id) {
-            await db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").bind(id, userId).run();
-        } else {
-            await db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId).run();
-        }
+        id ? await db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").bind(id, userId).run() 
+           : await db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId).run();
         return sendJSON({ success: true });
     }
 }
 
 export async function handleApproveBudget(db, userId, request) {
+    if (request.method !== 'POST') return sendJSON({ error: "Método não permitido" }, 405);
     const p = await request.json();
     const projectId = String(p.projectId || "");
     const printerId = String(p.printerId || "");
-    if (!projectId) return sendJSON({ error: "ID do projeto obrigatório" }, 400);
 
     const project = await db.prepare("SELECT data FROM projects WHERE id = ? AND user_id = ?").bind(projectId, userId).first();
     if (!project) return sendJSON({ error: "Projeto não encontrado" }, 404);
@@ -50,6 +47,7 @@ export async function handleApproveBudget(db, userId, request) {
     const batch = [
         db.prepare("UPDATE projects SET data = ? WHERE id = ? AND user_id = ?").bind(JSON.stringify(pData), projectId, userId)
     ];
+
     if (printerId) {
         batch.push(db.prepare("UPDATE printers SET horas_totais = horas_totais + ?, status = 'printing' WHERE id = ? AND user_id = ?").bind(toNum(p.totalTime), printerId, userId));
     }

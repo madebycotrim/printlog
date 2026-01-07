@@ -28,22 +28,28 @@ export async function onRequest(context) {
         const userId = authRequest.toAuth().userId;
         const db = env.DB;
 
-        // Roda o schema igualzinho ao seu original
+        // Inicializa o banco com as tabelas originais
         await initSchema(db);
 
         switch (entity) {
             case 'filaments': case 'filamentos':
                 return await handleFilaments(method, url, idFromPath, db, userId, request);
+            
             case 'settings':
                 return await handleSettings(method, db, userId, request);
+            
             case 'printers': case 'impressoras':
                 return await handlePrinters(method, url, idFromPath, db, userId, request);
-            case 'projects':
+            
+            case 'projects': case 'projetos':
                 return await handleProjects(method, url, idFromPath, db, userId, request);
+            
             case 'approve-budget':
                 return await handleApproveBudget(db, userId, request);
+            
             case 'users':
                 return await handleUsers(method, pathArray, db, userId);
+            
             default:
                 return sendJSON({ error: "Rota não encontrada" }, 404);
         }

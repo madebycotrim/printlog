@@ -13,10 +13,13 @@ export async function handleFilaments(method, url, idFromPath, db, userId, reque
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
         const f = await request.json();
         const id = f.id || idFromPath || crypto.randomUUID();
+
         if (method === 'PATCH') {
-            await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ? AND user_id = ?").bind(toNum(f.peso_atual), id, userId).run();
+            await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ? AND user_id = ?")
+                .bind(toNum(f.peso_atual), id, userId).run();
             return sendJSON({ success: true });
         }
+
         await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, peso_total, peso_atual, preco, data_abertura, favorito) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
             nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex,
