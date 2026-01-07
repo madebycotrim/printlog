@@ -36,8 +36,8 @@ export async function handleFilaments(method, url, idFromPath, db, userId, reque
                     "UPDATE filaments SET peso_atual = MAX(0, ?) WHERE id = ? AND user_id = ?"
                 ).bind(toNum(f.peso_atual), id, userId).run();
             }
-            // Se for atualização de favorito
-            else if (f.favorito !== undefined) {
+
+            if (f.favorito !== undefined) {
                 await db.prepare(
                     "UPDATE filaments SET favorito = ? WHERE id = ? AND user_id = ?"
                 ).bind(f.favorito ? 1 : 0, id, userId).run();

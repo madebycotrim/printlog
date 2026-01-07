@@ -1,7 +1,6 @@
 import { sendJSON, toNum } from './_utils';
 
 export async function handleProjects(method, url, idFromPath, db, userId, request) {
-    // 1. LISTAR PROJETOS
     if (method === 'GET') {
         try {
             const { results } = await db.prepare(
@@ -12,7 +11,7 @@ export async function handleProjects(method, url, idFromPath, db, userId, reques
                 try {
                     return { ...r, data: JSON.parse(r.data || "{}") };
                 } catch (e) {
-                    return { ...r, data: {}, _error: "Erro ao processar dados do projeto" };
+                    return { ...r, data: {}, _error: "Erro ao processar JSON" };
                 }
             });
 
@@ -22,28 +21,33 @@ export async function handleProjects(method, url, idFromPath, db, userId, reques
         }
     }
 
-    // 2. CRIAR OU ATUALIZAR (UPSERT)
     if (['POST', 'PUT'].includes(method)) {
         try {
             const p = await request.json();
-            // Prioridade do ID: Corpo do JSON > URL > Novo UUID
             const id = String(p.id || idFromPath || crypto.randomUUID());
             const label = String(p.label || p.entradas?.nomeProjeto || "Novo Orçamento");
             
+            // Extraímos valores para as colunas reais do banco (facilita filtros futuros)
+            const status = p.status || p.data?.status || 'rascunho';
+            const totalBudget = toNum(p.resultados?.precoFinal || p.total_budget);
+
             const dataStr = JSON.stringify({ 
                 entradas: p.entradas || {}, 
                 resultados: p.resultados || {}, 
-                status: p.status || 'rascunho',
+                status: status,
                 updated_at: new Date().toISOString()
             });
 
+            // CORREÇÃO: Agora salvamos nas colunas específicas que você criou no _utils.js
             await db.prepare(`
-                INSERT INTO projects (id, user_id, label, data) 
-                VALUES (?, ?, ?, ?) 
+                INSERT INTO projects (id, user_id, label, status, total_budget, data) 
+                VALUES (?, ?, ?, ?, ?, ?) 
                 ON CONFLICT(id) DO UPDATE SET 
                     label=excluded.label, 
+                    status=excluded.status,
+                    total_budget=excluded.total_budget,
                     data=excluded.data
-            `).bind(id, userId, label, dataStr).run();
+            `).bind(id, userId, label, status, totalBudget, dataStr).run();
 
             return sendJSON({ id, label, success: true });
         } catch (err) {
@@ -51,19 +55,13 @@ export async function handleProjects(method, url, idFromPath, db, userId, reques
         }
     }
 
-    // 3. DELETAR
     if (method === 'DELETE') {
-        // Tenta pegar o ID tanto do path (/api/projects/ID) quanto da query (?id=ID)
         const idToDelete = idFromPath || url.searchParams.get('id');
-
         if (idToDelete) {
             await db.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").bind(idToDelete, userId).run();
             return sendJSON({ success: true, message: "Projeto removido" });
-        } else {
-            // Se não passar ID, talvez você não queira deletar TUDO por acidente. 
-            // Adicionei uma proteção aqui.
-            return sendJSON({ error: "ID não fornecido para exclusão" }, 400);
         }
+        return sendJSON({ error: "ID não fornecido" }, 400);
     }
 }
 
@@ -73,10 +71,8 @@ export async function handleApproveBudget(db, userId, request) {
         const projectId = String(p.projectId || "");
         const printerId = String(p.printerId || "");
 
-        // Busca o projeto original
         const project = await db.prepare("SELECT data FROM projects WHERE id = ? AND user_id = ?")
-            .bind(projectId, userId)
-            .first();
+            .bind(projectId, userId).first();
 
         if (!project) return sendJSON({ error: "Projeto não encontrado" }, 404);
 
@@ -86,49 +82,43 @@ export async function handleApproveBudget(db, userId, request) {
 
         const batch = [];
 
-        // 1. Atualiza o status do projeto
+        // 1. Atualiza o status do projeto (Tanto na coluna real quanto no JSON)
         batch.push(
-            db.prepare("UPDATE projects SET data = ? WHERE id = ? AND user_id = ?")
+            db.prepare("UPDATE projects SET status = 'aprovado', data = ? WHERE id = ? AND user_id = ?")
               .bind(JSON.stringify(pData), projectId, userId)
         );
 
-        // 2. Atualiza a impressora (soma horas e muda status)
+        // 2. Atualiza a impressora
         if (printerId && printerId !== 'none') {
+            const horasParaAdicionar = toNum(p.totalTime || pData.resultados?.tempoTotal);
             batch.push(
                 db.prepare(`
                     UPDATE printers 
                     SET horas_totais = horas_totais + ?, 
                         status = 'printing' 
                     WHERE id = ? AND user_id = ?
-                `).bind(toNum(p.totalTime), printerId, userId)
+                `).bind(horasParaAdicionar, printerId, userId)
             );
         }
 
-        // 3. Baixa no estoque de filamentos
-        if (Array.isArray(p.filaments)) {
-            for (const f of p.filaments) {
+        // 3. Baixa de filamentos
+        const filamentos = p.filaments || pData.resultados?.filamentosUsados || [];
+        if (Array.isArray(filamentos)) {
+            for (const f of filamentos) {
                 const fId = String(f.id || "");
-                const weightToDeduct = toNum(f.peso || f.weight);
-
-                if (fId && fId !== 'manual' && weightToDeduct > 0) {
+                const peso = toNum(f.peso || f.gastoGrama);
+                if (fId && fId !== 'manual' && peso > 0) {
                     batch.push(
-                        db.prepare(`
-                            UPDATE filaments 
-                            SET peso_atual = MAX(0, peso_atual - ?) 
-                            WHERE id = ? AND user_id = ?
-                        `).bind(weightToDeduct, fId, userId)
+                        db.prepare("UPDATE filaments SET peso_atual = MAX(0, peso_atual - ?) WHERE id = ? AND user_id = ?")
+                          .bind(peso, fId, userId)
                     );
                 }
             }
         }
 
-        if (batch.length > 0) {
-            await db.batch(batch);
-        }
-
+        await db.batch(batch);
         return sendJSON({ success: true, status: "aprovado" });
-
     } catch (err) {
-        return sendJSON({ error: "Erro ao aprovar orçamento", details: err.message }, 500);
+        return sendJSON({ error: "Erro ao aprovar", details: err.message }, 500);
     }
 }

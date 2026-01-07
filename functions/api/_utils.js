@@ -13,7 +13,9 @@ export const sendJSON = (data, status = 200) =>
 
 export const toNum = (val, fallback = 0) => {
     if (val === null || val === undefined || val === '') return fallback;
-    const n = Number(val);
+    // Se for string, substitui vírgula por ponto antes de converter
+    const cleanVal = typeof val === 'string' ? val.replace(',', '.') : val;
+    const n = Number(cleanVal);
     return isNaN(n) ? fallback : n;
 };
 
