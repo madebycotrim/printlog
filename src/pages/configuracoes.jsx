@@ -15,8 +15,17 @@ import MainSidebar from "../layouts/mainSidebar";
 import Toast from "../components/Toast";
 import Popup from "../components/Popup";
 
+// --- FUNÇÃO AUXILIAR: ESCAPE PARA CSV ---
+const escapeCSV = (val) => {
+    const stringVal = String(val || "");
+    if (stringVal.includes(',') || stringVal.includes('"') || stringVal.includes('\n')) {
+        return `"${stringVal.replace(/"/g, '""')}"`;
+    }
+    return stringVal;
+};
+
 // --- COMPONENTE: INPUT ESTILIZADO (HUD) ---
-const HUDInput = ({ label, value, onChange, placeholder, type = "text", info, disabled, icon: Icon }) => (
+const HUDInput = ({ label, value, onChange, placeholder, type = "text", info, disabled, icon: Icon, maxLength = 50 }) => (
     <div className="space-y-2 group w-full">
         <div className="flex justify-between items-center px-1">
             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] group-focus-within:text-sky-400 transition-colors">
@@ -36,6 +45,7 @@ const HUDInput = ({ label, value, onChange, placeholder, type = "text", info, di
                 disabled={disabled}
                 type={type}
                 value={value}
+                maxLength={maxLength}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 className={`w-full bg-zinc-900/40 border border-zinc-800 rounded-xl ${Icon ? 'pl-11' : 'px-4'} py-3.5 text-sm text-zinc-200 outline-none focus:border-sky-500/40 focus:bg-zinc-900/80 transition-all font-medium disabled:opacity-40 disabled:cursor-not-allowed placeholder:text-zinc-700 shadow-inner`}
@@ -127,79 +137,45 @@ export default function ConfigPage() {
         finally { setIsSaving(false); }
     };
 
-    // --- AÇÃO: REDEFINIR SENHA (CLERK) ---
+    // --- AÇÃO: REDEFINIR SENHA ---
     const handlePasswordReset = async () => {
         try {
             setIsSaving(true);
-
-            // Verificação de segurança: Usuário social não tem senha
             if (!user.passwordEnabled) {
-                setToast({
-                    show: true,
-                    message: "Sua conta é via Login Social. Não há senha para redefinir.",
-                    type: 'error'
-                });
+                setToast({ show: true, message: "Login Social ativo. Sem senha local.", type: 'error' });
                 return;
             }
-
-            // O método correto para o Clerk disparar o fluxo de reset
-            await user.preparePasswordReset({
-                strategy: "reset_password_email_code",
-            });
-
-            setToast({
-                show: true,
-                message: "Protocolo de redefinição enviado ao seu e-mail.",
-                type: 'success'
-            });
+            await user.preparePasswordReset({ strategy: "reset_password_email_code" });
+            setToast({ show: true, message: "Protocolo enviado ao seu e-mail.", type: 'success' });
         } catch (error) {
-            console.error("Erro Clerk Reset:", error);
-            // Captura a mensagem real do Clerk (ex: "Too many requests")
             const clerkError = error.errors?.[0]?.longMessage || "Falha ao solicitar redefinição.";
             setToast({ show: true, message: clerkError, type: 'error' });
-        } finally {
-            setIsSaving(false);
-        }
+        } finally { setIsSaving(false); }
     };
 
     // --- AÇÃO: REVOGAR SESSÃO ---
     const revokeSession = async (sessionObject) => {
         try {
-            // Verificamos se é a sessão atual antes de tentar revogar
             if (sessionObject.id === user.lastActiveSessionId) {
                 setToast({ show: true, message: "Use 'Encerrar Conexão' para a sessão atual.", type: 'error' });
                 return;
             }
-
-            // Chamada ao método revoke
             await sessionObject.revoke();
-
-            // Atualiza a lista local IMEDIATAMENTE
             setSessions((prev) => prev.filter((s) => s.id !== sessionObject.id));
-
             setToast({ show: true, message: "Terminal removido com sucesso.", type: 'success' });
         } catch (error) {
-            console.error("Erro 403/Forbidden Clerk:", error);
-
-            // Se der 403, a sessão provavelmente já expirou no servidor
-            if (error.status === 403) {
-                setToast({ show: true, message: "Sessão já expirada ou negada. Atualizando...", type: 'error' });
-                // Força atualização da lista de sessões
-                const res = await user.getSessions();
-                setSessions(res);
-            } else {
-                setToast({ show: true, message: "Erro ao encerrar sessão remota.", type: 'error' });
-            }
+            const res = await user.getSessions();
+            setSessions(res);
+            setToast({ show: true, message: "Sincronização de sessões atualizada.", type: 'info' });
         }
     };
 
-    // --- AÇÃO: EXPORTAR MANIFESTO (INTEGRADO COM BACKEND API) ---
+    // --- AÇÃO: EXPORTAR MANIFESTO ---
     const exportFormattedData = async (format) => {
         try {
             setIsSaving(true);
-
-            // BUSCA DADOS REAIS DO BACKEND D1
-            const response = await api.get(`/users/${user.id}/backup`);
+            // Simplificado para usar a rota protegida que o Worker identifica via Token
+            const response = await api.get(`/users/backup`);
             if (!response.success) throw new Error("Falha na API");
 
             const { data, metadata } = response;
@@ -210,25 +186,31 @@ export default function ConfigPage() {
                 blob = new Blob([JSON.stringify(response, null, 2)], { type: "application/json" });
                 filename = `maker_core_manifesto_${timestamp}.json`;
             } else if (format === 'csv') {
-                // Montagem da Planilha Técnica
                 let rows = [
                     ["MAKER CORE - MANIFESTO TECNICO"],
-                    ["Operador", firstName],
+                    ["Operador", escapeCSV(firstName)],
                     ["UID", user.id],
                     ["Gerado em", metadata.generated_at],
                     [""],
                     ["TABELA: FILAMENTOS"],
-                    ["ID", "NOME", "TIPO", "PESO_ATUAL"]
+                    ["ID", "NOME", "MATERIAL", "PESO_ATUAL"]
                 ];
-                data.filaments.forEach(f => rows.push([f.id, f.name, f.type, f.current_weight]));
-                rows.push([""], ["TABELA: IMPRESSORAS"], ["ID", "NOME", "MODELO", "BICO"]);
-                data.printers.forEach(p => rows.push([p.id, p.name, p.model, p.nozzle_diameter]));
+                // CORREÇÃO: Sincronizado com nomes das colunas do D1 (nome, material, peso_atual)
+                data.filaments.forEach(f => rows.push([f.id, escapeCSV(f.nome), escapeCSV(f.material), f.peso_atual]));
+                
+                rows.push([""], ["TABELA: IMPRESSORAS"], ["ID", "NOME", "MODELO", "STATUS"]);
+                data.printers.forEach(p => rows.push([p.id, escapeCSV(p.nome), escapeCSV(p.modelo), p.status]));
 
                 const csvContent = rows.map(e => e.join(",")).join("\n");
-                blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                // Adicionado BOM (\ufeff) para o Excel reconhecer caracteres PT-BR
+                blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
                 filename = `maker_planilha_${timestamp}.csv`;
             } else if (format === 'pdf') {
                 const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    setToast({ show: true, message: "Pop-up bloqueado pelo navegador.", type: 'error' });
+                    setIsSaving(false); return;
+                }
                 printWindow.document.write(`
                     <html><head><title>Manifesto Maker Core</title><style>
                         body{font-family:monospace;padding:40px;background:#fff;color:#000}
@@ -239,8 +221,7 @@ export default function ConfigPage() {
                     <h1>MANIFESTO DE IDENTIDADE OPERACIONAL</h1>
                     <div class="sec">Operador</div><div class="val">${firstName}</div>
                     <div class="sec">Identificação (UID)</div><div class="val">${user.id}</div>
-                    <div class="sec">Email</div><div class="val">${user.primaryEmailAddress.emailAddress}</div>
-                    <div class="sec">Total de Filamentos</div><div class="val">${data.filaments.length}</div>
+                    <div class="sec">Ativos</div><div class="val">${data.filaments.length} Filamentos / ${data.printers.length} Impressoras</div>
                     <script>window.onload = function(){ window.print(); window.close(); }</script></body></html>
                 `);
                 setIsSaving(false); return;
@@ -253,12 +234,11 @@ export default function ConfigPage() {
             link.click();
             setToast({ show: true, message: `Manifesto .${format.toUpperCase()} gerado.`, type: 'success' });
         } catch (err) {
-            console.error(err);
             setToast({ show: true, message: "Erro ao extrair manifesto do banco.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
-    // --- AÇÃO: PROTOCOLO DE RESCISÃO (API DELETE) ---
+    // --- AÇÃO: RESCISÃO ---
     const handleRescisaoCompleta = async () => {
         try {
             setIsSaving(true);
@@ -345,7 +325,17 @@ export default function ConfigPage() {
                                 </button>
                             ))}
                         </div>
-                        <button onClick={() => signOut()} className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-[11px] font-black uppercase text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20 active:scale-95">
+                        <button 
+                            onClick={() => setModalConfig({
+                                open: true,
+                                title: "Encerrar Sessão?",
+                                message: "Você será desconectado do terminal com segurança.",
+                                type: "info",
+                                icon: LogOut,
+                                onConfirm: () => signOut()
+                            })}
+                            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-[11px] font-black uppercase text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20 active:scale-95"
+                        >
                             <LogOut size={18} /> Encerrar Conexão
                         </button>
                     </aside>
@@ -358,9 +348,19 @@ export default function ConfigPage() {
                                     <div className="relative p-10 rounded-[2.5rem] bg-gradient-to-br from-zinc-900/60 to-zinc-900/20 border border-white/5 overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity"><Fingerprint size={160} className="text-white" /></div>
                                         <div className="relative z-10 flex items-center gap-10">
-                                            <div className="relative group/avatar cursor-pointer" onClick={() => fileInputRef.current.click()}>
-                                                <div className="w-36 h-36 rounded-[2.5rem] bg-zinc-950 border-2 border-zinc-800 p-1.5 group-hover/avatar:border-sky-500/50 transition-all shadow-2xl">
+                                            {/* CORREÇÃO: Button semântico para acessibilidade */}
+                                            <button 
+                                                className="relative group/avatar cursor-pointer outline-none focus:ring-2 focus:ring-sky-500 rounded-[2.5rem]" 
+                                                onClick={() => fileInputRef.current.click()}
+                                                disabled={isSaving}
+                                            >
+                                                <div className="w-36 h-36 rounded-[2.5rem] bg-zinc-950 border-2 border-zinc-800 p-1.5 group-hover/avatar:border-sky-500/50 transition-all shadow-2xl overflow-hidden">
                                                     <div className="w-full h-full rounded-[2.2rem] overflow-hidden bg-zinc-900 flex items-center justify-center relative">
+                                                        {isSaving && (
+                                                            <div className="absolute inset-0 bg-black/60 z-20 flex items-center justify-center">
+                                                                <RefreshCw size={24} className="text-sky-500 animate-spin" />
+                                                            </div>
+                                                        )}
                                                         {user?.imageUrl ? <img src={user.imageUrl} className="w-full h-full object-cover" alt="Avatar" /> : <User size={40} className="text-zinc-700" />}
                                                         <div className="absolute inset-0 bg-sky-950/80 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-all">
                                                             <Camera size={24} className="text-white mb-2" />
@@ -369,7 +369,7 @@ export default function ConfigPage() {
                                                     </div>
                                                 </div>
                                                 <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
-                                            </div>
+                                            </button>
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-3 mb-2">
                                                     <Activity size={12} className="text-emerald-500" />
@@ -390,7 +390,7 @@ export default function ConfigPage() {
                                         title="Parâmetros de Identidade"
                                         icon={User}
                                         badge="Módulo 01"
-                                        description="Defina sua assinatura técnica. Esses dados identificam sua autoria no ecossistema."
+                                        description="Defina sua assinatura técnica para autoria no ecossistema."
                                         visible={isVisible("perfil nome email")}
                                     >
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-zinc-900/20 p-10 rounded-[2.5rem] border border-zinc-800/40">
@@ -420,7 +420,7 @@ export default function ConfigPage() {
                                             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                                                 <div className="space-y-1">
                                                     <p className="text-[11px] text-zinc-200 font-black uppercase tracking-widest">Redefinição de Credenciais</p>
-                                                    <p className="text-[10px] text-zinc-500 uppercase font-medium">Um link de segurança será enviado ao seu e-mail cadastrado.</p>
+                                                    <p className="text-[10px] text-zinc-500 uppercase font-medium">Link de segurança enviado ao e-mail cadastrado.</p>
                                                 </div>
                                                 <button
                                                     onClick={handlePasswordReset}
@@ -449,7 +449,7 @@ export default function ConfigPage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-[12px] font-black text-zinc-100 uppercase tracking-tight">{sess.latestActivity?.device?.model || "Terminal Remoto"}</p>
-                                                            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">{sess.latestActivity?.browserName} • IP: {sess.latestActivity?.ipAddress}</p>
+                                                            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">IP: {sess.latestActivity?.ipAddress}</p>
                                                         </div>
                                                     </div>
                                                     {sess.id === user.lastActiveSessionId ? (
@@ -462,7 +462,7 @@ export default function ConfigPage() {
                                         </div>
                                     </ConfigSection>
 
-                                    <ConfigSection title="Zona de Exclusão" icon={AlertTriangle} badge="Nível Crítico" description="A rescisão apaga todos os registros permanentemente do D1. Esta ação não pode ser desfeita.">
+                                    <ConfigSection title="Zona de Exclusão" icon={AlertTriangle} badge="Nível Crítico" description="A rescisão apaga todos os registros permanentemente do D1.">
                                         <div className="bg-rose-500/5 p-12 rounded-[2.5rem] border border-rose-500/20 space-y-8 relative overflow-hidden group">
                                             <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-rose-500/10 blur-[80px] pointer-events-none" />
                                             <h2 className="text-2xl font-black uppercase text-white tracking-tighter">Rescisão de <span className="text-rose-500">Identidade</span></h2>
@@ -470,7 +470,7 @@ export default function ConfigPage() {
                                                 onClick={() => setModalConfig({
                                                     open: true,
                                                     title: "Confirmar Expurgo?",
-                                                    message: "Invocando DELETE em todas as tabelas vinculadas ao seu UID.",
+                                                    message: "Esta ação apagará filamentos, impressoras e orçamentos vinculados ao seu UID permanentemente.",
                                                     type: "danger",
                                                     icon: AlertTriangle,
                                                     onConfirm: handleRescisaoCompleta
@@ -488,7 +488,7 @@ export default function ConfigPage() {
                             {activeTab === 'SISTEMA' && (
                                 <div className="space-y-16">
                                     <ConfigSection
-                                        title="Gestão de Ativos e Portabilidade"
+                                        title="Portabilidade de Ativos"
                                         icon={Download}
                                         badge="Módulo 03"
                                         description="Extraia seu Manifesto de Dados diretamente do banco D1."
@@ -498,7 +498,7 @@ export default function ConfigPage() {
                                                 <HardDrive className="text-sky-500 mt-1" size={18} />
                                                 <div className="space-y-1">
                                                     <p className="text-[11px] text-zinc-200 font-black uppercase tracking-widest">Manifesto do Núcleo</p>
-                                                    <p className="text-[10px] text-zinc-500 uppercase leading-relaxed font-medium">Extração de dados via API:</p>
+                                                    <p className="text-[10px] text-zinc-500 uppercase leading-relaxed font-medium">Extração via API:</p>
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -518,7 +518,7 @@ export default function ConfigPage() {
                                     <ConfigSection title="Sincronização de Cache" icon={RefreshCw} badge="Memória" description="Reinicializa a memória local do navegador.">
                                         <div className="bg-zinc-900/20 p-10 rounded-[2.5rem] border border-zinc-800/40">
                                             <button onClick={clearLocalCache} className="flex items-center gap-4 px-8 py-5 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 border border-zinc-700 rounded-2xl transition-all font-black uppercase text-[11px]">
-                                                <RefreshCw size={20} /> Reinicializar Terminal
+                                                <RefreshCw size={20} /> Limpar Memória Local
                                             </button>
                                         </div>
                                     </ConfigSection>
