@@ -5,7 +5,6 @@ export async function handleSettings(method, db, userId, request) {
         const data = await db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId).first();
         return sendJSON(data || {});
     }
-
     if (['POST', 'PUT'].includes(method)) {
         const s = await request.json();
         await db.prepare(`INSERT INTO calculator_settings (user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template) 

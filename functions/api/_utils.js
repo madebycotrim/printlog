@@ -8,13 +8,12 @@ export const sendJSON = (data, status = 200) =>
     Response.json(data, { status, headers: corsHeaders });
 
 export const toNum = (val, fallback = 0) => {
-    if (val === null || val === undefined || val === '') return fallback;
-    const n = Number(String(val).replace(',', '.')); // Lida com vírgula brasileira
+    const n = Number(val);
     return isNaN(n) ? fallback : n;
 };
 
 export async function initSchema(db) {
-    // Schema original para evitar erro de colunas faltantes
+    // SCHEMA IDÊNTICO AO SEU ORIGINAL
     await db.batch([
         db.prepare(`CREATE TABLE IF NOT EXISTS filaments (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, material TEXT, cor_hex TEXT, peso_total REAL, peso_atual REAL, preco REAL, data_abertura TEXT, favorito INTEGER DEFAULT 0)`),
         db.prepare(`CREATE TABLE IF NOT EXISTS printers (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, nome TEXT NOT NULL, marca TEXT, modelo TEXT, status TEXT DEFAULT 'idle', potencia REAL DEFAULT 0, preco REAL DEFAULT 0, rendimento_total REAL DEFAULT 0, horas_totais REAL DEFAULT 0, ultima_manutencao_hora REAL DEFAULT 0, intervalo_manutencao REAL DEFAULT 300, historico TEXT)`),
