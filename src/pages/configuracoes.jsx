@@ -131,32 +131,73 @@ export default function ConfigPage() {
     const handlePasswordReset = async () => {
         try {
             setIsSaving(true);
+
+            // Verificação de segurança: Usuário social não tem senha
             if (!user.passwordEnabled) {
-                setToast({ show: true, message: "Login via Social. Não há senha para redefinir.", type: 'error' });
+                setToast({
+                    show: true,
+                    message: "Sua conta é via Login Social. Não há senha para redefinir.",
+                    type: 'error'
+                });
                 return;
             }
-            await user.preparePasswordReset({ strategy: "reset_password_email_code" });
-            setToast({ show: true, message: "Protocolo enviado para seu e-mail.", type: 'success' });
+
+            // O método correto para o Clerk disparar o fluxo de reset
+            await user.preparePasswordReset({
+                strategy: "reset_password_email_code",
+            });
+
+            setToast({
+                show: true,
+                message: "Protocolo de redefinição enviado ao seu e-mail.",
+                type: 'success'
+            });
         } catch (error) {
-            const msg = error.errors?.[0]?.longMessage || "Erro ao solicitar redefinição.";
-            setToast({ show: true, message: msg, type: 'error' });
-        } finally { setIsSaving(false); }
+            console.error("Erro Clerk Reset:", error);
+            // Captura a mensagem real do Clerk (ex: "Too many requests")
+            const clerkError = error.errors?.[0]?.longMessage || "Falha ao solicitar redefinição.";
+            setToast({ show: true, message: clerkError, type: 'error' });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     // --- AÇÃO: REVOGAR SESSÃO ---
-    const revokeSession = async (sess) => {
+    const revokeSession = async (sessionObject) => {
         try {
-            await sess.revoke();
-            setSessions((prev) => prev.filter((s) => s.id !== sess.id));
-            setToast({ show: true, message: "Terminal desconectado.", type: 'success' });
-        } catch { setToast({ show: true, message: "Erro ao encerrar sessão.", type: 'error' }); }
+            // Verificamos se é a sessão atual antes de tentar revogar
+            if (sessionObject.id === user.lastActiveSessionId) {
+                setToast({ show: true, message: "Use 'Encerrar Conexão' para a sessão atual.", type: 'error' });
+                return;
+            }
+
+            // Chamada ao método revoke
+            await sessionObject.revoke();
+
+            // Atualiza a lista local IMEDIATAMENTE
+            setSessions((prev) => prev.filter((s) => s.id !== sessionObject.id));
+
+            setToast({ show: true, message: "Terminal removido com sucesso.", type: 'success' });
+        } catch (error) {
+            console.error("Erro 403/Forbidden Clerk:", error);
+
+            // Se der 403, a sessão provavelmente já expirou no servidor
+            if (error.status === 403) {
+                setToast({ show: true, message: "Sessão já expirada ou negada. Atualizando...", type: 'error' });
+                // Força atualização da lista de sessões
+                const res = await user.getSessions();
+                setSessions(res);
+            } else {
+                setToast({ show: true, message: "Erro ao encerrar sessão remota.", type: 'error' });
+            }
+        }
     };
 
     // --- AÇÃO: EXPORTAR MANIFESTO (INTEGRADO COM BACKEND API) ---
     const exportFormattedData = async (format) => {
         try {
             setIsSaving(true);
-            
+
             // BUSCA DADOS REAIS DO BACKEND D1
             const response = await api.get(`/users/${user.id}/backup`);
             if (!response.success) throw new Error("Falha na API");
@@ -425,15 +466,15 @@ export default function ConfigPage() {
                                         <div className="bg-rose-500/5 p-12 rounded-[2.5rem] border border-rose-500/20 space-y-8 relative overflow-hidden group">
                                             <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-rose-500/10 blur-[80px] pointer-events-none" />
                                             <h2 className="text-2xl font-black uppercase text-white tracking-tighter">Rescisão de <span className="text-rose-500">Identidade</span></h2>
-                                            <button 
+                                            <button
                                                 onClick={() => setModalConfig({
-                                                    open: true, 
-                                                    title: "Confirmar Expurgo?", 
-                                                    message: "Invocando DELETE em todas as tabelas vinculadas ao seu UID.", 
-                                                    type: "danger", 
-                                                    icon: AlertTriangle, 
-                                                    onConfirm: handleRescisaoCompleta 
-                                                })} 
+                                                    open: true,
+                                                    title: "Confirmar Expurgo?",
+                                                    message: "Invocando DELETE em todas as tabelas vinculadas ao seu UID.",
+                                                    type: "danger",
+                                                    icon: AlertTriangle,
+                                                    onConfirm: handleRescisaoCompleta
+                                                })}
                                                 className="group flex items-center gap-4 px-8 py-5 bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 rounded-2xl transition-all duration-500"
                                             >
                                                 <Trash2 size={20} className="text-rose-500 group-hover:text-white" />
