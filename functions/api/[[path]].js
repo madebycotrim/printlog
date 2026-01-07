@@ -222,65 +222,80 @@ export async function onRequest(context) {
             case 'users':
                 // O userId já foi extraído do token do Clerk no início da função onRequest
 
-                // --- PROTOCOLO DE EXPORTAÇÃO / BACKUP ---
+                // --- PROTOCOLO DE EXPORTAÇÃO / MANIFESTO (BACKUP) ---
                 if (method === 'GET') {
-                    // Verifica se a URL termina com /backup (pathArray[2])
-                    // Exemplo de path: /users/user_id/backup
-                    const action = pathArray[2];
+                    const action = pathArray[2]; // /users/[id]/backup
 
                     if (action === 'backup') {
                         try {
-                            // Buscamos todos os dados do operador em batch para performance
+                            // Coleta de dados em lote para o Manifesto Técnico
+                            // Removido qualquer referência a campos de 'designação' ou 'lastName' que pudessem existir
                             const results = await db.batch([
-                                db.prepare("SELECT * FROM filaments WHERE user_id = ?").bind(userId),
-                                db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(userId),
+                                db.prepare("SELECT id, name, color, type, current_weight FROM filaments WHERE user_id = ?").bind(userId),
+                                db.prepare("SELECT id, name, model, nozzle_diameter FROM printers WHERE user_id = ?").bind(userId),
                                 db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId),
-                                db.prepare("SELECT * FROM projects WHERE user_id = ?").bind(userId)
+                                db.prepare("SELECT id, name, data, created_at FROM projects WHERE user_id = ?").bind(userId)
                             ]);
 
                             return sendJSON({
                                 success: true,
                                 metadata: {
                                     operator_id: userId,
-                                    export_date: new Date().toISOString(),
-                                    system: "Oficina Maker API"
+                                    generated_at: new Date().toISOString(),
+                                    system_version: "Maker_Core_4.2",
+                                    status: "MANIFESTO_GERADO"
                                 },
                                 data: {
                                     filaments: results[0].results || [],
                                     printers: results[1].results || [],
-                                    settings: results[2].results[0] || {}, // Configurações é linha única
+                                    // As configurações do sistema (Removido designação técnica se estivesse aqui)
+                                    settings: results[2].results[0] || {},
                                     projects: (results[3].results || []).map(p => ({
                                         ...p,
-                                        data: JSON.parse(p.data || "{}") // Já enviamos o JSON do projeto parseado
+                                        data: JSON.parse(p.data || "{}")
                                     }))
                                 }
                             });
                         } catch (err) {
-                            return sendJSON({ error: "Falha na extração de dados", details: err.message }, 500);
+                            return sendJSON({
+                                error: "Falha na extração do Manifesto",
+                                details: err.message,
+                                code: "ERR_BACKUP_FAILURE"
+                            }, 500);
                         }
                     }
 
-                    return sendJSON({ error: "Ação não permitida" }, 405);
+                    return sendJSON({ error: "Ação não identificada no terminal" }, 404);
                 }
 
-                // --- PROTOCOLO DE RESCISÃO (O SEU DELETE ATUAL) ---
+                // --- PROTOCOLO DE RESCISÃO (EXPURGO DE DADOS) ---
                 if (method === 'DELETE') {
                     try {
+                        // Executa a limpeza total de todos os filamentos, impressoras, 
+                        // configurações e projetos vinculados ao UID do operador.
                         await db.batch([
                             db.prepare("DELETE FROM filaments WHERE user_id = ?").bind(userId),
                             db.prepare("DELETE FROM printers WHERE user_id = ?").bind(userId),
                             db.prepare("DELETE FROM calculator_settings WHERE user_id = ?").bind(userId),
                             db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId)
+                            // Se você tiver uma tabela de 'users' local, adicione o DELETE dela aqui também.
                         ]);
 
                         return sendJSON({
                             success: true,
-                            message: "Protocolo de rescisão executado: Todos os dados foram apagados."
+                            protocol: "EXPURGO_COMPLETE",
+                            message: "Protocolo de rescisão executado com sucesso. O núcleo foi limpo."
                         });
                     } catch (dbErr) {
-                        return sendJSON({ error: "Falha ao limpar banco de dados", details: dbErr.message }, 500);
+                        return sendJSON({
+                            error: "Falha crítica no protocolo de exclusão",
+                            details: dbErr.message,
+                            code: "ERR_PURGE_FAILED"
+                        }, 500);
                     }
                 }
+
+                return sendJSON({ error: "Método não autorizado para este módulo" }, 405);
                 break;
 
             default:
