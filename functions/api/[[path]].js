@@ -220,83 +220,80 @@ export async function onRequest(context) {
                 break;
 
             case 'users':
-                // O userId já foi extraído do token do Clerk no início da função onRequest (substitua pela sua constante se for diferente)
-                // Exemplo de URL esperada: /users/[id]/backup ou /users/backup
+                // 1. Identificação do Operador
+                // Certifique-se que o userId está vindo corretamente do token ou da URL
+                const targetUserId = pathArray[2] || userId;
 
-                // Determinamos a ação verificando se 'backup' está na posição 2 ou 3 do path
-                const action = pathArray.includes('backup') ? 'backup' : null;
-
-                // --- PROTOCOLO DE EXPORTAÇÃO / MANIFESTO (BACKUP) ---
-                if (method === 'GET' && action === 'backup') {
+                if (method === 'GET' && pathArray.includes('backup')) {
                     try {
-                        // Coleta de dados em lote (Atomicidade e Performance)
-                        // Extraímos apenas os dados técnicos necessários para o Manifesto
+                        // Executamos as queries individualmente ou em batch, 
+                        // mas com tratamento para tabelas vazias ou inexistentes.
                         const results = await db.batch([
-                            db.prepare("SELECT id, name, color, type, current_weight FROM filaments WHERE user_id = ?").bind(userId),
-                            db.prepare("SELECT id, name, model, nozzle_diameter FROM printers WHERE user_id = ?").bind(userId),
-                            db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId),
-                            db.prepare("SELECT id, name, data, created_at FROM projects WHERE user_id = ?").bind(userId)
+                            db.prepare("SELECT * FROM filaments WHERE user_id = ?").bind(targetUserId),
+                            db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(targetUserId),
+                            db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(targetUserId),
+                            db.prepare("SELECT * FROM projects WHERE user_id = ?").bind(targetUserId)
                         ]);
+
+                        // Formatação segura dos resultados
+                        const filaments = results[0]?.results || [];
+                        const printers = results[1]?.results || [];
+                        const settings = results[2]?.results?.length > 0 ? results[2].results[0] : {};
+                        const projectsRaw = results[3]?.results || [];
+
+                        const projects = projectsRaw.map(p => {
+                            try {
+                                return {
+                                    ...p,
+                                    data: typeof p.data === 'string' ? JSON.parse(p.data) : p.data
+                                };
+                            } catch (e) {
+                                console.error("Erro ao processar JSON do projeto:", p.id);
+                                return { ...p, data: {} }; // Fallback para não quebrar o backup
+                            }
+                        });
 
                         return sendJSON({
                             success: true,
                             metadata: {
-                                operator_id: userId,
+                                operator_id: targetUserId,
                                 generated_at: new Date().toISOString(),
-                                system_version: "Maker_Core_4.2",
-                                status: "NOMINAL",
-                                protocol: "MANIFESTO_TECNICO_GERADO"
+                                system_version: "Maker_Core_4.2"
                             },
                             data: {
-                                filaments: results[0].results || [],
-                                printers: results[1].results || [],
-                                // Configurações globais (sem campos de designação técnica/lastName)
-                                settings: results[2].results[0] || {},
-                                projects: (results[3].results || []).map(p => {
-                                    try {
-                                        return { ...p, data: JSON.parse(p.data || "{}") };
-                                    } catch (e) {
-                                        return { ...p, data: {} }; // Fallback para JSON corrompido
-                                    }
-                                })
+                                filaments,
+                                printers,
+                                settings,
+                                projects
                             }
                         });
+
                     } catch (err) {
+                        // Este retorno ajudará você a ver o erro real no console do navegador
                         return sendJSON({
                             success: false,
-                            error: "Falha na extração do Manifesto",
+                            error: "Falha técnica no Manifesto",
                             details: err.message,
-                            code: "ERR_BACKUP_FAILURE"
+                            sql_hint: "Verifique se as tabelas filaments, printers, calculator_settings e projects existem no D1."
                         }, 500);
                     }
                 }
 
-                // --- PROTOCOLO DE RESCISÃO (EXPURGO DE DADOS) ---
                 if (method === 'DELETE') {
                     try {
-                        // Invocação de expurgo em todas as tabelas vinculadas ao UID
-                        // O uso do batch garante que ou apaga TUDO ou nada é apagado (integridade)
                         await db.batch([
                             db.prepare("DELETE FROM filaments WHERE user_id = ?").bind(userId),
                             db.prepare("DELETE FROM printers WHERE user_id = ?").bind(userId),
                             db.prepare("DELETE FROM calculator_settings WHERE user_id = ?").bind(userId),
                             db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId)
-                            // Se houver uma tabela de metadados local de usuários:
-                            // db.prepare("DELETE FROM users WHERE id = ?").bind(userId)
                         ]);
 
                         return sendJSON({
                             success: true,
-                            protocol: "EXPURGO_COMPLETE",
-                            message: "Protocolo de rescisão executado: Todos os ativos do D1 foram removidos."
+                            message: "Expurgo completo realizado no D1."
                         });
-                    } catch (dbErr) {
-                        return sendJSON({
-                            success: false,
-                            error: "Falha crítica no protocolo de exclusão",
-                            details: dbErr.message,
-                            code: "ERR_PURGE_FAILED"
-                        }, 500);
+                    } catch (err) {
+                        return sendJSON({ error: "Erro ao deletar dados", details: err.message }, 500);
                     }
                 }
                 break;
