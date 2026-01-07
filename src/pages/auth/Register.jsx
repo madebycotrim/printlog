@@ -6,7 +6,7 @@ import {
     User, Package, Send, Lock, Eye, EyeOff,
     KeyRound, AlertTriangle, ShieldCheck,
     Zap, Fingerprint, Layout,
-    Layers, Cpu, BoxSelect, Activity, X // Adicionei o X aqui
+    Layers, Cpu, BoxSelect, Activity, X
 } from 'lucide-react';
 import logo from '../../assets/logo-branca.png';
 
@@ -89,7 +89,7 @@ const LegalModal = ({ isOpen, onClose, title, content }) => {
                     <h3 className="text-lg font-bold text-white uppercase italic tracking-tighter">{title}</h3>
                     <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={20} /></button>
                 </div>
-                <div className="p-8 overflow-y-auto">{content}</div>
+                <div className="p-8 overflow-y-auto custom-scrollbar">{content}</div>
                 <div className="p-6 border-t border-white/5 bg-[#0d0d0f] flex justify-end">
                     <button onClick={onClose} className="px-6 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-sky-500 hover:text-white transition-all">Entendido</button>
                 </div>
@@ -98,7 +98,7 @@ const LegalModal = ({ isOpen, onClose, title, content }) => {
     );
 };
 
-// --- COMPONENTE: UI (Badges e Buttons) ---
+// --- COMPONENTE: UI ---
 
 const Badge = ({ icon: Icon, label, color = "sky" }) => {
     const variants = {
@@ -128,7 +128,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
             {isLoading ? (
                 <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Preparando acesso...</span>
+                    <span>Processando...</span>
                 </div>
             ) : (
                 <>
@@ -139,8 +139,6 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
         </button>
     );
 };
-
-// --- WIDGETS DE PREVIEW ---
 
 const InventoryWidget = () => (
     <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
@@ -187,14 +185,17 @@ export default function RegisterPage() {
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [error, setError] = useState("");
-    const [, setLocation] = useLocation();
+    const [location, setLocation] = useLocation();
 
-    // ESTADO DO MODAL
+    // Captura o redirecionamento inteligente
+    const queryParams = new URLSearchParams(window.location.search);
+    const redirectUrl = queryParams.get("redirect") || "/dashboard";
+
     const [modal, setModal] = useState({ isOpen: false, title: '', content: null });
 
     useEffect(() => {
-        if (isLoaded && isSignedIn) setLocation("/dashboard");
-    }, [isLoaded, isSignedIn, setLocation]);
+        if (isLoaded && isSignedIn) setLocation(redirectUrl);
+    }, [isLoaded, isSignedIn, setLocation, redirectUrl]);
 
     const handleClerkError = (err) => {
         const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Não conseguimos criar seu acesso agora.";
@@ -202,24 +203,32 @@ export default function RegisterPage() {
     };
 
     const signUpWithGoogle = async () => {
-        if (!isLoaded) return;
+        if (!isLoaded || isGoogleLoading) return;
         setIsGoogleLoading(true);
         try {
             await signUp.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: "/sso-callback",
-                redirectUrlComplete: "/dashboard",
+                redirectUrl: `/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
+                redirectUrlComplete: redirectUrl,
             });
-        } catch (err) { setIsGoogleLoading(false); handleClerkError(err); }
+        } catch (err) { 
+            setIsGoogleLoading(false); 
+            handleClerkError(err); 
+        }
     };
 
     const handlePasswordSignUp = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
+        if (!isLoaded || isLoading) return;
         setIsLoading(true);
         setError("");
         try {
-            await signUp.create({ emailAddress: email, password, firstName: name });
+            // Sincroniza o Nome do usuário com o firstName do Clerk
+            await signUp.create({ 
+                emailAddress: email, 
+                password, 
+                firstName: name 
+            });
             await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
             setPendingVerification(true);
         } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
@@ -227,23 +236,38 @@ export default function RegisterPage() {
 
     const handleMagicLinkSignUp = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
+        if (!isLoaded || isLoading) return;
         setIsLoading(true);
         setError("");
         try {
-            await signUp.create({ emailAddress: email, firstName: name });
+            await signUp.create({ 
+                emailAddress: email, 
+                firstName: name 
+            });
             await signUp.prepareEmailAddressVerification({
                 strategy: 'email_link',
-                redirectUrl: `${window.location.origin}/dashboard`,
+                redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
             });
             setIsSent(true);
         } catch (err) { handleClerkError(err); setIsSent(false); } finally { setIsLoading(false); }
     };
 
+    const handleVerifyCode = async (e) => {
+        e.preventDefault();
+        if (!isLoaded || isLoading) return;
+        setIsLoading(true);
+        try {
+            const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
+            if (completeSignUp.status === "complete") {
+                await setActive({ session: completeSignUp.createdSessionId });
+                setLocation(redirectUrl);
+            }
+        } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
+    };
+
     return (
         <div className="min-h-screen bg-[#050506] text-zinc-100 font-sans flex overflow-hidden">
 
-            {/* COMPONENTE MODAL CHAMADO AQUI */}
             <LegalModal
                 isOpen={modal.isOpen}
                 title={modal.title}
@@ -333,17 +357,7 @@ export default function RegisterPage() {
                             </div>
                         </form>
                     ) : pendingVerification ? (
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            setIsLoading(true);
-                            try {
-                                const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
-                                if (completeSignUp.status === "complete") {
-                                    await setActive({ session: completeSignUp.createdSessionId });
-                                    setLocation("/dashboard");
-                                }
-                            } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
-                        }} className="space-y-6">
+                        <form onSubmit={handleVerifyCode} className="space-y-6">
                             <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
                                 <label className="text-xs font-bold uppercase text-sky-500 block">Código de Confirmação</label>
                                 <input
@@ -382,7 +396,6 @@ export default function RegisterPage() {
                             Já tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
                         </p>
 
-                        {/* TEXTO DE CONCORDÂNCIA ATUALIZADO PARA ABRIR MODAL */}
                         <p className="text-[10px] text-zinc-600 leading-relaxed uppercase tracking-wider max-w-[280px] mx-auto text-center">
                             Ao criar sua conta, você concorda com nossos <br />
                             <button

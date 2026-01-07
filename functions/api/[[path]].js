@@ -6,30 +6,53 @@ import { handleSettings } from './_settings';
 import { handleProjects, handleApproveBudget } from './_projects';
 import { handleUsers } from './_users';
 
+// Variável global para controle de inicialização do Banco (opcional para Workers)
+let dbInitialized = false;
+
 export async function onRequest(context) {
     const { request, env, params } = context;
     const url = new URL(request.url);
-    const pathArray = params.path || [];
-    const entity = pathArray[0];
-    const idFromPath = pathArray[1];
     const method = request.method;
 
-    if (method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+    // 1. Early return para CORS OPTIONS
+    if (method === "OPTIONS") {
+        return new Response(null, { 
+            headers: { 
+                ...corsHeaders,
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization"
+            } 
+        });
+    }
 
     try {
+        // 2. Inicialização do Clerk (Secret Key é obrigatória no Backend)
         const clerk = createClerkClient({
             secretKey: env.CLERK_SECRET_KEY,
-            publishableKey: env.CLERK_PUBLISHABLE_KEY
         });
 
+        // 3. Autenticação robusta
         const authRequest = await clerk.authenticateRequest(request);
-        if (!authRequest.isSignedIn) return sendJSON({ error: "Não autorizado" }, 401);
+        
+        if (!authRequest.isSignedIn) {
+            return sendJSON({ error: "Sessão inválida ou expirada" }, 401);
+        }
 
-        const userId = authRequest.toAuth().userId;
+        const { userId } = authRequest.toAuth();
         const db = env.DB;
 
-        await initSchema(db);
+        // 4. Otimização do Schema: Só roda se necessário
+        // Nota: O ideal é rodar isso via 'wrangler d1 execute ...' no deploy
+        if (!dbInitialized) {
+            await initSchema(db);
+            dbInitialized = true; 
+        }
 
+        // 5. Parsing de rota mais limpo
+        const pathArray = params.path || [];
+        const [entity, idFromPath] = pathArray;
+
+        // 6. Roteamento
         switch (entity) {
             case 'filaments':
             case 'filamentos':
@@ -47,7 +70,7 @@ export async function onRequest(context) {
 
             case 'approve-budget':
                 if (method === 'POST') return await handleApproveBudget(db, userId, request);
-                break;
+                return sendJSON({ error: "Método não permitido" }, 405);
 
             case 'users':
                 return await handleUsers(method, idFromPath, db, userId);
@@ -56,6 +79,10 @@ export async function onRequest(context) {
                 return sendJSON({ error: "Rota inexistente" }, 404);
         }
     } catch (err) {
-        return sendJSON({ error: "Erro Interno", details: err.message }, 500);
+        console.error("Erro no Worker:", err); // Log para debug no painel da Cloudflare
+        return sendJSON({ 
+            error: "Erro Interno no Servidor", 
+            message: err.message 
+        }, 500);
     }
 }

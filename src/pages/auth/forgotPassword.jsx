@@ -40,7 +40,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
             {isLoading ? (
                 <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Validando acesso...</span>
+                    <span>Validando...</span>
                 </div>
             ) : (
                 <>
@@ -52,7 +52,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
     );
 };
 
-// --- WIDGETS DE PREVIEW (Lado Direito) ---
+// --- WIDGETS DE PREVIEW ---
 
 const RecoveryStatusWidget = () => (
     <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
@@ -80,8 +80,6 @@ const RecoveryStatusWidget = () => (
     </div>
 );
 
-// --- COMPONENTE PRINCIPAL ---
-
 export default function ForgotPasswordPage() {
     const { isLoaded, signIn, setActive } = useSignIn();
     const [isLoading, setIsLoading] = useState(false);
@@ -93,9 +91,10 @@ export default function ForgotPasswordPage() {
     const [error, setError] = useState("");
     const [, setLocation] = useLocation();
 
+    // 1. Iniciar o reset de senha
     const handleSendCode = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
+        if (!isLoaded || isLoading) return;
         setIsLoading(true);
         setError("");
 
@@ -112,9 +111,10 @@ export default function ForgotPasswordPage() {
         }
     };
 
+    // 2. Validar código e definir nova senha
     const handleResetPassword = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
+        if (!isLoaded || isLoading) return;
         setIsLoading(true);
         setError("");
 
@@ -126,8 +126,12 @@ export default function ForgotPasswordPage() {
             });
 
             if (result.status === "complete") {
+                // Ao finalizar, criamos a sessão e jogamos para o Dashboard
                 await setActive({ session: result.createdSessionId });
                 setLocation("/dashboard");
+            } else {
+                // Caso exija um segundo fator (2FA)
+                console.warn("Status adicional requerido:", result.status);
             }
         } catch (err) {
             setError(err.errors?.[0]?.longMessage || "Código incorreto ou senha muito curta.");
@@ -142,7 +146,13 @@ export default function ForgotPasswordPage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/5 blur-[120px] pointer-events-none" />
 
                 <div className="absolute top-10 left-10">
-                    <button onClick={() => step === 1 ? setLocation('/login') : setStep(1)} className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white transition-all">
+                    <button 
+                        onClick={() => {
+                            setError("");
+                            step === 1 ? setLocation('/login') : setStep(1);
+                        }} 
+                        className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white transition-all"
+                    >
                         <ArrowLeft size={16} />
                         {step === 1 ? "Voltar ao login" : "Trocar e-mail"}
                     </button>
@@ -164,13 +174,13 @@ export default function ForgotPasswordPage() {
                             <p className="text-zinc-500 text-sm font-medium">
                                 {step === 1
                                     ? "Siga os passos abaixo para recuperar sua conta e voltar para a oficina."
-                                    : `Enviamos o código de validação para: ${email}`}
+                                    : `Enviamos o código de validação para o e-mail informado.`}
                             </p>
                         </div>
                     </div>
 
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium">
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium animate-in fade-in slide-in-from-top-1">
                             <ShieldAlert size={16} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -178,7 +188,7 @@ export default function ForgotPasswordPage() {
 
                     <form onSubmit={step === 1 ? handleSendCode : handleResetPassword} className="space-y-6">
                         {step === 1 ? (
-                            <div className="space-y-5">
+                            <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-zinc-500 ml-1">Qual seu e-mail cadastrado?</label>
                                     <div className="relative">
@@ -195,13 +205,14 @@ export default function ForgotPasswordPage() {
                                 </PrimaryButton>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
                                     <label className="text-xs font-bold uppercase tracking-widest text-sky-500 block">Digite o código do e-mail</label>
                                     <input
                                         type="text" required value={code} onChange={(e) => setCode(e.target.value)}
                                         className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 text-center text-3xl font-mono font-bold tracking-[0.4em] text-white outline-none focus:border-sky-500 transition-all"
                                         placeholder="000000"
+                                        maxLength={6}
                                     />
                                 </div>
                                 
@@ -212,7 +223,7 @@ export default function ForgotPasswordPage() {
                                         <input
                                             type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
                                             className="w-full bg-[#0a0a0c] border border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500/50 text-white placeholder:text-zinc-800"
-                                            placeholder="Use pelo menos 8 caracteres"
+                                            placeholder="Mínimo de 8 caracteres"
                                         />
                                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-700 hover:text-white">
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -238,7 +249,7 @@ export default function ForgotPasswordPage() {
                 </div>
             </div>
 
-            {/* PAINEL LATERAL (PREVIEW) */}
+            {/* PAINEL LATERAL */}
             <div className="hidden lg:flex flex-1 bg-[#09090b] border-l border-white/5 relative items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-500/10 blur-[180px] rounded-full" />

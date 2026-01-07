@@ -1,12 +1,12 @@
-import { lazy, Suspense } from "react"; // Importar Suspense aqui também
+import { lazy, Suspense } from "react";
 import { Switch, Route, Redirect } from "wouter";
-import { useAuth } from "@clerk/clerk-react"; // Importar para proteção de rotas públicas
+import { useAuth } from "@clerk/clerk-react";
 
 import ProtectedRoute from "./protectedRoute";
 import PageLoading from "../components/Loading";
 
 // =======================================================
-// LAZY PAGES
+// LAZY PAGES (Code Splitting para performance)
 // =======================================================
 const LandingPage = lazy(() => import("../pages/landingPage"));
 const Login = lazy(() => import("../pages/auth/Login"));
@@ -23,11 +23,17 @@ const Configuracoes = lazy(() => import("../pages/configuracoes.jsx"));
 const Ajuda = lazy(() => import("../pages/centralMaker"));
 const NotFound = lazy(() => import("../pages/notFound"));
 
-// Componente auxiliar para rotas que só podem ser vistas por quem NÃO está logado
+/**
+ * GuestRoute: Protege rotas que NÃO devem ser acessadas por usuários logados.
+ * Exemplo: Se o usuário já está logado, ele não deve ver a página de Login.
+ */
 function GuestRoute({ component: Component, ...props }) {
     const { isSignedIn, isLoaded } = useAuth();
     
+    // Aguarda o Clerk carregar o estado da sessão
     if (!isLoaded) return <PageLoading />;
+    
+    // Se já estiver logado, redireciona para o dashboard imediatamente
     if (isSignedIn) return <Redirect to="/dashboard" />;
     
     return <Component {...props} />;
@@ -35,27 +41,34 @@ function GuestRoute({ component: Component, ...props }) {
 
 export default function AppRoutes() {
     return (
-        // O Suspense aqui protege todas as rotas públicas contra o erro de carregamento lazy
+        // O Suspense principal captura o carregamento inicial dos arquivos JS (lazy)
         <Suspense fallback={<PageLoading />}>
             <Switch>
 
-                {/* ---------- PUBLIC ROUTES ---------- */}
+                {/* ---------- ROTAS PÚBLICAS ---------- */}
                 <Route path="/" component={LandingPage} />
                 
-                {/* Usamos GuestRoute para não deixar logado voltar pro Login */}
+                {/* 
+                    GuestRoutes: Redirecionam para o Dashboard se o usuário 
+                    já possuir uma sessão ativa no navegador.
+                */}
                 <Route path="/login">
-                    <GuestRoute component={Login} />
+                    {(params) => <GuestRoute component={Login} {...params} />}
                 </Route>
+                
                 <Route path="/register">
-                    <GuestRoute component={Register} />
+                    {(params) => <GuestRoute component={Register} {...params} />}
                 </Route>
                 
                 <Route path="/forgot-password" component={ForgotPassword} />
                 <Route path="/sso-callback" component={SSOCallback} />
                 <Route path="/preview" component={CalculadoraPreview} />
 
-                {/* ---------- PROTECTED ROUTES ---------- */}
-                {/* O ProtectedRoute já possui seu próprio Suspense interno conforme a correção anterior */}
+                {/* ---------- ROTAS PROTEGIDAS (AUTH REQUIRED) ---------- */}
+                {/* 
+                    ProtectedRoute já injeta o userData e possui seu próprio Suspense
+                    interno para lidar com o processamento dos dados do usuário.
+                */}
                 <ProtectedRoute path="/dashboard" component={Dashboard} />
                 <ProtectedRoute path="/calculadora" component={Calculadora} />
                 <ProtectedRoute path="/orcamentos" component={Orcamentos} />
@@ -64,7 +77,7 @@ export default function AppRoutes() {
                 <ProtectedRoute path="/configuracoes" component={Configuracoes} />
                 <ProtectedRoute path="/central-maker" component={Ajuda} />
 
-                {/* ---------- FALLBACK ---------- */}
+                {/* ---------- FALLBACK (404) ---------- */}
                 <Route component={NotFound} />
 
             </Switch>

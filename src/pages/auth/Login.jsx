@@ -50,7 +50,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
     );
 };
 
-// --- WIDGETS DE PREVIEW (Lado direito) ---
+// --- WIDGETS DE PREVIEW ---
 
 const FarmStatusWidget = () => (
     <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
@@ -118,11 +118,15 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const [, setLocation] = useLocation();
+    const [location, setLocation] = useLocation();
+
+    // Captura a rota de destino caso venha de um ProtectedRoute
+    const queryParams = new URLSearchParams(window.location.search);
+    const redirectUrl = queryParams.get("redirect") || "/dashboard";
 
     useEffect(() => {
-        if (isLoaded && isSignedIn) setLocation("/dashboard");
-    }, [isLoaded, isSignedIn, setLocation]);
+        if (isLoaded && isSignedIn) setLocation(redirectUrl);
+    }, [isLoaded, isSignedIn, setLocation, redirectUrl]);
 
     const handleClerkError = (err) => {
         const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "Houve um problema ao entrar na oficina.";
@@ -131,21 +135,23 @@ export default function LoginPage() {
 
     const handlePasswordSignIn = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
+        if (!isLoaded || isLoading) return;
         setIsLoading(true);
         setError("");
         try {
             const result = await signIn.create({ identifier: email, password });
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
-                setLocation("/dashboard");
+                setLocation(redirectUrl);
+            } else {
+                console.warn("Status de login incompleto:", result.status);
             }
         } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
     };
 
     const handleMagicLinkSignIn = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
+        if (!isLoaded || isLoading) return;
         setIsLoading(true);
         setError("");
         try {
@@ -156,7 +162,8 @@ export default function LoginPage() {
                 await signIn.prepareFirstFactor({
                     strategy: "email_link",
                     emailAddressId: emailCodeFactor.emailAddressId,
-                    redirectUrl: `${window.location.origin}/dashboard`,
+                    // Incluímos o redirect na URL do Magic Link para o Clerk saber onde voltar
+                    redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
                 });
                 setIsSent(true);
             } else {
@@ -171,13 +178,14 @@ export default function LoginPage() {
     };
 
     const signInWithGoogle = async () => {
-        if (!isLoaded) return;
+        if (!isLoaded || isGoogleLoading) return;
         setIsGoogleLoading(true);
         try {
             await signIn.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: "/sso-callback",
-                redirectUrlComplete: "/dashboard",
+                // Passamos o redirect para o SSOCallback processar depois
+                redirectUrl: `/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
+                redirectUrlComplete: redirectUrl,
             });
         } catch (err) {
             setIsGoogleLoading(false);
