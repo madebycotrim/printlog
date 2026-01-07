@@ -299,12 +299,6 @@ export async function onRequest(context) {
                         }, 500);
                     }
                 }
-
-                // Fallback para métodos não suportados ou ações inválidas
-                return sendJSON({
-                    error: "Comando não reconhecido pelo núcleo",
-                    code: "ERR_INVALID_COMMAND"
-                }, 405);
                 break;
 
             default:
