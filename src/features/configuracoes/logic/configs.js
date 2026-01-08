@@ -20,7 +20,7 @@ export const useConfigLogic = () => {
     // Estados de Dados
     const [firstName, setFirstName] = useState("");
     const [originalData, setOriginalData] = useState({ firstName: "" });
-    const [totalPrintingHours, setTotalPrintingHours] = useState(0); // Estado para armazenar o total de horas impressas
+    const [totalPrintingHours, setTotalPrintingHours] = useState(0);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: "",
@@ -28,13 +28,11 @@ export const useConfigLogic = () => {
         confirmPassword: ""
     });
 
-    // Carrega dados iniciais do perfil e calcula horas totais das máquinas
     useEffect(() => {
         if (isLoaded && user) {
             setFirstName(user.firstName || "");
             setOriginalData({ firstName: user.firstName || "" });
             
-            // Busca as impressoras para somar as horas de voo de todas as máquinas
             const fetchAndSumHours = async () => {
                 try {
                     const printers = await api.get('/printers');
@@ -51,17 +49,7 @@ export const useConfigLogic = () => {
     }, [isLoaded, user]);
 
     const isDirty = firstName !== originalData.firstName;
-    
     const isVisible = (tag) => !busca || tag.toLowerCase().includes(busca.toLowerCase());
-
-    const getAuthInfo = () => {
-        if (!user) return { method: "Padrão", isSocial: false };
-        if (user.externalAccounts.length > 0) {
-            const provider = user.externalAccounts[0].provider;
-            return { method: provider.charAt(0).toUpperCase() + provider.slice(1), isSocial: true };
-        }
-        return { method: "E-mail e Senha", isSocial: false };
-    };
 
     const handleGlobalSave = async () => {
         if (!isLoaded || !user) return;
@@ -69,9 +57,9 @@ export const useConfigLogic = () => {
         try {
             await user.update({ firstName });
             setOriginalData({ firstName });
-            setToast({ show: true, message: "Perfil atualizado com sucesso!", type: 'success' });
+            setToast({ show: true, message: "Bio-ID atualizado no sistema.", type: 'success' });
         } catch (err) {
-            setToast({ show: true, message: "Erro ao sincronizar com a nuvem.", type: 'error' });
+            setToast({ show: true, message: "Falha na sincronização orbital.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
@@ -81,93 +69,114 @@ export const useConfigLogic = () => {
         setIsSaving(true);
         try {
             await user.setProfileImage({ file });
-            setToast({ show: true, message: "Sua foto de perfil foi atualizada!", type: 'success' });
+            setToast({ show: true, message: "Bio-ID visual atualizado!", type: 'success' });
         } catch {
-            setToast({ show: true, message: "Não conseguimos enviar sua foto. Tente de novo?", type: 'error' });
+            setToast({ show: true, message: "Erro no upload da imagem.", type: 'error' });
+        } finally { setIsSaving(false); }
+    };
+
+    // --- LÓGICA DE SENHA INTELIGENTE ---
+    
+    // Dispara e-mail de redefinição (Caso esqueceu ou logou via rede social)
+    const handleResetPasswordEmail = async () => {
+        try {
+            setIsSaving(true);
+            // O Clerk envia para o e-mail primário do usuário logado
+            await user.preparePasswordReset({ strategy: "email_code" });
+            setToast({ 
+                show: true, 
+                message: "Protocolo enviado! Verifique seu e-mail para redefinir.", 
+                type: 'success' 
+            });
+        } catch (err) {
+            setToast({ show: true, message: "Falha ao disparar e-mail de recuperação.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
     const handleUpdatePassword = async () => {
-        if (!passwordForm.newPassword || passwordForm.newPassword.length < 8) {
-            setToast({ show: true, message: "A nova senha precisa ter pelo menos 8 caracteres.", type: 'error' });
-            return;
-        }
-        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            setToast({ show: true, message: "As senhas digitadas não são iguais.", type: 'error' });
+        // Validação mínima de 8 caracteres (Sincronizado com o Clerk que configuramos)
+        if (passwordForm.newPassword.length < 8) {
+            setToast({ show: true, message: "A chave deve conter no mínimo 8 caracteres.", type: 'error' });
             return;
         }
 
         setIsSaving(true);
         try {
             if (user.passwordEnabled) {
-                await user.update({ password: passwordForm.newPassword, currentPassword: passwordForm.currentPassword });
+                // Se já tem senha, exige a antiga (Update)
+                await user.update({ 
+                    password: passwordForm.newPassword, 
+                    currentPassword: passwordForm.currentPassword 
+                });
             } else {
+                // Se é user social sem senha, cria a primeira (Create)
                 await user.createPassword({ password: passwordForm.newPassword });
             }
-            setToast({ show: true, message: "Sua senha foi atualizada com sucesso!", type: 'success' });
+            
+            setToast({ show: true, message: "Nova chave de acesso criptografada!", type: 'success' });
             setShowPasswordModal(false);
             setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
         } catch (err) {
-            const errorMsg = err.errors?.[0]?.longMessage || "Ops! Tivemos um erro ao atualizar sua senha.";
+            // Captura erro de senha fraca ou senha atual incorreta
+            const errorMsg = err.errors?.[0]?.longMessage || "Erro ao validar nova chave.";
             setToast({ show: true, message: errorMsg, type: 'error' });
         } finally { setIsSaving(false); }
     };
 
-    // Função de exclusão: Remove do banco de dados e depois deleta o usuário do Clerk
+    // --- EXCLUSÃO TOTAL (BANCO + CLERK) ---
     const handleDeleteAccount = async () => {
         if (!user) return;
         setIsSaving(true);
         try {
-            // 1. Limpa todos os dados vinculados ao userId no banco de dados (D1)
+            // O Backend agora lida com tudo (D1 + Clerk API)
             const response = await api.delete('/users');
             
             if (response.success) {
-                // 2. Deleta o registro do usuário permanentemente no serviço de autenticação (Clerk)
-                await user.delete();
-                
-                setToast({ show: true, message: "Sua conta e todos os seus dados foram removidos. Até a próxima!", type: 'success' });
-                
-                // Pequeno delay para exibir o feedback antes de deslogar completamente
-                setTimeout(() => signOut(), 1500);
-            } else {
-                throw new Error("Erro na resposta do servidor");
+                setToast({ show: true, message: "Expurgo concluído. Encerrando sessão...", type: 'success' });
+                // Redireciona e limpa tokens
+                setTimeout(() => {
+                    signOut();
+                    window.location.href = "/";
+                }, 2000);
             }
         } catch (err) {
-            console.error("Erro ao encerrar conta:", err);
-            setToast({ show: true, message: "Não conseguimos excluir sua conta agora. Tente novamente mais tarde.", type: 'error' });
+            setToast({ show: true, message: "Falha crítica no protocolo de purga.", type: 'error' });
             setIsSaving(false);
         }
     };
 
+    // --- EXPORTAÇÃO DE DADOS (PDF / PLANILHA) ---
     const exportFormattedData = async (format) => {
         try {
             setIsSaving(true);
             const response = await api.get(`/users/backup`);
             if (!response.success) throw new Error();
 
-            const timestamp = new Date().getTime();
-            let blob, filename;
-
-            if (format === 'json') {
-                blob = new Blob([JSON.stringify(response, null, 2)], { type: "application/json" });
-                filename = `meu_backup_maker_${timestamp}.json`;
-            } else if (format === 'csv') {
-                const csvContent = `MEUS DADOS MAKER\nOperador,${firstName}\nID do Usuário,${user.id}`;
-                blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
-                filename = `minha_planilha_maker_${timestamp}.csv`;
-            } else {
+            const timestamp = new Date().toISOString().split('T')[0];
+            
+            if (format === 'pdf') {
+                // Para PDF, geralmente usamos a função de impressão do navegador formatada
+                // ou uma biblioteca como jspdf. Aqui usamos o print padrão do sistema.
                 window.print();
-                setIsSaving(false); return;
+            } else if (format === 'xlsx' || format === 'csv') {
+                // Simulação de CSV/Planilha
+                const data = response.data;
+                let csvContent = "data:text/csv;charset=utf-8,ID;NOME;MATERIAL;COR\n";
+                data.filaments.forEach(f => {
+                    csvContent += `${f.id};${f.nome};${f.material};${f.cor_hex}\n`;
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `printlog_manifesto_${timestamp}.csv`);
+                document.body.appendChild(link);
+                link.click();
             }
 
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            link.click();
-            setToast({ show: true, message: `Seu arquivo .${format.toUpperCase()} foi gerado!`, type: 'success' });
+            setToast({ show: true, message: `Manifesto ${format.toUpperCase()} gerado com sucesso.`, type: 'success' });
         } catch {
-            setToast({ show: true, message: "Tivemos um problema ao gerar seu arquivo de backup.", type: 'error' });
+            setToast({ show: true, message: "Erro ao extrair logs de dados.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
@@ -179,12 +188,14 @@ export const useConfigLogic = () => {
         toast, setToast,
         modalConfig, setModalConfig,
         firstName, setFirstName,
-        totalPrintingHours, // Exposto para ser usado no badge de perfil
-        isDirty, isVisible, getAuthInfo,
+        totalPrintingHours,
+        isDirty, isVisible,
         handleGlobalSave, handleImageUpload,
         showPasswordModal, setShowPasswordModal,
         passwordForm, setPasswordForm,
-        handleUpdatePassword, exportFormattedData,
+        handleUpdatePassword, 
+        handleResetPasswordEmail, // Exposto para o botão de e-mail
+        exportFormattedData,
         handleDeleteAccount
     };
 };
