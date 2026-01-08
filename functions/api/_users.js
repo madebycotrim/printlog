@@ -1,19 +1,20 @@
 import { sendJSON } from './[[path]]';
-import axios from 'axios'; // Certifique-se de que axios está instalado
+import axios from 'axios';
 
 export async function handleUsers({ request, db, userId, pathArray, env }) {
     const method = request.method;
 
-    // Rota: GET /api/users/backup
+    // --- LÓGICA DE GET (BACKUP) ---
     if (method === 'GET') {
-        // Correção do índice: pathArray[0] = 'users', pathArray[1] = 'backup'
-        const action = pathArray[1]; 
+        // Verifica se a palavra 'backup' existe em qualquer lugar do caminho da URL
+        const isBackupAction = pathArray.some(p => p.toLowerCase() === 'backup');
 
-        if (action === 'backup') {
+        if (isBackupAction) {
             try {
+                // Coleta todos os dados do maker em paralelo
                 const results = await db.batch([
                     db.prepare("SELECT id, nome, material, cor_hex, peso_atual FROM filaments WHERE user_id = ?").bind(userId),
-                    db.prepare("SELECT id, nome, modelo FROM printers WHERE user_id = ?").bind(userId),
+                    db.prepare("SELECT id, nome, modelo, horas_totais FROM printers WHERE user_id = ?").bind(userId),
                     db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(userId),
                     db.prepare("SELECT id, label, data, created_at FROM projects WHERE user_id = ?").bind(userId)
                 ]);
@@ -23,7 +24,7 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
                     metadata: {
                         operator_id: userId,
                         generated_at: new Date().toISOString(),
-                        status: "MANIFESTO_GERADO"
+                        protocol: "MANIFESTO_GERADO"
                     },
                     data: {
                         filaments: results[0].results || [],
@@ -36,17 +37,18 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
                     }
                 });
             } catch (err) {
-                return sendJSON({ error: "Falha na extração do Manifesto", details: err.message }, 500);
+                return sendJSON({ error: "Falha na extração dos logs", details: err.message }, 500);
             }
         }
-        return sendJSON({ error: "Ação não identificada", debug_path: pathArray }, 404);
+        
+        // Se cair aqui, a rota não era backup
+        return sendJSON({ error: "Rota de leitura não encontrada", path: pathArray }, 404);
     }
 
-    // Rota: DELETE /api/users
+    // --- LÓGICA DE DELETE (EXPURGO TOTAL) ---
     if (method === 'DELETE') {
         try {
-            // 1. PROTOCOLO DE EXPURGO NO BANCO DE DADOS (D1)
-            // Removemos todos os dados do usuário antes de apagar a conta
+            // 1. Limpeza do Banco de Dados Local (D1)
             await db.batch([
                 db.prepare("DELETE FROM filaments WHERE user_id = ?").bind(userId),
                 db.prepare("DELETE FROM printers WHERE user_id = ?").bind(userId),
@@ -54,39 +56,31 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
                 db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId)
             ]);
 
-            // 2. EXCLUSÃO DA CONTA NO CLERK (AUTENTICAÇÃO) VIA AXIOS
-            const clerkSecretKey = env.CLERK_SECRET_KEY;
-
-            if (!clerkSecretKey) {
-                throw new Error("Chave secreta CLERK_SECRET_KEY não encontrada no ambiente.");
+            // 2. Exclusão da conta no Clerk via API Secret Key
+            const CLERK_SECRET_KEY = env.CLERK_SECRET_KEY;
+            if (!CLERK_SECRET_KEY) {
+                throw new Error("Chave CLERK_SECRET_KEY não configurada no servidor.");
             }
 
-            // Chamada para a API do Clerk usando Axios
+            // Usando Axios para deletar o usuário no Clerk
             await axios.delete(`https://api.clerk.com/v1/users/${userId}`, {
                 headers: {
-                    'Authorization': `Bearer ${clerkSecretKey}`,
+                    'Authorization': `Bearer ${CLERK_SECRET_KEY}`,
                     'Content-Type': 'application/json'
                 }
             });
 
-            // 3. RETORNO DE SUCESSO TOTAL
-            return sendJSON({
-                success: true,
-                protocol: "EXPURGO_TOTAL_COMPLETE",
-                message: "Dados do banco e conta de autenticação removidos com sucesso."
+            return sendJSON({ 
+                success: true, 
+                protocol: "EXPURGO_TOTAL_SUCESSO",
+                message: "Dados removidos do banco e conta de acesso deletada." 
             });
 
         } catch (err) {
-            // Captura erro específico do Axios ou do Banco
-            const errorDetail = err.response?.data?.errors?.[0]?.message || err.message;
-            console.error("ERRO CRÍTICO NO EXPURGO:", errorDetail);
-            
-            return sendJSON({
-                error: "Falha crítica no protocolo de exclusão",
-                details: errorDetail
-            }, 500);
+            const errorMsg = err.response?.data?.errors?.[0]?.message || err.message;
+            return sendJSON({ error: "Erro crítico no protocolo de expurgo", details: errorMsg }, 500);
         }
     }
 
-    return sendJSON({ error: "Método não autorizado" }, 405);
+    return sendJSON({ error: "Método HTTP não permitido" }, 405);
 }
