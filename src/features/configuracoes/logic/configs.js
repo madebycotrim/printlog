@@ -20,7 +20,7 @@ export const useConfigLogic = () => {
     // Estados de Dados
     const [firstName, setFirstName] = useState("");
     const [originalData, setOriginalData] = useState({ firstName: "" });
-    const [totalPrintingHours, setTotalPrintingHours] = useState(0);
+    const [totalPrintingHours, setTotalPrintingHours] = useState(0); 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: "",
@@ -51,15 +51,16 @@ export const useConfigLogic = () => {
     const isDirty = firstName !== originalData.firstName;
     const isVisible = (tag) => !busca || tag.toLowerCase().includes(busca.toLowerCase());
 
+    // --- LOGICA DE ALTERAÇÃO DE PERFIL ---
     const handleGlobalSave = async () => {
         if (!isLoaded || !user) return;
         setIsSaving(true);
         try {
             await user.update({ firstName });
             setOriginalData({ firstName });
-            setToast({ show: true, message: "Bio-ID atualizado no sistema.", type: 'success' });
+            setToast({ show: true, message: "Bio-ID atualizado com sucesso!", type: 'success' });
         } catch (err) {
-            setToast({ show: true, message: "Falha na sincronização orbital.", type: 'error' });
+            setToast({ show: true, message: "Erro ao sincronizar perfil.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
@@ -71,81 +72,80 @@ export const useConfigLogic = () => {
             await user.setProfileImage({ file });
             setToast({ show: true, message: "Bio-ID visual atualizado!", type: 'success' });
         } catch {
-            setToast({ show: true, message: "Erro no upload da imagem.", type: 'error' });
+            setToast({ show: true, message: "Falha no upload da imagem.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
-    // --- LÓGICA DE SENHA INTELIGENTE ---
-    
-    // Dispara e-mail de redefinição (Caso esqueceu ou logou via rede social)
+    // --- PROTOCOLO DE SENHA (CLERK) ---
+
+    // 1. Redefinição via E-mail (Para quem esqueceu ou é login social)
     const handleResetPasswordEmail = async () => {
         try {
             setIsSaving(true);
-            // O Clerk envia para o e-mail primário do usuário logado
+            // Solicita ao Clerk para enviar um código/link de redefinição para o e-mail do usuário
             await user.preparePasswordReset({ strategy: "email_code" });
             setToast({ 
                 show: true, 
-                message: "Protocolo enviado! Verifique seu e-mail para redefinir.", 
+                message: "Protocolo enviado! Verifique seu e-mail para redefinir a chave.", 
                 type: 'success' 
             });
         } catch (err) {
+            console.error(err);
             setToast({ show: true, message: "Falha ao disparar e-mail de recuperação.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
+    // 2. Atualização Manual (Quando o usuário sabe a senha atual)
     const handleUpdatePassword = async () => {
-        // Validação mínima de 8 caracteres (Sincronizado com o Clerk que configuramos)
         if (passwordForm.newPassword.length < 8) {
-            setToast({ show: true, message: "A chave deve conter no mínimo 8 caracteres.", type: 'error' });
+            setToast({ show: true, message: "A nova senha precisa ter pelo menos 8 caracteres.", type: 'error' });
+            return;
+        }
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setToast({ show: true, message: "As senhas não coincidem.", type: 'error' });
             return;
         }
 
         setIsSaving(true);
         try {
             if (user.passwordEnabled) {
-                // Se já tem senha, exige a antiga (Update)
                 await user.update({ 
                     password: passwordForm.newPassword, 
                     currentPassword: passwordForm.currentPassword 
                 });
             } else {
-                // Se é user social sem senha, cria a primeira (Create)
+                // Se for usuário social sem senha, o Clerk cria a primeira aqui
                 await user.createPassword({ password: passwordForm.newPassword });
             }
-            
-            setToast({ show: true, message: "Nova chave de acesso criptografada!", type: 'success' });
+            setToast({ show: true, message: "Chave de acesso atualizada!", type: 'success' });
             setShowPasswordModal(false);
             setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
         } catch (err) {
-            // Captura erro de senha fraca ou senha atual incorreta
-            const errorMsg = err.errors?.[0]?.longMessage || "Erro ao validar nova chave.";
+            const errorMsg = err.errors?.[0]?.longMessage || "Erro ao validar nova senha.";
             setToast({ show: true, message: errorMsg, type: 'error' });
         } finally { setIsSaving(false); }
     };
 
-    // --- EXCLUSÃO TOTAL (BANCO + CLERK) ---
+    // --- PROTOCOLO DE EXPURGO (BACKEND + CLERK) ---
     const handleDeleteAccount = async () => {
         if (!user) return;
         setIsSaving(true);
         try {
-            // O Backend agora lida com tudo (D1 + Clerk API)
+            // O backend limpa o D1 e deleta o usuário no Clerk via Secret Key
             const response = await api.delete('/users');
             
             if (response.success) {
                 setToast({ show: true, message: "Expurgo concluído. Encerrando sessão...", type: 'success' });
-                // Redireciona e limpa tokens
-                setTimeout(() => {
-                    signOut();
-                    window.location.href = "/";
-                }, 2000);
+                // Desloga e limpa o estado local após 2 segundos
+                setTimeout(() => signOut(), 2000);
             }
         } catch (err) {
-            setToast({ show: true, message: "Falha crítica no protocolo de purga.", type: 'error' });
+            setToast({ show: true, message: "Erro crítico no expurgo total.", type: 'error' });
             setIsSaving(false);
         }
     };
 
-    // --- EXPORTAÇÃO DE DADOS (PDF / PLANILHA) ---
+    // --- EXTRAÇÃO DE DADOS (PDF / PLANILHA / JSON) ---
     const exportFormattedData = async (format) => {
         try {
             setIsSaving(true);
@@ -153,30 +153,28 @@ export const useConfigLogic = () => {
             if (!response.success) throw new Error();
 
             const timestamp = new Date().toISOString().split('T')[0];
-            
+
             if (format === 'pdf') {
-                // Para PDF, geralmente usamos a função de impressão do navegador formatada
-                // ou uma biblioteca como jspdf. Aqui usamos o print padrão do sistema.
+                // Protocolo de Impressão do Navegador (Formatado pelo seu CSS)
                 window.print();
             } else if (format === 'xlsx' || format === 'csv') {
-                // Simulação de CSV/Planilha
+                // Gera um CSV básico com os dados recebidos
                 const data = response.data;
-                let csvContent = "data:text/csv;charset=utf-8,ID;NOME;MATERIAL;COR\n";
+                let csv = "ID;NOME;MATERIAL;COR;PESO_ATUAL\n";
                 data.filaments.forEach(f => {
-                    csvContent += `${f.id};${f.nome};${f.material};${f.cor_hex}\n`;
+                    csv += `${f.id};${f.nome};${f.material};${f.cor_hex};${f.peso_atual}\n`;
                 });
-
-                const encodedUri = encodeURI(csvContent);
+                
+                const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `printlog_manifesto_${timestamp}.csv`);
-                document.body.appendChild(link);
+                link.href = URL.createObjectURL(blob);
+                link.download = `printlog_manifesto_${timestamp}.csv`;
                 link.click();
             }
 
             setToast({ show: true, message: `Manifesto ${format.toUpperCase()} gerado com sucesso.`, type: 'success' });
-        } catch {
-            setToast({ show: true, message: "Erro ao extrair logs de dados.", type: 'error' });
+        } catch (err) {
+            setToast({ show: true, message: "Erro ao gerar arquivo de exportação.", type: 'error' });
         } finally { setIsSaving(false); }
     };
 
@@ -194,7 +192,7 @@ export const useConfigLogic = () => {
         showPasswordModal, setShowPasswordModal,
         passwordForm, setPasswordForm,
         handleUpdatePassword, 
-        handleResetPasswordEmail, // Exposto para o botão de e-mail
+        handleResetPasswordEmail,
         exportFormattedData,
         handleDeleteAccount
     };
