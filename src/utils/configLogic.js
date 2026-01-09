@@ -95,124 +95,160 @@ export const useConfigLogic = () => {
 
     // --- EXPORTAÇÃO COMPLETA (CSV / PDF) ---
     const exportManifesto = async (format) => {
-        setIsSaving(true);
-        try {
-            const res = await api.get('/users/backup');
-            const fullData = res.data.data;
+    setIsSaving(true);
+    try {
+        const res = await api.get('/users/backup');
+        const fullData = res.data.data;
 
-            if (!fullData) throw new Error("Dados não encontrados");
+        if (!fullData) throw new Error("Dados não encontrados");
 
-            const timestamp = new Date().toISOString().split('T')[0];
-            const fileName = `PRINTLOG_EXPORT_${timestamp}`;
+        const timestamp = new Date().toISOString().split('T')[0];
+        const fileName = `PRINTLOG_MANIFESTO_${timestamp}`;
 
-            // --- PROTOCOLO 1: PLANILHA DE DADOS (CSV) ---
-            if (format === 'csv') {
-                let csvContent = "\ufeff--- MANIFESTO DE DADOS PRINTLOG ---\n";
-                csvContent += `Data de Exportação:;${new Date().toLocaleString()}\n\n`;
+        // --- PROTOCOLO 1: CSV ---
+        if (format === 'csv') {
+            let csvContent = "\ufeff--- MANIFESTO DE DADOS PRINTLOG ---\n";
+            csvContent += `GERADO EM:;${new Date().toLocaleString()}\n\n`;
 
-                // Seção de Filamentos
-                csvContent += `--- FILAMENTOS (%: ${fullData.filaments?.length || 0}) ---\n`;
-                csvContent += `ID;NOME;MATERIAL;COR;PESO ATUAL;PRECO\n`;
-                fullData.filaments?.forEach(f => {
+            if (fullData.filaments?.length > 0) {
+                csvContent += `--- FILAMENTOS ---\nID;NOME;MATERIAL;COR;PESO;PRECO\n`;
+                fullData.filaments.forEach(f => {
                     csvContent += `${f.id};"${f.nome}";${f.material};${f.cor};${f.peso_atual}g;${f.preco}\n`;
                 });
+            }
 
-                // Seção de Impressoras
-                csvContent += `\n--- IMPRESSORAS (%: ${fullData.printers?.length || 0}) ---\n`;
-                csvContent += `NOME;MODELO;HORAS DE USO\n`;
-                fullData.printers?.forEach(p => {
+            if (fullData.printers?.length > 0) {
+                csvContent += `\n--- IMPRESSORAS ---\nNOME;MODELO;HORAS\n`;
+                fullData.printers.forEach(p => {
                     csvContent += `"${p.nome}";"${p.modelo}";${p.horas_totais}h\n`;
                 });
-
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                downloadFile(blob, `${fileName}.csv`);
             }
 
-            // --- PROTOCOLO 2: RELATÓRIO TÉCNICO (PDF) ---
-            else if (format === 'pdf') {
-                const doc = new jsPDF();
-                const now = new Date().toLocaleString();
-
-                // Cabeçalho Industrial (Fundo Escuro)
-                doc.setFillColor(10, 10, 10);
-                doc.rect(0, 0, 210, 40, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                doc.text("MANIFESTO TÉCNICO .SYS", 15, 20);
-
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(150, 150, 150);
-                doc.text(`OPERADOR: ${user?.fullName?.toUpperCase() || 'MAKER'}`, 15, 30);
-                doc.text(`GERADO VIA DASHBOARD - DATA: ${now}`, 120, 30);
-
-                // 1. FILAMENTOS
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("1. INVENTÁRIO DE FILAMENTOS", 15, 55);
-
-                const filamentRows = fullData.filaments?.map(f => [
-                    f.nome, f.material, f.cor, `${f.peso_atual}g`, `R$ ${f.preco}`
-                ]) || [];
-
-                autoTable(doc, {
-                    startY: 60,
-                    head: [['Nome', 'Material', 'Cor', 'Peso', 'Preço']],
-                    body: filamentRows,
-                    headStyles: { fillColor: [14, 165, 233] }, // Azul Sky
-                    theme: 'striped',
-                    margin: { left: 15, right: 15 }
-                });
-
-                // 2. IMPRESSORAS
-                let finalY = doc.lastAutoTable.finalY + 15;
-                doc.setFontSize(14);
-                doc.text("2. FROTA DE IMPRESSORAS", 15, finalY);
-
-                const printerRows = fullData.printers?.map(p => [
-                    p.nome, p.modelo, `${p.horas_totais}h`
-                ]) || [];
-
-                autoTable(doc, {
-                    startY: finalY + 5,
-                    head: [['Impressora', 'Modelo', 'Uso Total']],
-                    body: printerRows,
-                    headStyles: { fillColor: [16, 185, 129] }, // Verde Emerald
-                    theme: 'grid',
-                    margin: { left: 15, right: 15 }
-                });
-
-                // 3. PROJETOS
-                finalY = doc.lastAutoTable.finalY + 15;
-                doc.setFontSize(14);
-                doc.text("3. LOG DE PROJETOS", 15, finalY);
-
-                const projectRows = fullData.projects?.map(p => [
-                    p.nome, p.cliente || 'Interno', `R$ ${p.custo_total || 0}`
-                ]) || [];
-
-                autoTable(doc, {
-                    startY: finalY + 5,
-                    head: [['Projeto', 'Cliente', 'Custo Final']],
-                    body: projectRows,
-                    headStyles: { fillColor: [100, 100, 100] }, // Cinza
-                    theme: 'striped',
-                    margin: { left: 15, right: 15 }
-                });
-
-                doc.save(`${fileName}.pdf`);
-            }
-
-            setToast({ show: true, message: `Manifesto ${format.toUpperCase()} exportado com sucesso!`, type: 'success' });
-        } catch (error) {
-            console.error("Erro na exportação:", error);
-            setToast({ show: true, message: "Falha técnica na geração do arquivo.", type: 'error' });
-        } finally {
-            setIsSaving(false);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            downloadFile(blob, `${fileName}.csv`);
         }
-    };
+
+        // --- PROTOCOLO 2: PDF PROFISSIONAL .SYS ---
+        else if (format === 'pdf') {
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const cores = { sky: [14, 165, 233], emerald: [16, 185, 129], dark: [10, 10, 10], grid: [235, 235, 235] };
+
+            // 1. FUNDO TÉCNICO (GRADE MAKER)
+            doc.setLineWidth(0.05);
+            doc.setDrawColor(...cores.grid);
+            for (let i = 0; i < 210; i += 5) doc.line(i, 0, i, 297);
+            for (let i = 0; i < 297; i += 5) doc.line(0, i, 210, i);
+            
+            // Marcas de Canto (Mira)
+            doc.setDrawColor(...cores.sky);
+            doc.setLineWidth(0.5);
+            doc.line(10, 10, 15, 10); doc.line(10, 10, 10, 15); // Topo esquerdo
+
+            // 2. CABEÇALHO INDUSTRIAL
+            doc.setFillColor(...cores.dark);
+            doc.rect(10, 15, 190, 30, 'F');
+            doc.setFillColor(...cores.sky);
+            doc.rect(10, 15, 2, 30, 'F'); // Detalhe lateral
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            doc.text("MANIFESTO TÉCNICO", 18, 30);
+            doc.setTextColor(...cores.sky);
+            doc.text(".SYS", 98, 30);
+
+            doc.setFont("courier", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(120, 120, 120);
+            const hash = Math.random().toString(36).toUpperCase().substring(2, 10);
+            doc.text(`OPERADOR: ${user?.fullName?.toUpperCase() || 'MAKER'}`, 18, 38);
+            doc.text(`ID_REF: ${hash} // ${new Date().toLocaleDateString()}`, 130, 38);
+
+            let currentY = 55;
+
+            // 3. SEÇÃO: FILAMENTOS (Condicional)
+            if (fullData.filaments?.length > 0) {
+                doc.setTextColor(...cores.dark);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text("> 01. INVENTÁRIO DE INSUMOS (FILAMENTOS)", 10, currentY);
+                
+                autoTable(doc, {
+                    startY: currentY + 4,
+                    head: [['NOME', 'MATERIAL', 'COR', 'PESO DISPONÍVEL', 'VALOR/KG']],
+                    body: fullData.filaments.map(f => [f.nome, f.material, f.cor, `${f.peso_atual}g`, `R$ ${f.preco}`]),
+                    headStyles: { fillColor: cores.sky, font: 'courier' },
+                    theme: 'striped',
+                    margin: { left: 10, right: 10 }
+                });
+                currentY = doc.lastAutoTable.finalY + 15;
+            }
+
+            // 4. SEÇÃO: IMPRESSORAS (Condicional)
+            if (fullData.printers?.length > 0) {
+                if (currentY > 250) { doc.addPage(); currentY = 20; }
+                doc.setTextColor(...cores.dark);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text("> 02. UNIDADES DE PROCESSAMENTO (MÁQUINAS)", 10, currentY);
+                
+                autoTable(doc, {
+                    startY: currentY + 4,
+                    head: [['IMPRESSORA', 'MODELO', 'HORAS ACUMULADAS', 'STATUS']],
+                    body: fullData.printers.map(p => [p.nome, p.modelo, `${p.horas_totais}h`, 'OPERACIONAL']),
+                    headStyles: { fillColor: cores.emerald, font: 'courier' },
+                    theme: 'grid',
+                    margin: { left: 10, right: 10 }
+                });
+                currentY = doc.lastAutoTable.finalY + 15;
+            }
+
+            // 5. SEÇÃO: PROJETOS (Condicional)
+            if (fullData.projects?.length > 0) {
+                if (currentY > 250) { doc.addPage(); currentY = 20; }
+                doc.setTextColor(...cores.dark);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text("> 03. LOG DE PRODUÇÃO (ÚLTIMOS PROJETOS)", 10, currentY);
+                
+                autoTable(doc, {
+                    startY: currentY + 4,
+                    head: [['PROJETO', 'CLIENTE', 'CUSTO ESTIMADO', 'DATA']],
+                    body: fullData.projects.slice(0, 15).map(p => [
+                        p.nome, 
+                        p.cliente || 'INTERNO', 
+                        `R$ ${p.custo_total || 0}`, 
+                        new Date(p.created_at || Date.now()).toLocaleDateString()
+                    ]),
+                    headStyles: { fillColor: [80, 80, 80], font: 'courier' },
+                    theme: 'striped',
+                    margin: { left: 10, right: 10 }
+                });
+            }
+
+            // 6. RODAPÉ TÉCNICO
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(7);
+                doc.setTextColor(150, 150, 150);
+                doc.setFont("courier", "normal");
+                doc.text(`PRINTLOG DASHBOARD // BUILD_2026.MAKER // PÁGINA ${i} DE ${pageCount}`, 105, 290, { align: "center" });
+            }
+
+            // ABRIR EM NOVA ABA
+            const blobURL = doc.output('bloburl');
+            window.open(blobURL, '_blank');
+        }
+
+        setToast({ show: true, message: `${format.toUpperCase()} gerado com sucesso!`, type: 'success' });
+    } catch (error) {
+        console.error("Erro na exportação:", error);
+        setToast({ show: true, message: "Falha técnica ao gerar manifesto.", type: 'error' });
+    } finally {
+        setIsSaving(false);
+    }
+};
 
     const handleGlobalSave = async () => {
         setIsSaving(true);
