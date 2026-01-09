@@ -21,7 +21,7 @@ const TacticalCard = ({ title, subtitle, icon: Icon, colorClass, children, badge
 
         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
             <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-${colorClass}-500/10 text-${colorClass}-500 ring-1 ring-${colorClass}-500/20`}>
+                <div className={`p-2 rounded-lg bg-${colorClass}-500/10 text-${colorClass}-500`}>
                     <Icon size={18} />
                 </div>
                 <div>

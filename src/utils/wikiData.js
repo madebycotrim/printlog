@@ -48,12 +48,12 @@ export const WIKI_DATA = [
        PRODUÇÃO (DICAS DE OFICINA)
     ====================================================== */
     {
-        id: '10',
+        id: '2',
         title: "Fluxo de Produção",
         category: "Dia a Dia",
         type: "setup",
         icon: Factory,
-        color: "sky",
+        color: "zinc",
         topics: [
             {
                 id: "pr1",
@@ -83,7 +83,7 @@ export const WIKI_DATA = [
        SOCORRO! (RESOLVENDO ERROS)
     ====================================================== */
     {
-        id: "11",
+        id: "3",
         title: "Socorro! Deu Erro",
         category: "Problemas",
         type: "critico",
@@ -119,7 +119,7 @@ export const WIKI_DATA = [
        QUÍMICA DOS FILAMENTOS
     ====================================================== */
     {
-        id: "22",
+        id: "4",
         title: "Segredos dos Materiais",
         category: "Química",
         type: "setup",
@@ -154,12 +154,12 @@ export const WIKI_DATA = [
        DESENHO PARA IMPRESSÃO (DESIGN)
     ====================================================== */
     {
-        id: "30",
+        id: "5",
         title: "Modelagem Maker",
         category: "Criação",
         type: "setup",
         icon: PenTool,
-        color: "indigo",
+        color: "purple",
         topics: [
             {
                 id: "des1",
@@ -182,7 +182,7 @@ export const WIKI_DATA = [
        NEGÓCIOS E MARKETPLACE
     ====================================================== */
     {
-        id: "12",
+        id: "6",
         title: "Vendas e Marketplaces",
         category: "Negócios",
         type: "lucro",
@@ -217,7 +217,7 @@ export const WIKI_DATA = [
        ALTA PERFORMANCE (EXPERIENTES)
     ====================================================== */
     {
-        id: "21",
+        id: "7",
         title: "Tuning e Velocidade",
         category: "Técnico",
         type: "setup",
@@ -245,12 +245,12 @@ export const WIKI_DATA = [
        SEGURANÇA E SAÚDE
     ====================================================== */
     {
-        id: "40",
+        id: "8",
         title: "Segurança na Oficina",
         category: "Saúde",
         type: "critico",
         icon: Flame,
-        color: "rose",
+        color: "red",
         topics: [
             {
                 id: "s1",
