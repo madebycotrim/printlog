@@ -2,9 +2,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useClerk, useUser } from "@clerk/clerk-react";
 import api from './api';
 
-// IMPORTAÇÕES NECESSÁRIAS PARA O PDF
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export const useConfigLogic = () => {
     const { signOut } = useClerk();
@@ -134,7 +133,7 @@ export const useConfigLogic = () => {
                 const doc = new jsPDF();
                 const now = new Date().toLocaleString();
 
-                // Cabeçalho Industrial (Dark Mode Style)
+                // Cabeçalho Industrial (Fundo Escuro)
                 doc.setFillColor(10, 10, 10);
                 doc.rect(0, 0, 210, 40, 'F');
                 doc.setTextColor(255, 255, 255);
@@ -145,52 +144,62 @@ export const useConfigLogic = () => {
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(150, 150, 150);
-                doc.text(`OPERADOR: ${user.fullName?.toUpperCase() || 'MAKER'}`, 15, 30);
+                doc.text(`OPERADOR: ${user?.fullName?.toUpperCase() || 'MAKER'}`, 15, 30);
                 doc.text(`GERADO VIA DASHBOARD - DATA: ${now}`, 120, 30);
 
                 // 1. FILAMENTOS
                 doc.setTextColor(0, 0, 0);
                 doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
                 doc.text("1. INVENTÁRIO DE FILAMENTOS", 15, 55);
+
                 const filamentRows = fullData.filaments?.map(f => [
                     f.nome, f.material, f.cor, `${f.peso_atual}g`, `R$ ${f.preco}`
                 ]) || [];
-                doc.autoTable({
+
+                autoTable(doc, {
                     startY: 60,
                     head: [['Nome', 'Material', 'Cor', 'Peso', 'Preço']],
                     body: filamentRows,
                     headStyles: { fillColor: [14, 165, 233] }, // Azul Sky
-                    theme: 'striped'
+                    theme: 'striped',
+                    margin: { left: 15, right: 15 }
                 });
 
                 // 2. IMPRESSORAS
                 let finalY = doc.lastAutoTable.finalY + 15;
                 doc.setFontSize(14);
                 doc.text("2. FROTA DE IMPRESSORAS", 15, finalY);
+
                 const printerRows = fullData.printers?.map(p => [
                     p.nome, p.modelo, `${p.horas_totais}h`
                 ]) || [];
-                doc.autoTable({
+
+                autoTable(doc, {
                     startY: finalY + 5,
                     head: [['Impressora', 'Modelo', 'Uso Total']],
                     body: printerRows,
                     headStyles: { fillColor: [16, 185, 129] }, // Verde Emerald
-                    theme: 'grid'
+                    theme: 'grid',
+                    margin: { left: 15, right: 15 }
                 });
 
                 // 3. PROJETOS
                 finalY = doc.lastAutoTable.finalY + 15;
                 doc.setFontSize(14);
                 doc.text("3. LOG DE PROJETOS", 15, finalY);
+
                 const projectRows = fullData.projects?.map(p => [
                     p.nome, p.cliente || 'Interno', `R$ ${p.custo_total || 0}`
                 ]) || [];
-                doc.autoTable({
+
+                autoTable(doc, {
                     startY: finalY + 5,
                     head: [['Projeto', 'Cliente', 'Custo Final']],
                     body: projectRows,
-                    headStyles: { fillColor: [100, 100, 100] },
-                    theme: 'striped'
+                    headStyles: { fillColor: [100, 100, 100] }, // Cinza
+                    theme: 'striped',
+                    margin: { left: 15, right: 15 }
                 });
 
                 doc.save(`${fileName}.pdf`);
@@ -199,7 +208,7 @@ export const useConfigLogic = () => {
             setToast({ show: true, message: `Manifesto ${format.toUpperCase()} exportado com sucesso!`, type: 'success' });
         } catch (error) {
             console.error("Erro na exportação:", error);
-            setToast({ show: true, message: "Falha na extração dos dados do sistema.", type: 'error' });
+            setToast({ show: true, message: "Falha técnica na geração do arquivo.", type: 'error' });
         } finally {
             setIsSaving(false);
         }
