@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import {
-    Search, ChevronRight, Mail, Terminal, Activity, AlertTriangle,
+    Search, ChevronRight, Terminal, Activity, AlertTriangle,
     Coins, Code, Send, Globe, Info, CheckCircle2,
-    Copy, AlertCircle, FileText, Cpu, Target, Zap,
+    Copy, AlertCircle, FileText, Cpu, Target,
     Box, Server, RefreshCw, LayoutGrid, BookOpen,
-    Wrench, Lightbulb, HelpCircle, ArrowRight
+    Wrench, Lightbulb, ArrowRight
 } from 'lucide-react';
 
 import { WIKI_DATA } from '../utils/wikiData';
@@ -63,7 +63,7 @@ export default function CentralMaker() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedFilter, setSelectedFilter] = useState('todos');
     const [selectedArticle, setSelectedArticle] = useState(null);
-    const [isCopied, setIsCopied] = useState(false);
+
 
     const [popupConfig, setPopupConfig] = useState({
         isOpen: false, title: "", message: "", icon: AlertCircle, color: "sky"
@@ -188,35 +188,7 @@ export default function CentralMaker() {
                         ))}
                     </div>
 
-                    {/* Rodapé de Ajuda "Super Widget" Style */}
-                    <div className="mt-12 p-6 rounded-2xl bg-gradient-to-br from-zinc-900/50 to-zinc-900/20 border border-zinc-800/50 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-zinc-800/50 flex items-center justify-center text-zinc-400">
-                                <HelpCircle size={20} />
-                            </div>
-                            <div>
-                                <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wide">Precisa de suporte extra?</h3>
-                                <p className="text-[10px] text-zinc-500 font-medium">Nossa equipe pode ajudar com dúvidas específicas.</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => window.open('https://wa.me/5511999999999', '_blank')}
-                                className="px-5 py-2.5 bg-zinc-900 border border-zinc-800 hover:border-sky-500/50 hover:bg-sky-500/10 rounded-lg text-[10px] font-black text-zinc-400 hover:text-sky-400 uppercase tracking-widest transition-all flex items-center gap-2 group"
-                            >
-                                <Zap size={12} className="text-zinc-600 group-hover:text-sky-500 transition-colors" />
-                                Abrir Chamado
-                            </button>
-                            <button
-                                onClick={() => { navigator.clipboard.writeText("suporte@printlog.com.br"); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); }}
-                                className="px-5 py-2.5 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-lg text-[10px] font-black text-zinc-400 uppercase tracking-widest transition-all flex items-center gap-2"
-                            >
-                                <Mail size={12} className={isCopied ? "text-emerald-500" : "text-zinc-600"} />
-                                {isCopied ? "Copiado!" : "Copiar Email"}
-                            </button>
 
-                        </div>
-                    </div>
 
                 </div>
             </main>

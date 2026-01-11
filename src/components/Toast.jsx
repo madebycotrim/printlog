@@ -7,7 +7,7 @@ export default function Toast({ message, type = 'success', onClose }) {
     // Gerenciamento do Timer com pausa ao dar Hover
     useEffect(() => {
         if (isPaused) return;
-        
+
         const timer = setTimeout(onClose, 4000);
         return () => clearTimeout(timer);
     }, [onClose, isPaused]);
@@ -22,7 +22,23 @@ export default function Toast({ message, type = 'success', onClose }) {
             icon: <Check size={18} strokeWidth={3} />,
             label: 'SISTEMA_NOMINAL'
         },
+        sucesso: {
+            color: 'text-emerald-500',
+            border: 'border-emerald-500/30',
+            bg: 'bg-emerald-500/5',
+            glow: 'shadow-[0_0_20px_rgba(16,185,129,0.15)]',
+            icon: <Check size={18} strokeWidth={3} />,
+            label: 'SISTEMA_NOMINAL'
+        },
         error: {
+            color: 'text-rose-500',
+            border: 'border-rose-500/30',
+            bg: 'bg-rose-500/5',
+            glow: 'shadow-[0_0_20px_rgba(244,63,94,0.15)]',
+            icon: <AlertOctagon size={18} strokeWidth={3} />,
+            label: 'ERRO_DE_NÚCLEO'
+        },
+        erro: {
             color: 'text-rose-500',
             border: 'border-rose-500/30',
             bg: 'bg-rose-500/5',
@@ -50,8 +66,15 @@ export default function Toast({ message, type = 'success', onClose }) {
 
     const config = configs[type] || configs.success;
 
+    // Verificar e tratar mensagem
+    const safeMessage = message || 'Mensagem não fornecida';
+
+    if (!message || message.trim() === '') {
+        console.warn('Toast chamado sem mensagem:', { type, message, allProps: { message, type } });
+    }
+
     return (
-        <div 
+        <div
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             className={`
@@ -77,21 +100,15 @@ export default function Toast({ message, type = 'success', onClose }) {
             </div>
 
             {/* CONTEÚDO */}
-            <div className="flex-1 flex flex-col space-y-0.5">
-                <div className="flex items-center gap-2">
-                    <span className={`font-mono text-[9px] font-black tracking-[0.2em] ${config.color}`}>
-                        {config.label}
-                    </span>
-                    <div className={`h-[1px] flex-1 bg-gradient-to-r ${config.color.replace('text', 'from')}/30 to-transparent`} />
-                </div>
-                <p className="text-[13px] font-bold text-zinc-200 tracking-tight leading-snug">
-                    {message}
+            <div className="flex-1 flex flex-col">
+                <p className="text-sm font-bold text-zinc-100 leading-snug">
+                    {safeMessage}
                 </p>
             </div>
 
             {/* BOTÃO FECHAR CUSTOM */}
-            <button 
-                onClick={onClose} 
+            <button
+                onClick={onClose}
                 className="ml-2 p-1 rounded-md hover:bg-white/10 text-zinc-500 hover:text-white"
             >
                 <X size={14} />
@@ -99,9 +116,9 @@ export default function Toast({ message, type = 'success', onClose }) {
 
             {/* BARRA DE PROGRESSO ANIMADA */}
             <div className="absolute bottom-0 left-0 w-full h-[3px] bg-zinc-800/50">
-                <div 
+                <div
                     className={`h-full ${config.color.replace('text', 'bg')}`}
-                    style={{ 
+                    style={{
                         width: isPaused ? '100%' : '0%',
                         boxShadow: `0 0 10px ${config.color.split('-')[1]}`
                     }}

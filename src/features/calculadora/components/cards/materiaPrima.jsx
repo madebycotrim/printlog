@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, Package, DollarSign, Tag, Layers, Loader2 } from "lucide-react";
 import { useFilamentStore } from "../../../filamentos/logic/filaments";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
+import { formatDecimal, parseNumber } from "../../../../utils/numbers";
 
 /* ---------- COMPONENTE: LINHA DE FILAMENTO (MODO MULTI) ---------- */
 const LinhaFilamento = ({ indice, total, dadosSlot, opcoesSelecao, aoAtualizar, aoRemover, podeRemover }) => {
@@ -46,7 +47,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, opcoesSelecao, aoAtualizar, 
             <button
                 type="button"
                 onClick={() => podeRemover && aoRemover(indice)}
-                className="h-11 w-10 shrink-0 flex items-center justify-center rounded-xl border border-zinc-800/60 text-zinc-700 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/5 transition-all mb-[1px]"
+                className="h-11 w-10 shrink-0 flex items-center justify-center rounded-xl bg-zinc-950/30 border border-zinc-800/50 text-zinc-600 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10 transition-all mb-[1px] shadow-sm"
             >
                 <Trash2 size={14} />
             </button>
@@ -58,11 +59,11 @@ const LinhaFilamento = ({ indice, total, dadosSlot, opcoesSelecao, aoAtualizar, 
 export default function MaterialModule({
     custoRolo, setCustoRolo,
     pesoModelo, setPesoModelo,
-    selectedFilamentId, setSelectedFilamentId,
+    idFilamentoSelecionado, setIdFilamentoSelecionado,
     materialSlots = [],
     setMaterialSlots
 }) {
-    const [modo, setModo] = useState(selectedFilamentId === "multi" ? "multi" : "single");
+    const [modo, setModo] = useState(idFilamentoSelecionado === "multi" ? "multi" : "single");
     const { filaments: filamentos, fetchFilaments: buscarFilamentos, loading: carregando } = useFilamentStore();
 
     useEffect(() => {
@@ -70,12 +71,12 @@ export default function MaterialModule({
     }, [buscarFilamentos]);
 
     useEffect(() => {
-        if (selectedFilamentId === "multi") {
+        if (idFilamentoSelecionado === "multi") {
             setModo("multi");
         } else {
             setModo("single");
         }
-    }, [selectedFilamentId]);
+    }, [idFilamentoSelecionado]);
 
     // Agrupa filamentos por tipo para o select
     const opcoesSelecao = useMemo(() => {
@@ -120,34 +121,31 @@ export default function MaterialModule({
     };
 
     const pesoTotalSomado = useMemo(() => {
-        if (modo === "single") return parseFloat(String(pesoModelo || "0").replace(',', '.')) || 0;
+        if (modo === "single") return parseNumber(pesoModelo);
         const slotsSeguros = Array.isArray(materialSlots) ? materialSlots : [];
-        return slotsSeguros.reduce((acc, s) => {
-            const valor = parseFloat(String(s?.weight || "0").replace(',', '.'));
-            return acc + (isNaN(valor) ? 0 : valor);
-        }, 0);
+        return slotsSeguros.reduce((acc, s) => acc + parseNumber(s?.weight), 0);
     }, [materialSlots, pesoModelo, modo]);
 
     const alternarModo = (novoModo) => {
         setModo(novoModo);
         if (novoModo === "multi") {
-            setSelectedFilamentId("multi");
+            setIdFilamentoSelecionado("multi");
         } else {
-            setSelectedFilamentId("manual");
+            setIdFilamentoSelecionado("manual");
         }
     };
 
     return (
         <div className="flex flex-col gap-5 animate-in fade-in duration-500">
             {/* SELETOR DE MODO */}
-            <div className="flex bg-zinc-900/40 border border-zinc-800/60 p-1 rounded-xl">
+            <div className="flex bg-zinc-900/40 border border-zinc-800/50 p-1 rounded-xl">
                 {["single", "multi"].map(m => (
                     <button
                         key={m}
                         type="button"
                         onClick={() => alternarModo(m)}
                         className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all
-                        ${modo === m ? "bg-zinc-800 text-sky-400 border border-white/5 shadow-lg" : "text-zinc-600 hover:text-zinc-400"}`}
+                        ${modo === m ? "bg-zinc-800 text-sky-400 border border-zinc-700 shadow-lg" : "text-zinc-600 hover:text-zinc-400"}`}
                     >
                         {m === "single" ? "Uma cor" : "Várias cores"}
                     </button>
@@ -163,9 +161,9 @@ export default function MaterialModule({
                             icon={carregando ? Loader2 : Tag}
                             className={carregando ? "animate-spin" : ""}
                             options={opcoesSelecao}
-                            value={String(selectedFilamentId || "manual")}
+                            value={String(idFilamentoSelecionado || "manual")}
                             onChange={(id) => {
-                                setSelectedFilamentId(id);
+                                setIdFilamentoSelecionado(id);
                                 if (id !== 'manual') {
                                     const item = filamentos.find(f => String(f.id) === String(id));
                                     // CORREÇÃO AQUI: Usando 'item' corretamente em vez de 'itemEstoque'
@@ -202,7 +200,7 @@ export default function MaterialModule({
             ) : (
                 /* MODO MULTI MATERIAL */
                 <div className="space-y-3 relative z-10">
-                    <div className="flex items-center justify-between px-1 border-b border-white/5 pb-2">
+                    <div className="flex items-center justify-between px-1 border-b border-zinc-800/50 pb-2">
                         <div className="flex items-center gap-2">
                             <Layers size={12} className="text-zinc-500" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Rack de Materiais</span>
@@ -211,7 +209,7 @@ export default function MaterialModule({
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-end">
                                 <span className="text-[10px] font-mono font-bold text-sky-400">
-                                    {pesoTotalSomado.toFixed(0)}g
+                                    {formatDecimal(pesoTotalSomado, 0)}g
                                 </span>
                                 <span className="text-[7px] font-black text-zinc-700 uppercase tracking-tighter">Total</span>
                             </div>

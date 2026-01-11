@@ -1,20 +1,21 @@
 import React from "react";
-import { Printer, History, Settings2, ChevronDown, Trash2 } from "lucide-react";
+import { Printer, History, Settings2, ChevronDown, Trash2, FileCode } from "lucide-react";
 
 export default function Header({
     nomeProjeto,
     setNomeProjeto,
     printers = [],
-    selectedPrinterId,
+    idImpressoraSelecionada,
     onCyclePrinter,
     onOpenHistory,
     onOpenSettings,
-    onOpenWaste, // New Prop
+    onOpenWaste,
+    onUploadGCode, // Nova prop para upload de arquivo
     needsConfig = false,
     hud
 }) {
     // Busca a impressora selecionada na lista de equipamentos com comparação segura de tipo
-    const impressoraAtual = printers.find(p => String(p.id) === String(selectedPrinterId));
+    const impressoraAtual = printers.find(p => String(p.id) === String(idImpressoraSelecionada));
 
     // Define o nome que aparece no botão
     const nomeExibicaoHardware = impressoraAtual?.nome || impressoraAtual?.name || (printers.length > 0 ? "Selecionar Impressora" : "Offline");
@@ -53,99 +54,98 @@ export default function Header({
     };
 
     return (
-        <header className="h-20 px-10 flex items-center justify-between z-40 relative border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md shrink-0 gap-4">
-            {/* 1. DETALHE VISUAL: LINHA EM GRADIENTE SKY (TOPO) */}
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-cyan-900 via-sky-500 to-indigo-900 opacity-40" />
+        <header className="px-8 xl:px-12 py-8 flex items-start justify-between z-40 relative shrink-0 gap-6">
 
-            {/* LADO ESQUERDO: NOME DO PROJETO COM EFEITO DE DUAS CORES */}
-            <div className="flex flex-col min-w-[200px] max-w-xl group">
-                <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 leading-none mb-1.5">
+            {/* LADO ESQUERDO: TITULO E INPUT DE PROJETO */}
+            <div className="flex flex-col min-w-[200px] max-w-xl group relative">
+                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 mb-2">
                     Cálculo de Produção
-                </h1>
+                </span>
 
-                {/* CONTAINER DO INPUT COM OVERLAY DE CORES */}
-                <div className="relative inline-grid items-center">
-                    {/* Camada Visual: Onde o texto colorido/gradiente realmente aparece */}
-                    <div className="pointer-events-none whitespace-pre text-xl font-black uppercase tracking-tight z-10">
+                {/* CONTAINER DO INPUT */}
+                <div className="relative inline-flex items-center">
+                    {/* Camada Visual: Texto Renderizado */}
+                    <div className="pointer-events-none whitespace-pre text-4xl font-black tracking-tight text-zinc-200 z-10 transition-colors group-hover:text-white">
                         {renderTextoColorido()}
                     </div>
 
-                    {/* Input Real: Transparente por cima para capturar a digitação e manter o caret visível */}
+                    {/* Input Real */}
                     <input
                         value={nomeProjeto}
                         onChange={(e) => setNomeProjeto(e.target.value)}
                         placeholder="NOME DO PROJETO..."
-                        className="absolute inset-0 bg-transparent uppercase border-none outline-none text-xl font-black tracking-tight text-transparent caret-sky-500 selection:bg-sky-500/30 w-full z-20 placeholder:text-transparent"
+                        className="absolute inset-0 bg-transparent border-none outline-none text-4xl font-black tracking-tight text-transparent caret-sky-500 selection:bg-sky-500/30 w-full z-20 placeholder:text-transparent"
                     />
                 </div>
             </div>
 
-            {/* CENTRO: HUD (Painel Flutuante com resultados rápidos) */}
-            <div className="flex-1 flex justify-center px-4">
+            {/* CENTRO: HUD (Painel Flutuante) */}
+            <div className="flex-1 flex justify-center px-4 pt-2">
                 {hud}
             </div>
 
-            {/* LADO DIREITO: SELEÇÃO DE MÁQUINA E ATALHOS */}
-            <div className="flex items-center gap-6 shrink-0">
+            {/* LADO DIREITO: TOOLBAR */}
+            <div className="flex items-center gap-4 shrink-0 pt-1">
 
+                {/* Selector de Impressora */}
                 <button
                     type="button"
                     onClick={onCyclePrinter}
-                    className="group relative flex items-center gap-3 pl-3 pr-4 py-1.5 bg-zinc-900/40 border border-zinc-800 hover:border-zinc-600 rounded-2xl transition-all duration-300 active:scale-[0.98]"
+                    className="group flex items-center gap-3 px-4 py-3 bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900 rounded-2xl transition-all duration-300 hover-lift"
                 >
-                    <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-zinc-950 border border-zinc-800 group-hover:border-zinc-700 transition-colors shadow-inner">
-                        <Printer size={15} className={`${impressoraAtual ? 'text-sky-400' : 'text-zinc-500'} transition-colors`} />
-                        {impressoraAtual && (
-                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-sky-500 rounded-full border-2 border-zinc-950 animate-pulse" />
-                        )}
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Printer size={18} className={`${impressoraAtual ? 'text-sky-400' : 'text-zinc-600'} transition-colors`} />
                     </div>
 
-                    <div className="flex flex-col items-start min-w-[120px] max-w-[180px]">
-                        <div className="flex items-center gap-2 leading-none mb-1">
-                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Máquina</span>
-                            {impressoraAtual && potenciaHardware > 0 && (
-                                <span className="flex items-center gap-0.5 text-[8px] font-mono font-bold text-emerald-500/80 bg-emerald-500/5 px-1 rounded border border-emerald-500/10">
+                    <div className="flex flex-col items-start text-left">
+                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-1">
+                            Máquina
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-zinc-200 uppercase tracking-tight truncate max-w-[140px]">
+                                {nomeExibicaoHardware}
+                            </span>
+                            {potenciaHardware > 0 && (
+                                <span className="text-[9px] font-mono font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                                     {potenciaHardware}W
                                 </span>
                             )}
                         </div>
-                        <span className="text-xs font-bold text-zinc-200 uppercase tracking-tight truncate w-full text-left">
-                            {nomeExibicaoHardware}
-                        </span>
                     </div>
-
-                    <div className="pl-2 border-l border-zinc-800 group-hover:border-zinc-700">
-                        <ChevronDown size={14} className="text-zinc-600 group-hover:text-zinc-400 transition-colors" />
-                    </div>
+                    <ChevronDown size={14} className="text-zinc-600 group-hover:text-zinc-400 ml-2" />
                 </button>
 
-                <div className="h-8 w-px bg-zinc-800/60" />
+                <div className="w-px h-10 bg-zinc-800/50" />
 
-                <div className="flex bg-zinc-900/50 border border-zinc-800/50 p-1 rounded-xl backdrop-blur-sm">
+                {/* Ações Rápidas */}
+                <div className="flex gap-2">
                     <button
-                        type="button"
+                        onClick={onUploadGCode}
+                        title="Importar G-Code / 3MF"
+                        className="w-12 h-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all hover-lift"
+                    >
+                        <FileCode size={18} />
+                    </button>
+                    <button
                         onClick={onOpenWaste}
-                        title="Registrar Falha / Desperdício"
-                        className="p-2 rounded-lg text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20"
+                        title="Registrar Falha"
+                        className="w-12 h-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/10 transition-all hover-lift"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                     </button>
-                    <div className="w-px h-4 bg-zinc-800 my-auto mx-1" />
                     <button
-                        type="button"
                         onClick={onOpenSettings}
-                        title="Configurações da Oficina"
-                        className={`p-2 rounded-lg transition-all ${needsConfig ? 'text-amber-500 bg-amber-500/10 animate-pulse' : 'text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800'}`}
+                        title="Configurações"
+                        className={`w-12 h-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center transition-all hover-lift ${needsConfig ? 'text-amber-500 border-amber-500/30 animate-pulse' : 'text-zinc-500 hover:text-white hover:border-zinc-600'}`}
                     >
-                        <Settings2 size={16} />
+                        <Settings2 size={18} />
                     </button>
                     <button
-                        type="button"
                         onClick={onOpenHistory}
-                        title="Histórico de Orçamentos"
-                        className="p-2 rounded-lg text-zinc-500 hover:text-sky-400 hover:bg-zinc-800 transition-all"
+                        title="Histórico"
+                        className="w-12 h-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all hover-lift"
                     >
-                        <History size={16} />
+                        <History size={18} />
                     </button>
                 </div>
             </div>

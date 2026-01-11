@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { formatarMoeda, analisarNumero, formatarDecimal } from "../utils/numbers";
 import {
     Package, Zap, Clock, DollarSign,
     TrendingUp, Printer, ChevronLeft, Info,
@@ -115,14 +116,14 @@ const PrintLayout = ({ dados, inputs, nomeProjeto }) => {
                                     <div className="w-2 h-2 bg-black rotate-45" />
                                     <span className="font-bold uppercase italic">Logística de Insumos e Polímeros</span>
                                 </div>
-                                <span className="font-black text-sm">{formatBRL(dados.custoMaterial + dados.custoEnergia)}</span>
+                                <span className="font-black text-sm">{formatarMoeda(dados.custoMaterial + dados.custoEnergia)}</span>
                             </div>
                             <div className="flex justify-between items-center border-b border-zinc-200 pb-2">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-black rotate-45" />
                                     <span className="font-bold uppercase italic">Preparação e Hora Técnica (MDO)</span>
                                 </div>
-                                <span className="font-black text-sm">{formatBRL(dados.custoMaoDeObra)}</span>
+                                <span className="font-black text-sm">{formatarMoeda(dados.custoMaoDeObra)}</span>
                             </div>
 
                             {/* VALOR FINAL PREMIUM */}
@@ -137,7 +138,7 @@ const PrintLayout = ({ dados, inputs, nomeProjeto }) => {
                                         <div className="flex items-start justify-end gap-2">
                                             <span className="text-2xl font-black mt-2">R$</span>
                                             <span className="text-7xl font-[1000] italic tracking-tighter leading-none">
-                                                {formatBRL(dados.precoVenda).replace("R$", "").trim()}
+                                                {formatarMoeda(dados.precoVenda).replace("R$", "").trim()}
                                             </span>
                                         </div>
                                     </div>
@@ -203,8 +204,7 @@ const InputGroup = ({ label, suffix, value, onChange, placeholder }) => (
     </div>
 );
 
-const formatBRL = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-const parseNumber = (value) => (!value ? 0 : Number(value.toString().replace(",", ".")) || 0);
+
 
 /* =============================
    PÁGINA DA CALCULADORA
@@ -222,15 +222,15 @@ export default function CalculadoraPreview() {
     const [margemLucro, setMargemLucro] = useState("100");
 
     const res = useMemo(() => {
-        const pKg = parseNumber(precoFilamento);
-        const peso = parseNumber(pesoPeca);
-        const tHoras = parseNumber(tempoHoras);
-        const tMin = parseNumber(tempoMinutos);
-        const watts = parseNumber(consumoWatts);
-        const kwhPrice = parseNumber(valorKwh);
-        const moHora = parseNumber(maoDeObraHora);
-        const moTempo = parseNumber(horasTrabalhadas);
-        const margem = parseNumber(margemLucro);
+        const pKg = analisarNumero(precoFilamento);
+        const peso = analisarNumero(pesoPeca);
+        const tHoras = analisarNumero(tempoHoras);
+        const tMin = analisarNumero(tempoMinutos);
+        const watts = analisarNumero(consumoWatts);
+        const kwhPrice = analisarNumero(valorKwh);
+        const moHora = analisarNumero(maoDeObraHora);
+        const moTempo = analisarNumero(horasTrabalhadas);
+        const margem = analisarNumero(margemLucro);
 
         const tempoTotalHoras = tHoras + (tMin / 60);
         const custoMaterial = (peso / 1000) * pKg;
@@ -338,13 +338,13 @@ export default function CalculadoraPreview() {
                             <div className="flex items-end gap-2 mb-6">
                                 <span className="text-2xl font-black italic text-[#10b981] mb-1.5 leading-none">R$</span>
                                 <span className="text-5xl md:text-7xl font-[1000] tracking-tighter font-mono italic text-white leading-none">
-                                    {res.precoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {formatDecimal(res.precoVenda, 2)}
                                 </span>
                             </div>
                             {hasValue && (
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981]">
                                     <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-                                    <span className="text-[10px] font-[1000] uppercase tracking-widest italic leading-none">Lucro Real: {formatBRL(res.lucroReal)}</span>
+                                    <span className="text-[10px] font-[1000] uppercase tracking-widest italic leading-none">Lucro Real: {formatarMoeda(res.lucroReal)}</span>
                                 </div>
                             )}
                         </div>
@@ -353,12 +353,12 @@ export default function CalculadoraPreview() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-zinc-500 uppercase font-black text-[10px] tracking-widest italic leading-none">
                                     <span>Custo de Produção:</span>
-                                    <span className="text-zinc-200 text-xl font-mono">{formatBRL(res.custoTotal)}</span>
+                                    <span className="text-zinc-200 text-xl font-mono">{formatarMoeda(res.custoTotal)}</span>
                                 </div>
                                 <div className="space-y-3 border-t border-white/5 pt-5">
-                                    {res.custoMaterial > 0 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Materiais</span><span>{formatBRL(res.custoMaterial)}</span></div>}
-                                    {res.custoEnergia > 0.05 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Energia</span><span>{formatBRL(res.custoEnergia)}</span></div>}
-                                    {res.custoMaoDeObra > 0 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>MDO</span><span>{formatBRL(res.custoMaoDeObra)}</span></div>}
+                                    {res.custoMaterial > 0 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Materiais</span><span>{formatarMoeda(res.custoMaterial)}</span></div>}
+                                    {res.custoEnergia > 0.05 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>Energia</span><span>{formatarMoeda(res.custoEnergia)}</span></div>}
+                                    {res.custoMaoDeObra > 0 && <div className="flex justify-between text-[9px] text-zinc-600 font-bold uppercase italic tracking-[0.1em]"><span>MDO</span><span>{formatarMoeda(res.custoMaoDeObra)}</span></div>}
                                 </div>
                             </div>
                             <button onClick={() => window.print()} disabled={!hasValue} className={`w-full h-16 rounded-2xl font-[1000] text-base uppercase tracking-[0.12em] italic transition-all flex items-center justify-center gap-3 ${hasValue ? 'bg-[#10b981] text-black shadow-lg hover:brightness-110 active:scale-95' : 'bg-zinc-900 text-zinc-800 cursor-not-allowed border border-white/5 opacity-50'}`}><Printer size={20} /> GERAR ORÇAMENTO</button>

@@ -1,19 +1,6 @@
-import React, { useMemo } from "react";
-import { Check, AlertTriangle, Activity, CheckCircle2, Timer } from "lucide-react";
-
-/**
- * Utilitário para formatar números de um jeito simples (ex: 1.2k)
- */
-const formatarNumero = (valor) => {
-  const numero = Number(valor);
-  if (isNaN(numero)) return "0";
-  if (numero === 0) return "0";
-
-  return new Intl.NumberFormat("pt-BR", {
-    notation: numero >= 1000 ? "compact" : "standard",
-    maximumFractionDigits: 1,
-  }).format(numero).toLowerCase();
-};
+import { useMemo } from "react";
+import { Activity, Check, AlertTriangle, CheckCircle2, Timer } from "lucide-react";
+import { formatCompact, formatDecimal } from "../../../utils/numbers";
 
 /**
  * Componente de Card de Estatística
@@ -136,8 +123,8 @@ export default function StatusDashboard({ criticalCount = 0, totalCount = 0, sta
     const totalFilamento = Number(stats?.filamento || 0);
 
     return {
-      totalImpressoes: formatarNumero(totalPecas),
-      massaFilamento: `${totalFilamento.toFixed(1)}kg`
+      totalImpressoes: formatCompact(totalPecas),
+      massaFilamento: `${formatDecimal(totalFilamento, 1)}kg`
     };
   }, [stats]);
 

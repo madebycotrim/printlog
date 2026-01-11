@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { formatCurrency } from "../../../utils/numbers";
+import { formatCurrency, formatDecimal } from "../../../utils/numbers";
+// ... imports
+
+// Line 80
 import {
-    Save, Calculator, FileText, Loader2, Wand2,
     MessageCircle, Target, Package, Zap, Clock, Wrench,
     Landmark, RotateCcw, Send, Copy, Check, Settings2,
     Truck, ShoppingBag, Tag, ShieldAlert, Box, AlertTriangle,
-    PlusCircle, CheckCircle2, Globe, History, CloudCheck
+    PlusCircle, CheckCircle2, Globe, History, CloudCheck,
+    Wand2, Save, Loader2, FileText
 } from "lucide-react";
 
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
@@ -77,7 +80,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     const paybackInsumo = useMemo(() => {
         if (!custoMaterial || custoMaterial < 0.001 || !lucroBrutoUnitario || lucroBrutoUnitario < 0) return 0;
         const resultado = lucroBrutoUnitario / custoMaterial;
-        return isFinite(resultado) && !isNaN(resultado) ? resultado.toFixed(1) : "0.0";
+        return isFinite(resultado) && !isNaN(resultado) ? formatDecimal(resultado, 1) : "0,0";
     }, [custoMaterial, lucroBrutoUnitario]);
 
     const saudeProjeto = useMemo(() => {
@@ -127,37 +130,40 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
         <div className="h-full flex flex-col gap-3 animate-in fade-in duration-500">
 
             {/* CARD 01: DESEMPENHO FINANCEIRO */}
-            <div className="bg-[#0c0c0e] border border-white/[0.05] rounded-3xl p-5 relative overflow-hidden shrink-0">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${saudeProjeto.dot} ${temMaterial ? 'animate-pulse' : ''} shadow-[0_0_8px_currentColor]`} />
-                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${saudeProjeto.color}`}>{saudeProjeto.label}</span>
+            <div className={`bg-zinc-950/40 border rounded-2xl p-6 relative overflow-hidden shrink-0 hover-lift group transition-all duration-500 ${margemEfetivaPct < 0 ? 'border-rose-500/50 shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/50' : 'border-zinc-800/50'}`}>
+                <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${saudeProjeto.dot === 'bg-[#10b981]' ? 'bg-emerald-500/10' : saudeProjeto.dot === 'bg-rose-500' ? 'bg-rose-500/10' : 'bg-zinc-800/50'}`}>
+                            <div className={`w-2.5 h-2.5 rounded-full ${saudeProjeto.dot} ${temMaterial ? 'animate-pulse' : ''}`} />
+                        </div>
+                        <span className={`text-xs font-black uppercase tracking-[0.2em] ${saudeProjeto.color}`}>{saudeProjeto.label}</span>
                     </div>
                     {temMaterial && (
-                        <div className="text-right">
-                            <span className="text-[7px] font-bold text-zinc-600 uppercase block leading-none mb-1">Retorno Material</span>
-                            <span className="text-[10px] font-mono font-bold text-zinc-300">{paybackInsumo}x</span>
+                        <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-right">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase block leading-none mb-0.5">Retorno</span>
+                            <span className="text-xs font-mono font-bold text-zinc-300">{paybackInsumo}x</span>
                         </div>
                     )}
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-6">
                     {temMaterial ? (
-                        <h2 className="text-5xl font-black font-mono tracking-tighter leading-none text-white">
+                        <h2 className="text-5xl font-black font-mono tracking-tighter leading-none text-white mb-2">
                             <AnimatedNumber value={lucroBrutoUnitario} />
                         </h2>
                     ) : (
-                        <span className="text-xl font-bold text-zinc-800 uppercase tracking-tighter">Aguardando dados...</span>
+                        <h2 className="text-2xl font-black font-mono tracking-tighter text-zinc-700 uppercase mb-2">--,--</h2>
                     )}
-                    <div className="flex justify-between items-end mt-2">
-                        <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Lucro Líquido Real</span>
-                        <span className={`text-[10px] font-bold font-mono ${temMaterial ? 'text-zinc-400' : 'text-zinc-800'}`}>
-                            {temMaterial ? `${Math.round(margemEfetivaPct)}% MARGEM` : '--'}
+                    <div className="flex justify-between items-end">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Lucro Líquido</span>
+                        <span className={`text-xs font-bold font-mono ${temMaterial ? 'text-zinc-400' : 'text-zinc-700'}`}>
+                            {temMaterial ? `${Math.round(margemEfetivaPct)}% MARGEM` : 'SEM DADOS'}
                         </span>
                     </div>
                 </div>
 
-                <div className="h-[2px] w-full bg-zinc-900 rounded-full flex overflow-hidden">
+                {/* Barra de Progresso Minimalista */}
+                <div className="h-1.5 w-full bg-zinc-900 rounded-full flex overflow-hidden">
                     {(() => {
                         const precoFinalSeguro = Math.max(0.01, precoFinalVenda || 0.01);
                         const percentualCusto = temMaterial && precoFinalSeguro > 0 ? Math.min(100, Math.max(0, (custoUnitario / precoFinalSeguro) * 100)) : 0;
@@ -165,7 +171,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                         return (
                             <>
                                 <div style={{ width: `${percentualCusto}%` }} className="bg-zinc-800 h-full transition-all duration-1000" />
-                                <div style={{ width: `${percentualLucro}%` }} className={`${saudeProjeto.bar} h-full transition-all duration-1000`} />
+                                <div style={{ width: `${percentualLucro}%` }} className={`${saudeProjeto.bar} h-full transition-all duration-1000 opacity-80`} />
                             </>
                         );
                     })()}
@@ -173,17 +179,22 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
             </div>
 
             {/* CARD 02: PREÇO FINAL DE VENDA */}
-            <div className="bg-[#0c0c0e] border border-white/[0.05] rounded-3xl p-5 relative group shrink-0">
-                <div className="absolute top-4 right-4 flex gap-2">
-                    <button onClick={() => { const current = precoFinalVenda; const val = Math.floor(current); const cents = Number((current % 1).toFixed(2)); setPrecoArredondado(cents < 0.90 ? val + 0.90 : val + 1.90); }} disabled={!temMaterial} className="p-2.5 rounded-xl border border-white/5 bg-zinc-900/50 text-zinc-600 hover:text-sky-400 disabled:opacity-10 transition-all">
-                        <Wand2 size={14} />
+            <div className="bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-6 relative group shrink-0 hover-lift">
+                <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => { const current = precoFinalVenda; const val = Math.floor(current); const cents = Number((current % 1).toFixed(2)); setPrecoArredondado(cents < 0.90 ? val + 0.90 : val + 1.90); }} disabled={!temMaterial} className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all">
+                        <Wand2 size={16} />
                     </button>
-                    <button onClick={() => { navigator.clipboard.writeText(precoFinalVenda.toFixed(2)); setCopiadoPreco(true); setTimeout(() => setCopiadoPreco(false), 2000); }} disabled={!temMaterial} className="p-2.5 rounded-xl border border-white/5 bg-zinc-900/50 text-zinc-600 hover:text-sky-400 disabled:opacity-10 transition-all">
-                        {copiadoPreco ? <Check size={14} /> : <Copy size={14} />}
+                    <button onClick={() => { navigator.clipboard.writeText(precoFinalVenda.toFixed(2)); setCopiadoPreco(true); setTimeout(() => setCopiadoPreco(false), 2000); }} disabled={!temMaterial} className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 transition-all">
+                        {copiadoPreco ? <Check size={16} /> : <Copy size={16} />}
                     </button>
                 </div>
 
-                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.3em] block mb-3">Preço Sugerido</span>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                        <Tag size={16} className="text-amber-500" />
+                    </div>
+                    <span className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">Preço Sugerido</span>
+                </div>
 
                 <div className="flex flex-col">
                     {temMaterial ? (
@@ -200,33 +211,39 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                             </h3>
                         )
                     ) : (
-                        <span className="text-2xl font-black text-zinc-800 uppercase tracking-tighter">Inicie o cálculo</span>
+                        <h3 className="text-2xl font-black font-mono tracking-tighter text-zinc-700 uppercase">--,--</h3>
                     )}
                 </div>
             </div>
 
             {/* CARD 03: COMPOSIÇÃO DOS CUSTOS */}
-            <div className="flex-1 bg-zinc-900/10 border border-white/[0.05] rounded-3xl flex flex-col overflow-hidden min-h-0">
-                <div className="px-5 py-3 border-b border-white/[0.03] flex justify-between items-center text-[9px] font-bold text-zinc-600 uppercase tracking-widest shrink-0">
-                    <span>Composição dos Custos</span>
-                    <Target size={12} className="opacity-20" />
+            <div className="flex-1 bg-zinc-950/40 border border-zinc-800/50 rounded-2xl flex flex-col overflow-hidden min-h-0 hover-lift group">
+                <div className="px-6 py-4 border-b border-zinc-800/50 flex justify-between items-center shrink-0">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-300 transition-colors">
+                        Composição de Custos
+                    </span>
+                    <Target size={14} className="text-zinc-700 group-hover:text-sky-500 transition-colors" />
                 </div>
-                <div className="flex-1 overflow-y-auto px-5 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto px-6 custom-scrollbar">
                     {temMaterial && composicaoItens.length > 0 ? (
-                        <div className="py-2 space-y-0.5">
+                        <div className="py-4 space-y-1">
                             {composicaoItens.map((item, i) => (
-                                <div key={i} className="flex justify-between py-1.5 border-b border-white/[0.01] last:border-0 group">
-                                    <span className="text-[8px] text-zinc-500 uppercase font-bold tracking-widest flex items-center gap-2 group-hover:text-zinc-300 transition-colors">
-                                        <item.icon size={11} className="shrink-0" /> {item.label}
+                                <div key={i} className="flex justify-between py-2 border-b border-zinc-900 last:border-0 group/item hover:pl-1 transition-all">
+                                    <span className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest flex items-center gap-2 group-hover/item:text-zinc-300 transition-colors">
+                                        <item.icon size={12} className="shrink-0 text-zinc-700 group-hover/item:text-sky-500 transition-colors" /> {item.label}
                                     </span>
-                                    <span className={`text-[10px] font-mono font-bold ${item.color || 'text-zinc-300'}`}>{formatCurrency(item.val)}</span>
+                                    <span className={`text-xs font-mono font-bold ${item.color || 'text-zinc-400'}`}>
+                                        {formatCurrency(item.val)}
+                                    </span>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center gap-4 opacity-20 py-10">
-                            <PlusCircle size={40} strokeWidth={1} className="text-sky-500" />
-                            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-center px-6">Informe peso e custo do material</p>
+                        <div className="h-full flex flex-col items-center justify-center gap-4 opacity-50 py-10">
+                            <PlusCircle size={32} strokeWidth={1.5} className="text-zinc-700" />
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-center text-zinc-600 px-6">
+                                Adicione materiais para ver a composição
+                            </p>
                         </div>
                     )}
                 </div>
@@ -244,8 +261,8 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                     </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2 h-10">
-                    <button onClick={() => setGenericModal({ open: true, type: 'CONFIRM', title: 'Reiniciar', icon: RotateCcw, message: 'Apagar dados atuais?', onConfirm: () => window.location.reload() })} className="rounded-xl bg-zinc-900 border border-white/[0.05] text-zinc-600 hover:text-zinc-300 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-zinc-800/50 group"><RotateCcw size={12} className="transition-transform duration-300 group-hover:rotate-180" /> Reiniciar</button>
-                    <button onClick={() => generateProfessionalPDF(resultados, entradas, precoFinalVenda)} className="rounded-xl bg-zinc-900 border border-white/[0.05] text-zinc-600 hover:text-sky-500 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-zinc-800/50 group"><FileText size={12} className="transition-transform duration-300 group-hover:scale-110" /> Gerar Proposta</button>
+                    <button onClick={() => setGenericModal({ open: true, type: 'CONFIRM', title: 'Reiniciar', icon: RotateCcw, message: 'Apagar dados atuais?', onConfirm: () => window.location.reload() })} className="rounded-xl bg-zinc-900 border border-zinc-800/50 text-zinc-600 hover:text-zinc-300 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-zinc-800/50 group"><RotateCcw size={12} className="transition-transform duration-300 group-hover:rotate-180" /> Reiniciar</button>
+                    <button onClick={() => generateProfessionalPDF(resultados, entradas, precoFinalVenda)} className="rounded-xl bg-zinc-900 border border-zinc-800/50 text-zinc-600 hover:text-sky-500 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-zinc-800/50 group"><FileText size={12} className="transition-transform duration-300 group-hover:scale-110" /> Gerar Proposta</button>
                 </div>
             </div>
 
@@ -273,13 +290,13 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
 
                     {/* Mini Cards (Reflexo do Resumo) */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-zinc-950 border border-white/5 p-5 rounded-[2rem] flex flex-col justify-center">
+                        <div className="bg-zinc-950 border border-zinc-800/50 p-5 rounded-[2rem] flex flex-col justify-center">
                             <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Preço de Venda</span>
                             <span className="text-2xl font-black font-mono text-white leading-none">
                                 {formatCurrency(precoFinalVenda)}
                             </span>
                         </div>
-                        <div className="bg-zinc-950 border border-white/5 p-5 rounded-[2rem] flex flex-col justify-center">
+                        <div className="bg-zinc-950 border border-zinc-800/50 p-5 rounded-[2rem] flex flex-col justify-center">
                             <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Lucro Líquido</span>
                             <span className="text-2xl font-black font-mono text-emerald-500 leading-none">
                                 {formatCurrency(lucroBrutoUnitario)}
@@ -296,7 +313,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                 icon={MessageCircle}
                 footer={
                     <div className="flex w-full gap-2">
-                        <button onClick={() => { navigator.clipboard.writeText(mensagemEditavel); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }} className="flex-1 bg-zinc-900 border border-white/5 text-zinc-400 text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2">
+                        <button onClick={() => { navigator.clipboard.writeText(mensagemEditavel); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }} className="flex-1 bg-zinc-900 border border-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2">
                             {copiado ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                             {copiado ? "Copiado" : "Copiar"}
                         </button>

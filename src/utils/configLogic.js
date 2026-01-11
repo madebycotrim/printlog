@@ -44,9 +44,26 @@ export const useLogicaConfiguracao = () => {
         return { pontuacao, rotulo: "Excelente", cor: "emerald" };
     }, [formularioSenha.novaSenha]);
 
+    const requisitosSenha = useMemo(() => {
+        const senha = formularioSenha.novaSenha;
+        return {
+            tamanhoMinimo: senha.length >= 8,
+            temMaiuscula: /[A-Z]/.test(senha),
+            temMinuscula: /[a-z]/.test(senha),
+            temNumero: /[0-9]/.test(senha),
+            temEspecial: /[^A-Za-z0-9]/.test(senha),
+            senhasConferem: senha.length > 0 && senha === formularioSenha.confirmarSenha
+        };
+    }, [formularioSenha.novaSenha, formularioSenha.confirmarSenha]);
+
+    const todosRequisitosAtendidos = useMemo(() =>
+        Object.values(requisitosSenha).every(req => req === true),
+        [requisitosSenha]
+    );
+
     const senhaEhValida = useMemo(() =>
-        forcaSenha.pontuacao >= 50 && formularioSenha.novaSenha === formularioSenha.confirmarSenha
-        , [forcaSenha, formularioSenha]);
+        todosRequisitosAtendidos
+        , [todosRequisitosAtendidos]);
 
     // --- CARREGAMENTO E OTIMIZAÇÃO DE IMAGEM ---
     const manipularCarregamentoImagem = async (evento) => {
@@ -280,7 +297,6 @@ export const useLogicaConfiguracao = () => {
     };
 
     const excluirContaPermanente = async () => {
-        if (!confirm("DESEJA EXCLUIR TODOS OS DADOS? Esta ação não pode ser desfeita.")) return;
         setEstaSalvando(true);
         try {
             await api.delete('/users');
@@ -300,38 +316,76 @@ export const useLogicaConfiguracao = () => {
     });
 
     useEffect(() => {
-        const verificarSaudeSistema = async () => {
-            try {
-                const resposta = await api.get('/users/health');
-                const tempoResposta = resposta.data.latency;
+        let isMounted = true;
 
-                if (resposta.data.status === 'online') {
-                    if (tempoResposta > 500) {
+        const verificarSaudeSistema = async () => {
+            // Se demorar muito, já define como desconectado para não ficar em loop infinito visual
+            const timeoutId = setTimeout(() => {
+                if (isMounted) {
+                    setStatusConexaoNuvem(prev => (prev.rotulo === 'Conectando' ? {
+                        rotulo: 'Demorando...',
+                        cor: 'amber',
+                        informacao: 'Conexão lenta ou instável',
+                        Icone: Loader2
+                    } : prev));
+                }
+            }, 5000);
+
+            try {
+                const inicio = Date.now();
+                const resposta = await api.get('/users/health');
+                const tempoResposta = Date.now() - inicio; // Medição local de latência para garantia
+
+                clearTimeout(timeoutId);
+
+                if (!isMounted) return;
+
+                if (resposta.data && resposta.data.status === 'online') {
+                    const latenciaReal = resposta.data.latency || tempoResposta;
+
+                    if (latenciaReal > 800) {
                         setStatusConexaoNuvem({
                             rotulo: 'Lenta',
                             cor: 'amber',
-                            informacao: `Resposta em: ${tempoResposta}ms (Instável)`,
+                            informacao: `Resposta em: ${latenciaReal}ms (Instável)`,
                             Icone: Zap
                         });
                     } else {
                         setStatusConexaoNuvem({
                             rotulo: 'Conectada',
                             cor: 'sky',
-                            informacao: `Resposta em: ${tempoResposta}ms (Estável)`,
+                            informacao: `Resposta em: ${latenciaReal}ms (Estável)`,
                             Icone: Globe
                         });
                     }
+                } else {
+                    setStatusConexaoNuvem({
+                        rotulo: 'Indisponível',
+                        cor: 'zinc',
+                        informacao: 'Sistema em manutenção',
+                        Icone: Activity
+                    });
                 }
             } catch (_erro) {
-                setStatusConexaoNuvem({
-                    rotulo: 'Desconectada',
-                    cor: 'rose',
-                    informacao: 'Sem comunicação com o servidor',
-                    Icone: WifiOff
-                });
+                clearTimeout(timeoutId);
+                if (isMounted) {
+                    setStatusConexaoNuvem({
+                        rotulo: 'Desconectada',
+                        cor: 'rose',
+                        informacao: 'Sem comunicação com o servidor',
+                        Icone: WifiOff
+                    });
+                }
             }
         };
+
         verificarSaudeSistema();
+        const intervalo = setInterval(verificarSaudeSistema, 30000); // Polling a cada 30s
+
+        return () => {
+            isMounted = false;
+            clearInterval(intervalo);
+        };
     }, []);
 
     return {
@@ -352,6 +406,8 @@ export const useLogicaConfiguracao = () => {
         setFormularioSenha,
         temSenhaDefinida,
         forcaSenha,
+        requisitosSenha,
+        todosRequisitosAtendidos,
         senhaEhValida,
         statusConexaoNuvem,
         salvarAlteracoesGerais,

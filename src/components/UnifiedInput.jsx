@@ -142,10 +142,10 @@ export const UnifiedInput = ({
         ref={containerRef}
         onClick={handleContainerClick}
         className={`relative flex items-center h-11 transition-all duration-300 cursor-pointer
-          ${isGhost ? "bg-transparent border-none" : "bg-[#070708] border rounded-xl"} 
+          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950/30 border rounded-xl"} 
           ${!isGhost && (isActive || isLucro
-            ? "border-sky-500/60 shadow-[0_0_20px_-5px_rgba(14,165,233,0.2)] ring-1 ring-sky-500/10"
-            : "border-zinc-800/60 hover:border-zinc-600")}
+            ? "bg-zinc-950/60 border-sky-500/60 shadow-[0_0_20px_-5px_rgba(14,165,233,0.2)] ring-1 ring-sky-500/10"
+            : "border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-950/60")}
           ${!isSelect ? "cursor-text" : "cursor-pointer"}`}
       >
         {/* Ícone agora responde ao clique do container pai */}

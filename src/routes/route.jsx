@@ -16,7 +16,7 @@ const SSOCallback = lazy(() => import("../pages/auth/SSOCallback"));
 const CalculadoraPreview = lazy(() => import("../pages/calculadoraPreview"));
 const Dashboard = lazy(() => import("../pages/dashboard"));
 const Calculadora = lazy(() => import("../pages/calculadora"));
-const Orcamentos = lazy(() => import("../pages/orcamentos"));
+const Projetos = lazy(() => import("../pages/projetos"));
 const Filamentos = lazy(() => import("../pages/filamentos"));
 const Impressoras = lazy(() => import("../pages/impressoras"));
 const Configuracoes = lazy(() => import("../pages/configuracoes.jsx"));
@@ -58,7 +58,7 @@ export default function AppRoutes() {
                 {/* O ProtectedRoute já possui seu próprio Suspense interno conforme a correção anterior */}
                 <ProtectedRoute path="/dashboard" component={Dashboard} />
                 <ProtectedRoute path="/calculadora" component={Calculadora} />
-                <ProtectedRoute path="/orcamentos" component={Orcamentos} />
+                <ProtectedRoute path="/projetos" component={Projetos} />
                 <ProtectedRoute path="/filamentos" component={Filamentos} />
                 <ProtectedRoute path="/impressoras" component={Impressoras} />
                 <ProtectedRoute path="/configuracoes" component={Configuracoes} />

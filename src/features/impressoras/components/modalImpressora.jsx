@@ -36,16 +36,16 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
             if (dadosIniciais) {
                 setFormulario({
                     id: dadosIniciais.id || null,
-                    nome: dadosIniciais.name || dadosIniciais.nome || "",
-                    marca: dadosIniciais.brand || dadosIniciais.marca || "",
-                    modelo: dadosIniciais.model || dadosIniciais.modelo || "",
-                    potencia: String(dadosIniciais.power ?? dadosIniciais.potencia ?? ""),
-                    preco: String(dadosIniciais.price ?? dadosIniciais.preco ?? ""),
+                    nome: dadosIniciais.nome || "",
+                    marca: dadosIniciais.marca || "",
+                    modelo: dadosIniciais.modelo || "",
+                    potencia: String(dadosIniciais.potencia ?? ""),
+                    preco: String(dadosIniciais.preco ?? ""),
                     status: dadosIniciais.status || "idle",
-                    horas_totais: String(dadosIniciais.totalHours ?? dadosIniciais.horas_totais ?? "0"),
-                    ultima_manutencao_hora: dadosIniciais.lastMaintenanceHour ?? dadosIniciais.ultima_manutencao_hora ?? 0,
-                    intervalo_manutencao: String(dadosIniciais.maintenanceInterval ?? dadosIniciais.intervalo_manutencao ?? "300"),
-                    historico: dadosIniciais.history || dadosIniciais.historico || []
+                    horas_totais: String(dadosIniciais.horas_totais ?? "0"),
+                    ultima_manutencao_hora: dadosIniciais.ultima_manutencao_hora ?? 0,
+                    intervalo_manutencao: String(dadosIniciais.intervalo_manutencao ?? "300"),
+                    historico: dadosIniciais.historico || []
                 });
             } else {
                 setFormulario({
@@ -118,7 +118,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
     const custoDesgaste = useMemo(() => {
         const preco = safeParse(formulario.preco);
-        const vidaUtilEstimada = 5000; 
+        const vidaUtilEstimada = 5000;
         if (preco <= 0) return "0,00";
         return (preco / vidaUtilEstimada).toFixed(2);
     }, [formulario.preco]);
@@ -130,7 +130,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/90 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="absolute inset-0" onClick={handleTentativaFechar} />
-            
+
             <div className={`relative bg-zinc-950 border border-zinc-800/80 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] transition-all duration-300 ${isSaving ? 'opacity-90 grayscale-[0.3]' : ''}`}>
 
                 {/* SIDEBAR DE PRÉVIA */}
@@ -198,7 +198,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                     </header>
 
                     <div className={`p-10 overflow-y-auto custom-scrollbar flex-1 space-y-8 ${isSaving ? 'pointer-events-none' : ''}`}>
-                        
+
                         {/* Seção 01 */}
                         <div className="space-y-6">
                             <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">

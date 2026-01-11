@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { formatCurrency, formatDecimal } from '../utils/numbers';
 import { Calendar, Clock, Package, Printer, BadgeDollarSign, FolderOpen, ArrowRight } from 'lucide-react';
+// ... imports
+
 
 // import { useLocation } from 'wouter'; // Not needed here anymore
 // Removing parseGCode and Upload import
@@ -17,7 +20,7 @@ import ModalFilamento from '../features/filamentos/components/modalFilamento';
 import ModalImpressora from '../features/impressoras/components/modalImpressora';
 import { useFilamentStore } from '../features/filamentos/logic/filaments';
 import { usePrinterStore } from '../features/impressoras/logic/printer';
-import { useProjectsStore } from '../features/orcamentos/logic/projects';
+import { useProjectsStore } from '../features/projetos/logic/projects';
 
 export default function Dashboard() {
     const [larguraSidebar, setLarguraSidebar] = useState(68);
@@ -218,7 +221,7 @@ export default function Dashboard() {
                                     <div className="pt-3 border-t border-zinc-800/50">
                                         <p className="text-xs text-zinc-600 mb-1">Peso Total</p>
                                         <p className="text-xl font-mono font-bold text-emerald-400">
-                                            {filamentFinancials.totalWeight.toFixed(2)} kg
+                                            {formatDecimal(filamentFinancials.totalWeight, 2)} kg
                                         </p>
                                     </div>
                                 </div>
@@ -267,7 +270,7 @@ export default function Dashboard() {
                                 </div>
                                 <div>
                                     <p className="text-2xl font-mono font-black text-amber-400">
-                                        R$ {filamentFinancials.totalValue.toFixed(2)}
+                                        {formatCurrency(filamentFinancials.totalValue)}
                                     </p>
                                     <p className="text-xs text-zinc-600 mt-2">
                                         Valor total em materiais
@@ -325,7 +328,7 @@ export default function Dashboard() {
                                                 <div className="flex items-center gap-4">
                                                     <div className="text-right">
                                                         <span className="block text-xs font-mono font-bold text-emerald-500">
-                                                            R$ {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(proj.resultados?.precoFinal || 0)}
+                                                            {formatCurrency(proj.resultados?.precoFinal || 0)}
                                                         </span>
                                                         <span className="block text-[9px] text-zinc-600 uppercase">Valor Final</span>
                                                     </div>

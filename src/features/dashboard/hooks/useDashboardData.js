@@ -61,7 +61,7 @@ export function useDashboardData() {
                 type: 'printer',
                 severity: p.status === 'error' ? 'critical' : 'warning',
                 title: p.status === 'error' ? 'Impressora com erro' : 'Manutenção necessária',
-                message: `${p.name || p.model} precisa de atenção`,
+                message: `${p.nome || p.modelo} precisa de atenção`,
                 item: p
             }));
     }, [printers]);

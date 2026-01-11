@@ -1,6 +1,6 @@
-import { sendJSON } from './[[path]]';
+import { enviarJSON } from './[[path]]';
 
-export async function handleProjects({ request, db, userId, url, params }) {
+export async function gerenciarProjetos({ request, db, userId, url, params }) {
     const method = request.method;
     const pathArray = params.path || [];
     const idFromPath = pathArray[1];
@@ -14,7 +14,7 @@ export async function handleProjects({ request, db, userId, url, params }) {
                 data: JSON.parse(r.data || "{}"),
                 created_at: r.created_at
             }));
-            return sendJSON(formatted);
+            return enviarJSON(formatted);
         }
 
         if (['POST', 'PUT'].includes(method)) {
@@ -29,7 +29,7 @@ export async function handleProjects({ request, db, userId, url, params }) {
 
             await db.prepare("INSERT INTO projects (id, user_id, label, data) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET label=excluded.label, data=excluded.data")
                 .bind(id, userId, label, dataStr).run();
-            return sendJSON({ id, label, success: true });
+            return enviarJSON({ id, label, success: true });
         }
 
         if (method === 'DELETE') {
@@ -39,9 +39,9 @@ export async function handleProjects({ request, db, userId, url, params }) {
             } else {
                 await db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId).run();
             }
-            return sendJSON({ success: true, message: "Projeto(s) removido(s)." });
+            return enviarJSON({ success: true, message: "Projeto(s) removido(s)." });
         }
     } catch (error) {
-        return sendJSON({ error: "Erro ao gerenciar projetos", details: error.message }, 500);
+        return enviarJSON({ error: "Erro ao gerenciar projetos", details: error.message }, 500);
     }
 }

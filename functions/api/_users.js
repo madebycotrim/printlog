@@ -1,6 +1,6 @@
-import { sendJSON } from './[[path]]';
+import { enviarJSON } from './[[path]]';
 
-export async function handleUsers({ request, db, userId, pathArray, env }) {
+export async function gerenciarUsuarios({ request, db, userId, pathArray, env }) {
     const method = request.method;
 
     if (method === 'GET' && pathArray.includes('backup')) {
@@ -12,7 +12,7 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
                 db.prepare("SELECT * FROM projects WHERE user_id = ?").bind(userId)
             ]);
 
-            return sendJSON({
+            return enviarJSON({
                 success: true,
                 data: {
                     metadata: {
@@ -32,7 +32,7 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
                 }
             });
         } catch (err) {
-            return sendJSON({ error: "Erro na extração", details: err.message }, 500);
+            return enviarJSON({ error: "Erro na extração", details: err.message }, 500);
         }
     }
 
@@ -43,19 +43,19 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
             await db.prepare("SELECT 1").first();
             const latency = Date.now() - start;
 
-            return sendJSON({
+            return enviarJSON({
                 success: true,
                 status: 'online',
                 latency: latency
             });
         } catch (_err) {
-            return sendJSON({ success: false, status: 'offline' }, 500);
+            return enviarJSON({ success: false, status: 'offline' }, 500);
         }
     }
 
     if (method === 'DELETE') {
         try {
-            // Protocolo de Expurgo (Clerk + D1)
+            // Protocolo de expurgo (Clerk + D1)
             const clerkRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${env.CLERK_SECRET_KEY}` }
@@ -70,11 +70,11 @@ export async function handleUsers({ request, db, userId, pathArray, env }) {
                 db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId)
             ]);
 
-            return sendJSON({ success: true, message: "Unidade de dados purgada." });
+            return enviarJSON({ success: true, message: "Unidade de dados purgada." });
         } catch (err) {
-            return sendJSON({ error: "Erro no expurgo", details: err.message }, 500);
+            return enviarJSON({ error: "Erro no expurgo", details: err.message }, 500);
         }
     }
 
-    return sendJSON({ error: "Método não permitido" }, 405);
+    return enviarJSON({ error: "Método não permitido" }, 405);
 }

@@ -1,18 +1,18 @@
-import { sendJSON, toNum, corsHeaders } from './[[path]]';
+import { enviarJSON, paraNumero, corsHeaders } from './[[path]]';
 
-export async function handlePrinters({ request, db, userId, pathArray, url }) {
+export async function gerenciarImpressoras({ request, db, userId, pathArray, url }) {
     const method = request.method;
     const idFromPath = pathArray[1];
 
     try {
         if (method === 'GET') {
             const { results } = await db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(userId).all();
-            return sendJSON(results || []);
+            return enviarJSON(results || []);
         }
 
         if (method === 'DELETE') {
             const id = idFromPath || url.searchParams.get('id');
-            if (!id) return sendJSON({ error: "ID da impressora necessário." }, 400);
+            if (!id) return enviarJSON({ error: "ID da impressora necessário." }, 400);
 
             await db.prepare("DELETE FROM printers WHERE id = ? AND user_id = ?").bind(id, userId).run();
             return new Response(null, { status: 204, headers: corsHeaders });
@@ -39,18 +39,18 @@ export async function handlePrinters({ request, db, userId, pathArray, url }) {
                     p.marca || p.brand || "",
                     p.modelo || p.model || "",
                     p.status || 'idle',
-                    toNum(p.potencia || p.power),
-                    toNum(p.preco || p.price),
-                    toNum(p.rendimento_total || p.yieldTotal),
-                    toNum(p.horas_totais || p.totalHours),
-                    toNum(p.ultima_manutencao_hora || p.lastMaintenanceHour),
-                    toNum(p.intervalo_manutencao || p.maintenanceInterval, 300),
+                    paraNumero(p.potencia || p.power),
+                    paraNumero(p.preco || p.price),
+                    paraNumero(p.rendimento_total || p.yieldTotal),
+                    paraNumero(p.horas_totais || p.totalHours),
+                    paraNumero(p.ultima_manutencao_hora || p.lastMaintenanceHour),
+                    paraNumero(p.intervalo_manutencao || p.maintenanceInterval, 300),
                     historico
                 ).run();
 
-            return sendJSON({ id, ...p, success: true });
+            return enviarJSON({ id, ...p, success: true });
         }
     } catch (error) {
-        return sendJSON({ error: "Erro ao processar impressoras", details: error.message }, 500);
+        return enviarJSON({ error: "Erro ao processar impressoras", details: error.message }, 500);
     }
 }

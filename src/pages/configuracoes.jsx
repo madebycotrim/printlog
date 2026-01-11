@@ -4,15 +4,16 @@ import {
     KeyRound, Fingerprint, ShieldAlert, FileText,
     Table, Trash2, X, Loader2, Camera, Mail,
     Download, Box, Radiation,
-    Wrench, HardDrive, Info,
+    Wrench, HardDrive, Info, Shield, Check,
 } from 'lucide-react';
 
 import { useLogicaConfiguracao } from '../utils/configLogic';
+import Popup from '../components/Popup';
 import BarraLateralPrincipal from "../layouts/mainSidebar";
 import AvisoFlutuante from "../components/Toast";
 
 // --- COMPONENTE DE CARTÃO (ESTILO DASHBOARD) ---
-const CartaoInformativo = ({ titulo, subtitulo, Icone, classeCor = "sky", children, etiqueta }) => {
+const CartaoInformativo = ({ titulo, subtitulo, Icone, classeCor = "sky", children, etiqueta, className = "" }) => {
     const temas = {
         sky: "text-sky-400 bg-sky-500/10",
         emerald: "text-emerald-400 bg-emerald-500/10",
@@ -22,31 +23,33 @@ const CartaoInformativo = ({ titulo, subtitulo, Icone, classeCor = "sky", childr
     const temaEscolhido = temas[classeCor] || temas.sky;
 
     return (
-        <div className="bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-6 relative overflow-hidden hover-lift transition-all duration-300 group">
+        <div className={`bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-4 hover-lift group ${className}`}>
             {/* Header do Card */}
-            <div className="flex items-start justify-between mb-6">
-                <div className="flex flex-col gap-1">
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 group-hover:text-zinc-400 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
                         {titulo}
-                    </h2>
-                    <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">
-                        {subtitulo}
-                    </p>
+                    </h3>
+                    {subtitulo && (
+                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mt-0.5">
+                            {subtitulo}
+                        </p>
+                    )}
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-3">
                     {etiqueta && (
                         <span className="text-[9px] font-black px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-500 uppercase tracking-widest leading-none">
                             {etiqueta}
                         </span>
                     )}
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${temaEscolhido} group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${temaEscolhido} group-hover:scale-110 transition-transform`}>
                         <Icone size={20} strokeWidth={2} />
                     </div>
                 </div>
             </div>
             {/* Content */}
-            <div className="pt-2 border-t border-zinc-800/50">
+            <div className="h-full">
                 {children}
             </div>
         </div>
@@ -55,6 +58,8 @@ const CartaoInformativo = ({ titulo, subtitulo, Icone, classeCor = "sky", childr
 
 export default function PaginaConfiguracao() {
     const logica = useLogicaConfiguracao();
+    const [exibirModalSuporte, setExibirModalSuporte] = React.useState(false);
+    const [exibirModalExclusao, setExibirModalExclusao] = React.useState(false);
 
     if (!logica.estaCarregado) return (
         <div className="h-screen w-full bg-[#030303] flex flex-col items-center justify-center gap-4">
@@ -84,7 +89,8 @@ export default function PaginaConfiguracao() {
 
             {logica.aviso.exibir && (
                 <AvisoFlutuante
-                    {...logica.aviso}
+                    message={logica.aviso.mensagem}
+                    type={logica.aviso.tipo}
                     onClose={() => logica.setAviso({ ...logica.aviso, exibir: false })}
                 />
             )}
@@ -95,7 +101,7 @@ export default function PaginaConfiguracao() {
 
             <main className="flex-1 flex flex-col relative overflow-y-auto custom-scrollbar" style={{ marginLeft: `${logica.larguraBarraLateral}px` }}>
 
-                {/* FUNDO DECORATIVO - igual ao dashboard */}
+                {/* Fundo Decorativo */}
                 <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none">
                     <div className="absolute inset-0 opacity-[0.08]" style={{
                         backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
@@ -108,8 +114,8 @@ export default function PaginaConfiguracao() {
                     </div>
                 </div>
 
-                {/* CABEÇALHO DA PÁGINA - estilo dashboard */}
-                <div className="p-8 xl:p-12 relative z-10 max-w-[1600px] mx-auto w-full">
+                {/* Conteúdo Principal */}
+                <div className="relative z-10 p-8 xl:p-12 max-w-[1600px] mx-auto w-full">
                     <div className="mb-12 animate-fade-in-up">
                         <div className="flex items-start justify-between flex-wrap gap-4">
                             <div>
@@ -127,9 +133,9 @@ export default function PaginaConfiguracao() {
                                 className={`
                                     h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] 
                                     flex items-center gap-3 transition-all duration-300
-                                    hover:scale-105 active:scale-95
+                                    active:scale-[0.98]
                                     ${logica.temAlteracao
-                                        ? 'bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-500/20'
+                                        ? 'bg-sky-500/10 hover:bg-sky-500/20 text-sky-500 shadow-lg shadow-sky-500/10 hover:shadow-sky-500/20 border border-sky-500/20'
                                         : 'bg-zinc-900/50 text-zinc-600 border border-zinc-800 opacity-50 cursor-not-allowed'
                                     }
                                 `}
@@ -140,10 +146,10 @@ export default function PaginaConfiguracao() {
                         </div>
                     </div>
 
-                    <div className="space-y-8">
-
-                        {/* 1. CARTÕES DE RESUMO RÁPIDO */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                    {/* Grid de Widgets */}
+                    <div className="space-y-4">
+                        {/* Linha 1: Resumo Rápido */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                             {[
                                 {
                                     Icone: Fingerprint,
@@ -167,35 +173,39 @@ export default function PaginaConfiguracao() {
                                     info: logica.statusConexaoNuvem.informacao,
                                 },
                             ].map((item, i) => (
-                                <div key={i} className="bg-zinc-950/40 border border-zinc-800/50 rounded-[2rem] p-6 flex items-center gap-5 hover-lift">
-                                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center bg-${item.color}-500/10 text-${item.color}-400 border border-${item.color}-500/30`}>
-                                        <item.Icone size={24} className={item.value === 'Conectando' ? 'animate-spin' : ''} />
+                                <div key={i} className="bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-6 hover-lift group">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                                            {item.label}
+                                        </h3>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${item.color}-500/10 text-${item.color}-400 group-hover:scale-110 transition-transform duration-300`}>
+                                            <item.Icone size={20} strokeWidth={2} className={item.value === 'Conectando' ? 'animate-spin' : ''} />
+                                        </div>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-zinc-600 uppercase tracking-wider mb-1">{item.label}</p>
-                                        <h3 className="text-lg font-black text-white tracking-tight uppercase">{item.value}</h3>
-                                        <p className="text-xs text-zinc-500 font-medium">{item.info}</p>
+                                        <p className={`text-2xl font-mono font-black text-${item.color}-400 mb-1`}>{item.value}</p>
+                                        <p className="text-xs text-zinc-600">{item.info}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        {/* 2. GRADE DE CONFIGURAÇÕES PRINCIPAIS */}
-                        <div className="grid grid-cols-12 gap-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        {/* Linha 2: Configurações Principais */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
 
-                            {/* SEÇÃO DE PERFIL DO MAKER */}
-                            <div className="col-span-12 lg:col-span-4">
-                                <CartaoInformativo titulo="Minha Foto" subtitulo="Imagem do Perfil" Icone={User} classeCor="sky" etiqueta="Usuário">
-                                    <div className="flex flex-col items-center mb-10">
+                            {/* SEÇÃO DE PERFIL DO MAKER (Esquerda, ocupando 2 linhas) */}
+                            <div className="lg:row-span-2 h-full">
+                                <CartaoInformativo titulo="Minha Foto" subtitulo="Imagem do Perfil" Icone={User} classeCor="sky" etiqueta="Usuário" className="h-full">
+                                    <div className="flex flex-col items-center mb-8">
                                         <div className="relative">
-                                            {/* Efeito visual circular */}
-                                            <div className="absolute -inset-2 border border-sky-500/20 rounded-[2.5rem] animate-[spin_10s_linear_infinite]" />
-                                            <div className="w-36 h-36 rounded-[2.2rem] overflow-hidden border-2 border-zinc-800 bg-black p-1 transition-all shadow-2xl relative z-10">
+
+
+                                            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-black p-1 transition-all shadow-2xl relative z-10">
                                                 {logica.usuario?.imageUrl ? (
-                                                    <img src={logica.usuario.imageUrl} className="w-full h-full object-cover rounded-[1.8rem]" alt="Sua Foto" />
+                                                    <img src={logica.usuario.imageUrl} className="w-full h-full object-cover rounded-xl" alt="Sua Foto" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-zinc-900 rounded-[1.8rem]">
-                                                        <User size={48} className="text-zinc-700" />
+                                                    <div className="w-full h-full flex items-center justify-center bg-zinc-900 rounded-xl">
+                                                        <User size={40} className="text-zinc-700" />
                                                     </div>
                                                 )}
                                             </div>
@@ -203,11 +213,11 @@ export default function PaginaConfiguracao() {
                                                 onClick={() => logica.referenciaEntradaArquivo.current?.click()}
                                                 className="absolute -bottom-2 -right-2 z-20 p-3 bg-sky-500 text-white rounded-2xl shadow-xl hover:bg-sky-400 transition-all duration-300 border-4 border-zinc-950 hover:scale-110 active:scale-95"
                                             >
-                                                <Camera size={18} />
+                                                <Camera size={16} />
                                             </button>
                                         </div>
-                                        <div className="mt-8 text-center">
-                                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">{logica.primeiroNome || "Membro da Oficina"}</h2>
+                                        <div className="mt-6 text-center">
+                                            <h2 className="text-xl font-black text-white uppercase tracking-tight">{logica.primeiroNome || "Membro da Oficina"}</h2>
                                             <div className="flex items-center gap-2 justify-center mt-1">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
                                                 <p className="text-[9px] text-zinc-500 font-black uppercase tracking-wider">Acesso Ativo</p>
@@ -223,7 +233,7 @@ export default function PaginaConfiguracao() {
                                             <input
                                                 value={logica.primeiroNome}
                                                 onChange={e => logica.setPrimeiroNome(e.target.value)}
-                                                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-4 px-5 text-xs font-bold text-white outline-none focus:border-sky-500/50 transition-all uppercase tracking-wide"
+                                                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-bold text-white outline-none focus:border-sky-500/50 transition-all uppercase tracking-wide"
                                             />
                                         </div>
                                         <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-xl flex items-center justify-between">
@@ -238,94 +248,77 @@ export default function PaginaConfiguracao() {
                             </div>
 
                             {/* SEÇÃO DE SEGURANÇA E DADOS */}
-                            <div className="col-span-12 lg:col-span-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                                    {/* CONTROLE DE SENHA */}
-                                    <CartaoInformativo titulo="Senha de Acesso" subtitulo="Segurança da Conta" Icone={Lock} classeCor="emerald" etiqueta="Privado">
-                                        <div className="space-y-4 mb-8">
-                                            <div className="text-xs text-zinc-500 leading-relaxed font-medium bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10">
-                                                {ehLoginSocial
-                                                    ? "Seu acesso é feito por conta externa (Google). Para maior segurança, você também pode criar uma senha interna."
-                                                    : "Sua conta usa uma senha local. Lembre-se de trocá-la regularmente para manter seus dados seguros."}
-                                            </div>
+
+                            {/* CONTROLE DE SENHA */}
+                            <CartaoInformativo titulo="Senha de Acesso" subtitulo="Segurança da Conta" Icone={Lock} classeCor="emerald" etiqueta="Privado">
+                                <div className="space-y-6 mb-6">
+                                    {temSenhaDefinida && (
+                                        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                            <Shield className="text-emerald-500" size={16} />
+                                            <span className="text-xs font-bold text-emerald-400">Senha configurada e protegida</span>
                                         </div>
-                                        <button
-                                            onClick={() => logica.setExibirJanelaSenha(true)}
-                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/20"
-                                        >
-                                            <KeyRound size={16} /> {temSenhaDefinida ? "Trocar Senha Atual" : "Criar Nova Senha"}
-                                        </button>
-                                    </CartaoInformativo>
+                                    )}
 
-                                    {/* EXPORTAÇÃO DE RELATÓRIOS */}
-                                    <CartaoInformativo titulo="Baixar Dados" subtitulo="Relatórios e Planilhas" Icone={HardDrive} classeCor="sky" etiqueta="Backup">
-                                        <p className="text-xs text-zinc-500 mb-6 leading-relaxed font-medium">
-                                            Baixe os dados da sua oficina para abrir em outros programas ou imprimir relatórios físicos do seu estoque.
-                                        </p>
-
-                                        <div className="grid grid-cols-1 gap-3">
-                                            <button
-                                                onClick={() => logica.exportarRelatorio('csv')}
-                                                className="group w-full p-4 bg-zinc-900/50 border border-zinc-800/50 rounded-xl flex items-center justify-between hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all duration-300"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <Table size={18} className="text-emerald-500" />
-                                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wide">Planilha Excel (CSV)</span>
-                                                </div>
-                                                <Download size={14} className="text-zinc-600 group-hover:text-emerald-500 transition-colors" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => logica.exportarRelatorio('pdf')}
-                                                className="group w-full p-4 bg-zinc-900/50 border border-zinc-800/50 rounded-xl flex items-center justify-between hover:border-sky-500/40 hover:bg-sky-500/5 transition-all duration-300"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <FileText size={18} className="text-sky-500" />
-                                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wide">Documento Técnico (PDF)</span>
-                                                </div>
-                                                <Download size={14} className="text-zinc-600 group-hover:text-sky-500 transition-colors" />
-                                            </button>
-                                        </div>
-                                    </CartaoInformativo>
                                 </div>
+                                <button
+                                    onClick={() => logica.setExibirJanelaSenha(true)}
+                                    className="w-full py-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-[0.98]"
+                                >
+                                    <KeyRound size={16} /> {temSenhaDefinida ? "Trocar Senha Atual" : "Criar Nova Senha"}
+                                </button>
+                            </CartaoInformativo>
 
-                                {/* ZONA DE EXCLUSÃO (CUIDADO) */}
-                                <div className="bg-rose-500/5 border border-rose-500/20 rounded-[2rem] p-8 relative overflow-hidden hover-lift">
-                                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(244,63,94,0.03)_20px,rgba(244,63,94,0.03)_40px)] pointer-events-none" />
+                            {/* EXPORTAÇÃO DE RELATÓRIOS */}
+                            <CartaoInformativo titulo="Baixar Dados" subtitulo="Relatórios e Planilhas" Icone={HardDrive} classeCor="sky" etiqueta="Backup">
 
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
-                                        <div className="flex items-start gap-5">
-                                            <div className="p-4 bg-rose-500 text-white rounded-2xl shadow-lg shadow-rose-500/20">
-                                                <Trash2 size={28} />
-                                            </div>
-                                            <div className="max-w-md">
-                                                <h3 className="text-sm font-black text-white uppercase tracking-wide mb-2 flex items-center gap-3">
-                                                    Excluir Minha Conta <span className="text-[8px] bg-rose-600 text-white px-2 py-1 rounded-lg animate-pulse">Irreversível</span>
-                                                </h3>
-                                                <p className="text-xs text-zinc-500 leading-relaxed font-medium">
-                                                    Ao excluir sua conta, você perderá permanentemente todos os seus filamentos, impressoras e projetos cadastrados. Não será possível recuperar os dados.
-                                                </p>
-                                            </div>
+
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => logica.exportarRelatorio('csv')}
+                                        className="group w-full p-4 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-[0.98]"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Table size={18} className="text-emerald-500 transition-colors" />
+                                            <span className="text-xs font-black text-emerald-500 uppercase tracking-wide transition-colors">Planilha Excel (CSV)</span>
                                         </div>
+                                        <Download size={14} className="text-emerald-500/50 transition-colors" />
+                                    </button>
 
-                                        <button
-                                            onClick={logica.excluirContaPermanente}
-                                            className="h-12 px-8 bg-rose-600/10 hover:bg-rose-600 border border-rose-500/30 text-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-3 shadow-lg"
-                                        >
-                                            <ShieldAlert size={16} /> Confirmar Exclusão
-                                        </button>
-                                    </div>
-                                    <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
-                                        <Radiation size={150} />
-                                    </div>
+                                    <button
+                                        onClick={() => logica.exportarRelatorio('pdf')}
+                                        className="group w-full p-4 bg-sky-500/5 hover:bg-sky-500/10 border border-sky-500/20 rounded-xl flex items-center justify-between transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/10 active:scale-[0.98]"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <FileText size={18} className="text-sky-500 transition-colors" />
+                                            <span className="text-xs font-black text-sky-500 uppercase tracking-wide transition-colors">Documento Técnico (PDF)</span>
+                                        </div>
+                                        <Download size={14} className="text-sky-500/50 transition-colors" />
+                                    </button>
                                 </div>
+                            </CartaoInformativo>
+
+                            {/* ZONA DE EXCLUSÃO (Rodapé direito - Ocupa 2 colunas) */}
+                            <div className="lg:col-span-2">
+                                <CartaoInformativo titulo="Excluir Conta" subtitulo="Zona de Perigo" Icone={Trash2} classeCor="rose" etiqueta="Irreversível">
+                                    <p className="text-xs text-zinc-500 mb-4 leading-relaxed font-medium">
+                                        Perda irreversível de todos os dados.
+                                    </p>
+
+                                    <button
+                                        onClick={() => setExibirModalExclusao(true)}
+                                        className="w-full py-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-rose-500/10 hover:shadow-rose-500/20 active:scale-[0.98]"
+                                    >
+                                        <ShieldAlert size={16} /> Excluir Minha Conta
+                                    </button>
+                                </CartaoInformativo>
                             </div>
                         </div>
                     </div>
 
-                    {/* Rodapé de Ajuda "Super Widget" Style (Igual Central Maker) */}
-                    <div className="mt-12 p-6 rounded-2xl bg-gradient-to-br from-zinc-900/50 to-zinc-900/20 border border-zinc-800/50 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+
+                    {/* Footer de Suporte */}
+                    <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-zinc-900/50 to-zinc-900/20 border border-zinc-800/50 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-zinc-800/50 flex items-center justify-center text-zinc-400">
                                 <Info size={20} />
@@ -337,15 +330,15 @@ export default function PaginaConfiguracao() {
                         </div>
                         <div className="flex gap-3">
                             <button
-                                onClick={() => window.open('https://wa.me/5511999999999', '_blank')}
-                                className="px-5 py-2.5 bg-zinc-900 border border-zinc-800 hover:border-sky-500/50 hover:bg-sky-500/10 rounded-lg text-[10px] font-black text-zinc-400 hover:text-sky-400 uppercase tracking-widest transition-all flex items-center gap-2 group"
+                                onClick={() => setExibirModalSuporte(true)}
+                                className="px-5 py-2.5 bg-zinc-900 border border-zinc-800 hover:border-sky-500/50 hover:bg-sky-500/10 rounded-lg text-[10px] font-black text-zinc-400 hover:text-sky-500 uppercase tracking-widest transition-all flex items-center gap-2 group active:scale-[0.98]"
                             >
                                 <Wrench size={12} className="text-zinc-600 group-hover:text-sky-500 transition-colors" />
                                 Abrir Chamado
                             </button>
                             <button
                                 onClick={() => { navigator.clipboard.writeText("suporte@printlog.com.br"); logica.setAviso({ exibir: true, tipo: 'sucesso', mensagem: 'E-mail copiado!' }); }}
-                                className="px-5 py-2.5 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-lg text-[10px] font-black text-zinc-400 uppercase tracking-widest transition-all flex items-center gap-2"
+                                className="px-5 py-2.5 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-lg text-[10px] font-black text-zinc-400 uppercase tracking-widest transition-all flex items-center gap-2 active:scale-[0.98]"
                             >
                                 <Mail size={12} className="text-zinc-600" />
                                 Copiar Email
@@ -353,63 +346,204 @@ export default function PaginaConfiguracao() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </main >
 
             {/* JANELA DE SENHA (MODAL) */}
-            {logica.exibirJanelaSenha && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="absolute inset-0" onClick={() => logica.setExibirJanelaSenha(false)} />
-                    <div className="relative w-full max-w-md bg-zinc-950 border border-white/10 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]">
-                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-zinc-900/50">
-                            <h2 className="text-[10px] font-black uppercase text-white tracking-[0.2em] flex items-center gap-2">
-                                <KeyRound size={14} className="text-cyan-500" /> Configurar Nova Senha
-                            </h2>
-                            <button onClick={() => logica.setExibirJanelaSenha(false)} className="text-zinc-600 hover:text-white transition-colors bg-white/5 p-1 rounded-lg"><X size={18} /></button>
+            < Popup
+                isOpen={logica.exibirJanelaSenha}
+                onClose={() => logica.setExibirJanelaSenha(false)
+                }
+                title="Configurar Senha"
+                subtitle="Segurança"
+                icon={KeyRound}
+                maxWidth="max-w-md"
+                isLoading={logica.estaSalvando}
+                footer={
+                    < button
+                        onClick={logica.atualizarSenha}
+                        disabled={logica.estaSalvando || !logica.todosRequisitosAtendidos}
+                        className={`w-full py-4 rounded-xl font-black uppercase text-xs tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${logica.todosRequisitosAtendidos
+                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
+                            : 'bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800'
+                            }`}
+                    >
+                        {
+                            logica.estaSalvando ? (
+                                <Loader2 className="animate-spin" size={18} />
+                            ) : logica.todosRequisitosAtendidos ? (
+                                <>
+                                    <Shield size={16} />
+                                    Confirmar Mudança
+                                </>
+                            ) : (
+                                'Complete os requisitos acima'
+                            )
+                        }
+                    </button >
+                }
+            >
+                <div className="space-y-4">
+                    {temSenhaDefinida && (
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Senha Atual</label>
+                            <input
+                                type="password"
+                                value={logica.formularioSenha.senhaAtual}
+                                onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, senhaAtual: e.target.value })}
+                                className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-emerald-500 transition-all"
+                            />
                         </div>
-                        <div className="p-8 space-y-6">
-                            <div className="space-y-4">
-                                {temSenhaDefinida && (
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Senha Atual</label>
-                                        <input
-                                            type="password"
-                                            value={logica.formularioSenha.senhaAtual}
-                                            onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, senhaAtual: e.target.value })}
-                                            className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-cyan-500 transition-all uppercase tracking-widest"
-                                        />
+                    )}
+                    <div className="space-y-2">
+                        <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Nova Senha</label>
+                        <input
+                            type="password"
+                            value={logica.formularioSenha.novaSenha}
+                            onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, novaSenha: e.target.value })}
+                            className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-emerald-500 transition-all"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Repetir Nova Senha</label>
+                        <input
+                            type="password"
+                            value={logica.formularioSenha.confirmarSenha}
+                            onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, confirmarSenha: e.target.value })}
+                            className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-emerald-500 transition-all"
+                        />
+                    </div>
+
+                    {/* Lista de Requisitos */}
+                    <div className="space-y-3 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                        <h4 className="text-xs font-black text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                            <ShieldCheck size={14} className="text-emerald-500" />
+                            Requisitos de Segurança
+                        </h4>
+                        <div className="space-y-2">
+                            {[
+                                { test: logica.requisitosSenha.tamanhoMinimo, label: "Mínimo de 8 caracteres" },
+                                { test: logica.requisitosSenha.temMaiuscula, label: "Pelo menos 1 letra maiúscula (A-Z)" },
+                                { test: logica.requisitosSenha.temMinuscula, label: "Pelo menos 1 letra minúscula (a-z)" },
+                                { test: logica.requisitosSenha.temNumero, label: "Pelo menos 1 número (0-9)" },
+                                { test: logica.requisitosSenha.temEspecial, label: "Pelo menos 1 caractere especial (!@#$...)" },
+                                { test: logica.requisitosSenha.senhasConferem, label: "As senhas conferem" },
+                            ].map((req, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-300 ${req.test ? 'bg-emerald-500 text-white scale-100' : 'bg-zinc-800 text-zinc-600 scale-90'
+                                        }`}>
+                                        {req.test ? <Check size={12} strokeWidth={3} /> : <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />}
                                     </div>
-                                )}
-                                <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Nova Senha (Mínimo 8 caracteres)</label>
-                                    <input
-                                        type="password"
-                                        value={logica.formularioSenha.novaSenha}
-                                        onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, novaSenha: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-cyan-500 transition-all uppercase tracking-widest"
-                                    />
+                                    <span className={`text-xs transition-colors duration-300 ${req.test ? 'text-zinc-300 font-bold' : 'text-zinc-600'}`}>
+                                        {req.label}
+                                    </span>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Repetir Nova Senha</label>
-                                    <input
-                                        type="password"
-                                        value={logica.formularioSenha.confirmarSenha}
-                                        onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, confirmarSenha: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-cyan-500 transition-all uppercase tracking-widest"
-                                    />
-                                </div>
-                            </div>
-                            <button
-                                onClick={logica.atualizarSenha}
-                                disabled={logica.estaSalvando}
-                                className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-black rounded-xl font-black uppercase text-[10px] tracking-[0.3em] active:scale-95 shadow-[0_0_30px_rgba(8,145,178,0.2)] transition-all disabled:opacity-20"
-                            >
-                                {logica.estaSalvando ? <Loader2 className="animate-spin mx-auto" size={18} /> : "Confirmar Mudança"}
-                            </button>
+                            ))}
                         </div>
                     </div>
+
+                    {/* Barra de Força da Senha */}
+                    {logica.formularioSenha.novaSenha.length > 0 && (
+                        <div className="space-y-2 p-4 bg-zinc-900/30 rounded-xl border border-zinc-800/50">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-zinc-500 uppercase tracking-wider">Força da senha</span>
+                                <span className={`text-xs font-black text-${logica.forcaSenha.cor}-400 uppercase`}>
+                                    {logica.forcaSenha.rotulo}
+                                </span>
+                            </div>
+                            <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full bg-${logica.forcaSenha.cor}-500 transition-all duration-500 ease-out`}
+                                    style={{ width: `${logica.forcaSenha.pontuacao}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )
-            }
+            </Popup >
+
+            {/* MODAL DE SUPORTE (GOOGLE FORMS) */}
+            < Popup
+                isOpen={exibirModalSuporte}
+                onClose={() => setExibirModalSuporte(false)}
+                title="Abrir Chamado"
+                subtitle="Suporte Técnico"
+                icon={Wrench}
+                maxWidth="max-w-2xl"
+            >
+                <div className="w-full h-[70vh] bg-white rounded-xl overflow-hidden">
+                    <iframe
+                        src="https://docs.google.com/forms/d/e/1FAIpQLSet7HVM3asx7qDukgZv0pFhyQRaQGl-ArM6jLif8nceI223Ow/viewform?embedded=true"
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        marginHeight="0"
+                        marginWidth="0"
+                    >
+                        Carregando formulário...
+                    </iframe>
+                </div>
+            </Popup >
+
+            {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+            < Popup
+                isOpen={exibirModalExclusao}
+                onClose={() => setExibirModalExclusao(false)}
+                title="Excluir Conta"
+                subtitle="Ação Irreversível"
+                icon={ShieldAlert}
+                maxWidth="max-w-md"
+                footer={
+                    < div className="flex gap-3" >
+                        <button
+                            onClick={() => setExibirModalExclusao(false)}
+                            className="flex-1 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-xl font-black uppercase text-xs tracking-wider transition-all"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={() => {
+                                setExibirModalExclusao(false);
+                                logica.excluirContaPermanente();
+                            }}
+                            className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-black uppercase text-xs tracking-wider transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
+                        >
+                            <Trash2 size={14} />
+                            Confirmar Exclusão
+                        </button>
+                    </div >
+                }
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-zinc-300 leading-relaxed">
+                        Você está prestes a <strong className="text-rose-400 font-black">excluir permanentemente</strong> sua conta e todos os dados associados:
+                    </p>
+
+                    <ul className="space-y-2 pl-4">
+                        <li className="text-xs text-zinc-400 flex items-start gap-2">
+                            <span className="text-rose-500 mt-0.5">•</span>
+                            <span>Todos os filamentos cadastrados</span>
+                        </li>
+                        <li className="text-xs text-zinc-400 flex items-start gap-2">
+                            <span className="text-rose-500 mt-0.5">•</span>
+                            <span>Todas as impressoras configuradas</span>
+                        </li>
+                        <li className="text-xs text-zinc-400 flex items-start gap-2">
+                            <span className="text-rose-500 mt-0.5">•</span>
+                            <span>Histórico completo de projetos</span>
+                        </li>
+                        <li className="text-xs text-zinc-400 flex items-start gap-2">
+                            <span className="text-rose-500 mt-0.5">•</span>
+                            <span>Configurações e preferências</span>
+                        </li>
+                    </ul>
+
+                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl">
+                        <p className="text-xs text-rose-300 font-bold text-center">
+                            ⚠️ Esta ação não pode ser desfeita. Os dados não poderão ser recuperados.
+                        </p>
+                    </div>
+                </div>
+            </Popup >
         </div >
     );
 }

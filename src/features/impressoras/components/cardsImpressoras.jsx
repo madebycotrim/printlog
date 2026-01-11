@@ -54,10 +54,10 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
                 stats: { hTotais: 0, health: 100, rendimento: 0, ehCritico: false }
             };
         }
-        const hTotais = Number(printer?.totalHours || printer?.horas_totais || 0);
-        const hMaint = Number(printer?.lastMaintenanceHour || printer?.ultima_manutencao_hora || 0);
-        const interval = Number(printer?.maintenanceInterval || printer?.intervalo_manutencao || 300);
-        const rendimento = Number(printer?.yieldTotal || printer?.rendimento_total || 0);
+        const hTotais = Number(printer?.horas_totais || 0);
+        const hMaint = Number(printer?.ultima_manutencao_hora || 0);
+        const interval = Number(printer?.intervalo_manutencao || 300);
+        const rendimento = Number(printer?.rendimento_total || 0);
 
         const health = Math.max(0, Math.min(100, ((interval - (hTotais - hMaint)) / interval) * 100));
 
@@ -101,7 +101,7 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
 
                     <div className="rotate-180 [writing-mode:vertical-lr] flex items-center opacity-40 group-hover:opacity-100 transition-opacity">
                         <span className="text-[9px] font-black uppercase tracking-[0.4em] whitespace-nowrap text-zinc-500">
-                            {printer.brand || printer.marca || 'FABRICANTE'}
+                            {printer.marca || 'FABRICANTE'}
                         </span>
                     </div>
                 </div>
@@ -112,7 +112,7 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
                     <div className="flex justify-between items-start gap-2">
                         <div className="min-w-0 flex-1">
                             <h3 className="text-lg font-black uppercase tracking-tight truncate leading-none text-zinc-100 group-hover:text-emerald-400 transition-colors">
-                                {printer.name || printer.nome || "Sem Nome"}
+                                {printer.nome || "Sem Nome"}
                             </h3>
                             <p className="text-[10px] font-mono font-bold text-zinc-600 mt-2.5 uppercase tracking-widest">
                                 SÉRIE: <span className="text-zinc-500">#{String(printer.id || '').slice(-6).toUpperCase()}</span>
@@ -146,7 +146,7 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
                         <div className="flex flex-col">
                             <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-1">Modelo</span>
                             <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider truncate max-w-[120px]">
-                                {printer.model || printer.modelo || 'Padrão'}
+                                {printer.modelo || 'Padrão'}
                             </span>
                         </div>
                         <div className="flex flex-col items-end">

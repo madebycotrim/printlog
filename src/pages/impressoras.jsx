@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { Printer, ChevronDown, Scan, AlertTriangle, Trash2, Search, Plus, X } from "lucide-react";
+import { Printer, ChevronDown, X, PackageSearch, Database, Plus, Search, LayoutGrid, List, AlertTriangle, Trash2, Scan } from "lucide-react";
+import { formatDecimal } from "../utils/numbers";
 
 // --- LAYOUT E INTERFACE GLOBAL ---
 import MainSidebar from "../layouts/mainSidebar";
@@ -21,7 +22,7 @@ const SessaoImpressoras = ({ titulo, items, acoes }) => {
     const [estaAberto, setEstaAberto] = useState(true);
 
     const totalHorasGrupo = useMemo(() =>
-        items.reduce((acumulador, imp) => acumulador + Number(imp.horas_totais || imp.totalHours || 0), 0),
+        items.reduce((acumulador, imp) => acumulador + Number(imp.horas_totais || 0), 0),
         [items]);
 
     return (
@@ -54,7 +55,7 @@ const SessaoImpressoras = ({ titulo, items, acoes }) => {
                     <div className="flex flex-col items-center">
                         <span className="text-[9px] font-bold text-zinc-600 uppercase mb-1 tracking-widest">Horas Acumuladas</span>
                         <span className="text-sm font-bold font-mono text-emerald-400 leading-none">
-                            {totalHorasGrupo.toLocaleString('pt-BR')}<span className="text-[10px] ml-1 font-sans text-emerald-600/70">h</span>
+                            {formatDecimal(totalHorasGrupo, 0)}<span className="text-[10px] ml-1 font-sans text-emerald-600/70">h</span>
                         </span>
                     </div>
                     <div className="w-px h-6 bg-zinc-800/60" />
@@ -112,24 +113,24 @@ export default function ImpressorasPage() {
         const listaOriginal = Array.isArray(printers) ? printers : [];
 
         const frotaFiltrada = listaOriginal.filter(p =>
-            (p.name || p.nome || "").toLowerCase().includes(termo) ||
-            (p.model || p.modelo || "").toLowerCase().includes(termo) ||
-            (p.brand || p.marca || "").toLowerCase().includes(termo)
+            (p.nome || "").toLowerCase().includes(termo) ||
+            (p.modelo || "").toLowerCase().includes(termo) ||
+            (p.marca || "").toLowerCase().includes(termo)
         );
 
         const agrupamento = frotaFiltrada.reduce((acc, p) => {
-            const horas = Number(p.totalHours || p.horas_totais || 0);
-            const historico = Array.isArray(p.history) ? p.history : [];
+            const horas = Number(p.horas_totais || 0);
+            const historico = Array.isArray(p.historico) ? p.historico : [];
             totalPecas += historico.length;
-            totalFilamentoGrama += historico.reduce((soma, h) => soma + (Number(h.filamentUsed || h.peso_usado || 0)), 0);
+            totalFilamentoGrama += historico.reduce((soma, h) => soma + (Number(h.peso_usado || 0)), 0);
 
-            const ultimaMaint = Number(p.lastMaintenanceHour || p.ultima_manutencao_hora || 0);
-            const intervalo = Math.max(1, Number(p.maintenanceInterval || p.intervalo_manutencao || 300));
+            const ultimaMaint = Number(p.ultima_manutencao_hora || 0);
+            const intervalo = Math.max(1, Number(p.intervalo_manutencao || 300));
             const porcentagemSaude = ((intervalo - (horas - ultimaMaint)) / intervalo) * 100;
 
             if (p.status === 'maintenance' || p.status === 'error' || porcentagemSaude < 15) maquinasCriticas++;
 
-            const categoria = (p.brand || p.marca || "Impressora Geral").toUpperCase();
+            const categoria = (p.marca || "Impressora Geral").toUpperCase();
             if (!acc[categoria]) acc[categoria] = [];
             acc[categoria].push(p);
             return acc;
@@ -138,7 +139,7 @@ export default function ImpressorasPage() {
         return {
             gruposMapeados: agrupamento,
             contagemCritica: maquinasCriticas,
-            estatisticas: { totalPrints: totalPecas, filamento: (totalFilamentoGrama / 1000).toFixed(2) }
+            estatisticas: { totalPrints: totalPecas, filamento: formatDecimal(totalFilamentoGrama / 1000, 2) }
         };
     }, [printers, buscaDiferida]);
 
@@ -375,7 +376,7 @@ export default function ImpressorasPage() {
                         <p className="text-zinc-400 text-sm font-medium leading-relaxed">
                             Você está prestes a remover a impressora <br />
                             <span className="text-zinc-100 font-bold uppercase tracking-tight">
-                                "{confirmacaoExclusao.item?.name || confirmacaoExclusao.item?.nome}"
+                                "{confirmacaoExclusao.item?.nome || "Hardware"}"
                             </span>
                         </p>
                         <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10">

@@ -4,12 +4,12 @@ import { UnifiedInput } from "../../../../components/UnifiedInput";
 
 // 1. Configurações de Taxas Médias (Presets)
 const PRESETS_MARKETPLACE = {
-    ml_premium: { label: "MERCADO LIVRE (PREMIUM)", pct: "19", fixo: "6.00" },
-    ml_classico: { label: "MERCADO LIVRE (CLÁSSICO)", pct: "14", fixo: "6.00" },
-    shopee_sem_frete: { label: "SHOPEE (SEM FRETE)", pct: "15", fixo: "4.00" },
-    shopee_com_frete: { label: "SHOPEE (COM FRETE)", pct: "20", fixo: "4.00" },
-    amazon: { label: "AMAZON", pct: "10", fixo: "4.00" },
-    tiktok: { label: "TIKTOK SHOPS", pct: "5", fixo: "0.00" },
+  ml_premium: { label: "MERCADO LIVRE (PREMIUM)", pct: "19", fixo: "6.00" },
+  ml_classico: { label: "MERCADO LIVRE (CLÁSSICO)", pct: "14", fixo: "6.00" },
+  shopee_sem_frete: { label: "SHOPEE (SEM FRETE)", pct: "15", fixo: "4.00" },
+  shopee_com_frete: { label: "SHOPEE (COM FRETE)", pct: "20", fixo: "4.00" },
+  amazon: { label: "AMAZON", pct: "10", fixo: "4.00" },
+  tiktok: { label: "TIKTOK SHOPS", pct: "5", fixo: "0.00" },
 };
 
 export default function CardCanal({
@@ -24,15 +24,15 @@ export default function CardCanal({
 
   // 2. SINCRONIZAÇÃO AUTOMÁTICA: Identifica o preset com base nos valores atuais
   useEffect(() => {
-    const chaveEncontrada = Object.keys(PRESETS_MARKETPLACE).find(chave => 
-        String(PRESETS_MARKETPLACE[chave].pct) === String(taxaMarketplace) && 
-        String(PRESETS_MARKETPLACE[chave].fixo) === String(taxaMarketplaceFixa)
+    const chaveEncontrada = Object.keys(PRESETS_MARKETPLACE).find(chave =>
+      String(PRESETS_MARKETPLACE[chave].pct) === String(taxaMarketplace) &&
+      String(PRESETS_MARKETPLACE[chave].fixo) === String(taxaMarketplaceFixa)
     );
-    
+
     if (chaveEncontrada) {
-        setPresetSelecionado(chaveEncontrada);
+      setPresetSelecionado(chaveEncontrada);
     } else {
-        setPresetSelecionado("manual");
+      setPresetSelecionado("manual");
     }
   }, [taxaMarketplace, taxaMarketplaceFixa]);
 
@@ -61,14 +61,14 @@ export default function CardCanal({
 
   return (
     <div className="flex flex-col gap-5 animate-in fade-in duration-500">
-      
+
       {/* SELETOR DE MODO (CANAL) */}
-      <div className="flex bg-zinc-900/40 border border-zinc-800/60 p-1 rounded-xl">
+      <div className="flex bg-zinc-900/40 border border-zinc-800/50 p-1 rounded-xl">
         <button
           type="button"
           onClick={() => setCanalVenda("loja")}
           className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2
-          ${canalVenda === "loja" ? "bg-zinc-800 text-sky-400 border border-white/5 shadow-lg" : "text-zinc-600 hover:text-zinc-400"}`}
+          ${canalVenda === "loja" ? "bg-zinc-800 text-sky-400 border border-zinc-700 shadow-lg" : "text-zinc-600 hover:text-zinc-400"}`}
         >
           <Store size={10} /> Loja Própria
         </button>
@@ -76,14 +76,14 @@ export default function CardCanal({
           type="button"
           onClick={() => setCanalVenda("marketplace")}
           className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2
-          ${canalVenda === "marketplace" ? "bg-zinc-800 text-sky-400 border border-white/5 shadow-lg" : "text-zinc-600 hover:text-zinc-400"}`}
+          ${canalVenda === "marketplace" ? "bg-zinc-800 text-sky-400 border border-zinc-700 shadow-lg" : "text-zinc-600 hover:text-zinc-400"}`}
         >
           <ShoppingBag size={10} /> Marketplace
         </button>
       </div>
 
       <div className="space-y-4">
-        
+
         {/* SELETOR DE PLATAFORMA */}
         {canalVenda === 'marketplace' ? (
           <div className="animate-in slide-in-from-top-2 duration-300">
@@ -129,11 +129,11 @@ export default function CardCanal({
 
       {/* DICA INFORMATIVA */}
       <div className="px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-          <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest leading-tight">
-            {canalVenda === 'loja' 
-              ? "Para venda direta, lembre-se de considerar as taxas da maquininha ou do parcelamento." 
-              : "As taxas de Marketplace são calculadas sobre o valor final da venda."}
-          </p>
+        <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest leading-tight">
+          {canalVenda === 'loja'
+            ? "Para venda direta, lembre-se de considerar as taxas da maquininha ou do parcelamento."
+            : "As taxas de Marketplace são calculadas sobre o valor final da venda."}
+        </p>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 
 import "./styles/main.css";
 import AppRoutes from "./routes/route";
-import { setupAxiosInterceptors } from "./utils/api";
+import { configurarInterceptadoresAxios } from "./utils/api";
 import PageLoading from "./components/Loading";
 
 function ClerkAndAxiosGate({ children }) {
@@ -16,8 +16,8 @@ function ClerkAndAxiosGate({ children }) {
     useEffect(() => {
         async function init() {
             if (isLoaded) {
-                // 1. Configura os interceptores
-                setupAxiosInterceptors(getToken);
+                // 1. Configura os interceptadores
+                configurarInterceptadoresAxios(getToken);
                 // 2. Avisa que o sistema está pronto (Axios + Auth ok)
                 setReady(true);
             }

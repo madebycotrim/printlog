@@ -34,16 +34,16 @@ export const prepararParaD1 = (dados = {}) => {
 
     return {
         id: dados.id || crypto.randomUUID(),
-        nome: (dados.name || dados.nome || "Nova Unidade").trim(),
-        marca: (dados.brand || dados.marca || "Genérica").trim(),
-        modelo: (dados.model || dados.modelo || "FDM").trim(),
+        nome: (dados.nome || "Nova Unidade").trim(),
+        marca: (dados.marca || "Genérica").trim(),
+        modelo: (dados.modelo || "FDM").trim(),
         status: dados.status || "idle",
-        potencia: limparNumero(dados.power || dados.potencia),
-        preco: limparNumero(dados.price || dados.preco),
-        rendimento_total: limparNumero(dados.yieldTotal || dados.rendimento_total),
-        horas_totais: limparNumero(dados.totalHours || dados.horas_totais),
-        ultima_manutencao_hora: limparNumero(dados.lastMaintenanceHour || dados.ultima_manutencao_hora),
-        intervalo_manutencao: limparNumero(dados.maintenanceInterval || dados.intervalo_manutencao || 300),
+        potencia: limparNumero(dados.potencia),
+        preco: limparNumero(dados.preco),
+        rendimento_total: limparNumero(dados.rendimento_total),
+        horas_totais: limparNumero(dados.horas_totais),
+        ultima_manutencao_hora: limparNumero(dados.ultima_manutencao_hora),
+        intervalo_manutencao: limparNumero(dados.intervalo_manutencao || 300),
         historico: historicoFormatado
     };
 };
@@ -83,17 +83,17 @@ export const usePrinterStore = create((set, get) => ({
 
                 return {
                     id: item.id,
-                    name: item.nome,
-                    brand: item.marca,
-                    model: item.modelo,
+                    nome: item.nome,
+                    marca: item.marca,
+                    modelo: item.modelo,
                     status: item.status,
-                    power: item.potencia,
-                    price: item.preco,
-                    yieldTotal: item.rendimento_total,
-                    totalHours: item.horas_totais,
-                    lastMaintenanceHour: item.ultima_manutencao_hora,
-                    maintenanceInterval: item.intervalo_manutencao,
-                    history: historicoTratado
+                    potencia: item.potencia,
+                    preco: item.preco,
+                    rendimento_total: item.rendimento_total,
+                    horas_totais: item.horas_totais,
+                    ultima_manutencao_hora: item.ultima_manutencao_hora,
+                    intervalo_manutencao: item.intervalo_manutencao,
+                    historico: historicoTratado
                 };
             });
 

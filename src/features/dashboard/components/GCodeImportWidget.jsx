@@ -7,26 +7,30 @@ export default function GCodeImportWidget() {
     const [, setLocation] = useLocation();
     const [isDragging, setIsDragging] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const processFile = async (file) => {
         setLoading(true);
+        setError(null);
         try {
-            const { timeSeconds, weightGrams, success } = await parseProjectFile(file);
+            const result = await parseProjectFile(file);
 
-            if (success) {
+            if (result.success) {
                 const params = new URLSearchParams();
-                params.append('hours', Math.floor(timeSeconds / 3600));
-                params.append('minutes', Math.floor((timeSeconds % 3600) / 60));
-                params.append('weight', weightGrams);
+                params.append('hours', Math.floor(result.timeSeconds / 3600));
+                params.append('minutes', Math.floor((result.timeSeconds % 3600) / 60));
+                params.append('weight', result.weightGrams);
                 params.append('auto', 'true');
 
                 setLocation(`/calculadora?${params.toString()}`);
             } else {
-                alert("Não foi possível ler os dados do arquivo. Certifique-se que ele foi fatiado e contém metadados.");
+                setError(result.message || "Não foi possível ler os dados do arquivo. Certifique-se que ele foi fatiado e contém metadados.");
+                setTimeout(() => setError(null), 5000);
             }
-        } catch (error) {
-            console.error(error);
-            alert("Erro ao processar arquivo.");
+        } catch (err) {
+            console.error(err);
+            setError("Erro ao processar arquivo.");
+            setTimeout(() => setError(null), 5000);
         } finally {
             setLoading(false);
         }
@@ -91,6 +95,16 @@ export default function GCodeImportWidget() {
                 Arraste ou clique para carregar <br />
                 <span className="text-sky-500/80 font-mono">.GCODE</span> ou <span className="text-emerald-500/80 font-mono">.3MF</span>
             </p>
+
+            {/* Feedback de erro inline */}
+            {error && (
+                <div className="absolute inset-0 bg-zinc-950/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-200">
+                    <AlertTriangle size={32} className="text-amber-500 mb-3" />
+                    <p className="text-xs text-zinc-400 text-center leading-relaxed max-w-[200px]">
+                        {error}
+                    </p>
+                </div>
+            )}
         </div>
     );
 }

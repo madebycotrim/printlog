@@ -3,6 +3,7 @@ import {
   DollarSign, Landmark, ShieldAlert, Tag,
   TrendingUp, HelpCircle, AlertTriangle, Activity
 } from "lucide-react";
+import { formatCurrency, formatDecimal } from "../../../../utils/numbers";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 
 export default function Precificacao({
@@ -68,8 +69,8 @@ export default function Precificacao({
   const ehPerigoso = cargaTotalEncargos >= 70 && cargaTotalEncargos < 90;
 
   const statusPrecificacao = useMemo(() => {
-    if (ehCritico) return { color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20", label: "MATEMATICAMENTE INVIÁVEL" };
-    if (ehPerigoso) return { color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", label: "MARGEM ARRISCADA / ALTO RISCO" };
+    if (ehCritico) return { color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/50 shadow-[0_0_20px_-5px_rgba(244,63,94,0.3)] animate-pulse", label: "MATEMATICAMENTE INVIÁVEL" };
+    if (ehPerigoso) return { color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", label: "MARGEM ARRISCADA" };
     return { color: "text-sky-400", bg: "bg-zinc-900/50", border: "border-zinc-800", label: "ESTRUTURA DE TAXAS SAUDÁVEL" };
   }, [ehCritico, ehPerigoso]);
 
@@ -202,7 +203,7 @@ export default function Precificacao({
               </span>
             </div>
             <span className={`text-[10px] font-mono font-bold ${ehCritico ? 'text-rose-500' : 'text-zinc-400'}`}>
-              {cargaTotalEncargos.toFixed(1)}%
+              {formatDecimal(cargaTotalEncargos, 1)}%
             </span>
           </div>
 
@@ -216,13 +217,13 @@ export default function Precificacao({
           </div>
 
           {!ehCritico && lucroRealItem > 0 && (
-            <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-0.5">
+            <div className="flex items-center justify-between border-t border-zinc-800/50 pt-2 mt-0.5">
               <div className="flex flex-col">
                 <span className="text-[7px] font-black text-zinc-500 uppercase leading-none">Ganhos por Hora</span>
                 <span className="text-[6px] text-zinc-600 uppercase font-bold tracking-tighter italic">Produtividade</span>
               </div>
               <span className={`text-[11px] font-mono font-bold ${lucroPorHora < 5 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                R$ {lucroPorHora.toFixed(2)}/h
+                {formatCurrency(lucroPorHora)}/h
               </span>
             </div>
           )}

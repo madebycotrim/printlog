@@ -3,8 +3,10 @@
  * Transforma dados do D1 em insights de negócio e manutenção.
  */
 
+import { parseNumber, formatDecimal } from "../../../utils/numbers";
+
 // --- CONFIGURAÇÕES DE PADRÃO (Caso o usuário não tenha configurado a oficina) ---
-const TARIFA_KWH_PADRAO = 0.85; 
+const TARIFA_KWH_PADRAO = 0.85;
 const VIDA_UTIL_MAQUINA_HORAS = 5000; // Vida útil estimada para depreciação total
 
 /**
@@ -14,40 +16,40 @@ const VIDA_UTIL_MAQUINA_HORAS = 5000; // Vida útil estimada para depreciação 
  */
 export const calcularFinanceiroAvancado = (impressora, configuracoes = null) => {
     // Validação inicial para evitar quebra de fluxo
-    if (!impressora) return { roiPct: "0", pago: false, custoOperacional: "0.00", lucroLiquido: "0.00" };
-    
+    if (!impressora) return { roiPct: "0", pago: false, custoOperacional: "0,00", lucroLiquido: "0,00" };
+
     // Prioriza o valor do kWh salvo nas configurações, senão usa o padrão
-    const tarifaKwh = configuracoes?.custoKwh ? Number(configuracoes.custoKwh) : TARIFA_KWH_PADRAO;
+    const tarifaKwh = configuracoes?.custoKwh ? parseNumber(configuracoes.custoKwh) : TARIFA_KWH_PADRAO;
 
     // Sanitização de dados numéricos para evitar NaN
-    const precoCompra = Math.max(0, Number(impressora.price) || 0);
-    const rendimentoTotal = Number(impressora.yieldTotal) || 0;
-    const horasTotais = Math.max(0, Number(impressora.totalHours) || 0);
-    const potenciaKw = (Number(impressora.power) || 0) / 1000;
-    
+    const precoCompra = Math.max(0, parseNumber(impressora.preco) || 0);
+    const rendimentoTotal = parseNumber(impressora.rendimento_total) || 0;
+    const horasTotais = Math.max(0, parseNumber(impressora.horas_totais) || 0);
+    const potenciaKw = (parseNumber(impressora.potencia) || 0) / 1000;
+
     // 1. Custo de Energia Real (Horas Totais * Consumo em kW * Tarifa)
-    const custoEnergia = horasTotais * potenciaKw * tarifaKwh; 
-    
+    const custoEnergia = horasTotais * potenciaKw * tarifaKwh;
+
     // 2. Depreciação (Custo de desgaste da máquina)
     // A depreciação acumulada é limitada ao preço de compra da máquina
-    const depreciacaoAcumulada = precoCompra > 0 
-        ? Math.min(precoCompra, (precoCompra / VIDA_UTIL_MAQUINA_HORAS) * horasTotais) 
+    const depreciacaoAcumulada = precoCompra > 0
+        ? Math.min(precoCompra, (precoCompra / VIDA_UTIL_MAQUINA_HORAS) * horasTotais)
         : 0;
-    
+
     // 3. Totais e Lucratividade
     const custoOperacionalTotal = custoEnergia + depreciacaoAcumulada;
     const lucroLiquido = rendimentoTotal - custoOperacionalTotal;
 
     // O ROI é calculado sobre o lucro líquido em relação ao investimento inicial (preço da máquina)
-    const roiCalculado = precoCompra > 0 ? ((lucroLiquido / precoCompra) * 100).toFixed(1) : "0";
+    const roiCalculado = precoCompra > 0 ? ((lucroLiquido / precoCompra) * 100) : 0;
 
     return {
-        roiPct: roiCalculado,
+        roiPct: formatDecimal(roiCalculado, 1),
         pago: precoCompra > 0 && lucroLiquido >= precoCompra,
-        custoOperacional: custoOperacionalTotal.toFixed(2),
-        lucroLiquido: lucroLiquido.toFixed(2),
-        custoEnergia: custoEnergia.toFixed(2),
-        depreciacaoAcumulada: depreciacaoAcumulada.toFixed(2)
+        custoOperacional: formatDecimal(custoOperacionalTotal, 2),
+        lucroLiquido: formatDecimal(lucroLiquido, 2),
+        custoEnergia: formatDecimal(custoEnergia, 2),
+        depreciacaoAcumulada: formatDecimal(depreciacaoAcumulada, 2)
     };
 };
 
@@ -58,10 +60,10 @@ export const calcularFinanceiroAvancado = (impressora, configuracoes = null) => 
 export const analisarSaudeImpressora = (impressora) => {
     if (!impressora) return [];
 
-    const horasTotais = Number(impressora.totalHours) || 0;
-    const ultimaManutencao = Number(impressora.lastMaintenanceHour) || 0;
+    const horasTotais = parseNumber(impressora.horas_totais) || 0;
+    const ultimaManutencao = parseNumber(impressora.ultima_manutencao_hora) || 0;
     const horasDesdeUltima = Math.max(0, horasTotais - ultimaManutencao);
-    
+
     const regrasManutencao = [
         { id: 'm1', rotulo: 'Limpeza Geral', acao: 'Mesa, bicos e fans', intervalo: 50, severidade: 'low' },
         { id: 'm2', rotulo: 'Correias', acao: 'Check de tensão X/Y', intervalo: 150, severidade: 'medium' },
@@ -70,7 +72,7 @@ export const analisarSaudeImpressora = (impressora) => {
         { id: 'm5', rotulo: 'Revisão Elétrica', acao: 'Aperto de bornes (Risco de Incêndio)', intervalo: 1000, severidade: 'critical' },
         { id: 'm6', rotulo: 'Tubo PTFE', acao: 'Substituição interna', intervalo: 800, severidade: 'medium' }
     ];
-    
+
     return regrasManutencao
         .filter(regra => horasDesdeUltima >= regra.intervalo * 0.9) // O alerta surge quando atinge 90% do intervalo
         .sort((a, b) => {

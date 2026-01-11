@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
     Settings2, BarChart3, HelpCircle, ChevronRight,
     CheckCircle2, AlertCircle, AlertTriangle, History as HistoryIcon,
@@ -24,12 +24,13 @@ import CardEmbalagem from "../features/calculadora/components/cards/custos.jsx";
 import CardPreco from "../features/calculadora/components/cards/lucroDescontos.jsx";
 
 // Lógica e Armazenamento
-import { formatCurrency } from "../utils/numbers";
-import { parseGCode } from "../utils/gcodeParser"; // Parser G-Code
+import { formatarMoeda } from "../utils/numbers";
+import { analisarGCode } from "../utils/gcodeParser"; // Parser G-Code
 import useDebounce from "../hooks/useDebounce";
 import { calcularTudo, useSettingsStore } from "../features/calculadora/logic/calculator";
 import { usePrinterStore } from "../features/impressoras/logic/printer.js";
-import { useProjectsStore } from "../features/orcamentos/logic/projects.js";
+import { useProjectsStore } from "../features/projetos/logic/projects.js";
+import { useFilamentStore } from "../features/filamentos/logic/filaments.js";
 
 const CONFIG_SIDEBAR = { COLAPSADO: 68, EXPANDIDO: 256 };
 
@@ -44,23 +45,23 @@ const WrapperCard = React.memo(({ children, title, step, className = "", zPriori
     };
 
     return (
-        <div className={`relative ${zPriority} ${className}`}>
-            <div className={`relative bg-zinc-900/20 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 flex flex-col gap-3 transition-all duration-300 group focus-within:z-50 focus-within:border-sky-500/30 hover:border-zinc-700/50`}>
-                <div className="flex items-center justify-between border-b border-zinc-800/50 pb-2">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-[10px] font-black text-sky-500 shadow-sm">
+        <div className={`relative ${zPriority} ${className} mx-2`}>
+            <div className={`relative bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300 group focus-within:z-50 focus-within:border-sky-500/30 hover:border-zinc-700/50 hover-lift`}>
+                <div className="flex items-center justify-between border-b border-zinc-800/50 pb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-[10px] font-black text-sky-500 shadow-sm group-hover:scale-110 transition-transform">
                             {step}
                         </div>
-                        <h3 className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{title}</h3>
+                        <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-300 transition-colors">{title}</h3>
                     </div>
                     <div className="group/info relative">
-                        <HelpCircle size={12} className="text-zinc-700 hover:text-sky-500 cursor-help transition-colors" />
-                        <div className="absolute right-0 top-6 w-48 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl invisible opacity-0 group-hover/info:visible group-hover/info:opacity-100 z-[110] transition-all pointer-events-none transform translate-y-1 group-hover/info:translate-y-0">
-                            <p className="text-[8px] text-zinc-400 uppercase font-bold leading-tight">{textosAjuda[step]}</p>
+                        <HelpCircle size={14} className="text-zinc-700 hover:text-sky-500 cursor-help transition-colors" />
+                        <div className="absolute right-0 top-6 w-48 p-3 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl invisible opacity-0 group-hover/info:visible group-hover/info:opacity-100 z-[110] transition-all pointer-events-none transform translate-y-1 group-hover/info:translate-y-0">
+                            <p className="text-[9px] text-zinc-400 uppercase font-bold leading-relaxed">{textosAjuda[step]}</p>
                         </div>
                     </div>
                 </div>
-                <div className="flex-1 overflow-visible">{children}</div>
+                <div className="flex-1 overflow-visible pt-2">{children}</div>
             </div>
         </div>
     );
@@ -74,6 +75,7 @@ export default function CalculadoraPage() {
     const [precisaConfigurar, setPrecisaConfigurar] = useState(false);
     const [idProjetoAtual, setIdProjetoAtual] = useState(null);
     const [isDragging, setIsDragging] = useState(false); // Estado de Drag & Drop
+    const fileInputRef = useRef(null); // Ref para input file escondido
 
     // Estado para Popups (Centralizado)
     const [modalConfig, setModalConfig] = useState({
@@ -84,11 +86,26 @@ export default function CalculadoraPage() {
     const { printers: impressoras, fetchPrinters: buscarImpressoras } = usePrinterStore();
     const { settings: configuracoesGerais, fetchSettings: buscarConfiguracoes } = useSettingsStore();
     const { fetchHistory: buscarHistorico, addHistoryEntry: salvarNoBanco } = useProjectsStore();
+    const { quickUpdateWeight, filaments: listaFilamentos } = useFilamentStore();
+
+    // Listener para Baixa de Estoque via Evento (Hack para ModalConfig Callback)
+    useEffect(() => {
+        const handleDeduct = async (e) => {
+            const { id, amount } = e.detail;
+            const fil = listaFilamentos.find(f => String(f.id) === String(id));
+            if (fil) {
+                const novoPeso = Math.max(0, Number(fil.peso_atual) - Number(amount));
+                await quickUpdateWeight(id, novoPeso);
+            }
+        };
+        window.addEventListener('deduct-stock', handleDeduct);
+        return () => window.removeEventListener('deduct-stock', handleDeduct);
+    }, [listaFilamentos, quickUpdateWeight]);
 
     const [dadosFormulario, setDadosFormulario] = useState({
         nomeProjeto: "",
         qtdPecas: "1",
-        material: { custoRolo: "", pesoModelo: "", selectedFilamentId: "manual", slots: [] },
+        material: { custoRolo: "", pesoModelo: "", idFilamentoSelecionado: "manual", slots: [] },
         tempo: { impressaoHoras: "", impressaoMinutos: "", trabalhoHoras: "", trabalhoMinutos: "" },
         vendas: { canal: "loja", taxaMarketplace: "", taxaMarketplaceFixa: "", desconto: "" },
         custosExtras: { embalagem: "", frete: "", lista: [] },
@@ -208,19 +225,52 @@ export default function CalculadoraPage() {
             const resposta = await salvarNoBanco({
                 id: idProjetoAtual,
                 label: dadosFormulario.nomeProjeto,
-                entradas: { ...dadosFormulario, selectedPrinterId: hardwareSelecionado?.id },
+                entradas: {
+                    ...dadosFormulario,
+                    idImpressoraSelecionada: hardwareSelecionado?.id,
+                    nomeImpressoraSelecionada: hardwareSelecionado?.nome || hardwareSelecionado?.modelo
+                },
                 resultados
             });
 
             if (resposta) {
                 setIdProjetoAtual(resposta.id);
+
+                // --- SYNC DE ESTOQUE REAL ---
+                const idFilamento = dadosFormulario?.material?.idFilamentoSelecionado;
+                const pesoConsumido = (Number(dadosFormulario?.material?.pesoModelo) || 0) * (Number(dadosFormulario?.qtdPecas) || 1);
+
+                // Só oferece se for um filamento do estoque (não manual/multi) e tiver peso
+                const podeDescontar = idFilamento && idFilamento !== 'manual' && idFilamento !== 'multi' && pesoConsumido > 0;
+
+                if (podeDescontar) {
+                    setModalConfig({
+                        open: true,
+                        title: "Sincronizar Estoque?",
+                        message: `Projeto salvo! Deseja dar baixa de ${Math.round(pesoConsumido)}g do estoque selecionado automaticamente?`,
+                        icon: AlertCircle,
+                        color: "text-emerald-500",
+                        customAction: () => {
+                            window.dispatchEvent(new CustomEvent('deduct-stock', { detail: { id: idFilamento, amount: pesoConsumido } }));
+                            setModalConfig({
+                                open: true,
+                                title: "Estoque Atualizado!",
+                                message: "O peso foi descontado com sucesso.",
+                                icon: CheckCircle2,
+                                color: "text-emerald-500"
+                            });
+                        }
+                    });
+                    return true;
+                }
+
                 return true; // SUCESSO! Summary receberá true e abrirá o popup dele
             }
         } catch (error) {
             console.error("Erro ao salvar:", error);
         }
 
-        // 3. Caso de Erro (API ou Banco)
+        // 4. Caso de Erro (API ou Banco)
         setModalConfig({
             open: true,
             title: "Erro de Sincronização",
@@ -229,17 +279,25 @@ export default function CalculadoraPage() {
             color: "text-rose-500"
         });
         return false;
-    }, [dadosFormulario, resultados, hardwareSelecionado, salvarNoBanco, idProjetoAtual]);
+    }, [dadosFormulario, resultados, hardwareSelecionado, salvarNoBanco, idProjetoAtual, configuracoesGerais]);
 
     const lidarRestauracao = useCallback((registro) => {
         const payload = registro.data || registro.payload;
         if (payload?.entradas) {
             const dadosRestaurados = JSON.parse(JSON.stringify(payload.entradas));
-            if (dadosRestaurados.material?.slots?.length > 0) dadosRestaurados.material.selectedFilamentId = 'multi';
+            if (dadosRestaurados.material?.slots?.length > 0) dadosRestaurados.material.idFilamentoSelecionado = 'multi';
+
+            // Compatibilidade com registros antigos
+            if (dadosRestaurados.material?.selectedFilamentId) {
+                dadosRestaurados.material.idFilamentoSelecionado = dadosRestaurados.material.selectedFilamentId;
+            }
+
             setIdProjetoAtual(registro.id);
             setDadosFormulario(dadosRestaurados);
-            if (dadosRestaurados.selectedPrinterId) {
-                const printer = impressoras.find(p => String(p.id) === String(dadosRestaurados.selectedPrinterId));
+
+            const idImpressora = dadosRestaurados.idImpressoraSelecionada || dadosRestaurados.selectedPrinterId;
+            if (idImpressora) {
+                const printer = impressoras.find(p => String(p.id) === String(idImpressora));
                 if (printer) setHardwareSelecionado(printer);
             }
         }
@@ -252,15 +310,15 @@ export default function CalculadoraPage() {
     const elementoHud = useMemo(() => {
         if (abaAtiva === 'resumo' || ehNeutro) return null;
         return (
-            <div className="hidden lg:flex items-center gap-6 px-5 h-11 bg-zinc-900/50 border border-white/5 rounded-full animate-in fade-in zoom-in-95 duration-500">
+            <div className="hidden lg:flex items-center gap-6 px-5 h-11 bg-zinc-900/50 border border-zinc-700/50 rounded-full animate-in fade-in zoom-in-95 duration-500">
                 <div className="flex flex-col items-center">
                     <span className="text-[6px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Preço Sugerido</span>
-                    <span className="text-[12px] font-mono font-bold text-white leading-none">{formatCurrency(resultados.precoComDesconto)}</span>
+                    <span className="text-[12px] font-mono font-bold text-white leading-none">{formatarMoeda(resultados.precoComDesconto)}</span>
                 </div>
                 <div className="w-px h-5 bg-white/10" />
                 <div className="flex flex-col items-center">
                     <span className="text-[6px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Lucro Real</span>
-                    <span className={`text-[12px] font-mono font-bold leading-none ${corSaude}`}>{formatCurrency(resultados.lucroBrutoUnitario)}</span>
+                    <span className={`text-[12px] font-mono font-bold leading-none ${corSaude}`}>{formatarMoeda(resultados.lucroBrutoUnitario)}</span>
                 </div>
                 <button type="button" onClick={() => setAbaAtiva('resumo')} className="group/hud flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 hover:bg-sky-500 transition-all ml-1 shadow-lg">
                     <ChevronRight size={14} className="text-zinc-400 group-hover/hud:text-white transition-colors" />
@@ -283,48 +341,174 @@ export default function CalculadoraPage() {
         setIsDragging(false);
     }, []);
 
+
     const handleDrop = useCallback(async (e) => {
         e.preventDefault();
         setIsDragging(false);
 
         const files = Array.from(e.dataTransfer.files);
-        const gcodeFile = files.find(f => f.name.toLowerCase().endsWith('.gcode') || f.name.toLowerCase().endsWith('.gco'));
+        const file = files.find(f => {
+            const name = f.name.toLowerCase();
+            return name.endsWith('.gcode') || name.endsWith('.gco') || name.endsWith('.3mf');
+        });
 
-        if (gcodeFile) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const content = event.target.result;
-                const { timeSeconds, weightGrams, success } = parseGCode(content);
+        if (!file) {
+            setModalConfig({
+                open: true,
+                title: "Formato Inválido",
+                message: "Por favor, arraste um arquivo .gcode, .gco ou .3mf",
+                icon: AlertTriangle,
+                color: "text-amber-500"
+            });
+            return;
+        }
 
-                if (success) {
-                    const hours = Math.floor(timeSeconds / 3600);
-                    const minutes = Math.floor((timeSeconds % 3600) / 60);
+        try {
+            let result;
+            const fileName = file.name.toLowerCase();
+            const isGCode = fileName.endsWith('.gcode') || fileName.endsWith('.gco');
+            const is3MF = fileName.endsWith('.3mf');
 
-                    // Atualiza estados
+            if (isGCode) {
+                const text = await file.text();
+                result = analisarGCode(text);
+            } else if (is3MF) {
+                const { analisarArquivoProjeto } = await import('../utils/projectParser');
+                result = await analisarArquivoProjeto(file);
+            }
+
+            if (result.success) {
+                const hours = Math.floor(result.timeSeconds / 3600);
+                const minutes = Math.floor((result.timeSeconds % 3600) / 60);
+
+                // Atualiza campos apenas se os dados foram encontrados
+                if (result.details?.foundTime) {
                     atualizarCampo('tempo', 'impressaoHoras', String(hours));
                     atualizarCampo('tempo', 'impressaoMinutos', String(minutes));
-                    if (weightGrams > 0) atualizarCampo('material', 'pesoModelo', String(weightGrams));
-
-                    // Feedback Visual
-                    setModalConfig({
-                        open: true,
-                        title: "Arquivo Processado",
-                        message: `G-Code lido com sucesso! Tempo: ${hours}h ${minutes}m | Peso: ${weightGrams}g`,
-                        icon: CheckCircle2,
-                        color: "text-emerald-500"
-                    });
-                } else {
-                    setModalConfig({
-                        open: true,
-                        title: "Arquivo Desconhecido",
-                        message: "Não foi possível extrair dados desse G-Code. Verifique se é um arquivo padrão (Cura, Prusa, Orca).",
-                        icon: AlertTriangle,
-                        color: "text-amber-500"
-                    });
                 }
-            };
-            reader.readAsText(gcodeFile);
+                if (result.details?.foundWeight && result.weightGrams > 0) {
+                    atualizarCampo('material', 'pesoModelo', String(result.weightGrams));
+                }
+
+                // Feedback Visual Detalhado
+                const infoLines = [];
+                if (result.details?.foundTime) infoLines.push(`⏱️ Tempo: ${result.details.timeFormatted}`);
+                if (result.details?.foundWeight) infoLines.push(`⚖️ Peso: ${result.details.weightFormatted}`);
+                if (result.detectedSlicer) infoLines.push(`🔧 Slicer: ${result.detectedSlicer}`);
+
+                setModalConfig({
+                    open: true,
+                    title: "Arquivo Processado!",
+                    message: `${file.name}\n\n${infoLines.join('\n')}${result.message ? '\n\n' + result.message : ''}`,
+                    icon: CheckCircle2,
+                    color: "text-emerald-500"
+                });
+            } else {
+                // Tratamento especial para modelos não fatiados
+                setModalConfig({
+                    open: true,
+                    title: result.fileType === "modelo_3d" ? "Modelo Não Fatiado" : "Dados Não Encontrados",
+                    message: result.message || `Não foi possível extrair dados de "${file.name}".\n\nVerifique se é um arquivo fatiado dos slicers suportados:\nCura, Prusa, Orca, Bambu, Simplify3D, IdeaMaker, KISSlicer, SuperSlicer.`,
+                    icon: AlertTriangle,
+                    color: "text-amber-500"
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao processar arquivo:", error);
+            setModalConfig({
+                open: true,
+                title: "Erro ao Processar",
+                message: `Erro ao ler o arquivo: ${error.message}`,
+                icon: AlertTriangle,
+                color: "text-rose-500"
+            });
         }
+    }, [atualizarCampo]);
+
+    // Handler para botão de upload
+    const handleUploadClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    // Handler para quando arquivo é selecionado via input
+    const handleFileSelected = useCallback(async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+        const isGCode = fileName.endsWith('.gcode') || fileName.endsWith('.gco');
+        const is3MF = fileName.endsWith('.3mf');
+
+        if (!isGCode && !is3MF) {
+            setModalConfig({
+                open: true,
+                title: "Formato Inválido",
+                message: "Por favor, selecione um arquivo .gcode, .gco ou .3mf",
+                icon: AlertTriangle,
+                color: "text-amber-500"
+            });
+            e.target.value = ''; // Reset input
+            return;
+        }
+
+        try {
+            let result;
+
+            if (isGCode) {
+                const text = await file.text();
+                result = analisarGCode(text);
+            } else if (is3MF) {
+                const { analisarArquivoProjeto } = await import('../utils/projectParser');
+                result = await analisarArquivoProjeto(file);
+            }
+
+            if (result.success) {
+                const hours = Math.floor(result.timeSeconds / 3600);
+                const minutes = Math.floor((result.timeSeconds % 3600) / 60);
+
+                // Atualiza campos
+                if (result.details?.foundTime) {
+                    atualizarCampo('tempo', 'impressaoHoras', String(hours));
+                    atualizarCampo('tempo', 'impressaoMinutos', String(minutes));
+                }
+                if (result.details?.foundWeight && result.weightGrams > 0) {
+                    atualizarCampo('material', 'pesoModelo', String(result.weightGrams));
+                }
+
+                // Feedback detalhado
+                const infoLines = [];
+                if (result.details?.foundTime) infoLines.push(`⏱️ Tempo: ${result.details.timeFormatted}`);
+                if (result.details?.foundWeight) infoLines.push(`⚖️ Peso: ${result.details.weightFormatted}`);
+                if (result.detectedSlicer) infoLines.push(`🔧 Slicer: ${result.detectedSlicer}`);
+
+                setModalConfig({
+                    open: true,
+                    title: "Arquivo Importado!",
+                    message: `${file.name}\n\n${infoLines.join('\n')}${result.message ? '\n\n' + result.message : ''}`,
+                    icon: CheckCircle2,
+                    color: "text-emerald-500"
+                });
+            } else {
+                setModalConfig({
+                    open: true,
+                    title: result.fileType === "modelo_3d" ? "Modelo Não Fatiado" : "Dados Não Encontrados",
+                    message: result.message || `Não foi possível extrair dados de "${file.name}".`,
+                    icon: AlertTriangle,
+                    color: "text-amber-500"
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao processar arquivo:", error);
+            setModalConfig({
+                open: true,
+                title: "Erro ao Processar",
+                message: `Erro ao ler o arquivo: ${error.message}`,
+                icon: AlertTriangle,
+                color: "text-rose-500"
+            });
+        }
+
+        e.target.value = ''; // Reset input para permitir reenvio
     }, [atualizarCampo]);
 
     return (
@@ -351,34 +535,55 @@ export default function CalculadoraPage() {
 
             <main className="flex-1 flex flex-row relative h-full overflow-hidden transition-all duration-300" style={{ marginLeft: `${larguraSidebar}px` }}>
 
-                {/* Grid Background */}
-                <div className="absolute inset-x-0 top-0 h-[500px] z-0 opacity-[0.05] pointer-events-none"
-                    style={{ backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+                {/* Fundo Decorativo (Igual ao Dashboard) */}
+                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none">
+                    <div className="absolute inset-0 opacity-[0.08]" style={{
+                        backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
+                        backgroundSize: '50px 50px',
+                        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
+                    }} />
+
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-full">
+                        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-sky-500/30 via-transparent to-transparent" />
+                    </div>
+                </div>
 
                 {/* Coluna de Inputs */}
-                <div className="flex-1 flex flex-col h-full min-w-0 relative z-10 border-r border-white/5">
-                    <Header
-                        nomeProjeto={dadosFormulario.nomeProjeto}
-                        setNomeProjeto={(v) => atualizarCampo('nomeProjeto', null, v)}
-                        printers={impressoras}
-                        selectedPrinterId={hardwareSelecionado?.id}
-                        onCyclePrinter={lidarCicloHardware}
-                        onOpenHistory={() => setHistoricoAberto(true)}
-                        onOpenSettings={() => setAbaAtiva('config')}
-                        onOpenWaste={() => setModalFalhaAberto(true)}
-                        needsConfig={precisaConfigurar}
-                        hud={elementoHud}
-                    />
+                <div className="flex-1 flex flex-col h-full min-w-0 relative z-10 border-r border-zinc-800/50">
+                    <div className="relative z-[100]">
+                        {/* Input file escondido */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".gcode,.gco,.3mf"
+                            onChange={handleFileSelected}
+                            className="hidden"
+                        />
 
-                    <div className="flex-1 overflow-y-auto p-4 xl:p-6 custom-scrollbar">
-                        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <Header
+                            nomeProjeto={dadosFormulario.nomeProjeto}
+                            setNomeProjeto={(v) => atualizarCampo('nomeProjeto', null, v)}
+                            printers={impressoras}
+                            idImpressoraSelecionada={hardwareSelecionado?.id}
+                            onCyclePrinter={lidarCicloHardware}
+                            onOpenHistory={() => setHistoricoAberto(true)}
+                            onOpenSettings={() => setAbaAtiva('config')}
+                            onOpenWaste={() => setModalFalhaAberto(true)}
+                            onUploadGCode={handleUploadClick}
+                            needsConfig={precisaConfigurar}
+                            hud={elementoHud}
+                        />
+                    </div>
 
-                            <div className="flex flex-col gap-4">
+                    <div className="flex-1 overflow-y-auto p-4 xl:p-8 custom-scrollbar">
+                        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                            <div className="flex flex-col gap-6">
                                 <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
                                     <CardMaterial
                                         custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
                                         pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
-                                        selectedFilamentId={dadosFormulario.material.selectedFilamentId} setSelectedFilamentId={(v) => atualizarCampo('material', 'selectedFilamentId', v)}
+                                        idFilamentoSelecionado={dadosFormulario.material.idFilamentoSelecionado} setIdFilamentoSelecionado={(v) => atualizarCampo('material', 'idFilamentoSelecionado', v)}
                                         materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
                                     />
                                 </WrapperCard>
@@ -392,7 +597,7 @@ export default function CalculadoraPage() {
                                 </WrapperCard>
                             </div>
 
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-6">
                                 <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
                                     <CardCanal
                                         canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
@@ -409,7 +614,7 @@ export default function CalculadoraPage() {
                                 </WrapperCard>
                             </div>
 
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-6">
                                 <WrapperCard title="Lucro e Estratégia" step="05">
                                     <CardPreco
                                         margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
@@ -419,31 +624,27 @@ export default function CalculadoraPage() {
                                         taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} lucroRealItem={resultados.lucroBrutoUnitario} tempoTotalHoras={resultados.tempoTotalHoras}
                                     />
                                 </WrapperCard>
-
-                                {/* Info Adicional Rápida */}
-                                <div className="bg-sky-500/5 border border-sky-500/10 rounded-xl p-4 flex gap-4 items-start">
-                                    <Zap size={18} className="text-sky-500 shrink-0 mt-0.5" />
-                                    <div>
-                                        <h4 className="text-[10px] font-bold text-sky-400 uppercase mb-1">Dica Pro</h4>
-                                        <p className="text-[9px] text-zinc-400 leading-relaxed">O custo de energia é calculado com base na potência da {hardwareSelecionado?.nome || 'impressora'} e no custo do kWh da sua oficina.</p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Sidebar Direita: Resumo/Config */}
-                <aside className="w-[400px] h-full bg-zinc-950/40 backdrop-blur-2xl flex flex-col z-20 border-l border-white/5">
-                    <div className="h-[80px] border-b border-white/5 flex items-center px-4">
-                        <div className="flex w-full h-12 bg-zinc-950 rounded-lg border border-zinc-800 p-1 shadow-inner">
+                <aside className="w-[400px] h-full bg-zinc-950/40 backdrop-blur-2xl flex flex-col z-20 border-l border-zinc-800/50">
+                    <div className="h-[80px] border-b border-zinc-800/50 flex items-center px-4">
+                        <div className="relative flex w-full h-12 bg-zinc-950/50 rounded-xl border border-zinc-800/50 p-1">
+                            {/* Animated Background Pill */}
+                            <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ${abaAtiva === 'resumo' ? 'left-1' : 'left-[calc(50%+4px)]'}`} />
+
                             <button type="button" onClick={() => setAbaAtiva('resumo')}
-                                className={`flex-1 rounded text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'bg-sky-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                <BarChart3 size={14} /> Resultado
+                                className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                <BarChart3 size={14} className={abaAtiva === 'resumo' ? 'text-sky-400' : 'text-zinc-600'} />
+                                Resultado
                             </button>
                             <button type="button" onClick={() => setAbaAtiva('config')}
-                                className={`flex-1 rounded text-[11px] font-black uppercase transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'bg-sky-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                <Settings2 size={14} /> Minha Oficina
+                                className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                <Settings2 size={14} className={abaAtiva === 'config' ? 'text-emerald-400' : 'text-zinc-600'} />
+                                Minha Oficina
                             </button>
                         </div>
                     </div>
@@ -470,6 +671,27 @@ export default function CalculadoraPage() {
             <ModalRegistrarFalha
                 aberto={modalFalhaAberto}
                 aoFechar={() => setModalFalhaAberto(false)}
+                aoSalvar={(falha) => {
+                    // LÓGICA DE COMPENSAÇÃO INTELIGENTE
+                    // Se o usuário registrar uma falha, perguntamos se ele quer adicionar o prejuízo ao projeto atual.
+                    if (falha?.costWasted) {
+                        setModalConfig({
+                            open: true,
+                            title: "Compensar Prejuízo?",
+                            message: `Você registrou um prejuízo de R$ ${falha.costWasted}. Deseja adicionar esse valor aos custos extras deste projeto para recuperar o dinheiro?`,
+                            icon: AlertTriangle,
+                            color: "text-amber-500",
+                            customAction: () => {
+                                const novoExtra = {
+                                    nome: `FALHA RECUPERADA (${falha.reason})`,
+                                    valor: String(falha.costWasted)
+                                };
+                                atualizarCampo('custosExtras', 'lista', [...dadosFormulario.custosExtras.lista, novoExtra]);
+                                setModalConfig({ ...modalConfig, open: false });
+                            }
+                        });
+                    }
+                }}
             />
 
             {/* POPUP GLOBAL DE MENSAGENS (Unificado) */}
@@ -480,15 +702,26 @@ export default function CalculadoraPage() {
                 subtitle="Notificação de Sistema"
                 icon={modalConfig.icon}
                 footer={
-                    <button
-                        onClick={() => setModalConfig({ ...modalConfig, open: false })}
-                        className={`w-full h-12 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg active:scale-95 text-white ${modalConfig.icon === CheckCircle2 ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' :
-                            modalConfig.icon === AlertTriangle ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20' :
-                                'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
-                            }`}
-                    >
-                        Entendi, fechar aviso
-                    </button>
+                    <div className="flex gap-2 w-full">
+                        {modalConfig.customAction && (
+                            <button
+                                onClick={modalConfig.customAction}
+                                className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase transition-all shadow-lg active:scale-95"
+                            >
+                                Sim, Compensar
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setModalConfig({ ...modalConfig, open: false })}
+                            className={`flex-1 h-12 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg active:scale-95 text-white ${modalConfig.customAction ? 'bg-zinc-800 hover:bg-zinc-700' :
+                                modalConfig.icon === CheckCircle2 ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' :
+                                    modalConfig.icon === AlertTriangle ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20' :
+                                        'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
+                                }`}
+                        >
+                            {modalConfig.customAction ? 'Não, Ignorar' : 'Entendi, fechar aviso'}
+                        </button>
+                    </div>
                 }
             >
                 <div className="p-8 flex flex-col items-center text-center gap-4">

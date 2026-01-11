@@ -6,9 +6,9 @@
 // Cache de formatadores para ganho de performance em listas grandes
 const formatters = {
     currency: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
-    decimal: (digits) => new Intl.NumberFormat('pt-BR', { 
-        minimumFractionDigits: digits, 
-        maximumFractionDigits: digits 
+    decimal: (digits) => new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
     })
 };
 
@@ -16,7 +16,7 @@ const formatters = {
  * Converte qualquer entrada (String com R$, %, pontos ou vírgulas) em Float puro.
  * Resolve conflitos entre formatos americanos (1,200.50) e brasileiros (1.200,50).
  */
-export const parseNumber = (value) => {
+export const analisarNumero = (value) => {
     if (typeof value === 'number') return isFinite(value) ? value : 0;
     if (!value || typeof value !== 'string') return 0;
 
@@ -49,12 +49,12 @@ export const parseNumber = (value) => {
  * Gera IDs únicos. 
  * Usa Crypto API nativa (muito rápido) com fallback robusto.
  */
-export const generateUUID = () => {
+export const gerarUUID = () => {
     try {
         return crypto.randomUUID();
     } catch {
         // Fallback para ambientes antigos ou sem SSL
-        return Array.from({ length: 3 }, () => 
+        return Array.from({ length: 3 }, () =>
             Math.random().toString(36).substring(2, 9)
         ).join('-');
     }
@@ -65,9 +65,9 @@ export const generateUUID = () => {
  * Útil para decidir se o texto sobre a cor deve ser Branco ou Preto.
  * @param {string} hex - Cor em formato #000, #000000 ou #00000000
  */
-export const isColorDark = (hex) => {
+export const eCorEscura = (hex) => {
     if (!hex || typeof hex !== 'string') return false;
-    
+
     // Limpa e normaliza o hex
     let color = hex.replace('#', '');
     if (color.length === 3) {
@@ -88,30 +88,30 @@ export const isColorDark = (hex) => {
 /**
  * Formata moeda (R$ 1.234,56)
  */
-export const formatCurrency = (n) => formatters.currency.format(parseNumber(n));
+export const formatarMoeda = (n) => formatters.currency.format(analisarNumero(n));
 
 /**
  * Formata decimais (1.234,56)
  * @param {number} n - Valor
  * @param {number} digits - Quantidade de casas decimais
  */
-export const formatDecimal = (n, digits = 2) => {
+export const formatarDecimal = (n, digits = 2) => {
     // Para performance, não recriamos o Intl se for o padrão de 2 dígitos
-    if (digits === 2) return formatters.decimal(2).format(parseNumber(n));
-    return new Intl.NumberFormat('pt-BR', { 
-        minimumFractionDigits: digits, 
-        maximumFractionDigits: digits 
-    }).format(parseNumber(n));
+    if (digits === 2) return formatters.decimal(2).format(analisarNumero(n));
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+    }).format(analisarNumero(n));
 };
 
 /**
  * Formata peso (g ou kg) dependendo da magnitude.
  * Útil para filamentos.
  */
-export const formatWeight = (grams) => {
-    const val = parseNumber(grams);
+export const formatarPeso = (grams) => {
+    const val = analisarNumero(grams);
     if (val >= 1000) {
-        return `${formatDecimal(val / 1000, 2)}kg`;
+        return `${formatarDecimal(val / 1000, 2)}kg`;
     }
     return `${Math.round(val)}g`;
 };
@@ -119,10 +119,37 @@ export const formatWeight = (grams) => {
 /**
  * Calcula porcentagem de uso (ex: estoque de rolo)
  */
-export const calculatePercentage = (current, total) => {
-    const c = parseNumber(current);
-    const t = parseNumber(total);
+export const calcularPorcentagem = (current, total) => {
+    const c = analisarNumero(current);
+    const t = analisarNumero(total);
     if (t <= 0) return 0;
     const pct = (c / t) * 100;
     return Math.min(Math.max(pct, 0), 100); // Garante entre 0 e 100
 };
+
+/**
+ * Formata números grandes de forma compacta (ex: 1.2k, 1.5M).
+ */
+export const formatarCompacto = (val) => {
+    const n = analisarNumero(val);
+    if (!n) return "0";
+
+    return new Intl.NumberFormat("pt-BR", {
+        notation: Math.abs(n) >= 1000 ? "compact" : "standard",
+        maximumFractionDigits: 1,
+    }).format(n).toLowerCase();
+};
+
+// ========================================
+// ALIASES DE COMPATIBILIDADE (DEPRECATED)
+// Manter temporariamente para garantir transição suave
+// TODO: Remover após atualizar todos os arquivos
+// ========================================
+export const parseNumber = analisarNumero;
+export const generateUUID = gerarUUID;
+export const isColorDark = eCorEscura;
+export const formatCurrency = formatarMoeda;
+export const formatDecimal = formatarDecimal;
+export const formatWeight = formatarPeso;
+export const calculatePercentage = calcularPorcentagem;
+export const formatCompact = formatarCompacto;

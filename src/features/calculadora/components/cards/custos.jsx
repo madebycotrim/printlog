@@ -1,6 +1,6 @@
-import React from "react";
-import { Box, Truck, Plus, Wrench, Tag, Trash2 } from "lucide-react";
+import { formatCurrency } from "../../../../utils/numbers";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
+import { Box, Truck, Wrench, Plus, Tag, Trash2 } from "lucide-react";
 
 export default function CustosLogisticos({
   custoEmbalagem,
@@ -76,13 +76,13 @@ export default function CustosLogisticos({
       {/* 2. SEÇÃO DE GASTOS EXTRAS */}
       <div className="space-y-3">
         {/* Cabeçalho com Contador e Total */}
-        <div className="flex items-center justify-between px-1 border-b border-white/5 pb-2">
+        <div className="flex items-center justify-between px-1 border-b border-zinc-800/50 pb-2">
           <div className="flex items-center gap-2">
             <Wrench size={12} className="text-zinc-500" />
             <span className="text-[9px] font-black tracking-[0.2em] text-zinc-500 uppercase">
               Custos Adicionais
             </span>
-            <span className="text-[7px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded border border-white/5 font-bold font-mono">
+            <span className="text-[7px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded border border-zinc-700/50 font-bold font-mono">
               {String(extrasSeguros.length).padStart(2, '0')} ITENS
             </span>
           </div>
@@ -90,7 +90,7 @@ export default function CustosLogisticos({
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
               <span className="text-[10px] font-mono font-bold text-sky-400">
-                R$ {totalExtrasSoma.toFixed(2)}
+                {formatCurrency(totalExtrasSoma)}
               </span>
               <span className="text-[7px] font-black text-zinc-700 uppercase tracking-tighter">Total de Extras</span>
             </div>
@@ -136,7 +136,7 @@ export default function CustosLogisticos({
               <button
                 type="button"
                 onClick={() => removerExtra(index)}
-                className="mb-[1px] flex h-11 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-800/60 text-zinc-700 transition-all hover:border-rose-500/30 hover:bg-rose-500/5 hover:text-rose-500 shadow-sm"
+                className="mb-[1px] flex h-11 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-950/30 border border-zinc-800/50 text-zinc-600 transition-all hover:border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-500 shadow-sm"
               >
                 <Trash2 size={14} />
               </button>

@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import api from '../../../utils/api';
-import { parseNumber } from "../../../utils/numbers";
+import { analisarNumero } from "../../../utils/numbers";
 
 /**
  * MOTOR DE CÁLCULO PROFISSIONAL (MÉTODO COMERCIAL)
  * Calcula custos, formação de preço por markup e análise de lucro real.
  */
 export function calcularTudo(dadosEntrada = {}) {
-    // Helper para extração segura de números e conversão de vírgula para ponto
+    // Helper para extração segura de números
     const obterValor = (caminho, caminhoAlternativo) => {
         const partes = caminho.split('.');
         let valor = dadosEntrada;
@@ -15,8 +15,7 @@ export function calcularTudo(dadosEntrada = {}) {
             valor = valor?.[parte];
         }
         const resultado = valor !== undefined ? valor : dadosEntrada[caminhoAlternativo];
-        const stringLimpa = String(resultado || "0").replace(',', '.');
-        return parseNumber(stringLimpa) || 0;
+        return analisarNumero(resultado);
     };
 
     const quantidade = Math.max(1, obterValor('qtdPecas', 'qtdPecas'));
@@ -30,7 +29,9 @@ export function calcularTudo(dadosEntrada = {}) {
         taxaSetup: obterValor('config.taxaSetup', 'taxaSetup'),
         embalagem: obterValor('custosExtras.embalagem', 'custoEmbalagem'),
         frete: obterValor('custosExtras.frete', 'custoFrete'),
-        extras: Array.isArray(dadosEntrada.custosExtras?.lista) ? dadosEntrada.custosExtras.lista.reduce((acc, item) => acc + (parseFloat(String(item?.valor || "0").replace(',', '.')) || 0), 0) : 0,
+        frete: obterValor('custosExtras.frete', 'custoFrete'),
+        extras: Array.isArray(dadosEntrada.custosExtras?.lista) ? dadosEntrada.custosExtras.lista.reduce((acc, item) => acc + analisarNumero(item?.valor), 0) : 0,
+        margemLucro: obterValor('config.margemLucro', 'margemLucro') / 100,
         margemLucro: obterValor('config.margemLucro', 'margemLucro') / 100,
         imposto: obterValor('config.imposto', 'imposto') / 100,
         taxaMkt: obterValor('vendas.taxaMarketplace', 'taxaMarketplace') / 100,
@@ -48,8 +49,8 @@ export function calcularTudo(dadosEntrada = {}) {
     const slots = Array.isArray(dadosEntrada.material?.slots) ? dadosEntrada.material.slots : [];
     if (slots.length > 0) {
         custoMaterialUnitario = slots.reduce((acc, slot) => {
-            const weight = Math.max(0, parseFloat(String(slot?.weight || "0").replace(',', '.')) || 0);
-            const priceKg = Math.max(0, parseFloat(String(slot?.priceKg || "0").replace(',', '.')) || 0);
+            const weight = parseFloat(String(slot?.weight || "0").replace(',', '.')) || 0;
+            const priceKg = parseFloat(String(slot?.priceKg || "0").replace(',', '.')) || 0;
             const custoSlot = (priceKg / 1000) * weight;
             return acc + (isFinite(custoSlot) ? custoSlot : 0);
         }, 0);
@@ -194,15 +195,15 @@ export const useSettingsStore = create((set, get) => ({
 
             // Prepara o objeto para o formato que o Cloudflare Worker espera (snake_case)
             const paraEnviar = {
-                custo_kwh: parseNumber(String(dadosCompletos.custoKwh || 0).replace(',', '.')) || 0,
-                valor_hora_humana: parseNumber(String(dadosCompletos.valorHoraHumana || 0).replace(',', '.')) || 0,
-                custo_hora_maquina: parseNumber(String(dadosCompletos.custoHoraMaquina || 0).replace(',', '.')) || 0,
-                taxa_setup: parseNumber(String(dadosCompletos.taxaSetup || 0).replace(',', '.')) || 0,
-                consumo_impressora_kw: parseNumber(String(dadosCompletos.consumoKw || 0).replace(',', '.')) || 0,
-                margem_lucro: parseNumber(String(dadosCompletos.margemLucro || 0).replace(',', '.')) || 0,
-                imposto: parseNumber(String(dadosCompletos.imposto || 0).replace(',', '.')) || 0,
-                taxa_falha: parseNumber(String(dadosCompletos.taxaFalha || 0).replace(',', '.')) || 0,
-                desconto: parseNumber(String(dadosCompletos.desconto || 0).replace(',', '.')) || 0,
+                custo_kwh: analisarNumero(dadosCompletos.custoKwh),
+                valor_hora_humana: analisarNumero(dadosCompletos.valorHoraHumana),
+                custo_hora_maquina: analisarNumero(dadosCompletos.custoHoraMaquina),
+                taxa_setup: analisarNumero(dadosCompletos.taxaSetup),
+                consumo_impressora_kw: analisarNumero(dadosCompletos.consumoKw),
+                margem_lucro: analisarNumero(dadosCompletos.margemLucro),
+                imposto: analisarNumero(dadosCompletos.imposto),
+                taxa_falha: analisarNumero(dadosCompletos.taxaFalha),
+                desconto: analisarNumero(dadosCompletos.desconto),
                 whatsapp_template: dadosCompletos.whatsappTemplate || ""
             };
 

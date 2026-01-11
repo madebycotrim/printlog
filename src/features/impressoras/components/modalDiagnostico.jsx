@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { X, Check, Wrench, Gauge } from "lucide-react";
 import { analisarSaudeImpressora } from "../logic/diagnostics";
+import { parseNumber, formatDecimal } from "../../../utils/numbers";
 
 // Sub-componente para os medidores da lateral (Refinado)
 const MedidorManutencao = ({ rotulo, valor, maximo, unidade }) => {
@@ -17,7 +18,7 @@ const MedidorManutencao = ({ rotulo, valor, maximo, unidade }) => {
             <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
                 <span className="text-zinc-500">{rotulo}</span>
                 <span className={ehCritico ? 'text-rose-400' : 'text-emerald-500/80'}>
-                    {restante.toFixed(0)}{unidade}
+                    {formatDecimal(restante, 0)}{unidade}
                 </span>
             </div>
             <div className="h-1.5 w-full bg-zinc-900 rounded-full border border-zinc-800/50 p-[1px]">
@@ -42,9 +43,9 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
     if (!printer) return null;
 
     // Organização de dados de entrada
-    const horasTotais = Number(printer.totalHours || printer.horas_totais || 0);
-    const ultimaManutencao = Number(printer.lastMaintenanceHour || printer.ultima_manutencao_hora || 0);
-    const intervaloManutencao = Number(printer.maintenanceInterval || printer.intervalo_manutencao || 300);
+    const horasTotais = parseNumber(printer.horas_totais);
+    const ultimaManutencao = parseNumber(printer.ultima_manutencao_hora);
+    const intervaloManutencao = parseNumber(printer.intervalo_manutencao) || 300;
 
     // Cálculo de tempo decorrido
     const horasDesdeUltima = Math.max(0, horasTotais - ultimaManutencao);
@@ -76,7 +77,7 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
                         <div>
                             <h2 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Protocolo de Manutenção</h2>
                             <p className="text-sm font-semibold text-zinc-100 mt-0.5">
-                                Máquina: <span className="text-zinc-400 font-mono tracking-tighter ml-1">{(printer.name || printer.nome || "Impressora Desconhecida")}</span>
+                                Máquina: <span className="text-zinc-400 font-mono tracking-tighter ml-1">{(printer.nome || "Impressora Desconhecida")}</span>
                             </p>
                         </div>
                     </div>
@@ -132,13 +133,13 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
                                                 key={idx}
                                                 onClick={() => onToggleTask?.(tarefa.rotulo)}
                                                 className={`group flex items-center gap-5 p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${concluida
-                                                        ? 'bg-zinc-900/20 border-zinc-800/40 opacity-50'
-                                                        : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/60 shadow-sm'
+                                                    ? 'bg-zinc-900/20 border-zinc-800/40 opacity-50'
+                                                    : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/60 shadow-sm'
                                                     }`}
                                             >
                                                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${concluida
-                                                        ? 'bg-emerald-500 border-emerald-400 text-zinc-950'
-                                                        : 'border-zinc-700 bg-zinc-950 text-zinc-500 group-hover:border-zinc-500'
+                                                    ? 'bg-emerald-500 border-emerald-400 text-zinc-950'
+                                                    : 'border-zinc-700 bg-zinc-950 text-zinc-500 group-hover:border-zinc-500'
                                                     }`}>
                                                     {concluida ? <Check size={20} strokeWidth={3} /> : <span className="text-xs font-bold">{idx + 1}</span>}
                                                 </div>
@@ -181,8 +182,8 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
                             disabled={tarefas.length > 0 && totalConcluidas < tarefas.length}
                             onClick={() => onResolve?.(printer.id)}
                             className={`px-10 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${totalConcluidas === tarefas.length && tarefas.length > 0
-                                    ? 'bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg active:scale-[0.98]'
-                                    : 'bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed opacity-50'
+                                ? 'bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg active:scale-[0.98]'
+                                : 'bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed opacity-50'
                                 }`}
                         >
                             Finalizar Manutenção
