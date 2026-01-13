@@ -1,27 +1,16 @@
-import { enviarJSON, paraNumero } from './[[path]]';
+import { enviarJSON, paraNumero } from './_utils';
+import { validateInput, schemas, sanitizeFields } from './_validation';
 
+/**
+ * API DE GERENCIAMENTO DE FALHAS
+ * Registra falhas de impressão e atualiza automaticamente o estoque de filamentos
+ */
 export async function gerenciarFalhas({ request, db, userId }) {
     const method = request.method;
 
     try {
-        // Inicialização da tabela (executa apenas se não existir)
-        await db.prepare(`
-            CREATE TABLE IF NOT EXISTS failures (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                date TEXT NOT NULL,
-                filament_id TEXT,
-                printer_id TEXT,
-                model_name TEXT,
-                weight_wasted REAL,
-                cost_wasted REAL,
-                reason TEXT,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-        `).run();
-
         if (method === 'GET') {
-            // Retorna estatísticas e histórico
+            // Retorna histórico de falhas e estatísticas agregadas
             const { results } = await db.prepare(`
                 SELECT * FROM failures 
                 WHERE user_id = ? 
@@ -29,6 +18,7 @@ export async function gerenciarFalhas({ request, db, userId }) {
                 LIMIT 50
             `).bind(userId).all();
 
+            // Calcula estatísticas totais de peso e custo desperdiçados
             const stats = await db.prepare(`
                 SELECT 
                     SUM(weight_wasted) as total_weight, 
@@ -49,11 +39,18 @@ export async function gerenciarFalhas({ request, db, userId }) {
         }
 
         if (method === 'POST') {
-            const f = await request.json();
+            const rawData = await request.json();
+
+            const validation = validateInput(rawData, schemas.failure);
+            if (!validation.valid) {
+                return enviarJSON({ error: "Dados inválidos", details: validation.errors }, 400);
+            }
+
+            const f = sanitizeFields(rawData, schemas.failure);
             const id = crypto.randomUUID();
             const date = new Date().toISOString();
 
-            // 1. Registra a falha
+            // 1. Registra a falha no histórico
             await db.prepare(`
                 INSERT INTO failures (id, user_id, date, filament_id, printer_id, model_name, weight_wasted, cost_wasted, reason)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -69,7 +66,7 @@ export async function gerenciarFalhas({ request, db, userId }) {
                 f.reason || "Falha genérica"
             ).run();
 
-            // 2. Abate do estoque (se houver ID de filamento válido)
+            // 2. Deduz automaticamente o peso desperdiçado do estoque (se houver filamento vinculado)
             if (f.filamentId && f.filamentId !== 'manual') {
                 const filamento = await db.prepare("SELECT peso_atual FROM filaments WHERE id = ? AND user_id = ?").bind(f.filamentId, userId).first();
                 if (filamento) {

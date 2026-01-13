@@ -1,10 +1,18 @@
 import { enviarJSON } from './[[path]]';
 
+/**
+ * API DE GERENCIAMENTO DE USUÁRIOS
+ * Endpoints: backup de dados, health check e exclusão completa de conta
+ */
 export async function gerenciarUsuarios({ request, db, userId, pathArray, env }) {
     const method = request.method;
 
+    // ==========================================
+    // ENDPOINT: BACKUP DE DADOS DO USUÁRIO
+    // ==========================================
     if (method === 'GET' && pathArray.includes('backup')) {
         try {
+            // Busca todos os dados do usuário em paralelo
             const [filaments, printers, settings, projects] = await db.batch([
                 db.prepare("SELECT * FROM filaments WHERE user_id = ?").bind(userId),
                 db.prepare("SELECT * FROM printers WHERE user_id = ?").bind(userId),
@@ -24,7 +32,7 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
                     filaments: filaments.results,
                     printers: printers.results,
                     settings: settings.results[0] || {},
-                    // Garantimos que o campo 'data' do projeto seja um objeto real antes de enviar
+                    // Garante que o campo 'data' do projeto seja parseado corretamente
                     projects: projects.results.map(p => ({
                         ...p,
                         data: typeof p.data === 'string' ? JSON.parse(p.data) : p.data
@@ -32,14 +40,17 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
                 }
             });
         } catch (err) {
-            return enviarJSON({ error: "Erro na extração", details: err.message }, 500);
+            return enviarJSON({ error: "Erro na extração de dados", details: err.message }, 500);
         }
     }
 
+    // ==========================================
+    // ENDPOINT: HEALTH CHECK DO BANCO D1
+    // ==========================================
     if (method === 'GET' && pathArray.includes('health')) {
         try {
             const start = Date.now();
-            // Uma consulta ultra leve apenas para testar a comunicação com o D1
+            // Consulta leve para testar a conexão com o banco D1
             await db.prepare("SELECT 1").first();
             const latency = Date.now() - start;
 
@@ -53,9 +64,12 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
         }
     }
 
+    // ==========================================
+    // ENDPOINT: EXCLUSÃO PERMANENTE DE CONTA
+    // ==========================================
     if (method === 'DELETE') {
         try {
-            // Protocolo de expurgo (Clerk + D1)
+            // 1. Remove conta do Clerk (autenticação)
             const clerkRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${env.CLERK_SECRET_KEY}` }
@@ -63,6 +77,7 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
 
             if (!clerkRes.ok) throw new Error("Falha ao invalidar credenciais no Clerk");
 
+            // 2. Remove todos os dados do usuário do banco D1
             await db.batch([
                 db.prepare("DELETE FROM filaments WHERE user_id = ?").bind(userId),
                 db.prepare("DELETE FROM printers WHERE user_id = ?").bind(userId),
@@ -70,9 +85,9 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
                 db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId)
             ]);
 
-            return enviarJSON({ success: true, message: "Unidade de dados purgada." });
+            return enviarJSON({ success: true, message: "Conta e dados removidos permanentemente." });
         } catch (err) {
-            return enviarJSON({ error: "Erro no expurgo", details: err.message }, 500);
+            return enviarJSON({ error: "Erro ao excluir conta", details: err.message }, 500);
         }
     }
 
