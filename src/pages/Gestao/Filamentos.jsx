@@ -219,12 +219,14 @@ export default function FilamentosPage() {
                                     placeholder:text-zinc-700 placeholder:text-[9px]
                                 "
                     placeholder="BUSCAR MATERIAL..."
+                    aria-label="Buscar material"
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
                   />
                   {busca && (
                     <button
                       onClick={() => setBusca("")}
+                      aria-label="Limpar busca"
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-rose-500 transition-colors"
                     >
                       <X size={14} />
@@ -236,12 +238,14 @@ export default function FilamentosPage() {
                 <div className="flex items-center bg-zinc-900/50 border border-zinc-800/50 p-1 rounded-xl">
                   <button
                     onClick={() => setViewMode('grid')}
+                    aria-label="Visualização em grade"
                     className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'grid' ? 'bg-rose-500/20 text-rose-400' : 'text-zinc-600 hover:text-zinc-200'}`}
                   >
                     <LayoutGrid size={16} strokeWidth={viewMode === 'grid' ? 2.5 : 2} />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
+                    aria-label="Visualização em lista"
                     className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'list' ? 'bg-rose-500/20 text-rose-400' : 'text-zinc-600 hover:text-zinc-200'}`}
                   >
                     <List size={16} strokeWidth={viewMode === 'list' ? 2.5 : 2} />
@@ -257,6 +261,7 @@ export default function FilamentosPage() {
                                 transition-all duration-300 active:scale-95
                             "
                   title="Registrar Desperdício"
+                  aria-label="Registrar desperdício"
                 >
                   <Trash2 size={18} className="text-rose-500 group-hover:scale-110 transition-transform" />
                 </button>
@@ -269,6 +274,7 @@ export default function FilamentosPage() {
                                 rounded-xl transition-all duration-300 active:scale-95 shadow-lg shadow-rose-900/40
                                 flex items-center gap-3 text-white
                             "
+                  aria-label="Adicionar novo filamento"
                 >
                   <Plus size={16} strokeWidth={3} />
                   <span className="text-[10px] font-black uppercase tracking-[0.15em]">
@@ -292,6 +298,7 @@ export default function FilamentosPage() {
                             placeholder:text-zinc-700 placeholder:text-[9px]
                         "
                 placeholder="BUSCAR MATERIAL..."
+                aria-label="Buscar material"
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
               />
