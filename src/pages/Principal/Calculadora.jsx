@@ -440,7 +440,7 @@ export default function CalculadoraPage() {
                 const text = await file.text();
                 result = analisarGCode(text);
             } else if (is3MF) {
-                const { analisarArquivoProjeto } = await import('../utils/projectParser');
+                const { analisarArquivoProjeto } = await import('../../utils/projectParser');
                 result = await analisarArquivoProjeto(file);
             }
 
@@ -523,10 +523,10 @@ export default function CalculadoraPage() {
 
             if (isGCode) {
                 const text = await file.text();
-                const { analisarGCode } = await import('../utils/projectParser');
+                const { analisarGCode } = await import('../../utils/projectParser');
                 result = analisarGCode(text);
             } else if (is3MF) {
-                const { analisarArquivoProjeto } = await import('../utils/projectParser');
+                const { analisarArquivoProjeto } = await import('../../utils/projectParser');
                 result = await analisarArquivoProjeto(file);
             }
 

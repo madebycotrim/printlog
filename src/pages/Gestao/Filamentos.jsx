@@ -108,7 +108,21 @@ export default function FilamentosPage() {
     };
   }, [filaments, deferredBusca]);
 
-  // HANDLERS
+  // HANDLERS MEMOIZADOS (Performance)
+  const handleEdit = useCallback((item) => {
+    setItemEdicao(item);
+    setModalAberto(true);
+  }, []);
+
+  const handleDelete = useCallback((id) => {
+    // Busca otimizada para evitar percorrer todo o array se possível, mas find é aceitável aqui
+    // filaments é uma dependência externa, então precisamos incluí-la ou usar functional update se fosse state local.
+    // Como filaments vem da store, é melhor buscá-lo fresh ou confiar na prop.
+    // O ideal é passar o item inteiro no onDelete se possível, mas ajustaremos para buscar na lista atual.
+    const item = filaments.find(f => f.id === id);
+    if (item) setConfirmacaoExclusao({ aberta: true, item });
+  }, [filaments]);
+
   const fecharModais = useCallback(() => {
     setModalAberto(false);
     setItemEdicao(null);
@@ -117,12 +131,18 @@ export default function FilamentosPage() {
     setConfirmacaoExclusao({ aberta: false, item: null });
   }, []);
 
+  const acoes = useMemo(() => ({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+    onConsume: setItemConsumo
+  }), [handleEdit, handleDelete]);
+
   const aoSalvarFilamento = async (dados) => {
     try {
       const isEdicao = !!(dados.id || itemEdicao?.id);
       await saveFilament(dados);
       fecharModais();
-      showToast(isEdicao ? "AlteraÃ§Ãµes salvas!" : "Novo material adicionado!");
+      showToast(isEdicao ? "Alterações salvas!" : "Novo material adicionado!");
     } catch (_e) {
       showToast("Tivemos um problema ao salvar.", "error");
     }
@@ -170,7 +190,7 @@ export default function FilamentosPage() {
           </div>
         </div>
 
-        {/* CONTEÃšDO PRINCIPAL */}
+        {/* CONTEÚDO PRINCIPAL */}
         <div className="relative z-10 p-8 xl:p-12 max-w-[1600px] mx-auto w-full">
 
           {/* Header unificado (Estilo Dashboard) */}
@@ -181,7 +201,7 @@ export default function FilamentosPage() {
                   Meus Filamentos
                 </h1>
                 <p className="text-sm text-zinc-500 capitalize">
-                  GestÃ£o de Estoque e Materiais
+                  Gestão de Estoque e Materiais
                 </p>
               </div>
 
@@ -228,7 +248,7 @@ export default function FilamentosPage() {
                   </button>
                 </div>
 
-                {/* BotÃ£o DesperdÃ­cio */}
+                {/* Botão Desperdício */}
                 <button
                   onClick={() => setModalFalhaAberto(true)}
                   className="
@@ -236,12 +256,12 @@ export default function FilamentosPage() {
                                 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40
                                 transition-all duration-300 active:scale-95
                             "
-                  title="Registrar DesperdÃ­cio"
+                  title="Registrar Desperdício"
                 >
                   <Trash2 size={18} className="text-rose-500 group-hover:scale-110 transition-transform" />
                 </button>
 
-                {/* BotÃ£o Novo Filamento */}
+                {/* Botão Novo Filamento */}
                 <button
                   onClick={() => { setItemEdicao(null); setModalAberto(true); }}
                   className="
@@ -299,11 +319,7 @@ export default function FilamentosPage() {
                     items={items}
                     viewMode={viewMode}
                     currentHumidity={humidity}
-                    acoes={{
-                      onEdit: (item) => { setItemEdicao(item); setModalAberto(true); },
-                      onDelete: (id) => setConfirmacaoExclusao({ aberta: true, item: filaments.find(f => f.id === id) }),
-                      onConsume: setItemConsumo
-                    }}
+                    acoes={acoes}
                   />
                 ))}
               </div>
