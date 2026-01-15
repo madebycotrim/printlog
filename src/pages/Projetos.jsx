@@ -1,0 +1,318 @@
+/* eslint-disable react-refresh/only-export-components */
+import React, { useEffect, useMemo, useState } from "react";
+import { Inbox, Loader2, SearchX, Plus, Search, X, FolderOpen, Layers, Clock, Hammer, CheckCircle2 } from "lucide-react";
+import { useLocation } from "wouter";
+
+// Layout & Store
+import MainSidebar from "../layouts/mainSidebar";
+import { useProjectsStore } from "../features/projetos/logic/projects";
+import { useClientStore } from "../features/clientes/logic/clients";
+
+// Sub-componentes
+import StatusOrcamentos from "../features/projetos/components/StatusOrcamentos";
+import CardOrcamento from "../features/projetos/components/CardOrcamento";
+import ModalDetalhes from "../features/projetos/components/ModalDetalhes";
+
+// 1. CONFIGURAÇÃO DE STATUS
+export const CONFIG_STATUS = {
+    rascunho: { label: "Rascunho", color: "text-zinc-500", bg: "bg-zinc-500/10", border: "border-zinc-500/20" },
+    aprovado: {
+        label: "Aguardando",
+        color: "text-amber-400",
+        bg: "bg-amber-400/10",
+        border: "border-amber-400/20",
+        glow: "shadow-[0_0_15px_rgba(251,191,36,0.15)]"
+    },
+    producao: {
+        label: "Em Produção",
+        color: "text-orange-400",
+        bg: "bg-orange-400/10",
+        border: "border-orange-400/20",
+        glow: "shadow-[0_0_15px_rgba(251,146,60,0.15)]"
+    },
+    finalizado: {
+        label: "Concluído",
+        color: "text-emerald-400",
+        bg: "bg-emerald-400/10",
+        border: "border-emerald-400/20",
+        glow: "shadow-[0_0_15px_rgba(52,211,153,0.15)]"
+    }
+};
+
+// 2. HOOK DE LÓGICA
+function useOrcamentosLogic(projetos, filtroStatus, termoBusca) {
+    const [buscaDebounced, setBuscaDebounced] = useState(termoBusca);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setBuscaDebounced(termoBusca), 300);
+        return () => clearTimeout(timer);
+    }, [termoBusca]);
+
+    const filtrados = useMemo(() => {
+        const lista = Array.isArray(projetos) ? projetos : [];
+        const termo = buscaDebounced.toLowerCase().trim();
+
+        return lista.filter(p => {
+            const d = p.data || {};
+            const status = d.status || "rascunho";
+            if (status === "rascunho") return false;
+
+            const condicaoStatus = filtroStatus === "todos" || status === filtroStatus;
+            const nomeProjeto = (p.label || d.entradas?.nomeProjeto || "").toLowerCase();
+            const cliente = (d.entradas?.clienteNome || "").toLowerCase();
+            const condicaoBusca = nomeProjeto.includes(termo) || cliente.includes(termo);
+
+            return condicaoStatus && condicaoBusca;
+        });
+    }, [projetos, filtroStatus, buscaDebounced]);
+
+    const stats = useMemo(() => {
+        return filtrados.reduce((acc, p) => {
+            const r = p.data?.resultados || {};
+            acc.bruto += Number(r.precoComDesconto || r.precoSugerido || 0);
+            acc.lucro += Number(r.lucroReal || 0);
+            acc.horas += Number(r.tempoTotalHoras || 0);
+            if (p.data?.status === 'producao') acc.ativos++;
+            return acc;
+        }, { bruto: 0, lucro: 0, ativos: 0, horas: 0 });
+    }, [filtrados]);
+
+    return { filtrados, stats };
+}
+
+export default function OrcamentosPage() {
+    const { projects, fetchHistory, removeHistoryEntry } = useProjectsStore();
+    const { clients, fetchClients } = useClientStore();
+    const [, setLocation] = useLocation();
+
+    const [filtroStatus, setFiltroStatus] = useState("todos");
+    const [termoBusca, setTermoBusca] = useState("");
+    const [projetoSelecionado, setProjetoSelecionado] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [larguraSidebar, setLarguraSidebar] = useState(68);
+
+    const { filtrados, stats } = useOrcamentosLogic(projects, filtroStatus, termoBusca);
+
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            await fetchHistory();
+            await fetchClients();
+            setLoading(false);
+        };
+        load();
+    }, [fetchHistory, fetchClients]);
+
+    return (
+        <div className="flex h-screen w-full bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden">
+            <MainSidebar onCollapseChange={(collapsed) => setLarguraSidebar(collapsed ? 68 : 256)} />
+
+            <main
+                className="flex-1 flex flex-col relative overflow-y-auto custom-scrollbar"
+                style={{ marginLeft: `${larguraSidebar}px` }}
+            >
+                {/* Fundo Decorativo (Igual Dashboard) */}
+                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none">
+                    <div className="absolute inset-0 opacity-[0.08]" style={{
+                        backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
+                        backgroundSize: '50px 50px',
+                        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
+                    }} />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-full">
+                        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-amber-500/30 via-transparent to-transparent" />
+                    </div>
+                </div>
+
+                {/* Conteúdo Principal */}
+                <div className="relative z-10 p-8 xl:p-12 max-w-[1600px] mx-auto w-full">
+
+                    {/* Header do Layout (Igual Dashboard) */}
+                    <div className="mb-12 animate-fade-in-up">
+                        <div className="flex items-start justify-between flex-wrap gap-4">
+                            <div>
+                                <h1 className="text-4xl font-black tracking-tight text-white mb-2">
+                                    Meus Orçamentos
+                                </h1>
+                                <p className="text-sm text-zinc-500 capitalize">
+                                    Gestão de Propostas Comerciais
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                {/* Barra de Pesquisa */}
+                                <div className="relative group hidden md:block">
+                                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${termoBusca ? 'text-amber-400' : 'text-zinc-600'}`}>
+                                        <Search size={14} strokeWidth={3} />
+                                    </div>
+                                    <input
+                                        className="
+                                            w-64 bg-zinc-950/40/40 border border-zinc-800/50 rounded-xl py-2.5 pl-11 pr-10 
+                                            text-[11px] text-zinc-200 outline-none transition-all font-bold uppercase tracking-widest 
+                                            focus:border-amber-500/50 focus:bg-zinc-950/40/80 focus:ring-4 focus:ring-amber-500/10 
+                                            placeholder:text-zinc-700 placeholder:text-[9px]
+                                        "
+                                        placeholder="BUSCAR ORÇAMENTO..."
+                                        value={termoBusca}
+                                        onChange={(e) => setTermoBusca(e.target.value)}
+                                    />
+                                    {termoBusca && (
+                                        <button
+                                            onClick={() => setTermoBusca("")}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-rose-500 transition-colors"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Botão Novo Orçamento */}
+                                <button
+                                    onClick={() => setLocation("/calculadora")}
+                                    className="
+                                        group relative h-11 px-6 overflow-hidden bg-amber-500 hover:bg-amber-400 
+                                        rounded-xl transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/40
+                                        flex items-center gap-3 text-zinc-950
+                                    "
+                                >
+                                    <Plus size={16} strokeWidth={3} />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                        Novo
+                                    </span>
+                                    {/* Brilho */}
+                                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Barra de Pesquisa Mobile (Abaixo do Header) */}
+                        <div className="mt-4 md:hidden relative group">
+                            <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${termoBusca ? 'text-amber-400' : 'text-zinc-600'}`}>
+                                <Search size={14} strokeWidth={3} />
+                            </div>
+                            <input
+                                className="
+                                    w-full bg-zinc-950/40/40 border border-zinc-800/50 rounded-xl py-2.5 pl-11 pr-10 
+                                    text-[11px] text-zinc-200 outline-none transition-all font-bold uppercase tracking-widest 
+                                    focus:border-amber-500/50 focus:bg-zinc-950/40/80 focus:ring-4 focus:ring-amber-500/10 
+                                    placeholder:text-zinc-700 placeholder:text-[9px]
+                                "
+                                placeholder="BUSCAR ORÇAMENTO..."
+                                value={termoBusca}
+                                onChange={(e) => setTermoBusca(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-8">
+                        {/* 1. DASHBOARD STATS */}
+                        <div>
+                            <StatusOrcamentos
+                                totalBruto={stats.bruto}
+                                totalLucro={stats.lucro}
+                                projetosAtivos={stats.ativos}
+                                horasEstimadas={stats.horas}
+                            />
+                        </div>
+
+                        {/* 2. FILTROS (Novo Estilo Tabs) */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-4 custom-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
+                            {[
+                                { id: "todos", label: "Geral", icon: Layers },
+                                { id: "aprovado", label: "Aguardando", icon: Clock },
+                                { id: "producao", label: "Produção", icon: Hammer },
+                                { id: "finalizado", label: "Concluído", icon: CheckCircle2 }
+                            ].map((tab) => {
+                                const isActive = filtroStatus === tab.id;
+                                const Icon = tab.icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setFiltroStatus(tab.id)}
+                                        className={`
+                                            flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all duration-300 shrink-0
+                                            ${isActive
+                                                ? 'bg-zinc-800 border-zinc-700 text-white shadow-lg shadow-black/20'
+                                                : 'bg-zinc-950/40 border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'
+                                            }
+                                        `}
+                                    >
+                                        <Icon size={14} className={isActive ? "text-amber-500" : "opacity-70"} />
+                                        <span className="text-[11px] font-bold uppercase tracking-wider">
+                                            {tab.label}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* 3. CONTEÚDO PRINCIPAL (GRID) */}
+                        {loading ? (
+                            <div className="w-full h-96 flex flex-col items-center justify-center gap-6 border border-white/5 bg-white/[0.02] rounded-[3rem]">
+                                <div className="relative">
+                                    <Loader2 className="text-amber-500" size={40} strokeWidth={1} />
+                                    <div className="absolute inset-0 bg-amber-500/10 blur-3xl opacity-20" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">
+                                    Sincronizando registros...
+                                </span>
+                            </div>
+                        ) : filtrados.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                                {filtrados.map(item => (
+                                    <CardOrcamento
+                                        key={item.id}
+                                        item={item}
+                                        client={clients.find(c => String(c.id) === String(item.data?.entradas?.clienteId || item.data?.clienteId))}
+                                        onClick={() => setProjetoSelecionado(item)}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="w-full py-24 flex flex-col items-center justify-center border border-dashed border-zinc-800/60 rounded-[3rem] bg-zinc-950/40/5 backdrop-blur-sm">
+                                {termoBusca ? (
+                                    <div className="flex flex-col items-center text-center">
+                                        <div className="relative mb-6">
+                                            <div className="absolute inset-0 bg-amber-500/10 blur-2xl rounded-full" />
+                                            <SearchX size={48} strokeWidth={1} className="text-amber-600/50 relative z-10" />
+                                        </div>
+                                        <h3 className="text-zinc-300 text-[11px] font-black uppercase tracking-[0.3em]">Nenhum registro localizado</h3>
+                                        <p className="text-zinc-600 text-[10px] uppercase mt-3 tracking-widest italic">Critério: "{termoBusca}"</p>
+                                        <button
+                                            onClick={() => setTermoBusca("")}
+                                            className="mt-8 px-8 py-2.5 bg-zinc-800/50 hover:bg-zinc-900/50 border border-white/5 rounded-full text-[9px] font-black text-amber-500 uppercase tracking-[0.2em]"
+                                        >
+                                            Limpar Busca
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center">
+                                        <div className="relative mb-6">
+                                            <div className="absolute inset-0 bg-amber-500/10 blur-2xl rounded-full" />
+                                            <FolderOpen size={48} strokeWidth={1} className="text-amber-500/30 relative z-10" />
+                                        </div>
+                                        <h3 className="text-zinc-300 text-[11px] font-black uppercase tracking-[0.3em]">Nenhum orçamento ainda</h3>
+                                        <p className="text-zinc-600 text-[10px] uppercase mt-3 tracking-widest leading-relaxed text-center">
+                                            Seus projetos salvos aparecerão aqui.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* MODAL DETALHES */}
+                {projetoSelecionado && (
+                    <ModalDetalhes
+                        item={projetoSelecionado}
+                        onClose={() => setProjetoSelecionado(null)}
+                        onExcluir={async (id) => {
+                            const sucesso = await removeHistoryEntry(id);
+                            if (sucesso) setProjetoSelecionado(null);
+                        }}
+                    />
+                )}
+            </main>
+        </div>
+    );
+}
