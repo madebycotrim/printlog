@@ -8,20 +8,7 @@
  */
 
 const rateLimitMap = new Map();
-const CLEANUP_INTERVAL = 60000; // 1 minuto
 
-// Cleanup automático a cada minuto para evitar memory leak
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, requests] of rateLimitMap.entries()) {
-        const recent = requests.filter(t => now - t < 60000);
-        if (recent.length === 0) {
-            rateLimitMap.delete(key);
-        } else {
-            rateLimitMap.set(key, recent);
-        }
-    }
-}, CLEANUP_INTERVAL);
 
 /**
  * Verifica se o identificador (userId ou IP) excedeu o limite de requisições

@@ -1,0 +1,21 @@
+{
+    "name": "PrintLog - Gestão 3D",
+    "short_name": "PrintLog",
+    "description": "Gestão Profissional para Impressão 3D",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#09090b",
+    "theme_color": "#09090b",
+    "icons": [
+        {
+            "src": "/logo192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/logo512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}

@@ -8,17 +8,7 @@
  */
 
 const cache = new Map();
-const CLEANUP_INTERVAL = 60000; // 1 minuto
 
-// Cleanup auto automático para evitar memory leak
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of cache.entries()) {
-        if (now > entry.expiry) {
-            cache.delete(key);
-        }
-    }
-}, CLEANUP_INTERVAL);
 
 /**
  * Executa query com cache
