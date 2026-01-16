@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* 
+  --- 1. DESIGN SYSTEM & VARIÁVEIS ---
+  Organizado por semântica (o que a cor faz) e não apenas o nome da cor.
+*/
+:root {
+    color-scheme: dark;
+
+    /* Cores de Fundo */
+    --bg-main: #050506;
+    --bg-card: #09090b;
+    --bg-glass: rgba(9, 9, 11, 0.7);
+
+    /* Cores de Acento (Brand) */
+    --brand-primary: #0ea5e9;
+    /* Sky 500 */
+    --brand-secondary: #10b981;
+    /* Emerald 500 */
+    --brand-critical: #f43f5e;
+    /* Rose 500 */
+    --brand-warning: #f59e0b;
+    /* Amber 500 */
+
+    /* Cores de Borda e Texto */
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --border-bright: rgba(255, 255, 255, 0.1);
+    --text-main: #e4e4e7;
+    --text-muted: #71717a;
+
+    /* Efeitos */
+    --glow-sky: 0 0 20px rgba(14, 165, 233, 0.15);
+    --glow-rose: 0 0 20px rgba(244, 63, 94, 0.2);
+}
+
+
+/* BASE & RESET */
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body {
+        background-color: var(--bg-app);
+        color: var(--text-secondary);
+    }
+
+    * {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 200ms;
+    }
+
+    /* Fontes mono para dados técnicos */
+    .font-mono {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+}
+
+/* --- 3. SCROLLBAR CUSTOMIZADA --- */
+@layer utilities {
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--brand-primary);
+    }
+}
+
+/* --- 4. COMPONENTES DE INTERFACE (GLASSMORPISM) --- */
+@layer components {
+
+
+
+
+
+
+    /* Focus states suaves para inputs */
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+
+
+
+}
+
+/* --- 6. MEDIA QUERIES & ACESSIBILIDADE --- */
+
+/* Redução de movimento para usuários sensíveis */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    ::before,
+    ::after {
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Ajustes de Impressão */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .glass-card {
+        border: 1px solid #ccc;
+        backdrop-filter: none;
+    }
+}
+
+/* --- 5. ANIMATIONS --- */
+@layer utilities {
+
+    /* Fade In Up Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+
+
+    /* Hover Lift Effect */
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+            box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+
+
+    /* Spring Animation for Buttons */
+    .spring-bounce {
+        transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .spring-bounce:active {
+        transform: scale(0.95);
+    }
+}
+
+/* --- 6. CUSTOM SCROLLBAR --- */
+@layer utilities {
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(9, 9, 11, 0.5);
+        border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #3f3f46;
+        border-radius: 10px;
+        transition: background 0.3s;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #0ea5e9;
+    }
+}
