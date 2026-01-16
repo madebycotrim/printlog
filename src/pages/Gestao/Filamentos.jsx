@@ -221,13 +221,15 @@ export default function FilamentosPage() {
                     placeholder="BUSCAR MATERIAL..."
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
+                    aria-label="Buscar material"
                   />
                   {busca && (
                     <button
                       onClick={() => setBusca("")}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-rose-500 transition-colors"
+                      aria-label="Limpar busca"
                     >
-                      <X size={14} />
+                      <X size={14} aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -237,14 +239,18 @@ export default function FilamentosPage() {
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'grid' ? 'bg-rose-500/20 text-rose-400' : 'text-zinc-600 hover:text-zinc-200'}`}
+                    aria-label="Visualização em grade"
+                    aria-pressed={viewMode === 'grid'}
                   >
-                    <LayoutGrid size={16} strokeWidth={viewMode === 'grid' ? 2.5 : 2} />
+                    <LayoutGrid size={16} strokeWidth={viewMode === 'grid' ? 2.5 : 2} aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
                     className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'list' ? 'bg-rose-500/20 text-rose-400' : 'text-zinc-600 hover:text-zinc-200'}`}
+                    aria-label="Visualização em lista"
+                    aria-pressed={viewMode === 'list'}
                   >
-                    <List size={16} strokeWidth={viewMode === 'list' ? 2.5 : 2} />
+                    <List size={16} strokeWidth={viewMode === 'list' ? 2.5 : 2} aria-hidden="true" />
                   </button>
                 </div>
 
@@ -257,8 +263,9 @@ export default function FilamentosPage() {
                                 transition-all duration-300 active:scale-95
                             "
                   title="Registrar Desperdício"
+                  aria-label="Registrar desperdício"
                 >
-                  <Trash2 size={18} className="text-rose-500 group-hover:scale-110 transition-transform" />
+                  <Trash2 size={18} className="text-rose-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
                 </button>
 
                 {/* Botão Novo Filamento */}
@@ -282,7 +289,7 @@ export default function FilamentosPage() {
             {/* Busca Mobile */}
             <div className="mt-4 md:hidden relative group">
               <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${busca ? 'text-rose-400' : 'text-zinc-600'}`}>
-                <Search size={14} strokeWidth={3} />
+                <Search size={14} strokeWidth={3} aria-hidden="true" />
               </div>
               <input
                 className="
@@ -294,6 +301,7 @@ export default function FilamentosPage() {
                 placeholder="BUSCAR MATERIAL..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
+                aria-label="Buscar material"
               />
             </div>
           </div>
