@@ -139,6 +139,13 @@ export const useLogicaConfiguracao = () => {
                     });
                 }
 
+                if (dadosCompletos.clients?.length > 0) {
+                    conteudoCsv += `\n--- CLIENTES ---\nNOME;EMPRESA;EMAIL;TELEFONE;ENDERECO\n`;
+                    dadosCompletos.clients.forEach(c => {
+                        conteudoCsv += `"${c.nome}";"${c.empresa || ''}";"${c.email || ''}";"${c.telefone || ''}";"${c.endereco || ''}"\n`;
+                    });
+                }
+
                 const arquivoGerado = new Blob([conteudoCsv], { type: 'text/csv;charset=utf-8;' });
                 baixarArquivo(arquivoGerado, `${nomeArquivo}.csv`);
             }

@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, Search } from "lucide-react";
 
 /* ---------- COMPONENTE: INTERNAL SELECT ---------- */
 import { createPortal } from 'react-dom';
 
-const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen }) => {
+const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen, onSearch }) => {
   const containerRef = useRef(null);
+  const searchRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
 
   const selected = useMemo(() => {
     for (const g of options || []) {
@@ -16,8 +18,30 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
     return null;
   }, [options, value]);
 
+  // Filter options based on search
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm) return options;
+    return options.map(group => ({
+      ...group,
+      items: group.items?.filter(item =>
+        item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.value === 'new_client') // Always show actions
+      )
+    })).filter(group => group.items && group.items.length > 0);
+  }, [options, searchTerm]);
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      if (onSearch) onSearch("");
+      return;
+    }
+
+    // Reset search
+    setSearchTerm("");
+    if (onSearch) onSearch("");
+
+    // Focus search input after render
+    setTimeout(() => searchRef.current?.focus(), 50);
 
     // Calcula posição
     const updatePosition = () => {
@@ -37,7 +61,10 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
     const handleScroll = (e) => {
       // Se o scroll ocorrer fora do dropdown, fecha
       // (Opcional: ou recalcula, mas fechar é mais seguro para evitar desync visual)
-      setOpen(false);
+      // setOpen(false); // COMENTADO: Scroll dentro do dropdown fecha ele se não cuidar. 
+      // Idealmente, checar se target está dentro do dropdown. 
+      // Mas para simplificar e garantir UX, vamos fechar SÓ se for scroll da window/body não controlado.
+      // E.target pode ser capturado.
     };
     const handleResize = () => setOpen(false);
     const handleEsc = (e) => e.key === 'Escape' && setOpen(false);
@@ -60,45 +87,71 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
         position: 'fixed',
         top: coords.top,
         left: coords.left,
-        width: Math.max(coords.width, 200), // Min width for better UX
+        width: Math.max(coords.width, 240), // Min width for better UX
         zIndex: 9999
       }}
-      className="bg-[#0c0c0e] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+      className="bg-[#0c0c0e] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+      onMouseDown={(e) => e.stopPropagation()}
     >
+      {/* Campo de Pesquisa */}
+      <div className="p-2 border-b border-white/10 sticky top-0 bg-[#0c0c0e] z-10">
+        <div className="relative flex items-center">
+          <Search size={12} className="absolute left-3 text-zinc-500 pointer-events-none" />
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Pesquisar..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (onSearch) onSearch(e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-zinc-900/50 border border-white/5 rounded-lg py-1.5 pl-8 pr-3 text-[10px] font-bold text-zinc-200 placeholder:text-zinc-600 outline-none focus:border-sky-500/50 focus:bg-zinc-900 transition-all uppercase"
+          />
+        </div>
+      </div>
+
       <div className="max-h-64 overflow-y-auto p-1.5 custom-scrollbar flex flex-col">
-        {(options || []).map((g, i) => (
-          <div key={i} className="mb-2 last:mb-0">
-            {g.group && (
-              <div className="px-3 py-1.5 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em] border-b border-white/5 mb-1">
-                {g.group}
-              </div>
-            )}
-            {g.items?.map(item => (
-              <div
-                key={item.value}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(item.value);
-                  setOpen(false);
-                }}
-                className={`px-3 py-2.5 rounded-lg flex items-center justify-between text-[10px] font-bold uppercase cursor-pointer transition-all duration-200 whitespace-nowrap gap-6 ${String(value) === String(item.value)
-                  ? "bg-sky-500/15 text-sky-400"
-                  : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
-                  }`}
-              >
-                <div className="flex items-center gap-2 truncate">
-                  {item.color && String(value) === "manual" && item.value !== "manual" ? null : (
-                    item.color && item.color !== 'transparent' && <div className="w-2 h-2 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: item.color }} />
-                  )}
-                  <span className="truncate">{item.label}</span>
+        {filteredOptions.length > 0 ? (
+          filteredOptions.map((g, i) => (
+            <div key={i} className="mb-2 last:mb-0">
+              {g.group && (
+                <div className="px-3 py-1.5 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em] border-b border-white/5 mb-1">
+                  {g.group}
                 </div>
-                {String(value) === String(item.value) && (
-                  <Check size={12} className="shrink-0" />
-                )}
-              </div>
-            ))}
+              )}
+              {g.items?.map(item => (
+                <div
+                  key={item.value}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange(item.value);
+                    setOpen(false);
+                  }}
+                  className={`px-3 py-2.5 rounded-lg flex items-center justify-between text-[10px] font-bold uppercase cursor-pointer transition-all duration-200 whitespace-nowrap gap-6 ${String(value) === String(item.value)
+                    ? "bg-sky-500/15 text-sky-400"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                    }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    {item.color && String(value) === "manual" && item.value !== "manual" ? null : (
+                      item.color && item.color !== 'transparent' && <div className="w-2 h-2 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: item.color }} />
+                    )}
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  {String(value) === String(item.value) && (
+                    <Check size={12} className="shrink-0" />
+                  )}
+                </div>
+              ))}
+            </div>
+          ))
+        ) : (
+          <div className="p-4 text-center">
+            <span className="text-[9px] font-bold text-zinc-600 uppercase">Nenhuma opção encontrada</span>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -126,7 +179,7 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
 /* ---------- COMPONENTE PRINCIPAL: UNIFIED INPUT ---------- */
 export const UnifiedInput = ({
   label, subtitle, icon: Icon, suffix, isLucro, type, options, variant = "default",
-  hoursValue, onHoursChange, minutesValue, onMinutesChange, ...props
+  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
@@ -167,7 +220,7 @@ export const UnifiedInput = ({
   }, []);
 
   return (
-    <div className={`flex-1 min-w-[120px] flex flex-col gap-1.5 transition-all duration-300 
+    <div className={`flex-1 min-w-0 w-full flex flex-col gap-1.5 transition-all duration-300 
       ${isSelectOpen ? 'relative z-[60]' : 'relative z-0'}`}
     >
       {label && !isGhost && (
@@ -244,6 +297,7 @@ export const UnifiedInput = ({
                   options={options}
                   isOpen={isSelectOpen}
                   setOpen={setIsSelectOpen}
+                  onSearch={onSearch}
                 />
               ) : (
                 <input
@@ -259,6 +313,7 @@ export const UnifiedInput = ({
             </div>
           )}
         </div>
+
 
         {!isTime && suffix && (
           <span className={`absolute right-3.5 text-[9px] font-black uppercase pointer-events-none transition-colors 

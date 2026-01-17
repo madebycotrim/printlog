@@ -30,7 +30,7 @@ export default function TabelaClientes({ clientes, onEdit, onDelete, onViewHisto
                         key={cliente.id}
                         className="bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-5 hover:border-zinc-700/50 transition-all group hover-lift relative overflow-hidden"
                     >
-                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                        <div className="absolute top-0 right-0 p-4 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex gap-2">
                             <button
                                 onClick={() => onEdit(cliente)}
                                 className="p-2 hover:bg-sky-500/10 text-zinc-400 hover:text-sky-400 rounded-lg transition-colors"

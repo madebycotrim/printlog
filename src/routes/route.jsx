@@ -24,6 +24,8 @@ const Financeiro = lazy(() => import("../pages/Gestao/Financeiro"));
 const Clientes = lazy(() => import("../pages/Principal/Clientes"));
 const Ajuda = lazy(() => import("../pages/Sistema/CentralMaker"));
 const NotFound = lazy(() => import("../pages/Publica/NotFound"));
+const PrivacyPolicy = lazy(() => import("../pages/Publica/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("../pages/Publica/TermsOfService"));
 
 // Componente auxiliar para rotas que só podem ser vistas por quem NÃO está logado
 function GuestRoute({ component: Component, ...props }) {
@@ -62,6 +64,8 @@ export default function AppRoutes() {
 
                 <Route path="/forgot-password" component={ForgotPassword} />
                 <Route path="/sso-callback" component={SSOCallback} />
+                <Route path="/privacy-policy" component={PrivacyPolicy} />
+                <Route path="/terms" component={TermsOfService} />
 
                 {/* ---------- PROTECTED ROUTES ---------- */}
                 {/* O ProtectedRoute já possui seu próprio Suspense interno conforme a correção anterior */}

@@ -176,7 +176,7 @@ export default function MaterialModule({
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 relative z-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10">
                         <UnifiedInput
                             label="Peso da Peça"
                             suffix="g"

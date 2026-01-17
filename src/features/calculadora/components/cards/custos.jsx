@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { formatCurrency } from "../../../../utils/numbers";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
-import { Box as BoxIcon, Truck, Wrench, Plus, Tag, Trash2, Package } from "lucide-react";
+import { Box as BoxIcon, Truck, Wrench, Plus, Tag, Trash2, List } from "lucide-react";
 import { useSupplyStore } from "../../../insumos/logic/supplies";
 
 export default function CustosLogisticos({
@@ -21,8 +21,16 @@ export default function CustosLogisticos({
   // Garante que a lista de extras seja sempre um array válido para o código
   const extrasSeguros = Array.isArray(custosExtras) ? custosExtras : [];
 
-  const mappedSupplies = supplies.map(s => ({ value: s.id, label: s.name }));
-  const supplyOptions = [{ items: [{ value: "", label: "..." }].concat(mappedSupplies) }];
+  // Prepara as opções do Select
+  const opcoesSelecao = useMemo(() => {
+    const manualOption = { value: 'custom', label: 'Item Personalizado...', color: 'transparent' };
+    const supplyOptions = supplies.map(s => ({
+      value: s.id,
+      label: s.name,
+      // Opcional: Adicionar cor ou outro metadado se necessário
+    }));
+    return [{ group: "Opções", items: [manualOption, ...supplyOptions] }];
+  }, [supplies]);
 
   // Soma todos os extras para mostrar o total no topo do card
   const totalExtrasSoma = extrasSeguros.reduce((acumulado, item) => {
@@ -32,7 +40,8 @@ export default function CustosLogisticos({
 
   // Adiciona uma nova linha de custo na lista
   const adicionarExtra = () => {
-    setCustosExtras([...extrasSeguros, { nome: "", valor: "" }]);
+    // Por padrão começa com Select vazio
+    setCustosExtras([...extrasSeguros, { nome: "", valor: "", qtd: 1, supplyId: "" }]);
   };
 
   // Remove um item da lista pelo índice dele
@@ -41,47 +50,70 @@ export default function CustosLogisticos({
     setCustosExtras(novaLista);
   };
 
-  // Atualiza o nome ou o valor de um custo extra específico
-  const atualizarExtra = (index, campo, valor) => {
-    const novaListaExtras = extrasSeguros.map((item, i) => {
+  // Atualiza campo genérico
+  const atualizarItem = (index, campo, valor) => {
+    const novaLista = extrasSeguros.map((item, i) => {
       if (i === index) {
-        // Se for o nome, a gente deixa tudo em maiúsculo pra manter o padrão
-        if (campo === "nome") {
-          return { ...item, [campo]: valor.toUpperCase() };
-        }
+        if (campo === "nome") return { ...item, nome: valor.toUpperCase() };
         return { ...item, [campo]: valor };
       }
       return item;
     });
-    setCustosExtras(novaListaExtras);
+    setCustosExtras(novaLista);
   };
 
-  const selecionarInsumo = (index, supplyId) => {
-    const supply = supplies.find(s => String(s.id) === String(supplyId));
-    if (supply) {
-      const novaLista = extrasSeguros.map((item, i) => {
-        if (i === index) {
-          const qtd = item.qtd || 1;
-          return {
-            ...item,
-            supplyId: supply.id, // Store ID for future inventory deduction
-            nome: supply.name.toUpperCase(),
-            unitPrice: supply.price,
-            qtd: qtd,
-            valor: (qtd * supply.price).toFixed(2) // Initial total
-          };
-        }
-        return item;
-      });
-      setCustosExtras(novaLista);
+  // Lógica de Seleção do Insumo
+  const selecionarInsumo = (index, valorSelecionado) => {
+    const novaLista = [...extrasSeguros];
+    const itemAtual = novaLista[index];
+
+    if (valorSelecionado === 'custom') {
+      // Muda para modo manual
+      novaLista[index] = {
+        ...itemAtual,
+        supplyId: 'custom',
+        nome: "", // Limpa o nome para o usuário digitar
+        unitPrice: 0,
+        valor: "0.00"
+      };
+    } else {
+      // Selecionou um insumo do estoque
+      const supply = supplies.find(s => String(s.id) === String(valorSelecionado));
+      if (supply) {
+        novaLista[index] = {
+          ...itemAtual,
+          supplyId: supply.id,
+          nome: supply.name.toUpperCase(),
+          unitPrice: supply.price,
+          valor: (parseFloat(itemAtual.qtd || 1) * supply.price).toFixed(2)
+        };
+      }
     }
+    setCustosExtras(novaLista);
   };
+
+  // Voltar para o modo lista (resetar para seleção)
+  const voltarParaLista = (index) => {
+    const novaLista = [...extrasSeguros];
+    novaLista[index].supplyId = ""; // Reinicia a seleção para mostrar o Select
+    // Opcional: Limpar dados se quiser resetar totalmente?
+    // novaLista[index].nome = ""; 
+    // novaLista[index].unitPrice = 0;
+    // Vamos manter os dados por enquanto ou não? 
+    // Se voltar para lista, melhor limpar para não parecer que selecionou algo.
+    novaLista[index].nome = "";
+    novaLista[index].unitPrice = 0;
+    novaLista[index].valor = "";
+
+    setCustosExtras(novaLista);
+  };
+
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
 
       {/* 1. CAMPOS PADRÃO: LOGÍSTICA BÁSICA */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <UnifiedInput
           label="Embalagem"
           icon={BoxIcon}
@@ -106,15 +138,12 @@ export default function CustosLogisticos({
 
       {/* 2. SEÇÃO DE GASTOS EXTRAS */}
       <div className="space-y-3">
-        {/* Cabeçalho com Contador e Total */}
+        {/* Cabeçalho SEM CONTADOR */}
         <div className="flex items-center justify-between px-1 border-b border-zinc-800/50 pb-2">
           <div className="flex items-center gap-2">
             <Wrench size={12} className="text-zinc-500" />
             <span className="text-[9px] font-black tracking-[0.2em] text-zinc-500 uppercase">
               Custos Adicionais
-            </span>
-            <span className="text-[7px] bg-zinc-900/50 text-zinc-400 px-1.5 py-0.5 rounded border border-zinc-800/50/50 font-bold font-mono">
-              {String(extrasSeguros.length).padStart(2, '0')} ITENS
             </span>
           </div>
 
@@ -135,110 +164,120 @@ export default function CustosLogisticos({
           </div>
         </div>
 
-        {/* LISTA DE ITENS COM ROLAGEM INTERNA */}
+        {/* LISTA DE ITENS */}
         <div className="space-y-2 max-h-[234px] overflow-y-auto pr-1 custom-scrollbar overflow-x-hidden">
-          {extrasSeguros.map((item, index) => (
-            <div key={`extra-${index}`} className="flex items-center gap-2 group animate-in slide-in-from-right-2 duration-300 mb-2 bg-zinc-900/20 p-2 rounded-xl border border-zinc-800/50 hover:border-zinc-700 transition-colors">
+          {extrasSeguros.map((item, index) => {
+            const isManualMode = item.supplyId === 'custom' || (!item.supplyId && Boolean(item.nome));
+            const showTextInput = item.supplyId === 'custom' || (!item.supplyId && Boolean(item.nome)); // Redundant but clear
 
-              {/* DESCRIÇÃO DO GASTO + SELECT */}
-              <div className="min-w-0 flex-[2] flex flex-col gap-1">
-                <div className="flex gap-2">
-                  {supplies.length > 0 && (
-                    <div className="w-[40px] shrink-0">
-                      <UnifiedInput
-                        type="select"
-                        icon={Package}
-                        options={supplyOptions}
-                        value={""} // Always reset
-                        onChange={(val) => selecionarInsumo(index, val)}
-                      />
-                    </div>
+            // Calculate z-index for dropdown stacking context (higher at top)
+            const zIndex = (extrasSeguros.length - index) * 10;
+
+            return (
+              <div
+                key={`extra-${index}`}
+                style={{ zIndex }}
+                className="flex items-end gap-2 group animate-in slide-in-from-right-2 duration-300 mb-2 relative"
+              >
+
+                {/* BOTÃO VOLTAR PARA SELECT (SÓ NO MODO MANUAL) 
+                    Optei por deixá-lo fora do fluxo principal de 3 colunas ou integrado?
+                    Para ficar IGUAL ao rack, não deveria ter esse botão extra quebrando o layout.
+                    Vou tentar integrá-lo ou deixá-lo sutil. 
+                    No Rack não tem esse botão. Mas aqui é necessário UX.
+                    Vou colocar antes do input principal, mas tentar manter alinhado.
+                */}
+                {showTextInput && (
+                  <button
+                    onClick={() => voltarParaLista(index)}
+                    className="h-11 w-8 shrink-0 rounded-xl bg-zinc-950/30 border border-zinc-800/50 flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all mb-[1px]"
+                    title="Voltar para seleção"
+                  >
+                    <List size={14} />
+                  </button>
+                )}
+
+                {/* COLUNA 1: NOME / SELECT */}
+                <div className="flex-1 min-w-0 relative">
+                  {showTextInput ? (
+                    <UnifiedInput
+                      placeholder="NOME DO ITEM..."
+                      type="text"
+                      icon={Tag}
+                      value={item.nome || ""}
+                      onChange={(e) => atualizarItem(index, "nome", e.target.value)}
+                    />
+                  ) : (
+                    <UnifiedInput
+                      placeholder="SELECIONE..."
+                      type="select"
+                      icon={BoxIcon}
+                      options={opcoesSelecao}
+                      value={item.supplyId || ""}
+                      onChange={(val) => selecionarInsumo(index, val)}
+                    />
                   )}
+                </div>
+
+                {/* COLUNA 2: QUANTIDADE (Igual ao Peso no Rack -> 82px) */}
+                <div className="w-[82px] shrink-0 relative">
                   <UnifiedInput
-                    placeholder="Nome do custo..."
-                    type="text"
-                    icon={Tag}
-                    value={item.nome || ""}
-                    onChange={(e) => atualizarExtra(index, "nome", e.target.value)}
+                    placeholder="0"
+                    type="number"
+                    suffix="UN"
+                    value={item.qtd || 1}
+                    onChange={(e) => {
+                      const novaQtd = parseFloat(e.target.value) || 0;
+                      const novaLista = [...extrasSeguros];
+                      novaLista[index] = {
+                        ...novaLista[index],
+                        qtd: novaQtd,
+                        valor: (novaQtd * (parseFloat(novaLista[index].unitPrice) || 0)).toFixed(2)
+                      };
+                      setCustosExtras(novaLista);
+                    }}
+                    onWheel={(e) => e.target.blur()}
                   />
                 </div>
+
+                {/* COLUNA 3: VALOR UNITÁRIO (Igual ao Preço no Rack -> 82px) */}
+                <div className="w-[82px] shrink-0 relative">
+                  <UnifiedInput
+                    placeholder="0.00"
+                    type="number"
+                    suffix="R$"
+                    value={item.unitPrice || (item.valor && item.qtd ? (item.valor / item.qtd).toFixed(2) : 0)}
+                    onChange={(e) => {
+                      const novoUnitario = parseFloat(e.target.value) || 0;
+                      const novaLista = [...extrasSeguros];
+                      const qtd = parseFloat(novaLista[index].qtd) || 1;
+                      novaLista[index] = {
+                        ...novaLista[index],
+                        unitPrice: novoUnitario,
+                        valor: (qtd * novoUnitario).toFixed(2)
+                      };
+                      setCustosExtras(novaLista);
+                    }}
+                    onWheel={(e) => e.target.blur()}
+                  />
+                </div>
+
+                {/* REMOVER (Estilo exato do Rack) */}
+                <button
+                  type="button"
+                  onClick={() => removerExtra(index)}
+                  className="h-11 w-10 shrink-0 flex items-center justify-center rounded-xl bg-zinc-950/30 border border-zinc-800/50 text-zinc-600 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10 transition-all mb-[1px] shadow-sm"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
+            );
+          })}
 
-              {/* QUANTIDADE */}
-              <div className="w-[70px] shrink-0">
-                <UnifiedInput
-                  placeholder="Qtd"
-                  type="number"
-                  label="Qtd"
-                  value={item.qtd || 1}
-                  onChange={(e) => {
-                    const novaQtd = parseFloat(e.target.value) || 0;
-                    // Atualiza a quantidade e recalcula o valor total
-                    const novaLista = [...extrasSeguros];
-                    novaLista[index] = {
-                      ...novaLista[index],
-                      qtd: novaQtd,
-                      valor: (novaQtd * (parseFloat(novaLista[index].unitPrice) || 0)).toFixed(2)
-                    };
-                    setCustosExtras(novaLista);
-                  }}
-                  onWheel={(e) => e.target.blur()}
-                />
-              </div>
-
-              {/* VALOR UNITÁRIO (HIDDEN IF NOT INVENTORY? NO, ALWAYS SHOW FOR EDITS) */}
-              <div className="w-[80px] shrink-0">
-                <UnifiedInput
-                  placeholder="Unit."
-                  type="number"
-                  label="Unit."
-                  suffix="R$"
-                  value={item.unitPrice || item.valor || 0} // Fallback for legacy data
-                  onChange={(e) => {
-                    const novoUnitario = parseFloat(e.target.value) || 0;
-                    const novaLista = [...extrasSeguros];
-                    const qtd = parseFloat(novaLista[index].qtd) || 1;
-                    novaLista[index] = {
-                      ...novaLista[index],
-                      unitPrice: novoUnitario,
-                      valor: (qtd * novoUnitario).toFixed(2)
-                    };
-                    setCustosExtras(novaLista);
-                  }}
-                  onWheel={(e) => e.target.blur()}
-                />
-              </div>
-
-
-              {/* VALOR TOTAL (READ ONLY PREFERABLY, BUT LET'S LEAVE EDITABLE IF USER WANTS TO OVERRIDE) */}
-              <div className="w-[90px] shrink-0">
-                <UnifiedInput
-                  placeholder="Total"
-                  type="number"
-                  label="Total"
-                  suffix="R$"
-                  disabled={true} // Calculado automaticamente
-                  value={item.valor || ""}
-                  className="bg-zinc-950/50 text-zinc-400 cursor-not-allowed"
-                />
-              </div>
-
-              {/* BOTÃO PRA REMOVER */}
-              <button
-                type="button"
-                onClick={() => removerExtra(index)}
-                className="h-10 w-10 flex shrink-0 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 transition-all mt-6"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
-
-          {/* AVISO DE LISTA VAZIA */}
           {extrasSeguros.length === 0 && (
             <div className="py-8 text-center border-2 border-dashed border-zinc-900 rounded-2xl animate-in fade-in zoom-in-95">
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-700">
-                Nenhum custo extra por enquanto
+                Nenhum custo extra
               </p>
             </div>
           )}

@@ -55,7 +55,11 @@ createRoot(document.getElementById("root")).render(
                 }>
                     <Toast />
                     <Router>
-                        <ErrorBoundary>
+                        <ErrorBoundary
+                            title="Erro na Busca Global"
+                            message="A pesquisa encontrou um problema."
+                            className="fixed bottom-4 right-4 z-[9999] w-80 bg-zinc-900 border-zinc-800 shadow-2xl"
+                        >
                             <GlobalSearch />
                         </ErrorBoundary>
                         <AppRoutes />

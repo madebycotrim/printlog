@@ -8,7 +8,7 @@ import ErrorBoundary from "../components/ErrorBoundary";
 export default function ProtectedRoute({ path, component: Component }) {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const { isLoaded: userLoaded, user } = useUser();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
 
   // Salvar URL se não estiver logado
   useEffect(() => {
@@ -52,7 +52,13 @@ export default function ProtectedRoute({ path, component: Component }) {
         // Renderização com Suspense para Lazy loading
         return (
           <Suspense fallback={<SimpleLoader />}>
-            <ErrorBoundary>
+            <ErrorBoundary
+              title="Erro na Página"
+              message="Ocorreu um erro crítico ao carregar esta tela. Tente recarregar."
+              className="h-screen w-full flex flex-col items-center justify-center p-8 bg-zinc-950/80"
+              onBack={() => setLocation('/dashboard')}
+              backLabel="Voltar ao Início"
+            >
               <Component user={userData} />
             </ErrorBoundary>
           </Suspense>

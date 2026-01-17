@@ -1,12 +1,12 @@
 ﻿import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
     CheckCircle2, AlertTriangle, Upload, AlertCircle,
-    Settings2, BarChart3, HelpCircle, ChevronRight
+    Settings2, BarChart3, HelpCircle, ChevronRight, Menu, X
 } from "lucide-react";
 
 // Layout e Componentes Universais
-import MainSidebar from "../../layouts/mainSidebar.jsx";
-import Popup from "../../components/Popup.jsx"; // Componente Unificado
+import ManagementLayout from "../../layouts/ManagementLayout.jsx";
+import Popup from "../../components/Popup.jsx";
 
 // Componentes de Feature
 import HeaderCalculadora from "../../features/calculadora/components/HeaderCalculadora.jsx";
@@ -22,9 +22,8 @@ import CardCanal from "../../features/calculadora/components/cards/taxasVenda.js
 import CardEmbalagem from "../../features/calculadora/components/cards/custos.jsx";
 import CardPreco from "../../features/calculadora/components/cards/lucroDescontos.jsx";
 
-// LÃ³gica e Armazenamento
+// Lógica e Armazenamento
 import { formatarMoeda } from "../../utils/numbers";
-
 import useDebounce from "../../hooks/useDebounce";
 import { calcularTudo, useSettingsStore } from "../../features/calculadora/logic/calculator";
 import { usePrinterStore } from "../../features/impressoras/logic/printer.js";
@@ -32,10 +31,11 @@ import { useProjectsStore } from "../../features/projetos/logic/projects.js";
 import { useFilamentStore } from "../../features/filamentos/logic/filaments.js";
 import { useSupplyStore } from "../../features/insumos/logic/supplies.js";
 import { useClientStore } from "../../features/clientes/logic/clients.js";
-
 import { useSidebarStore } from "../../stores/sidebarStore";
-
-const CONFIG_SIDEBAR = { COLAPSADO: 72, EXPANDIDO: 260 };
+import { useToastStore } from "../../stores/toastStore";
+import { analisarArquivoProjeto } from "../../utils/projectParser";
+import { useDragDrop } from "../../hooks/useDragDrop";
+import { useTransferStore } from "../../stores/transferStore";
 
 /* ---------- WRAPPER CARD: ESTRUTURA VISUAL ---------- */
 const WrapperCard = React.memo(({ children, title, step, className = "", zPriority = "z-10" }) => {
@@ -67,557 +67,333 @@ const WrapperCard = React.memo(({ children, title, step, className = "", zPriori
                 <div className="flex-1 overflow-visible pt-2">{children}</div>
             </div>
         </div>
+
     );
 });
 
-/* ---------- COMPONENTE PRINCIPAL DA PÃ GINA ---------- */
+/* ---------- COMPONENTE PRINCIPAL DA PÁGINA ---------- */
 export default function CalculadoraPage() {
-    const { width: larguraSidebar } = useSidebarStore();
+    const { width: larguraSidebar, isMobile, setMobileOpen } = useSidebarStore();
+    const { addToast } = useToastStore();
     const [abaAtiva, setAbaAtiva] = useState("resumo");
+
+    // Stores
+    const { settings, fetchSettings, isLoading: isLoadingSettings } = useSettingsStore();
+    const { printers, fetchPrinters } = usePrinterStore();
+    const { clients, fetchClients } = useClientStore();
+    const { filaments, fetchFilaments } = useFilamentStore();
+    const { saveProject } = useProjectsStore();
+
+    // Estados Locais
+
     const [historicoAberto, setHistoricoAberto] = useState(false);
-    const [precisaConfigurar, setPrecisaConfigurar] = useState(false);
-    const [idProjetoAtual, setIdProjetoAtual] = useState(null);
-    const [isDragging, setIsDragging] = useState(false); // Estado de Drag & Drop
-    const fileInputRef = useRef(null); // Ref para input file escondido
+    const [modalFalhaAberto, setModalFalhaAberto] = useState(false);
+    const [modalConfig, setModalConfig] = useState({ open: false, title: "", message: "", icon: null, customAction: null });
+    const fileInputRef = useRef(null);
 
-    // Estado para Popups (Centralizado)
-    const [modalConfig, setModalConfig] = useState({
-        open: false, title: "", message: "", icon: AlertCircle, color: "text-sky-500"
-    });
-    const [modalFalhaAberto, setModalFalhaAberto] = useState(false); // Novo estado
-
-    const { printers: impressoras, fetchPrinters: buscarImpressoras } = usePrinterStore();
-    const { settings: configuracoesGerais, fetchSettings: buscarConfiguracoes } = useSettingsStore();
-    const { fetchHistory: buscarHistorico, addHistoryEntry: salvarNoBanco, projects } = useProjectsStore();
-    const { quickUpdateWeight, filaments: listaFilamentos } = useFilamentStore();
-    const { quickUpdateStock, supplies: listaInsumos } = useSupplyStore(); // [NOVO]
-    const { fetchClients, clients: listaClientes } = useClientStore();
-
-    // Listener para Baixa de Estoque via Evento
-    useEffect(() => {
-        const handleDeduct = async (e) => {
-            const { id, amount } = e.detail;
-            const fil = listaFilamentos.find(f => String(f.id) === String(id));
-            if (fil) {
-                const novoPeso = Math.max(0, Number(fil.peso_atual) - Number(amount));
-                await quickUpdateWeight(id, novoPeso);
-            }
-        };
-
-        // [NOVO] Listener para Baixa de Insumos
-        const handleDeductSupply = async (e) => {
-            const { items } = e.detail; // Array de {id, qtd}
-            if (Array.isArray(items)) {
-                for (const item of items) {
-                    const supply = listaInsumos.find(s => String(s.id) === String(item.id));
-                    if (supply) {
-                        const novoEstoque = Math.max(0, Number(supply.currentStock) - Number(item.qtd));
-                        await quickUpdateStock(item.id, novoEstoque);
-                    }
-                }
-            }
-        };
-
-        window.addEventListener('deduct-stock', handleDeduct);
-        window.addEventListener('deduct-supply', handleDeductSupply);
-        return () => {
-            window.removeEventListener('deduct-stock', handleDeduct);
-            window.removeEventListener('deduct-supply', handleDeductSupply);
-        };
-    }, [listaFilamentos, quickUpdateWeight, listaInsumos, quickUpdateStock]);
-
+    // Estado do Formulário
     const [dadosFormulario, setDadosFormulario] = useState({
         nomeProjeto: "",
-        clienteId: "", // [NOVO]
-        qtdPecas: "1",
-        material: { custoRolo: "", pesoModelo: "", idFilamentoSelecionado: "manual", slots: [] },
-        tempo: { impressaoHoras: "", impressaoMinutos: "", trabalhoHoras: "", trabalhoMinutos: "" },
-        vendas: { canal: "loja", taxaMarketplace: "", taxaMarketplaceFixa: "", desconto: "" },
-        custosExtras: { embalagem: "", frete: "", lista: [] },
+        clienteId: "",
+        qtdPecas: 1,
+        material: {
+            custoRolo: "",
+            pesoModelo: "",
+            idFilamentoSelecionado: "",
+            slots: []
+        },
+        tempo: {
+            impressaoHoras: "",
+            impressaoMinutos: "",
+            trabalhoHoras: "",
+            trabalhoMinutos: ""
+        },
+        vendas: {
+            canal: "direta",
+            taxaMarketplace: "",
+            taxaMarketplaceFixa: "",
+            desconto: ""
+        },
+        custosExtras: {
+            embalagem: "",
+            frete: "",
+            lista: []
+        },
         config: {
-            margemLucro: "", imposto: "", taxaFalha: "", custoKwh: "",
-            valorHoraHumana: "", custoHoraMaquina: "", taxaSetup: "", consumoKw: ""
+            custoKwh: "",
+            valorHoraHumana: "",
+            custoHoraMaquina: "",
+            taxaSetup: "",
+            consumoKw: "",
+            margemLucro: "",
+            imposto: "",
+            taxaFalha: ""
         }
     });
 
     const [hardwareSelecionado, setHardwareSelecionado] = useState(null);
 
+    // Carregamento Inicial
+    useEffect(() => {
+        const init = async () => {
+            // Verificar se há arquivo pendente vindo do Dashboard ou outra tela
+            const pendingFile = useTransferStore.getState().pendingFile;
+            if (pendingFile) {
+                // Pequeno delay para garantir que a UI montou
+                setTimeout(() => {
+                    processarArquivo(pendingFile);
+                    useTransferStore.getState().clearPendingFile();
+                }, 500);
+            }
 
-    const atualizarCampo = useCallback((categoria, campo, valor) => {
-        setDadosFormulario(prev => {
-            if (campo === null) return { ...prev, [categoria]: valor };
-            return { ...prev, [categoria]: { ...prev[categoria], [campo]: valor } };
-        });
+            await Promise.all([
+                fetchSettings(),
+                fetchPrinters(),
+                fetchClients(),
+                fetchFilaments()
+            ]);
+        };
+        init();
     }, []);
 
+    // Atualiza Configuração quando carregada
     useEffect(() => {
-        const inicializar = async () => {
-            const [, , temConfig] = await Promise.all([
-                buscarImpressoras(),
-                buscarHistorico(),
-                buscarConfiguracoes(),
-                fetchClients()
-            ]);
-            if (!temConfig) setPrecisaConfigurar(true);
-        };
-        inicializar();
-    }, [buscarImpressoras, buscarHistorico, buscarConfiguracoes]);
-
-    // Check for G-Code Auto-Fill Params or Project Load
-    useEffect(() => {
-        const searchParams = new URLSearchParams(window.location.search);
-        let shouldCleanUrl = false;
-
-        // Mode 1: Auto-fill from G-Code Drag & Drop
-        if (searchParams.get('auto') === 'true') {
-            const hours = searchParams.get('hours') || "0";
-            const minutes = searchParams.get('minutes') || "0";
-            const weight = searchParams.get('weight') || "0";
-
-            setDadosFormulario(prev => ({
-                ...prev,
-                tempo: { ...prev.tempo, impressaoHoras: hours, impressaoMinutos: minutes },
-                material: { ...prev.material, pesoModelo: weight }
-            }));
-            shouldCleanUrl = true;
-        }
-
-        // Mode 2: Load/Duplicate Existing Project
-        const loadId = searchParams.get('load');
-        if (loadId && projects.length > 0) { // Ensure projects are loaded
-            const projectToLoad = projects.find(p => String(p.id) === String(loadId));
-            if (projectToLoad) {
-                if (projectToLoad.entradas) {
-                    setDadosFormulario(prev => ({
-                        ...prev,
-                        ...projectToLoad.entradas,
-                        nomeProjeto: projectToLoad.entradas.nomeProjeto + " (Cópia)" // Append Copy
-                    }));
-                    // When loading a project to duplicate, we clear the current ID
-                    // so it's saved as a new entry.
-                    setIdProjetoAtual(null);
-                }
-            }
-            shouldCleanUrl = true;
-        }
-
-        if (shouldCleanUrl) {
-            window.history.replaceState({}, '', '/calculadora');
-        }
-    }, [projects]); // Depend on projects so it runs when they load
-
-    useEffect(() => {
-        if (configuracoesGerais && (configuracoesGerais.custoKwh || configuracoesGerais.valorHoraHumana)) {
+        if (settings && !isLoadingSettings) {
             setDadosFormulario(prev => ({
                 ...prev,
                 config: {
                     ...prev.config,
-                    valorHoraHumana: prev.config.valorHoraHumana || configuracoesGerais.valorHoraHumana,
-                    custoKwh: prev.config.custoKwh || configuracoesGerais.custoKwh,
-                    custoHoraMaquina: prev.config.custoHoraMaquina || configuracoesGerais.custoHoraMaquina,
-                    taxaSetup: prev.config.taxaSetup || configuracoesGerais.taxaSetup,
-                    consumoKw: prev.config.consumoKw || configuracoesGerais.consumoKw,
-                    margemLucro: prev.config.margemLucro || configuracoesGerais.margemLucro,
-                    imposto: prev.config.imposto || configuracoesGerais.imposto,
-                    taxaFalha: prev.config.taxaFalha || configuracoesGerais.taxaFalha
+                    custoKwh: settings.custoKwh || prev.config.custoKwh,
+                    valorHoraHumana: settings.valorHoraHumana || prev.config.valorHoraHumana,
+                    custoHoraMaquina: settings.custoHoraMaquina || prev.config.custoHoraMaquina,
+                    taxaSetup: settings.taxaSetup || prev.config.taxaSetup,
+                    consumoKw: settings.consumoKw || prev.config.consumoKw,
+                    margemLucro: settings.margemLucro || prev.config.margemLucro,
+                    imposto: settings.imposto || prev.config.imposto,
+                    taxaFalha: settings.taxaFalha || prev.config.taxaFalha
                 }
             }));
-            setPrecisaConfigurar(false);
         }
-    }, [configuracoesGerais]);
+    }, [settings, isLoadingSettings]);
 
+    // Seleção automática de impressora
     useEffect(() => {
-        if (impressoras?.length > 0 && !hardwareSelecionado) {
-            const ultimoId = localStorage.getItem("last_printer_id");
-            const hardwareParaDefinir = impressoras.find(p => String(p.id) === ultimoId) || impressoras[0];
-            setHardwareSelecionado(hardwareParaDefinir);
-            const potencia = Number(hardwareParaDefinir.potencia || hardwareParaDefinir.power || 0);
-            atualizarCampo('config', 'consumoKw', String(potencia >= 2 ? potencia / 1000 : potencia));
+        if (printers.length > 0 && !hardwareSelecionado) {
+            setHardwareSelecionado(printers[0]);
         }
-    }, [impressoras, hardwareSelecionado, atualizarCampo]);
+    }, [printers, hardwareSelecionado]);
 
-    const lidarCicloHardware = useCallback(() => {
-        if (!impressoras || impressoras.length === 0) return;
-        const indiceAtual = impressoras.findIndex(p => p.id === hardwareSelecionado?.id);
-        const proximoHardware = impressoras[(indiceAtual + 1) % impressoras.length];
-        setHardwareSelecionado(proximoHardware);
-        localStorage.setItem("last_printer_id", proximoHardware.id);
-        const potencia = Number(proximoHardware.potencia || proximoHardware.power || 0);
-        atualizarCampo('config', 'consumoKw', String(potencia >= 2 ? potencia / 1000 : potencia));
-    }, [impressoras, hardwareSelecionado, atualizarCampo]);
-
-    const entradasParaCalculo = useDebounce(dadosFormulario, 250);
-    // OTIMIZAÇÃO: Cálculo derivado síncrono para evitar duplo render (Bolt)
-    const resultados = useMemo(() => {
-        try {
-            return calcularTudo(entradasParaCalculo) || {};
-        } catch (erro) {
-            console.error("Erro no motor de cálculo:", erro);
-            return {};
-        }
-    }, [entradasParaCalculo]);
-
-    const lidarSalvarNoHistorico = useCallback(async () => {
-        // 1. Validação de Nome
-        if (!dadosFormulario.nomeProjeto.trim()) {
-            setModalConfig({
-                open: true,
-                title: "Atenção",
-                message: "Dê um nome para o seu projeto no topo da página antes de salvar.",
-                icon: AlertCircle,
-                color: "text-amber-500"
-            });
-            return false; // Summary recebe false e não abre o popup de sucesso
-        }
-
-        // 2. Tentativa de Salvamento
-        try {
-            const resposta = await salvarNoBanco({
-                id: idProjetoAtual,
-                label: dadosFormulario.nomeProjeto,
-                entradas: {
-                    ...dadosFormulario,
-                    idImpressoraSelecionada: hardwareSelecionado?.id,
-                    nomeImpressoraSelecionada: hardwareSelecionado?.nome || hardwareSelecionado?.modelo
-                },
-                resultados
-            });
-
-            if (resposta) {
-                setIdProjetoAtual(resposta.id);
-
-                // --- SYNC DE ESTOQUE REAL (FILAMENTOS + INSUMOS) ---
-                const idFilamento = dadosFormulario?.material?.idFilamentoSelecionado;
-                const pesoConsumido = (Number(dadosFormulario?.material?.pesoModelo) || 0) * (Number(dadosFormulario?.qtdPecas) || 1);
-
-                // 1. Verifica Filamento
-                const podeDescontarFilamento = idFilamento && idFilamento !== 'manual' && idFilamento !== 'multi' && pesoConsumido > 0;
-
-                // 2. Verifica Insumos
-                const suppliesToDeduct = (dadosFormulario.custosExtras?.lista || [])
-                    .filter(item => item.supplyId && Number(item.qtd) > 0)
-                    .map(item => ({ id: item.supplyId, qtd: Number(item.qtd), name: item.nome }));
-
-                const podeDescontarInsumos = suppliesToDeduct.length > 0;
-
-                // MENSAGEM UNIFICADA
-                if (podeDescontarFilamento || podeDescontarInsumos) {
-                    let msg = "Projeto salvo! Deseja atualizar o estoque automaticamente?";
-                    if (podeDescontarFilamento && podeDescontarInsumos) msg += `\n\n• Filamento: -${Math.round(pesoConsumido)}g\n• Insumos: -${suppliesToDeduct.map(i => `${i.qtd}x ${i.name}`).join(', ')}`;
-                    else if (podeDescontarFilamento) msg += `\n\n• Filamento: -${Math.round(pesoConsumido)}g`;
-                    else msg += `\n\n• Insumos: -${suppliesToDeduct.map(i => `${i.qtd}x ${i.name}`).join(', ')}`;
-
-                    setModalConfig({
-                        open: true,
-                        title: "Sincronizar Estoque?",
-                        message: msg,
-                        icon: AlertCircle,
-                        color: "text-emerald-500",
-                        customAction: () => {
-                            if (podeDescontarFilamento) {
-                                window.dispatchEvent(new CustomEvent('deduct-stock', { detail: { id: idFilamento, amount: pesoConsumido } }));
-                            }
-                            if (podeDescontarInsumos) {
-                                window.dispatchEvent(new CustomEvent('deduct-supply', { detail: { items: suppliesToDeduct } }));
-                            }
-
-                            setModalConfig({
-                                open: true,
-                                title: "Estoques Atualizados!",
-                                message: "Baixa realizada com sucesso.",
-                                icon: CheckCircle2,
-                                color: "text-emerald-500"
-                            });
-                        }
-                    });
-                    return true;
-                }
-
-                return true; // SUCESSO! Summary receberá true e abrirá o popup dele
+    // Atualiza campo genérico
+    const atualizarCampo = useCallback((secao, campo, valor) => {
+        setDadosFormulario(prev => {
+            if (secao && campo) {
+                return {
+                    ...prev,
+                    [secao]: {
+                        ...prev[secao],
+                        [campo]: valor
+                    }
+                };
+            } else if (secao && !campo) {
+                // Atualização direta na raiz ou objeto inteiro
+                return { ...prev, [secao]: valor };
             }
-        } catch (error) {
-            console.error("Erro ao salvar:", error);
-        }
-
-        // 4. Caso de Erro (API ou Banco)
-        setModalConfig({
-            open: true,
-            title: "Erro de Sincronização",
-            message: "Não foi possível salvar na nuvem. Verifique sua conexão.",
-            icon: AlertTriangle,
-            color: "text-rose-500"
+            return prev;
         });
-        return false;
-    }, [dadosFormulario, resultados, hardwareSelecionado, salvarNoBanco, idProjetoAtual]);
-
-    const lidarRestauracao = useCallback((registro) => {
-        const payload = registro.data || registro.payload;
-        if (payload?.entradas) {
-            const dadosRestaurados = JSON.parse(JSON.stringify(payload.entradas));
-            if (dadosRestaurados.material?.slots?.length > 0) dadosRestaurados.material.idFilamentoSelecionado = 'multi';
-
-            // Compatibilidade com registros antigos
-            if (dadosRestaurados.material?.selectedFilamentId) {
-                dadosRestaurados.material.idFilamentoSelecionado = dadosRestaurados.material.selectedFilamentId;
-            }
-
-            setIdProjetoAtual(registro.id);
-            setDadosFormulario(dadosRestaurados);
-
-            const idImpressora = dadosRestaurados.idImpressoraSelecionada || dadosRestaurados.selectedPrinterId;
-            if (idImpressora) {
-                const printer = impressoras.find(p => String(p.id) === String(idImpressora));
-                if (printer) setHardwareSelecionado(printer);
-            }
-        }
-        setHistoricoAberto(false);
-    }, [impressoras]);
-
-    const ehNeutro = !resultados.precoSugerido || resultados.precoSugerido <= 0;
-    const corSaude = resultados.margemEfetivaPct <= 0 ? 'text-rose-500' : resultados.margemEfetivaPct < 15 ? 'text-amber-500' : 'text-emerald-500';
-
-    const elementoHud = useMemo(() => {
-        if (abaAtiva === 'resumo' || ehNeutro) return null;
-        return (
-            <div className="hidden lg:flex items-center gap-6 px-5 h-11 bg-zinc-900/50 border border-zinc-800/50/50 rounded-full animate-in fade-in zoom-in-95 duration-500">
-                <div className="flex flex-col items-center">
-                    <span className="text-[6px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Preço Sugerido</span>
-                    <span className="text-[12px] font-mono font-bold text-white leading-none">{formatarMoeda(resultados.precoComDesconto)}</span>
-                </div>
-                <div className="w-px h-5 bg-white/10" />
-                <div className="flex flex-col items-center">
-                    <span className="text-[6px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Lucro Real</span>
-                    <span className={`text-[12px] font-mono font-bold leading-none ${corSaude}`}>{formatarMoeda(resultados.lucroBrutoUnitario)}</span>
-                </div>
-                <button type="button" onClick={() => setAbaAtiva('resumo')} className="group/hud flex items-center justify-center w-6 h-6 rounded-full bg-zinc-900/50 hover:bg-sky-500 transition-all ml-1 shadow-lg">
-                    <ChevronRight size={14} className="text-zinc-400 group-hover/hud:text-white transition-colors" />
-                </button>
-            </div>
-        );
-    }, [abaAtiva, ehNeutro, resultados, corSaude]);
-
-
-
-    // --- DRAG & DROP HANDLERS ---
-    const handleDragOver = useCallback((e) => {
-        e.preventDefault();
-        setIsDragging(true);
     }, []);
 
-    const handleDragLeave = useCallback((e) => {
-        e.preventDefault();
-        if (e.currentTarget.contains(e.relatedTarget)) return;
-        setIsDragging(false);
-    }, []);
+    const buscarConfiguracoes = async () => {
+        await fetchSettings();
+    };
 
+    // Lógica de Hardware/Impressora
+    const lidarCicloHardware = () => {
+        if (printers.length === 0) return;
+        const currentIndex = printers.findIndex(p => p.id === hardwareSelecionado?.id);
+        const nextIndex = (currentIndex + 1) % printers.length;
+        const nextPrinter = printers[nextIndex];
+        setHardwareSelecionado(nextPrinter);
 
-    const handleDrop = useCallback(async (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-
-        const files = Array.from(e.dataTransfer.files);
-        const file = files.find(f => {
-            const name = f.name.toLowerCase();
-            return name.endsWith('.gcode') || name.endsWith('.gco') || name.endsWith('.3mf');
-        });
-
-        if (!file) {
-            setModalConfig({
-                open: true,
-                title: "Formato Inválido",
-                message: "Por favor, arraste um arquivo .gcode, .gco ou .3mf",
-                icon: AlertTriangle,
-                color: "text-amber-500"
-            });
-            return;
+        // Atualiza consumo se disponível
+        if (nextPrinter?.consumo_w) {
+            const consumoKw = (nextPrinter.consumo_w / 1000).toFixed(3);
+            atualizarCampo('config', 'consumoKw', consumoKw);
+            addToast(`Impressora: ${nextPrinter.nome} (${nextPrinter.consumo_w}W)`, 'info');
         }
+    };
 
-        try {
-            let result;
-            const fileName = file.name.toLowerCase();
-            const isGCode = fileName.endsWith('.gcode') || fileName.endsWith('.gco');
-            const is3MF = fileName.endsWith('.3mf');
+    // Drag & Drop com Hook Otimizado
+    const { isDragging, dragHandlers } = useDragDrop((file) => processarArquivo(file));
 
-            if (isGCode) {
-                const text = await file.text();
-                result = analisarGCode(text);
-            } else if (is3MF) {
-                const { analisarArquivoProjeto } = await import('../../utils/projectParser');
-                result = await analisarArquivoProjeto(file);
-            }
-
-            if (result.success) {
-                const hours = Math.floor(result.timeSeconds / 3600);
-                const minutes = Math.floor((result.timeSeconds % 3600) / 60);
-
-                // Atualiza campos apenas se os dados foram encontrados
-                if (result.details?.foundTime) {
-                    atualizarCampo('tempo', 'impressaoHoras', String(hours));
-                    atualizarCampo('tempo', 'impressaoMinutos', String(minutes));
-                }
-                if (result.details?.foundWeight && result.weightGrams > 0) {
-                    atualizarCampo('material', 'pesoModelo', String(result.weightGrams));
-                }
-
-                // Feedback Visual Detalhado
-                const infoLines = [];
-                if (result.details?.foundTime) infoLines.push(`⏱️ Tempo: ${result.details.timeFormatted}`);
-                if (result.details?.foundWeight) infoLines.push(`⚖️ Peso: ${result.details.weightFormatted}`);
-                if (result.detectedSlicer) infoLines.push(`🔧 Slicer: ${result.detectedSlicer}`);
-
-                setModalConfig({
-                    open: true,
-                    title: "Arquivo Processado!",
-                    message: `${file.name}\n\n${infoLines.join('\n')}${result.message ? '\n\n' + result.message : ''}`,
-                    icon: CheckCircle2,
-                    color: "text-emerald-500"
-                });
-            } else {
-                // Tratamento especial para modelos não fatiados
-                setModalConfig({
-                    open: true,
-                    title: result.fileType === "modelo_3d" ? "Modelo Não Fatiado" : "Dados Não Encontrados",
-                    message: result.message || `Não foi possível extrair dados de "${file.name}".\n\nVerifique se é um arquivo fatiado dos slicers suportados:\nCura, Prusa, Orca, Bambu, Simplify3D, IdeaMaker, KISSlicer, SuperSlicer.`,
-                    icon: AlertTriangle,
-                    color: "text-amber-500"
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao processar arquivo:", error);
-            setModalConfig({
-                open: true,
-                title: "Erro ao Processar",
-                message: `Erro ao ler o arquivo: ${error.message}`,
-                icon: AlertTriangle,
-                color: "text-rose-500"
-            });
-        }
-    }, [atualizarCampo]);
-
-    // Handler para botão de upload
-    const handleUploadClick = useCallback(() => {
+    const handleUploadClick = () => {
         fileInputRef.current?.click();
-    }, []);
+    };
 
-    // Handler para quando arquivo é selecionado via input
-    const handleFileSelected = useCallback(async (e) => {
+    const handleFileSelected = async (e) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) await processarArquivo(file);
+    };
 
-        const fileName = file.name.toLowerCase();
-        const isGCode = fileName.endsWith('.gcode') || fileName.endsWith('.gco');
-        const is3MF = fileName.endsWith('.3mf');
+    const processarArquivo = async (file) => {
+        addToast("Analisando arquivo...", "loading");
+        try {
+            const resultado = await analisarArquivoProjeto(file);
 
-        if (!isGCode && !is3MF) {
-            setModalConfig({
-                open: true,
-                title: "Formato Inválido",
-                message: "Por favor, selecione um arquivo .gcode, .gco ou .3mf",
-                icon: AlertTriangle,
-                color: "text-amber-500"
-            });
-            e.target.value = ''; // Reset input
+            if (resultado.success) {
+                // Atualiza Tempo
+                if (resultado.timeSeconds > 0) {
+                    const totalMinutos = Math.ceil(resultado.timeSeconds / 60);
+                    const horas = Math.floor(totalMinutos / 60);
+                    const minutos = totalMinutos % 60;
+
+                    setDadosFormulario(prev => ({
+                        ...prev,
+                        tempo: {
+                            ...prev.tempo,
+                            impressaoHoras: String(horas),
+                            impressaoMinutos: String(minutos)
+                        }
+                    }));
+                }
+
+                // Atualiza Peso
+                if (resultado.weightGrams > 0) {
+                    setDadosFormulario(prev => ({
+                        ...prev,
+                        material: {
+                            ...prev.material,
+                            pesoModelo: String(resultado.weightGrams)
+                        }
+                    }));
+                }
+
+                // Nome do projeto (se vazio)
+                if (!dadosFormulario.nomeProjeto) {
+                    const nomeLimpo = file.name.replace(/\.(gcode|gco|3mf|stl|obj)$/i, "").replace(/[-_]/g, " ");
+                    atualizarCampo('nomeProjeto', null, nomeLimpo);
+                }
+
+                addToast(`Arquivo processado: ${resultado.message}`, "success");
+            } else {
+                addToast(resultado.message, "warning");
+            }
+        } catch (error) {
+            console.error(error);
+            addToast("Erro ao processar arquivo.", "error");
+        }
+    };
+
+    // Cálculos
+    const resultados = useMemo(() => {
+        return calcularTudo(dadosFormulario);
+    }, [dadosFormulario]);
+
+    // Histórico
+    const lidarSalvarNoHistorico = async () => {
+        if (!dadosFormulario.nomeProjeto) {
+            addToast("Digite um nome para o projeto", "warning");
             return;
         }
 
-        try {
-            let result;
+        const projeto = {
+            nome: dadosFormulario.nomeProjeto,
+            cliente_id: dadosFormulario.clienteId,
+            status: "rascunho",
+            dados_entrada: JSON.stringify(dadosFormulario),
+            dados_saida: JSON.stringify(resultados),
+            custo_total: resultados.custoUnitario,
+            preco_final: resultados.precoComDesconto,
+            lucro_estimado: resultados.lucroBrutoUnitario
+        };
 
-            if (isGCode) {
-                const text = await file.text();
-                const { analisarGCode } = await import('../../utils/projectParser');
-                result = analisarGCode(text);
-            } else if (is3MF) {
-                const { analisarArquivoProjeto } = await import('../../utils/projectParser');
-                result = await analisarArquivoProjeto(file);
+        const sucesso = await saveProject(projeto);
+        if (sucesso) addToast("Projeto salvo no histórico!", "success");
+    };
+
+    const lidarRestauracao = (projetoHistorico) => {
+        if (projetoHistorico?.dados_entrada) {
+            try {
+                const dados = typeof projetoHistorico.dados_entrada === 'string'
+                    ? JSON.parse(projetoHistorico.dados_entrada)
+                    : projetoHistorico.dados_entrada;
+                setDadosFormulario(dados);
+                setHistoricoAberto(false);
+                addToast("Projeto restaurado.", "success");
+            } catch (e) {
+                addToast("Erro ao restaurar dados.", "error");
             }
-
-            if (result.success) {
-                const hours = Math.floor(result.timeSeconds / 3600);
-                const minutes = Math.floor((result.timeSeconds % 3600) / 60);
-
-                // Atualiza campos
-                if (result.details?.foundTime) {
-                    atualizarCampo('tempo', 'impressaoHoras', String(hours));
-                    atualizarCampo('tempo', 'impressaoMinutos', String(minutes));
-                }
-                if (result.details?.foundWeight && result.weightGrams > 0) {
-                    atualizarCampo('material', 'pesoModelo', String(result.weightGrams));
-                }
-
-                // Feedback detalhado
-                const infoLines = [];
-                if (result.details?.foundTime) infoLines.push(`⏱️ Tempo: ${result.details.timeFormatted}`);
-                if (result.details?.foundWeight) infoLines.push(`⚖️ Peso: ${result.details.weightFormatted}`);
-                if (result.detectedSlicer) infoLines.push(`🔧 Slicer: ${result.detectedSlicer}`);
-
-                setModalConfig({
-                    open: true,
-                    title: "Arquivo Importado!",
-                    message: `${file.name}\n\n${infoLines.join('\n')}${result.message ? '\n\n' + result.message : ''}`,
-                    icon: CheckCircle2,
-                    color: "text-emerald-500"
-                });
-            } else {
-                setModalConfig({
-                    open: true,
-                    title: result.fileType === "modelo_3d" ? "Modelo Não Fatiado" : "Dados Não Encontrados",
-                    message: result.message || `Não foi possível extrair dados de "${file.name}".`,
-                    icon: AlertTriangle,
-                    color: "text-amber-500"
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao processar arquivo:", error);
-            setModalConfig({
-                open: true,
-                title: "Erro ao Processar",
-                message: `Erro ao ler o arquivo: ${error.message}`,
-                icon: AlertTriangle,
-                color: "text-rose-500"
-            });
         }
+    };
 
-        e.target.value = ''; // Reset input para permitir reenvio
-    }, [atualizarCampo]);
+    const precisaConfigurar = !settings?.custoKwh;
+    const elementoHud = (
+        <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                {hardwareSelecionado?.nome || "Impressora Padrão"}
+            </span>
+            <div className={`w-2 h-2 rounded-full ${hardwareSelecionado ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
+        </div>
+    );
+
+    // Lista de clientes formatada para o select
+    const listaClientes = clients.map(c => ({ id: c.id, label: c.nome }));
 
     return (
         <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            {...dragHandlers}
             className="flex h-screen bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden relative"
         >
-            {/* OVERLAY DE DRAG & DROP */}
-            {isDragging && (
-                <div className="absolute inset-0 z-[200] bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 pointer-events-none">
-                    <div className="flex flex-col items-center gap-6 p-10 border-2 border-dashed border-sky-500 bg-sky-500/10 rounded-3xl animate-pulse">
-                        <Upload size={64} className="text-sky-500" />
-                        <div className="text-center">
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Solte o G-Code Aqui</h2>
-                            <p className="text-sm font-bold text-sky-400 mt-2 uppercase tracking-widest">Extração Automática de Time e Peso</p>
-                        </div>
+            {/* OVERLAY DE DRAG & DROP OTIMIZADO */}
+            <div className={`
+                absolute inset-0 z-[200] bg-zinc-950/80 backdrop-blur-md flex items-center justify-center 
+                transition-all duration-300 pointer-events-none
+                ${isDragging ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
+            `}>
+                <div className={`
+                     flex flex-col items-center gap-6 p-12 
+                     border-4 border-dashed border-sky-500/50 bg-sky-500/5 
+                     rounded-[3rem] shadow-2xl shadow-sky-500/10 
+                     transition-all duration-500
+                     ${isDragging ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
+                `}>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-sky-500 blur-2xl opacity-20 animate-pulse" />
+                        <Upload size={80} className="text-sky-400 relative z-10 animate-bounce" />
+                    </div>
+                    <div className="text-center space-y-2">
+                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Solte o arquivo</h2>
+                        <p className="text-sm font-bold text-sky-400 uppercase tracking-[0.2em]">Extração Automática de Dados</p>
                     </div>
                 </div>
-            )}
+            </div>
 
-            <MainSidebar />
-
-            <main className="flex-1 flex flex-row relative h-full overflow-hidden transition-all duration-300" style={{ marginLeft: `${larguraSidebar}px` }}>
-
-                {/* Fundo Decorativo (Igual ao Dashboard) */}
-                <div className="absolute inset-x-0 top-0 h-[600px] z-0 pointer-events-none overflow-hidden select-none">
-                    <div className="absolute inset-0 opacity-[0.08]" style={{
-                        backgroundImage: `linear-gradient(to right, #52525b 1px, transparent 1px), linear-gradient(to bottom, #52525b 1px, transparent 1px)`,
-                        backgroundSize: '50px 50px',
-                        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
-                    }} />
-
-                </div>
-
-                {/* Coluna de Inputs */}
-                <div className="flex-1 flex flex-col h-full min-w-0 relative z-10 border-r border-zinc-800/50">
-                    <div className="relative z-[100]">
+            <ManagementLayout>
+                <div className="flex-1 flex flex-col lg:flex-row h-full relative">
+                    {/* --- ÁREA DE INPUTS (ESQUERDA) --- */}
+                    <div className="flex-1 flex flex-col min-w-0">
+                        <HeaderCalculadora
+                            nomeProjeto={dadosFormulario.nomeProjeto}
+                            setNomeProjeto={(v) => atualizarCampo('nomeProjeto', null, v)}
+                            clients={listaClientes}
+                            selectedClientId={dadosFormulario.clienteId}
+                            onSelectClient={(v) => atualizarCampo('clienteId', null, v)}
+                            printers={printers} // Pass full list
+                            idImpressoraSelecionada={hardwareSelecionado?.id}
+                            onCyclePrinter={lidarCicloHardware}
+                            onOpenHistory={() => setHistoricoAberto(true)}
+                            onOpenSettings={() => {
+                                setAbaAtiva('config');
+                                if (window.innerWidth < 1024) {
+                                    setTimeout(() => {
+                                        document.getElementById('painel-resultados')?.scrollIntoView({ behavior: 'smooth' });
+                                    }, 100);
+                                }
+                            }}
+                            onOpenWaste={() => setModalFalhaAberto(true)}
+                            onUploadGCode={handleUploadClick}
+                            needsConfig={precisaConfigurar}
+                            hud={elementoHud}
+                        />
                         {/* Input file escondido */}
                         <input
                             ref={fileInputRef}
@@ -627,182 +403,168 @@ export default function CalculadoraPage() {
                             className="hidden"
                         />
 
-                        <HeaderCalculadora
-                            nomeProjeto={dadosFormulario.nomeProjeto}
-                            setNomeProjeto={(v) => atualizarCampo('nomeProjeto', null, v)}
-                            clients={listaClientes}
-                            selectedClientId={dadosFormulario.clienteId}
-                            onSelectClient={(v) => atualizarCampo('clienteId', null, v)}
-                            printers={impressoras}
-                            idImpressoraSelecionada={hardwareSelecionado?.id}
-                            onCyclePrinter={lidarCicloHardware}
-                            onOpenHistory={() => setHistoricoAberto(true)}
-                            onOpenSettings={() => setAbaAtiva('config')}
-                            onOpenWaste={() => setModalFalhaAberto(true)}
-                            onUploadGCode={handleUploadClick}
-                            needsConfig={precisaConfigurar}
-                            hud={elementoHud}
-                        />
-                    </div>
+                        <div className="flex-1 lg:overflow-y-auto p-4 xl:p-8 custom-scrollbar">
+                            <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
-                    <div className="flex-1 overflow-y-auto p-4 xl:p-8 custom-scrollbar">
-                        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                                <div className="flex flex-col gap-6">
+                                    <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
+                                        <CardMaterial
+                                            custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
+                                            pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
+                                            idFilamentoSelecionado={dadosFormulario.material.idFilamentoSelecionado} setIdFilamentoSelecionado={(v) => atualizarCampo('material', 'idFilamentoSelecionado', v)}
+                                            materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
+                                        />
+                                    </WrapperCard>
+                                    <WrapperCard title="Tempo de Produção" step="02" zPriority="z-10">
+                                        <CardTempo
+                                            tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras} setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
+                                            tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos} setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
+                                            tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras} setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
+                                            tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos} setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
+                                        />
+                                    </WrapperCard>
+                                </div>
 
-                            <div className="flex flex-col gap-6">
-                                <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
-                                    <CardMaterial
-                                        custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
-                                        pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
-                                        idFilamentoSelecionado={dadosFormulario.material.idFilamentoSelecionado} setIdFilamentoSelecionado={(v) => atualizarCampo('material', 'idFilamentoSelecionado', v)}
-                                        materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
-                                    />
-                                </WrapperCard>
-                                <WrapperCard title="Tempo de Produção" step="02" zPriority="z-10">
-                                    <CardTempo
-                                        tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras} setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
-                                        tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos} setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
-                                        tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras} setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
-                                        tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos} setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
-                                    />
-                                </WrapperCard>
-                            </div>
+                                <div className="flex flex-col gap-6">
+                                    <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
+                                        <CardCanal
+                                            canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
+                                            taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
+                                            taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa} setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
+                                        />
+                                    </WrapperCard>
+                                    <WrapperCard title="Gastos Extras" step="04" zPriority="z-10">
+                                        <CardEmbalagem
+                                            custoEmbalagem={dadosFormulario.custosExtras.embalagem} setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
+                                            custoFrete={dadosFormulario.custosExtras.frete} setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
+                                            custosExtras={dadosFormulario.custosExtras.lista} setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
+                                        />
+                                    </WrapperCard>
+                                </div>
 
-                            <div className="flex flex-col gap-6">
-                                <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
-                                    <CardCanal
-                                        canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
-                                        taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
-                                        taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa} setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
-                                    />
-                                </WrapperCard>
-                                <WrapperCard title="Gastos Extras" step="04" zPriority="z-10">
-                                    <CardEmbalagem
-                                        custoEmbalagem={dadosFormulario.custosExtras.embalagem} setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
-                                        custoFrete={dadosFormulario.custosExtras.frete} setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
-                                        custosExtras={dadosFormulario.custosExtras.lista} setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
-                                    />
-                                </WrapperCard>
-                            </div>
-
-                            <div className="flex flex-col gap-6">
-                                <WrapperCard title="Lucro e Estratégia" step="05">
-                                    <CardPreco
-                                        margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
-                                        imposto={dadosFormulario.config.imposto} setImposto={(v) => atualizarCampo('config', 'imposto', v)}
-                                        desconto={dadosFormulario.vendas.desconto} setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
-                                        taxaFalha={dadosFormulario.config.taxaFalha} setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
-                                        taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
-                                        lucroRealItem={resultados?.lucroBrutoUnitario || 0}
-                                        tempoTotalHoras={resultados?.tempoTotalHoras || 0}
-                                    />
-                                </WrapperCard>
+                                <div className="flex flex-col gap-6">
+                                    <WrapperCard title="Lucro e Estratégia" step="05">
+                                        <CardPreco
+                                            margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
+                                            imposto={dadosFormulario.config.imposto} setImposto={(v) => atualizarCampo('config', 'imposto', v)}
+                                            desconto={dadosFormulario.vendas.desconto} setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
+                                            taxaFalha={dadosFormulario.config.taxaFalha} setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
+                                            taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
+                                            lucroRealItem={resultados?.lucroBrutoUnitario || 0}
+                                            tempoTotalHoras={resultados?.tempoTotalHoras || 0}
+                                        />
+                                    </WrapperCard>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Sidebar Direita: Resumo/Config */}
-                <aside className="w-[400px] h-full bg-zinc-950/40 backdrop-blur-2xl flex flex-col z-20 border-l border-zinc-800/50">
-                    <div className="h-[80px] border-b border-zinc-800/50 flex items-center px-4">
-                        <div className="relative flex w-full h-12 bg-zinc-950/50 rounded-xl border border-zinc-800/50 p-1">
-                            {/* Animated Background Pill */}
-                            <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-900/50 rounded-lg shadow-sm transition-all duration-300 ${abaAtiva === 'resumo' ? 'left-1' : 'left-[calc(50%+4px)]'}`} />
+                    {/* Sidebar Direita: Resumo/Config */}
+                    <aside id="painel-resultados" className={`
+                    w-full lg:w-[400px] h-auto lg:h-full 
+                    bg-zinc-950/40 backdrop-blur-2xl flex flex-col z-20 
+                    border-t lg:border-t-0 lg:border-l border-zinc-800/50
+                `}>
+                        <div className="h-[80px] border-b border-zinc-800/50 flex items-center px-4">
+                            <div className="relative flex w-full h-12 bg-zinc-950/50 rounded-xl border border-zinc-800/50 p-1">
+                                {/* Animated Background Pill */}
+                                <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-900/50 rounded-lg shadow-sm transition-all duration-300 ${abaAtiva === 'resumo' ? 'left-1' : 'left-[calc(50%+4px)]'}`} />
 
-                            <button type="button" onClick={() => setAbaAtiva('resumo')}
-                                className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                <BarChart3 size={14} className={abaAtiva === 'resumo' ? 'text-sky-400' : 'text-zinc-600'} />
-                                Resultado
-                            </button>
-                            <button type="button" onClick={() => setAbaAtiva('config')}
-                                className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                <Settings2 size={14} className={abaAtiva === 'config' ? 'text-emerald-400' : 'text-zinc-600'} />
-                                Minha Oficina
-                            </button>
+                                <button type="button" onClick={() => setAbaAtiva('resumo')}
+                                    className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                    <BarChart3 size={14} className={abaAtiva === 'resumo' ? 'text-sky-400' : 'text-zinc-600'} />
+                                    Resultado
+                                </button>
+                                <button type="button" onClick={() => setAbaAtiva('config')}
+                                    className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                    <Settings2 size={14} className={abaAtiva === 'config' ? 'text-emerald-400' : 'text-zinc-600'} />
+                                    Minha Oficina
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-                        {abaAtiva === 'resumo' ? (
-                            <Summary resultados={resultados} entradas={dadosFormulario} salvar={lidarSalvarNoHistorico} />
-                        ) : (
-                            <PainelConfiguracoesCalculo
-                                valorHoraHumana={dadosFormulario.config.valorHoraHumana} setValorHoraHumana={(v) => atualizarCampo('config', 'valorHoraHumana', v)}
-                                custoKwh={dadosFormulario.config.custoKwh} setCustoKwh={(v) => atualizarCampo('config', 'custoKwh', v)}
-                                consumoImpressoraKw={dadosFormulario.config.consumoKw} setConsumoImpressoraKw={(v) => atualizarCampo('config', 'consumoKw', v)}
-                                custoHoraMaquina={dadosFormulario.config.custoHoraMaquina} setCustoHoraMaquina={(v) => atualizarCampo('config', 'custoHoraMaquina', v)}
-                                taxaSetup={dadosFormulario.config.taxaSetup} setTaxaSetup={(v) => atualizarCampo('config', 'taxaSetup', v)}
-                                onSaved={buscarConfiguracoes}
-                            />
-                        )}
-                    </div>
-                </aside>
-            </main>
+                        <div className="flex-1 lg:overflow-y-auto custom-scrollbar p-4">
+                            {abaAtiva === 'resumo' ? (
+                                <Summary resultados={resultados} entradas={dadosFormulario} salvar={lidarSalvarNoHistorico} />
+                            ) : (
+                                <PainelConfiguracoesCalculo
+                                    valorHoraHumana={dadosFormulario.config.valorHoraHumana} setValorHoraHumana={(v) => atualizarCampo('config', 'valorHoraHumana', v)}
+                                    custoKwh={dadosFormulario.config.custoKwh} setCustoKwh={(v) => atualizarCampo('config', 'custoKwh', v)}
+                                    consumoImpressoraKw={dadosFormulario.config.consumoKw} setConsumoImpressoraKw={(v) => atualizarCampo('config', 'consumoKw', v)}
+                                    custoHoraMaquina={dadosFormulario.config.custoHoraMaquina} setCustoHoraMaquina={(v) => atualizarCampo('config', 'custoHoraMaquina', v)}
+                                    taxaSetup={dadosFormulario.config.taxaSetup} setTaxaSetup={(v) => atualizarCampo('config', 'taxaSetup', v)}
+                                    onSaved={buscarConfiguracoes}
+                                />
+                            )}
+                        </div>
+                    </aside>
 
-            <HistoryDrawer open={historicoAberto} onClose={() => setHistoricoAberto(false)} onRestore={lidarRestauracao} />
 
-            <ModalRegistrarFalha
-                aberto={modalFalhaAberto}
-                aoFechar={() => setModalFalhaAberto(false)}
-                aoSalvar={(falha) => {
-                    // LÓGICA DE COMPENSAÇÃO INTELIGENTE
-                    // Se o usuário registrar uma falha, perguntamos se ele quer adicionar o prejuízo ao projeto atual.
-                    if (falha?.costWasted) {
-                        setModalConfig({
-                            open: true,
-                            title: "Compensar Prejuízo?",
-                            message: `Você registrou um prejuízo de R$ ${falha.costWasted}. Deseja adicionar esse valor aos custos extras deste projeto para recuperar o dinheiro?`,
-                            icon: AlertTriangle,
-                            color: "text-amber-500",
-                            customAction: () => {
-                                const novoExtra = {
-                                    nome: `FALHA RECUPERADA (${falha.reason})`,
-                                    valor: String(falha.costWasted)
-                                };
-                                atualizarCampo('custosExtras', 'lista', [...dadosFormulario.custosExtras.lista, novoExtra]);
-                                setModalConfig({ ...modalConfig, open: false });
+                    <HistoryDrawer open={historicoAberto} onClose={() => setHistoricoAberto(false)} onRestore={lidarRestauracao} />
+
+                    <ModalRegistrarFalha
+                        aberto={modalFalhaAberto}
+                        aoFechar={() => setModalFalhaAberto(false)}
+                        aoSalvar={(falha) => {
+                            // LÓGICA DE COMPENSAÇÃO INTELIGENTE
+                            if (falha?.costWasted) {
+                                setModalConfig({
+                                    open: true,
+                                    title: "Compensar Prejuízo?",
+                                    message: `Você registrou um prejuízo de R$ ${falha.costWasted}. Deseja adicionar esse valor aos custos extras deste projeto para recuperar o dinheiro?`,
+                                    icon: AlertTriangle,
+                                    color: "text-amber-500",
+                                    customAction: () => {
+                                        const novoExtra = {
+                                            nome: `FALHA RECUPERADA (${falha.reason})`,
+                                            valor: String(falha.costWasted)
+                                        };
+                                        atualizarCampo('custosExtras', 'lista', [...dadosFormulario.custosExtras.lista, novoExtra]);
+                                        setModalConfig({ ...modalConfig, open: false });
+                                    }
+                                });
                             }
-                        });
-                    }
-                }}
-            />
+                        }}
+                    />
 
-            {/* POPUP GLOBAL DE MENSAGENS (Unificado) */}
-            <Popup
-                isOpen={modalConfig.open}
-                onClose={() => setModalConfig({ ...modalConfig, open: false })}
-                title={modalConfig.title}
-                subtitle="Notificação de Sistema"
-                icon={modalConfig.icon}
-                footer={
-                    <div className="flex gap-2 w-full">
-                        {modalConfig.customAction && (
-                            <button
-                                onClick={modalConfig.customAction}
-                                className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase transition-all shadow-lg active:scale-95"
-                            >
-                                Sim, Compensar
-                            </button>
-                        )}
-                        <button
-                            onClick={() => setModalConfig({ ...modalConfig, open: false })}
-                            className={`flex-1 h-12 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg active:scale-95 text-white ${modalConfig.customAction ? 'bg-zinc-900/50 hover:bg-zinc-700' :
-                                modalConfig.icon === CheckCircle2 ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' :
-                                    modalConfig.icon === AlertTriangle ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20' :
-                                        'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
-                                }`}
-                        >
-                            {modalConfig.customAction ? 'Não, Ignorar' : 'Entendi, fechar aviso'}
-                        </button>
-                    </div>
-                }
-            >
-                <div className="p-8 flex flex-col items-center text-center gap-4">
-                    <p className="text-sm text-zinc-400 font-medium leading-relaxed">
-                        {modalConfig.message}
-                    </p>
+                    {/* POPUP GLOBAL DE MENSAGENS */}
+                    <Popup
+                        isOpen={modalConfig.open}
+                        onClose={() => setModalConfig({ ...modalConfig, open: false })}
+                        title={modalConfig.title}
+                        subtitle="Notificação de Sistema"
+                        icon={modalConfig.icon}
+                        footer={
+                            <div className="flex gap-2 w-full">
+                                {modalConfig.customAction && (
+                                    <button
+                                        onClick={modalConfig.customAction}
+                                        className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase transition-all shadow-lg active:scale-95"
+                                    >
+                                        Sim, Compensar
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setModalConfig({ ...modalConfig, open: false })}
+                                    className={`flex-1 h-12 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg active:scale-95 text-white ${modalConfig.customAction ? 'bg-zinc-900/50 hover:bg-zinc-700' :
+                                        modalConfig.icon === CheckCircle2 ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20' :
+                                            modalConfig.icon === AlertTriangle ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/20' :
+                                                'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
+                                        }`}
+                                >
+                                    {modalConfig.customAction ? 'Não, Ignorar' : 'Entendi, fechar aviso'}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="p-8 flex flex-col items-center text-center gap-4">
+                            <p className="text-sm text-zinc-400 font-medium leading-relaxed">
+                                {modalConfig.message}
+                            </p>
+                        </div>
+                    </Popup>
                 </div>
-            </Popup>
+            </ManagementLayout>
         </div>
     );
 }
-

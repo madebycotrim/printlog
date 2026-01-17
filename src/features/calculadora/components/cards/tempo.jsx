@@ -8,7 +8,7 @@ export default function Tempo({
   tempoTrabalhoHoras, setTempoTrabalhoHoras,
   tempoTrabalhoMinutos, setTempoTrabalhoMinutos
 }) {
-  
+
   /**
    * CÁLCULO DE HORAS DECIMAIS
    * Converte o tempo (Horas e Minutos) em um valor decimal único.
@@ -23,7 +23,7 @@ export default function Tempo({
   }, [tempoImpressaoHoras, tempoImpressaoMinutos]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-500">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
 
       {/* 1. TEMPO DE MÁQUINA (Duração da Impressão) */}
       <UnifiedInput

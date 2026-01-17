@@ -104,7 +104,7 @@ export default function CardCanal({
         )}
 
         {/* CAMPOS DE TAXAS */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UnifiedInput
             label="Comissão do Canal"
             icon={Percent}
@@ -125,15 +125,6 @@ export default function CardCanal({
             onChange={(e) => setTaxaMarketplaceFixa(e.target.value)}
           />
         </div>
-      </div>
-
-      {/* DICA INFORMATIVA */}
-      <div className="px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-        <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest leading-tight">
-          {canalVenda === 'loja'
-            ? "Para venda direta, lembre-se de considerar as taxas da maquininha ou do parcelamento."
-            : "As taxas de Marketplace são calculadas sobre o valor final da venda."}
-        </p>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertOctagon, RefreshCw } from 'lucide-react';
+import { AlertOctagon, RefreshCw, Home } from 'lucide-react';
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -21,22 +21,41 @@ class ErrorBoundary extends React.Component {
 
     render() {
         if (this.state.hasError) {
+            const {
+                title = "Erro no Componente",
+                message = "Um erro inesperado ocorreu. Tente recarregar ou contate o suporte.",
+                className = "h-full w-full min-h-[120px] p-6",
+                onBack,
+                backLabel = "Voltar"
+            } = this.props;
+
             return (
-                <div className="h-full min-h-[200px] flex flex-col items-center justify-center p-6 bg-zinc-950/40 border border-rose-500/30 rounded-2xl">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-rose-500/10 mb-4">
-                        <AlertOctagon className="w-6 h-6 text-rose-500" />
+                <div className={`flex flex-col items-center justify-center bg-zinc-950/40 border border-rose-500/30 rounded-2xl ${className}`}>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-500/10 mb-3">
+                        <AlertOctagon className="w-5 h-5 text-rose-500" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Widget Error</h3>
-                    <p className="text-sm text-zinc-400 text-center mb-4 max-w-xs">
-                        Este widget encontrou um erro inesperado.
+                    <h3 className="text-sm font-bold text-white mb-1">{title}</h3>
+                    <p className="text-xs text-zinc-400 text-center mb-3 max-w-[200px] leading-relaxed">
+                        {message}
                     </p>
-                    <button
-                        onClick={this.handleReset}
-                        className="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-all duration-200 hover:scale-105"
-                    >
-                        <RefreshCw size={16} />
-                        Tentar Novamente
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={this.handleReset}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-all duration-200 hover:scale-105 text-[10px] font-bold uppercase tracking-wide"
+                        >
+                            <RefreshCw size={12} />
+                            Tentar Novamente
+                        </button>
+                        {onBack && (
+                            <button
+                                onClick={onBack}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg transition-all duration-200 hover:scale-105 text-[10px] font-bold uppercase tracking-wide border border-zinc-700"
+                            >
+                                <Home size={12} />
+                                {backLabel}
+                            </button>
+                        )}
+                    </div>
                 </div>
             );
         }

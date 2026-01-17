@@ -26,7 +26,7 @@ export default function PageHeader({
 }) {
     return (
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 shrink-0">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 pl-20 md:pl-0">
                 <h1 className="text-3xl font-black text-zinc-100 tracking-tight flex items-center gap-3">
                     {title}
                     {stats && (

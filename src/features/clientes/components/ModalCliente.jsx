@@ -6,7 +6,7 @@ import FormFeedback from '../../../components/FormFeedback';
 import { useFormFeedback } from '../../../hooks/useFormFeedback';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
 
-export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null }) {
+export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null, reduced = false, onSuccess, initialData = {} }) {
     const { saveClient, isSaving } = useClientStore();
     const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
 
@@ -15,7 +15,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
         empresa: "",
         email: "",
         telefone: "",
-        documento: "",
+
         endereco: "",
         observacoes: ""
     }), []);
@@ -28,12 +28,12 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
             if (clienteParaEditar) {
                 setFormData(clienteParaEditar);
             } else {
-                setFormData(initialForm);
+                setFormData({ ...initialForm, ...initialData });
             }
             setIsDirty(false);
             hideFeedback();
         }
-    }, [isOpen, clienteParaEditar, initialForm, hideFeedback]);
+    }, [isOpen, clienteParaEditar, initialForm, hideFeedback, initialData]);
 
     const updateForm = (updates) => {
         setFormData(prev => ({ ...prev, ...updates }));
@@ -61,9 +61,14 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
 
         try {
             hideFeedback();
-            const success = await saveClient(formData);
-            if (success) {
+            const result = await saveClient(formData);
+            if (result) {
                 showSuccess(clienteParaEditar ? 'Cliente atualizado com sucesso!' : 'Novo cliente cadastrado!');
+                if (onSuccess) {
+                    // Se result for objeto com id, usa-o. Se não, tenta usar result direto.
+                    const newId = result.id || result.data?.id || (typeof result === 'object' ? result.id : null);
+                    onSuccess(newId);
+                }
                 setTimeout(() => {
                     onClose();
                 }, 1000);
@@ -105,17 +110,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
                 </div>
             </div>
 
-            <div className="bg-zinc-950/50 border border-zinc-800 rounded-2xl p-6 relative z-10 w-full">
-                <div className="flex items-center gap-2 mb-2">
-                    <Phone size={12} className="text-indigo-500/50" />
-                    <span className="text-[10px] font-bold text-indigo-500/60 uppercase tracking-wider">Contato Principal</span>
-                </div>
-                <div className="flex items-baseline gap-1.5 overflow-hidden">
-                    <span className="text-lg font-bold text-zinc-300 tracking-tight truncate">
-                        {formData.telefone || "---"}
-                    </span>
-                </div>
-            </div>
+
         </div>
     );
 
@@ -157,8 +152,8 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
             isOpen={isOpen}
             onClose={handleTentativaFechar}
             sidebar={sidebarContent}
-            title={clienteParaEditar ? "Editar Cliente" : "Cadastrar Cliente"}
-            subtitle={clienteParaEditar ? "Atualize os dados de contato do cliente" : "Adicione um novo parceiro ou cliente à sua base"}
+            title={clienteParaEditar ? "Editar Cliente" : (reduced ? "Cadastro Rápido" : "Cadastrar Cliente")}
+            subtitle={clienteParaEditar ? "Atualize os dados de contato do cliente" : (reduced ? "Preencha apenas os dados essenciais para começar" : "Adicione um novo parceiro ou cliente à sua base")}
             footer={footerContent}
             isSaving={isSaving} // Optional, for visual feedback on the main area if supported
         >
@@ -220,32 +215,26 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
                 </section>
 
                 {/* Seção 03 - Detalhes */}
-                <section className="space-y-5">
-                    <div className="flex items-center gap-4">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[03] Dados Adicionais</h4>
-                        <div className="h-px bg-zinc-800/50 flex-1" />
-                    </div>
-                    <div className="space-y-5">
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Documento (CPF/CNPJ)</label>
-                            <UnifiedInput
-                                icon={FileText}
-                                value={formData.documento}
-                                onChange={(e) => updateForm({ documento: e.target.value })}
-                                placeholder="000.000.000-00"
-                            />
+                {!reduced && (
+                    <section className="space-y-5">
+                        <div className="flex items-center gap-4">
+                            <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[03] Dados Adicionais</h4>
+                            <div className="h-px bg-zinc-800/50 flex-1" />
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Endereço Completo</label>
-                            <UnifiedInput
-                                icon={MapPin}
-                                value={formData.endereco}
-                                onChange={(e) => updateForm({ endereco: e.target.value })}
-                                placeholder="Rua, Número, Bairro, Cidade - UF"
-                            />
+                        <div className="space-y-5">
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Endereço Completo</label>
+                                <UnifiedInput
+                                    icon={MapPin}
+                                    value={formData.endereco}
+                                    onChange={(e) => updateForm({ endereco: e.target.value })}
+                                    placeholder="Rua, Número, Bairro, Cidade - UF"
+                                />
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
             </div>
         </SideBySideModal>
     );

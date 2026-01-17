@@ -29,7 +29,7 @@ const SessaoImpressoras = ({ titulo, items, acoes }) => {
 
     return (
         <section className="space-y-8">
-            <div className="flex items-center gap-6 group">
+            <div className="flex flex-wrap items-center gap-6 group">
                 <button onClick={() => setEstaAberto(!estaAberto)} className="flex items-center gap-5 hover:opacity-90 transition-all duration-200 focus:outline-none">
                     <div className={`p-2.5 rounded-xl border transition-all duration-300 ${estaAberto ? 'bg-zinc-950/40 border-zinc-800 text-emerald-400 shadow-inner' : 'bg-zinc-950 border-zinc-900 text-zinc-600'}`}>
                         <Printer size={18} strokeWidth={2} />

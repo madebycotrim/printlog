@@ -4,7 +4,7 @@ import { useUser, useClerk } from "@clerk/clerk-react";
 import {
     LayoutGrid, Calculator, Package, Settings,
     Printer, HelpCircle, LogOut, ChevronLeft, ChevronRight,
-    Layers, FolderOpen, Users, Wallet
+    Layers, FolderOpen, Users, Wallet, X
 } from "lucide-react";
 
 import logo from "../assets/logo-colorida.png";
@@ -28,13 +28,13 @@ const THEME = {
  * COMPONENT: TECH NAV ITEM
  * Featuring a glassmorphic active state with a precise colored border.
  */
-const SidebarItem = memo(({ href, icon: Icon, label, collapsed, badge, color = "sky", onHover }) => {
+const SidebarItem = memo(({ href, icon: Icon, label, collapsed, badge, color = "sky", onHover, onClick }) => {
     const [location] = useLocation();
     const isActive = location === href || (href !== "/" && location.startsWith(href));
     const activeClass = THEME[color] || THEME.sky;
 
     return (
-        <Link href={href}>
+        <Link href={href} onClick={onClick}>
             <div
                 className={`relative group px-3 py-1`}
                 onMouseEnter={onHover}
@@ -142,7 +142,7 @@ export default function MainSidebar() {
     const { signOut } = useClerk();
 
     // Global State
-    const { collapsed, setCollapsed } = useSidebarStore();
+    const { collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen } = useSidebarStore();
 
     const { filaments, fetchFilaments } = useFilamentStore();
     const { printers, fetchPrinters } = usePrinterStore();
@@ -167,112 +167,148 @@ export default function MainSidebar() {
         setLocation("/login");
     };
 
-    return (
-        <aside className={`
-            fixed left-0 top-0 h-screen z-[9999] flex flex-col 
-            bg-[#09090b] border-r border-white/5 shadow-2xl
-            transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]
-            ${collapsed ? "w-[72px]" : "w-[260px]"}
-        `}>
-            {/* GRID TEXTURE BACKGROUND */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-                backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
-                backgroundSize: '24px 24px',
-                maskImage: 'linear-gradient(to bottom, black, transparent)'
-            }} />
+    // Mobile Overlay Close
+    const handleCloseMobile = () => setMobileOpen(false);
 
-            {/* HEADER */}
-            <header className={`
-                h-[88px] flex items-center shrink-0 relative
-                ${collapsed ? "justify-center px-0" : "px-6 justify-between"}
+    // Dynamic props for rendering
+    // If mobile, force "not collapsed" for the drawer content
+    const renderCollapsed = isMobile ? false : collapsed;
+    const sidebarWidthClass = isMobile ? "w-[280px]" : (collapsed ? "w-[72px]" : "w-[260px]");
+
+    // Transform logic for mobile
+    const mobileTransformClass = isMobile
+        ? (mobileOpen ? "translate-x-0" : "-translate-x-full")
+        : "";
+
+    return (
+        <>
+            {/* MOBILE BACKDROP */}
+            {isMobile && mobileOpen && (
+                <div
+                    className="fixed inset-0 z-[9998] bg-zinc-950/80 backdrop-blur-sm animate-in fade-in duration-300"
+                    onClick={handleCloseMobile}
+                />
+            )}
+
+            <aside className={`
+                fixed left-0 top-0 h-screen z-[9999] flex flex-col 
+                bg-[#09090b] border-r border-white/5 shadow-2xl
+                transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]
+                ${sidebarWidthClass}
+                ${mobileTransformClass}
             `}>
-                {!collapsed ? (
-                    <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-500">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 border border-white/5 flex items-center justify-center shadow-lg relative group overflow-hidden">
-                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <img src={logo} alt="PL" className="w-6 h-6 object-contain relative z-10" />
-                        </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase leading-none">PrintLog</h1>
-                            <div className="flex items-center gap-2 mt-1.5">
-                                <span className="flex h-1.5 w-1.5">
-                                    <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                                </span>
-                                <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
-                                    System v2.0
-                                </span>
+                {/* GRID TEXTURE BACKGROUND */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+                    backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+                    backgroundSize: '24px 24px',
+                    maskImage: 'linear-gradient(to bottom, black, transparent)'
+                }} />
+
+                {/* HEADER */}
+                <header className={`
+                    h-[88px] flex items-center shrink-0 relative
+                    ${renderCollapsed ? "justify-center px-0" : "px-6 justify-between"}
+                `}>
+                    {!renderCollapsed ? (
+                        <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-500">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 border border-white/5 flex items-center justify-center shadow-lg relative group overflow-hidden">
+                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <img src={logo} alt="PL" className="w-6 h-6 object-contain relative z-10" />
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase leading-none">PrintLog</h1>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                    <span className="flex h-1.5 w-1.5">
+                                        <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                    </span>
+                                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+                                        System v2.0
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="w-10 h-10 rounded-xl bg-zinc-900/50 border border-white/5 flex items-center justify-center">
-                        <img src={logoBranca} alt="PL" className="w-5 h-5 object-contain opacity-50" />
+                    ) : (
+                        <div className="w-10 h-10 rounded-xl bg-zinc-900/50 border border-white/5 flex items-center justify-center">
+                            <img src={logoBranca} alt="PL" className="w-5 h-5 object-contain opacity-50" />
+                        </div>
+                    )}
+
+                    {/* Mobile Close Button */}
+                    {isMobile && (
+                        <button
+                            onClick={handleCloseMobile}
+                            className="text-zinc-500 hover:text-white transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
+                </header>
+
+                {/* NAV LIST */}
+                <nav className="flex-1 py-2 overflow-y-auto custom-scrollbar relative z-10 space-y-1">
+                    <SidebarSection title="Principal" collapsed={renderCollapsed} />
+                    <SidebarItem href="/dashboard" icon={LayoutGrid} label="Dashboard" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/dashboard')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/calculadora" icon={Calculator} label="Calculadora" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/calculadora')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/clientes" icon={Users} label="Clientes" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/clientes')} onClick={isMobile ? handleCloseMobile : undefined} />
+
+                    <SidebarSection title="Gestão" collapsed={renderCollapsed} />
+                    <SidebarItem href="/filamentos" icon={Package} label="Filamentos" collapsed={renderCollapsed} badge={alerts.lowStock} color="rose" onHover={() => prefetchRoute('/filamentos')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/insumos" icon={Layers} label="Insumos" collapsed={renderCollapsed} color="orange" onHover={() => prefetchRoute('/insumos')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/impressoras" icon={Printer} label="Impressoras" collapsed={renderCollapsed} badge={alerts.criticalPrinter} color="emerald" onHover={() => prefetchRoute('/impressoras')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/projetos" icon={FolderOpen} label="Projetos" collapsed={renderCollapsed} color="amber" onHover={() => prefetchRoute('/projetos')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/financeiro" icon={Wallet} label="Financeiro" collapsed={renderCollapsed} color="emerald" onHover={() => prefetchRoute('/financeiro')} onClick={isMobile ? handleCloseMobile : undefined} />
+
+                    <SidebarSection title="Sistema" collapsed={renderCollapsed} />
+                    <SidebarItem href="/configuracoes" icon={Settings} label="Configurações" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/configuracoes')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/central-maker" icon={HelpCircle} label="Central Maker" collapsed={renderCollapsed} color="purple" onHover={() => prefetchRoute('/central-maker')} onClick={isMobile ? handleCloseMobile : undefined} />
+                </nav>
+
+                {/* EXPANDER (Floating) - Only Desktop */}
+                {!isMobile && (
+                    <div className="absolute top-10 right-0 translate-x-1/2 z-50">
+                        <button
+                            onClick={() => setCollapsed(!collapsed)}
+                            className="w-5 h-5 bg-zinc-950 border border-zinc-700 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:border-zinc-500 transition-all shadow-xl hover:scale-110"
+                        >
+                            {collapsed ? <ChevronRight size={10} /> : <ChevronLeft size={10} />}
+                        </button>
                     </div>
                 )}
-            </header>
 
-            {/* NAV LIST */}
-            <nav className="flex-1 py-2 overflow-y-auto custom-scrollbar relative z-10 space-y-1">
-                <SidebarSection title="Principal" collapsed={collapsed} />
-                <SidebarItem href="/dashboard" icon={LayoutGrid} label="Dashboard" collapsed={collapsed} color="sky" onHover={() => prefetchRoute('/dashboard')} />
-                <SidebarItem href="/calculadora" icon={Calculator} label="Calculadora" collapsed={collapsed} color="sky" onHover={() => prefetchRoute('/calculadora')} />
-                <SidebarItem href="/clientes" icon={Users} label="Clientes" collapsed={collapsed} color="sky" onHover={() => prefetchRoute('/clientes')} />
+                {/* FOOTER */}
+                <div className="p-4 border-t border-white/5 relative z-20 bg-zinc-950/50 backdrop-blur-sm">
+                    <div className={`flex items-center gap-3 transition-all duration-300 ${renderCollapsed ? "justify-center" : ""}`}>
+                        <div className="relative group cursor-pointer">
+                            <div className="absolute -inset-0.5 bg-gradient-to-br from-zinc-700 to-zinc-900 rounded-xl blur opacity-30 group-hover:opacity-100 transition-opacity" />
+                            <img
+                                src={user?.imageUrl}
+                                className="w-9 h-9 rounded-lg border border-white/10 object-cover relative z-10"
+                                alt="Perfil"
+                            />
+                        </div>
 
-                <SidebarSection title="Gestão" collapsed={collapsed} />
-                <SidebarItem href="/filamentos" icon={Package} label="Filamentos" collapsed={collapsed} badge={alerts.lowStock} color="rose" onHover={() => prefetchRoute('/filamentos')} />
-                <SidebarItem href="/insumos" icon={Layers} label="Insumos" collapsed={collapsed} color="orange" onHover={() => prefetchRoute('/insumos')} />
-                <SidebarItem href="/impressoras" icon={Printer} label="Impressoras" collapsed={collapsed} badge={alerts.criticalPrinter} color="emerald" onHover={() => prefetchRoute('/impressoras')} />
-                <SidebarItem href="/projetos" icon={FolderOpen} label="Projetos" collapsed={collapsed} color="amber" onHover={() => prefetchRoute('/projetos')} />
-                <SidebarItem href="/financeiro" icon={Wallet} label="Financeiro" collapsed={collapsed} color="emerald" onHover={() => prefetchRoute('/financeiro')} />
-
-                <SidebarSection title="Sistema" collapsed={collapsed} />
-                <SidebarItem href="/configuracoes" icon={Settings} label="Configurações" collapsed={collapsed} color="sky" onHover={() => prefetchRoute('/configuracoes')} />
-                <SidebarItem href="/central-maker" icon={HelpCircle} label="Central Maker" collapsed={collapsed} color="purple" onHover={() => prefetchRoute('/central-maker')} />
-            </nav>
-
-            {/* EXPANDER (Floating) */}
-            <div className="absolute top-10 right-0 translate-x-1/2 z-50">
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="w-5 h-5 bg-zinc-950 border border-zinc-700 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:border-zinc-500 transition-all shadow-xl hover:scale-110"
-                >
-                    {collapsed ? <ChevronRight size={10} /> : <ChevronLeft size={10} />}
-                </button>
-            </div>
-
-            {/* FOOTER */}
-            <div className="p-4 border-t border-white/5 relative z-20 bg-zinc-950/50 backdrop-blur-sm">
-                <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed ? "justify-center" : ""}`}>
-                    <div className="relative group cursor-pointer">
-                        <div className="absolute -inset-0.5 bg-gradient-to-br from-zinc-700 to-zinc-900 rounded-xl blur opacity-30 group-hover:opacity-100 transition-opacity" />
-                        <img
-                            src={user?.imageUrl}
-                            className="w-9 h-9 rounded-lg border border-white/10 object-cover relative z-10"
-                            alt="Perfil"
-                        />
+                        {!renderCollapsed && (
+                            <>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-bold text-white truncate font-mono">
+                                        {user?.firstName || "Maker"}
+                                    </p>
+                                    <p className="text-[9px] text-zinc-500 truncate">
+                                        {user?.publicMetadata?.role || "Membro"}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-all"
+                                >
+                                    <LogOut size={14} />
+                                </button>
+                            </>
+                        )}
                     </div>
-
-                    {!collapsed && (
-                        <>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-white truncate font-mono">
-                                    {user?.firstName || "Maker"}
-                                </p>
-                                <p className="text-[9px] text-zinc-500 truncate">
-                                    {user?.publicMetadata?.role || "Membro"}
-                                </p>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-all"
-                            >
-                                <LogOut size={14} />
-                            </button>
-                        </>
-                    )}
                 </div>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 }

@@ -12,108 +12,25 @@ import {
 import logo from '../../../assets/logo-branca.png';
 import { getClerkErrorMessage } from "../../../utils/auth";
 
-// --- CONTEÚDOS LEGAIS ---
-
-const TERMS_CONTENT = (
-    <div className="space-y-6">
-        <section className="space-y-2">
-            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <Database size={14} className="text-sky-500" />
-                1. O que é o PrintLog
-            </h4>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-                O PrintLog é um sistema de gestão feito para makers e donos de
-                oficinas de impressão 3D que precisam organizar custos, processos e o histórico
-                de produção.
-            </p>
-        </section>
-        <section className="space-y-2">
-            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <Cpu size={14} className="text-sky-500" />
-                2. Melhorias e Evolução
-            </h4>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-                O PrintLog está sempre recebendo atualizações. Podemos ajustar ou criar
-                novas funções para deixar o sistema mais útil para a sua produção.
-            </p>
-        </section>
-        <section className="space-y-2">
-            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <AlertTriangle size={14} className="text-sky-500" />
-                3. Uso Correto
-            </h4>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-                O uso deve ser manual e focado na gestão da sua oficina. Comportamentos abusivos podem gerar suspensão.
-            </p>
-        </section>
-    </div>
-);
-
-const PRIVACY_CONTENT = (
-    <div className="space-y-6">
-        <div className="flex items-center gap-3 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
-            <ShieldCheck className="text-emerald-500" size={24} />
-            <div>
-                <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Segurança em primeiro lugar</p>
-                <p className="text-xs text-zinc-500">Sua oficina, seus dados e sua privacidade.</p>
-            </div>
-        </div>
-        <section className="space-y-2">
-            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <Lock size={14} className="text-sky-500" />
-                1. Dados Protegidos
-            </h4>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-                Seus custos e margens de lucro são protegidos com criptografia antes de entrarem no nosso banco de dados.
-            </p>
-        </section>
-        <section className="space-y-2">
-            <h4 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <EyeOff size={14} className="text-sky-500" />
-                2. Seus dados são só seus
-            </h4>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-                O PrintLog não vende e não repassa seus dados para ninguém.
-            </p>
-        </section>
-    </div>
-);
-
-// --- COMPONENTE: MODAL ---
-
-const LegalModal = ({ isOpen, onClose, title, content }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-xl bg-zinc-900/50 border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#0d0d0f]">
-                    <h3 className="text-lg font-bold text-white uppercase italic tracking-tighter">{title}</h3>
-                    <button onClick={onClose} className="text-zinc-500 hover:text-white"><X size={20} /></button>
-                </div>
-                <div className="p-8 overflow-y-auto custom-scrollbar">{content}</div>
-                <div className="p-6 border-t border-white/5 bg-[#0d0d0f] flex justify-end">
-                    <button onClick={onClose} className="px-6 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-sky-500 hover:text-white">Entendido</button>
-                </div>
-            </div>
-        </div>
-    );
-};
+// --- REMOVED LEGAL MODAL CONTENT ---
 
 // --- COMPONENTE: UI ---
 
 const Badge = ({ icon: Icon, label, color = "sky" }) => {
+    // ... (unchanged)
     const variants = {
         emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
         sky: "text-sky-400 bg-sky-500/10 border-sky-500/20",
     };
     return (
-        <div className={`flex items - center gap - 2 px - 3 py - 1.5 rounded - full border ${variants[color]} backdrop - blur - md w - fit`}>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${variants[color]} backdrop-blur-md w-fit`}>
             {Icon && <Icon size={12} strokeWidth={2.5} />}
             <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
         </div>
     );
 };
+
+// ... (PrimaryButton and InventoryWidget unchanged) ...
 
 const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", className = "", disabled, type = "button", isLoading }) => {
     const styles = {
@@ -165,7 +82,7 @@ const InventoryWidget = () => (
                         <span className={item.alert ? "text-amber-500" : "text-white"}>{item.weight}</span>
                     </div>
                     <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                        <div className={`h - full ${item.percent} ${item.color} rounded - full`} />
+                        <div className={`h-full ${item.percent} ${item.color} rounded-full`} />
                     </div>
                 </div>
             ))}
@@ -187,13 +104,12 @@ export default function RegisterPage() {
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [error, setError] = useState("");
+    const [agreed, setAgreed] = useState(false); // NEW STATE
     const [, setLocation] = useLocation();
 
     // Captura o redirecionamento inteligente
     const queryParams = new URLSearchParams(window.location.search);
     const redirectUrl = queryParams.get("redirect") || "/dashboard";
-
-    const [modal, setModal] = useState({ isOpen: false, title: '', content: null });
 
     useEffect(() => {
         if (isLoaded && isSignedIn) setLocation(redirectUrl);
@@ -206,11 +122,15 @@ export default function RegisterPage() {
 
     const signUpWithGoogle = async () => {
         if (!isLoaded || isGoogleLoading) return;
+        if (!agreed) {
+            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
+            return;
+        }
         setIsGoogleLoading(true);
         try {
             await signUp.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: `/ sso - callback ? redirect = ${encodeURIComponent(redirectUrl)} `,
+                redirectUrl: `/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
                 redirectUrlComplete: redirectUrl,
             });
         } catch (err) {
@@ -222,6 +142,10 @@ export default function RegisterPage() {
     const handlePasswordSignUp = async (e) => {
         e.preventDefault();
         if (!isLoaded || isLoading) return;
+        if (!agreed) {
+            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
+            return;
+        }
         setIsLoading(true);
         setError("");
         try {
@@ -239,6 +163,10 @@ export default function RegisterPage() {
     const handleMagicLinkSignUp = async (e) => {
         e.preventDefault();
         if (!isLoaded || isLoading) return;
+        if (!agreed) {
+            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
+            return;
+        }
         setIsLoading(true);
         setError("");
         try {
@@ -269,13 +197,6 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex overflow-hidden">
-
-            <LegalModal
-                isOpen={modal.isOpen}
-                title={modal.title}
-                content={modal.content}
-                onClose={() => setModal({ ...modal, isOpen: false })}
-            />
 
             <div className="flex-1 flex flex-col justify-center items-center p-8 relative z-10 w-full lg:w-1/2">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/5 blur-[120px] pointer-events-none" />
@@ -346,9 +267,30 @@ export default function RegisterPage() {
                                 </div>
                             )}
 
+                            {/* CONSENTIMENTO - LGPD */}
+                            <div className="flex items-start gap-3 px-1">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="terms"
+                                        checked={agreed}
+                                        onChange={(e) => setAgreed(e.target.checked)}
+                                        className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-900/50 checked:border-sky-500 checked:bg-sky-500 transition-all"
+                                    />
+                                    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100">
+                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none">
+                                    Li e concordo com os <a href="/terms" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Política de Privacidade</a> do PrintLog.
+                                </label>
+                            </div>
+
                             <div className="space-y-4">
                                 <div id="clerk-captcha"></div>
-                                <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={regMode === 'magic' ? Zap : LayoutDashboard}>
+                                <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} disabled={!agreed} icon={regMode === 'magic' ? Zap : LayoutDashboard}>
                                     {regMode === 'magic' ? "Receber link por e-mail" : "Abrir minha oficina"}
                                 </PrimaryButton>
 
@@ -364,6 +306,7 @@ export default function RegisterPage() {
                                 </div>
                             </div>
                         </form>
+
                     ) : pendingVerification ? (
                         <form onSubmit={handleVerifyCode} className="space-y-6">
                             <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
@@ -397,29 +340,14 @@ export default function RegisterPage() {
                             <div className="absolute inset-0 border-t border-white/5" />
                             <span className="relative bg-zinc-950 px-4 text-[10px] font-bold uppercase text-zinc-600">Ou cadastre-se com</span>
                         </div>
-                        <button onClick={signUpWithGoogle} disabled={isGoogleLoading || isLoading} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50">
+                        <button onClick={signUpWithGoogle} disabled={isGoogleLoading || isLoading || !agreed} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50">
                             {isGoogleLoading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Chrome size={20} /> Continuar com Google</>}
                         </button>
                         <p className="text-center text-zinc-500 text-sm">
                             Já tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
                         </p>
 
-                        <p className="text-[10px] text-zinc-600 leading-relaxed uppercase tracking-wider max-w-[280px] mx-auto text-center">
-                            Ao criar sua conta, você concorda com nossos <br />
-                            <button
-                                onClick={() => setModal({ isOpen: true, title: 'Termos de Uso', content: TERMS_CONTENT })}
-                                className="text-zinc-400 hover:text-sky-500 underline decoration-zinc-800 underline-offset-4"
-                            >
-                                Termos de Uso
-                            </button>
-                            {' '} e {' '}
-                            <button
-                                onClick={() => setModal({ isOpen: true, title: 'Política de Privacidade', content: PRIVACY_CONTENT })}
-                                className="text-zinc-400 hover:text-sky-500 underline decoration-zinc-800 underline-offset-4"
-                            >
-                                Privacidade
-                            </button>.
-                        </p>
+
                     </div>
                 </div>
             </div>

@@ -37,7 +37,7 @@ export const useClientStore = create((set, get) => ({
                 empresa: cliente.empresa || "",
                 email: cliente.email || "",
                 telefone: cliente.telefone || "",
-                documento: cliente.documento || "", // CPF/CNPJ
+
                 endereco: cliente.endereco || "",
                 observacoes: cliente.observacoes || ""
             };
@@ -53,7 +53,12 @@ export const useClientStore = create((set, get) => ({
 
             set({ isSaving: false });
             useToastStore.getState().addToast(`Cliente ${isUpdate ? 'atualizado' : 'cadastrado'} com sucesso!`, "success");
-            return true;
+
+            // Retorna o ID do cliente criado/atualizado ou o objeto completo se disponível
+            // Assumindo que a API retorna o objeto criado em response.data
+            // Se não, teremos que buscar na lista atualizada se soubermos como identificar (ex: pelo nome?)
+            // Mas geralmente POST retorna o objeto.
+            return response?.data || true;
         } catch (erro) {
             console.error("Erro ao salvar cliente:", erro);
             useToastStore.getState().addToast("Erro ao salvar cliente.", "error");
