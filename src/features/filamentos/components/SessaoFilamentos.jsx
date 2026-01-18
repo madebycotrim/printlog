@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Layers, ChevronDown, PackageOpen } from "lucide-react";
 import { FilamentCard, FilamentRow } from "./CardsFilamentos";
+import EmptyState from "../../../components/ui/EmptyState";
 
 export default function SessaoFilamentos({
     tipo,
@@ -115,11 +116,12 @@ export default function SessaoFilamentos({
                                 />
                         ))
                     ) : (
-                        <div className="col-span-full py-16 flex flex-col items-center justify-center border border-dashed border-zinc-800/50 rounded-[2rem] bg-zinc-950/40/5">
-                            <PackageOpen size={32} className="text-zinc-700 mb-3 stroke-[1.5]" />
-                            <span className="text-zinc-600 text-[10px] uppercase font-bold tracking-[0.2em]">
-                                Nenhum material nessa categoria
-                            </span>
+                        <div className="col-span-full py-10">
+                            <EmptyState
+                                icon={PackageOpen}
+                                title="Nenhum material nessa categoria"
+                                description="Adicione novos filamentos para começar."
+                            />
                         </div>
                     )}
                 </div>

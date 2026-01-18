@@ -3,6 +3,7 @@ import { FolderOpen, ArrowRight, Copy, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '../../../utils/numbers';
 import { useLocation } from 'wouter';
 import DashboardCard from './DashboardCard';
+import EmptyState from '../../../components/ui/EmptyState';
 
 export default function RecentProjectsWidget({ projects, onDuplicate, onConclude }) {
     const [, setLocation] = useLocation();
@@ -81,21 +82,19 @@ export default function RecentProjectsWidget({ projects, onDuplicate, onConclude
                         </div>
                     ))
                 ) : (
-                    <div className="h-full min-h-[150px] flex flex-col items-center justify-center text-center p-6 border border-dashed border-zinc-800/50 rounded-xl bg-black/10">
-                        <div className="w-12 h-12 rounded-full bg-violet-500/10 flex items-center justify-center mb-3 ring-1 ring-violet-500/20">
-                            <FolderOpen size={20} className="text-violet-400" />
-                        </div>
-                        <h4 className="text-xs font-bold text-zinc-300 mb-0.5">Sem projetos recentes</h4>
-                        <p className="text-[10px] text-zinc-500 mb-3 max-w-[150px]">
-                            Crie orçamentos para controlar seus lucros.
-                        </p>
-                        <a
-                            href="/calculadora"
-                            className="px-3 py-1.5 rounded-lg bg-violet-600/10 hover:bg-violet-600/20 text-violet-400 border border-violet-500/20 text-[10px] font-bold transition-all"
-                        >
-                            Novo Projeto
-                        </a>
-                    </div>
+                    <EmptyState
+                        icon={FolderOpen}
+                        title="Sem projetos recentes"
+                        description="Crie orçamentos para controlar seus lucros."
+                        action={
+                            <a
+                                href="/calculadora"
+                                className="px-3 py-1.5 rounded-lg bg-violet-600/10 hover:bg-violet-600/20 text-violet-400 border border-violet-500/20 text-[10px] font-bold transition-all"
+                            >
+                                Novo Projeto
+                            </a>
+                        }
+                    />
                 )}
             </div>
         </DashboardCard>

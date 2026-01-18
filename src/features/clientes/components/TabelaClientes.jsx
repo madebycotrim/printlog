@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Edit2, Trash2, Phone, Mail, Building2, Search, User, Clock } from 'lucide-react';
+import EmptyState from '../../../components/ui/EmptyState';
 
 export default function TabelaClientes({ clientes, onEdit, onDelete, onViewHistory }) {
     const [busca, setBusca] = useState("");
@@ -87,8 +88,12 @@ export default function TabelaClientes({ clientes, onEdit, onDelete, onViewHisto
                 ))}
 
                 {filtrados.length === 0 && (
-                    <div className="col-span-full py-12 text-center text-zinc-500">
-                        Nenhum cliente encontrado.
+                    <div className="col-span-full py-12">
+                        <EmptyState
+                            icon={User}
+                            title="Nenhum cliente encontrado"
+                            description="Tente buscar com outros termos."
+                        />
                     </div>
                 )}
             </div>

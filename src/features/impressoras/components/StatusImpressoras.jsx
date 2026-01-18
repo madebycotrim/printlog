@@ -1,41 +1,9 @@
 import { useMemo } from "react";
 import { Activity, Check, AlertTriangle, CheckCircle2, Timer } from "lucide-react";
+import StatsWidget from "../../../components/ui/StatsWidget";
 import { formatCompact, formatDecimal } from "../../../utils/numbers";
 
-/**
- * Componente de Card de Estatística
- */
-const StatCard = ({ title, value, icon: IconStat, colorClass, label, description }) => (
-  <div className="h-[130px] p-6 rounded-2xl bg-zinc-950/40/40 border border-zinc-800/50 backdrop-blur-sm flex items-center justify-between group transition-all duration-300 hover:border-zinc-800/50/50 hover:bg-zinc-950/40/60 shadow-sm">
-    <div className="flex items-center gap-5">
-      <div className={`p-3.5 rounded-xl bg-zinc-950 border border-zinc-800/80 ${colorClass} shadow-inner group-hover:scale-105 transition-transform duration-500`}>
-        <IconStat size={24} strokeWidth={2} />
-      </div>
-      <div>
-        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5">
-          {title}
-        </p>
-        <div className="flex flex-col">
-          <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight">
-            {label}
-          </span>
-          <span className="text-[11px] text-zinc-500 font-medium mt-0.5">
-            {description}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div className="text-right flex flex-col justify-between h-full py-1">
-      <h3 className="text-2xl font-bold text-zinc-100 font-sans tracking-tighter leading-none">
-        {value}
-      </h3>
-      <div className="flex items-center gap-2 justify-end opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-        <Activity size={14} className="text-zinc-500" />
-      </div>
-    </div>
-  </div>
-);
+// StatCard removido - Substituído por StatsWidget universal
 
 /**
  * Componente de Saúde das Máquinas
@@ -135,22 +103,24 @@ export default function StatusDashboard({ criticalCount = 0, totalCount = 0, sta
         totalCount={totalCount}
       />
 
-      <StatCard
+      <StatsWidget
         title="Produção Total"
         value={estatisticasFormatadas.totalImpressoes}
         icon={CheckCircle2}
-        colorClass="text-emerald-500"
-        label="Peças Finalizadas"
-        description="Histórico geral das máquinas"
+        iconColor="text-emerald-500"
+        iconBg="border-emerald-500/20 bg-zinc-950"
+        secondaryLabel="Peças Finalizadas"
+        secondaryValue="Histórico geral das máquinas"
       />
 
-      <StatCard
+      <StatsWidget
         title="Material Usado"
         value={estatisticasFormatadas.massaFilamento}
         icon={Timer}
-        colorClass="text-amber-500/90"
-        label="Total de Filamento"
-        description="Consumo total acumulado"
+        iconColor="text-amber-500/90"
+        iconBg="border-amber-500/20 bg-zinc-950"
+        secondaryLabel="Total de Filamento"
+        secondaryValue="Consumo total acumulado"
       />
     </div>
   );

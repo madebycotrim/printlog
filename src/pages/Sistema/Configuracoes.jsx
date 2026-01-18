@@ -9,7 +9,7 @@ import {
 
 import { useLogicaConfiguracao } from '../../utils/configLogic';
 import ManagementLayout from "../../layouts/ManagementLayout";
-import AvisoFlutuante from "../../components/Toast";
+import { UnifiedInput } from "../../components/UnifiedInput";
 import Modal from '../../components/ui/Modal';
 import DataCard from '../../components/ui/DataCard';
 import Button from '../../components/ui/Button';
@@ -45,13 +45,7 @@ export default function PaginaConfiguracao() {
                 className="hidden"
             />
 
-            {logica.aviso.exibir && (
-                <AvisoFlutuante
-                    message={logica.aviso.mensagem}
-                    type={logica.aviso.tipo}
-                    onClose={() => logica.setAviso({ ...logica.aviso, exibir: false })}
-                />
-            )}
+
 
             {/* Conteúdo Principal */}
             <div className="relative z-10 p-8 xl:p-12 max-w-[1600px] mx-auto w-full">
@@ -159,16 +153,13 @@ export default function PaginaConfiguracao() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-zinc-600 uppercase ml-1 tracking-wider flex items-center gap-2">
-                                            Nome do Membro <Info size={10} className="text-sky-500" />
-                                        </label>
-                                        <input
-                                            value={logica.primeiroNome}
-                                            onChange={e => logica.setPrimeiroNome(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-bold text-white outline-none focus:border-sky-500/50 transition-all uppercase tracking-wide"
-                                        />
-                                    </div>
+                                    <UnifiedInput
+                                        label="Nome do Membro"
+                                        icon={User}
+                                        value={logica.primeiroNome}
+                                        onChange={e => logica.setPrimeiroNome(e.target.value)}
+                                        placeholder="SEU NOME"
+                                    />
                                     <div className="p-4 bg-zinc-950/40/30 border border-zinc-800/50 rounded-xl flex items-center justify-between">
                                         <div>
                                             <p className="text-[8px] font-black text-zinc-600 uppercase mb-1 tracking-wider">E-mail Cadastrado</p>
@@ -361,34 +352,28 @@ export default function PaginaConfiguracao() {
             >
                 <div className="space-y-4">
                     {temSenhaDefinida && (
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Senha Atual</label>
-                            <input
-                                type="password"
-                                value={logica.formularioSenha.senhaAtual}
-                                onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, senhaAtual: e.target.value })}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-emerald-500 transition-all"
-                            />
-                        </div>
+                        <UnifiedInput
+                            label="Senha Atual"
+                            type="password"
+                            value={logica.formularioSenha.senhaAtual}
+                            onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, senhaAtual: e.target.value })}
+                            placeholder="••••••••"
+                        />
                     )}
-                    <div className="space-y-2">
-                        <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Nova Senha</label>
-                        <input
-                            type="password"
-                            value={logica.formularioSenha.novaSenha}
-                            onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, novaSenha: e.target.value })}
-                            className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-emerald-500 transition-all"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[9px] font-black text-zinc-600 uppercase ml-1">Repetir Nova Senha</label>
-                        <input
-                            type="password"
-                            value={logica.formularioSenha.confirmarSenha}
-                            onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, confirmarSenha: e.target.value })}
-                            className="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-4 text-xs font-bold text-white outline-none focus:border-emerald-500 transition-all"
-                        />
-                    </div>
+                    <UnifiedInput
+                        label="Nova Senha"
+                        type="password"
+                        value={logica.formularioSenha.novaSenha}
+                        onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, novaSenha: e.target.value })}
+                        placeholder="••••••••"
+                    />
+                    <UnifiedInput
+                        label="Repetir Nova Senha"
+                        type="password"
+                        value={logica.formularioSenha.confirmarSenha}
+                        onChange={e => logica.setFormularioSenha({ ...logica.formularioSenha, confirmarSenha: e.target.value })}
+                        placeholder="••••••••"
+                    />
 
                     {/* Lista de Requisitos */}
                     <div className="space-y-3 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">

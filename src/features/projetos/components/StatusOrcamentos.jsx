@@ -8,46 +8,11 @@ import {
     Check,
     BadgeDollarSign
 } from "lucide-react";
+import StatsWidget from "../../../components/ui/StatsWidget";
 
 import { formatCurrency, formatDecimal, parseNumber } from "../../../utils/numbers";
 
-/**
- * Componente de Card Estatístico Genérico (Seguindo o estilo de Hardware)
- */
-const StatCard = ({ title, value, icon: IconCard, colorClass, label, description, glowColor }) => (
-    <div className="h-[130px] p-6 rounded-2xl bg-zinc-950/40/40 border border-zinc-800/50 backdrop-blur-sm flex items-center justify-between group transition-all duration-300 hover:border-amber-500/30 hover:bg-zinc-950/40/60 shadow-sm relative overflow-hidden">
-        {/* Background Glow sutil no hover */}
-        <div className={`absolute -right-2 -bottom-2 w-12 h-12 blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${glowColor}`} />
-
-        <div className="flex items-center gap-5 relative z-10">
-            <div className={`p-3.5 rounded-xl bg-zinc-950 border border-zinc-800/80 ${colorClass} shadow-inner group-hover:scale-105 transition-transform duration-500`}>
-                <IconCard size={24} strokeWidth={2} />
-            </div>
-            <div>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5">
-                    {title}
-                </p>
-                <div className="flex flex-col">
-                    <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight">
-                        {label}
-                    </span>
-                    <span className="text-[11px] text-zinc-500 font-medium mt-0.5 italic">
-                        {description}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div className="text-right flex flex-col justify-between h-full py-1 relative z-10">
-            <h3 className="text-2xl font-black text-zinc-100 font-mono tracking-tighter leading-none italic">
-                {value}
-            </h3>
-            <div className="flex items-center gap-2 justify-end opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                <Activity size={14} className="text-zinc-500" />
-            </div>
-        </div>
-    </div>
-);
+// StatCard removido - Substituído por StatsWidget universal
 
 /**
  * Componente de Saúde da Operação (Baseado no lucro real)
@@ -148,25 +113,27 @@ export default function StatusOrcamentos({
             />
 
             {/* 2. Volume Comercial */}
-            <StatCard
+            <StatsWidget
                 title="Comercial"
                 value={formatCurrency(metrics.bruto)}
                 icon={BadgeDollarSign}
-                colorClass="text-amber-500"
+                iconColor="text-amber-500"
+                iconBg="border-amber-500/20 bg-zinc-950"
                 glowColor="bg-amber-500/20"
-                label="Faturamento Total"
-                description={`${metrics.ativos} pedidos processados`}
+                secondaryLabel="Faturamento Total"
+                secondaryValue={`${metrics.ativos} pedidos processados`}
             />
 
             {/* 3. Capacidade de Manufatura */}
-            <StatCard
+            <StatsWidget
                 title="Manufatura"
                 value={`${metrics.horas}h`}
                 icon={Clock}
-                colorClass="text-orange-500"
+                iconColor="text-orange-500"
+                iconBg="border-orange-500/20 bg-zinc-950"
                 glowColor="bg-orange-500/20"
-                label="Carga Horária"
-                description="Tempo total estimado"
+                secondaryLabel="Carga Horária"
+                secondaryValue="Tempo total estimado"
             />
         </div>
     );

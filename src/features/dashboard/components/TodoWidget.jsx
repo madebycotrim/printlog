@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckSquare, Plus, Trash2, Square, Check, Loader2 } from 'lucide-react';
 import api from '../../../utils/api';
 import DashboardCard from './DashboardCard';
+import EmptyState from '../../../components/ui/EmptyState';
 
 export default function TodoWidget() {
     const [tasks, setTasks] = useState([]);
@@ -79,9 +80,13 @@ export default function TodoWidget() {
         >
             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 -mr-2 mb-2">
                 {!loading && tasks.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center opacity-30 mt-2">
-                        <CheckSquare size={24} className="mb-2 text-zinc-500" />
-                        <p className="text-[10px] uppercase font-bold text-zinc-500">Sem tarefas</p>
+                    <div className="flex-1 flex flex-col justify-center">
+                        <EmptyState
+                            icon={CheckSquare}
+                            title="Sem tarefas"
+                            description="" // Empty description for minimal look
+                            minHeight="h-full"
+                        />
                     </div>
                 )}
 

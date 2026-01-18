@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Box, AlertTriangle, BadgeDollarSign, Activity, Thermometer, RefreshCw, Trash2 } from "lucide-react";
+import StatsWidget from "../../../components/ui/StatsWidget";
 
 /**
  * Utilitário de formatação de moeda (Memoizado no componente principal para performance)
@@ -83,37 +84,7 @@ const StockOverviewCard = ({ totalWeight = 0, lowStockCount = 0 }) => {
   );
 };
 
-/**
- * Card Estatístico Genérico
- */
-const StatCard = ({ title, value, icon: Icon, colorClass, secondaryLabel, secondaryValue, isLoading = false }) => (
-  <div className="h-[130px] p-6 rounded-2xl bg-zinc-950/40/40 border border-zinc-800/50 backdrop-blur-sm flex items-center justify-between group transition-all duration-300 hover:border-zinc-800/50/50 hover:bg-zinc-950/40/60 shadow-sm">
-    <div className="flex items-center gap-5">
-      <div className={`p-3.5 rounded-xl bg-zinc-950 border border-zinc-800/80 ${colorClass} shadow-inner group-hover:scale-105 transition-transform duration-500`}>
-        {Icon && <Icon size={24} strokeWidth={2} />}
-      </div>
-      <div>
-        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5">{title}</p>
-        <div className="flex flex-col">
-          <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight">
-            {secondaryLabel}
-          </span>
-          <span className="text-[11px] text-zinc-500 font-medium mt-1">
-            {isLoading ? "Sincronizando..." : secondaryValue}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div className="text-right flex flex-col justify-between h-full py-1">
-      <h3 className={`text-2xl font-bold font-sans tracking-tighter leading-none ${isLoading ? 'text-zinc-600' : 'text-zinc-100'}`}>
-        {isLoading ? "---" : value}
-      </h3>
-      <div className="flex items-center gap-2 justify-end opacity-20">
-        <Activity size={14} className={isLoading ? "animate-spin" : "text-zinc-500"} />
-      </div>
-    </div>
-  </div>
-);
+// StatCard removido - Substituído por StatsWidget universal
 
 export default function StatusFilamentos({
   totalWeight = 0,
@@ -146,32 +117,35 @@ export default function StatusFilamentos({
       />
 
       {/* 2. Custo do Inventário - Valor proporcional ao que resta nos carretéis */}
-      <StatCard
+      <StatsWidget
         title="Financeiro"
         value={displayStats.financial}
         icon={BadgeDollarSign}
-        colorClass="text-rose-500"
+        iconColor="text-rose-500"
+        iconBg="border-rose-500/20 bg-zinc-950"
         secondaryLabel="Valor Estimado"
         secondaryValue="Custo proporcional ao peso"
       />
 
       {/* 3. Clima Local - Essencial para conservação de filamentos (PLA/PETG/Nylon) */}
-      <StatCard
+      <StatsWidget
         title="Ambiente"
         value={displayStats.temperature}
         icon={Thermometer}
-        colorClass="text-rose-500"
+        iconColor="text-rose-500"
+        iconBg="border-rose-500/20 bg-zinc-950"
         secondaryLabel="Espaço Maker"
         secondaryValue={displayStats.humidity}
         isLoading={displayStats.weatherLoading}
       />
 
       {/* 4. Desperdício - Monitoramento de Falhas */}
-      <StatCard
+      <StatsWidget
         title="Desperdício (30d)"
         value={failureStats?.totalWeight ? `${Math.round(failureStats.totalWeight)}g` : '0g'}
         icon={Trash2}
-        colorClass="text-rose-500"
+        iconColor="text-rose-500"
+        iconBg="border-rose-500/20 bg-zinc-950"
         secondaryLabel="Custo Total"
         secondaryValue={formatCurrency(failureStats?.totalCost || 0)}
         isLoading={false}
