@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { FileDown, Loader2 } from 'lucide-react';
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { formatCurrency } from '../../../utils/numbers';
 import { PDF_COLORS, drawPDFHeader } from '../../../utils/pdfUtils';
 
@@ -13,9 +11,12 @@ export default function BotaoGerarPDF({ projeto, cliente }) {
     // Se não tiver projeto ou dados, não renderiza
     if (!projeto) return null;
 
-    const gerarPDF = () => {
+    const gerarPDF = async () => {
         setLoading(true);
         try {
+            const { default: jsPDF } = await import("jspdf");
+            const { default: autoTable } = await import("jspdf-autotable");
+
             const doc = new jsPDF('p', 'mm', 'a4');
             const data = projeto.data || {};
             const ent = data.entradas || {};

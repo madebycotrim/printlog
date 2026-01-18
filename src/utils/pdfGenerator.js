@@ -1,4 +1,3 @@
-import jsPDF from "jspdf";
 import { formatCurrency } from "./numbers";
 import { PDF_COLORS, drawPDFHeader } from "./pdfUtils";
 
@@ -8,9 +7,10 @@ import { PDF_COLORS, drawPDFHeader } from "./pdfUtils";
  * @param {Object} resultados - Dados calculados pelo motor de precificação
  * @param {Object} entradas - Dados de entrada do formulário (projeto, material, tempo, custos)
  * @param {Number} precoFinalExibido - Preço final exibido (com arredondamentos manuais, se houver)
- * @returns {void} Abre PDF em nova aba do navegador
+ * @returns {Promise<void>} Abre PDF em nova aba do navegador
  */
-export const generateProfessionalPDF = (resultados, entradas, precoFinalExibido) => {
+export const generateProfessionalPDF = async (resultados, entradas, precoFinalExibido) => {
+    const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF('p', 'mm', 'a4');
 
     // Desenha cabeçalho padrão

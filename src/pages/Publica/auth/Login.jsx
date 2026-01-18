@@ -204,7 +204,7 @@ export default function LoginPage() {
             await signIn.authenticateWithRedirect({
                 strategy: "oauth_google",
                 // Passamos o redirect para o SSOCallback processar depois
-                redirectUrl: `/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
+                redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
                 redirectUrlComplete: redirectUrl,
             });
         } catch (err) {

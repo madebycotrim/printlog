@@ -5,9 +5,6 @@ import api from './api';
 import { calculatePasswordStrength } from './auth';
 import { PDF_COLORS, drawPDFHeader } from './pdfUtils';
 
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-
 import { useSidebarStore } from '../stores/sidebarStore';
 
 export const useLogicaConfiguracao = () => {
@@ -152,6 +149,9 @@ export const useLogicaConfiguracao = () => {
 
             // --- OPÇÃO 2: FORMATO DOCUMENTO (PDF) ---
             else if (formato === 'pdf') {
+                const { jsPDF } = await import("jspdf");
+                const { default: autoTable } = await import("jspdf-autotable");
+
                 const documentoPdf = new jsPDF('p', 'mm', 'a4');
                 const coresPaleta = {
                     ...PDF_COLORS,

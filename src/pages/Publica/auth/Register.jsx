@@ -130,7 +130,7 @@ export default function RegisterPage() {
         try {
             await signUp.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: `/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
+                redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
                 redirectUrlComplete: redirectUrl,
             });
         } catch (err) {
@@ -284,7 +284,7 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none">
-                                    Li e concordo com os <a href="/terms" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Política de Privacidade</a> do PrintLog.
+                                    Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Política de Privacidade</a> do PrintLog.
                                 </label>
                             </div>
 

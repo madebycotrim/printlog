@@ -1,5 +1,3 @@
-import JSZip from 'jszip';
-
 /**
  * PARSER UNIVERSAL DE G-CODE
  * Compatível com os principais slicers do mercado de impressão 3D
@@ -237,8 +235,7 @@ export const analisarGCode = (content) => {
     };
 };
 
-// Alias de compatibilidade (deprecated)
-export const parseGCode = analisarGCode;
+
 
 /**
  * CÁLCULO DE VOLUME PARA ARQUIVOS STL (Binary & ASCII)
@@ -370,6 +367,7 @@ export const analisarArquivoProjeto = async (file) => {
     // 3. 3MF (Arquivo ZIP com modelos 3D e/ou G-Code)
     if (fileName.endsWith('.3mf')) {
         try {
+            const { default: JSZip } = await import('jszip');
             const zip = await JSZip.loadAsync(file);
             let timeSeconds = 0;
             let weightGrams = 0;
@@ -561,5 +559,4 @@ export const analisarArquivoProjeto = async (file) => {
     };
 };
 
-// Alias de compatibilidade (deprecated)
-export const parseProjectFile = analisarArquivoProjeto;
+

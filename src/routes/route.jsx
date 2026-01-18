@@ -65,7 +65,7 @@ export default function AppRoutes() {
                 <Route path="/forgot-password" component={ForgotPassword} />
                 <Route path="/sso-callback" component={SSOCallback} />
                 <Route path="/privacy-policy" component={PrivacyPolicy} />
-                <Route path="/terms" component={TermsOfService} />
+                <Route path="/terms-of-service" component={TermsOfService} />
 
                 {/* ---------- PROTECTED ROUTES ---------- */}
                 {/* O ProtectedRoute já possui seu próprio Suspense interno conforme a correção anterior */}
