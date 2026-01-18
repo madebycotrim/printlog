@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useProjectsStore } from "../../projetos/logic/projects";
 import { formatCurrency, formatDecimal } from "../../../utils/numbers";
-import Popup from "../../../components/Popup";
+import Modal from "../../../components/ui/Modal";
 export default function Historico({ open, onClose, onRestore }) {
     // No wouter, useLocation retorna [location, setLocation]
     const [, setLocation] = useLocation();
@@ -328,7 +328,7 @@ export default function Historico({ open, onClose, onRestore }) {
                 )}
             </aside>
 
-            <Popup
+            <Modal
                 isOpen={confirmacao.open}
                 onClose={fecharConfirmacao}
                 title={confirmacao.title}
@@ -345,7 +345,7 @@ export default function Historico({ open, onClose, onRestore }) {
                 }
             >
                 <div className="p-6 text-center text-zinc-400 text-sm font-medium leading-relaxed">{confirmacao.message}</div>
-            </Popup>
+            </Modal>
 
             <style dangerouslySetInnerHTML={{
                 __html: `

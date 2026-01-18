@@ -13,7 +13,7 @@ import {
 
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
 import { useSettingsStore } from "../logic/calculator";
-import Popup from "../../../components/Popup";
+import Modal from "../../../components/ui/Modal";
 
 /* ---------- SUB-COMPONENTE: NÚMERO ANIMADO ---------- */
 const AnimatedNumber = ({ value, duration = 800 }) => {
@@ -267,7 +267,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
             </div>
 
             {/* POPUP DE SUCESSO (ESTILO RESUMO) */}
-            <Popup
+            <Modal
                 isOpen={showSuccessPopup}
                 onClose={() => setShowSuccessPopup(false)}
                 title="Projeto salvo com sucesso"
@@ -305,10 +305,10 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                     </div>
 
                 </div>
-            </Popup>
+            </Modal>
 
             {/* OUTROS POPUPS */}
-            <Popup isOpen={whatsappModal} onClose={() => setWhatsappModal(false)}
+            <Modal isOpen={whatsappModal} onClose={() => setWhatsappModal(false)}
                 title="Enviar WhatsApp"
                 icon={MessageCircle}
                 footer={
@@ -325,9 +325,9 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                 <div className="p-6">
                     <textarea className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs text-zinc-300 outline-none focus:border-emerald-500/50 transition-all resize-none font-sans" value={mensagemEditavel} onChange={(e) => setMensagemEditavel(e.target.value)} />
                 </div>
-            </Popup>
+            </Modal>
 
-            <Popup isOpen={genericModal.open} onClose={() => setGenericModal({ ...genericModal, open: false })}
+            <Modal isOpen={genericModal.open} onClose={() => setGenericModal({ ...genericModal, open: false })}
                 title={genericModal.title}
                 icon={genericModal.icon}
                 footer={
@@ -351,7 +351,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                 <div className="p-8 text-center">
                     <p className="text-sm text-zinc-400">{genericModal.message}</p>
                 </div>
-            </Popup>
+            </Modal>
         </div>
     );
 }

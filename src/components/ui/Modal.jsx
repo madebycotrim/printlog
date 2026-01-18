@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { X, Loader2, Cpu, Fingerprint } from "lucide-react";
 
-export default function Popup({
+export default function Modal({
     isOpen,
     onClose,
     title,
@@ -49,7 +49,7 @@ export default function Popup({
                 bg-[#050506] border border-white/10 rounded-[2.5rem] 
                 shadow-[0_0_80px_rgba(0,0,0,1)] flex flex-col overflow-hidden
             `}>
-                
+
                 {/* GRADE DE FUNDO */}
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
 
@@ -105,11 +105,11 @@ export default function Popup({
                     </div>
                 ) : (
                     <div className="h-8 border-t border-white/5 bg-[#080809] flex items-center px-8 justify-between shrink-0">
-                         <div className="flex gap-2">
+                        <div className="flex gap-2">
                             <div className="w-1 h-1 rounded-full bg-zinc-800" />
                             <div className="w-1 h-1 rounded-full bg-zinc-800" />
-                         </div>
-                         <Fingerprint size={12} className="text-zinc-800" />
+                        </div>
+                        <Fingerprint size={12} className="text-zinc-800" />
                     </div>
                 )}
             </div>

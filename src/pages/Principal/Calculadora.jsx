@@ -6,7 +6,7 @@ import {
 
 // Layout e Componentes Universais
 import ManagementLayout from "../../layouts/ManagementLayout.jsx";
-import Popup from "../../components/Popup.jsx";
+import Modal from "../../components/ui/Modal";
 
 // Componentes de Feature
 import HeaderCalculadora from "../../features/calculadora/components/HeaderCalculadora.jsx";
@@ -528,7 +528,7 @@ export default function CalculadoraPage() {
                     />
 
                     {/* POPUP GLOBAL DE MENSAGENS */}
-                    <Popup
+                    <Modal
                         isOpen={modalConfig.open}
                         onClose={() => setModalConfig({ ...modalConfig, open: false })}
                         title={modalConfig.title}
@@ -562,7 +562,7 @@ export default function CalculadoraPage() {
                                 {modalConfig.message}
                             </p>
                         </div>
-                    </Popup>
+                    </Modal>
                 </div>
             </ManagementLayout>
         </div>

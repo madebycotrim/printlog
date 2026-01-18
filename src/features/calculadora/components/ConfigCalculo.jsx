@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import api from "../../../utils/api";
 import { useSettingsStore } from "../logic/calculator";
-import Popup from "../../../components/Popup"; // Importando o componente universal
+import Modal from "../../../components/ui/Modal"; // Importando o componente universal
 
 /* ---------- TOOLTIP VIA PORTAL ---------- */
 const TooltipPortal = ({ texto, referenciaAlvo, visivel }) => {
@@ -287,7 +287,7 @@ export default function PainelConfiguracoesCalculo({
             </div>
 
             {/* POPUP DE CONFIGURAÇÃO DO WHATSAPP */}
-            <Popup
+            <Modal
                 isOpen={whatsappModal}
                 onClose={() => setWhatsappModal(false)}
                 title="Template de Mensagem"
@@ -324,7 +324,7 @@ export default function PainelConfiguracoesCalculo({
                         As tags acima serão substituídas automaticamente pelos dados do cálculo atual no momento do envio.
                     </p>
                 </div>
-            </Popup>
+            </Modal>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import {
     Layers, Clock, Printer, AlertTriangle, ArrowDownCircle
 } from "lucide-react";
 import { formatCurrency, formatDecimal } from "../../../utils/numbers";
-import Popup from "../../../components/Popup";
+import Modal from "../../../components/ui/Modal";
 import { CONFIG_STATUS } from "../../../utils/constants";
 import SideBySideModal from "../../../components/ui/SideBySideModal";
 
@@ -162,7 +162,7 @@ export default function ModalDetalhes({ item, onClose, onExcluir }) {
             </SideBySideModal>
 
             {/* Modal de Confirmação de Exclusão */}
-            <Popup
+            <Modal
                 isOpen={showDeleteConfirm}
                 onClose={() => setShowDeleteConfirm(false)}
                 title="Excluir Projeto?"
@@ -195,7 +195,7 @@ export default function ModalDetalhes({ item, onClose, onExcluir }) {
                         Esta ação não pode ser desfeita.
                     </p>
                 </div>
-            </Popup>
+            </Modal>
         </>
     );
 }

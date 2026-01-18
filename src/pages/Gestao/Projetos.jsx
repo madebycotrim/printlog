@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { Inbox, Loader2, SearchX, Plus, Search, FolderOpen, Layers, Clock, Hammer, CheckCircle2 } from "lucide-react";
+import { Inbox, Loader2, SearchX, Plus, Search, FolderOpen, Layers, Clock, Hammer, CheckCircle2, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 // Layout & Store
@@ -7,11 +7,16 @@ import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
 import { useProjectsStore } from "../../features/projetos/logic/projects";
 import { useClientStore } from "../../features/clientes/logic/clients";
+import EmptyState from "../../components/ui/EmptyState";
+import { formatCurrency } from "../../utils/numbers";
 
 // Sub-componentes
 import StatusOrcamentos from "../../features/projetos/components/StatusOrcamentos";
-import CardOrcamento from "../../features/projetos/components/CardOrcamento";
+import BotaoGerarPDF from "../../features/orcamentos/components/BotaoGerarPDF";
 import ModalDetalhes from "../../features/projetos/components/ModalDetalhes";
+import DataCard from "../../components/ui/DataCard";
+import Button from "../../components/ui/Button";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 
 // 1. CONFIGURAÇÃO DE STATUS
 import { CONFIG_STATUS } from "../../utils/constants";
@@ -80,21 +85,14 @@ export default function OrcamentosPage() {
     }, [fetchHistory, fetchClients]);
 
     const novoOrcamentoButton = (
-        <button
+        <Button
             onClick={() => setLocation("/calculadora")}
-            className="
-                group relative h-11 px-6 overflow-hidden bg-amber-500 hover:bg-amber-400 
-                rounded-xl transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/40
-                flex items-center gap-3 text-zinc-950
-            "
+            className="bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-lg shadow-amber-900/40"
+            variant="custom"
+            icon={Plus}
         >
-            <Plus size={16} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.15em]">
-                Novo
-            </span>
-            {/* Brilho */}
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        </button>
+            Novo
+        </Button>
     );
 
     return (
@@ -164,43 +162,72 @@ export default function OrcamentosPage() {
                         </div>
                     ) : filtrados.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                            {filtrados.map(item => (
-                                <CardOrcamento
-                                    key={item.id}
-                                    item={item}
-                                    client={clients.find(c => String(c.id) === String(item.data?.entradas?.clienteId || item.data?.clienteId))}
-                                    onClick={() => setProjetoSelecionado(item)}
-                                />
-                            ))}
+                            {filtrados.map(item => {
+                                const d = item.data || {};
+                                const res = d.resultados || {};
+                                const ent = d.entradas || {};
+                                const statusKey = d.status || 'rascunho';
+                                const config = CONFIG_STATUS[statusKey] || CONFIG_STATUS['rascunho'];
+                                const precoVenda = Number(res.precoComDesconto || res.precoSugerido || 0);
+                                const client = clients.find(c => String(c.id) === String(ent.clienteId || d.clienteId));
+
+                                return (
+                                    <DataCard
+                                        key={item.id}
+                                        title={item.label || ent.nomeProjeto || "Sem Título"}
+                                        subtitle={ent.clienteNome || "Cliente não informado"}
+                                        status={{
+                                            label: config.label,
+                                            color: config.color,
+                                            bg: config.bg,
+                                            border: config.border,
+                                            dotColor: config.color.replace('text', 'bg')
+                                        }}
+                                        badge={`#${String(item.id || '000').slice(-4)}`}
+                                        onClick={() => setProjetoSelecionado(item)}
+                                        className="h-[200px]"
+                                        footer={
+                                            <div className="flex items-end justify-between w-full">
+                                                <div>
+                                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Valor Final</p>
+                                                    <p className="text-2xl font-mono font-black text-zinc-200">{formatCurrency(precoVenda)}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <BotaoGerarPDF projeto={item} cliente={client} />
+                                                    <div className="w-8 h-8 rounded-xl bg-zinc-950/40 border border-zinc-800 flex items-center justify-center text-zinc-500 group-hover:bg-amber-500 group-hover:border-amber-500 group-hover:text-zinc-950 transition-all">
+                                                        <ChevronRight size={16} strokeWidth={3} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    />
+                                );
+                            })}
                         </div>
                     ) : (
-                        <div className="w-full py-24 flex flex-col items-center justify-center border border-dashed border-zinc-800/60 rounded-[3rem] bg-zinc-950/40/5 backdrop-blur-sm">
+                        <div className="w-full">
                             {termoBusca ? (
-                                <div className="flex flex-col items-center text-center">
-                                    <div className="relative mb-6">
-                                        <div className="absolute inset-0 bg-amber-500/10 blur-2xl rounded-full" />
-                                        <SearchX size={48} strokeWidth={1} className="text-amber-600/50 relative z-10" />
-                                    </div>
-                                    <h3 className="text-zinc-300 text-[11px] font-black uppercase tracking-[0.3em]">Nenhum registro localizado</h3>
-                                    <p className="text-zinc-600 text-[10px] uppercase mt-3 tracking-widest italic">Critério: "{termoBusca}"</p>
-                                    <button
-                                        onClick={() => setTermoBusca("")}
-                                        className="mt-8 px-8 py-2.5 bg-zinc-800/50 hover:bg-zinc-900/50 border border-white/5 rounded-full text-[9px] font-black text-amber-500 uppercase tracking-[0.2em]"
-                                    >
-                                        Limpar Busca
-                                    </button>
-                                </div>
+                                <EmptyState
+                                    title="Nenhum registro localizado"
+                                    description={`Critério: "${termoBusca}"`}
+                                    icon={SearchX}
+                                    action={
+                                        <Button
+                                            onClick={() => setTermoBusca("")}
+                                            variant="secondary"
+                                            size="sm"
+                                            className="px-8 bg-zinc-800/50 hover:bg-zinc-900/50 border-white/5 text-amber-500 hover:text-amber-400"
+                                        >
+                                            Limpar Busca
+                                        </Button>
+                                    }
+                                />
                             ) : (
-                                <div className="flex flex-col items-center">
-                                    <div className="relative mb-6">
-                                        <div className="absolute inset-0 bg-amber-500/10 blur-2xl rounded-full" />
-                                        <FolderOpen size={48} strokeWidth={1} className="text-amber-500/30 relative z-10" />
-                                    </div>
-                                    <h3 className="text-zinc-300 text-[11px] font-black uppercase tracking-[0.3em]">Nenhum orçamento ainda</h3>
-                                    <p className="text-zinc-600 text-[10px] uppercase mt-3 tracking-widest leading-relaxed text-center">
-                                        Seus projetos salvos aparecerão aqui.
-                                    </p>
-                                </div>
+                                <EmptyState
+                                    title="Nenhum orçamento ainda"
+                                    description="Seus projetos salvos aparecerão aqui."
+                                    icon={FolderOpen}
+                                />
                             )}
                         </div>
                     )}

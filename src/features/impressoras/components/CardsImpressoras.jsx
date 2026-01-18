@@ -2,6 +2,7 @@ import React, { memo, useMemo } from "react";
 import { Edit2, Trash2, Activity, Printer, Wrench, Power, TrendingUp, CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "../../../utils/numbers";
 import { SegmentedProgress } from "../../../components/ui/SegmentedProgress";
+import Button from "../../../components/ui/Button";
 
 
 /**
@@ -136,27 +137,26 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
 
             {/* AÇÕES DO RODAPÉ (h-11) */}
             <div className="grid grid-cols-[1fr_50px_50px] h-11 bg-zinc-950/60 border-t border-zinc-800/50">
-                <button onClick={() => onResetMaint?.(printer)}
-                    className="flex items-center justify-center gap-2.5 text-[9px] font-black uppercase tracking-[0.2em] 
-                        text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/50/30 transition-all duration-300 group/btn"
+                <Button
+                    variant="ghost"
+                    onClick={() => onResetMaint?.(printer)}
+                    className="rounded-none h-full text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/50/30"
                 >
-                    <Activity size={14} className={`transition-all duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12 ${stats.ehCritico ? 'text-rose-500 animate-pulse' : 'text-zinc-600'}`} />
+                    <Activity size={14} className={`mr-2 transition-all duration-300 ${stats.ehCritico ? 'text-rose-500 animate-pulse' : 'text-zinc-600'}`} />
                     Diagnóstico / Reset
-                </button>
-                <button
+                </Button>
+                <Button
+                    variant="ghost"
                     onClick={() => onEdit?.(printer)}
-                    className="flex items-center justify-center border-l border-zinc-800/50 text-zinc-600 
-                        hover:text-zinc-100 hover:bg-zinc-800/50 transition-all duration-300 group/edit"
-                >
-                    <Edit2 size={14} className="transition-transform duration-300 group-hover/edit:scale-110" />
-                </button>
-                <button
+                    className="rounded-none h-full border-l border-zinc-800/50 px-0 flex items-center justify-center text-zinc-600 hover:text-zinc-100 hover:bg-zinc-800/50"
+                    icon={Edit2}
+                />
+                <Button
+                    variant="ghost"
                     onClick={() => onDelete?.(printer.id)}
-                    className="flex items-center justify-center border-l border-zinc-800/50 text-zinc-600 
-                        hover:text-rose-500 hover:bg-rose-500/10 transition-all duration-300 group/delete"
-                >
-                    <Trash2 size={14} className="transition-transform duration-300 group-hover/delete:scale-110 group-hover/delete:rotate-12" />
-                </button>
+                    className="rounded-none h-full border-l border-zinc-800/50 px-0 flex items-center justify-center text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10"
+                    icon={Trash2}
+                />
             </div>
         </div>
     );

@@ -24,14 +24,15 @@ export default function ManagementLayout({ children }) {
         return () => window.removeEventListener('resize', handleResize);
     }, [setIsMobile, setMobileOpen]);
 
-    // Determine Theme Color based on route
+    // Determine Theme Color based on route (Matches Sidebar)
     const getThemeColorClass = () => {
         if (location.includes('filamentos')) return 'from-rose-500/30';
-        if (location.includes('impressoras')) return 'from-orange-500/30';
-        if (location.includes('insumos')) return 'from-amber-500/30';
-        if (location.includes('projetos')) return 'from-emerald-500/30';
-        if (location.includes('clientes')) return 'from-blue-500/30';
-        return 'from-sky-500/30'; // Default (Dashboard)
+        if (location.includes('insumos')) return 'from-orange-500/30';
+        if (location.includes('impressoras')) return 'from-emerald-500/30';
+        if (location.includes('projetos')) return 'from-amber-500/30';
+        if (location.includes('financeiro')) return 'from-emerald-500/30';
+        if (location.includes('central-maker')) return 'from-purple-500/30';
+        return 'from-sky-500/30'; // Default (Dashboard, Calculadora, Clientes, Config)
     };
 
     const themeGradient = getThemeColorClass();
@@ -56,10 +57,12 @@ export default function ManagementLayout({ children }) {
                         maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent)'
                     }} />
 
-                    {/* Linha Vertical Temática (Centralizada no container de 1600px) */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-full">
-                        <div className={`absolute top-0 left-0 h-full w-px bg-gradient-to-b ${themeGradient} via-transparent to-transparent`} />
-                    </div>
+                    {/* Linha Vertical Temática (Centralizada no container de 1600px) - Oculta na Calculadora */}
+                    {!location.includes('calculadora') && (
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-full">
+                            <div className={`absolute top-0 left-0 h-full w-px bg-gradient-to-b ${themeGradient} via-transparent to-transparent`} />
+                        </div>
+                    )}
                 </div>
 
                 {/* LINHA DECORATIVA SUPERIOR (Global para todas as páginas de gestão) */}

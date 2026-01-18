@@ -7,7 +7,7 @@ import TabelaClientes from '../../features/clientes/components/TabelaClientes';
 import ModalCliente from '../../features/clientes/components/ModalCliente';
 import ModalHistoricoCliente from '../../features/clientes/components/ModalHistoricoCliente';
 import { useProjectsStore } from '../../features/projetos/logic/projects';
-import Popup from "../../components/Popup";
+import Modal from "../../components/ui/Modal";
 import { useToastStore } from "../../stores/toastStore";
 
 export default function ClientesPage() {
@@ -135,7 +135,7 @@ export default function ClientesPage() {
                 />
 
                 {/* Popup Exclusão */}
-                <Popup
+                <Modal
                     isOpen={confirmacaoExclusao.aberta}
                     onClose={() => setConfirmacaoExclusao({ aberta: false, item: null })}
                     title="Excluir Cliente?"
@@ -171,7 +171,7 @@ export default function ClientesPage() {
                             </p>
                         </div>
                     </div>
-                </Popup>
+                </Modal>
             </div>
         </ManagementLayout>
     );

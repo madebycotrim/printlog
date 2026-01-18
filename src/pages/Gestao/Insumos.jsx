@@ -1,14 +1,17 @@
 ﻿import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { Plus, Search, X, Trash2, AlertTriangle, PackageSearch, Loader2, Layers, Box, Zap, Hammer, Link } from "lucide-react";
+import { Plus, Search, X, Trash2, AlertTriangle, PackageSearch, Loader2, Layers, Box, Zap, Hammer, Link, Edit2 } from "lucide-react";
 
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import Popup from "../../components/Popup";
+import Modal from "../../components/ui/Modal";
+import EmptyState from "../../components/ui/EmptyState";
 import { useToastStore } from "../../stores/toastStore";
 
 // COMPONENTES DA FUNCIONALIDADE
-import CardInsumo from "../../features/insumos/components/cardInsumo";
+import DataCard from "../../components/ui/DataCard";
+import Button from "../../components/ui/Button";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 import ModalInsumo from "../../features/insumos/components/ModalInsumo";
 import StatusInsumos from "../../features/insumos/components/statusInsumos";
 
@@ -124,20 +127,14 @@ export default function InsumosPage() {
     );
 
     const novoInsumoButton = (
-        <button
+        <Button
             onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-            className="
-                group relative h-11 px-6 overflow-hidden bg-orange-500 hover:bg-orange-400 
-                rounded-xl transition-all duration-300 active:scale-95 shadow-lg shadow-orange-900/40
-                flex items-center gap-3 text-zinc-950
-            "
+            className="bg-orange-500 hover:bg-orange-400 text-zinc-950 shadow-lg shadow-orange-900/40"
+            variant="custom"
+            icon={Plus}
         >
-            <Plus size={16} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.15em]">
-                Novo
-            </span>
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        </button>
+            Novo
+        </Button>
     );
 
     return (
@@ -193,20 +190,53 @@ export default function InsumosPage() {
                         {itemsFiltrados.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 {itemsFiltrados.map(item => (
-                                    <CardInsumo
+                                    <DataCard
                                         key={item.id}
-                                        item={item}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDeleteClick}
-                                    />
+                                        title={item.name}
+                                        subtitle={`ID: ${item?.id?.slice?.(0, 8) || '...'}`}
+                                        icon={CATEGORIES.find(c => c.id === item.category)?.icon || PackageSearch}
+                                        badge={item.category || 'Geral'}
+                                        color="orange"
+                                        onClick={() => handleEdit(item)}
+                                        headerActions={
+                                            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    onClick={() => handleEdit(item)}
+                                                    variant="ghost"
+                                                    size="xs"
+                                                    className="w-8 h-8 p-0 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                                    icon={Edit2}
+                                                />
+                                                <Button
+                                                    onClick={() => handleDeleteClick(item)}
+                                                    variant="ghost"
+                                                    size="xs"
+                                                    className="w-8 h-8 p-0 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10"
+                                                    icon={Trash2}
+                                                />
+                                            </div>
+                                        }
+                                    >
+                                        <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                                            <div className="bg-zinc-950/50 p-2.5 rounded-lg border border-white/5">
+                                                <span className="block text-[10px] text-zinc-500 uppercase font-black tracking-wider mb-0.5">Preço</span>
+                                                <span className="text-emerald-400 font-mono font-bold">R$ {Number(item.price).toFixed(2)}</span>
+                                            </div>
+                                            <div className="bg-zinc-950/50 p-2.5 rounded-lg border border-white/5">
+                                                <span className="block text-[10px] text-zinc-500 uppercase font-black tracking-wider mb-0.5">Estoque</span>
+                                                <span className="text-zinc-200 font-mono font-bold">{item.currentStock} <span className="text-[10px] text-zinc-600">{item.unit}</span></span>
+                                            </div>
+                                        </div>
+                                    </DataCard>
                                 ))}
                             </div>
                         ) : (
                             !loading && (
-                                <div className="py-24 flex flex-col items-center justify-center border border-dashed border-zinc-800/60 rounded-[3rem] bg-zinc-950/40/5 backdrop-blur-sm">
-                                    <PackageSearch size={48} strokeWidth={1} className="mb-4 text-zinc-700" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Nenhum insumo encontrado</p>
-                                </div>
+                                <EmptyState
+                                    title="Nenhum insumo encontrado"
+                                    description="Adicione novos itens para controlar seu estoque."
+                                    icon={PackageSearch}
+                                />
                             )
                         )}
                     </div>
@@ -222,35 +252,21 @@ export default function InsumosPage() {
             />
 
             {/* POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) */}
-            <Popup
+            <ConfirmModal
                 isOpen={confirmacaoExclusao.aberta}
                 onClose={() => setConfirmacaoExclusao({ aberta: false, item: null })}
+                onConfirm={confirmDelete}
                 title="Excluir Insumo?"
-                subtitle="Gestão de Insumos"
-                icon={AlertTriangle}
-                footer={
-                    <div className="flex gap-3 w-full">
-                        <button onClick={() => setConfirmacaoExclusao({ aberta: false, item: null })} className="flex-1 h-12 rounded-xl bg-zinc-950/40 border border-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest hover:text-white">
-                            Cancelar
-                        </button>
-                        <button onClick={confirmDelete} className="flex-1 h-12 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-900/20 flex items-center justify-center gap-2">
-                            <Trash2 size={16} /> Confirmar Exclusão
-                        </button>
-                    </div>
-                }
-            >
-                <div className="p-8 text-center space-y-4">
-                    <p className="text-zinc-400 text-sm font-medium leading-relaxed">
+                message={
+                    <span>
                         Você está prestes a remover permanentemente o insumo <br />
                         <span className="text-zinc-100 font-bold uppercase tracking-tight">"{confirmacaoExclusao.item?.name}"</span>
-                    </p>
-                    <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10">
-                        <p className="text-[10px] text-rose-500/80 font-black uppercase tracking-widest">
-                            Atenção: Esta ação não pode ser desfeita.
-                        </p>
-                    </div>
-                </div>
-            </Popup>
+                    </span>
+                }
+                description="Atenção: Esta ação não pode ser desfeita."
+                confirmText="Confirmar Exclusão"
+                isDestructive
+            />
         </ManagementLayout>
     );
 }

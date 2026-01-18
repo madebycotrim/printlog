@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
     User, Lock, RefreshCw, Save, ShieldCheck,
     KeyRound, Fingerprint, ShieldAlert, FileText,
@@ -10,50 +10,12 @@ import {
 import { useLogicaConfiguracao } from '../../utils/configLogic';
 import ManagementLayout from "../../layouts/ManagementLayout";
 import AvisoFlutuante from "../../components/Toast";
+import Modal from '../../components/ui/Modal';
+import DataCard from '../../components/ui/DataCard';
+import Button from '../../components/ui/Button';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
-// --- COMPONENTE DE CARTÃO (ESTILO DASHBOARD) ---
-const CartaoInformativo = ({ titulo, subtitulo, Icone, classeCor = "sky", children, etiqueta, className = "" }) => {
-    const temas = {
-        sky: "text-sky-400 bg-sky-500/10",
-        emerald: "text-emerald-400 bg-emerald-500/10",
-        amber: "text-amber-400 bg-amber-500/10",
-        rose: "text-rose-400 bg-rose-500/10",
-    };
-    const temaEscolhido = temas[classeCor] || temas.sky;
 
-    return (
-        <div className={`bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-4 hover-lift group ${className}`}>
-            {/* Header do Card */}
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
-                        {titulo}
-                    </h3>
-                    {subtitulo && (
-                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mt-0.5">
-                            {subtitulo}
-                        </p>
-                    )}
-                </div>
-
-                <div className="flex items-center gap-3">
-                    {etiqueta && (
-                        <span className="text-[9px] font-black px-2 py-1 rounded bg-zinc-950/40 border border-zinc-800 text-zinc-500 uppercase tracking-widest leading-none">
-                            {etiqueta}
-                        </span>
-                    )}
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${temaEscolhido} group-hover:scale-110 transition-transform`}>
-                        <Icone size={20} strokeWidth={2} />
-                    </div>
-                </div>
-            </div>
-            {/* Content */}
-            <div className="h-full">
-                {children}
-            </div>
-        </div>
-    );
-};
 
 export default function PaginaConfiguracao() {
     const logica = useLogicaConfiguracao();
@@ -91,7 +53,7 @@ export default function PaginaConfiguracao() {
                 />
             )}
 
-            {/* ConteÃºdo Principal */}
+            {/* Conteúdo Principal */}
             <div className="relative z-10 p-8 xl:p-12 max-w-[1600px] mx-auto w-full">
                 <div className="mb-12 animate-fade-in-up">
                     <div className="flex items-start justify-between flex-wrap gap-4">
@@ -104,35 +66,27 @@ export default function PaginaConfiguracao() {
                             </p>
                         </div>
 
-                        <button
+                        <Button
                             onClick={logica.salvarAlteracoesGerais}
-                            disabled={logica.estaSalvando || !logica.temAlteracao}
-                            className={`
-                                    h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] 
-                                    flex items-center gap-3 transition-all duration-300
-                                    active:scale-[0.98]
-                                    ${logica.temAlteracao
-                                    ? 'bg-sky-500/10 hover:bg-sky-500/20 text-sky-500 shadow-lg shadow-sky-500/10 hover:shadow-sky-500/20 border border-sky-500/20'
-                                    : 'bg-zinc-900/50 text-zinc-600 border border-zinc-800 opacity-50 cursor-not-allowed'
-                                }
-                                `}
+                            disabled={!logica.temAlteracao}
+                            isLoading={logica.estaSalvando}
+                            variant={logica.temAlteracao ? "primary" : "secondary"}
+                            className={`h-14 px-8 shadow-lg ${logica.temAlteracao ? "bg-sky-500/10 hover:bg-sky-500/20 text-sky-500 shadow-sky-500/10 border-sky-500/20" : "opacity-50"}`}
+                            icon={Save}
                         >
-                            {logica.estaSalvando ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                             Salvar Alterações
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 {/* Grid de Widgets */}
                 <div className="space-y-4">
-                    {/* Linha 1: Resumo RÃ¡pido */}
+                    {/* Linha 1: Resumo Rápido */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                         {[
                             {
                                 Icone: Fingerprint,
-                                label: 'Identificador Ãšnico',
-                                value: logica.usuario?.id?.slice(-8).toUpperCase(),
-                                color: 'sky',
+                                label: 'Identificador Único',
                                 value: logica.usuario?.id?.slice(-8).toUpperCase(),
                                 color: 'sky',
                                 info: 'Código de Registro'
@@ -169,12 +123,12 @@ export default function PaginaConfiguracao() {
                         ))}
                     </div>
 
-                    {/* Linha 2: ConfiguraÃ§Ãµes Principais */}
+                    {/* Linha 2: Configurações Principais */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
 
-                        {/* SEÃ‡ÃƒO DE PERFIL DO MAKER (Esquerda, ocupando 2 linhas) */}
+                        {/* SEÇÃO DE PERFIL DO MAKER (Esquerda, ocupando 2 linhas) */}
                         <div className="lg:row-span-2 h-full">
-                            <CartaoInformativo titulo="Minha Foto" subtitulo="Imagem do Perfil" Icone={User} classeCor="sky" etiqueta="Usuário" className="h-full">
+                            <DataCard title="Minha Foto" subtitle="Imagem do Perfil" icon={User} color="sky" badge="Usuário" className="h-full">
                                 <div className="flex flex-col items-center mb-8">
                                     <div className="relative">
 
@@ -223,74 +177,127 @@ export default function PaginaConfiguracao() {
                                         <Mail size={14} className="text-zinc-600 shrink-0" />
                                     </div>
                                 </div>
-                            </CartaoInformativo>
+                            </DataCard>
                         </div>
 
-                        {/* SEÃ‡ÃƒO DE SEGURANÃ‡A E DADOS */}
+                        {/* SEÇÃO DE SEGURANÇA E DADOS */}
 
 
                         {/* CONTROLE DE SENHA */}
-                        <CartaoInformativo titulo="Senha de Acesso" subtitulo="Segurança da Conta" Icone={Lock} classeCor="emerald" etiqueta="Privado">
-                            <div className="space-y-6 mb-6">
-                                {temSenhaDefinida && (
-                                    <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                                        <Shield className="text-emerald-500" size={16} />
-                                        <span className="text-xs font-bold text-emerald-400">Senha configurada e protegida</span>
-                                    </div>
-                                )}
+                        <DataCard title="Senha de Acesso" subtitle="Segurança da Conta" icon={Lock} color="emerald" badge="Privado">
+                            <div className="space-y-4">
+                                <p className="text-xs text-zinc-500 leading-relaxed font-medium">
+                                    Garanta a segurança dos seus projetos e dados definindo uma senha forte para sua conta.
+                                </p>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => logica.setExibirJanelaSenha(true)}
+                                        className="group w-full p-4 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-[0.98]"
+                                    >
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 group-hover:bg-emerald-500/20 transition-colors">
+                                            <KeyRound size={24} />
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="block text-xs font-black text-emerald-600 uppercase tracking-wide">
+                                                {temSenhaDefinida ? "Gerenciar Senha" : "Criar Senha"}
+                                            </span>
+                                            <span className="block text-[9px] text-emerald-600/60 font-medium mt-0.5">
+                                                {temSenhaDefinida ? "Ultima alteração: Recente" : "Não configurada"}
+                                            </span>
+                                        </div>
+                                    </button>
+
+                                    <div className="group w-full p-4 bg-zinc-900/30 border border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-3 opacity-60 cursor-not-allowed relative overflow-hidden">
+                                        <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-zinc-800 rounded text-[8px] font-black text-zinc-500 uppercase tracking-wider">
+                                            Em Breve
+                                        </div>
+                                        <div className="p-2 bg-zinc-800/50 rounded-lg text-zinc-600">
+                                            <Fingerprint size={24} />
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="block text-xs font-black text-zinc-500 uppercase tracking-wide">Autenticação 2FA</span>
+                                            <span className="block text-[9px] text-zinc-600 font-medium mt-0.5">Proteção Extra</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <button
-                                onClick={() => logica.setExibirJanelaSenha(true)}
-                                className="w-full py-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-[0.98]"
-                            >
-                                <KeyRound size={16} /> {temSenhaDefinida ? "Trocar Senha Atual" : "Criar Nova Senha"}
-                            </button>
-                        </CartaoInformativo>
+                        </DataCard>
 
                         {/* EXPORTAÇÃO DE RELATÓRIOS */}
-                        <CartaoInformativo titulo="Baixar Dados" subtitulo="Relatórios e Planilhas" Icone={HardDrive} classeCor="sky" etiqueta="Backup">
+                        <DataCard
+                            title="Baixar Dados"
+                            subtitle="Exportar & Backup"
+                            icon={HardDrive}
+                            color="indigo"
+                            badge="Portabilidade"
+                        >
+                            <div className="space-y-4">
+                                <p className="text-xs text-zinc-500 leading-relaxed font-medium">
+                                    Mantenha cópias locais dos seus registros. Seus dados são seus.
+                                </p>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => logica.exportarRelatorio('csv')}
+                                        className="group w-full p-4 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-[0.98]"
+                                    >
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 group-hover:bg-emerald-500/20 transition-colors">
+                                            <Table size={24} />
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="block text-xs font-black text-emerald-600 uppercase tracking-wide">Excel (.CSV)</span>
+                                            <span className="block text-[9px] text-emerald-600/60 font-medium mt-0.5">Planilha Universal</span>
+                                        </div>
+                                    </button>
 
-                            <div className="grid grid-cols-1 gap-3">
-                                <button
-                                    onClick={() => logica.exportarRelatorio('csv')}
-                                    className="group w-full p-4 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 active:scale-[0.98]"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Table size={18} className="text-emerald-500 transition-colors" />
-                                        <span className="text-xs font-black text-emerald-500 uppercase tracking-wide transition-colors">Planilha Excel (CSV)</span>
-                                    </div>
-                                    <Download size={14} className="text-emerald-500/50 transition-colors" />
-                                </button>
-
-                                <button
-                                    onClick={() => logica.exportarRelatorio('pdf')}
-                                    className="group w-full p-4 bg-sky-500/5 hover:bg-sky-500/10 border border-sky-500/20 rounded-xl flex items-center justify-between transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/10 active:scale-[0.98]"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <FileText size={18} className="text-sky-500 transition-colors" />
-                                        <span className="text-xs font-black text-sky-500 uppercase tracking-wide transition-colors">Documento Técnico (PDF)</span>
-                                    </div>
-                                    <Download size={14} className="text-sky-500/50 transition-colors" />
-                                </button>
+                                    <button
+                                        onClick={() => logica.exportarRelatorio('pdf')}
+                                        className="group w-full p-4 bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/40 rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/10 active:scale-[0.98]"
+                                    >
+                                        <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500 group-hover:bg-indigo-500/20 transition-colors">
+                                            <FileText size={24} />
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="block text-xs font-black text-indigo-600 uppercase tracking-wide">PDF Técnico</span>
+                                            <span className="block text-[9px] text-indigo-600/60 font-medium mt-0.5">Documento Formal</span>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
-                        </CartaoInformativo>
+                        </DataCard>
 
                         {/* ZONA DE EXCLUSÃO (Rodapé direito - Ocupa 2 colunas) */}
                         <div className="lg:col-span-2">
-                            <CartaoInformativo titulo="Excluir Conta" subtitulo="Zona de Perigo" Icone={Trash2} classeCor="rose" etiqueta="Irreversível">
-                                <p className="text-xs text-zinc-500 mb-4 leading-relaxed font-medium">
-                                    Perda irreversível de todos os dados.
-                                </p>
+                            <DataCard
+                                title="Excluir Conta"
+                                subtitle="Zona de Perigo"
+                                icon={Trash2}
+                                color="rose"
+                                badge="Irreversível"
+                                className="bg-rose-950/10 border-rose-500/10 group-hover:border-rose-500/30"
+                            >
+                                <div className="flex flex-col md:flex-row items-center gap-6 justify-between h-full pt-2">
+                                    <div className="flex-1 space-y-2 text-center md:text-left">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/10 rounded-full border border-rose-500/20 mb-1">
+                                            <ShieldAlert size={12} className="text-rose-500" />
+                                            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Ação Destrutiva</span>
+                                        </div>
+                                        <p className="text-xs text-zinc-400 font-medium leading-relaxed max-w-lg">
+                                            Essa ação apagará <strong className="text-rose-400">permanentemente</strong> todos os seus filamentos, impressoras e configurações. Não há como desfazer.
+                                        </p>
+                                    </div>
 
-                                <button
-                                    onClick={() => setExibirModalExclusao(true)}
-                                    className="w-full py-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-rose-500/10 hover:shadow-rose-500/20 active:scale-[0.98]"
-                                >
-                                    <ShieldAlert size={16} /> Excluir Minha Conta
-                                </button>
-                            </CartaoInformativo>
+                                    <Button
+                                        onClick={() => setExibirModalExclusao(true)}
+                                        className="w-full md:w-auto bg-rose-600 hover:bg-rose-500 text-white border-rose-400/20"
+                                        variant="danger"
+                                        icon={Trash2}
+                                    >
+                                        Excluir Tudo
+                                    </Button>
+                                </div>
+                            </DataCard>
                         </div>
                     </div>
                 </div>
@@ -308,27 +315,29 @@ export default function PaginaConfiguracao() {
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <button
+                        <Button
                             onClick={() => setExibirModalSuporte(true)}
-                            className="px-5 py-2.5 bg-zinc-950/40 border border-zinc-800 hover:border-sky-500/50 hover:bg-sky-500/10 rounded-lg text-[10px] font-black text-zinc-400 hover:text-sky-500 uppercase tracking-widest transition-all flex items-center gap-2 group active:scale-[0.98]"
+                            variant="secondary"
+                            className="bg-zinc-950/40 border-zinc-800 hover:border-sky-500/50 hover:bg-sky-500/10 hover:text-sky-500"
+                            icon={Wrench}
                         >
-                            <Wrench size={12} className="text-zinc-600 group-hover:text-sky-500 transition-colors" />
                             Abrir Chamado
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={() => { navigator.clipboard.writeText("suporte@printlog.com.br"); logica.setAviso({ exibir: true, tipo: 'sucesso', mensagem: 'E-mail copiado!' }); }}
-                            className="px-5 py-2.5 bg-zinc-950 border border-zinc-800 hover:border-zinc-800/50 rounded-lg text-[10px] font-black text-zinc-400 uppercase tracking-widest transition-all flex items-center gap-2 active:scale-[0.98]"
+                            variant="secondary"
+                            className="bg-zinc-950 border-zinc-800 hover:border-zinc-800/50"
+                            icon={Mail}
                         >
-                            <Mail size={12} className="text-zinc-600" />
                             Copiar Email
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
 
 
             {/* JANELA DE SENHA (MODAL) */}
-            < Popup
+            <Modal
                 isOpen={logica.exibirJanelaSenha}
                 onClose={() => logica.setExibirJanelaSenha(false)
                 }
@@ -338,27 +347,16 @@ export default function PaginaConfiguracao() {
                 maxWidth="max-w-md"
                 isLoading={logica.estaSalvando}
                 footer={
-                    < button
+                    <Button
                         onClick={logica.atualizarSenha}
-                        disabled={logica.estaSalvando || !logica.todosRequisitosAtendidos}
-                        className={`w-full py-4 rounded-xl font-black uppercase text-xs tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${logica.todosRequisitosAtendidos
-                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-                            : 'bg-zinc-950/40 text-zinc-600 cursor-not-allowed border border-zinc-800'
-                            }`}
+                        disabled={!logica.todosRequisitosAtendidos}
+                        isLoading={logica.estaSalvando}
+                        variant={logica.todosRequisitosAtendidos ? "primary" : "secondary"}
+                        className="w-full"
+                        icon={Shield}
                     >
-                        {
-                            logica.estaSalvando ? (
-                                <Loader2 className="animate-spin" size={18} />
-                            ) : logica.todosRequisitosAtendidos ? (
-                                <>
-                                    <Shield size={16} />
-                                    Confirmar Mudança
-                                </>
-                            ) : (
-                                'Complete os requisitos acima'
-                            )
-                        }
-                    </button >
+                        {logica.todosRequisitosAtendidos ? "Confirmar Mudança" : "Complete os requisitos acima"}
+                    </Button>
                 }
             >
                 <div className="space-y-4">
@@ -420,7 +418,7 @@ export default function PaginaConfiguracao() {
                         </div>
                     </div>
 
-                    {/* Barra de ForÃ§a da Senha */}
+                    {/* Barra de Força da Senha */}
                     {logica.formularioSenha.novaSenha.length > 0 && (
                         <div className="space-y-2 p-4 bg-zinc-950/40/30 rounded-xl border border-zinc-800/50">
                             <div className="flex items-center justify-between">
@@ -438,10 +436,10 @@ export default function PaginaConfiguracao() {
                         </div>
                     )}
                 </div>
-            </Popup >
+            </Modal>
 
             {/* MODAL DE SUPORTE (GOOGLE FORMS) */}
-            < Popup
+            <Modal
                 isOpen={exibirModalSuporte}
                 onClose={() => setExibirModalSuporte(false)}
                 title="Abrir Chamado"
@@ -461,69 +459,26 @@ export default function PaginaConfiguracao() {
                         Carregando formulário...
                     </iframe>
                 </div>
-            </Popup >
+            </Modal>
 
-            {/* MODAL DE CONFIRMAÃ‡ÃƒO DE EXCLUSÃƒO */}
-            < Popup
+            {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+            <ConfirmModal
                 isOpen={exibirModalExclusao}
                 onClose={() => setExibirModalExclusao(false)}
+                onConfirm={() => {
+                    setExibirModalExclusao(false);
+                    logica.excluirContaPermanente();
+                }}
                 title="Excluir Conta"
-                subtitle="Ação Irreversível"
-                icon={ShieldAlert}
-                maxWidth="max-w-md"
-                footer={
-                    < div className="flex gap-3" >
-                        <button
-                            onClick={() => setExibirModalExclusao(false)}
-                            className="flex-1 py-3 bg-zinc-950/40 hover:bg-zinc-900/50 border border-zinc-800/50 text-zinc-300 rounded-xl font-black uppercase text-xs tracking-wider transition-all"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={() => {
-                                setExibirModalExclusao(false);
-                                logica.excluirContaPermanente();
-                            }}
-                            className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-black uppercase text-xs tracking-wider transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
-                        >
-                            <Trash2 size={14} />
-                            Confirmar Exclusão
-                        </button>
-                    </div >
+                message={
+                    <span>
+                        Você está prestes a <strong className="text-rose-400 font-black">excluir permanentemente</strong> sua conta e todos os dados associados.
+                    </span>
                 }
-            >
-                <div className="space-y-4">
-                    <p className="text-sm text-zinc-300 leading-relaxed">
-                        Você está prestes a <strong className="text-rose-400 font-black">excluir permanentemente</strong> sua conta e todos os dados associados:
-                    </p>
-
-                    <ul className="space-y-2 pl-4">
-                        <li className="text-xs text-zinc-400 flex items-start gap-2">
-                            <span className="text-rose-500 mt-0.5">â€¢</span>
-                            <span>Todos os filamentos cadastrados</span>
-                        </li>
-                        <li className="text-xs text-zinc-400 flex items-start gap-2">
-                            <span className="text-rose-500 mt-0.5">â€¢</span>
-                            <span>Todas as impressoras configuradas</span>
-                        </li>
-                        <li className="text-xs text-zinc-400 flex items-start gap-2">
-                            <span className="text-rose-500 mt-0.5">•</span>
-                            <span>Histórico completo de projetos</span>
-                        </li>
-                        <li className="text-xs text-zinc-400 flex items-start gap-2">
-                            <span className="text-rose-500 mt-0.5">•</span>
-                            <span>Configurações e preferências</span>
-                        </li>
-                    </ul>
-
-                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl">
-                        <p className="text-xs text-rose-300 font-bold text-center">
-                            ⚠️ Esta ação não pode ser desfeita. Os dados não poderão ser recuperados.
-                        </p>
-                    </div>
-                </div>
-            </Popup >
-        </ManagementLayout >
+                description="⚠️ Esta ação não pode ser desfeita. Os dados não poderão ser recuperados."
+                confirmText="Confirmar Exclusão"
+                isDestructive
+            />
+        </ManagementLayout>
     );
 }
-

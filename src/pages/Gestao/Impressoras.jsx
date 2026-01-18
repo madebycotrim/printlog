@@ -6,7 +6,10 @@ import { formatDecimal } from "../../utils/numbers";
 // --- LAYOUT E INTERFACE GLOBAL ---
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import Popup from "../../components/Popup"; // Componente Unificado
+import Modal from "../../components/ui/Modal"; // Componente Unificado
+import EmptyState from "../../components/ui/EmptyState";
+import Button from "../../components/ui/Button";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 
 // --- COMPONENTES DA FUNCIONALIDADE ---
 import PrinterCard from "../../features/impressoras/components/CardsImpressoras";
@@ -211,21 +214,13 @@ export default function ImpressorasPage() {
     };
 
     const novaImpressoraButton = (
-        <button
+        <Button
             onClick={() => { setItemParaEdicao(null); setModalAberto(true); }}
-            className="
-                group relative h-11 px-6 overflow-hidden bg-emerald-500 hover:bg-emerald-400 
-                rounded-xl transition-all duration-300 active:scale-95 shadow-lg shadow-emerald-900/40
-                flex items-center gap-3 text-zinc-950
-            "
+            variant="primary"
+            icon={Plus}
         >
-            <Plus size={16} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.15em]">
-                Nova
-            </span>
-            {/* Brilho */}
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        </button>
+            Nova
+        </Button>
     );
 
     return (
@@ -268,10 +263,11 @@ export default function ImpressorasPage() {
                         </div>
                     ) : (
                         !loading && (
-                            <div className="py-24 flex flex-col items-center justify-center border border-dashed border-zinc-800/60 rounded-[3rem] bg-zinc-950/40/5 backdrop-blur-sm">
-                                <Scan size={48} strokeWidth={1} className="mb-4 text-zinc-700" />
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">Nenhuma impressora na frota</p>
-                            </div>
+                            <EmptyState
+                                title="Nenhuma impressora na frota"
+                                description="Adicione sua primeira máquina para começar o monitoramento."
+                                icon={Scan}
+                            />
                         )
                     )}
                 </div>
@@ -296,43 +292,24 @@ export default function ImpressorasPage() {
                 )}
 
                 {/* POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) */}
-                <Popup
+                {/* POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) */}
+                <ConfirmModal
                     isOpen={confirmacaoExclusao.aberta}
                     onClose={() => setConfirmacaoExclusao({ aberta: false, item: null })}
+                    onConfirm={aoConfirmarExclusao}
                     title="Remover Hardware?"
-                    subtitle="Gestão de Frota"
-                    icon={AlertTriangle}
-                    footer={
-                        <div className="flex gap-3 w-full">
-                            <button
-                                onClick={() => setConfirmacaoExclusao({ aberta: false, item: null })}
-                                className="flex-1 h-12 rounded-xl bg-zinc-950/40 border border-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={aoConfirmarExclusao}
-                                className="flex-1 h-12 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-rose-900/20 flex items-center justify-center gap-2"
-                            >
-                                <Trash2 size={16} /> Confirmar Remoção
-                            </button>
-                        </div>
-                    }
-                >
-                    <div className="p-8 text-center space-y-4">
-                        <p className="text-zinc-400 text-sm font-medium leading-relaxed">
+                    message={
+                        <span>
                             Você está prestes a remover a impressora <br />
                             <span className="text-zinc-100 font-bold uppercase tracking-tight">
                                 "{confirmacaoExclusao.item?.nome || "Hardware"}"
                             </span>
-                        </p>
-                        <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10">
-                            <p className="text-[10px] text-rose-500/80 font-black uppercase tracking-widest leading-tight">
-                                Atenção: Os dados de horas trabalhadas e o histórico de impressões deste hardware serão desconectados da sua conta.
-                            </p>
-                        </div>
-                    </div>
-                </Popup>
+                        </span>
+                    }
+                    description="Atenção: Os dados de horas trabalhadas e o histórico de impressões deste hardware serão desconectados da sua conta."
+                    confirmText="Confirmar Remoção"
+                    isDestructive
+                />
             </div>
         </ManagementLayout>
     );
