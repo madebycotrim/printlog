@@ -27,7 +27,7 @@ const Badge = ({ icon: Icon, label, color = "sky" }) => {
 const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", className = "", disabled, type = "button", isLoading }) => {
     const styles = {
         sky: "bg-sky-600 text-white hover:bg-sky-500 shadow-lg shadow-sky-500/20",
-        white: "bg-white text-black hover:bg-zinc-200",
+        white: "bg-white text-black hover:bg-zinc-200 shadow-xl",
     };
     return (
         <button
@@ -38,8 +38,8 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
         >
             {isLoading ? (
                 <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
-                    <span>Validando...</span>
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Processando...</span>
                 </div>
             ) : (
                 <>
@@ -54,23 +54,34 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
 // --- WIDGETS DE PREVIEW ---
 
 const RecoveryStatusWidget = () => (
-    <div className="w-80 bg-[#0c0c0e]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
+    <div className="w-80 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl group hover:border-amber-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
                 <Badge label="Segurança" color="amber" icon={Settings} />
-                <h4 className="text-white font-bold text-lg mt-2 uppercase">Voltar para a oficina</h4>
+                <h4 className="text-white font-bold text-lg mt-2 uppercase group-hover:text-amber-400 transition-colors">Recuperação</h4>
             </div>
-            <Cpu className="text-zinc-600" size={20} />
+            <Cpu className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={20} />
         </div>
-        <div className="space-y-3">
+        <div className="space-y-4">
+            <div className="p-4 bg-zinc-900/30 rounded-2xl border border-zinc-800/30 space-y-3 group-hover:bg-amber-500/5 transition-colors duration-500">
+                <div className="flex justify-between text-[10px] font-bold uppercase text-zinc-500">
+                    <span>Nível de Proteção</span>
+                    <span className="text-amber-400">100%</span>
+                </div>
+                <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                    <div className="h-full w-[0%] animate-[fillBarAmber_1.5s_ease-out_forwards] bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" style={{ '--w': '100%' }} />
+                    <style>{`@keyframes fillBarAmber { to { width: 100%; } }`}</style>
+                </div>
+            </div>
+
             {[
                 { label: 'Criptografia', status: 'Ativa', icon: ShieldCheck },
                 { label: 'Sincronia Maker', status: 'Online', icon: RefreshCcw }
             ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 group/item hover:border-amber-500/20 transition-colors">
                     <div className="flex items-center gap-3">
-                        <item.icon size={14} className="text-sky-500/70" />
-                        <span className="text-[10px] font-bold uppercase text-zinc-400">{item.label}</span>
+                        <item.icon size={14} className="text-sky-500/70 group-hover/item:text-amber-500 transition-colors" />
+                        <span className="text-[10px] font-bold uppercase text-zinc-400 group-hover/item:text-white transition-colors">{item.label}</span>
                     </div>
                     <span className="text-[9px] font-bold text-sky-400 uppercase">{item.status}</span>
                 </div>
@@ -161,7 +172,7 @@ export default function ForgotPasswordPage() {
                     <div className="space-y-4 text-center sm:text-left">
                         <div className="flex items-center gap-3 justify-center sm:justify-start">
                             <img src={logo} alt="PrintLog" className="w-10 h-10 object-contain" />
-                            <span className="text-xl font-bold text-white uppercase tracking-tight">PrintLog <span className="text-sky-500 text-[10px] ml-1 uppercase">Suporte</span></span>
+                            <span className="text-xl font-bold text-white uppercase tracking-tight">PRINTLOG <span className="text-sky-500 text-[10px] ml-1 uppercase">Suporte</span></span>
                         </div>
                         <div className="space-y-2">
                             <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.95] text-white uppercase">
@@ -174,7 +185,7 @@ export default function ForgotPasswordPage() {
                     </div>
 
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium">
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium animate-shake">
                             <ShieldAlert size={16} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -183,13 +194,13 @@ export default function ForgotPasswordPage() {
                     <form onSubmit={step === 1 ? handleSendCode : handleResetPassword} className="space-y-6">
                         {step === 1 ? (
                             <div className="space-y-5">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 ml-1">Qual seu e-mail cadastrado?</label>
+                                <div className="space-y-2 group">
+                                    <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Qual seu e-mail cadastrado?</label>
                                     <div className="relative">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                         <input
                                             type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 transition-all duration-200 text-white placeholder:text-zinc-800"
+                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
                                             placeholder="seu@email.com"
                                         />
                                     </div>
@@ -201,7 +212,7 @@ export default function ForgotPasswordPage() {
                                 </PrimaryButton>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div className="space-y-6 animate-fade-in-up">
                                 <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
                                     <label className="text-xs font-bold uppercase tracking-widest text-sky-500 block">Digite o código do e-mail</label>
                                     <input
@@ -213,15 +224,15 @@ export default function ForgotPasswordPage() {
                                 </div>
 
                                 <div className="space-y-2 group">
-                                    <label className="text-xs font-bold text-zinc-500 ml-1">Crie sua nova senha</label>
+                                    <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie sua nova senha</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                         <input
                                             type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 transition-all duration-200 text-white placeholder:text-zinc-800"
+                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
                                             placeholder="Mínimo de 8 caracteres"
                                         />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white">
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
                                     </div>
@@ -255,9 +266,9 @@ export default function ForgotPasswordPage() {
                         <RecoveryStatusWidget />
                     </div>
 
-                    <div className="bg-[#0c0c0e]/90 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl mt-6 mx-auto w-72">
+                    <div className="bg-zinc-950/60 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl mt-6 mx-auto w-72 hover:scale-105 transition-transform duration-500">
                         <div className="flex items-center gap-4 mb-3">
-                            <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                            <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                                 <CheckCircle2 size={24} />
                             </div>
                             <div className="text-left">
@@ -270,8 +281,8 @@ export default function ForgotPasswordPage() {
                         </p>
                     </div>
 
-                    <div className="absolute -bottom-40 -left-20 opacity-10">
-                        <Layers size={200} strokeWidth={0.5} className="text-white" />
+                    <div className="absolute -bottom-40 -left-20 opacity-10 text-white">
+                        <Layers size={200} strokeWidth={0.5} />
                     </div>
                 </div>
             </div>

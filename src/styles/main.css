@@ -172,6 +172,71 @@
     .spring-bounce:active {
         transform: scale(0.95);
     }
+
+    /* Float Animation */
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .animate-float-delayed {
+        animation: float 6s ease-in-out infinite;
+        animation-delay: 3s;
+    }
+
+    /* Shake Animation (Intermittent Glitch) */
+    @keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+
+        2% {
+            transform: translateX(-4px);
+        }
+
+        4% {
+            transform: translateX(4px);
+        }
+
+        6% {
+            transform: translateX(-4px);
+        }
+
+        8% {
+            transform: translateX(4px);
+        }
+
+        10% {
+            transform: translateX(-2px);
+        }
+
+        12% {
+            transform: translateX(2px);
+        }
+
+        14% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    .animate-shake {
+        animation: shake 5s ease-in-out infinite;
+    }
 }
 
 /* --- 6. CUSTOM SCROLLBAR --- */

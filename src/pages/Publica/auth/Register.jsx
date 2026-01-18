@@ -59,30 +59,58 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
     );
 };
 
+// --- COMPONENTES AUXILIARES ---
+
+const AuthModeToggle = ({ mode, setMode }) => (
+    <div className="bg-zinc-900/50 p-1 rounded-xl flex relative mb-6 border border-white/5">
+        <div
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ease-spring ${mode === 'magic' ? 'left-1' : 'left-[calc(50%+4px)]'}`}
+        />
+        <button
+            type="button"
+            onClick={() => setMode('magic')}
+            className={`flex-1 relative z-10 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide py-2.5 rounded-lg transition-colors ${mode === 'magic' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+            <Zap size={14} /> Link Mágico
+        </button>
+        <button
+            type="button"
+            onClick={() => setMode('password')}
+            className={`flex-1 relative z-10 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide py-2.5 rounded-lg transition-colors ${mode === 'password' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+            <KeyRound size={14} /> Senha
+        </button>
+    </div>
+);
+
 const InventoryWidget = () => (
-    <div className="w-80 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
+    <div className="w-80 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl group hover:border-sky-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
                 <Badge label="Materiais" color="sky" icon={Database} />
-                <h4 className="text-white font-bold text-lg mt-2">Meus Filamentos</h4>
+                <h4 className="text-white font-bold text-lg mt-2 group-hover:text-sky-400 transition-colors">Meus Filamentos</h4>
             </div>
-            <Package className="text-zinc-600" size={20} />
+            <Package className="text-zinc-600 group-hover:text-sky-500 transition-colors" size={20} />
         </div>
         <div className="space-y-4">
             {[
-                { name: 'PETG Carbono', weight: '820g', color: 'bg-sky-500', percent: 'w-[82%]' },
-                { name: 'PLA Silk Ouro', weight: '150g', color: 'bg-amber-400', percent: 'w-[15%]', alert: true },
+                { name: 'PETG Carbono', weight: '820g', color: 'bg-sky-500', shadow: 'shadow-[0_0_10px_rgba(14,165,233,0.5)]', percent: '82%' },
+                { name: 'PLA Silk Ouro', weight: '150g', color: 'bg-amber-400', shadow: 'shadow-[0_0_10px_rgba(251,191,36,0.5)]', percent: '15%', alert: true },
             ].map((item, i) => (
-                <div key={i} className="space-y-2">
+                <div key={i} className="space-y-2 group/item">
                     <div className="flex justify-between items-center text-[11px] font-medium">
-                        <span className="text-zinc-400 flex items-center gap-2">
+                        <span className="text-zinc-400 flex items-center gap-2 group-hover/item:text-white transition-colors">
                             {item.alert && <AlertTriangle size={12} className="text-amber-500" />}
                             {item.name}
                         </span>
                         <span className={item.alert ? "text-amber-500" : "text-white"}>{item.weight}</span>
                     </div>
                     <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                        <div className={`h-full ${item.percent} ${item.color} rounded-full`} />
+                        <div
+                            className={`h-full ${item.color} ${item.shadow} rounded-full animate-[fillBarReg_1.5s_ease-out_forwards]`}
+                            style={{ '--w': item.percent, animationDelay: `${i * 0.2}s`, width: '0%' }}
+                        />
+                        <style>{`@keyframes fillBarReg { to { width: var(--w); } }`}</style>
                     </div>
                 </div>
             ))}
@@ -212,7 +240,7 @@ export default function RegisterPage() {
                     <div className="space-y-4 text-center sm:text-left">
                         <div className="flex items-center gap-3 justify-center sm:justify-start">
                             <img src={logo} alt="PrintLog" className="w-10 h-10 object-contain" />
-                            <span className="text-xl font-bold text-white">PrintLog <span className="text-sky-500 text-[10px] uppercase ml-1">v1.0</span></span>
+                            <span className="text-xl font-bold text-white">PRINTLOG <span className="text-sky-500 text-[10px] uppercase ml-1">BETA</span></span>
                         </div>
                         <div className="space-y-2">
                             <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.95] text-white uppercase">
@@ -225,7 +253,7 @@ export default function RegisterPage() {
                     </div>
 
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium">
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium animate-shake">
                             <AlertTriangle size={16} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -233,34 +261,37 @@ export default function RegisterPage() {
 
                     {!isSent && !pendingVerification ? (
                         <form onSubmit={regMode === 'magic' ? handleMagicLinkSignUp : handlePasswordSignUp} className="space-y-5">
+
+                            <AuthModeToggle mode={regMode} setMode={(m) => { setRegMode(m); setError(""); }} />
+
                             <div className="space-y-2 group">
-                                <label className="text-xs font-bold text-zinc-500 ml-1">Seu Nome ou Nome da Oficina</label>
+                                <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
                                 <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
-                                    <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 transition-all duration-200 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                    <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
                                 </div>
                             </div>
 
                             <div className="space-y-2 group">
-                                <label className="text-xs font-bold text-zinc-500 ml-1">Seu melhor e-mail</label>
+                                <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu melhor e-mail</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
-                                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 transition-all duration-200 text-white placeholder:text-zinc-700" placeholder="seu@email.com" />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="seu@email.com" />
                                 </div>
                             </div>
 
                             {regMode === 'password' && (
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 ml-1">Crie uma senha</label>
+                                <div className="space-y-2 group animate-fade-in-up">
+                                    <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie uma senha</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                         <input
                                             type={showPassword ? "text" : "password"} required value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 transition-all duration-200 text-white placeholder:text-zinc-700"
+                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
                                             placeholder="Use pelo menos 8 caracteres"
                                         />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white">
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
                                     </div>
@@ -268,23 +299,23 @@ export default function RegisterPage() {
                             )}
 
                             {/* CONSENTIMENTO - LGPD */}
-                            <div className="flex items-start gap-3 px-1">
+                            <div className="flex items-start gap-3 px-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                                 <div className="relative flex items-center">
                                     <input
                                         type="checkbox"
                                         id="terms"
                                         checked={agreed}
                                         onChange={(e) => setAgreed(e.target.checked)}
-                                        className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-900/50 checked:border-sky-500 checked:bg-sky-500 transition-all"
+                                        className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-900/50 checked:border-sky-500 checked:bg-sky-500 transition-all shadow-sm"
                                     />
-                                    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100">
+                                    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100 transition-opacity">
                                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </div>
                                 </div>
-                                <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none">
-                                    Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-zinc-300 hover:text-sky-500 hover:underline">Política de Privacidade</a> do PrintLog.
+                                <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none hover:text-zinc-300 transition-colors">
+                                    Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Política de Privacidade</a> do PrintLog.
                                 </label>
                             </div>
 
@@ -293,17 +324,6 @@ export default function RegisterPage() {
                                 <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} disabled={!agreed} icon={regMode === 'magic' ? Zap : LayoutDashboard}>
                                     {regMode === 'magic' ? "Receber link por e-mail" : "Abrir minha oficina"}
                                 </PrimaryButton>
-
-                                <div className="text-center">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setRegMode(regMode === 'magic' ? 'password' : 'magic'); setError(""); }}
-                                        className="flex items-center gap-2 mx-auto text-xs font-bold text-zinc-500 hover:text-white"
-                                    >
-                                        <KeyRound size={14} className="text-sky-500" />
-                                        {regMode === 'magic' ? "Entrar com e-mail e senha" : "Cadastrar sem senha (Link Rápido)"}
-                                    </button>
-                                </div>
                             </div>
                         </form>
 
@@ -340,7 +360,7 @@ export default function RegisterPage() {
                             <div className="absolute inset-0 border-t border-white/5" />
                             <span className="relative bg-zinc-950 px-4 text-[10px] font-bold uppercase text-zinc-600">Ou cadastre-se com</span>
                         </div>
-                        <button onClick={signUpWithGoogle} disabled={isGoogleLoading || isLoading || !agreed} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50">
+                        <button onClick={signUpWithGoogle} disabled={isGoogleLoading || isLoading || !agreed} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50 transition-colors">
                             {isGoogleLoading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Chrome size={20} /> Continuar com Google</>}
                         </button>
                         <p className="text-center text-zinc-500 text-sm">
@@ -360,8 +380,8 @@ export default function RegisterPage() {
                 <div className="relative z-10 scale-110">
                     <div className="translate-x-[-30px]"><InventoryWidget /></div>
 
-                    <div className="bg-zinc-950/90 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl ml-auto -mt-12 mr-[-40px] relative z-20 w-64 text-center">
-                        <div className="w-12 h-12 bg-sky-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-sky-500/20 text-sky-500">
+                    <div className="bg-zinc-950/60 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl ml-auto -mt-12 mr-[-40px] relative z-20 w-64 text-center hover:scale-105 transition-transform duration-500">
+                        <div className="w-12 h-12 bg-sky-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-sky-500/20 text-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.2)]">
                             <Layout size={24} />
                         </div>
                         <span className="text-sm font-bold text-white block uppercase">Tudo em uma tela</span>

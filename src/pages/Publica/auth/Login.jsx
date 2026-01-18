@@ -51,62 +51,111 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
     );
 };
 
+// --- HOOKS & COMPONENTES AUXILIARES ---
+
+// Hook para animar números (Count Up)
+const useCounter = (end, duration = 2000) => {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        let startTime;
+        let animationFrame;
+        const step = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            setCount(Math.floor(progress * end));
+            if (progress < 1) {
+                animationFrame = requestAnimationFrame(step);
+            }
+        };
+        animationFrame = requestAnimationFrame(step);
+        return () => cancelAnimationFrame(animationFrame);
+    }, [end, duration]);
+    return count;
+};
+
+const LoginModeToggle = ({ mode, setMode }) => (
+    <div className="bg-zinc-900/50 p-1 rounded-xl flex relative mb-6 border border-white/5">
+        <div
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ease-spring ${mode === 'magic' ? 'left-1' : 'left-[calc(50%+4px)]'}`}
+        />
+        <button
+            type="button"
+            onClick={() => setMode('magic')}
+            className={`flex-1 relative z-10 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide py-2.5 rounded-lg transition-colors ${mode === 'magic' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+            <Zap size={14} /> Link Mágico
+        </button>
+        <button
+            type="button"
+            onClick={() => setMode('password')}
+            className={`flex-1 relative z-10 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide py-2.5 rounded-lg transition-colors ${mode === 'password' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+            <KeyRound size={14} /> Senha
+        </button>
+    </div>
+);
+
 // --- WIDGETS DE PREVIEW ---
 
 const OficinaStatusWidget = () => (
-    <div className="w-80 bg-zinc-950/40 backdrop-blur-xl border border-zinc-800/50 rounded-[2rem] p-6 shadow-2xl">
+    <div className="w-80 bg-zinc-950/40 backdrop-blur-xl border border-zinc-800/50 rounded-[2rem] p-6 shadow-2xl group hover:border-emerald-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
                 <Badge label="Em operação" color="emerald" icon={Activity} />
-                <h4 className="text-white font-bold text-lg mt-2">Status da Oficina</h4>
+                <h4 className="text-white font-bold text-lg mt-2 group-hover:text-emerald-400 transition-colors">Status da Oficina</h4>
             </div>
-            <Cpu className="text-zinc-600" size={20} />
+            <Cpu className="text-zinc-600 group-hover:text-emerald-500 transition-colors" size={20} />
         </div>
         <div className="space-y-4">
-            <div className="p-4 bg-zinc-900/30 rounded-2xl border border-zinc-800/30 space-y-3">
+            <div className="p-4 bg-zinc-900/30 rounded-2xl border border-zinc-800/30 space-y-3 group-hover:bg-emerald-500/5 transition-colors duration-500">
                 <div className="flex justify-between text-[10px] font-bold uppercase text-zinc-500">
                     <span>Impressoras Rodando</span>
                     <span className="text-emerald-400">8 de 8</span>
                 </div>
                 <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                    <div className="h-full w-[85%] bg-emerald-500" />
+                    <div className="h-full w-[0%] animate-[fillBar_1.5s_ease-out_forwards] bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ '--w': '85%' }} />
+                    <style>{`@keyframes fillBar { to { width: 85%; } }`}</style>
                 </div>
                 <div className="flex justify-between items-center pt-1">
                     <span className="text-[9px] text-zinc-500 font-bold uppercase">Temperatura do Bico</span>
-                    <span className="text-[10px] text-white">215Â°C</span>
+                    <span className="text-[10px] text-white font-mono">215°C</span>
                 </div>
             </div>
         </div>
     </div>
 );
 
-const ProductionWidget = () => (
-    <div className="bg-zinc-950/60 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl ml-auto -mt-12 mr-[-30px] relative z-20 w-72">
-        <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 border border-sky-500/20">
-                <Layers size={20} />
+const ProductionWidget = () => {
+    const count = useCounter(1482);
+
+    return (
+        <div className="bg-zinc-950/60 backdrop-blur-xl border border-sky-500/20 rounded-[2rem] p-6 shadow-2xl ml-auto -mt-12 mr-[-30px] relative z-20 w-72 hover:scale-105 transition-transform duration-500">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 border border-sky-500/20 shadow-[0_0_15px_rgba(14,165,233,0.2)]">
+                    <Layers size={20} />
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-sky-500 uppercase">Produção do Mês</span>
+                    <span className="text-[11px] font-bold text-white uppercase">Peças Prontas</span>
+                </div>
             </div>
-            <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-sky-500 uppercase">Produção do Mês</span>
-                <span className="text-[11px] font-bold text-white uppercase">Peças Prontas</span>
+            <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold text-white tracking-tighter tabular-nums">{count.toLocaleString()}</span>
+                <span className="text-[10px] font-bold text-zinc-500 ml-1 uppercase">itens</span>
+            </div>
+            <div className="mt-4 pt-4 border-t border-zinc-800/30 flex justify-between">
+                <div className="text-center">
+                    <p className="text-[8px] text-zinc-500 font-bold uppercase">Filamento</p>
+                    <p className="text-xs text-white">42kg</p>
+                </div>
+                <div className="text-center">
+                    <p className="text-[8px] text-zinc-500 font-bold uppercase">Taxa de Acerto</p>
+                    <p className="text-xs text-emerald-400">99%</p>
+                </div>
             </div>
         </div>
-        <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-white tracking-tighter">1.482</span>
-            <span className="text-[10px] font-bold text-zinc-500 ml-1 uppercase">itens</span>
-        </div>
-        <div className="mt-4 pt-4 border-t border-zinc-800/30 flex justify-between">
-            <div className="text-center">
-                <p className="text-[8px] text-zinc-500 font-bold uppercase">Filamento</p>
-                <p className="text-xs text-white">42kg</p>
-            </div>
-            <div className="text-center">
-                <p className="text-[8px] text-zinc-500 font-bold uppercase">Taxa de Acerto</p>
-                <p className="text-xs text-emerald-400">99%</p>
-            </div>
-        </div>
-    </div>
-);
+    );
+};
 
 export default function LoginPage() {
     const { isLoaded, signIn, setActive } = useSignIn();
@@ -182,7 +231,7 @@ export default function LoginPage() {
                 await signIn.prepareFirstFactor({
                     strategy: "email_link",
                     emailAddressId: emailCodeFactor.emailAddressId,
-                    // IncluÃ­mos o redirect na URL do Magic Link para o Clerk saber onde voltar
+                    // Incluímos o redirect na URL do Magic Link para o Clerk saber onde voltar
                     redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
                 });
                 setIsSent(true);
@@ -219,7 +268,7 @@ export default function LoginPage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/5 blur-[120px] pointer-events-none" />
 
                 <div className="absolute top-10 left-10">
-                    <button onClick={() => setLocation('/')} className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white">
+                    <button onClick={() => setLocation('/')} className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white transition-colors">
                         <ArrowLeft size={16} />
                         Voltar ao site
                     </button>
@@ -229,7 +278,7 @@ export default function LoginPage() {
                     <div className="space-y-4 text-center sm:text-left">
                         <div className="flex items-center gap-3 justify-center sm:justify-start">
                             <img src={logo} alt="PrintLog" className="w-10 h-10 object-contain" />
-                            <span className="text-xl font-bold text-white">PrintLog <span className="text-sky-500 text-[10px] uppercase ml-1">v1.0</span></span>
+                            <span className="text-xl font-bold text-white">PRINTLOG <span className="text-sky-500 text-[10px] uppercase ml-1">BETA</span></span>
                         </div>
                         <div className="space-y-2">
                             <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.95] text-white uppercase">
@@ -242,7 +291,7 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium">
+                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium animate-shake">
                             <AlertCircle size={16} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -250,31 +299,34 @@ export default function LoginPage() {
 
                     {!isSent ? (
                         <form onSubmit={loginMode === 'magic' ? handleMagicLinkSignIn : handlePasswordSignIn} className="space-y-6">
+
+                            <LoginModeToggle mode={loginMode} setMode={(m) => { setLoginMode(m); setError(""); }} />
+
                             <div className="space-y-2 group">
-                                <label className="text-xs font-bold text-zinc-500 ml-1">E-mail de acesso</label>
+                                <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
                                 <div className="relative">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                     <input
                                         type="email" required value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 text-white placeholder:text-zinc-700 transition-all duration-200"
-                                        placeholder="seu@email.com"
+                                        className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
+                                        placeholder="seu@office.com"
                                     />
                                 </div>
                             </div>
 
                             {loginMode === 'password' && (
-                                <div className="space-y-2 group">
+                                <div className="space-y-2 group animate-fade-in-up">
                                     <div className="flex justify-between items-center px-1">
-                                        <label className="text-xs font-bold text-zinc-500">Sua senha</label>
-                                        <button type="button" onClick={() => setLocation('/forgot-password')} className="text-[10px] font-bold text-sky-500 hover:text-sky-400 uppercase transition-colors">Esqueci a senha</button>
+                                        <label className="text-xs font-bold text-zinc-500 transition-colors group-focus-within:text-sky-500">Sua senha</label>
+                                        <button type="button" onClick={() => setLocation('/forgot-password')} className="text-[10px] font-bold text-zinc-500 hover:text-sky-400 uppercase transition-colors">Esqueci a senha</button>
                                     </div>
                                     <div className="relative">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                         <input
                                             type={showPassword ? "text" : "password"} required value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500/50 focus:bg-zinc-900/70 text-white placeholder:text-zinc-700 transition-all duration-200"
+                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
                                             placeholder="••••••••"
                                         />
                                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
@@ -287,7 +339,7 @@ export default function LoginPage() {
                             <div className="space-y-4">
                                 {/* Remember Me Checkbox */}
                                 {loginMode === 'password' && (
-                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                    <label className="flex items-center gap-3 cursor-pointer group animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                                         <input
                                             type="checkbox"
                                             checked={rememberMe}
@@ -302,19 +354,8 @@ export default function LoginPage() {
 
                                 <div id="clerk-captcha"></div>
                                 <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={loginMode === 'magic' ? Zap : LayoutDashboard}>
-                                    {loginMode === 'magic' ? "Receber link por e-mail" : "Entrar na Oficina"}
+                                    {loginMode === 'magic' ? "Receber Link Mágico" : "Entrar na Oficina"}
                                 </PrimaryButton>
-
-                                <div className="text-center">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setLoginMode(loginMode === 'magic' ? 'password' : 'magic'); setError(""); }}
-                                        className="flex items-center gap-2 mx-auto text-xs font-bold text-zinc-500 hover:text-white"
-                                    >
-                                        <KeyRound size={14} className="text-sky-500" />
-                                        {loginMode === 'magic' ? "Entrar com e-mail e senha" : "Entrar sem senha (Link Rápido)"}
-                                    </button>
-                                </div>
                             </div>
                         </form>
                     ) : (
