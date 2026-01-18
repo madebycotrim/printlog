@@ -38,7 +38,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
         >
             {isLoading ? (
                 <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Entrando na oficina...</span>
                 </div>
             ) : (

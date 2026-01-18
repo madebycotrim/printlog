@@ -12,7 +12,7 @@ import {
 import logo from '../../../assets/logo-branca.png';
 import { getClerkErrorMessage } from "../../../utils/auth";
 
-// --- REMOVED LEGAL MODAL CONTENT ---
+
 
 // --- COMPONENTE: UI ---
 
@@ -47,7 +47,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
             {isLoading ? (
                 <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Processando...</span>
+                    <span>Criando oficina...</span>
                 </div>
             ) : (
                 <>

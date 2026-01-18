@@ -28,6 +28,9 @@ export const clerkErrorMessages = {
     // Erros Genéricos
     'authorization_invalid': 'Sessão inválida. Faça login novamente.',
     'client_uat_without_clerk_js': 'Erro ao carregar sistema de autenticação.',
+    'session_not_found': 'Sessão não encontrada. Faça login novamente.',
+    'internal_error': 'Erro interno. Tente mais tarde.',
+    'form_username_invalid': 'Nome de usuário inválido.'
 };
 
 /**
