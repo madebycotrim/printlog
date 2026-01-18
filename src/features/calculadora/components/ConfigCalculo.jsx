@@ -6,7 +6,6 @@ import {
     MessageCircle, X
 } from "lucide-react";
 import api from "../../../utils/api";
-import { useSettingsStore } from "../logic/calculator";
 import Modal from "../../../components/ui/Modal"; // Importando o componente universal
 
 /* ---------- TOOLTIP VIA PORTAL ---------- */
@@ -65,6 +64,11 @@ const EntradaConfiguracao = ({ rotulo, sufixo, valor, aoAlterar, icone: IconeCon
 };
 
 /* ---------- COMPONENTE PRINCIPAL ---------- */
+import { useSettings, useUpdateSettings } from "../../../features/sistema/logic/settingsQueries";
+
+// ... (Imports anteriores mantidos, remover useSettingsStore)
+
+/* ---------- COMPONENTE PRINCIPAL ---------- */
 export default function PainelConfiguracoesCalculo({
     valorHoraHumana, setValorHoraHumana,
     custoKwh, setCustoKwh,
@@ -73,7 +77,10 @@ export default function PainelConfiguracoesCalculo({
     taxaSetup, setTaxaSetup,
     onSaved
 }) {
-    const { settings, saveSettings, fetchSettings, isLoading: estaGravando } = useSettingsStore();
+    // React Query
+    const { data: settings, isLoading: carregandoSettings, refetch } = useSettings();
+    const { mutateAsync: salvarSettings, isPending: estaGravando } = useUpdateSettings();
+
     const [estaSincronizando, setEstaSincronizando] = useState(false);
     const [configuracaoSincronizada, setConfiguracaoSincronizada] = useState(true);
     const [whatsappModal, setWhatsappModal] = useState(false);
@@ -88,7 +95,7 @@ export default function PainelConfiguracoesCalculo({
             try {
                 const inicio = Date.now();
                 const res = await api.get('/users/health');
-                const latencia = Date.now() - inicio; // Aproximado ou usar res.data.latency se disponível
+                const latencia = Date.now() - inicio;
 
                 if (res.data?.status === 'online') {
                     if (latencia > 500) {
@@ -109,10 +116,7 @@ export default function PainelConfiguracoesCalculo({
         return () => clearInterval(intervalo);
     }, []);
 
-    useEffect(() => {
-        fetchSettings();
-    }, [fetchSettings]);
-
+    // Sincronização automática ao carregar dados do React Query
     useEffect(() => {
         if (settings && Object.keys(settings).length > 0 && !carregamentoInicialConcluido) {
             if (settings.valorHoraHumana) setValorHoraHumana(String(settings.valorHoraHumana));
@@ -121,7 +125,7 @@ export default function PainelConfiguracoesCalculo({
             if (settings.custoHoraMaquina) setCustoHoraMaquina(String(settings.custoHoraMaquina));
             if (settings.taxaSetup) setTaxaSetup(String(settings.taxaSetup));
 
-            const template = settings.whatsappTemplate || settings.whatsapp_template;
+            const template = settings.whatsappTemplate;
             if (template) setTempTemplate(template);
 
             setCarregamentoInicialConcluido(true);
@@ -132,7 +136,7 @@ export default function PainelConfiguracoesCalculo({
     const lidarSincronizacaoManual = async () => {
         setEstaSincronizando(true);
         setCarregamentoInicialConcluido(false);
-        await fetchSettings();
+        await refetch();
         setEstaSincronizando(false);
         setConfiguracaoSincronizada(true);
     };
@@ -144,7 +148,7 @@ export default function PainelConfiguracoesCalculo({
 
     const lidarSalvarConfiguracoes = async () => {
         const dadosParaSalvar = {
-            ...settings,
+            ...settings, // Mantém dados existentes que não estão no form
             valorHoraHumana,
             custoKwh,
             consumoKw: consumoImpressoraKw,
@@ -153,11 +157,13 @@ export default function PainelConfiguracoesCalculo({
             whatsappTemplate: tempTemplate
         };
 
-        const sucesso = await saveSettings(dadosParaSalvar);
-        if (sucesso) {
+        try {
+            await salvarSettings(dadosParaSalvar);
             setConfiguracaoSincronizada(true);
-            if (onSaved) onSaved();
+            if (onSaved) onSaved(); // Nota: onSaved no pai precisará ser ajustado, pois fetchSettings não existe mais.
             setWhatsappModal(false);
+        } catch (e) {
+            // Toast já tratado no hook useUpdateSettings
         }
     };
 

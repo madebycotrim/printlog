@@ -1,81 +1,22 @@
 import React, { useMemo } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Activity, Printer, Zap } from 'lucide-react';
 import { formatarMoeda } from '../../../utils/numbers';
+import { calcularEstatisticasGlobais, calcularRoiPorImpressora } from '../logic/roi';
 
 export default function DashboardFinanceiro({ projects, printers }) {
 
     // 1. Cálculos Globais (Apenas Projetos Finalizados/Pagos? Ou todos? Vamos usar 'finalizado' e 'producao')
     // Assumindo que 'finalizado' = Realizado.
 
+    // 1. Cálculos Globais (Apenas Projetos Finalizados/Pagos)
     const stats = useMemo(() => {
-        let receitaTotal = 0;
-        let custoTotal = 0;
-        let lucroTotal = 0;
-        let custoEnergia = 0;
-        let custoMaterial = 0;
-
-        const projetosValidos = projects.filter(p => p.data?.status === 'finalizado' || p.data?.status === 'entregue');
-
-        projetosValidos.forEach(p => {
-            const res = p.data?.resultados || {};
-            const itemReceita = Number(res.precoComDesconto || res.precoSugerido || 0);
-            const itemLucro = Number(res.lucroBrutoUnitario || 0);
-            const itemCusto = Number(res.custoUnitario || 0); // Operacional Total
-            const itemEnergia = Number(res.custoEnergia || 0);
-            const itemMaterial = Number(res.custoMaterial || 0);
-
-            // Multiplicar pela quantidade se o resultado for unitário?
-            // O objeto 'resultados' costuma ser unitário, mas 'quantidadePecas' está lá.
-            // Verificando `calculate.js`: resultados são unitários.
-            const qtd = Number(res.quantidadePecas || 1);
-
-            receitaTotal += itemReceita * qtd;
-            custoTotal += itemCusto * qtd;
-            lucroTotal += itemLucro * qtd;
-            custoEnergia += itemEnergia * qtd;
-            custoMaterial += itemMaterial * qtd;
-        });
-
-        return { receitaTotal, custoTotal, lucroTotal, custoEnergia, custoMaterial };
+        return calcularEstatisticasGlobais(projects);
     }, [projects]);
 
 
     // 2. ROI por Impressora
     const roiPrinters = useMemo(() => {
-        const map = {}; // printerId -> { revenue, profit, prints }
-
-        // Mapeia projetos para impressoras
-        projects.forEach(p => {
-            const status = p.data?.status;
-            if (status !== 'finalizado' && status !== 'entregue') return;
-
-            // Tenta achar printerId no root ou entradas (suporte a legado e novo)
-            const pId = p.data?.entradas?.printerId || p.data?.printerId || p.data?.entradas?.idImpressoraSelecionada;
-            if (!pId) return; // Projeto sem impressora vinculada
-
-            if (!map[pId]) map[pId] = { revenue: 0, profit: 0, prints: 0 };
-
-            const res = p.data?.resultados || {};
-            const qtd = Number(res.quantidadePecas || 1);
-
-            map[pId].revenue += (Number(res.precoComDesconto || 0) * qtd);
-            map[pId].profit += (Number(res.lucroBrutoUnitario || 0) * qtd);
-            map[pId].prints += qtd;
-        });
-
-        // Cruza com dados das impressoras
-        return printers.map(imp => {
-            const dadosProj = map[imp.id] || { revenue: 0, profit: 0, prints: 0 };
-            const custoAq = Number(imp.preco || 0);
-            const roi = custoAq > 0 ? (dadosProj.profit / custoAq) * 100 : 0;
-
-            return {
-                ...imp,
-                stats: dadosProj,
-                roi
-            };
-        }).sort((a, b) => b.stats.profit - a.stats.profit); // Mais lucrativas primeiro
-
+        return calcularRoiPorImpressora(projects, printers);
     }, [projects, printers]);
 
 
@@ -83,7 +24,7 @@ export default function DashboardFinanceiro({ projects, printers }) {
         <div className="space-y-8 animate-fade-in-up">
 
             {/* KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-tour="dashboard-kpi">
                 <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 hover:bg-zinc-900/60 transition-colors">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">

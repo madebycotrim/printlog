@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import MainSidebar from './mainSidebar';
 import { useSidebarStore } from '../stores/sidebarStore';
 import { Menu } from 'lucide-react';
+import TourGuide from '../components/TourGuide';
+import { InstallPwa } from '../components/InstallPwa';
 
 import { useLocation } from 'wouter';
 
@@ -39,6 +41,8 @@ export default function ManagementLayout({ children }) {
 
     return (
         <div className="flex h-screen w-full bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden">
+            <TourGuide />
+            <InstallPwa />
             <MainSidebar />
 
             <main

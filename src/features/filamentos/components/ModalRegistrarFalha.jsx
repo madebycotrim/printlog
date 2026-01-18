@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertOctagon, Layers, Loader2, AlertCircle, Save, X, Ban } from 'lucide-react';
 import { UnifiedInput } from '../../../components/UnifiedInput';
-import { useFilamentStore } from '../logic/filaments';
+import { useFilaments } from '../logic/filamentQueries';
 import FormFeedback from '../../../components/FormFeedback';
 import { useFormFeedback } from '../../../hooks/useFormFeedback';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
@@ -20,11 +20,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
         filamentId: 'manual',
     });
 
-    const { filaments, fetchFilaments } = useFilamentStore();
-
-    useEffect(() => {
-        if (aberto) fetchFilaments();
-    }, [aberto, fetchFilaments]);
+    const { data: filaments = [] } = useFilaments();
 
     const reasons = [
         "Falha de Aderência", "Entupimento de Bico", "Queda de Energia",

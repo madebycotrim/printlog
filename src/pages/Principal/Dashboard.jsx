@@ -18,8 +18,8 @@ import { useSidebarStore } from '../../stores/sidebarStore';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 // Importar modais para ações rápidas
-import { useFilamentStore } from '../../features/filamentos/logic/filaments';
-import { usePrinterStore } from '../../features/impressoras/logic/printer';
+import { useFilaments, useFilamentMutations } from '../../features/filamentos/logic/filamentQueries';
+import { usePrinters, usePrinterMutations } from '../../features/impressoras/logic/printerQueries';
 import { useProjectsStore } from '../../features/projetos/logic/projects';
 import { useLocation } from 'wouter';
 import { useDashboardLayoutStore } from '../../features/dashboard/logic/layout';
@@ -124,8 +124,8 @@ export default function Dashboard() {
         criticalAlertsCount
     } = useDashboardData();
 
-    const { filaments } = useFilamentStore();
-    const { printers } = usePrinterStore();
+    const { data: filaments = [] } = useFilaments();
+    const { data: printers = [] } = usePrinters();
     const { projects, fetchHistory, updateProjectStatus } = useProjectsStore();
 
 
@@ -228,8 +228,8 @@ export default function Dashboard() {
     const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
     const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
 
-    const { saveFilament } = useFilamentStore();
-    const { upsertPrinter } = usePrinterStore();
+    const { saveFilament } = useFilamentMutations();
+    const { upsertPrinter } = usePrinterMutations();
 
     // Handlers para salvar
     const handleSaveFilament = async (data) => {
@@ -287,7 +287,7 @@ export default function Dashboard() {
                 <div className={`p-8 xl:p-12 max-w-[1600px] mx-auto w-full space-y-8 animate-in fade-in duration-500`}>
 
                     {/* HEADER */}
-                    <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 shrink-0">
+                    <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 shrink-0" data-tour="dashboard-overview">
                         <div className="flex flex-col gap-1">
                             <h1 className="text-3xl font-black text-zinc-100 tracking-tight flex items-center gap-3">
                                 <LayoutGrid className="text-sky-500" size={28} />
@@ -371,7 +371,7 @@ export default function Dashboard() {
                     )}
 
                     {/* GRID DASHBOARD */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-32 auto-rows-[minmax(200px,auto)]" style={{ gridAutoFlow: 'dense' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-32 auto-rows-[minmax(200px,auto)]" style={{ gridAutoFlow: 'dense' }} data-tour="dashboard-widgets">
                         {Array.isArray(layout) && layout.map((widgetId, index) => {
                             const colSpan = (colSpans && colSpans[widgetId]) || 'lg:col-span-1';
                             const rowSpan = (rowSpans && rowSpans[widgetId]) || '';

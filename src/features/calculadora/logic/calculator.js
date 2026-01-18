@@ -1,7 +1,6 @@
-import { create } from 'zustand';
 import api from '../../../utils/api';
 import { analisarNumero } from "../../../utils/numbers";
-import { useToastStore } from '../../../stores/toastStore';
+
 
 /**
  * MOTOR DE CÁLCULO PROFISSIONAL (MÉTODO COMERCIAL)
@@ -137,87 +136,6 @@ export function calcularTudo(dadosEntrada = {}) {
 }
 
 /**
- * ZUSTAND STORE: CONFIGURAÇÕES
- * Gerencia a persistência dos dados entre a interface e o banco de dados Cloudflare D1.
+ * (DEPRECATED) ZUSTAND STORE REMOVIDO
+ * Migrado para React Query em src/features/sistema/logic/settingsQueries.js
  */
-export const useSettingsStore = create((set, get) => ({
-    settings: {
-        custoKwh: "",
-        valorHoraHumana: "",
-        custoHoraMaquina: "",
-        taxaSetup: "",
-        consumoKw: "",
-        margemLucro: "",
-        imposto: "",
-        taxaFalha: "",
-        desconto: "",
-        whatsappTemplate: ""
-    },
-    isLoading: false,
-
-    fetchSettings: async () => {
-        set({ isLoading: true });
-        try {
-            const { data } = await api.get('/settings');
-            const d = Array.isArray(data) ? data[0] : (data?.results ? data.results[0] : data);
-
-            if (d) {
-                // Converte de snake_case (Banco) para camelCase (Aplicação)
-                const mapeado = {
-                    custoKwh: String(d.custo_kwh ?? ""),
-                    valorHoraHumana: String(d.valor_hora_humana ?? ""),
-                    custoHoraMaquina: String(d.custo_hora_maquina ?? ""),
-                    taxaSetup: String(d.taxa_setup ?? ""),
-                    consumoKw: String(d.consumo_impressora_kw ?? ""),
-                    margemLucro: String(d.margem_lucro ?? ""),
-                    imposto: String(d.imposto ?? ""),
-                    taxaFalha: String(d.taxa_falha ?? ""),
-                    desconto: String(d.desconto ?? ""),
-                    whatsappTemplate: d.whatsapp_template || "Segue o orçamento do projeto *{projeto}*:\n\n💰 Valor: *{valor}*\n⏱️ Tempo estimado: *{tempo}*\n\nPodemos fechar?"
-                };
-                set({ settings: mapeado, isLoading: false });
-                return true;
-            }
-        } catch (error) {
-            console.error("Erro ao carregar configurações:", error);
-            useToastStore.getState().addToast("Erro ao carregar configurações.", "error");
-        }
-        set({ isLoading: false });
-        return false;
-    },
-
-    saveSettings: async (novosDados) => {
-        set({ isLoading: true });
-        try {
-            // MESCLAGEM: Importante para não perder campos que não estão no formulário atual
-            const dadosAtuais = get().settings;
-            const dadosCompletos = { ...dadosAtuais, ...novosDados };
-
-            // Prepara o objeto para o formato que o Cloudflare Worker espera (snake_case)
-            const paraEnviar = {
-                custo_kwh: analisarNumero(dadosCompletos.custoKwh),
-                valor_hora_humana: analisarNumero(dadosCompletos.valorHoraHumana),
-                custo_hora_maquina: analisarNumero(dadosCompletos.custoHoraMaquina),
-                taxa_setup: analisarNumero(dadosCompletos.taxaSetup),
-                consumo_impressora_kw: analisarNumero(dadosCompletos.consumoKw),
-                margem_lucro: analisarNumero(dadosCompletos.margemLucro),
-                imposto: analisarNumero(dadosCompletos.imposto),
-                taxa_falha: analisarNumero(dadosCompletos.taxaFalha),
-                desconto: analisarNumero(dadosCompletos.desconto),
-                whatsapp_template: dadosCompletos.whatsappTemplate || ""
-            };
-
-            await api.post('/settings', paraEnviar);
-
-            // Atualiza o estado global com os dados mesclados
-            set({ settings: dadosCompletos, isLoading: false });
-            useToastStore.getState().addToast("Configurações salvas!", "success");
-            return true;
-        } catch (error) {
-            console.error("Erro ao salvar configurações:", error);
-            useToastStore.getState().addToast("Erro ao salvar configurações.", "error");
-            set({ isLoading: false });
-            return false;
-        }
-    }
-}));

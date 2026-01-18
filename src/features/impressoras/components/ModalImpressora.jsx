@@ -2,25 +2,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Zap, Timer, DollarSign, Tag, Binary, Terminal, Cpu, Activity, Loader2, AlertCircle } from "lucide-react";
 import { UnifiedInput } from "../../../components/UnifiedInput";
-import { usePrinterStore } from "../logic/printer";
-import { validateInput, schemas } from "../../../utils/validation";
-import SideBySideModal from "../../../components/ui/SideBySideModal";
-import FormFeedback from "../../../components/FormFeedback";
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
-
-/**
- * Utilitário de conversão numérica robusto
- */
-const safeParse = (valor) => {
-    if (typeof valor === 'number') return valor;
-    if (!valor || valor === "") return 0;
-    const limpo = String(valor).replace(/[R$\s.]/g, '').replace(',', '.');
-    const resultado = parseFloat(limpo);
-    return isNaN(resultado) ? 0 : resultado;
-};
-
-export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais }) {
-    const { printerModels, fetchPrinterModels } = usePrinterStore();
+import FormFeedback from "../../../components/FormFeedback";
+import SideBySideModal from "../../../components/ui/SideBySideModal";
+import { usePrinterModels } from "../logic/printerQueries";
+import { schemas, validateInput } from "../../../utils/validation";
+import { parseNumber as safeParse } from "../../../utils/numbers";
+export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais, isSaving }) {
+    const { data: printerModels = [] } = usePrinterModels();
 
     const [formulario, setFormulario] = useState({
         id: null, nome: "", marca: "", modelo: "", potencia: "", preco: "",
@@ -29,7 +18,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     });
 
     const [entradaManual, setEntradaManual] = useState({ marca: false, modelo: false });
-    const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
 
     // Feedback Hook
@@ -38,8 +26,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
     useEffect(() => {
         if (aberto) {
-            fetchPrinterModels();
-            setIsSaving(false);
+            // fetchPrinterModels removido (React Query auto-fetch)
             setIsDirty(false);
             hideFeedback();
 
@@ -66,7 +53,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                 setEntradaManual({ marca: false, modelo: false });
             }
         }
-    }, [aberto, dadosIniciais, fetchPrinterModels, hideFeedback]);
+    }, [aberto, dadosIniciais, hideFeedback]);
 
     const opcoesMarca = useMemo(() => {
         const marcasUnicas = [...new Set(printerModels.map(p => p.brand))].sort();
@@ -110,7 +97,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     const handleSalvarInterno = async () => {
         if (isSaving) return;
         try {
-            setIsSaving(true);
             const payload = {
                 ...formulario,
                 potencia: safeParse(formulario.potencia),
@@ -122,11 +108,11 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
             const check = validateInput(payload, schemas.printer);
             if (!check.valid) {
                 showError(check.errors[0]);
-                setIsSaving(false);
                 return;
             }
 
             hideFeedback();
+            // A responsabilidade de feedback e loading é da mutação (pai)
             await aoSalvar(payload);
             showSuccess(dadosIniciais ? "Impressora atualizada!" : "Impressora cadastrada!");
             setTimeout(() => {
@@ -136,8 +122,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
         } catch (error) {
             console.error("Erro ao salvar impressora:", error);
             showError("Erro ao salvar impressora.");
-        } finally {
-            setIsSaving(false);
         }
     };
 

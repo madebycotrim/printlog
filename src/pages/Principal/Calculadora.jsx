@@ -25,10 +25,11 @@ import CardPreco from "../../features/calculadora/components/cards/lucroDesconto
 // Lógica e Armazenamento
 import { formatarMoeda } from "../../utils/numbers";
 import useDebounce from "../../hooks/useDebounce";
-import { calcularTudo, useSettingsStore } from "../../features/calculadora/logic/calculator";
-import { usePrinterStore } from "../../features/impressoras/logic/printer.js";
+import { calcularTudo } from "../../features/calculadora/logic/calculator";
+import { useSettings } from "../../features/sistema/logic/settingsQueries";
+import { usePrinters } from "../../features/impressoras/logic/printerQueries"; // Migrado
 import { useProjectsStore } from "../../features/projetos/logic/projects.js";
-import { useFilamentStore } from "../../features/filamentos/logic/filaments.js";
+import { useFilaments } from "../../features/filamentos/logic/filamentQueries.js";
 import { useSupplyStore } from "../../features/insumos/logic/supplies.js";
 import { useClientStore } from "../../features/clientes/logic/clients.js";
 import { useSidebarStore } from "../../stores/sidebarStore";
@@ -77,15 +78,14 @@ export default function CalculadoraPage() {
     const { addToast } = useToastStore();
     const [abaAtiva, setAbaAtiva] = useState("resumo");
 
-    // Stores
-    const { settings, fetchSettings, isLoading: isLoadingSettings } = useSettingsStore();
-    const { printers, fetchPrinters } = usePrinterStore();
+    // React Query Hooks
+    const { data: settings, isLoading: isLoadingSettings, refetch } = useSettings();
+    const { data: printers = [] } = usePrinters();
     const { clients, fetchClients } = useClientStore();
-    const { filaments, fetchFilaments } = useFilamentStore();
+    const { data: filaments = [] } = useFilaments();
     const { saveProject } = useProjectsStore();
 
     // Estados Locais
-
     const [historicoAberto, setHistoricoAberto] = useState(false);
     const [modalFalhaAberto, setModalFalhaAberto] = useState(false);
     const [modalConfig, setModalConfig] = useState({ open: false, title: "", message: "", icon: null, customAction: null });
@@ -136,10 +136,8 @@ export default function CalculadoraPage() {
     // Carregamento Inicial
     useEffect(() => {
         const init = async () => {
-            // Verificar se há arquivo pendente vindo do Dashboard ou outra tela
             const pendingFile = useTransferStore.getState().pendingFile;
             if (pendingFile) {
-                // Pequeno delay para garantir que a UI montou
                 setTimeout(() => {
                     processarArquivo(pendingFile);
                     useTransferStore.getState().clearPendingFile();
@@ -147,14 +145,14 @@ export default function CalculadoraPage() {
             }
 
             await Promise.all([
-                fetchSettings(),
-                fetchPrinters(),
+                // fetchSettings() removido - agora é automático via useSettings()
+                // fetchPrinters() removido - agora é automático via usePrinters()
                 fetchClients(),
-                fetchFilaments()
+
             ]);
         };
         init();
-    }, []);
+    }, [fetchClients]);
 
     // Atualiza Configuração quando carregada
     useEffect(() => {
@@ -203,7 +201,9 @@ export default function CalculadoraPage() {
     }, []);
 
     const buscarConfiguracoes = async () => {
-        await fetchSettings();
+        // Agora via React Query, a atualização é automática (cache invalidation ou setQueryData).
+        // Podemos forçar um refetch se necessário, mas o useEffect já vai pegar a mudança.
+        await refetch();
     };
 
     // Lógica de Hardware/Impressora
@@ -407,60 +407,70 @@ export default function CalculadoraPage() {
                             <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
                                 <div className="flex flex-col gap-6">
-                                    <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
-                                        <CardMaterial
-                                            custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
-                                            pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
-                                            idFilamentoSelecionado={dadosFormulario.material.idFilamentoSelecionado} setIdFilamentoSelecionado={(v) => atualizarCampo('material', 'idFilamentoSelecionado', v)}
-                                            materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
-                                        />
-                                    </WrapperCard>
-                                    <WrapperCard title="Tempo de Produção" step="02" zPriority="z-10">
-                                        <CardTempo
-                                            tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras} setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
-                                            tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos} setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
-                                            tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras} setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
-                                            tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos} setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
-                                        />
-                                    </WrapperCard>
+                                    <div data-tour="calc-material">
+                                        <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
+                                            <CardMaterial
+                                                custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
+                                                pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
+                                                idFilamentoSelecionado={dadosFormulario.material.idFilamentoSelecionado} setIdFilamentoSelecionado={(v) => atualizarCampo('material', 'idFilamentoSelecionado', v)}
+                                                materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
+                                            />
+                                        </WrapperCard>
+                                    </div>
+                                    <div data-tour="calc-print-time">
+                                        <WrapperCard title="Tempo de Produção" step="02" zPriority="z-10">
+                                            <CardTempo
+                                                tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras} setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
+                                                tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos} setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
+                                                tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras} setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
+                                                tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos} setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
+                                            />
+                                        </WrapperCard>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col gap-6">
-                                    <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
-                                        <CardCanal
-                                            canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
-                                            taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
-                                            taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa} setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
-                                        />
-                                    </WrapperCard>
-                                    <WrapperCard title="Gastos Extras" step="04" zPriority="z-10">
-                                        <CardEmbalagem
-                                            custoEmbalagem={dadosFormulario.custosExtras.embalagem} setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
-                                            custoFrete={dadosFormulario.custosExtras.frete} setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
-                                            custosExtras={dadosFormulario.custosExtras.lista} setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
-                                        />
-                                    </WrapperCard>
+                                    <div data-tour="calc-channels">
+                                        <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
+                                            <CardCanal
+                                                canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
+                                                taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
+                                                taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa} setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
+                                            />
+                                        </WrapperCard>
+                                    </div>
+                                    <div data-tour="calc-extra">
+                                        <WrapperCard title="Gastos Extras" step="04" zPriority="z-10">
+                                            <CardEmbalagem
+                                                custoEmbalagem={dadosFormulario.custosExtras.embalagem} setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
+                                                custoFrete={dadosFormulario.custosExtras.frete} setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
+                                                custosExtras={dadosFormulario.custosExtras.lista} setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
+                                            />
+                                        </WrapperCard>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col gap-6">
-                                    <WrapperCard title="Lucro e Estratégia" step="05">
-                                        <CardPreco
-                                            margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
-                                            imposto={dadosFormulario.config.imposto} setImposto={(v) => atualizarCampo('config', 'imposto', v)}
-                                            desconto={dadosFormulario.vendas.desconto} setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
-                                            taxaFalha={dadosFormulario.config.taxaFalha} setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
-                                            taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
-                                            lucroRealItem={resultados?.lucroBrutoUnitario || 0}
-                                            tempoTotalHoras={resultados?.tempoTotalHoras || 0}
-                                        />
-                                    </WrapperCard>
+                                    <div data-tour="calc-profit">
+                                        <WrapperCard title="Lucro e Estratégia" step="05">
+                                            <CardPreco
+                                                margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
+                                                imposto={dadosFormulario.config.imposto} setImposto={(v) => atualizarCampo('config', 'imposto', v)}
+                                                desconto={dadosFormulario.vendas.desconto} setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
+                                                taxaFalha={dadosFormulario.config.taxaFalha} setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
+                                                taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
+                                                lucroRealItem={resultados?.lucroBrutoUnitario || 0}
+                                                tempoTotalHoras={resultados?.tempoTotalHoras || 0}
+                                            />
+                                        </WrapperCard>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Sidebar Direita: Resumo/Config */}
-                    <aside id="painel-resultados" className={`
+                    <aside id="painel-resultados" data-tour="calc-results" className={`
                     w-full lg:w-[400px] h-auto lg:h-full 
                     bg-zinc-950/40 backdrop-blur-2xl flex flex-col z-20 
                     border-t lg:border-t-0 lg:border-l border-zinc-800/50

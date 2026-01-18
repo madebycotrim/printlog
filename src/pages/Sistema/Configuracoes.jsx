@@ -127,27 +127,29 @@ export default function PaginaConfiguracao() {
                                     <div className="relative">
 
 
-                                        <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-black p-1 transition-all shadow-2xl relative z-10">
-                                            {logica.usuario?.imageUrl ? (
-                                                <img src={logica.usuario.imageUrl} className="w-full h-full object-cover rounded-xl" alt="Sua Foto" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-zinc-950/40 rounded-xl">
-                                                    <User size={40} className="text-zinc-700" />
-                                                </div>
-                                            )}
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden p-[2px] bg-gradient-to-br from-sky-500/50 via-zinc-500/10 to-emerald-500/50 hover:from-sky-400 hover:to-emerald-400 transition-all duration-500 shadow-2xl relative z-10 group/img">
+                                            <div className="w-full h-full rounded-[14px] overflow-hidden bg-black p-0.5">
+                                                {logica.usuario?.imageUrl ? (
+                                                    <img src={logica.usuario.imageUrl} className="w-full h-full object-cover rounded-[12px] group-hover/img:scale-110 transition-transform duration-700" alt="Sua Foto" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-zinc-950/80 rounded-[12px]">
+                                                        <User size={40} className="text-zinc-700" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <button
                                             onClick={() => logica.referenciaEntradaArquivo.current?.click()}
-                                            className="absolute -bottom-2 -right-2 z-20 p-3 bg-sky-500 text-white rounded-2xl shadow-xl hover:bg-sky-400 transition-all duration-300 border-4 border-zinc-950 hover:scale-110 active:scale-95"
+                                            className="absolute -bottom-2 -right-2 z-20 p-2.5 bg-zinc-950 border border-zinc-800 text-sky-500 rounded-xl shadow-xl hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all duration-300 hover:scale-110 active:scale-95 group/btn"
                                         >
-                                            <Camera size={16} />
+                                            <Camera size={14} strokeWidth={2.5} className="group-hover/btn:rotate-12 transition-transform" />
                                         </button>
                                     </div>
                                     <div className="mt-6 text-center">
                                         <h2 className="text-xl font-black text-white uppercase tracking-tight">{logica.primeiroNome || "Membro da Oficina"}</h2>
-                                        <div className="flex items-center gap-2 justify-center mt-1">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-                                            <p className="text-[9px] text-zinc-500 font-black uppercase tracking-wider">Acesso Ativo</p>
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/5 border border-emerald-500/20 mt-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+                                            <p className="text-[9px] text-emerald-500/80 font-black uppercase tracking-widest">Acesso Vitalício</p>
                                         </div>
                                     </div>
                                 </div>
@@ -160,7 +162,7 @@ export default function PaginaConfiguracao() {
                                         onChange={e => logica.setPrimeiroNome(e.target.value)}
                                         placeholder="SEU NOME"
                                     />
-                                    <div className="p-4 bg-zinc-950/40/30 border border-zinc-800/50 rounded-xl flex items-center justify-between">
+                                    <div className="p-4 bg-zinc-950/40 border border-zinc-800/50 rounded-xl flex items-center justify-between group/email hover:border-zinc-700 transition-colors cursor-default">
                                         <div>
                                             <p className="text-[8px] font-black text-zinc-600 uppercase mb-1 tracking-wider">E-mail Cadastrado</p>
                                             <p className="text-[10px] text-zinc-400 font-mono truncate">{logica.usuario?.primaryEmailAddress?.emailAddress}</p>

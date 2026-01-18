@@ -70,6 +70,19 @@ export default function PageHeader({
                         {actionProps.label}
                     </button>
                 ))}
+
+                {/* BOTÃO DE AJUDA / TOUR (Novo) */}
+                <button
+                    onClick={() => {
+                        const path = window.location.pathname;
+                        localStorage.removeItem(`hasSeenTour-${path}`);
+                        window.location.reload();
+                    }}
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-900/50 border border-zinc-800 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all active:scale-95"
+                    title="Reiniciar Tour desta página"
+                >
+                    <span className="text-lg font-bold">?</span>
+                </button>
             </div>
         </header>
     );

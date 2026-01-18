@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useCallback } from 'react'; // Added useState, useEffect, useCallback
 import api from '../../../utils/api';
-import { useFilamentStore } from '../../filamentos/logic/filaments';
-import { usePrinterStore } from '../../impressoras/logic/printer';
+import { useFilaments } from '../../filamentos/logic/filamentQueries';
+import { usePrinters } from '../../impressoras/logic/printerQueries';
 import { useSupplyStore } from '../../insumos/logic/supplies';
 
 /**
@@ -9,9 +9,9 @@ import { useSupplyStore } from '../../insumos/logic/supplies';
  * Combina informações de impressoras, filamentos e orçamentos
  */
 export function useDashboardData() {
-    const { filaments, loading: filamentsLoading } = useFilamentStore();
-    const { printers, loading: printersLoading } = usePrinterStore();
-    const { supplies, fetchSupplies, loading: suppliesLoading } = useSupplyStore();
+    const { data: filaments = [], isLoading: filamentsLoading } = useFilaments();
+    const { data: printers = [], isLoading: printersLoading } = usePrinters();
+    const { fetchSupplies, loading: suppliesLoading } = useSupplyStore();
     const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 }); // New state
 
     // Ensure supplies are loaded

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, Package, DollarSign, Tag, Layers, Loader2 } from "lucide-react";
-import { useFilamentStore } from "../../../filamentos/logic/filaments";
+import { useFilaments } from "../../../filamentos/logic/filamentQueries";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 import { formatDecimal, parseNumber } from "../../../../utils/numbers";
 
@@ -64,11 +64,9 @@ export default function MaterialModule({
     setMaterialSlots
 }) {
     const [modo, setModo] = useState(idFilamentoSelecionado === "multi" ? "multi" : "single");
-    const { filaments: filamentos, fetchFilaments: buscarFilamentos, loading: carregando } = useFilamentStore();
+    const { data: filamentos = [], isLoading: carregando } = useFilaments();
 
-    useEffect(() => {
-        buscarFilamentos();
-    }, [buscarFilamentos]);
+    // Fetch automatico via React Query
 
     useEffect(() => {
         if (idFilamentoSelecionado === "multi") {

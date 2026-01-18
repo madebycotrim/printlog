@@ -3,7 +3,7 @@ import { Search, FolderOpen, Users, Printer, ChevronRight, X, Command } from 'lu
 import { useLocation } from 'wouter';
 import { useProjectsStore } from '../features/projetos/logic/projects';
 import { useClientStore } from '../features/clientes/logic/clients';
-import { usePrinterStore } from '../features/impressoras/logic/printer';
+import { usePrinters } from '../features/impressoras/logic/printerQueries';
 
 export default function GlobalSearch() {
     const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +15,7 @@ export default function GlobalSearch() {
 
     const { projects = [] } = useProjectsStore();
     const { clients = [] } = useClientStore();
-    const { printers = [] } = usePrinterStore();
+    const { data: printers = [] } = usePrinters();
 
     // Filtragem
     const results = useMemo(() => {

@@ -1,17 +1,9 @@
 import React from "react";
 import { AlertTriangle, BadgeDollarSign, Activity, Box, PackageCheck } from "lucide-react";
+import StatsWidget from "../../../components/ui/StatsWidget";
+import { formatCurrency } from "../../../utils/numbers";
 
-/**
- * Utilitário de formatação de moeda
- */
-const formatCurrency = (val) => {
-    const numericValue = typeof val === 'number' ? val : parseFloat(val) || 0;
-    return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        notation: numericValue >= 100000 ? "compact" : "standard",
-    }).format(numericValue);
-};
+
 
 /**
  * Card de Visão Geral (Estoque)
@@ -84,37 +76,8 @@ const StockOverviewCard = ({ totalItems = 0, lowStockCount = 0 }) => {
     );
 };
 
-/**
- * Card Estatístico Genérico
- */
-const StatCard = ({ title, value, icon: Icon, colorClass, secondaryLabel, secondaryValue, isLoading = false }) => (
-    <div className="h-[130px] p-6 rounded-2xl bg-zinc-950/40/40 border border-zinc-800/50 backdrop-blur-sm flex items-center justify-between group transition-all duration-300 hover:border-zinc-800/50/50 hover:bg-zinc-950/40/60 shadow-sm">
-        <div className="flex items-center gap-5">
-            <div className={`p-3.5 rounded-xl bg-zinc-950 border border-zinc-800/80 ${colorClass} shadow-inner group-hover:scale-105 transition-transform duration-500`}>
-                {Icon && <Icon size={24} strokeWidth={2} />}
-            </div>
-            <div>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5">{title}</p>
-                <div className="flex flex-col">
-                    <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight">
-                        {secondaryLabel}
-                    </span>
-                    <span className="text-[11px] text-zinc-500 font-medium mt-1">
-                        {isLoading ? "Calculando..." : secondaryValue}
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div className="text-right flex flex-col justify-between h-full py-1">
-            <h3 className={`text-2xl font-bold font-sans tracking-tighter leading-none ${isLoading ? 'text-zinc-600' : 'text-zinc-100'}`}>
-                {isLoading ? "---" : value}
-            </h3>
-            <div className="flex items-center gap-2 justify-end opacity-20">
-                <Activity size={14} className={isLoading ? "animate-spin" : "text-zinc-500"} />
-            </div>
-        </div>
-    </div>
-);
+// StockOverviewCard mantido por ser específico
+/* StatCard e formatCurrency removidos em favor de componentes unificados */
 
 export default function StatusInsumos({
     totalItems = 0,
@@ -134,21 +97,24 @@ export default function StatusInsumos({
             />
 
             {/* 2. Valor em Estoque */}
-            <StatCard
+            {/* 2. Valor em Estoque */}
+            <StatsWidget
                 title="Financeiro"
                 value={formatCurrency(valorTotal)}
                 icon={BadgeDollarSign}
-                colorClass="text-orange-500"
+                iconColor="text-orange-500"
+                iconBg="border-orange-500/20 bg-zinc-950"
                 secondaryLabel="Valor em Estoque"
                 secondaryValue="Custo total dos insumos"
             />
 
             {/* 3. Itens Zerados */}
-            <StatCard
+            <StatsWidget
                 title="Disponibilidade"
                 value={percentageAvailable.toFixed(1) + '%'}
                 icon={PackageCheck}
-                colorClass="text-orange-500"
+                iconColor="text-orange-500"
+                iconBg="border-orange-500/20 bg-zinc-950"
                 secondaryLabel="Itens em Estoque"
                 secondaryValue={`${totalItems - itemsWithoutStock} de ${totalItems} itens`}
             />

@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { TrendingUp, Target, Clock, Award } from 'lucide-react';
 import { useProjectsStore } from '../../projetos/logic/projects';
-import { useFilamentStore } from '../../filamentos/logic/filaments';
+import { useFilaments } from '../../filamentos/logic/filamentQueries';
 import DashboardCard from './DashboardCard';
 
 export default function PerformanceMetricsWidget() {
     const { projects } = useProjectsStore();
-    const { filaments } = useFilamentStore();
+    const { data: filaments = [] } = useFilaments();
 
     const metrics = useMemo(() => {
         const total = projects.length;

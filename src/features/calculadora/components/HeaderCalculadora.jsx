@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Printer, History, Settings2, ChevronDown, Trash2, FileCode, UserCircle2, User, Check, X } from "lucide-react";
 import { UnifiedInput } from "../../../components/UnifiedInput";
 import { useClientStore } from "../../clientes/logic/clients";
-import { useToastStore } from "../../../stores/toastStore";
+
 import ModalCliente from "../../clientes/components/ModalCliente";
 
 export default function Header({
@@ -85,7 +85,7 @@ export default function Header({
     };
 
     return (
-        <header className="px-4 md:px-8 xl:px-12 pt-6 lg:pt-8 flex flex-col lg:flex-row items-start lg:items-center justify-between z-40 relative shrink-0 gap-6 lg:gap-6">
+        <header className="px-4 md:px-8 xl:px-12 pt-6 lg:pt-8 flex flex-col lg:flex-row items-start lg:items-center justify-between z-40 relative shrink-0 gap-6 lg:gap-6" data-tour="calc-header">
 
             {/* LADO ESQUERDO: TITULO E INPUT DE PROJETO */}
             <div className="flex flex-col w-full lg:w-auto min-w-[200px] max-w-xl group relative pl-20 lg:pl-0">
@@ -94,7 +94,7 @@ export default function Header({
                 </span>
 
                 {/* CONTAINER DO INPUT */}
-                <div className="relative inline-flex items-center w-full">
+                <div className="relative inline-flex items-center w-full" data-tour="calc-project-name">
                     {/* Camada Visual: Texto Renderizado */}
                     <div className="pointer-events-none whitespace-pre text-2xl lg:text-4xl font-black tracking-tight text-zinc-200 z-10 transition-colors group-hover:text-white truncate">
                         {renderTextoColorido()}

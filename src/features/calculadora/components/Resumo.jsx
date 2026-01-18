@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
-import { useSettingsStore } from "../logic/calculator";
+import { useSettings } from "../../sistema/logic/settingsQueries";
 import Modal from "../../../components/ui/Modal";
 
 /* ---------- SUB-COMPONENTE: NÚMERO ANIMADO ---------- */
@@ -51,7 +51,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
         valorRisco = 0
     } = resultados;
 
-    const { settings } = useSettingsStore();
+    const { data: settings } = useSettings();
 
     const [estaSalvo, setEstaSalvo] = useState(false);
     const [estaGravando, setEstaGravando] = useState(false);

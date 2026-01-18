@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../../utils/numbers';
 import DashboardCard from './DashboardCard';
-// import { useToastStore } from '../../../stores/toastStore'; // If needed for interactions
+
 
 /**
  * Widget de Resumo Financeiro Renovado

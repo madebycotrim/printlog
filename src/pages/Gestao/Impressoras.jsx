@@ -19,7 +19,7 @@ import StatusImpressoras from "../../features/impressoras/components/StatusImpre
 import { useToastStore } from "../../stores/toastStore";
 
 // --- LÓGICA E STORE (ARMAZENAMENTO) ---
-import { usePrinterStore } from "../../features/impressoras/logic/printer";
+import { usePrinters, usePrinterMutations } from "../../features/impressoras/logic/printerQueries";
 
 const CONFIG_SIDEBAR = { RECOLHIDA: 68, EXPANDIDA: 256 };
 
@@ -92,7 +92,10 @@ const SessaoImpressoras = ({ titulo, items, acoes }) => {
 };
 
 export default function ImpressorasPage() {
-    const { printers, fetchPrinters, upsertPrinter, removePrinter, updatePrinterStatus, loading } = usePrinterStore();
+    // React Query
+    const { data: printers = [], isLoading: loading } = usePrinters();
+    const { upsertPrinter, removePrinter, updatePrinterStatus, isSaving } = usePrinterMutations();
+
     const [busca, setBusca] = useState("");
     const buscaDiferida = useDeferredValue(busca);
 
@@ -113,9 +116,7 @@ export default function ImpressorasPage() {
         addToast(message, type);
     };
 
-    useEffect(() => {
-        fetchPrinters();
-    }, [fetchPrinters]);
+
 
     const { gruposMapeados, estatisticas, contagemCritica } = useMemo(() => {
         const termo = buscaDiferida.toLowerCase();
@@ -159,9 +160,8 @@ export default function ImpressorasPage() {
         try {
             await upsertPrinter(dados);
             setModalAberto(false);
-            showToast("Hardware sincronizado com sucesso!", 'success');
         } catch (_erro) {
-            showToast("Erro ao salvar hardware.", 'error');
+            // Erro tratado no hook
         }
     };
 
@@ -170,9 +170,8 @@ export default function ImpressorasPage() {
         if (!item) return;
         try {
             await removePrinter(item.id);
-            showToast("Impressora removida da frota.", 'success');
         } catch (_erro) {
-            showToast("Erro ao excluir impressora.", 'error');
+            // Erro tratado no hook
         } finally {
             setConfirmacaoExclusao({ aberta: false, item: null });
         }
@@ -218,6 +217,7 @@ export default function ImpressorasPage() {
             onClick={() => { setItemParaEdicao(null); setModalAberto(true); }}
             variant="primary"
             icon={Plus}
+            data-tour="printer-add-btn"
         >
             Nova
         </Button>
@@ -246,7 +246,7 @@ export default function ImpressorasPage() {
                     </div>
 
                     {Object.entries(gruposMapeados).length > 0 ? (
-                        <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                        <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-6 duration-1000" data-tour="printer-list">
                             {Object.entries(gruposMapeados).map(([fabricante, lista]) => (
                                 <SessaoImpressoras
                                     key={fabricante}
@@ -256,7 +256,10 @@ export default function ImpressorasPage() {
                                         onEdit: (p) => { setItemParaEdicao(p); setModalAberto(true); },
                                         onDelete: (id) => setConfirmacaoExclusao({ aberta: true, item: printers.find(p => p.id === id) }),
                                         onResetMaint: (p) => setImpressoraEmDiagnostico(p),
-                                        onToggleStatus: updatePrinterStatus
+                                        onToggleStatus: (id, currentStatus) => updatePrinterStatus({
+                                            id,
+                                            status: currentStatus === 'printing' ? 'idle' : 'printing'
+                                        })
                                     }}
                                 />
                             ))}
@@ -273,7 +276,13 @@ export default function ImpressorasPage() {
                 </div>
 
                 {/* MODAIS DE NEGOCIO */}
-                <PrinterModal aberto={modalAberto} aoFechar={() => { setModalAberto(false); setItemParaEdicao(null); }} aoSalvar={aoSalvar} dadosIniciais={itemParaEdicao} />
+                <PrinterModal
+                    aberto={modalAberto}
+                    aoFechar={() => { setModalAberto(false); setItemParaEdicao(null); }}
+                    aoSalvar={aoSalvar}
+                    dadosIniciais={itemParaEdicao}
+                    isSaving={isSaving}
+                />
 
                 {impressoraEmDiagnostico && (
                     <DiagnosticsModal

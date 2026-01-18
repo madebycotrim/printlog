@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { Printer, Wrench, AlertTriangle, CheckCircle } from 'lucide-react';
 import DashboardCard from './DashboardCard';
-import { usePrinterStore } from '../../impressoras/logic/printer';
+import { usePrinters } from '../../impressoras/logic/printerQueries';
 import { useProjectsStore } from '../../projetos/logic/projects';
 
 export default function FleetSummaryWidget({ className = '', maintenanceInterval = 300 }) {
-    const { printers } = usePrinterStore();
+    const { data: printers = [] } = usePrinters();
     const { projects } = useProjectsStore();
 
     const stats = useMemo(() => {

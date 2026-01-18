@@ -43,29 +43,43 @@ function ClerkAndAxiosGate({ children }) {
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+// React Query Setup
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 1000 * 60 * 5, // 5 minutos
+            refetchOnWindowFocus: false,
+            retry: 1
+        }
+    }
+});
+
 createRoot(document.getElementById("root")).render(
     <StrictMode>
         <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-            <ClerkAndAxiosGate>
-                {/* O Suspense aqui é para os imports lazy() das páginas */}
-                <Suspense fallback={
-                    <div className="flex h-screen items-center justify-center bg-zinc-950">
-                        <Loader2 className="animate-spin text-sky-500" size={40} />
-                    </div>
-                }>
-                    <Toast />
-                    <Router>
-                        <ErrorBoundary
-                            title="Erro na Busca Global"
-                            message="A pesquisa encontrou um problema."
-                            className="fixed bottom-4 right-4 z-[9999] w-80 bg-zinc-900 border-zinc-800 shadow-2xl"
-                        >
-                            <GlobalSearch />
-                        </ErrorBoundary>
-                        <AppRoutes />
-                    </Router>
-                </Suspense>
-            </ClerkAndAxiosGate>
+            <QueryClientProvider client={queryClient}>
+                <ClerkAndAxiosGate>
+                    {/* O Suspense aqui é para os imports lazy() das páginas */}
+                    <Suspense fallback={
+                        <div className="flex h-screen items-center justify-center bg-zinc-950">
+                            <Loader2 className="animate-spin text-sky-500" size={40} />
+                        </div>
+                    }>
+                        <Toast />
+                        <Router>
+                            <ErrorBoundary
+                                title="Erro na Busca Global"
+                                message="A pesquisa encontrou um problema."
+                                className="fixed bottom-4 right-4 z-[9999] w-80 bg-zinc-900 border-zinc-800 shadow-2xl"
+                            >
+                                <GlobalSearch />
+                            </ErrorBoundary>
+                            <AppRoutes />
+                        </Router>
+                    </Suspense>
+                </ClerkAndAxiosGate>
+            </QueryClientProvider>
         </ClerkProvider>
     </StrictMode>
 );

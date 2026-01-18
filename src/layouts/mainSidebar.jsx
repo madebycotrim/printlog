@@ -10,8 +10,8 @@ import {
 import logo from "../assets/logo-colorida.png";
 import logoBranca from "../assets/logo-branca.png";
 
-import { useFilamentStore } from "../features/filamentos/logic/filaments";
-import { usePrinterStore } from "../features/impressoras/logic/printer";
+import { useFilaments } from "../features/filamentos/logic/filamentQueries";
+import { usePrinters } from "../features/impressoras/logic/printerQueries";
 import { analisarSaudeImpressora } from "../features/impressoras/logic/diagnostics";
 
 // --- THEME ---
@@ -144,13 +144,10 @@ export default function MainSidebar() {
     // Global State
     const { collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen } = useSidebarStore();
 
-    const { filaments, fetchFilaments } = useFilamentStore();
-    const { printers, fetchPrinters } = usePrinterStore();
+    const { data: filaments = [] } = useFilaments();
+    const { data: printers = [] } = usePrinters();
 
-    useEffect(() => {
-        fetchFilaments();
-        fetchPrinters();
-    }, [fetchFilaments, fetchPrinters]);
+
 
     const alerts = useMemo(() => {
         const lowStock = (filaments || []).some(f => (Number(f.peso_atual) || 0) < 150);

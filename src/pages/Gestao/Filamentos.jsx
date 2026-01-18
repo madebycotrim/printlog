@@ -11,7 +11,7 @@ import ConfirmModal from "../../components/ui/ConfirmModal";
 import api from "../../utils/api"; // Configured API instance
 
 // LÓGICA E STORE (Zustand)
-import { useFilamentStore } from "../../features/filamentos/logic/filaments.js";
+import { useFilaments, useFilamentMutations } from "../../features/filamentos/logic/filamentQueries";
 
 // COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
 import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
@@ -19,7 +19,7 @@ import SessaoFilamentos from "../../features/filamentos/components/SessaoFilamen
 import ModalFilamento from "../../features/filamentos/components/ModalFilamento.jsx";
 import ModalBaixaRapida from "../../features/filamentos/components/ModalBaixaRapida.jsx";
 import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegistrarFalha';
-import { useToastStore } from "../../stores/toastStore";
+
 
 // NOVOS COMPONENTES (FILTROS)
 import { getColorFamily } from "../../utils/colorUtils";
@@ -36,7 +36,8 @@ export default function FilamentosPage() {
   const temp = 25; // Default/Mock value
   const humidity = 50; // Default/Mock value
   const weatherLoading = false;
-  const { filaments, fetchFilaments, saveFilament, deleteFilament, loading } = useFilamentStore();
+  const { data: filaments = [], isLoading: loading } = useFilaments();
+  const { saveFilament, deleteFilament, updateWeight } = useFilamentMutations();
 
   const [viewMode, setViewMode] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
   const [groupBy, setGroupBy] = useState("material"); // 'material' | 'color'
@@ -53,11 +54,7 @@ export default function FilamentosPage() {
   const [modalFalhaAberto, setModalFalhaAberto] = useState(false);
   const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
 
-  const { addToast } = useToastStore();
 
-  const showToast = useCallback((message, type = 'success') => {
-    addToast(message, type);
-  }, [addToast]);
 
   // Fetch Failures Stats
   const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });
@@ -73,9 +70,7 @@ export default function FilamentosPage() {
     fetchFailures();
   }, [fetchFailures]);
 
-  useEffect(() => {
-    fetchFilaments().catch(() => showToast("Erro ao carregar os filamentos.", "error"));
-  }, [fetchFilaments, showToast]);
+  // Fetch automatico via React Query
 
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
@@ -180,12 +175,10 @@ export default function FilamentosPage() {
 
   const aoSalvarFilamento = async (dados) => {
     try {
-      const isEdicao = !!(dados.id || itemEdicao?.id);
       await saveFilament(dados);
       fecharModais();
-      showToast(isEdicao ? "Alterações salvas!" : "Novo material adicionado!");
     } catch (_e) {
-      showToast("Tivemos um problema ao salvar.", "error");
+      // Erro tratado pela mutation
     }
   };
 
@@ -194,9 +187,8 @@ export default function FilamentosPage() {
     if (!item) return;
     try {
       await deleteFilament(item.id);
-      showToast("Material removido com sucesso.");
     } catch (_e) {
-      showToast("Erro ao excluir o material.", "error");
+      // Erro tratado pela mutation
     } finally {
       fecharModais();
     }
