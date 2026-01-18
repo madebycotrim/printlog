@@ -24,7 +24,7 @@ export default function ProtectedRoute({ path, component: Component }) {
   );
 
   // Se o Clerk ainda estiver carregando a sessão, mostra loading
-  if (!authLoaded || !userLoaded) {
+  if (!authLoaded) {
     return (
       <Route path={path}>
         <SimpleLoader />
@@ -39,6 +39,11 @@ export default function ProtectedRoute({ path, component: Component }) {
         if (!isSignedIn) {
           // O useEffect já salvou o redirect
           return <Redirect to="/login" />;
+        }
+
+        // Se estiver logado mas o usuário ainda não carregou, mostra loader
+        if (!userLoaded && !user) {
+          return <SimpleLoader />;
         }
 
         // Prepara os dados do usuário de forma segura

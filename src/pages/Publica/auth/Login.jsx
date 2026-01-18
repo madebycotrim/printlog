@@ -152,6 +152,9 @@ export default function LoginPage() {
 
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
+                // Pequeno delay para garantir propagação do estado
+                await new Promise(resolve => setTimeout(resolve, 100));
+
                 const redirectUrl = getRedirectUrl();
                 setLocation(redirectUrl);
             } else if (result.status === "needs_second_factor") {
