@@ -88,14 +88,21 @@ export function calcularTudo(dadosEntrada = {}) {
     const custoFixoSaidaUnitario = Math.max(0, p.embalagem) + Math.max(0, p.frete) + (Math.max(0, p.extras) / p.quantidade);
     const custoTotalOperacional = custoComRisco + custoFixoSaidaUnitario;
 
-    // --- FORMAÇÃO DE PREÇO (DIVISOR DE MARKUP) ---
-    // Proteção contra divisor inválido: garante que a soma não ultrapasse 0.99
-    const somaTaxasELucro = Math.min(0.99, Math.max(0, p.imposto + p.taxaMkt + p.margemLucro));
-    const divisor = Math.max(0.01, 1 - somaTaxasELucro); // Garante mínimo de 0.01 para evitar divisão por zero
+    // --- FORMAÇÃO DE PREÇO (MARKUP / COST PLUS) ---
+    // Agora 'margemLucro' é tratada como MARKUP sobre o custo operacional
+    // Fórmula: Preço = ( (CustoOp * (1 + Markup)) + TaxasFixas ) / (1 - Impostos - Comissões%)
 
-    // Preço Sugerido (Tabela) e Preço Praticado (Com Desconto)
+    const somaTaxasVenda = Math.min(0.99, Math.max(0, p.imposto + p.taxaMkt));
+    const divisorTaxas = Math.max(0.01, 1 - somaTaxasVenda); // Divisor apenas das taxas de venda
+
+    // Markup Multiplier: 50% => 1.5x
+    const markupMultiplier = 1 + p.margemLucro;
+
     const taxaMktFixaUnit = Math.max(0, p.taxaMktFixa) / p.quantidade;
-    const precoSugerido = Math.max(0, (custoTotalOperacional + taxaMktFixaUnit) / divisor);
+
+    // Cálculo do Preço Sugerido com base no Markup
+    const precoSugerido = Math.max(0, ((custoTotalOperacional * markupMultiplier) + taxaMktFixaUnit) / divisorTaxas);
+
     const descontoSeguro = Math.min(Math.max(p.desconto, 0), 0.99); // Garante desconto entre 0 e 99%
     const precoComDesconto = Math.max(0, precoSugerido * (1 - descontoSeguro));
 

@@ -195,7 +195,9 @@ export const UnifiedInput = ({
   const isActive = isFocused || isSelectOpen;
 
   // Gerenciador de clique no container
-  const handleContainerClick = () => {
+  const handleContainerClick = (e) => {
+    if (e.target.tagName === 'INPUT') return;
+
     if (isSelect) {
       setIsSelectOpen(!isSelectOpen);
     } else if (isTime) {
@@ -220,7 +222,7 @@ export const UnifiedInput = ({
   }, []);
 
   return (
-    <div className={`flex-1 min-w-0 w-full flex flex-col gap-1.5 transition-all duration-300 
+    <div className={`flex-1 min-w-0 w-full flex flex-col gap-1.5 
       ${isSelectOpen ? 'relative z-[60]' : 'relative z-0'}`}
     >
       {label && !isGhost && (
@@ -239,25 +241,26 @@ export const UnifiedInput = ({
       <div
         ref={containerRef}
         onClick={handleContainerClick}
-        className={`relative flex items-center h-11 transition-all duration-300 cursor-pointer
-          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950/30 border rounded-xl"} 
+        className={`relative flex items-center h-11 transition duration-300 ease-in-out cursor-pointer
+          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950 border border-zinc-800 rounded-xl shadow-sm"}
           ${!isGhost && (isActive || isLucro
-            ? "bg-zinc-950/60 border-sky-500/60 shadow-[0_0_20px_-5px_rgba(14,165,233,0.2)] ring-1 ring-sky-500/10"
-            : "border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-950/60")}
+            ? "border-sky-500/50 shadow-[0_0_15px_-3px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/20"
+            : "hover:border-zinc-700 hover:bg-zinc-900/40")}
           ${!isSelect ? "cursor-text" : "cursor-pointer"}`}
       >
         {/* Ícone agora responde ao clique do container pai */}
         {Icon && (
-          <div className={`absolute left-3.5 transition-colors duration-300 
+          <div className={`absolute left-3.5 transition-colors duration-300 pointer-events-none
             ${isActive || isLucro ? "text-sky-500" : "text-zinc-600"}`}>
             <Icon size={14} strokeWidth={2.5} />
           </div>
         )}
 
-        <div className={`flex-1 h-full grid ${isTime ? 'grid-cols-2 divide-x divide-zinc-900/50' : 'grid-cols-1'}`}>
+        <div className={`flex-1 h-full ${isTime ? `flex justify-center items-center ${Icon ? 'pl-7' : ''}` : 'grid grid-cols-1'}`}>
           {isTime ? (
             <>
-              <div className="relative flex items-center group">
+              <div className="flex items-center justify-center gap-1 w-full h-full">
+                {/* HORAS */}
                 <input
                   ref={hoursInputRef}
                   type="number"
@@ -266,12 +269,14 @@ export const UnifiedInput = ({
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
                   onBlur={() => setIsFocused(false)}
                   onWheel={handleWheel}
-                  className={`w-full h-full bg-transparent text-zinc-100 text-[13px] font-mono font-bold outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${Icon ? 'pl-9' : ''} pr-6`}
-                  placeholder="0"
+                  className="w-9 h-full bg-transparent text-zinc-100 text-[13px] font-mono font-bold outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-zinc-800"
+                  placeholder="00"
                 />
-                <span className="absolute right-2 text-[7px] font-black text-zinc-800 uppercase pointer-events-none group-focus-within:text-sky-500/40">H</span>
-              </div>
-              <div className="relative flex items-center group">
+
+                {/* SEPARADOR */}
+                <span className="text-zinc-600 font-black text-[10px]">:</span>
+
+                {/* MINUTOS */}
                 <input
                   type="number"
                   min={0} max={59}
@@ -283,14 +288,13 @@ export const UnifiedInput = ({
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
                   onBlur={() => setIsFocused(false)}
                   onWheel={handleWheel}
-                  className="w-full h-full bg-transparent text-zinc-100 text-[13px] font-mono font-bold outline-none text-center pl-2 pr-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-9 h-full bg-transparent text-zinc-100 text-[13px] font-mono font-bold outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-zinc-800"
                   placeholder="00"
                 />
-                <span className="absolute right-2 text-[7px] font-black text-zinc-800 uppercase pointer-events-none group-focus-within:text-sky-500/40">MIN</span>
               </div>
             </>
           ) : (
-            <div className={`h-full flex items-center ${Icon ? 'pl-10' : 'pl-4'} ${suffix || isSelect ? 'pr-9' : 'pr-4'}`}>
+            <div className={`h-full flex items-center ${Icon ? 'pl-9' : 'pl-2'} ${suffix || isSelect ? 'pr-7' : 'pr-2'}`}>
               {isSelect ? (
                 <InternalSelect
                   {...props}
@@ -307,7 +311,7 @@ export const UnifiedInput = ({
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
                   onBlur={() => setIsFocused(false)}
                   onWheel={handleWheel}
-                  className="w-full h-full bg-transparent text-zinc-100 text-[12px] font-mono font-bold outline-none placeholder:text-zinc-800"
+                  className={`w-full h-full bg-transparent text-zinc-100 text-[12px] font-mono font-bold outline-none placeholder:text-zinc-800 ${props.align === 'right' ? 'text-right' : props.align === 'center' ? 'text-center' : 'text-left'}`}
                 />
               )}
             </div>
@@ -316,14 +320,14 @@ export const UnifiedInput = ({
 
 
         {!isTime && suffix && (
-          <span className={`absolute right-3.5 text-[9px] font-black uppercase pointer-events-none transition-colors 
+          <span className={`absolute right-2 text-[9px] font-black uppercase pointer-events-none transition-colors 
             ${isActive || isLucro ? "text-sky-500/50" : "text-zinc-700"}`}>
             {suffix}
           </span>
         )}
 
         {isSelect && (
-          <div className="absolute right-3 text-zinc-600 pointer-events-none">
+          <div className="absolute right-2 text-zinc-600 pointer-events-none">
             <ChevronDown size={14} strokeWidth={3} className={`transition-all duration-300 
               ${isSelectOpen ? "rotate-180 text-sky-500" : ""}`} />
           </div>

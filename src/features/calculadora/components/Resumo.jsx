@@ -7,16 +7,17 @@ import {
     MessageCircle, Target, Package, Zap, Clock, Wrench,
     Landmark, RotateCcw, Send, Copy, Check, Settings2,
     Truck, ShoppingBag, Tag, ShieldAlert, Box, AlertTriangle,
-    PlusCircle, CheckCircle2, Globe, History, CloudCheck,
-    Wand2, Save, Loader2, FileText
+    CheckCircle2, Wand2, Save, Loader2, FileText,
+    PieChart, List as ListIcon, Camera, TrendingUp, TrendingDown
 } from "lucide-react";
 
+import { useCalculatorStore } from "../../../stores/calculatorStore";
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
 import { useSettings } from "../../sistema/logic/settingsQueries";
 import Modal from "../../../components/ui/Modal";
 
 /* ---------- SUB-COMPONENTE: NÚMERO ANIMADO ---------- */
-const AnimatedNumber = ({ value, duration = 800 }) => {
+const AnimatedNumber = ({ value, duration = 800, className }) => {
     const [displayValue, setDisplayValue] = useState(value);
     const frameRef = useRef();
     const startTimeRef = useRef();
@@ -38,11 +39,73 @@ const AnimatedNumber = ({ value, duration = 800 }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- displayValue excluído intencionalmente para evitar loop infinito
     }, [value, duration]);
 
-    return <span>{formatCurrency(displayValue)}</span>;
+    return <span className={className}>{formatDecimal(displayValue, 2)}</span>;
+};
+
+/* ---------- SUB-COMPONENTE: GRÁFICO DE ROSCA SVG ---------- */
+/* ---------- SUB-COMPONENTE: GRÁFICO DE ROSCA SVG ---------- */
+const DonutChart = ({ data, total }) => {
+    let accumulatedAngle = 0;
+    const radius = 16;
+    const circumference = 2 * Math.PI * radius;
+
+    // Mapa de cores centralizado (Hex Codes)
+    const getColor = (twClass) => {
+        const map = {
+            'text-emerald-500': '#10b981', 'text-red-500': '#ef4444',
+            'text-blue-500': '#3b82f6', 'text-yellow-400': '#facc15',
+            'text-cyan-400': '#22d3ee', 'text-violet-500': '#8b5cf6',
+            'text-fuchsia-500': '#d946ef', 'text-orange-500': '#f97316',
+            'text-lime-400': '#a3e635', 'text-indigo-400': '#818cf8',
+            'text-pink-500': '#ec4899', 'text-zinc-500': '#71717a',
+            'text-emerald-400': '#34d399', 'text-zinc-300': '#d4d4d8',
+            'text-amber-300': '#fcd34d', 'text-zinc-400': '#a1a1aa',
+            'text-sky-300': '#7dd3fc', 'text-indigo-300': '#a5b4fc',
+            'text-rose-400': '#fb7185', 'text-rose-300': '#fda4af'
+        };
+        return map[twClass] || '#71717a';
+    };
+
+    return (
+        <div className="relative w-48 h-48 flex items-center justify-center mx-auto my-6">
+            <svg viewBox="0 0 40 40" className="w-full h-full transform -rotate-90">
+                {/* Track Circle (Fundo escuro para dar profundidade) */}
+                <circle cx="20" cy="20" r={radius} fill="transparent" stroke="#18181b" strokeWidth="5" />
+
+                {data.map((item, index) => {
+                    const percentage = (item.val / total) * 100;
+                    const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+                    const strokeDashoffset = -((accumulatedAngle / 360) * circumference);
+                    accumulatedAngle += (percentage / 100) * 360;
+                    const color = getColor(item.color);
+
+                    return (
+                        <circle
+                            key={index}
+                            cx="20" cy="20" r={radius}
+                            fill="transparent"
+                            stroke={color}
+                            strokeWidth="5"
+                            strokeDasharray={strokeDasharray}
+                            strokeDashoffset={strokeDashoffset}
+                            strokeLinecap={percentage > 3 ? "round" : "butt"}
+                            className="transition-all duration-500 hover:opacity-80"
+                        />
+                    );
+                })}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Custo Total</span>
+                <span className="text-xl font-mono font-black text-white tracking-tight">{formatCurrency(total)}</span>
+            </div>
+        </div>
+    );
 };
 
 /* ---------- COMPONENTE PRINCIPAL ---------- */
 export default function Resumo({ resultados = {}, entradas = {}, salvar = () => { } }) {
+    const { dadosFormulario, atualizarCampo } = useCalculatorStore();
+
     const {
         lucroBrutoUnitario = 0, precoSugerido = 0, precoComDesconto = 0, tempoTotalHoras = 0,
         custoMaterial = 0, custoEnergia = 0, custoMaquina = 0, custoMaoDeObra = 0,
@@ -51,11 +114,20 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
         valorRisco = 0
     } = resultados;
 
+    // Atualizar margem ao usar o slider
+    const handleMargemChange = (e) => {
+        atualizarCampo('config', 'margemLucro', parseFloat(e.target.value));
+    };
+
     const { data: settings } = useSettings();
 
     const [estaSalvo, setEstaSalvo] = useState(false);
     const [estaGravando, setEstaGravando] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'chart'
+
+    // ESTADO DO SNAPSHOT (COMPARATIVO)
+    const [snapshot, setSnapshot] = useState(null);
 
     const [whatsappModal, setWhatsappModal] = useState(false);
     const [genericModal, setGenericModal] = useState({
@@ -72,9 +144,28 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     const precoFinalVenda = precoArredondado || (possuiDesconto ? precoComDesconto : precoSugerido);
     const nomeProjeto = entradas?.nomeProjeto || "";
 
+    // Lógica do Snapshot
+    const handleToggleSnapshot = () => {
+        if (snapshot) {
+            setSnapshot(null);
+        } else {
+            setSnapshot({
+                precoFinalVenda,
+                lucroBrutoUnitario,
+                margemEfetivaPct,
+                paybackInsumo: parseFloat(paybackInsumo) || 0
+            });
+        }
+    };
+
+    const deltaPreco = snapshot ? precoFinalVenda - snapshot.precoFinalVenda : 0;
+    const deltaLucro = snapshot ? lucroBrutoUnitario - snapshot.lucroBrutoUnitario : 0;
+    const deltaMargem = snapshot ? margemEfetivaPct - snapshot.margemEfetivaPct : 0;
+
     useEffect(() => {
         setEstaSalvo(false);
         setPrecoArredondado(null);
+        // Não reseta o snapshot automaticamente para permitir comparação ao trocar materiais
     }, [resultados, entradas]);
 
     const paybackInsumo = useMemo(() => {
@@ -84,25 +175,27 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     }, [custoMaterial, lucroBrutoUnitario]);
 
     const saudeProjeto = useMemo(() => {
-        if (!temMaterial) return { label: "AGUARDANDO INSUMOS", color: "text-zinc-600", bar: "bg-zinc-900/50", dot: "bg-zinc-900/50" };
-        if (margemEfetivaPct <= 0) return { label: "VALOR INVIÁVEL", color: "text-rose-500", bar: "bg-rose-500", dot: "bg-rose-500" };
-        return { label: "PROJETO SAUDÁVEL", color: "text-[#10b981]", bar: "bg-[#10b981]", dot: "bg-[#10b981]" };
+        if (!temMaterial) return { label: "Aguardando", color: "text-zinc-500", bg: "bg-zinc-500/10", border: "border-zinc-800" };
+        // Lógica simplificada sem o painel visual pesado
+        if (margemEfetivaPct <= 0) return { label: "Prejuízo", color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/50" };
+        return { label: "Simulação", color: "text-sky-500", bg: "bg-sky-500/10", border: "border-sky-500/50" };
     }, [temMaterial, margemEfetivaPct]);
 
+    // MAPA DE CORES VIBRANTE E ÚNICO
     const composicaoItens = useMemo(() => {
         return [
-            { label: 'Matéria-Prima', val: custoMaterial, icon: Package },
-            { label: 'Energia Elétrica', val: custoEnergia, icon: Zap },
-            { label: 'Depreciação Máquina', val: custoMaquina, icon: Clock },
-            { label: 'Mão de Obra', val: custoMaoDeObra, icon: Wrench },
-            { label: 'Taxa de Setup', val: custoSetup, icon: Settings2 },
-            { label: 'Embalagem', val: custoEmbalagem, icon: Box },
-            { label: 'Frete de Entrega', val: custoFrete, icon: Truck },
-            { label: 'Gastos Adicionais', val: custosExtras, icon: Tag },
-            { label: 'Reserva p/ Falhas', val: valorRisco, icon: ShieldAlert, color: 'text-amber-400/70' },
-            { label: 'Impostos', val: valorImpostos, icon: Landmark, color: 'text-rose-400/60' },
-            { label: 'Taxas de Venda', val: valorMarketplace, icon: ShoppingBag, color: 'text-rose-400/60' }
-        ].filter(item => item.val > 0.009);
+            { label: 'Matéria-Prima', val: custoMaterial, icon: Package, color: 'text-emerald-500' }, // Verde
+            { label: 'Impostos', val: valorImpostos, icon: Landmark, color: 'text-red-500' },        // Vermelho
+            { label: 'Comissão', val: valorMarketplace, icon: ShoppingBag, color: 'text-blue-500' },  // Azul
+            { label: 'Energia', val: custoEnergia, icon: Zap, color: 'text-yellow-400' },             // Amarelo
+            { label: 'Depreciação', val: custoMaquina, icon: Clock, color: 'text-violet-500' },       // Roxo
+            { label: 'Mão de Obra', val: custoMaoDeObra, icon: Wrench, color: 'text-cyan-400' },      // Ciano
+            { label: 'Risco/Falha', val: valorRisco, icon: ShieldAlert, color: 'text-fuchsia-500' },  // Rosa Choque
+            { label: 'Embalagem', val: custoEmbalagem, icon: Box, color: 'text-orange-500' },         // Laranja
+            { label: 'Frete', val: custoFrete, icon: Truck, color: 'text-lime-400' },                 // Verde Limão
+            { label: 'Setup', val: custoSetup, icon: Settings2, color: 'text-pink-500' },             // Rosa
+            { label: 'Extras', val: custosExtras, icon: Tag, color: 'text-indigo-400' }               // Indigo
+        ].filter(item => item.val > 0.009).sort((a, b) => b.val - a.val);
     }, [custoMaterial, custoEnergia, custoMaquina, custoMaoDeObra, custoSetup, custoEmbalagem, custoFrete, custosExtras, valorRisco, valorImpostos, valorMarketplace]);
 
     // --- HANDLERS ---
@@ -127,187 +220,305 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     };
 
     return (
-        <div className="h-full flex flex-col gap-3 animate-in fade-in duration-500">
+        <div className="h-full flex flex-col gap-3 animate-in fade-in duration-500 pb-20 lg:pb-0">
 
-            {/* CARD 01: DESEMPENHO FINANCEIRO */}
-            <div className={`bg-zinc-950/40 border rounded-2xl p-6 relative overflow-hidden shrink-0 hover-lift group transition-all duration-500 ${margemEfetivaPct < 0 ? 'border-rose-500/50 shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/50' : 'border-zinc-800/50'}`}>
-                <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${saudeProjeto.dot === 'bg-[#10b981]' ? 'bg-emerald-500/10' : saudeProjeto.dot === 'bg-rose-500' ? 'bg-rose-500/10' : 'bg-zinc-800/50'}`}>
-                            <div className={`w-2.5 h-2.5 rounded-full ${saudeProjeto.dot} ${temMaterial ? 'animate-pulse' : ''}`} />
-                        </div>
-                        <span className={`text-xs font-black uppercase tracking-[0.2em] ${saudeProjeto.color}`}>{saudeProjeto.label}</span>
+            {/* --- BLOCO PRINCIPAL: PRESIFICAÇÃO E METRICAS --- */}
+            <div className="shrink-0 bg-zinc-950 border border-zinc-800 rounded-2xl p-5 relative overflow-hidden">
+                {/* Background decorative */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-900/50 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+
+                {/* Topo: Status e Ferramentas */}
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md border ${saudeProjeto.bg} ${saudeProjeto.border}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${saudeProjeto.color.replace('text', 'bg')} animate-pulse`} />
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${saudeProjeto.color}`}>{saudeProjeto.label}</span>
                     </div>
-                    {temMaterial && (
-                        <div className="px-3 py-1.5 rounded-lg bg-zinc-950/40 border border-zinc-800 text-right">
-                            <span className="text-[9px] font-bold text-zinc-500 uppercase block leading-none mb-0.5">Retorno</span>
-                            <span className="text-xs font-mono font-bold text-zinc-300">{paybackInsumo}x</span>
-                        </div>
-                    )}
+
+                    <div className="flex gap-1">
+                        {/* BOTÃO FREEZE / COMPARAÇÃO */}
+                        <button
+                            onClick={handleToggleSnapshot}
+                            disabled={!temMaterial}
+                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all disabled:opacity-30 ${snapshot
+                                ? "bg-sky-500 text-white border-sky-400 shadow-[0_0_15px_rgba(14,165,233,0.5)] animate-pulse"
+                                : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30"
+                                }`}
+                            title={snapshot ? "Parar Comparação" : "Tirar Foto (Comparar)"}
+                        >
+                            <Camera size={14} />
+                        </button>
+
+                        <button
+                            onClick={() => { const current = precoFinalVenda; const val = Math.floor(current); const cents = Number((current % 1).toFixed(2)); setPrecoArredondado(cents < 0.90 ? val + 0.90 : val + 1.90); }}
+                            disabled={!temMaterial}
+                            className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 flex items-center justify-center transition-all disabled:opacity-30"
+                            title="Arredondar"
+                        >
+                            <Wand2 size={12} />
+                        </button>
+                        <button
+                            onClick={() => { navigator.clipboard.writeText(precoFinalVenda.toFixed(2)); setCopiadoPreco(true); setTimeout(() => setCopiadoPreco(false), 2000); }}
+                            disabled={!temMaterial}
+                            className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 flex items-center justify-center transition-all disabled:opacity-30"
+                            title="Copiar"
+                        >
+                            {copiadoPreco ? <Check size={12} /> : <Copy size={12} />}
+                        </button>
+                    </div>
                 </div>
 
-                <div className="mb-6">
+                {/* Preço de Venda */}
+                <div className="mb-6 relative z-10">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">Preço Final</span>
                     {temMaterial ? (
-                        <h2 className="text-5xl font-black font-mono tracking-tighter leading-none text-white mb-2">
-                            <AnimatedNumber value={lucroBrutoUnitario} />
-                        </h2>
-                    ) : (
-                        <h2 className="text-2xl font-black font-mono tracking-tighter text-zinc-700 uppercase mb-2">--,--</h2>
-                    )}
-                    <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Lucro Líquido</span>
-                        <span className={`text-xs font-bold font-mono ${temMaterial ? 'text-zinc-400' : 'text-zinc-700'}`}>
-                            {temMaterial ? `${Math.round(margemEfetivaPct)}% MARGEM` : 'SEM DADOS'}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Barra de Progresso Minimalista */}
-                <div className="h-1.5 w-full bg-zinc-950/40 rounded-full flex overflow-hidden">
-                    {(() => {
-                        const precoFinalSeguro = Math.max(0.01, precoFinalVenda || 0.01);
-                        const percentualCusto = temMaterial && precoFinalSeguro > 0 ? Math.min(100, Math.max(0, (custoUnitario / precoFinalSeguro) * 100)) : 0;
-                        const percentualLucro = temMaterial && precoFinalSeguro > 0 ? Math.min(100, Math.max(0, (lucroBrutoUnitario / precoFinalSeguro) * 100)) : 0;
-                        return (
-                            <>
-                                <div style={{ width: `${percentualCusto}%` }} className="bg-zinc-900/50 h-full transition-all duration-1000" />
-                                <div style={{ width: `${percentualLucro}%` }} className={`${saudeProjeto.bar} h-full transition-all duration-1000 opacity-80`} />
-                            </>
-                        );
-                    })()}
-                </div>
-            </div>
-
-            {/* CARD 02: PREÇO FINAL DE VENDA */}
-            <div className="bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-6 relative group shrink-0 hover-lift">
-                <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => { const current = precoFinalVenda; const val = Math.floor(current); const cents = Number((current % 1).toFixed(2)); setPrecoArredondado(cents < 0.90 ? val + 0.90 : val + 1.90); }} disabled={!temMaterial} className="p-2 rounded-lg bg-zinc-950/40 border border-zinc-800 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all">
-                        <Wand2 size={16} />
-                    </button>
-                    <button onClick={() => { navigator.clipboard.writeText(precoFinalVenda.toFixed(2)); setCopiadoPreco(true); setTimeout(() => setCopiadoPreco(false), 2000); }} disabled={!temMaterial} className="p-2 rounded-lg bg-zinc-950/40 border border-zinc-800 text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 transition-all">
-                        {copiadoPreco ? <Check size={16} /> : <Copy size={16} />}
-                    </button>
-                </div>
-
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                        <Tag size={16} className="text-amber-500" />
-                    </div>
-                    <span className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">Preço Sugerido</span>
-                </div>
-
-                <div className="flex flex-col">
-                    {temMaterial ? (
-                        possuiDesconto ? (
-                            <div className="flex flex-col">
-                                <span className="text-zinc-600 font-mono text-sm line-through decoration-rose-500/40 mb-1">{formatCurrency(precoSugerido)}</span>
-                                <h3 className="text-5xl font-black font-mono tracking-tighter text-white leading-none">
-                                    <AnimatedNumber value={precoFinalVenda} />
-                                </h3>
-                            </div>
-                        ) : (
-                            <h3 className="text-5xl font-black font-mono tracking-tighter text-white leading-none">
-                                <AnimatedNumber value={precoFinalVenda} />
-                            </h3>
-                        )
-                    ) : (
-                        <h3 className="text-2xl font-black font-mono tracking-tighter text-zinc-700 uppercase">--,--</h3>
-                    )}
-                </div>
-            </div>
-
-            {/* CARD 03: COMPOSIÇÃO DOS CUSTOS */}
-            <div className="flex-1 bg-zinc-950/40 border border-zinc-800/50 rounded-2xl flex flex-col overflow-hidden min-h-0 hover-lift group">
-                <div className="px-6 py-4 border-b border-zinc-800/50 flex justify-between items-center shrink-0">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-300 transition-colors">
-                        Composição de Custos
-                    </span>
-                    <Target size={14} className="text-zinc-700 group-hover:text-sky-500 transition-colors" />
-                </div>
-                <div className="flex-1 overflow-y-auto px-6 custom-scrollbar">
-                    {temMaterial && composicaoItens.length > 0 ? (
-                        <div className="py-4 space-y-1">
-                            {composicaoItens.map((item, i) => (
-                                <div key={i} className="flex justify-between py-2 border-b border-zinc-900 last:border-0 group/item hover:pl-1 transition-all">
-                                    <span className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest flex items-center gap-2 group-hover/item:text-zinc-300 transition-colors">
-                                        <item.icon size={12} className="shrink-0 text-zinc-700 group-hover/item:text-sky-500 transition-colors" /> {item.label}
+                        <div className="flex flex-col">
+                            {/* Preço Original e Badge de Desconto */}
+                            {possuiDesconto && (
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="text-sm font-medium text-zinc-500 line-through decoration-zinc-600 decoration-1">
+                                        {formatCurrency(precoSugerido)}
                                     </span>
-                                    <span className={`text-xs font-mono font-bold ${item.color || 'text-zinc-400'}`}>
-                                        {formatCurrency(item.val)}
+                                    <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
+                                        -{Math.round(((precoSugerido - precoFinalVenda) / precoSugerido) * 100)}%
                                     </span>
                                 </div>
-                            ))}
+                            )}
+
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-zinc-600 text-xl font-light">R$</span>
+                                <AnimatedNumber
+                                    value={precoFinalVenda}
+                                    className="text-5xl font-black tracking-tighter text-white font-mono"
+                                />
+                            </div>
+
+                            {/* COMPARAÇÃO COM SNAPSHOT (MELHORADA) */}
+                            {snapshot && (
+                                <div className="mt-2 p-2 bg-sky-500/10 border border-sky-500/20 rounded-lg flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] text-sky-400 uppercase font-bold tracking-wider">Referência</span>
+                                        <span className="text-xs text-sky-300 font-mono font-bold">{formatCurrency(snapshot.precoFinalVenda)}</span>
+                                    </div>
+
+                                    {Math.abs(deltaPreco) > 0.01 ? (
+                                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${deltaPreco > 0 ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"}`}>
+                                            {deltaPreco > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                            <span className="text-xs font-bold font-mono">
+                                                {deltaPreco > 0 ? "+" : ""}{formatCurrency(deltaPreco)}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-[10px] text-zinc-500 font-bold uppercase">Igual</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center gap-4 opacity-50 py-10">
-                            <PlusCircle size={32} strokeWidth={1.5} className="text-zinc-700" />
-                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-center text-zinc-600 px-6">
-                                Adicione materiais para ver a composição
-                            </p>
+                        <span className="text-5xl font-black tracking-tighter text-zinc-800 select-none">--,--</span>
+                    )}
+                </div>
+
+                {/* Grid de KPIs e Configurador de Margem */}
+                <div className="border-t border-zinc-900 pt-3 relative z-10 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
+                            Margem: {dadosFormulario?.config?.margemLucro}%
+                        </span>
+                        <input
+                            type="range"
+                            min="0" max="300" step="5"
+                            value={dadosFormulario?.config?.margemLucro || 0}
+                            onChange={handleMargemChange}
+                            className="w-24 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                        <div>
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Lucro</span>
+                            <div className="flex flex-col">
+                                <span className="text-emerald-500 font-bold font-mono text-sm">
+                                    {temMaterial ? formatCurrency(lucroBrutoUnitario) : '--'}
+                                </span>
+                                {snapshot && Math.abs(deltaLucro) > 0.01 && (
+                                    <span className={`text-[8px] font-mono font-bold ${deltaLucro > 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                        {deltaLucro > 0 ? "+" : ""}{formatCurrency(deltaLucro)}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Margem</span>
+                            <div className="flex flex-col">
+                                <span className={`font-bold font-mono text-sm ${margemEfetivaPct > 15 ? 'text-zinc-300' : 'text-amber-500'}`}>
+                                    {temMaterial ? `${Math.round(margemEfetivaPct)}%` : '--'}
+                                </span>
+                                {snapshot && Math.abs(deltaMargem) > 0.1 && (
+                                    <span className={`text-[8px] font-mono font-bold ${deltaMargem > 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                        {deltaMargem > 0 ? "+" : ""}{deltaMargem.toFixed(1)}%
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Retorno</span>
+                            <div className="text-zinc-400 font-bold font-mono text-sm">
+                                {temMaterial ? `${paybackInsumo}x` : '--'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* --- LISTA vs GRÁFICO (TOGGLE) --- */}
+            <div className="flex-1 min-h-0 bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col overflow-hidden">
+                <div className="px-4 py-3 border-b border-zinc-900 bg-zinc-900/30 flex justify-between items-center shrink-0">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Custos</span>
+                        <span className="text-[10px] font-mono font-bold text-zinc-600">({temMaterial ? composicaoItens.length : 0})</span>
+                    </div>
+
+                    {/* Toggle View */}
+                    <div className="flex bg-zinc-900 rounded-lg p-0.5 border border-zinc-800">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-400'}`}
+                            title="Lista"
+                        >
+                            <ListIcon size={12} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('chart')}
+                            className={`p-1.5 rounded-md transition-all ${viewMode === 'chart' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-400'}`}
+                            title="Gráfico"
+                        >
+                            <PieChart size={12} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                    {temMaterial && composicaoItens.length > 0 ? (
+                        viewMode === 'list' ? (
+                            <div className="space-y-0.5">
+                                {composicaoItens.map((item, i) => (
+                                    <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-zinc-900/50 transition-colors group">
+                                        <div className="flex items-center gap-2.5 overflow-hidden">
+                                            <item.icon size={12} className={`${item.color} shrink-0`} />
+                                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide truncate group-hover:text-zinc-300 transition-colors">{item.label}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <div className="hidden sm:block w-12 h-1 bg-zinc-900 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full ${item.color.replace('text', 'bg')}`}
+                                                    style={{ width: `${Math.min(100, (item.val / custoUnitario) * 100)}%` }}
+                                                />
+                                            </div>
+                                            <span className={`text-[11px] font-mono font-bold ${item.color} min-w-[3rem] text-right`}>
+                                                {formatCurrency(item.val)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full animate-in fade-in zoom-in-95 duration-300 pb-4">
+                                <DonutChart data={composicaoItens} total={custoUnitario} />
+
+                                <div className="grid grid-cols-2 gap-x-6 gap-y-2 w-full px-4">
+                                    {composicaoItens.map((item, i) => {
+                                        // Helper para pegar a cor hexadecimal também aqui
+                                        const hexColor = {
+                                            'text-emerald-500': '#10b981', 'text-red-500': '#ef4444',
+                                            'text-blue-500': '#3b82f6', 'text-yellow-400': '#facc15',
+                                            'text-cyan-400': '#22d3ee', 'text-violet-500': '#8b5cf6',
+                                            'text-fuchsia-500': '#d946ef', 'text-orange-500': '#f97316',
+                                            'text-lime-400': '#a3e635', 'text-indigo-400': '#818cf8',
+                                            'text-pink-500': '#ec4899', 'text-zinc-500': '#71717a'
+                                        }[item.color] || '#71717a';
+
+                                        return (
+                                            <div key={i} className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2.5 h-2.5 rounded-full shadow-sm shrink-0"
+                                                    style={{ backgroundColor: hexColor, boxShadow: `0 0 8px ${hexColor}40` }}
+                                                />
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] text-zinc-300 font-bold uppercase truncate leading-none">{item.label}</span>
+                                                    <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{((item.val / custoUnitario) * 100).toFixed(0)}%</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center gap-2 opacity-30">
+                            <Box size={20} />
+                            <span className="text-[9px] font-bold uppercase">Sem custos</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* AÇÕES FIXAS */}
-            <div className="flex flex-col gap-2 shrink-0">
-                <div className="flex gap-2 h-14">
-                    <button onClick={lidarSalvarResumo} disabled={!temMaterial || estaSalvo || estaGravando} className={`flex-1 rounded-2xl flex items-center justify-center gap-3 font-bold text-[10px] uppercase tracking-[0.2em] transition-all duration-300 hover:scale-[1.02] active:scale-95 ${estaSalvo ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-[#0095ff] hover:bg-[#007cd6] text-white shadow-lg hover:shadow-xl shadow-sky-500/10 disabled:opacity-20'}`}>
-                        {estaGravando ? <Loader2 className="animate-spin" size={16} /> : <Save size={18} className="transition-transform duration-300 group-hover:scale-110" />}
-                        {estaSalvo ? "PROJETO SINCRONIZADO" : "GERAR E SALVAR"}
-                    </button>
-                    <button onClick={() => { if (temMaterial) { const template = settings?.whatsappTemplate || "Olá! Segue orçamento: *{valor}*"; setMensagemEditavel(template.replace(/{projeto}/g, nomeProjeto || "3D").replace(/{valor}/g, formatCurrency(precoFinalVenda)).replace(/{tempo}/g, `${tempoTotalHoras}h`)); setWhatsappModal(true); } }} disabled={!temMaterial} className="w-14 h-14 rounded-2xl bg-[#10b981] hover:bg-[#0da472] text-white flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-20 group">
-                        <MessageCircle size={24} fill="currentColor" className="transition-transform duration-300 group-hover:rotate-12" />
-                    </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2 h-10">
-                    <button onClick={() => setGenericModal({ open: true, type: 'CONFIRM', title: 'Reiniciar', icon: RotateCcw, message: 'Apagar dados atuais?', onConfirm: () => window.location.reload() })} className="rounded-xl bg-zinc-950/40 border border-zinc-800/50 text-zinc-600 hover:text-zinc-300 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-zinc-800/50 group"><RotateCcw size={12} className="transition-transform duration-300 group-hover:rotate-180" /> Reiniciar</button>
-                    <button onClick={() => generateProfessionalPDF(resultados, entradas, precoFinalVenda)} className="rounded-xl bg-zinc-950/40 border border-zinc-800/50 text-zinc-600 hover:text-sky-500 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-zinc-800/50 group"><FileText size={12} className="transition-transform duration-300 group-hover:scale-110" /> Gerar Proposta</button>
-                </div>
+            {/* --- FOOTER SIMPLIFICADO --- */}
+            <div className="shrink-0 flex gap-2">
+                <button
+                    onClick={lidarSalvarResumo}
+                    disabled={!temMaterial || estaSalvo || estaGravando}
+                    className={`flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-bold text-[10px] uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 ${estaSalvo ? 'bg-zinc-900 text-emerald-500 border border-emerald-500/20' : 'bg-zinc-100 hover:bg-white text-black shadow-lg shadow-zinc-100/10'}`}
+                >
+                    {estaGravando ? <Loader2 className="animate-spin" size={14} /> : estaSalvo ? <CheckCircle2 size={14} /> : <Save size={14} />}
+                    {estaSalvo ? "Salvo" : "Salvar"}
+                </button>
+
+                <button
+                    onClick={() => { if (temMaterial) { const template = settings?.whatsappTemplate || "Olá! Segue orçamento: *{valor}*"; setMensagemEditavel(template.replace(/{projeto}/g, nomeProjeto || "3D").replace(/{valor}/g, formatCurrency(precoFinalVenda)).replace(/{tempo}/g, `${tempoTotalHoras}h`)); setWhatsappModal(true); } }}
+                    disabled={!temMaterial}
+                    className="aspect-square h-11 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-emerald-500 hover:border-emerald-500/30 flex items-center justify-center transition-all disabled:opacity-30"
+                    title="WhatsApp"
+                >
+                    <MessageCircle size={16} />
+                </button>
+
+                <button
+                    onClick={() => generateProfessionalPDF(resultados, entradas, precoFinalVenda)}
+                    disabled={!temMaterial}
+                    className="aspect-square h-11 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-sky-500 hover:border-sky-500/30 flex items-center justify-center transition-all disabled:opacity-30"
+                    title="PDF"
+                >
+                    <FileText size={16} />
+                </button>
+
+                <button
+                    onClick={() => setGenericModal({ open: true, type: 'CONFIRM', title: 'Reiniciar', icon: RotateCcw, message: 'Apagar tudo?', onConfirm: () => window.location.reload() })}
+                    className="aspect-square h-11 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-rose-500 hover:border-rose-500/30 flex items-center justify-center transition-all"
+                    title="Reiniciar"
+                >
+                    <RotateCcw size={14} />
+                </button>
             </div>
 
-            {/* POPUP DE SUCESSO (ESTILO RESUMO) */}
+            {/* --- MODAIS (MANTIDOS IGUAIS) --- */}
             <Modal
                 isOpen={showSuccessPopup}
                 onClose={() => setShowSuccessPopup(false)}
-                title="Projeto salvo com sucesso"
+                title="Projeto Salvo!"
                 icon={CheckCircle2}
                 footer={
-                    <button
-                        onClick={() => setShowSuccessPopup(false)}
-                        className="w-full h-12 rounded-xl bg-zinc-950/40 border border-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all active:scale-95"
-                    >
-                        Continuar trabalhando
+                    <button onClick={() => setShowSuccessPopup(false)} className="w-full h-12 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all">
+                        Continuar
                     </button>
                 }
             >
-                <div className="p-8 space-y-6">
-                    <div className="text-center space-y-2">
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">
-                            {nomeProjeto || "Orçamento Sem Nome"}
-                        </h3>
-                    </div>
-
-                    {/* Mini Cards (Reflexo do Resumo) */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-zinc-950 border border-zinc-800/50 p-5 rounded-[2rem] flex flex-col justify-center">
-                            <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Preço de Venda</span>
-                            <span className="text-2xl font-black font-mono text-white leading-none">
-                                {formatCurrency(precoFinalVenda)}
-                            </span>
-                        </div>
-                        <div className="bg-zinc-950 border border-zinc-800/50 p-5 rounded-[2rem] flex flex-col justify-center">
-                            <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Lucro Líquido</span>
-                            <span className="text-2xl font-black font-mono text-emerald-500 leading-none">
-                                {formatCurrency(lucroBrutoUnitario)}
-                            </span>
-                        </div>
-                    </div>
-
+                <div className="p-8 space-y-6 text-center">
+                    <h3 className="text-lg font-bold text-white mb-1">{nomeProjeto || "Projeto Sem Nome"}</h3>
+                    <p className="text-xs text-zinc-400">Dados salvos com sucesso no histórico.</p>
                 </div>
             </Modal>
 
-            {/* OUTROS POPUPS */}
             <Modal isOpen={whatsappModal} onClose={() => setWhatsappModal(false)}
                 title="Enviar WhatsApp"
                 icon={MessageCircle}
@@ -317,8 +528,8 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                             {copiado ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                             {copiado ? "Copiado" : "Copiar"}
                         </button>
-                        <button onClick={() => { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagemEditavel)}`, "_blank"); setWhatsappModal(false); }} className="flex-[2] bg-[#10b981] text-white text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg"><Send size={14} />
-                            Enviar Agora
+                        <button onClick={() => { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagemEditavel)}`, "_blank"); setWhatsappModal(false); }} className="flex-[2] bg-emerald-600 text-white text-[10px] font-black uppercase h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+                            <Send size={14} /> Enviar
                         </button>
                     </div>
                 }>

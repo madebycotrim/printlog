@@ -56,6 +56,17 @@
     .font-mono {
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
     }
+
+    /* Remove Input Arrows/Spinners */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
 }
 
 /* --- 3. SCROLLBAR CUSTOMIZADA --- */

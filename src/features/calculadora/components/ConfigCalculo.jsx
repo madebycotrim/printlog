@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import api from "../../../utils/api";
 import Modal from "../../../components/ui/Modal"; // Importando o componente universal
+import { useSettings, useUpdateSettings } from "../../../features/sistema/logic/settingsQueries";
+import { useCalculatorStore } from "../../../stores/calculatorStore";
 
 /* ---------- TOOLTIP VIA PORTAL ---------- */
 const TooltipPortal = ({ texto, referenciaAlvo, visivel }) => {
@@ -64,19 +66,19 @@ const EntradaConfiguracao = ({ rotulo, sufixo, valor, aoAlterar, icone: IconeCon
 };
 
 /* ---------- COMPONENTE PRINCIPAL ---------- */
-import { useSettings, useUpdateSettings } from "../../../features/sistema/logic/settingsQueries";
+export default function PainelConfiguracoesCalculo({ onSaved }) {
+    const { dadosFormulario, atualizarCampo } = useCalculatorStore();
+    const {
+        valorHoraHumana, custoKwh, consumoKw: consumoImpressoraKw,
+        custoHoraMaquina, taxaSetup
+    } = dadosFormulario.config;
 
-// ... (Imports anteriores mantidos, remover useSettingsStore)
+    const setValorHoraHumana = (v) => atualizarCampo('config', 'valorHoraHumana', v);
+    const setCustoKwh = (v) => atualizarCampo('config', 'custoKwh', v);
+    const setConsumoImpressoraKw = (v) => atualizarCampo('config', 'consumoKw', v);
+    const setCustoHoraMaquina = (v) => atualizarCampo('config', 'custoHoraMaquina', v);
+    const setTaxaSetup = (v) => atualizarCampo('config', 'taxaSetup', v);
 
-/* ---------- COMPONENTE PRINCIPAL ---------- */
-export default function PainelConfiguracoesCalculo({
-    valorHoraHumana, setValorHoraHumana,
-    custoKwh, setCustoKwh,
-    consumoImpressoraKw, setConsumoImpressoraKw,
-    custoHoraMaquina, setCustoHoraMaquina,
-    taxaSetup, setTaxaSetup,
-    onSaved
-}) {
     // React Query
     const { data: settings, isLoading: carregandoSettings, refetch } = useSettings();
     const { mutateAsync: salvarSettings, isPending: estaGravando } = useUpdateSettings();
@@ -160,7 +162,7 @@ export default function PainelConfiguracoesCalculo({
         try {
             await salvarSettings(dadosParaSalvar);
             setConfiguracaoSincronizada(true);
-            if (onSaved) onSaved(); // Nota: onSaved no pai precisará ser ajustado, pois fetchSettings não existe mais.
+            if (onSaved) onSaved();
             setWhatsappModal(false);
         } catch (e) {
             // Toast já tratado no hook useUpdateSettings
@@ -169,8 +171,6 @@ export default function PainelConfiguracoesCalculo({
 
     /* Lógica de Exibição Combinada */
     const corDot = !configuracaoSincronizada ? 'bg-amber-500 animate-pulse' : statusConexao.dot;
-    // O textoStatus e corTexto não estão sendo usados explicitamente pois a lógica foi inline no JSX abaixo, 
-    // mas podem ser úteis se quisermos refatorar depois.
 
     return (
         <div className="relative h-full flex flex-col">

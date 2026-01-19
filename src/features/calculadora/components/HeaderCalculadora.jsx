@@ -14,6 +14,7 @@ export default function Header({
     printers = [],
     idImpressoraSelecionada,
     onCyclePrinter,
+    onSelectPrinter, // Nova prop
     onOpenHistory,
     onOpenSettings,
     onOpenWaste,
@@ -112,6 +113,7 @@ export default function Header({
                 {/* CLIENT SELECTOR - NOVO INTEGRADO */}
                 <div className="mt-4 w-full lg:w-[280px] relative z-30">
                     <UnifiedInput
+                        label="Cliente"
                         placeholder="Selecione um Cliente..."
                         type="select"
                         icon={User}
@@ -125,8 +127,6 @@ export default function Header({
                                 onSelectClient(val);
                             }
                         }}
-                        variant="ghost"
-                        className="pl-0"
                     />
                     {/* Nota: UnifiedInput variant ghost remove bordas. O seletor original tinha UserCircle2 mas UnifiedInput já tem suporte a ícone. */}
                 </div>
@@ -140,33 +140,49 @@ export default function Header({
             {/* LADO DIREITO: TOOLBAR (STACKED ON MOBILE) */}
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 shrink-0 pt-1 w-full lg:w-auto">
 
-                {/* Selector de Impressora */}
-                <button
-                    type="button"
-                    onClick={onCyclePrinter}
-                    className="group flex flex-1 items-center gap-3 px-4 py-3 bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-800/50 hover:bg-zinc-950/40 rounded-2xl transition-all duration-300 hover-lift"
-                >
-                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                        <Printer size={18} className={`${impressoraAtual ? 'text-sky-400' : 'text-zinc-600'} transition-colors`} />
-                    </div>
+                {/* Selector de Impressora (Dropdown Customizado) */}
+                <div className="relative group/printer w-full lg:w-64">
+                    <button
+                        type="button"
+                        onClick={() => { const nextIndex = (printers.findIndex(p => p.id === impressoraAtual?.id) + 1) % printers.length; onCyclePrinter(nextIndex); }}
+                        className="w-full flex items-center gap-3 px-3 h-12 bg-zinc-900 border border-zinc-800 rounded-xl hover:bg-zinc-800 transition-all text-left relative overflow-hidden"
+                    >
+                        <div className="w-8 h-8 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center shrink-0">
+                            <Printer size={16} className={`${impressoraAtual ? 'text-sky-500' : 'text-zinc-600'}`} />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Máquina Atual</span>
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-[11px] font-bold text-zinc-200 truncate">{nomeExibicaoHardware}</span>
+                                {potenciaHardware > 0 && <span className="text-[9px] font-mono text-emerald-500">{potenciaHardware}W</span>}
+                            </div>
+                        </div>
 
-                    <div className="flex flex-col items-start text-left min-w-0 flex-1">
-                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-1">
-                            Máquina
-                        </span>
-                        <div className="flex items-center gap-2 w-full">
-                            <span className="text-sm font-bold text-zinc-200 uppercase tracking-tight truncate w-full">
-                                {nomeExibicaoHardware}
-                            </span>
-                            {potenciaHardware > 0 && (
-                                <span className="text-[9px] font-mono font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
-                                    {potenciaHardware}W
-                                </span>
-                            )}
+                        {/* Hover Overlay com Lista (Simulação de Dropdown Nativo via CSS no Hover/Focus ou Click) */}
+                        {/* Como o usuário pediu Dropdown, vamos fazer algo mais robusto que o cycle. 
+                            Mas o onCyclePrinter atual só cicla. Vou usar o estado local para abrir um menu. 
+                        */}
+                    </button>
+
+                    {/* Menu Dropdown - Implementado com Absolute Position e Visibility Hidden por padrão */}
+                    <div className="absolute top-full mt-2 left-0 w-full bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden invisible opacity-0 group-hover/printer:visible group-hover/printer:opacity-100 transition-all z-50 transform origin-top pointer-events-none group-hover/printer:pointer-events-auto">
+                        <div className="p-1.5 flex flex-col gap-1 max-h-60 overflow-y-auto custom-scrollbar">
+                            <span className="px-2 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Disponíveis</span>
+                            {printers.map(p => (
+                                <button
+                                    key={p.id}
+                                    onClick={() => onSelectPrinter && onSelectPrinter(p)}
+                                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${p.id === impressoraAtual?.id ? 'bg-sky-500/10 text-sky-400' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
+                                >                                      <div className="flex flex-col text-left">
+                                        <span>{p.nome}</span>
+                                        <span className="text-[8px] text-zinc-600 lowercase">{p.tipo || 'FDM'}</span>
+                                    </div>
+                                    <span className="font-mono text-zinc-600">{p.consumo_w || 0}W</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    <ChevronDown size={14} className="text-zinc-600 group-hover:text-zinc-400 ml-2 shrink-0" />
-                </button>
+                </div>
 
                 {/* Ações Rápidas - Grid on Mobile (3 items visible) */}
                 <div className="grid grid-cols-3 lg:flex gap-2 w-full lg:w-auto">

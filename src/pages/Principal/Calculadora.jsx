@@ -1,12 +1,13 @@
-﻿import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+﻿import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
-    CheckCircle2, AlertTriangle, Upload, AlertCircle,
-    Settings2, BarChart3, HelpCircle, ChevronRight, Menu, X
+    CheckCircle2, AlertTriangle, AlertCircle,
+    Settings2, BarChart3, Menu, X
 } from "lucide-react";
 
 // Layout e Componentes Universais
 import ManagementLayout from "../../layouts/ManagementLayout.jsx";
 import Modal from "../../components/ui/Modal";
+import WrapperCard from "../../components/ui/WrapperCard"; // Importado
 
 // Componentes de Feature
 import HeaderCalculadora from "../../features/calculadora/components/HeaderCalculadora.jsx";
@@ -14,6 +15,7 @@ import Summary from "../../features/calculadora/components/Resumo.jsx";
 import HistoryDrawer from "../../features/calculadora/components/Historico.jsx";
 import PainelConfiguracoesCalculo from "../../features/calculadora/components/ConfigCalculo.jsx";
 import ModalRegistrarFalha from "../../features/filamentos/components/ModalRegistrarFalha.jsx";
+import DragDropOverlay from "../../features/calculadora/components/DragDropOverlay.jsx"; // Importado
 
 // Cards de Entrada
 import CardMaterial from "../../features/calculadora/components/cards/materiaPrima.jsx";
@@ -23,58 +25,21 @@ import CardEmbalagem from "../../features/calculadora/components/cards/custos.js
 import CardPreco from "../../features/calculadora/components/cards/lucroDescontos.jsx";
 
 // Lógica e Armazenamento
-import { formatarMoeda } from "../../utils/numbers";
-import useDebounce from "../../hooks/useDebounce";
 import { calcularTudo } from "../../features/calculadora/logic/calculator";
 import { useSettings } from "../../features/sistema/logic/settingsQueries";
-import { usePrinters } from "../../features/impressoras/logic/printerQueries"; // Migrado
+import { usePrinters } from "../../features/impressoras/logic/printerQueries";
 import { useProjectsStore } from "../../features/projetos/logic/projects.js";
-import { useFilaments } from "../../features/filamentos/logic/filamentQueries.js";
-import { useSupplyStore } from "../../features/insumos/logic/supplies.js";
 import { useClientStore } from "../../features/clientes/logic/clients.js";
 import { useSidebarStore } from "../../stores/sidebarStore";
 import { useToastStore } from "../../stores/toastStore";
+import { useCalculatorStore } from "../../stores/calculatorStore"; // Novo Store
 import { analisarArquivoProjeto } from "../../utils/projectParser";
 import { useDragDrop } from "../../hooks/useDragDrop";
 import { useTransferStore } from "../../stores/transferStore";
-
-/* ---------- WRAPPER CARD: ESTRUTURA VISUAL ---------- */
-const WrapperCard = React.memo(({ children, title, step, className = "", zPriority = "z-10" }) => {
-    const textosAjuda = {
-        "01": "Defina o preço do seu filamento e o peso da peça (em gramas) que aparece no seu fatiador.",
-        "02": "O tempo de impressão afeta o custo de energia e o desgaste da máquina. O tempo manual é o seu trabalho direto.",
-        "03": "As taxas de venda diminuem o seu lucro bruto. Veja aqui como elas afetam o preço final.",
-        "04": "Lixas, tintas, parafusos e embalagens devem ser somados para você não sair no prejuízo.",
-        "05": "A margem de lucro desejada é calculada sobre o preço final de venda (Método do Divisor)."
-    };
-
-    return (
-        <div className={`relative ${zPriority} ${className} mx-2`}>
-            <div className={`relative bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300 group focus-within:z-50 focus-within:border-sky-500/30 hover:border-zinc-800/50/50 hover-lift`}>
-                <div className="flex items-center justify-between border-b border-zinc-800/50 pb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-[10px] font-black text-sky-500 shadow-sm group-hover:scale-110 transition-transform">
-                            {step}
-                        </div>
-                        <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-300 transition-colors">{title}</h3>
-                    </div>
-                    <div className="group/info relative">
-                        <HelpCircle size={14} className="text-zinc-700 hover:text-sky-500 cursor-help transition-colors" />
-                        <div className="absolute right-0 top-6 w-48 p-3 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl invisible opacity-0 group-hover/info:visible group-hover/info:opacity-100 z-[110] transition-all pointer-events-none transform translate-y-1 group-hover/info:translate-y-0">
-                            <p className="text-[9px] text-zinc-400 uppercase font-bold leading-relaxed">{textosAjuda[step]}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex-1 overflow-visible pt-2">{children}</div>
-            </div>
-        </div>
-
-    );
-});
+import { formatCurrency } from "../../utils/numbers";
 
 /* ---------- COMPONENTE PRINCIPAL DA PÁGINA ---------- */
 export default function CalculadoraPage() {
-    const { width: larguraSidebar, isMobile, setMobileOpen } = useSidebarStore();
     const { addToast } = useToastStore();
     const [abaAtiva, setAbaAtiva] = useState("resumo");
 
@@ -82,55 +47,16 @@ export default function CalculadoraPage() {
     const { data: settings, isLoading: isLoadingSettings, refetch } = useSettings();
     const { data: printers = [] } = usePrinters();
     const { clients, fetchClients } = useClientStore();
-    const { data: filaments = [] } = useFilaments();
     const { saveProject } = useProjectsStore();
 
-    // Estados Locais
+    // Store do Calculator
+    const { dadosFormulario, setDadosFormulario, atualizarCampo } = useCalculatorStore();
+
+    // Estados Locais de UI
     const [historicoAberto, setHistoricoAberto] = useState(false);
     const [modalFalhaAberto, setModalFalhaAberto] = useState(false);
     const [modalConfig, setModalConfig] = useState({ open: false, title: "", message: "", icon: null, customAction: null });
     const fileInputRef = useRef(null);
-
-    // Estado do Formulário
-    const [dadosFormulario, setDadosFormulario] = useState({
-        nomeProjeto: "",
-        clienteId: "",
-        qtdPecas: 1,
-        material: {
-            custoRolo: "",
-            pesoModelo: "",
-            idFilamentoSelecionado: "",
-            slots: []
-        },
-        tempo: {
-            impressaoHoras: "",
-            impressaoMinutos: "",
-            trabalhoHoras: "",
-            trabalhoMinutos: ""
-        },
-        vendas: {
-            canal: "direta",
-            taxaMarketplace: "",
-            taxaMarketplaceFixa: "",
-            desconto: ""
-        },
-        custosExtras: {
-            embalagem: "",
-            frete: "",
-            lista: []
-        },
-        config: {
-            custoKwh: "",
-            valorHoraHumana: "",
-            custoHoraMaquina: "",
-            taxaSetup: "",
-            consumoKw: "",
-            margemLucro: "",
-            imposto: "",
-            taxaFalha: ""
-        }
-    });
-
     const [hardwareSelecionado, setHardwareSelecionado] = useState(null);
 
     // Carregamento Inicial
@@ -143,34 +69,29 @@ export default function CalculadoraPage() {
                     useTransferStore.getState().clearPendingFile();
                 }, 500);
             }
-
-            await Promise.all([
-                // fetchSettings() removido - agora é automático via useSettings()
-                // fetchPrinters() removido - agora é automático via usePrinters()
-                fetchClients(),
-
-            ]);
+            await fetchClients();
         };
         init();
     }, [fetchClients]);
 
-    // Atualiza Configuração quando carregada
+    // Sincroniza Config (Merge com dados do backend se store estiver vazia ou para garantir defaults)
     useEffect(() => {
         if (settings && !isLoadingSettings) {
-            setDadosFormulario(prev => ({
-                ...prev,
-                config: {
-                    ...prev.config,
-                    custoKwh: settings.custoKwh || prev.config.custoKwh,
-                    valorHoraHumana: settings.valorHoraHumana || prev.config.valorHoraHumana,
-                    custoHoraMaquina: settings.custoHoraMaquina || prev.config.custoHoraMaquina,
-                    taxaSetup: settings.taxaSetup || prev.config.taxaSetup,
-                    consumoKw: settings.consumoKw || prev.config.consumoKw,
-                    margemLucro: settings.margemLucro || prev.config.margemLucro,
-                    imposto: settings.imposto || prev.config.imposto,
-                    taxaFalha: settings.taxaFalha || prev.config.taxaFalha
-                }
-            }));
+            // Atualiza apenas a config, mantendo o resto do formulário que pode ter sido editado
+            const currentConfig = dadosFormulario.config;
+            const newConfig = {
+                custoKwh: settings.custoKwh || currentConfig.custoKwh,
+                valorHoraHumana: settings.valorHoraHumana || currentConfig.valorHoraHumana,
+                custoHoraMaquina: settings.custoHoraMaquina || currentConfig.custoHoraMaquina,
+                taxaSetup: settings.taxaSetup || currentConfig.taxaSetup,
+                consumoKw: settings.consumoKw || currentConfig.consumoKw,
+                margemLucro: settings.margemLucro || currentConfig.margemLucro,
+                imposto: settings.imposto || currentConfig.imposto,
+                taxaFalha: settings.taxaFalha || currentConfig.taxaFalha
+            };
+
+            // Só atualiza se houver diferença para evitar loops (embora setDadosFormulario do zustand faça merge/check)
+            atualizarCampo('config', null, newConfig);
         }
     }, [settings, isLoadingSettings]);
 
@@ -181,59 +102,32 @@ export default function CalculadoraPage() {
         }
     }, [printers, hardwareSelecionado]);
 
-    // Atualiza campo genérico
-    const atualizarCampo = useCallback((secao, campo, valor) => {
-        setDadosFormulario(prev => {
-            if (secao && campo) {
-                return {
-                    ...prev,
-                    [secao]: {
-                        ...prev[secao],
-                        [campo]: valor
-                    }
-                };
-            } else if (secao && !campo) {
-                // Atualização direta na raiz ou objeto inteiro
-                return { ...prev, [secao]: valor };
-            }
-            return prev;
-        });
-    }, []);
 
     const buscarConfiguracoes = async () => {
-        // Agora via React Query, a atualização é automática (cache invalidation ou setQueryData).
-        // Podemos forçar um refetch se necessário, mas o useEffect já vai pegar a mudança.
         await refetch();
     };
 
     // Lógica de Hardware/Impressora
+    const lidarSelecaoHardware = (printer) => {
+        if (!printer) return;
+        setHardwareSelecionado(printer);
+
+        // Atualiza consumo se disponível
+        if (printer?.consumo_w) {
+            const consumoKw = (printer.consumo_w / 1000).toFixed(3);
+            atualizarCampo('config', 'consumoKw', consumoKw);
+            addToast(`Impressora: ${printer.nome} (${printer.consumo_w}W)`, 'info');
+        }
+    };
+
     const lidarCicloHardware = () => {
         if (printers.length === 0) return;
         const currentIndex = printers.findIndex(p => p.id === hardwareSelecionado?.id);
         const nextIndex = (currentIndex + 1) % printers.length;
-        const nextPrinter = printers[nextIndex];
-        setHardwareSelecionado(nextPrinter);
-
-        // Atualiza consumo se disponível
-        if (nextPrinter?.consumo_w) {
-            const consumoKw = (nextPrinter.consumo_w / 1000).toFixed(3);
-            atualizarCampo('config', 'consumoKw', consumoKw);
-            addToast(`Impressora: ${nextPrinter.nome} (${nextPrinter.consumo_w}W)`, 'info');
-        }
+        lidarSelecaoHardware(printers[nextIndex]);
     };
 
-    // Drag & Drop com Hook Otimizado
-    const { isDragging, dragHandlers } = useDragDrop((file) => processarArquivo(file));
-
-    const handleUploadClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleFileSelected = async (e) => {
-        const file = e.target.files?.[0];
-        if (file) await processarArquivo(file);
-    };
-
+    // Lógica de processamento de arquivo
     const processarArquivo = async (file) => {
         addToast("Analisando arquivo...", "loading");
         try {
@@ -246,25 +140,13 @@ export default function CalculadoraPage() {
                     const horas = Math.floor(totalMinutos / 60);
                     const minutos = totalMinutos % 60;
 
-                    setDadosFormulario(prev => ({
-                        ...prev,
-                        tempo: {
-                            ...prev.tempo,
-                            impressaoHoras: String(horas),
-                            impressaoMinutos: String(minutos)
-                        }
-                    }));
+                    atualizarCampo('tempo', 'impressaoHoras', String(horas));
+                    atualizarCampo('tempo', 'impressaoMinutos', String(minutos));
                 }
 
                 // Atualiza Peso
                 if (resultado.weightGrams > 0) {
-                    setDadosFormulario(prev => ({
-                        ...prev,
-                        material: {
-                            ...prev.material,
-                            pesoModelo: String(resultado.weightGrams)
-                        }
-                    }));
+                    atualizarCampo('material', 'pesoModelo', String(resultado.weightGrams));
                 }
 
                 // Nome do projeto (se vazio)
@@ -283,7 +165,18 @@ export default function CalculadoraPage() {
         }
     };
 
-    // Cálculos
+    const { isDragging, dragHandlers } = useDragDrop(processarArquivo);
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileSelected = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) await processarArquivo(file);
+    };
+
+    // Cálculos (Agora calculando aqui APENAS para o Resumo e Histórico, os componentes filhos calculam o que precisam)
     const resultados = useMemo(() => {
         return calcularTudo(dadosFormulario);
     }, [dadosFormulario]);
@@ -335,7 +228,6 @@ export default function CalculadoraPage() {
         </div>
     );
 
-    // Lista de clientes formatada para o select
     const listaClientes = clients.map(c => ({ id: c.id, label: c.nome }));
 
     return (
@@ -343,29 +235,7 @@ export default function CalculadoraPage() {
             {...dragHandlers}
             className="flex h-screen bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden relative"
         >
-            {/* OVERLAY DE DRAG & DROP OTIMIZADO */}
-            <div className={`
-                absolute inset-0 z-[200] bg-zinc-950/80 backdrop-blur-md flex items-center justify-center 
-                transition-all duration-300 pointer-events-none
-                ${isDragging ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
-            `}>
-                <div className={`
-                     flex flex-col items-center gap-6 p-12 
-                     border-4 border-dashed border-sky-500/50 bg-sky-500/5 
-                     rounded-[3rem] shadow-2xl shadow-sky-500/10 
-                     transition-all duration-500
-                     ${isDragging ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
-                `}>
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-sky-500 blur-2xl opacity-20 animate-pulse" />
-                        <Upload size={80} className="text-sky-400 relative z-10 animate-bounce" />
-                    </div>
-                    <div className="text-center space-y-2">
-                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Solte o arquivo</h2>
-                        <p className="text-sm font-bold text-sky-400 uppercase tracking-[0.2em]">Extração Automática de Dados</p>
-                    </div>
-                </div>
-            </div>
+            <DragDropOverlay isDragging={isDragging} />
 
             <ManagementLayout>
                 <div className="flex-1 flex flex-col lg:flex-row h-full relative">
@@ -377,9 +247,10 @@ export default function CalculadoraPage() {
                             clients={listaClientes}
                             selectedClientId={dadosFormulario.clienteId}
                             onSelectClient={(v) => atualizarCampo('clienteId', null, v)}
-                            printers={printers} // Pass full list
+                            printers={printers}
                             idImpressoraSelecionada={hardwareSelecionado?.id}
                             onCyclePrinter={lidarCicloHardware}
+                            onSelectPrinter={lidarSelecaoHardware}
                             onOpenHistory={() => setHistoricoAberto(true)}
                             onOpenSettings={() => {
                                 setAbaAtiva('config');
@@ -394,7 +265,6 @@ export default function CalculadoraPage() {
                             needsConfig={precisaConfigurar}
                             hud={elementoHud}
                         />
-                        {/* Input file escondido */}
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -408,44 +278,54 @@ export default function CalculadoraPage() {
 
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-material">
-                                        <WrapperCard title="Matéria-Prima" step="01" zPriority="z-20">
-                                            <CardMaterial
-                                                custoRolo={dadosFormulario.material.custoRolo} setCustoRolo={(v) => atualizarCampo('material', 'custoRolo', v)}
-                                                pesoModelo={dadosFormulario.material.pesoModelo} setPesoModelo={(v) => atualizarCampo('material', 'pesoModelo', v)}
-                                                idFilamentoSelecionado={dadosFormulario.material.idFilamentoSelecionado} setIdFilamentoSelecionado={(v) => atualizarCampo('material', 'idFilamentoSelecionado', v)}
-                                                materialSlots={dadosFormulario.material.slots} setMaterialSlots={(v) => atualizarCampo('material', 'slots', v)}
-                                            />
+                                        <WrapperCard
+                                            title="Matéria-Prima"
+                                            step="01"
+                                            zPriority="z-20"
+                                            hasNext={true}
+                                            subtotal={resultados?.custoMaterial > 0 ? formatCurrency(resultados.custoMaterial) : null}
+                                        >
+                                            <CardMaterial />
                                         </WrapperCard>
                                     </div>
                                     <div data-tour="calc-print-time">
-                                        <WrapperCard title="Tempo de Produção" step="02" zPriority="z-10">
-                                            <CardTempo
-                                                tempoImpressaoHoras={dadosFormulario.tempo.impressaoHoras} setTempoImpressaoHoras={(v) => atualizarCampo('tempo', 'impressaoHoras', v)}
-                                                tempoImpressaoMinutos={dadosFormulario.tempo.impressaoMinutos} setTempoImpressaoMinutos={(v) => atualizarCampo('tempo', 'impressaoMinutos', v)}
-                                                tempoTrabalhoHoras={dadosFormulario.tempo.trabalhoHoras} setTempoTrabalhoHoras={(v) => atualizarCampo('tempo', 'trabalhoHoras', v)}
-                                                tempoTrabalhoMinutos={dadosFormulario.tempo.trabalhoMinutos} setTempoTrabalhoMinutos={(v) => atualizarCampo('tempo', 'trabalhoMinutos', v)}
-                                            />
+                                        <WrapperCard
+                                            title="Tempo de Produção"
+                                            step="02"
+                                            zPriority="z-10"
+                                            subtotal={(resultados?.custoEnergia + resultados?.custoMaquina + resultados?.custoMaoDeObra) > 0
+                                                ? formatCurrency(resultados.custoEnergia + resultados.custoMaquina + resultados.custoMaoDeObra)
+                                                : null}
+                                        >
+                                            <CardTempo />
                                         </WrapperCard>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-channels">
-                                        <WrapperCard title="Canais de Venda" step="03" zPriority="z-20">
-                                            <CardCanal
-                                                canalVenda={dadosFormulario.vendas.canal} setCanalVenda={(v) => atualizarCampo('vendas', 'canal', v)}
-                                                taxaMarketplace={dadosFormulario.vendas.taxaMarketplace} setTaxaMarketplace={(v) => atualizarCampo('vendas', 'taxaMarketplace', v)}
-                                                taxaMarketplaceFixa={dadosFormulario.vendas.taxaMarketplaceFixa} setTaxaMarketplaceFixa={(v) => atualizarCampo('vendas', 'taxaMarketplaceFixa', v)}
-                                            />
+                                        <WrapperCard
+                                            title="Canais de Venda"
+                                            step="03"
+                                            zPriority="z-20"
+                                            hasNext={true}
+                                            subtotal={(resultados?.valorMarketplace + resultados?.valorImpostos) > 0
+                                                ? formatCurrency(resultados.valorMarketplace + resultados.valorImpostos)
+                                                : null}
+                                        >
+                                            <CardCanal />
                                         </WrapperCard>
                                     </div>
                                     <div data-tour="calc-extra">
-                                        <WrapperCard title="Gastos Extras" step="04" zPriority="z-10">
-                                            <CardEmbalagem
-                                                custoEmbalagem={dadosFormulario.custosExtras.embalagem} setCustoEmbalagem={(v) => atualizarCampo('custosExtras', 'embalagem', v)}
-                                                custoFrete={dadosFormulario.custosExtras.frete} setCustoFrete={(v) => atualizarCampo('custosExtras', 'frete', v)}
-                                                custosExtras={dadosFormulario.custosExtras.lista} setCustosExtras={(v) => atualizarCampo('custosExtras', 'lista', v)}
-                                            />
+                                        <WrapperCard
+                                            title="Gastos Extras"
+                                            step="04"
+                                            zPriority="z-10"
+                                            subtotal={(resultados?.custoEmbalagem + resultados?.custoFrete + resultados?.custosExtras) > 0
+                                                ? formatCurrency(resultados.custoEmbalagem + resultados.custoFrete + resultados.custosExtras)
+                                                : null}
+                                        >
+                                            <CardEmbalagem />
                                         </WrapperCard>
                                     </div>
                                 </div>
@@ -453,15 +333,7 @@ export default function CalculadoraPage() {
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-profit">
                                         <WrapperCard title="Lucro e Estratégia" step="05">
-                                            <CardPreco
-                                                margemLucro={dadosFormulario.config.margemLucro} setMargemLucro={(v) => atualizarCampo('config', 'margemLucro', v)}
-                                                imposto={dadosFormulario.config.imposto} setImposto={(v) => atualizarCampo('config', 'imposto', v)}
-                                                desconto={dadosFormulario.vendas.desconto} setDesconto={(v) => atualizarCampo('vendas', 'desconto', v)}
-                                                taxaFalha={dadosFormulario.config.taxaFalha} setTaxaFalha={(v) => atualizarCampo('config', 'taxaFalha', v)}
-                                                taxaMarketplace={dadosFormulario.vendas.taxaMarketplace}
-                                                lucroRealItem={resultados?.lucroBrutoUnitario || 0}
-                                                tempoTotalHoras={resultados?.tempoTotalHoras || 0}
-                                            />
+                                            <CardPreco />
                                         </WrapperCard>
                                     </div>
                                 </div>
@@ -477,7 +349,6 @@ export default function CalculadoraPage() {
                 `}>
                         <div className="h-[80px] border-b border-zinc-800/50 flex items-center px-4">
                             <div className="relative flex w-full h-12 bg-zinc-950/50 rounded-xl border border-zinc-800/50 p-1">
-                                {/* Animated Background Pill */}
                                 <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-900/50 rounded-lg shadow-sm transition-all duration-300 ${abaAtiva === 'resumo' ? 'left-1' : 'left-[calc(50%+4px)]'}`} />
 
                                 <button type="button" onClick={() => setAbaAtiva('resumo')}
@@ -497,14 +368,7 @@ export default function CalculadoraPage() {
                             {abaAtiva === 'resumo' ? (
                                 <Summary resultados={resultados} entradas={dadosFormulario} salvar={lidarSalvarNoHistorico} />
                             ) : (
-                                <PainelConfiguracoesCalculo
-                                    valorHoraHumana={dadosFormulario.config.valorHoraHumana} setValorHoraHumana={(v) => atualizarCampo('config', 'valorHoraHumana', v)}
-                                    custoKwh={dadosFormulario.config.custoKwh} setCustoKwh={(v) => atualizarCampo('config', 'custoKwh', v)}
-                                    consumoImpressoraKw={dadosFormulario.config.consumoKw} setConsumoImpressoraKw={(v) => atualizarCampo('config', 'consumoKw', v)}
-                                    custoHoraMaquina={dadosFormulario.config.custoHoraMaquina} setCustoHoraMaquina={(v) => atualizarCampo('config', 'custoHoraMaquina', v)}
-                                    taxaSetup={dadosFormulario.config.taxaSetup} setTaxaSetup={(v) => atualizarCampo('config', 'taxaSetup', v)}
-                                    onSaved={buscarConfiguracoes}
-                                />
+                                <PainelConfiguracoesCalculo onSaved={buscarConfiguracoes} />
                             )}
                         </div>
                     </aside>
@@ -516,7 +380,6 @@ export default function CalculadoraPage() {
                         aberto={modalFalhaAberto}
                         aoFechar={() => setModalFalhaAberto(false)}
                         aoSalvar={(falha) => {
-                            // LÓGICA DE COMPENSAÇÃO INTELIGENTE
                             if (falha?.costWasted) {
                                 setModalConfig({
                                     open: true,
@@ -527,7 +390,9 @@ export default function CalculadoraPage() {
                                     customAction: () => {
                                         const novoExtra = {
                                             nome: `FALHA RECUPERADA (${falha.reason})`,
-                                            valor: String(falha.costWasted)
+                                            valor: String(falha.costWasted),
+                                            qtd: 1,
+                                            supplyId: "custom"
                                         };
                                         atualizarCampo('custosExtras', 'lista', [...dadosFormulario.custosExtras.lista, novoExtra]);
                                         setModalConfig({ ...modalConfig, open: false });
@@ -537,7 +402,6 @@ export default function CalculadoraPage() {
                         }}
                     />
 
-                    {/* POPUP GLOBAL DE MENSAGENS */}
                     <Modal
                         isOpen={modalConfig.open}
                         onClose={() => setModalConfig({ ...modalConfig, open: false })}
