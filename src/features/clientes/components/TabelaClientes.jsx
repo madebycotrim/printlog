@@ -35,21 +35,24 @@ export default function TabelaClientes({ clientes, onEdit, onDelete, onViewHisto
                             <button
                                 onClick={() => onEdit(cliente)}
                                 className="p-2 hover:bg-sky-500/10 text-zinc-400 hover:text-sky-400 rounded-lg transition-colors"
+                                aria-label={`Editar cliente ${cliente.nome}`}
                             >
-                                <Edit2 size={16} />
+                                <Edit2 size={16} aria-hidden="true" />
                             </button>
                             <button
                                 onClick={() => onViewHistory && onViewHistory(cliente)}
                                 title="Histórico"
                                 className="p-2 hover:bg-emerald-500/10 text-zinc-400 hover:text-emerald-400 rounded-lg transition-colors"
+                                aria-label={`Ver histórico de ${cliente.nome}`}
                             >
-                                <Clock size={16} />
+                                <Clock size={16} aria-hidden="true" />
                             </button>
                             <button
                                 onClick={() => onDelete(cliente.id)}
                                 className="p-2 hover:bg-red-500/10 text-zinc-400 hover:text-red-400 rounded-lg transition-colors"
+                                aria-label={`Excluir cliente ${cliente.nome}`}
                             >
-                                <Trash2 size={16} />
+                                <Trash2 size={16} aria-hidden="true" />
                             </button>
                         </div>
 
