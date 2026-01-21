@@ -2,6 +2,7 @@ import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { useTour } from "../contexts/TourContext";
 
 export const TOUR_STEPS = {
     '/dashboard': [
@@ -50,6 +51,33 @@ export const TOUR_STEPS = {
             }
         }
     ],
+    '/filamentos': [
+        {
+            element: '[data-tour="filament-add-btn"]',
+            popover: {
+                title: 'Adicionar Material',
+                description: 'Clique aqui para cadastrar seus filamentos e manter o controle do estoque.',
+                side: "bottom",
+                align: 'end'
+            }
+        },
+        {
+            element: '[data-tour="filament-grid"]',
+            popover: {
+                title: 'Seu Estoque',
+                description: 'Visualize todos os seus materiais, peso disponível e alertas de estoque baixo.',
+                side: "top"
+            }
+        },
+        {
+            element: '[data-tour="filament-filters"]',
+            popover: {
+                title: 'Filtros e Busca',
+                description: 'Use filtros para encontrar rapidamente o material que você precisa.',
+                side: "bottom"
+            }
+        }
+    ],
     '/calculadora': [
         {
             element: '[data-tour="calc-project-name"]',
@@ -64,7 +92,7 @@ export const TOUR_STEPS = {
             element: '[data-tour="calc-material"]',
             popover: {
                 title: '1. Matéria-Prima',
-                description: 'Selecione o material e o peso da peça. O custo é calculado automaticamente baseada no seu estoque.',
+                description: 'Selecione o material e o peso da peça. O custo é calculado automaticamente baseado no seu estoque.',
                 side: "right",
                 align: 'start'
             }
@@ -119,6 +147,7 @@ export const TOUR_STEPS = {
 export default function TourGuide() {
     const [location] = useLocation();
     const driverRef = useRef(null);
+    const { hasSeen, markAsSeen, currentTour } = useTour();
 
     useEffect(() => {
         // Inicializa o driver apenas uma vez
@@ -130,11 +159,13 @@ export default function TourGuide() {
             nextBtnText: "Próximo",
             prevBtnText: "Anterior",
             progressText: "{{current}} de {{total}}",
-
-            // Customização Visual para bater com o tema Dark do PrintLog
             popoverClass: 'driverjs-theme',
-
-            steps: [] // Steps serão definidos dinamicamente
+            onDestroyed: () => {
+                // Marca como visto quando completar ou fechar
+                if (location) {
+                    markAsSeen(location);
+                }
+            }
         });
 
         return () => {
@@ -142,35 +173,30 @@ export default function TourGuide() {
                 driverRef.current.destroy();
             }
         };
-    }, []);
+    }, [location, markAsSeen]);
 
-    // Função exposta globalmente ou via Context (se quiséssemos complicar, mas vamos manter simples por enquanto)
-    // Para simplificar, vamos verificar o localStorage e a rota atual
-
+    // Auto-start tour on first visit or when manually triggered
     useEffect(() => {
-        const tourKey = `hasSeenTour-${location}`;
-        const hasSeen = localStorage.getItem(tourKey);
-
-        // Se já viu, ignora. Se não tem steps pra essa rota, ignora.
         const steps = TOUR_STEPS[location];
 
-        if (!hasSeen && steps && steps.length > 0) {
-            // Pequeno delay para garantir que a UI carregou
+        if (!steps || steps.length === 0) return;
+
+        // Check if should auto-start (first visit) or manual trigger
+        const shouldAutoStart = !hasSeen(location);
+        const manualTrigger = currentTour === location;
+
+        if (shouldAutoStart || manualTrigger) {
+            // Small delay to ensure DOM is ready
             const timer = setTimeout(() => {
                 if (driverRef.current) {
                     driverRef.current.setSteps(steps);
                     driverRef.current.drive();
-
-                    // Marca como visto ao iniciar/terminar?
-                    // Vamos marcar como visto para não encher o saco
-                    localStorage.setItem(tourKey, 'true');
                 }
-            }, 1000); // 1s delay
+            }, 800);
 
             return () => clearTimeout(timer);
         }
-    }, [location]);
+    }, [location, hasSeen, currentTour]);
 
-    // Renderless component
     return null;
 }

@@ -106,7 +106,7 @@ export default function Header({
     };
 
     return (
-        <header className="px-4 md:px-8 xl:px-12 pt-6 lg:pt-8 flex flex-col lg:flex-row items-start justify-between z-40 relative shrink-0 gap-6 lg:gap-6" data-tour="calc-header">
+        <header className="px-4 md:px-8 xl:px-12 pt-6 lg:pt-8 flex flex-col lg:flex-row items-start justify-between z-40 relative shrink-0 gap-6 lg:gap-6">
 
             {/* LADO ESQUERDO: TITULO E INPUT DE PROJETO */}
             <div className="flex flex-col w-full lg:w-auto min-w-[200px] max-w-xl group relative pl-20 lg:pl-0">

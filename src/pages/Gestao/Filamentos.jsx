@@ -213,6 +213,7 @@ export default function FilamentosPage() {
       onClick={() => { setItemEdicao(null); setModalAberto(true); }}
       variant="danger"
       icon={Plus}
+      data-tour="filament-add-btn"
     >
       Novo
     </Button>
