@@ -269,7 +269,8 @@ export default function LoginPage() {
                 strategy: "oauth_google",
                 // Passamos o redirect para o SSOCallback processar depois
                 redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
-                redirectUrlComplete: redirectUrl,
+                // IMPORTANT: Force absolute URL to prevent Clerk from inferring production domain on localhost
+                redirectUrlComplete: `${window.location.origin}${redirectUrl}`,
             });
         } catch (err) {
             setIsGoogleLoading(false);
