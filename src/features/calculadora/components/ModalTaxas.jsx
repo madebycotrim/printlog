@@ -109,7 +109,7 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
             />
             <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2">
-                    <Percent size={12} className="text-zinc-500" />
+                    <Percent size={12} strokeWidth={2.5} className="text-zinc-500" />
                     <input
                         type="number"
                         placeholder="Taxa %"
@@ -119,7 +119,7 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
                     />
                 </div>
                 <div className="flex-1 flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2">
-                    <DollarSign size={12} className="text-zinc-500" />
+                    <DollarSign size={12} strokeWidth={2.5} className="text-zinc-500" />
                     <input
                         type="number"
                         placeholder="Fixo R$"
@@ -134,13 +134,13 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
                     onClick={isNew ? handleSaveNew : handleSaveEdit}
                     className="flex-1 bg-emerald-600/20 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-600/30 h-8 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1 transition-all"
                 >
-                    <Check size={12} /> Salvar
+                    <Check size={12} strokeWidth={2.5} /> Salvar
                 </button>
                 <button
                     onClick={() => { isNew ? setIsCreating(false) : setEditingId(null) }}
                     className="flex-1 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 h-8 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1 transition-all"
                 >
-                    <X size={12} /> Cancelar
+                    <X size={12} strokeWidth={2.5} /> Cancelar
                 </button>
             </div>
         </div>
@@ -162,7 +162,7 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
                         onClick={handleCreate}
                         className="w-full py-3 border border-dashed border-zinc-800 rounded-xl flex items-center justify-center gap-2 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/5 transition-all mb-4"
                     >
-                        <Plus size={14} />
+                        <Plus size={14} strokeWidth={2.5} />
                         <span className="text-[10px] font-black uppercase tracking-wider">Adicionar Nova Taxa</span>
                     </button>
                 )}
@@ -184,10 +184,10 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
                                     <h4 className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors">{p.name}</h4>
                                     <div className="flex gap-3 mt-1">
                                         <span className="text-[10px] text-zinc-500 flex items-center gap-1">
-                                            <Percent size={10} className="text-sky-500" /> {p.taxa}%
+                                            <Percent size={10} strokeWidth={2.5} className="text-sky-500" /> {p.taxa}%
                                         </span>
                                         <span className="text-[10px] text-zinc-500 flex items-center gap-1">
-                                            <DollarSign size={10} className="text-emerald-500" /> R$ {Number(p.fixa).toFixed(2)}
+                                            <DollarSign size={10} strokeWidth={2.5} className="text-emerald-500" /> R$ {Number(p.fixa).toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
@@ -197,21 +197,21 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
                                         className="p-2 text-zinc-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-lg transition-all"
                                         title="Aplicar"
                                     >
-                                        <Check size={14} />
+                                        <Check size={14} strokeWidth={2.5} />
                                     </button>
                                     <button
                                         onClick={() => handleEdit(p)}
                                         className="p-2 text-zinc-500 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all"
                                         title="Editar"
                                     >
-                                        <Edit2 size={14} />
+                                        <Edit2 size={14} strokeWidth={2.5} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(p.id)}
                                         className="p-2 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                                         title="Excluir"
                                     >
-                                        <Trash2 size={14} />
+                                        <Trash2 size={14} strokeWidth={2.5} />
                                     </button>
                                 </div>
                             </div>

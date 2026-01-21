@@ -15,6 +15,7 @@ import { useCalculatorStore } from "../../../stores/calculatorStore";
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
 import { useSettings } from "../../sistema/logic/settingsQueries";
 import Modal from "../../../components/ui/Modal";
+import { CHART_COLORS } from "../logic/chartColors";
 
 /* ---------- SUB-COMPONENTE: NÚMERO ANIMADO ---------- */
 const AnimatedNumber = ({ value, duration = 800, className }) => {
@@ -48,22 +49,7 @@ const DonutChart = ({ data, total }) => {
     const radius = 16;
     const circumference = 2 * Math.PI * radius;
 
-    // Mapa de cores centralizado (Hex Codes)
-    const getColor = (twClass) => {
-        const map = {
-            'text-emerald-500': '#10b981', 'text-red-500': '#ef4444',
-            'text-blue-500': '#3b82f6', 'text-yellow-400': '#facc15',
-            'text-cyan-400': '#22d3ee', 'text-violet-500': '#8b5cf6',
-            'text-fuchsia-500': '#d946ef', 'text-orange-500': '#f97316',
-            'text-lime-400': '#a3e635', 'text-indigo-400': '#818cf8',
-            'text-pink-500': '#ec4899', 'text-zinc-500': '#71717a',
-            'text-emerald-400': '#34d399', 'text-zinc-300': '#d4d4d8',
-            'text-amber-300': '#fcd34d', 'text-zinc-400': '#a1a1aa',
-            'text-sky-300': '#7dd3fc', 'text-indigo-300': '#a5b4fc',
-            'text-rose-400': '#fb7185', 'text-rose-300': '#fda4af'
-        };
-        return map[twClass] || '#71717a';
-    };
+
 
     return (
         <div className="relative w-48 h-48 flex items-center justify-center mx-auto my-6">
@@ -76,7 +62,7 @@ const DonutChart = ({ data, total }) => {
                     const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
                     const strokeDashoffset = -((accumulatedAngle / 360) * circumference);
                     accumulatedAngle += (percentage / 100) * 360;
-                    const color = getColor(item.color);
+                    const color = item.hex;
 
                     return (
                         <circle
@@ -125,8 +111,9 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'chart'
 
-    // ESTADO DO SNAPSHOT (COMPARATIVO)
-    const [snapshot, setSnapshot] = useState(null);
+    // ESTADO DO SNAPSHOT (GLOBAL VIA ZUSTAND)
+    const { snapshot, setSnapshot, clearSnapshot } = useCalculatorStore();
+    // const [snapshot, setSnapshot] = useState(null); // REMOVIDO EM FAVOR DO STORE GLOBAL
 
     const [whatsappModal, setWhatsappModal] = useState(false);
     const [genericModal, setGenericModal] = useState({
@@ -146,7 +133,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     // Lógica do Snapshot
     const handleToggleSnapshot = () => {
         if (snapshot) {
-            setSnapshot(null);
+            clearSnapshot();
         } else {
             setSnapshot({
                 precoFinalVenda,
@@ -181,20 +168,21 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
         return { label: "Simulação", color: "text-sky-500", bg: "bg-sky-500/10", border: "border-sky-500/50" };
     }, [temMaterial, margemEfetivaPct]);
 
-    // MAPA DE CORES VIBRANTE E ÚNICO
+
+    // MAPA DE CORES CENTRALIZADO
     const composicaoItens = useMemo(() => {
         return [
-            { label: 'Material', val: custoMaterial, icon: Package, color: 'text-emerald-500' }, // Verde
-            { label: 'Impostos', val: valorImpostos, icon: Landmark, color: 'text-red-500' },        // Vermelho
-            { label: 'Comissão', val: valorMarketplace, icon: ShoppingBag, color: 'text-blue-500' },  // Azul
-            { label: 'Energia', val: custoEnergia, icon: Zap, color: 'text-yellow-400' },             // Amarelo
-            { label: 'Depreciação', val: custoMaquina, icon: Clock, color: 'text-violet-500' },       // Roxo
-            { label: 'Mão de Obra', val: custoMaoDeObra, icon: Wrench, color: 'text-cyan-400' },      // Ciano
-            { label: 'Margem de Erro', val: valorRisco, icon: ShieldAlert, color: 'text-fuchsia-500' },  // Rosa Choque
-            { label: 'Embalagem', val: custoEmbalagem, icon: Box, color: 'text-orange-500' },         // Laranja
-            { label: 'Frete', val: custoFrete, icon: Truck, color: 'text-lime-400' },                 // Verde Limão
-            { label: 'Setup', val: custoSetup, icon: Settings2, color: 'text-pink-500' },             // Rosa
-            { label: 'Custos Extras', val: custosExtras, icon: Tag, color: 'text-indigo-400' }               // Indigo
+            { label: 'Material', val: custoMaterial, icon: Package, color: CHART_COLORS.material.class, hex: CHART_COLORS.material.hex },
+            { label: 'Impostos', val: valorImpostos, icon: Landmark, color: CHART_COLORS.impostos.class, hex: CHART_COLORS.impostos.hex },
+            { label: 'Comissão', val: valorMarketplace, icon: ShoppingBag, color: CHART_COLORS.comissao.class, hex: CHART_COLORS.comissao.hex },
+            { label: 'Energia', val: custoEnergia, icon: Zap, color: CHART_COLORS.energia.class, hex: CHART_COLORS.energia.hex },
+            { label: 'Depreciação', val: custoMaquina, icon: Clock, color: CHART_COLORS.depreciacao.class, hex: CHART_COLORS.depreciacao.hex },
+            { label: 'Mão de Obra', val: custoMaoDeObra, icon: Wrench, color: CHART_COLORS.maoDeObra.class, hex: CHART_COLORS.maoDeObra.hex },
+            { label: 'Margem de Erro', val: valorRisco, icon: ShieldAlert, color: CHART_COLORS.margemErro.class, hex: CHART_COLORS.margemErro.hex },
+            { label: 'Embalagem', val: custoEmbalagem, icon: Box, color: CHART_COLORS.embalagem.class, hex: CHART_COLORS.embalagem.hex },
+            { label: 'Frete', val: custoFrete, icon: Truck, color: CHART_COLORS.frete.class, hex: CHART_COLORS.frete.hex },
+            { label: 'Setup', val: custoSetup, icon: Settings2, color: CHART_COLORS.setup.class, hex: CHART_COLORS.setup.hex },
+            { label: 'Custos Extras', val: custosExtras, icon: Tag, color: CHART_COLORS.extras.class, hex: CHART_COLORS.extras.hex }
         ].filter(item => item.val > 0.009).sort((a, b) => b.val - a.val);
     }, [custoMaterial, custoEnergia, custoMaquina, custoMaoDeObra, custoSetup, custoEmbalagem, custoFrete, custosExtras, valorRisco, valorImpostos, valorMarketplace]);
 
@@ -245,7 +233,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                                 }`}
                             title={snapshot ? "Parar Comparação" : "Comparar Orçamentos"}
                         >
-                            <Camera size={14} />
+                            <Camera size={14} strokeWidth={2.5} />
                         </button>
 
                         <button
@@ -254,7 +242,7 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                             className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 flex items-center justify-center transition-all disabled:opacity-30"
                             title="Arredondar Valor"
                         >
-                            <Wand2 size={12} />
+                            <Wand2 size={14} strokeWidth={2.5} />
                         </button>
                         <button
                             onClick={() => { navigator.clipboard.writeText(precoFinalVenda.toFixed(2)); setCopiadoPreco(true); setTimeout(() => setCopiadoPreco(false), 2000); }}
@@ -429,21 +417,12 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
                                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 w-full px-4">
                                     {composicaoItens.map((item, i) => {
                                         // Helper para pegar a cor hexadecimal também aqui
-                                        const hexColor = {
-                                            'text-emerald-500': '#10b981', 'text-red-500': '#ef4444',
-                                            'text-blue-500': '#3b82f6', 'text-yellow-400': '#facc15',
-                                            'text-cyan-400': '#22d3ee', 'text-violet-500': '#8b5cf6',
-                                            'text-fuchsia-500': '#d946ef', 'text-orange-500': '#f97316',
-                                            'text-lime-400': '#a3e635', 'text-indigo-400': '#818cf8',
-                                            'text-pink-500': '#ec4899', 'text-zinc-500': '#71717a'
-                                        }[item.color] || '#71717a';
+                                        const hexColor = item.hex;
+                                        const Icon = item.icon;
 
                                         return (
                                             <div key={i} className="flex items-center gap-2">
-                                                <div
-                                                    className="w-2.5 h-2.5 rounded-full shadow-sm shrink-0"
-                                                    style={{ backgroundColor: hexColor, boxShadow: `0 0 8px ${hexColor}40` }}
-                                                />
+                                                <Icon size={16} strokeWidth={2.5} style={{ color: hexColor }} className="shrink-0" />
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-[10px] text-zinc-300 font-bold uppercase truncate leading-none">{item.label}</span>
                                                     <span className="text-[9px] text-zinc-500 font-mono mt-0.5">{((item.val / custoUnitario) * 100).toFixed(0)}%</span>

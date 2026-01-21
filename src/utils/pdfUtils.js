@@ -22,8 +22,9 @@ export const drawPDFHeader = (doc, title, subtitle) => {
     // --- 1. FUNDO TÉCNICO ---
     doc.setDrawColor(...PDF_COLORS.grade);
     doc.setLineWidth(0.1);
-    for (let i = 0; i < 210; i += 5) doc.line(i, 0, i, 297);
-    for (let i = 0; i < 297; i += 5) doc.line(0, i, 210, i);
+    // Grid removido para visual mais limpo
+    // for (let i = 0; i < 210; i += 5) doc.line(i, 0, i, 297);
+    // for (let i = 0; i < 297; i += 5) doc.line(0, i, 210, i);
 
     // --- 2. CABEÇALHO VISUAL ---
     doc.setFillColor(...PDF_COLORS.zinco950);
@@ -32,12 +33,14 @@ export const drawPDFHeader = (doc, title, subtitle) => {
     doc.rect(0, 35, 210, 0.8, 'F');
 
     // Títulos
+    // Títulos
     doc.setTextColor(...PDF_COLORS.branco);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(18); // Levemente menor para elegância
     doc.text(title, 15, 20);
     doc.setTextColor(...PDF_COLORS.ceu500);
-    doc.text(subtitle, 15 + doc.getTextWidth(title) + 2, 20); // Posicionamento dinâmico
+    // Ajuste de espaçamento
+    doc.text(subtitle, 15 + doc.getTextWidth(title) + 3, 20);
 
     // Metadados
     doc.setFontSize(7);

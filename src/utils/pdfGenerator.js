@@ -111,8 +111,8 @@ export const generateProfessionalPDF = async (resultados, entradas, precoFinalEx
     doc.setFontSize(6);
     doc.setTextColor(...cores.zinco500);
     const anoAtual = new Date().getFullYear();
-    doc.text(`MAKER LOG - SISTEMAS DE GESTÃO PARA MANUFATURA ADITIVA // ${anoAtual}`, 10, 285);
-    doc.text("Este relatório é uma estimativa técnica baseada nos parâmetros fornecidos.", 10, 290);
+    doc.text(`PRINTLOG // ${anoAtual}`, 10, 285);
+    doc.text("Relatório gerado automaticamente. Valores sujeitos a alteração.", 10, 290);
 
     // Abre o PDF em nova aba do navegador
     window.open(doc.output('bloburl'), '_blank');

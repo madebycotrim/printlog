@@ -5,6 +5,7 @@ import { UnifiedInput } from "../../../components/UnifiedInput";
 
 
 import ModalCliente from "../../clientes/components/ModalCliente";
+import ModalSelecaoCliente from "../../clientes/components/ModalSelecaoCliente";
 
 export default function Header({
     nomeProjeto,
@@ -26,6 +27,7 @@ export default function Header({
 }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+    const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
     // aplicarTemplate removed (unused)
 
     // Busca a impressora selecionada na lista de equipamentos com comparação segura de tipo
@@ -37,24 +39,6 @@ export default function Header({
     // Organiza o valor da potência
     const potenciaHardware = Number(impressoraAtual?.potencia || impressoraAtual?.power || 0);
 
-    // Prepara opções de clientes para o UnifiedInput
-    const clientOptions = useMemo(() => {
-        const clientItems = clients.map(c => ({
-            value: c.id,
-            label: c.empresa ? `${c.nome} • ${c.empresa}` : c.nome
-        }));
-
-        return [
-            {
-                group: "Ações",
-                items: [{ value: "new_client", label: "+ NOVO CLIENTE (RÁPIDO)", color: "#0ea5e9" }]
-            },
-            {
-                group: "Meus Clientes",
-                items: [{ value: "", label: "Cliente (Opcional)" }, ...clientItems]
-            }
-        ];
-    }, [clients]);
 
 
 
@@ -115,23 +99,36 @@ export default function Header({
 
                 {/* CLIENT SELECTOR - NOVO INTEGRADO */}
                 <div className="mt-4 w-full lg:w-[280px] relative z-30">
-                    <UnifiedInput
-                        label="Cliente"
-                        placeholder="Selecione um Cliente..."
-                        type="select"
-                        icon={User}
-                        options={clientOptions}
-                        value={selectedClientId || ""}
-                        onSearch={setSearchTerm}
-                        onChange={(val) => {
-                            if (val === 'new_client') {
-                                setIsClientModalOpen(true);
-                            } else {
-                                onSelectClient(val);
-                            }
-                        }}
-                    />
-                    {/* Nota: UnifiedInput variant ghost remove bordas. O seletor original tinha UserCircle2 mas UnifiedInput já tem suporte a ícone. */}
+                    <div className="flex justify-between items-end px-1.5 h-3 mb-1.5">
+                        <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.15em] select-none">
+                            Cliente
+                        </label>
+                    </div>
+
+                    <button
+                        onClick={() => setIsSelectionModalOpen(true)}
+                        className="w-full h-10 flex items-center justify-between bg-zinc-950/50 border border-zinc-800/60 rounded-xl px-3 hover:border-zinc-700 hover:bg-zinc-900/40 transition-all group/client"
+                    >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <User size={14} strokeWidth={2.5} className="text-zinc-600 group-hover/client:text-sky-500 transition-colors shrink-0" />
+                            <span className={`text-[12px] font-mono font-bold truncate ${selectedClientId ? 'text-zinc-100' : 'text-zinc-600'}`}>
+                                {selectedClientId
+                                    ? (clients.find(c => c.id === selectedClientId)?.nome || "Cliente Selecionado")
+                                    : "Selecione um Cliente..."}
+                            </span>
+                        </div>
+                        {selectedClientId && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSelectClient("");
+                                }}
+                                className="p-1 hover:bg-zinc-800 rounded-md text-zinc-600 hover:text-rose-500 transition-colors"
+                            >
+                                <Trash2 size={12} strokeWidth={2.5} />
+                            </button>
+                        )}
+                    </button>
                 </div>
             </div>
 
@@ -151,7 +148,7 @@ export default function Header({
                         className="w-full flex items-center gap-3 pl-2 pr-4 h-11 bg-zinc-950/40 border border-zinc-800/60 rounded-xl hover:bg-zinc-900 transition-all text-left relative overflow-hidden group-hover/printer:border-zinc-700"
                     >
                         <div className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 shadow-sm transition-colors ${impressoraAtual ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-900 border-zinc-800'}`}>
-                            <Printer size={14} className={`${impressoraAtual ? 'text-emerald-500' : 'text-zinc-600'}`} />
+                            <Printer size={16} strokeWidth={2.5} className={`${impressoraAtual ? 'text-emerald-500' : 'text-zinc-600'}`} />
                         </div>
                         <div className="flex flex-col min-w-0 flex-1 gap-0.5">
                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Máquina</span>
@@ -193,7 +190,7 @@ export default function Header({
                     className="relative overflow-hidden group h-11 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 active:bg-sky-600 transition-all shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 mx-1 hover:scale-[1.02] active:scale-[0.98]"
                 >
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <FileCode size={18} className="text-white fill-white/20" />
+                    <FileCode size={18} strokeWidth={2.5} className="text-white fill-white/20" />
                     <span className="text-xs font-black text-white uppercase tracking-wider">Importar 3D</span>
                 </button>
 
@@ -207,7 +204,7 @@ export default function Header({
                         title="Registrar Falha"
                         className="h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-all"
                     >
-                        <Trash2 size={18} />
+                        <Trash2 size={18} strokeWidth={2.5} />
                     </button>
 
                     <button
@@ -215,7 +212,7 @@ export default function Header({
                         title="Configurações e Tarifas"
                         className={`h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center transition-all ${needsConfig ? 'text-amber-500 animate-pulse bg-amber-500/10' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800'}`}
                     >
-                        <Settings2 size={18} />
+                        <Settings2 size={18} strokeWidth={2.5} />
                     </button>
 
                     <button
@@ -223,7 +220,7 @@ export default function Header({
                         title="Histórico de Projetos"
                         className="h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:bg-zinc-800 transition-all"
                     >
-                        <History size={18} />
+                        <History size={18} strokeWidth={2.5} />
                     </button>
 
                     <button
@@ -231,7 +228,7 @@ export default function Header({
                         title="Reiniciar Calculadora"
                         className="h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-all"
                     >
-                        <RotateCcw size={18} />
+                        <RotateCcw size={18} strokeWidth={2.5} />
                     </button>
                 </div>
             </div>
@@ -244,6 +241,16 @@ export default function Header({
                 onSuccess={(newId) => {
                     setIsClientModalOpen(false);
                     onSelectClient(newId);
+                }}
+            />
+
+            <ModalSelecaoCliente
+                isOpen={isSelectionModalOpen}
+                onClose={() => setIsSelectionModalOpen(false)}
+                onConfirm={(id) => onSelectClient(id)}
+                onCreateNew={() => {
+                    setIsSelectionModalOpen(false);
+                    setIsClientModalOpen(true);
                 }}
             />
         </header>

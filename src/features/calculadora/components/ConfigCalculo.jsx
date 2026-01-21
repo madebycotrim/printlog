@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
     User, Zap, Monitor, Settings2, Save, Check,
     RefreshCw, Loader2, Cpu,
-    MessageCircle
+    MessageCircle, Store
 } from "lucide-react";
 import api from "../../../utils/api";
 import Modal from "../../../components/ui/Modal"; // Importando o componente universal
@@ -18,7 +18,7 @@ const EntradaConfiguracao = ({ rotulo, sufixo, valor, aoAlterar, icone: IconeCon
         <div className="group flex items-center justify-between p-3 rounded-2xl bg-zinc-950/40 border border-zinc-800/50 hover:border-zinc-800/50 hover:bg-zinc-950/60 transition-all duration-300">
             <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-xl bg-zinc-950/40 border border-zinc-800 flex items-center justify-center ${cor} shadow-inner group-hover:scale-110 transition-transform`}>
-                    <IconeConfig size={14} strokeWidth={2.5} />
+                    <IconeConfig size={16} strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
                     <div className="flex items-center gap-1.5">
@@ -170,7 +170,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
                             className="w-8 h-8 rounded-lg bg-zinc-950/40 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all"
                             title="Sincronizar"
                         >
-                            <RefreshCw size={14} className={estaSincronizando ? "animate-spin text-sky-400" : ""} />
+                            <RefreshCw size={14} strokeWidth={2.5} className={estaSincronizando ? "animate-spin text-sky-400" : ""} />
                         </button>
 
                         <button
@@ -181,7 +181,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
                                 : "bg-sky-500 text-white hover:bg-sky-400 shadow-lg shadow-sky-500/20 active:scale-95"
                                 }`}
                         >
-                            {estaGravando ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                            {estaGravando ? <Loader2 size={14} strokeWidth={2.5} className="animate-spin" /> : <Save size={14} strokeWidth={2.5} />}
                             {estaGravando ? "..." : (configuracaoSincronizada ? "Salvo" : "Salvar")}
                         </button>
                     </div>
@@ -190,7 +190,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
                 {/* GRUPOS DE CONFIGURAÇÃO */}
                 <div className="space-y-4">
                     {/* ENERGIA */}
-                    <div className="bg-zinc-950/40/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
+                    <div className="bg-zinc-950/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
                         <div className="flex items-center gap-2 pb-1">
                             <Zap size={14} className="text-amber-500" />
                             <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Energia Elétrica</h4>
@@ -211,7 +211,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
                     </div>
 
                     {/* MÁQUINA */}
-                    <div className="bg-zinc-950/40/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
+                    <div className="bg-zinc-950/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
                         <div className="flex items-center gap-2 pb-1">
                             <Cpu size={14} className="text-blue-500" />
                             <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Depreciação da Máquina</h4>
@@ -231,7 +231,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
                     </div>
 
                     {/* TRABALHO */}
-                    <div className="bg-zinc-950/40/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
+                    <div className="bg-zinc-950/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
                         <div className="flex items-center gap-2 pb-1">
                             <User size={14} className="text-emerald-500" />
                             <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Valor da sua Hora</h4>
@@ -244,7 +244,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
                     </div>
 
                     {/* COMUNICAÇÃO */}
-                    <div className="bg-zinc-950/40/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
+                    <div className="bg-zinc-950/20 border border-zinc-800/30 rounded-2xl p-4 space-y-3">
                         <div className="flex items-center gap-2 pb-1">
                             <MessageCircle size={14} className="text-sky-500" />
                             <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Configurar WhatsApp</h4>

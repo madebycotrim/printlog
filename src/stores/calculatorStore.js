@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export const useCalculatorStore = create((set) => ({
     // Estado Inicial
     dadosFormulario: {
+        id: "", // ID do projeto para permitir updates
         nomeProjeto: "",
         clienteId: "",
         qtdPecas: 1,
@@ -43,6 +44,7 @@ export const useCalculatorStore = create((set) => ({
 
     resetForm: () => set({
         dadosFormulario: {
+            id: "",
             nomeProjeto: "",
             clienteId: "",
             qtdPecas: 1,
@@ -84,6 +86,11 @@ export const useCalculatorStore = create((set) => ({
 
     // Ações de Atualização
     setDadosFormulario: (novosDados) => set({ dadosFormulario: novosDados }),
+
+    // Snapshot State
+    snapshot: null,
+    setSnapshot: (snap) => set({ snapshot: snap }),
+    clearSnapshot: () => set({ snapshot: null }),
 
     atualizarCampo: (secao, campo, valor) => set((state) => {
         if (secao && campo) {

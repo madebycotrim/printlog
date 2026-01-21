@@ -35,7 +35,8 @@ import { useClientStore } from "../../features/clientes/logic/clients.js";
 
 import { useToastStore } from "../../stores/toastStore";
 import { useCalculatorStore } from "../../stores/calculatorStore"; // Novo Store
-import { analisarArquivoProjeto } from "../../utils/projectParser";
+// import { analisarArquivoProjeto } from "../../utils/projectParser"; // Removed
+import { useFileProcessor } from "../../features/calculadora/hooks/useFileProcessor"; // Imported
 import { useDragDrop } from "../../hooks/useDragDrop";
 import { useTransferStore } from "../../stores/transferStore";
 import { formatCurrency } from "../../utils/numbers";
@@ -67,58 +68,16 @@ export default function CalculadoraPage() {
     const fileInputRef = useRef(null);
     const [hardwareSelecionado, setHardwareSelecionado] = useState(null);
 
+    const { isProcessing, checkPendingFiles, processarArquivo } = useFileProcessor();
+
     // Carregamento Inicial
-    // Lógica de processamento de arquivo
-    const processarArquivo = React.useCallback(async (file) => {
-        addToast("Lendo arquivo...", "loading");
-        try {
-            const resultado = await analisarArquivoProjeto(file);
-
-            if (resultado.success) {
-                // Atualiza Tempo
-                if (resultado.timeSeconds > 0) {
-                    const totalMinutos = Math.ceil(resultado.timeSeconds / 60);
-                    const horas = Math.floor(totalMinutos / 60);
-                    const minutos = totalMinutos % 60;
-
-                    atualizarCampo('tempo', 'impressaoHoras', String(horas));
-                    atualizarCampo('tempo', 'impressaoMinutos', String(minutos));
-                }
-
-                // Atualiza Peso
-                if (resultado.weightGrams > 0) {
-                    atualizarCampo('material', 'pesoModelo', String(resultado.weightGrams));
-                }
-
-                // Nome do projeto (se vazio)
-                if (!dadosFormulario.nomeProjeto) {
-                    const nomeLimpo = file.name.replace(/\.(gcode|gco|3mf|stl|obj)$/i, "").replace(/[-_]/g, " ");
-                    atualizarCampo('nomeProjeto', null, nomeLimpo);
-                }
-
-                addToast(`Arquivo lido: ${resultado.message}`, "success");
-            } else {
-                addToast(resultado.message, "warning");
-            }
-        } catch (error) {
-            console.error(error);
-            addToast("Erro ao ler o arquivo.", "error");
-        }
-    }, [atualizarCampo, dadosFormulario.nomeProjeto, addToast]);
-
     useEffect(() => {
         const init = async () => {
-            const pendingFile = useTransferStore.getState().pendingFile;
-            if (pendingFile) {
-                setTimeout(() => {
-                    processarArquivo(pendingFile);
-                    useTransferStore.getState().clearPendingFile();
-                }, 500);
-            }
+            checkPendingFiles();
             await fetchClients();
         };
         init();
-    }, [fetchClients, processarArquivo]);
+    }, [fetchClients, checkPendingFiles]);
 
     // Sincroniza Config (Merge com dados do backend se store estiver vazia ou para garantir defaults)
     useEffect(() => {
@@ -178,6 +137,32 @@ export default function CalculadoraPage() {
 
 
 
+
+    // ... inside component ...
+    // Note: I cannot simply inject the hook call here because hooks must be called at the top level.
+    // I will fix this in the next tool call properly by getting processarArquivo from the hook I called earlier. 
+
+    // Actually, I already called useFileProcessor above but didn't destructure processarArquivo.
+    // Let me fix the previous replacement first or handle it here. 
+    // Wait, in the FIRST tool call I replaced lines 70-117 with:
+    // const { isProcessing, checkPendingFiles } = useFileProcessor();
+    // I missed `processarArquivo` there!
+
+    // This tool call serves to replace handleFileSelected and DragDrop usage of processarArquivo
+    // BUT since I removed the definition of processarArquivo in the first edit, I need to make sure it's available.
+
+    // Let's assume I will fix the hook destructuring in a separate step or re-do the first one if I could (I can't).
+    // I will replace `const { isDragging, dragHandlers } = useDragDrop(processarArquivo);` 
+    // and `const handleFileSelected ...` 
+
+    // Strategy: I'll use `multi_replace` next time to fix everything. For now, let's just abort this singular specific replacement 
+    // because I need to fix the hook destructuring first.
+
+    // actually, let's try to fix the hook destructuring AND this part in one go with multi_replace if I hadn't already sent a replace_file_content.
+    // Since I sent replace_file_content for lines 70-117, I need to fix the destructuring there. 
+
+    // I will use this step to fix the hook usage to Include processarArquivo.
+
     const { isDragging, dragHandlers } = useDragDrop(processarArquivo);
 
     const handleUploadClick = () => {
@@ -208,6 +193,7 @@ export default function CalculadoraPage() {
     ]);
 
     // Histórico
+    // Histórico
     const lidarSalvarNoHistorico = async () => {
         if (!dadosFormulario.nomeProjeto) {
             addToast("Dá um nome pro seu projeto", "warning");
@@ -215,6 +201,7 @@ export default function CalculadoraPage() {
         }
 
         const projeto = {
+            id: dadosFormulario.id || null, // Passa ID se existir para atualizar
             nome: dadosFormulario.nomeProjeto,
             cliente_id: dadosFormulario.clienteId,
             status: "rascunho",
@@ -225,8 +212,15 @@ export default function CalculadoraPage() {
             lucro_estimado: resultados.lucroBrutoUnitario
         };
 
-        const sucesso = await saveProject(projeto);
-        if (sucesso) addToast("Projeto salvo!", "success");
+        const resultado = await saveProject(projeto);
+
+        // Se salvou/criou com sucesso, atualiza o ID local para permitir updates futuros
+        if (resultado && resultado.id) {
+            atualizarCampo('id', null, String(resultado.id));
+            addToast("Projeto salvo com sucesso!", "success");
+        } else if (resultado) {
+            addToast("Projeto salvo!", "success");
+        }
     };
 
     const lidarRestauracao = (projetoHistorico) => {
@@ -388,22 +382,22 @@ export default function CalculadoraPage() {
                             >
                                 {!isEnabled ? (
                                     <>
-                                        <CloudOff size={10} className="text-zinc-600" />
+                                        <CloudOff size={12} strokeWidth={2.5} className="text-zinc-600" />
                                         <span className="text-zinc-600">Sincronia Pausada</span>
                                     </>
                                 ) : isSaving ? (
                                     <>
-                                        <Loader2 size={10} className="animate-spin text-emerald-500" />
+                                        <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-emerald-500" />
                                         <span className="text-emerald-500">Salvando...</span>
                                     </>
                                 ) : lastSaved ? (
                                     <>
-                                        <Cloud size={10} className="text-zinc-600" />
+                                        <Cloud size={12} strokeWidth={2.5} className="text-zinc-600" />
                                         <span className="text-zinc-500">Salvo às {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Cloud size={10} className="text-zinc-600" />
+                                        <Cloud size={12} strokeWidth={2.5} className="text-zinc-600" />
                                         <span className="text-zinc-500">Tudo Salvo</span>
                                     </>
                                 )}
@@ -423,12 +417,12 @@ export default function CalculadoraPage() {
 
                                 <button type="button" onClick={() => setAbaAtiva('resumo')}
                                     className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'resumo' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                    <BarChart3 size={14} className={abaAtiva === 'resumo' ? 'text-sky-400' : 'text-zinc-600'} />
+                                    <BarChart3 size={16} strokeWidth={2.5} className={abaAtiva === 'resumo' ? 'text-sky-400' : 'text-zinc-600'} />
                                     Resultado
                                 </button>
                                 <button type="button" onClick={() => setAbaAtiva('config')}
                                     className={`relative flex-1 z-10 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${abaAtiva === 'config' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                    <Settings2 size={14} className={abaAtiva === 'config' ? 'text-emerald-400' : 'text-zinc-600'} />
+                                    <Settings2 size={16} strokeWidth={2.5} className={abaAtiva === 'config' ? 'text-emerald-400' : 'text-zinc-600'} />
                                     Minha Mesa
                                 </button>
                             </div>

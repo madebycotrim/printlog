@@ -75,7 +75,7 @@ export default function Precificacao() {
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded bg-emerald-500/10 text-emerald-500">
-              <TrendingUp size={14} />
+              <TrendingUp size={14} strokeWidth={2.5} />
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">Lucro Desejado</span>
           </div>
@@ -120,7 +120,7 @@ export default function Precificacao() {
       {/* 2. SEÇÃO DE CUSTOS & TAXAS (Secondary) */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 px-1 opacity-75">
-          <ShieldAlert size={14} className="text-zinc-600" />
+          <ShieldAlert size={14} strokeWidth={2.5} className="text-zinc-600" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Taxas & Segurança</span>
         </div>
 

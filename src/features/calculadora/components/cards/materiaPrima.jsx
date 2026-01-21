@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Package, DollarSign, Tag, Layers, Loader2, X, Search } from "lucide-react";
+import { Plus, Package, DollarSign, Tag, Layers, Loader2, X, Search, Disc } from "lucide-react";
 import { useFilaments } from "../../../filamentos/logic/filamentQueries";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 import ModalSelecaoFilamento from "../../../filamentos/components/ModalSelecaoFilamento";
@@ -37,7 +37,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
     return (
         <div
             style={{ zIndex: ordemVisual }}
-            className="group flex items-center bg-zinc-900/20 hover:bg-zinc-900/40 border border-zinc-800/40 hover:border-zinc-700/60 rounded-lg transition-all relative h-10 animate-in slide-in-from-right-2 duration-300 mb-1.5"
+            className="group flex items-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-lg transition-all relative h-10 animate-in slide-in-from-right-2 duration-300 mb-1.5"
         >
 
             {/* 1. NOME/SELECT (Trigger Modal) */}
@@ -94,7 +94,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                 className="w-8 shrink-0 h-full flex items-center justify-center text-zinc-700 hover:text-rose-500 hover:bg-rose-500/10 transition-colors rounded-r-lg"
                 title="Remover"
             >
-                <X size={12} strokeWidth={2.5} />
+                <X size={14} strokeWidth={2.5} />
             </button>
 
             <ModalSelecaoFilamento
@@ -206,15 +206,16 @@ export default function MaterialModule() {
     return (
         <div className="flex flex-col gap-5 h-full animate-in fade-in duration-500">
             {/* SELETOR DE MODO */}
-            <div className="flex bg-zinc-950/40 border border-zinc-800 p-1 rounded-xl shrink-0">
+            <div className="grid grid-cols-2 bg-zinc-950 border border-zinc-800 p-1 rounded-xl shrink-0">
                 {["single", "multi"].map(m => (
                     <button
                         key={m}
                         type="button"
                         onClick={() => alternarModo(m)}
-                        className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest border outline-none focus:ring-0
-                        ${modo === m ? "bg-zinc-900/50 text-sky-400 border-zinc-800 shadow-lg" : "border-transparent text-zinc-600 hover:text-zinc-400"}`}
+                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all focus:outline-none
+                        ${modo === m ? "bg-zinc-800 text-sky-400 shadow-sm" : "text-zinc-600 hover:text-zinc-400"}`}
                     >
+                        {m === "single" ? <Disc size={14} strokeWidth={2.5} /> : <Layers size={14} strokeWidth={2.5} />}
                         {m === "single" ? "Uma cor" : "Várias cores"}
                     </button>
                 ))}
@@ -233,7 +234,7 @@ export default function MaterialModule() {
                             className="text-zinc-600 hover:text-sky-400 transition-colors"
                             title="Buscar no Estoque"
                         >
-                            <Search size={12} strokeWidth={2.5} />
+                            <Search size={14} strokeWidth={2.5} />
                         </button>
                     </div>
                     <UnifiedInput
@@ -283,7 +284,7 @@ export default function MaterialModule() {
             <div className={`flex-1 flex flex-col gap-2 relative z-10 ${modo === 'multi' ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between px-1 shrink-0">
                     <div className="flex items-center gap-2">
-                        <Layers size={14} className="text-zinc-600" />
+                        <Layers size={16} strokeWidth={2.5} className="text-zinc-600" />
                         <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Lista de Materiais</span>
                     </div>
 
@@ -302,7 +303,7 @@ export default function MaterialModule() {
                                 title="Importar do Estoque"
                                 className="w-6 h-6 flex items-center justify-center rounded-md bg-zinc-800 text-zinc-400 hover:bg-emerald-500 hover:text-white transition-all"
                             >
-                                <Layers size={12} />
+                                <Layers size={14} strokeWidth={2.5} />
                             </button>
 
                             <button
@@ -311,7 +312,7 @@ export default function MaterialModule() {
                                 title="Adicionar Manualmente"
                                 className="w-6 h-6 flex items-center justify-center rounded-md bg-zinc-800 text-zinc-400 hover:bg-sky-500 hover:text-white transition-all"
                             >
-                                <Plus size={12} />
+                                <Plus size={14} strokeWidth={2.5} />
                             </button>
                         </div>
                     </div>

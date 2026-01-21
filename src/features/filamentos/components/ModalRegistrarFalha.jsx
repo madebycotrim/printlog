@@ -110,7 +110,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
 
             <div className="bg-rose-950/20 border border-rose-500/20 rounded-2xl p-6 relative z-10 w-full">
                 <div className="flex items-center gap-2 mb-2">
-                    <Ban size={12} className="text-rose-500/50" />
+                    <Ban size={12} strokeWidth={2.5} className="text-rose-500/50" />
                     <span className="text-[10px] font-bold text-rose-500/60 uppercase tracking-wider">Prejuízo Estimado</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
@@ -134,7 +134,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                     onClick={handleSubmit}
                     className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!loading && form.weightWasted ? "bg-rose-500 text-white hover:bg-rose-400 active:scale-95 hover:shadow-xl shadow-lg shadow-rose-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
                 >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {loading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Save size={16} strokeWidth={2.5} />}
                     Confirmar Prejuízo
                 </button>
             </div>
@@ -184,7 +184,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
 
                 <div className="pt-6 border-t border-zinc-800/50 space-y-4">
                     <div className="flex items-center gap-2 text-rose-500 mb-2">
-                        <Layers size={14} />
+                        <Layers size={14} strokeWidth={2.5} />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Abater do Estoque?</span>
                     </div>
                     <UnifiedInput

@@ -75,7 +75,7 @@ export default function Tempo() {
         {/* ENERGY BADGE - Minimalist */}
         {totalHorasImpressaoCalculado > 0 && (
           <div className="flex items-center gap-2 px-1 opacity-75">
-            <Zap size={12} className="text-yellow-500" />
+            <Zap size={14} strokeWidth={2.5} className="text-yellow-500" />
             <span className="text-[10px] text-zinc-500 font-medium">
               Estimativa de Energia: <span className="text-yellow-500 font-bold font-mono ml-1">{formatCurrency(custoEnergiaEstimado)}</span>
             </span>
@@ -85,7 +85,7 @@ export default function Tempo() {
         {/* WARNING */}
         {totalHorasImpressaoCalculado > 12 && (
           <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500">
-            <Clock size={14} className="mt-0.5 shrink-0" />
+            <Clock size={14} strokeWidth={2.5} className="mt-0.5 shrink-0" />
             <span className="text-[10px] leading-tight font-medium">
               Impressão muito longa ({Number(totalHorasImpressaoCalculado).toFixed(1)}h). Verifique o carretel.
             </span>

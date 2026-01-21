@@ -9,8 +9,11 @@ export default function QuickActionsDock({
     onNewSupply
 }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [, setLocation] = useLocation();
+    const [location, setLocation] = useLocation();
     const { startTour } = useTour();
+
+    // Renderiza apenas no Dashboard
+    if (location !== '/' && location !== '/dashboard') return null;
 
     const actions = [
         {
@@ -87,8 +90,8 @@ export default function QuickActionsDock({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-6 right-6 z-[9998] w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${isOpen
-                        ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30 scale-110'
-                        : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white hover:border-zinc-700'
+                    ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30 scale-110'
+                    : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white hover:border-zinc-700'
                     }`}
             >
                 {isOpen ? <X size={20} strokeWidth={2.5} /> : <Zap size={20} strokeWidth={2.5} />}

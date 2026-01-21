@@ -245,8 +245,8 @@ export const UnifiedInput = ({
       <div
         ref={containerRef}
         onClick={handleContainerClick}
-        className={`relative flex items-center h-11 transition duration-300 ease-in-out cursor-pointer
-          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950 border border-zinc-800 rounded-xl shadow-sm"}
+        className={`relative flex items-center h-10 transition duration-300 ease-in-out cursor-pointer
+          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950/50 border border-zinc-800/60 rounded-xl shadow-sm"}
           ${!isGhost && (isActive || isLucro
             ? "border-sky-500/50 shadow-[0_0_15px_-3px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/20"
             : "hover:border-zinc-700 hover:bg-zinc-900/40")}
