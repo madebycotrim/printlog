@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { User, Building2, Phone, Mail, FileText, MapPin, Loader2, AlertCircle, Terminal } from 'lucide-react';
+import { User, Building2, Phone, Mail, MapPin, Loader2, AlertCircle, Terminal } from 'lucide-react';
 import { useClientStore } from '../logic/clients';
 import { UnifiedInput } from '../../../components/UnifiedInput';
 import FormFeedback from '../../../components/FormFeedback';
@@ -73,7 +73,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
                     onClose();
                 }, 1000);
             }
-        } catch (error) {
+        } catch {
             showError("Erro ao salvar cliente.");
         }
     };

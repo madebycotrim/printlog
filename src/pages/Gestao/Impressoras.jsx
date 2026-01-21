@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
+﻿import React, { useState, useMemo, useDeferredValue } from "react";
 import { Printer, ChevronDown, X, PackageSearch, Database, Plus, Search, LayoutGrid, List, AlertTriangle, Trash2, Scan } from "lucide-react";
 import { formatDecimal } from "../../utils/numbers";
 

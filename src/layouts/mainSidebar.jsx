@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from "react";
+import React, { useMemo, memo } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import {

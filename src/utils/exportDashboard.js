@@ -1,11 +1,11 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatarMoeda } from './numbers';
 
 export const exportDashboardToPDF = (data) => {
-    const { projects, printers, filaments, stats } = data;
+    const { projects, printers, stats } = data;
     const doc = new jsPDF();
 
     // Título
@@ -22,7 +22,7 @@ export const exportDashboardToPDF = (data) => {
     doc.setTextColor(0);
     doc.text('Resumo Financeiro', 14, 40);
 
-    doc.autoTable({
+    autoTable(doc, {
         startY: 45,
         head: [['Métrica', 'Valor']],
         body: [
@@ -41,7 +41,7 @@ export const exportDashboardToPDF = (data) => {
         doc.setFontSize(14);
         doc.text('Projetos Recentes', 14, yPos);
 
-        doc.autoTable({
+        autoTable(doc, {
             startY: yPos + 5,
             head: [['ID', 'Nome', 'Data', 'Valor']],
             body: projects.slice(0, 10).map(p => [
@@ -62,7 +62,7 @@ export const exportDashboardToPDF = (data) => {
         doc.setFontSize(14);
         doc.text('Impressoras', 14, yPos);
 
-        doc.autoTable({
+        autoTable(doc, {
             startY: yPos + 5,
             head: [['Nome', 'Marca/Modelo', 'Status', 'Horas']],
             body: printers.map(p => [

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { calcularTudo } from '../features/calculadora/logic/calculator';
 
-export const useCalculatorStore = create((set, get) => ({
+export const useCalculatorStore = create((set) => ({
     // Estado Inicial
     dadosFormulario: {
         nomeProjeto: "",

@@ -1,12 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useCalculatorStore } from '../stores/calculatorStore';
-import { useToastStore } from '../stores/toastStore';
+
 
 export const useAutoSave = () => {
     const { dadosFormulario, setDadosFormulario } = useCalculatorStore();
-    const { addToast } = useToastStore();
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaved, setLastSaved] = useState(null);
+
+
+    const [isEnabled, setIsEnabled] = useState(() => {
+        const saved = localStorage.getItem('calculator_autosave_enabled');
+        return saved !== null ? JSON.parse(saved) : false;
+    });
+
+    const toggleAutoSave = () => {
+        setIsEnabled(prev => {
+            const newValue = !prev;
+            localStorage.setItem('calculator_autosave_enabled', JSON.stringify(newValue));
+            return newValue;
+        });
+    };
 
     // Carregar dados salvos ao montar
     useEffect(() => {
@@ -34,7 +47,7 @@ export const useAutoSave = () => {
                 console.error("Erro ao carregar auto-save", e);
             }
         }
-    }, []); // Executa apenas uma vez no mount
+    }, [setDadosFormulario, dadosFormulario]);
 
     // Salvar dados quando mudarem
     useEffect(() => {
@@ -48,20 +61,9 @@ export const useAutoSave = () => {
         }, 2000); // Debounce de 2 segundos
 
         return () => clearTimeout(handler);
-    }, [dadosFormulario]);
+    }, [dadosFormulario, isEnabled]);
 
-    const [isEnabled, setIsEnabled] = useState(() => {
-        const saved = localStorage.getItem('calculator_autosave_enabled');
-        return saved !== null ? JSON.parse(saved) : false;
-    });
 
-    const toggleAutoSave = () => {
-        setIsEnabled(prev => {
-            const newValue = !prev;
-            localStorage.setItem('calculator_autosave_enabled', JSON.stringify(newValue));
-            return newValue;
-        });
-    };
 
     return { isSaving, lastSaved, isEnabled, toggleAutoSave };
 };

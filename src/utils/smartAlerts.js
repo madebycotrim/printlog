@@ -1,4 +1,4 @@
-import { differenceInDays, subDays, parseISO } from 'date-fns';
+import { subDays, parseISO } from 'date-fns';
 
 /**
  * Predicts when a material will run out based on consumption rate

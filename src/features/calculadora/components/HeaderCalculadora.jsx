@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Printer, History, Settings2, ChevronDown, Trash2, FileCode, UserCircle2, User, Check, X, Wand2, Cloud, CloudOff, Loader2, Store, RotateCcw } from "lucide-react";
+import { Printer, History, Settings2, Trash2, FileCode, User, RotateCcw } from "lucide-react";
 import { UnifiedInput } from "../../../components/UnifiedInput";
-import { useClientStore } from "../../clientes/logic/clients";
-import { useCalculatorStore } from "../../../stores/calculatorStore";
-import { useToastStore } from "../../../stores/toastStore";
+
+
 
 import ModalCliente from "../../clientes/components/ModalCliente";
 
@@ -22,28 +21,12 @@ export default function Header({
     onOpenWaste,
     onUploadGCode, // Nova prop para upload de arquivo
     needsConfig = false,
-    hud,
-    isSaving = false,
-    lastSaved = null,
-    isAutoSaveEnabled = true,
-    onToggleAutoSave,
+    // hud, isSaving, lastSaved, isAutoSaveEnabled, onToggleAutoSave removed (unused)
     onReset
 }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-    const { atualizarCampo } = useCalculatorStore();
-    const { addToast } = useToastStore();
-
-    const aplicarTemplate = (template) => {
-        if (!template?.config) return;
-
-        // Aplica as configurações do template
-        Object.entries(template.config).forEach(([key, value]) => {
-            atualizarCampo('config', key, value);
-        });
-
-        addToast(`Template "${template.nome}" aplicado!`, 'success');
-    };
+    // aplicarTemplate removed (unused)
 
     // Busca a impressora selecionada na lista de equipamentos com comparação segura de tipo
     const impressoraAtual = printers.find(p => String(p.id) === String(idImpressoraSelecionada));

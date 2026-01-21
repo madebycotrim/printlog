@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+
 
 export const PDF_COLORS = {
     zinco950: [9, 9, 11],
@@ -18,7 +18,7 @@ export const PDF_COLORS = {
  * @param {string} subtitle Subtítulo (ex: TÉCNICO DE FABRICAÇÃO)
  * @param {object} user Objeto do usuário para identificar o operador
  */
-export const drawPDFHeader = (doc, title, subtitle, user) => {
+export const drawPDFHeader = (doc, title, subtitle) => {
     // --- 1. FUNDO TÉCNICO ---
     doc.setDrawColor(...PDF_COLORS.grade);
     doc.setLineWidth(0.1);

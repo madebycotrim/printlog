@@ -6,20 +6,14 @@ import { useToastStore } from "../../../stores/toastStore";
 
 import { useSettings, useUpdateSettings } from "../../sistema/logic/settingsQueries";
 
-export const DEFAULT_PLATFORMS = [
-    { id: 'shopee', name: 'Shopee (Padrão)', taxa: 18, fixa: 3.00 },
-    { id: 'ml_classico', name: 'Mercado Livre (Clássico)', taxa: 11.5, fixa: 5.00 },
-    { id: 'ml_premium', name: 'Mercado Livre (Premium)', taxa: 16.5, fixa: 5.00 },
-    { id: 'elo7', name: 'Elo7', taxa: 12, fixa: 0 },
-    { id: 'olx', name: 'OLX Pay', taxa: 10, fixa: 0 },
-];
+import { DEFAULT_PLATFORMS } from "../logic/constants";
 
 export default function ModalTaxas({ isOpen, onClose, onApply }) {
     const { addToast } = useToastStore();
 
     // Conecta com o Banco de Dados (Hook Global)
-    const { data: settings, isLoading } = useSettings();
-    const { mutate: salvarSettings, isPending: salvando } = useUpdateSettings();
+    const { data: settings } = useSettings();
+    const { mutate: salvarSettings } = useUpdateSettings();
 
     const [platforms, setPlatforms] = useState([]);
     const [editingId, setEditingId] = useState(null);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency } from "../../../../utils/numbers";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 import { Truck, Wrench, Plus, Archive, X, Search, Package } from "lucide-react";
@@ -116,7 +116,7 @@ export default function CustosLogisticos() {
     const setCustoFrete = (v) => atualizarCampo('custosExtras', 'frete', v);
     const setCustosExtras = (v) => atualizarCampo('custosExtras', 'lista', v);
 
-    const { supplies, fetchSupplies } = useSupplyStore();
+    const { fetchSupplies } = useSupplyStore();
     const [modalSelecaoAberto, setModalSelecaoAberto] = useState(false);
     const [isModalEmbalagemOpen, setIsModalEmbalagemOpen] = useState(false);
 

@@ -20,7 +20,7 @@ import SmartSuggestionsWidget from '../../features/dashboard/components/SmartSug
 
 import { useToastStore } from '../../stores/toastStore';
 import { useSidebarStore } from '../../stores/sidebarStore';
-import { useDateRangeStore, presets } from '../../stores/dateRangeStore';
+
 
 // Error handling
 import ErrorBoundary from '../../components/ErrorBoundary';
@@ -133,7 +133,6 @@ export default function Dashboard() {
 
     // Dados do dashboard
     const {
-        alerts,
         criticalAlertsCount
     } = useDashboardData();
 

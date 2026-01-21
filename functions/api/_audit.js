@@ -37,7 +37,7 @@ export async function gerenciarAuditoria({ request, db, tenantId }) {
         `).bind(tenantId).all();
 
         return enviarJSON(logs.results || []);
-    } catch (e) {
+    } catch {
         return enviarJSON({ error: "Erro ao buscar logs" }, 500);
     }
 }

@@ -2,7 +2,7 @@ import { enviarJSON, paraNumero } from './_utils';
 import { validateInput, schemas, sanitizeFields } from './_validation';
 import { cacheQuery, invalidateCache } from './_cache';
 
-export async function gerenciarConfiguracoes({ request, db, userId, tenantId }) {
+export async function gerenciarConfiguracoes({ request, db, tenantId }) {
     const method = request.method;
 
     try {

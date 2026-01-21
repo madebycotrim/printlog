@@ -1,4 +1,4 @@
-import { enviarJSON, paraNumero } from './_utils';
+import { enviarJSON } from './_utils';
 
 // ==========================================
 // DEFINIÇÃO DOS PLANOS (Hardcoded por enquanto)

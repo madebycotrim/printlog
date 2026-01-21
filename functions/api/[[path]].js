@@ -126,7 +126,7 @@ async function executarMigracoes(ctx) {
         for (const table of tables) {
             try {
                 await db.prepare(`ALTER TABLE ${table} ADD COLUMN org_id TEXT`).run();
-            } catch (e) {
+            } catch {
                 // Ignora erro se coluna já existir
             }
         }

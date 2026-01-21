@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronDown } from 'lucide-react';
 import { useDateRangeStore, presets } from '../stores/dateRangeStore';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export default function DateRangeSelector() {
     const [isOpen, setIsOpen] = useState(false);

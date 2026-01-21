@@ -56,8 +56,8 @@ describe('Calculadora de Preços (calcularTudo)', () => {
         expect(resultado.custoUnitario).toBe(76.20);
     });
 
-    it('deve aplicar margem de lucro corretamente (Divisor Markup)', () => {
-        // Custo = 100. Margem = 50%. Preço Venda = 100 / (1 - 0.5) = 200.
+    it('deve aplicar margem de lucro corretamente (Multiplier Markup)', () => {
+        // Custo = 100. Markup = 50%. Preço Venda = 100 * (1 + 0.5) = 150.
         const input = {
             qtdPecas: 1,
             config: {
@@ -74,8 +74,8 @@ describe('Calculadora de Preços (calcularTudo)', () => {
         const resultado = calcularTudo(input);
         expect(resultado.custoMaterial).toBe(100.00);
         expect(resultado.custoUnitario).toBe(100.00);
-        expect(resultado.precoSugerido).toBe(200.00);
-        expect(resultado.lucroBrutoUnitario).toBe(100.00);
+        expect(resultado.precoSugerido).toBe(150.00);
+        expect(resultado.lucroBrutoUnitario).toBe(50.00);
     });
 
     it('deve lidar com entradas inválidas ou zero sem quebrar', () => {

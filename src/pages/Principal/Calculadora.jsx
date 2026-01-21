@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
     CheckCircle2, AlertTriangle, AlertCircle,
-    Settings2, BarChart3, Menu, X,
+    Settings2, BarChart3,
     Cloud, CloudOff, Loader2
 } from "lucide-react";
 
@@ -32,7 +32,7 @@ import { useSettings } from "../../features/sistema/logic/settingsQueries";
 import { usePrinters } from "../../features/impressoras/logic/printerQueries";
 import { useProjectsStore } from "../../features/projetos/logic/projects.js";
 import { useClientStore } from "../../features/clientes/logic/clients.js";
-import { useSidebarStore } from "../../stores/sidebarStore";
+
 import { useToastStore } from "../../stores/toastStore";
 import { useCalculatorStore } from "../../stores/calculatorStore"; // Novo Store
 import { analisarArquivoProjeto } from "../../utils/projectParser";
@@ -68,75 +68,8 @@ export default function CalculadoraPage() {
     const [hardwareSelecionado, setHardwareSelecionado] = useState(null);
 
     // Carregamento Inicial
-    useEffect(() => {
-        const init = async () => {
-            const pendingFile = useTransferStore.getState().pendingFile;
-            if (pendingFile) {
-                setTimeout(() => {
-                    processarArquivo(pendingFile);
-                    useTransferStore.getState().clearPendingFile();
-                }, 500);
-            }
-            await fetchClients();
-        };
-        init();
-    }, [fetchClients]);
-
-    // Sincroniza Config (Merge com dados do backend se store estiver vazia ou para garantir defaults)
-    useEffect(() => {
-        if (settings && !isLoadingSettings) {
-            // Atualiza apenas a config, mantendo o resto do formulário que pode ter sido editado
-            const currentConfig = dadosFormulario.config;
-            const newConfig = {
-                custoKwh: settings.custoKwh || currentConfig.custoKwh,
-                valorHoraHumana: settings.valorHoraHumana || currentConfig.valorHoraHumana,
-                custoHoraMaquina: settings.custoHoraMaquina || currentConfig.custoHoraMaquina,
-                taxaSetup: settings.taxaSetup || currentConfig.taxaSetup,
-                consumoKw: settings.consumoKw || currentConfig.consumoKw,
-                margemLucro: settings.margemLucro || currentConfig.margemLucro,
-                imposto: settings.imposto || currentConfig.imposto,
-                taxaFalha: settings.taxaFalha || currentConfig.taxaFalha
-            };
-
-            // Só atualiza se houver diferença para evitar loops (embora setDadosFormulario do zustand faça merge/check)
-            atualizarCampo('config', null, newConfig);
-        }
-    }, [settings, isLoadingSettings]);
-
-    // Seleção automática de impressora
-    useEffect(() => {
-        if (printers.length > 0 && !hardwareSelecionado) {
-            setHardwareSelecionado(printers[0]);
-        }
-    }, [printers, hardwareSelecionado]);
-
-
-    const buscarConfiguracoes = async () => {
-        await refetch();
-    };
-
-    // Lógica de Hardware/Impressora
-    const lidarSelecaoHardware = (printer) => {
-        if (!printer) return;
-        setHardwareSelecionado(printer);
-
-        // Atualiza consumo se disponível
-        if (printer?.consumo_w) {
-            const consumoKw = (printer.consumo_w / 1000).toFixed(3);
-            atualizarCampo('config', 'consumoKw', consumoKw);
-            addToast(`Usando: ${printer.nome} (${printer.consumo_w}W)`, 'info');
-        }
-    };
-
-    const lidarCicloHardware = () => {
-        if (printers.length === 0) return;
-        const currentIndex = printers.findIndex(p => p.id === hardwareSelecionado?.id);
-        const nextIndex = (currentIndex + 1) % printers.length;
-        lidarSelecaoHardware(printers[nextIndex]);
-    };
-
     // Lógica de processamento de arquivo
-    const processarArquivo = async (file) => {
+    const processarArquivo = React.useCallback(async (file) => {
         addToast("Lendo arquivo...", "loading");
         try {
             const resultado = await analisarArquivoProjeto(file);
@@ -171,7 +104,79 @@ export default function CalculadoraPage() {
             console.error(error);
             addToast("Erro ao ler o arquivo.", "error");
         }
+    }, [atualizarCampo, dadosFormulario.nomeProjeto, addToast]);
+
+    useEffect(() => {
+        const init = async () => {
+            const pendingFile = useTransferStore.getState().pendingFile;
+            if (pendingFile) {
+                setTimeout(() => {
+                    processarArquivo(pendingFile);
+                    useTransferStore.getState().clearPendingFile();
+                }, 500);
+            }
+            await fetchClients();
+        };
+        init();
+    }, [fetchClients, processarArquivo]);
+
+    // Sincroniza Config (Merge com dados do backend se store estiver vazia ou para garantir defaults)
+    useEffect(() => {
+        if (settings && !isLoadingSettings) {
+            // Atualiza apenas a config, mantendo o resto do formulário que pode ter sido editado
+            const currentConfig = dadosFormulario.config;
+            const newConfig = {
+                custoKwh: settings.custoKwh || currentConfig.custoKwh,
+                valorHoraHumana: settings.valorHoraHumana || currentConfig.valorHoraHumana,
+                custoHoraMaquina: settings.custoHoraMaquina || currentConfig.custoHoraMaquina,
+                taxaSetup: settings.taxaSetup || currentConfig.taxaSetup,
+                consumoKw: settings.consumoKw || currentConfig.consumoKw,
+                margemLucro: settings.margemLucro || currentConfig.margemLucro,
+                imposto: settings.imposto || currentConfig.imposto,
+                taxaFalha: settings.taxaFalha || currentConfig.taxaFalha
+            };
+
+            // Só atualiza se houver diferença REAL nos valores para evitar loops infinitos
+            // Comparação simples via stringify resolve o problema de referência de objeto
+            if (JSON.stringify(currentConfig) !== JSON.stringify(newConfig)) {
+                atualizarCampo('config', null, newConfig);
+            }
+        }
+    }, [settings, isLoadingSettings, atualizarCampo, dadosFormulario.config]);
+
+    // Seleção automática de impressora
+    useEffect(() => {
+        if (printers.length > 0 && !hardwareSelecionado) {
+            setHardwareSelecionado(printers[0]);
+        }
+    }, [printers, hardwareSelecionado]);
+
+
+    const buscarConfiguracoes = async () => {
+        await refetch();
     };
+
+    // Lógica de Hardware/Impressora
+    const lidarSelecaoHardware = (printer) => {
+        if (!printer) return;
+        setHardwareSelecionado(printer);
+
+        // Atualiza consumo se disponível
+        if (printer?.consumo_w) {
+            const consumoKw = (printer.consumo_w / 1000).toFixed(3);
+            atualizarCampo('config', 'consumoKw', consumoKw);
+            addToast(`Usando: ${printer.nome} (${printer.consumo_w}W)`, 'info');
+        }
+    };
+
+    const lidarCicloHardware = () => {
+        if (printers.length === 0) return;
+        const currentIndex = printers.findIndex(p => p.id === hardwareSelecionado?.id);
+        const nextIndex = (currentIndex + 1) % printers.length;
+        lidarSelecaoHardware(printers[nextIndex]);
+    };
+
+
 
     const { isDragging, dragHandlers } = useDragDrop(processarArquivo);
 
@@ -233,7 +238,7 @@ export default function CalculadoraPage() {
                 setDadosFormulario(dados);
                 setHistoricoAberto(false);
                 addToast("Projeto carregado!", "success");
-            } catch (e) {
+            } catch {
                 addToast("Erro ao carregar o projeto.", "error");
             }
         }

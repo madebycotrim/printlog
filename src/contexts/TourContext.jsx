@@ -43,6 +43,7 @@ export const TourProvider = ({ children }) => {
     return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTour = () => {
     const context = useContext(TourContext);
     if (!context) {

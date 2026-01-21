@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Package, AlertTriangle, TrendingUp, Boxes } from 'lucide-react';
-import { formatarMoeda, formatDecimal } from '../../../utils/numbers';
+import { formatarMoeda } from '../../../utils/numbers';
 
 export default function MaterialStatsWidget({ filaments = [] }) {
     const stats = useMemo(() => {

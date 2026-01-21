@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Filter, Grid, List as ListIcon, Layers, Palette, ChevronDown, Check } from 'lucide-react';
 
 export default function FilamentFilters({

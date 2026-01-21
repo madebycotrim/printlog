@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useTour } from "../contexts/TourContext";
 
-export const TOUR_STEPS = {
+const TOUR_STEPS = {
     '/dashboard': [
         {
             element: '[data-tour="dashboard-overview"]',

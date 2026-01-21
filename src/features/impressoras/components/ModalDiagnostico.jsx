@@ -55,15 +55,9 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
     if (!printer) return null;
 
     // Definição do visual com base na gravidade das tarefas
-    const temaVisual = tarefas.some(t => t.severidade === 'critical')
-        ? 'rose'
-        : tarefas.length > 0 ? 'amber' : 'emerald';
 
-    const mapaCores = {
-        rose: { texto: 'text-rose-400', borda: 'border-rose-500/20', bg: 'bg-rose-500/5' },
-        amber: { texto: 'text-amber-400', borda: 'border-amber-500/20', bg: 'bg-amber-500/5' },
-        emerald: { texto: 'text-emerald-400', borda: 'border-emerald-500/20', bg: 'bg-emerald-500/5' }
-    }[temaVisual];
+
+
 
     // Quantidade de tarefas concluídas
     const totalConcluidas = completedTasks instanceof Set ? completedTasks.size : 0;

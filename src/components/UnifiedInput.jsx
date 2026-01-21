@@ -59,7 +59,7 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
     updatePosition();
 
     // Listeners para fechar/recalcular
-    const handleScroll = (e) => {
+    const handleScroll = () => {
       // Se o scroll ocorrer fora do dropdown, fecha
       // (Opcional: ou recalcula, mas fechar é mais seguro para evitar desync visual)
       // setOpen(false); // COMENTADO: Scroll dentro do dropdown fecha ele se não cuidar. 
@@ -79,7 +79,7 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll, true);
     };
-  }, [isOpen, setOpen]);
+  }, [isOpen, setOpen, onSearch]);
 
   // Conteúdo do Dropdown (via Portal)
   const dropdownContent = (

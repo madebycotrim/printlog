@@ -161,11 +161,12 @@ export default function Resumo({ resultados = {}, entradas = {}, salvar = () => 
     const deltaLucro = snapshot ? lucroBrutoUnitario - snapshot.lucroBrutoUnitario : 0;
     const deltaMargem = snapshot ? margemEfetivaPct - snapshot.margemEfetivaPct : 0;
 
+    // Resetar estado local apenas quando o projeto mudar de fato (pelo nome)
+    // ou se houver uma mudança drástica no preço final (opcional, mas ajuda a limpar estados visuais antigos)
     useEffect(() => {
         setEstaSalvo(false);
         setPrecoArredondado(null);
-        // Não reseta o snapshot automaticamente para permitir comparação ao trocar materiais
-    }, [resultados, entradas]);
+    }, [nomeProjeto]); // Depende apenas do nome do projeto agora, muito mais estável
 
     const paybackInsumo = useMemo(() => {
         if (!custoMaterial || custoMaterial < 0.001 || !lucroBrutoUnitario || lucroBrutoUnitario < 0) return 0;

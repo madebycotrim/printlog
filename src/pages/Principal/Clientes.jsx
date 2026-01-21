@@ -59,7 +59,7 @@ export default function ClientesPage() {
             try {
                 await deleteClient(confirmacaoExclusao.item.id);
                 showToast("Cliente removido com sucesso!", 'success');
-            } catch (error) {
+            } catch {
                 showToast("Erro ao remover cliente.", 'error');
             } finally {
                 setConfirmacaoExclusao({ aberta: false, item: null });

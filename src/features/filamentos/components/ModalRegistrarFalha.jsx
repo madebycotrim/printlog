@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { AlertOctagon, Layers, Loader2, AlertCircle, Save, X, Ban } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { AlertOctagon, Layers, Loader2, Save, Ban } from 'lucide-react';
 import { UnifiedInput } from '../../../components/UnifiedInput';
 import { useFilaments } from '../logic/filamentQueries';
 import FormFeedback from '../../../components/FormFeedback';

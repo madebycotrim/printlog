@@ -15,7 +15,7 @@ export const useKeyboardShortcuts = (shortcuts = []) => {
 
             shortcuts.forEach(({ key, ctrl = false, handler }) => {
                 const keyMatches = event.key.toLowerCase() === key.toLowerCase();
-                const ctrlMatches = ctrl ? (event.ctrlKey || event.metaKey) : true;
+
 
                 // Se ctrl é exigido, verifica. Se não for exigido, verifica se NÃO foi apertado (para evitar conflitos)
                 // Ajuste: Se ctrl=false, permitimos execução simples. Se ctrl=true, exigimos ctrl.

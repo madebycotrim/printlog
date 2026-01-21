@@ -7,14 +7,13 @@ import { formatDecimal, parseNumber } from "../../../../utils/numbers";
 import { useCalculatorStore } from "../../../../stores/calculatorStore";
 
 /* ---------- COMPONENTE: LINHA DE FILAMENTO (MODO MULTI) ---------- */
-const LinhaFilamento = ({ indice, total, dadosSlot, opcoesSelecao, aoAtualizar, aoRemover, podeRemover }) => {
+const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, podeRemover }) => {
     const ordemVisual = (total - indice) * 10;
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Cálculo de Custo Real
-    const peso = parseNumber(dadosSlot.weight);
-    const precoKg = parseNumber(dadosSlot.priceKg);
-    const custoReal = (peso / 1000) * precoKg;
+    // Cálculo de Custo Real
+    // custoReal removed (unused)
 
     // Handle Modal Confirmation
     const aoConfirmarSelecao = (itens) => {
@@ -33,7 +32,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, opcoesSelecao, aoAtualizar, 
         }
     };
 
-    const isManual = dadosSlot.id === 'manual';
+    // isManual removed (unused)
 
     return (
         <div

@@ -15,8 +15,8 @@ import { useFilamentMutations } from '../features/filamentos/logic/filamentQueri
 import { usePrinterMutations } from '../features/impressoras/logic/printerQueries';
 
 export default function ManagementLayout({ children }) {
-    const { width: larguraSidebar, isMobile, setIsMobile, setMobileOpen, mobileOpen } = useSidebarStore();
-    const [location, setLocation] = useLocation();
+    const { width: larguraSidebar, isMobile, setIsMobile, setMobileOpen } = useSidebarStore();
+    const [location] = useLocation();
 
     // Modal states
     const [isFilamentModalOpen, setFilamentModalOpen] = useState(false);

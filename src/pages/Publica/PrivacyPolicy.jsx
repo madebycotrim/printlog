@@ -48,9 +48,7 @@ export default function PrivacyPolicy() {
 
                 <section className="space-y-4">
                     <h2 className="text-xl font-bold text-zinc-100">2. Uso das Informações</h2>
-                    <p className="leading-relaxed text-zinc-400">
-                        Apenas retemos as informações coletadas pelo tempo necessário para fornecer o serviço solicitado. Quando armazenamos dados, protegemos dentro de meios comercialmente aceitáveis ​​para evitar perdas e roubos, bem como acesso, divulgação, cópia, uso ou modificação não autorizados.
-                    </p>
+                    Apenas retemos as informações coletadas pelo tempo necessário para fornecer o serviço solicitado. Quando armazenamos dados, protegemos dentro de meios comercialmente aceitáveis para evitar perdas e roubos, bem como acesso, divulgação, cópia, uso ou modificação não autorizados.
                 </section>
 
                 <section className="space-y-4">

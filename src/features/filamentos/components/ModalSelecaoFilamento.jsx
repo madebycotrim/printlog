@@ -5,7 +5,7 @@ import { useFilaments } from "../logic/filamentQueries";
 import SpoolSideView from "./Carretel";
 
 export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
-    const { data: filamentos = [], isLoading } = useFilaments();
+    const { data: filamentos = [] } = useFilaments();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedIds, setSelectedIds] = useState([]);
 

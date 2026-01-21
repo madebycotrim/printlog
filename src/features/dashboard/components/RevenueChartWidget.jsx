@@ -34,7 +34,7 @@ export default function RevenueChartWidget({ projects = [] }) {
         });
     }, [projects]);
 
-    const totalRevenue = chartData.reduce((sum, d) => sum + d.receita, 0);
+
     const trend = chartData.length > 1
         ? ((chartData[chartData.length - 1].receita / chartData[0].receita - 1) * 100).toFixed(1)
         : 0;

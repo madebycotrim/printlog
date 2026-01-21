@@ -6,7 +6,7 @@ import { cacheQuery, invalidateCache } from './_cache';
  * API DE APROVAÇÃO DE ORÇAMENTOS
  * Aprova orçamento, atualiza status do projeto, deduz filamento do estoque e registra horas na impressora
  */
-export async function aprovarProjeto({ request, db, userId, tenantId }) {
+export async function aprovarProjeto({ request, db, tenantId }) {
     if (request.method !== 'POST') return enviarJSON({ error: "Método não permitido" }, 405);
 
     const p = await request.json();

@@ -55,7 +55,7 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                 setForm(INITIAL_STATE);
             }
         }
-    }, [isOpen, editingItem]); // Remove 'hide' from deps
+    }, [isOpen, editingItem, hide]);
 
     const updateForm = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));

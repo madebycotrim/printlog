@@ -1,9 +1,9 @@
-import React, { useState, useRef, useLayoutEffect, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useState, useEffect, useCallback } from "react";
+// createPortal removed (unused)
 import {
     User, Zap, Monitor, Settings2, Save, Check,
-    RefreshCw, Loader2, Cpu, AlertCircle,
-    MessageCircle, X, Store
+    RefreshCw, Loader2, Cpu,
+    MessageCircle
 } from "lucide-react";
 import api from "../../../utils/api";
 import Modal from "../../../components/ui/Modal"; // Importando o componente universal
@@ -49,14 +49,14 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
         custoHoraMaquina, taxaSetup
     } = dadosFormulario.config;
 
-    const setValorHoraHumana = (v) => atualizarCampo('config', 'valorHoraHumana', v);
-    const setCustoKwh = (v) => atualizarCampo('config', 'custoKwh', v);
-    const setConsumoImpressoraKw = (v) => atualizarCampo('config', 'consumoKw', v);
-    const setCustoHoraMaquina = (v) => atualizarCampo('config', 'custoHoraMaquina', v);
-    const setTaxaSetup = (v) => atualizarCampo('config', 'taxaSetup', v);
+    const setValorHoraHumana = useCallback((v) => atualizarCampo('config', 'valorHoraHumana', v), [atualizarCampo]);
+    const setCustoKwh = useCallback((v) => atualizarCampo('config', 'custoKwh', v), [atualizarCampo]);
+    const setConsumoImpressoraKw = useCallback((v) => atualizarCampo('config', 'consumoKw', v), [atualizarCampo]);
+    const setCustoHoraMaquina = useCallback((v) => atualizarCampo('config', 'custoHoraMaquina', v), [atualizarCampo]);
+    const setTaxaSetup = useCallback((v) => atualizarCampo('config', 'taxaSetup', v), [atualizarCampo]);
 
     // React Query
-    const { data: settings, isLoading: carregandoSettings, refetch } = useSettings();
+    const { data: settings, isLoading: _carregandoSettings, refetch } = useSettings();
     const { mutateAsync: salvarSettings, isPending: estaGravando } = useUpdateSettings();
 
     const [estaSincronizando, setEstaSincronizando] = useState(false);
@@ -140,7 +140,7 @@ export default function PainelConfiguracoesCalculo({ onSaved, onOpenTaxas }) {
             setConfiguracaoSincronizada(true);
             if (onSaved) onSaved();
             setWhatsappModal(false);
-        } catch (e) {
+        } catch {
             // Toast já tratado no hook useUpdateSettings
         }
     };

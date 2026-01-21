@@ -1,4 +1,3 @@
-import api from '../../../utils/api';
 import { analisarNumero } from "../../../utils/numbers";
 
 

@@ -37,7 +37,7 @@ export default function FilamentosPage() {
   const humidity = 50; // Default/Mock value
   const weatherLoading = false;
   const { data: filaments = [], isLoading: loading } = useFilaments();
-  const { saveFilament, deleteFilament, updateWeight } = useFilamentMutations();
+  const { saveFilament, deleteFilament } = useFilamentMutations();
 
   const [viewMode, setViewMode] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
   const [groupBy, setGroupBy] = useState("material"); // 'material' | 'color'

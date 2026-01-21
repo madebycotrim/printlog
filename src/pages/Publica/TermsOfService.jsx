@@ -27,7 +27,7 @@ export default function TermsOfService() {
             <main className="max-w-4xl mx-auto px-6 py-12 space-y-12">
                 <section className="space-y-4">
                     <p className="leading-relaxed text-zinc-400">
-                        Ao acessar ao site <strong>PrintLog</strong>, você concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis ​​e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis. Se você não concordar com algum desses termos, está proibido de usar ou acessar este site.
+                        Ao acessar ao site <strong>PrintLog</strong>, você concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis. Se você não concordar com algum desses termos, está proibido de usar ou acessar este site.
                     </p>
                 </section>
 
@@ -53,7 +53,7 @@ export default function TermsOfService() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-bold text-zinc-100">3. Limitações</h2>
                     <p className="leading-relaxed text-zinc-400">
-                        Em nenhum caso o PrintLog ou seus fornecedores serão responsáveis ​​por quaisquer danos (incluindo, sem limitação, danos por perda de dados ou lucro ou devido a interrupção dos negócios) decorrentes do uso ou da incapacidade de usar os materiais em PrintLog.
+                        Em nenhum caso o PrintLog ou seus fornecedores serão responsáveis por quaisquer danos (incluindo, sem limitação, danos por perda de dados ou lucro ou devido a interrupção dos negócios) decorrentes do uso ou da incapacidade de usar os materiais em PrintLog.
                     </p>
                 </section>
 

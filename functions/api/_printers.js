@@ -52,7 +52,7 @@ export async function gerenciarImpressoras({ request, db, userId, tenantId, path
         if (['POST', 'PUT'].includes(method)) {
             const rawData = await request.json();
             const id = rawData.id || idFromPath || crypto.randomUUID();
-            const isNew = !rawData.id && !idFromPath; // Identificação heurística de criação
+            // isNew removed (unused)
 
             // Verifica se é criação nova
             const existing = await db.prepare("SELECT 1 FROM printers WHERE id = ? AND org_id = ?").bind(id, tenantId).first();
