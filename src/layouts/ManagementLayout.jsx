@@ -4,13 +4,27 @@ import { useSidebarStore } from '../stores/sidebarStore';
 import { Menu } from 'lucide-react';
 import { InstallPwa } from '../components/InstallPwa';
 import TourGuide from '../components/TourGuide';
-import TourTrigger from '../components/TourTrigger';
+import FloatingQuickActions from '../components/FloatingQuickActions';
+import ModalFilamento from '../features/filamentos/components/ModalFilamento';
+import ModalImpressora from '../features/impressoras/components/ModalImpressora';
+import ModalInsumo from '../features/insumos/components/ModalInsumo';
 
 import { useLocation } from 'wouter';
+import { useState } from 'react';
+import { useFilamentMutations } from '../features/filamentos/logic/filamentQueries';
+import { usePrinterMutations } from '../features/impressoras/logic/printerQueries';
 
 export default function ManagementLayout({ children }) {
     const { width: larguraSidebar, isMobile, setIsMobile, setMobileOpen, mobileOpen } = useSidebarStore();
-    const [location] = useLocation();
+    const [location, setLocation] = useLocation();
+
+    // Modal states
+    const [isFilamentModalOpen, setFilamentModalOpen] = useState(false);
+    const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
+    const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
+
+    const { saveFilament } = useFilamentMutations();
+    const { upsertPrinter } = usePrinterMutations();
 
     // Resize Handler
     useEffect(() => {
@@ -43,8 +57,34 @@ export default function ManagementLayout({ children }) {
     return (
         <div className="flex h-screen w-full bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden">
             <TourGuide />
-            <TourTrigger />
+            <FloatingQuickActions
+                onNewFilament={() => setFilamentModalOpen(true)}
+                onNewPrinter={() => setPrinterModalOpen(true)}
+                onNewSupply={() => setSupplyModalOpen(true)}
+            />
             <InstallPwa />
+
+            {/* Modals */}
+            <ModalFilamento
+                aberto={isFilamentModalOpen}
+                aoFechar={() => setFilamentModalOpen(false)}
+                aoSalvar={async (data) => {
+                    await saveFilament(data);
+                    if (!data.id) setFilamentModalOpen(false);
+                }}
+            />
+            <ModalImpressora
+                aberto={isPrinterModalOpen}
+                aoFechar={() => setPrinterModalOpen(false)}
+                aoSalvar={async (data) => {
+                    await upsertPrinter(data);
+                    if (!data.id) setPrinterModalOpen(false);
+                }}
+            />
+            <ModalInsumo
+                isOpen={isSupplyModalOpen}
+                onClose={() => setSupplyModalOpen(false)}
+            />
             <MainSidebar />
 
             <main

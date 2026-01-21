@@ -4,13 +4,18 @@ import { persist } from 'zustand/middleware';
 // Base dimensions (w = col-span, h = row-span)
 const WIDGET_DIMENSIONS = {
     financial: { w: 2, h: 1 },
-    fleet_summary: { w: 2, h: 1 },    // New Consolidated Widget
+    fleet_summary: { w: 2, h: 1 },
     alerts: { w: 1, h: 1 },
     todo: { w: 1, h: 2 },
     highlights: { w: 2, h: 1 },
     recent_projects: { w: 2, h: 2 },
     activity_feed: { w: 1, h: 2 },
-    performance: { w: 1, h: 1 }
+    performance: { w: 1, h: 1 },
+    material_stats: { w: 1, h: 2 },
+    live_printers: { w: 1, h: 2 },
+    revenue_chart: { w: 2, h: 1 },
+    cost_distribution: { w: 2, h: 1 },
+    smart_suggestions: { w: 1, h: 2 }
 };
 
 const getColClass = (w) => `lg:col-span-${w}`;
@@ -31,14 +36,16 @@ export const useDashboardLayoutStore = create(
             editMode: false,
             // Initial Order: Status -> Workflow -> Insights
             layout: [
-                // Top Row: Status
+                // Top Row: Status & Finance
                 'financial', 'fleet_summary',
-                // Mid Row: Workflow
-                'recent_projects', 'todo', 'activity_feed',
-                // Bot Row: Insights
-                'highlights', 'performance', 'alerts'
+                // Charts Row
+                'revenue_chart', 'cost_distribution',
+                // Mid Row: Workflow & Materials
+                'recent_projects', 'material_stats', 'live_printers',
+                // Bot Row: Insights & AI
+                'smart_suggestions', 'performance', 'alerts'
             ],
-            hidden: [], // Removed old widgets from default list
+            hidden: ['todo', 'activity_feed', 'highlights'], // Hidden by default
             expandedWidgets: [],
             colSpans: INITIAL_COL_SPANS,
             rowSpans: INITIAL_ROW_SPANS,
@@ -204,17 +211,18 @@ export const useDashboardLayoutStore = create(
                 );
 
                 set({
-                    version: 13,
+                    version: 14,
                     layout: [
                         'financial', 'fleet_summary',
-                        'recent_projects', 'todo', 'activity_feed',
+                        'revenue_chart', 'cost_distribution',
+                        'recent_projects', 'material_stats', 'live_printers',
                         'highlights', 'performance', 'alerts'
                     ],
                     colSpans: cleanColSpans,
                     rowSpans: cleanRowSpans,
                     customSizes: {},
-                    hidden: [],
-                    editMode: false, // Turn off edit mode to signal completion
+                    hidden: ['todo', 'activity_feed'],
+                    editMode: false,
                     expandedWidgets: []
                 });
             },

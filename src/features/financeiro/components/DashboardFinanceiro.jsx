@@ -1,7 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Activity, Printer, Zap } from 'lucide-react';
 import { formatarMoeda } from '../../../utils/numbers';
 import { calcularEstatisticasGlobais, calcularRoiPorImpressora } from '../logic/roi';
+import { Sparkline } from '../../../components/charts/ChartComponents';
+import { subDays, format, parseISO } from 'date-fns';
+import { celebrateGoal } from '../../../utils/confetti';
+import { soundSystem } from '../../../utils/soundSystem';
 
 export default function DashboardFinanceiro({ projects, printers }) {
 
@@ -19,6 +23,43 @@ export default function DashboardFinanceiro({ projects, printers }) {
         return calcularRoiPorImpressora(projects, printers);
     }, [projects, printers]);
 
+    // 3. Sparkline data (últimos 7 dias)
+    const sparklineData = useMemo(() => {
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const date = format(subDays(new Date(), 6 - i), 'yyyy-MM-dd');
+            return { date, value: 0 };
+        });
+
+        projects.forEach(p => {
+            if (!p.createdAt || !p.data) return;
+            const projectDate = format(parseISO(p.createdAt), 'yyyy-MM-dd');
+            const entry = last7Days.find(d => d.date === projectDate);
+            if (entry) {
+                entry.value += Number(p.data.lucro_liquido || 0);
+            }
+        });
+
+        return last7Days;
+    }, [projects]);
+
+    // Goal detection & celebration
+    const goalReached = useRef(false);
+    const monthlyGoal = 10000; // R$ 10.000 meta mensal (configurável)
+
+    useEffect(() => {
+        if (stats.lucroTotal >= monthlyGoal && !goalReached.current) {
+            goalReached.current = true;
+            setTimeout(() => {
+                celebrateGoal();
+                soundSystem.success();
+            }, 500);
+        }
+
+        if (stats.lucroTotal < monthlyGoal) {
+            goalReached.current = false;
+        }
+    }, [stats.lucroTotal]);
+
 
     return (
         <div className="space-y-8 animate-fade-in-up">
@@ -32,8 +73,11 @@ export default function DashboardFinanceiro({ projects, printers }) {
                         </div>
                         <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Receita Total</span>
                     </div>
-                    <div className="text-2xl font-mono font-bold text-white">
+                    <div className="text-2xl font-mono font-bold text-white mb-2">
                         {formatarMoeda(stats.receitaTotal)}
+                    </div>
+                    <div className="h-10 -mx-2">
+                        <Sparkline data={sparklineData} color="#10b981" />
                     </div>
                 </div>
 

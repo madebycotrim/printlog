@@ -1,6 +1,8 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
-import { Activity, LayoutGrid, RotateCcw, EyeOff, Eye, Plus, Check, Box, Printer, Package, Calculator, Layers, Search, Command, PenTool } from 'lucide-react';
+import { Activity, LayoutGrid, RotateCcw, EyeOff, Eye, Plus, Check, Box, Printer, Package, Calculator, Layers, Search, Command, PenTool, FileDown } from 'lucide-react';
 import ManagementLayout from '../../layouts/ManagementLayout';
+import DateRangeSelector from '../../components/DateRangeSelector';
+import { exportDashboardToPDF, exportToExcel } from '../../utils/exportDashboard';
 import { useDashboardData } from '../../features/dashboard/hooks/useDashboardData';
 import FinancialSummaryWidget from '../../features/dashboard/components/FinancialSummaryWidget';
 import FleetSummaryWidget from '../../features/dashboard/components/FleetSummaryWidget';
@@ -10,9 +12,15 @@ import TodoWidget from '../../features/dashboard/components/TodoWidget';
 import HighlightsWidget from '../../features/dashboard/components/HighlightsWidget';
 import ActivityFeedWidget from '../../features/dashboard/components/ActivityFeedWidget';
 import PerformanceMetricsWidget from '../../features/dashboard/components/PerformanceMetricsWidget';
+import MaterialStatsWidget from '../../features/dashboard/components/MaterialStatsWidget';
+import LivePrinterStatusWidget from '../../features/dashboard/components/LivePrinterStatusWidget';
+import RevenueChartWidget from '../../features/dashboard/components/RevenueChartWidget';
+import CostDistributionWidget from '../../features/dashboard/components/CostDistributionWidget';
+import SmartSuggestionsWidget from '../../features/dashboard/components/SmartSuggestionsWidget';
 
 import { useToastStore } from '../../stores/toastStore';
 import { useSidebarStore } from '../../stores/sidebarStore';
+import { useDateRangeStore, presets } from '../../stores/dateRangeStore';
 
 // Error handling
 import ErrorBoundary from '../../components/ErrorBoundary';
@@ -38,7 +46,12 @@ const widgetNames = {
     highlights: 'Destaques',
     recent_projects: 'Projetos Recentes',
     activity_feed: 'Atividades',
-    performance: 'Performance'
+    performance: 'Performance',
+    material_stats: 'Estoque de Materiais',
+    live_printers: 'Status ao Vivo',
+    revenue_chart: 'Evolução Financeira',
+    cost_distribution: 'Distribuição de Custos',
+    smart_suggestions: 'O que Fazer Agora'
 };
 
 export default function Dashboard() {
@@ -128,6 +141,23 @@ export default function Dashboard() {
     const { data: printers = [] } = usePrinters();
     const { projects, fetchHistory, updateProjectStatus } = useProjectsStore();
 
+    // Export handler
+    const handleExport = (format) => {
+        const stats = {
+            receitaTotal: projects.reduce((sum, p) => sum + Number(p.resultados?.precoFinal || 0), 0),
+            custoTotal: projects.reduce((sum, p) => sum + Number(p.data?.custo_total || 0), 0),
+            lucroTotal: projects.reduce((sum, p) => sum + (Number(p.resultados?.precoFinal || 0) - Number(p.data?.custo_total || 0)), 0)
+        };
+
+        if (format === 'pdf') {
+            exportDashboardToPDF({ projects, printers, filaments, stats });
+            addToast('Exportando Dashboard em PDF...', 'success');
+        } else if (format === 'excel') {
+            exportToExcel({ projects });
+            addToast('Exportando dados para Excel...', 'success');
+        }
+    };
+
 
 
     console.log('[Dashboard Debug] State:', { layout, hidden, editMode, projects, filaments, printers });
@@ -193,7 +223,7 @@ export default function Dashboard() {
                 content = <FleetSummaryWidget printers={printers} />;
                 break;
             case 'alerts':
-                content = <AlertsWidget alerts={alerts} criticalAlerts={criticalAlertsCount} />;
+                content = <AlertsWidget filaments={filaments} printers={printers} projects={projects} />;
                 break;
             case 'recent_projects':
                 content = <RecentProjectsWidget projects={projects?.filter(p => p.data?.status !== 'finalizado') || []} onDuplicate={handleDuplicateProject} onConclude={handleConcludeProject} />;
@@ -209,6 +239,21 @@ export default function Dashboard() {
                 break;
             case 'performance':
                 content = <PerformanceMetricsWidget projects={projects} />;
+                break;
+            case 'material_stats':
+                content = <MaterialStatsWidget filaments={filaments} />;
+                break;
+            case 'live_printers':
+                content = <LivePrinterStatusWidget printers={printers} />;
+                break;
+            case 'revenue_chart':
+                content = <RevenueChartWidget projects={projects} />;
+                break;
+            case 'cost_distribution':
+                content = <CostDistributionWidget projects={projects} />;
+                break;
+            case 'smart_suggestions':
+                content = <SmartSuggestionsWidget filaments={filaments} printers={printers} projects={projects} />;
                 break;
             default:
                 content = null;
@@ -289,8 +334,7 @@ export default function Dashboard() {
                     {/* HEADER */}
                     <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 shrink-0" data-tour="dashboard-overview">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-3xl font-black text-zinc-100 tracking-tight flex items-center gap-3">
-                                <LayoutGrid className="text-sky-500" size={28} />
+                            <h1 className="text-3xl font-black text-zinc-100 tracking-tight">
                                 Dashboard
                             </h1>
                             <p className="text-sm text-zinc-500 font-medium tracking-wide">
@@ -299,6 +343,21 @@ export default function Dashboard() {
                         </div>
 
                         <div className="flex items-center gap-3">
+                            {/* DATE RANGE SELECTOR */}
+                            <DateRangeSelector />
+
+                            {/* EXPORT BUTTON */}
+                            <div className="relative group">
+                                <button className="h-10 px-4 rounded-xl flex items-center gap-2 bg-zinc-900/50 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all">
+                                    <FileDown size={14} />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider hidden md:inline">Exportar</span>
+                                </button>
+                                <div className="absolute top-full right-0 mt-2 w-40 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                    <button onClick={() => handleExport('pdf')} className="w-full px-4 py-2.5 text-left text-xs font-medium text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors">Exportar PDF</button>
+                                    <button onClick={() => handleExport('excel')} className="w-full px-4 py-2.5 text-left text-xs font-medium text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors">Exportar Excel</button>
+                                </div>
+                            </div>
+
                             {/* BOTÃO GLOBAL SEARCH - NOVA ADIÇÃO */}
                             <button
                                 onClick={() => window.dispatchEvent(new Event('open-global-search'))}
