@@ -40,7 +40,7 @@ export default function FilamentosPage() {
   const { saveFilament, deleteFilament } = useFilamentMutations();
 
   const [viewMode, setViewMode] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
-  const [groupBy, setGroupBy] = useState("material"); // 'material' | 'color'
+
   const [filters, setFilters] = useState({
     lowStock: false,
     materials: [],
@@ -124,20 +124,10 @@ export default function FilamentosPage() {
       if ((atual / total) <= 0.2 || atual < 150) lowStock++;
     });
 
-    // 3. Agrupamento Dinâmico (Color Intelligence vs Material)
-    const map = filtrados.reduce((acc, f) => {
-      let groupKey = "OUTROS";
-
-      if (groupBy === 'material') {
-        groupKey = (f.material || "OUTROS").toUpperCase().trim();
-      } else if (groupBy === 'color') {
-        groupKey = getColorFamily(f.cor_hex);
-      }
-
-      if (!acc[groupKey]) acc[groupKey] = [];
-      acc[groupKey].push(f);
-      return acc;
-    }, {});
+    // 3. Agrupamento Simplificado (Sem Abas)
+    const map = {
+      "Inventário": filtrados
+    };
 
     return {
       grupos: map,
@@ -146,7 +136,7 @@ export default function FilamentosPage() {
       availableBrands: allBrands,
       availableMaterials: allMaterials
     };
-  }, [filaments, deferredBusca, filters, groupBy]);
+  }, [filaments, deferredBusca, filters]);
 
   // HANDLERS MEMOIZADOS (Performance)
   const handleEdit = useCallback((item) => {
@@ -251,8 +241,7 @@ export default function FilamentosPage() {
               setFilters={setFilters}
               viewMode={viewMode}
               setViewMode={setViewMode}
-              groupBy={groupBy}
-              setGroupBy={setGroupBy}
+
               availableBrands={availableBrands}
               availableMaterials={availableMaterials}
             />

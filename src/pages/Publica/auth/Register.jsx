@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 import logo from '../../../assets/logo-branca.png';
-import { getClerkErrorMessage } from "../../../utils/auth";
+import { getClerkErrorMessage, isValidEmail, validatePassword } from "../../../utils/auth";
 
 
 
@@ -170,12 +170,25 @@ export default function RegisterPage() {
     const handlePasswordSignUp = async (e) => {
         e.preventDefault();
         if (!isLoaded || isLoading) return;
+
+        // VALIDAÇÕES CLIENT-SIDE
         if (!agreed) {
             setError("Você precisa aceitar os Termos e a Política de Privacidade.");
             return;
         }
+        if (!isValidEmail(email)) {
+            setError("E-mail inválido. Verifique o endereço digitado.");
+            return;
+        }
+        const passwordCheck = validatePassword(password);
+        if (!passwordCheck.valid) {
+            setError(passwordCheck.message);
+            return;
+        }
+
         setIsLoading(true);
         setError("");
+
         try {
             // Sincroniza o Nome do usuário com o firstName do Clerk
             await signUp.create({
@@ -185,7 +198,11 @@ export default function RegisterPage() {
             });
             await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
             setPendingVerification(true);
-        } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
+        } catch (err) {
+            handleClerkError(err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleMagicLinkSignUp = async (e) => {
@@ -195,6 +212,11 @@ export default function RegisterPage() {
             setError("Você precisa aceitar os Termos e a Política de Privacidade.");
             return;
         }
+        if (!isValidEmail(email)) {
+            setError("E-mail inválido.");
+            return;
+        }
+
         setIsLoading(true);
         setError("");
         try {

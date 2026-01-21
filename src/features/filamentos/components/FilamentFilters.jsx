@@ -6,8 +6,6 @@ export default function FilamentFilters({
     setFilters,
     viewMode,
     setViewMode,
-    groupBy,
-    setGroupBy,
     availableBrands = [],
     availableMaterials = []
 }) {
@@ -28,26 +26,68 @@ export default function FilamentFilters({
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
 
-                {/* --- LEFT: GROUP BY SWITCH --- */}
-                <div className="flex items-center p-1 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+                {/* --- LEFT: FILTERS --- */}
+                <div className="flex flex-wrap items-center gap-2 flex-1">
+                    <div className="flex items-center gap-2 mr-2 text-zinc-500">
+                        <Filter size={14} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Filtros:</span>
+                    </div>
+
+                    {/* Status Toggle */}
                     <button
-                        onClick={() => setGroupBy('material')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${groupBy === 'material' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        onClick={() => setFilters(prev => ({ ...prev, lowStock: !prev.lowStock }))}
+                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition-all flex items-center gap-1.5 ${filters.lowStock
+                            ? 'bg-rose-500/10 border-rose-500 text-rose-500'
+                            : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                            }`}
                     >
-                        <Layers size={14} /> Material
+                        {filters.lowStock && <Check size={12} />}
+                        Baixo Estoque
                     </button>
-                    <button
-                        onClick={() => setGroupBy('color')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${groupBy === 'color' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    >
-                        <Palette size={14} /> Cor
-                    </button>
+
+                    {/* Material Filters (Dynamic) */}
+                    {availableMaterials.slice(0, 5).map(mat => (
+                        <button
+                            key={mat}
+                            onClick={() => toggleFilter('materials', mat)}
+                            className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition-all ${filters.materials?.includes(mat)
+                                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+                                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                                }`}
+                        >
+                            {mat}
+                        </button>
+                    ))}
+
+                    {/* Brand Filters (Dynamic - Top 3) */}
+                    {availableBrands.slice(0, 3).map(brand => (
+                        <button
+                            key={brand}
+                            onClick={() => toggleFilter('brands', brand)}
+                            className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition-all ${filters.brands?.includes(brand)
+                                ? 'bg-sky-500/10 border-sky-500 text-sky-500'
+                                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                                }`}
+                        >
+                            {brand}
+                        </button>
+                    ))}
+
+                    {/* Active Filters Summary / Clear All */}
+                    {(filters.lowStock || filters.materials?.length > 0 || filters.brands?.length > 0) && (
+                        <button
+                            onClick={() => setFilters({ lowStock: false, materials: [], brands: [] })}
+                            className="text-[10px] text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider ml-2"
+                        >
+                            Limpar
+                        </button>
+                    )}
                 </div>
 
                 {/* --- RIGHT: VIEW MODE --- */}
-                <div className="flex items-center p-1 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+                <div className="flex items-center flex-shrink-0 p-1 bg-zinc-900/50 border border-zinc-800 rounded-xl">
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-zinc-800 text-rose-400' : 'text-zinc-500 hover:text-zinc-300'}`}
@@ -62,65 +102,6 @@ export default function FilamentFilters({
                     </button>
                 </div>
             </div>
-
-            {/* --- FILTER PILLS --- */}
-            {/* Creates a specific area for filtering by specific attributes */}
-            <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 mr-2 text-zinc-500">
-                    <Filter size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Filtros:</span>
-                </div>
-
-                {/* Status Toggle */}
-                <button
-                    onClick={() => setFilters(prev => ({ ...prev, lowStock: !prev.lowStock }))}
-                    className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition-all flex items-center gap-1.5 ${filters.lowStock
-                        ? 'bg-rose-500/10 border-rose-500 text-rose-500'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
-                        }`}
-                >
-                    {filters.lowStock && <Check size={12} />}
-                    Baixo Estoque
-                </button>
-
-                {/* Material Filters (Dynamic) */}
-                {availableMaterials.slice(0, 5).map(mat => (
-                    <button
-                        key={mat}
-                        onClick={() => toggleFilter('materials', mat)}
-                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition-all ${filters.materials?.includes(mat)
-                            ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
-                            }`}
-                    >
-                        {mat}
-                    </button>
-                ))}
-
-                {/* Brand Filters (Dynamic - Top 3) */}
-                {availableBrands.slice(0, 3).map(brand => (
-                    <button
-                        key={brand}
-                        onClick={() => toggleFilter('brands', brand)}
-                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wide transition-all ${filters.brands?.includes(brand)
-                            ? 'bg-sky-500/10 border-sky-500 text-sky-500'
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
-                            }`}
-                    >
-                        {brand}
-                    </button>
-                ))}
-            </div>
-
-            {/* Active Filters Summary / Clear All */}
-            {(filters.lowStock || filters.materials?.length > 0 || filters.brands?.length > 0) && (
-                <button
-                    onClick={() => setFilters({ lowStock: false, materials: [], brands: [] })}
-                    className="self-start text-[10px] text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider mt-1"
-                >
-                    Limpar todos os filtros
-                </button>
-            )}
 
         </div>
     );

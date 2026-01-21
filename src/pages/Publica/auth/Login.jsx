@@ -7,7 +7,7 @@ import {
     Zap, Cpu, Layers, BoxSelect
 } from 'lucide-react';
 import logo from '../../../assets/logo-branca.png';
-import { getClerkErrorMessage, sanitizeInput, getRedirectUrl } from "../../../utils/auth";
+import { getClerkErrorMessage, sanitizeInput, getRedirectUrl, isValidEmail } from "../../../utils/auth";
 
 // --- COMPONENTES DE UI ---
 
@@ -188,6 +188,16 @@ export default function LoginPage() {
         e.preventDefault();
         if (!isLoaded) return;
 
+        // VALIDAÇÃO CLIENT-SIDE
+        if (!isValidEmail(email)) {
+            setError("Por favor, insira um e-mail válido.");
+            return;
+        }
+        if (!password) {
+            setError("Por favor, digite sua senha.");
+            return;
+        }
+
         setIsLoading(true);
         setError('');
 
@@ -209,10 +219,15 @@ export default function LoginPage() {
             } else if (result.status === "needs_second_factor") {
                 setError('Código de verificação necessário. Verifique seu email ou autenticador.');
             } else {
-                setError('Falha no login. Tente novamente.');
+                setError('Falha no login. Verifique suas credenciais.');
             }
         } catch (err) {
-            handleClerkError(err);
+            // Se for erro de "Identifiers not found", personalizamos a mensagem
+            if (err.errors && err.errors[0]?.code === 'form_identifier_not_found') {
+                setError('Conta não encontrada. Verifique o e-mail ou cadastre-se.');
+            } else {
+                handleClerkError(err);
+            }
         } finally {
             setIsLoading(false);
         }
