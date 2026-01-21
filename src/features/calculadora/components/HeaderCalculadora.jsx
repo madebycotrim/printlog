@@ -140,96 +140,85 @@ export default function Header({
             {/* LADO DIREITO: TOOLBAR RENOVADA */}
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 shrink-0 pt-1 w-full lg:w-auto">
 
-                {/* 1. SELETOR DE IMPRESSORA (Refinado) */}
-                <div className="relative group/printer w-full lg:w-auto lg:min-w-[180px] lg:max-w-[280px]">
+                {/* 1. SELETOR DE IMPRESSORA (Separado) */}
+                <div className="relative group/printer">
                     <button
                         type="button"
                         onClick={() => { const nextIndex = (printers.findIndex(p => p.id === impressoraAtual?.id) + 1) % printers.length; onCyclePrinter(nextIndex); }}
-                        className="w-full flex items-center gap-3 pl-2 pr-4 h-11 bg-zinc-950/40 border border-zinc-800/60 rounded-xl hover:bg-zinc-900 transition-all text-left relative overflow-hidden group-hover/printer:border-zinc-700"
+                        className="flex items-center gap-3 pl-2 pr-4 h-11 rounded-xl bg-zinc-950/40 border border-zinc-800/60 hover:bg-zinc-900/60 hover:border-zinc-700 transition-all text-left min-w-[200px]"
                     >
-                        <div className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 shadow-sm transition-colors ${impressoraAtual ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-900 border-zinc-800'}`}>
-                            <Printer size={16} strokeWidth={2.5} className={`${impressoraAtual ? 'text-emerald-500' : 'text-zinc-600'}`} />
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${impressoraAtual ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-900 text-zinc-600'}`}>
+                            <Printer size={16} strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col min-w-0 flex-1 gap-0.5">
-                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Máquina</span>
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Máquina Atual</span>
                             <div className="flex items-center gap-1.5">
-                                <div className={`w-1.5 h-1.5 rounded-full ${impressoraAtual ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-red-500/50'}`} />
-                                <span className="text-[11px] font-bold text-zinc-200 truncate leading-none pt-px">{nomeExibicaoHardware}</span>
+                                <div className={`w-1.5 h-1.5 rounded-full ${impressoraAtual ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                <span className="text-[11px] font-bold text-zinc-200 truncate leading-none pt-px">
+                                    {nomeExibicaoHardware}
+                                </span>
                             </div>
                         </div>
-                        {potenciaHardware > 0 && <span className="text-[9px] font-mono text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">{potenciaHardware}W</span>}
+                        {potenciaHardware > 0 && (
+                            <span className="absolute top-1.5 right-1.5 text-[8px] font-mono font-bold text-zinc-600">
+                                {potenciaHardware}W
+                            </span>
+                        )}
                     </button>
 
                     {/* Menu Dropdown */}
-                    <div className="absolute top-full mt-2 left-0 w-full bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden invisible opacity-0 group-hover/printer:visible group-hover/printer:opacity-100 transition-all z-50 transform origin-top pointer-events-none group-hover/printer:pointer-events-auto">
-                        <div className="p-1.5 flex flex-col gap-1 max-h-60 overflow-y-auto custom-scrollbar">
-                            <span className="px-2 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Disponíveis</span>
+                    <div className="absolute top-full mt-2 left-0 w-full bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl overflow-hidden invisible opacity-0 translate-y-2 group-hover/printer:visible group-hover/printer:opacity-100 group-hover/printer:translate-y-0 transition-all z-50">
+                        <div className="p-1 flex flex-col gap-1 max-h-64 overflow-y-auto custom-scrollbar">
+                            <span className="px-3 py-2 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Meus Equipamentos</span>
                             {printers.map(p => (
                                 <button
                                     key={p.id}
                                     onClick={() => onSelectPrinter && onSelectPrinter(p)}
-                                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${p.id === impressoraAtual?.id ? 'bg-emerald-500/10 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
+                                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all
+                                        ${p.id === impressoraAtual?.id
+                                            ? 'bg-emerald-500/10 text-emerald-500'
+                                            : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
                                 >
-                                    <div className="flex flex-col text-left">
+                                    <div className="flex flex-col text-left gap-0.5">
                                         <span>{p.nome}</span>
-                                        <span className="text-[8px] text-zinc-600 lowercase">{p.tipo || 'FDM'}</span>
+                                        <span className="text-[8px] font-black text-zinc-600 lowercase tracking-wider">{p.tipo || 'FDM'}</span>
                                     </div>
-                                    <span className="font-mono text-zinc-600">{p.consumo_w || 0}W</span>
+                                    {p.id === impressoraAtual?.id && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                                 </button>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* DIVISÓRIA EXTERNA 1 Sutil */}
-                <div className="h-6 w-px bg-zinc-800 self-center hidden lg:block mx-1" />
-
-                {/* 2. BOTÃO DE AÇÃO PRINCIPAL: IMPORTAR */}
+                {/* 2. BOTÃO DE AÇÃO PRINCIPAL (Importar - Destacado) */}
                 <button
                     onClick={onUploadGCode}
-                    className="relative overflow-hidden group h-11 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 active:bg-sky-600 transition-all shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 mx-1 hover:scale-[1.02] active:scale-[0.98]"
+                    className="h-11 px-8 rounded-xl bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                     <FileCode size={18} strokeWidth={2.5} className="text-white fill-white/20" />
-                    <span className="text-xs font-black text-white uppercase tracking-wider">Importar 3D</span>
+                    <span className="text-xs font-black uppercase tracking-wider">Importar 3D</span>
                 </button>
 
-                {/* DIVISÓRIA EXTERNA 2 Sutil */}
-                <div className="h-6 w-px bg-zinc-800 self-center hidden lg:block mx-1" />
-
-                {/* 3. GRUPO DE AÇÕES SECUNDÁRIAS (Unificado e Clean) */}
-                <div className="grid grid-cols-4 lg:flex bg-zinc-950/40 border border-zinc-800/60 rounded-xl p-1 gap-1 h-11 items-center">
-                    <button
-                        onClick={onOpenWaste}
-                        title="Registrar Falha"
-                        className="h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-all"
-                    >
-                        <Trash2 size={18} strokeWidth={2.5} />
-                    </button>
-
-                    <button
-                        onClick={onOpenSettings}
-                        title="Configurações e Tarifas"
-                        className={`h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center transition-all ${needsConfig ? 'text-amber-500 animate-pulse bg-amber-500/10' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800'}`}
-                    >
-                        <Settings2 size={18} strokeWidth={2.5} />
-                    </button>
-
-                    <button
-                        onClick={onOpenHistory}
-                        title="Histórico de Projetos"
-                        className="h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:bg-zinc-800 transition-all"
-                    >
-                        <History size={18} strokeWidth={2.5} />
-                    </button>
-
-                    <button
-                        onClick={onReset}
-                        title="Reiniciar Calculadora"
-                        className="h-9 w-9 lg:w-10 lg:h-full rounded-lg flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-all"
-                    >
-                        <RotateCcw size={18} strokeWidth={2.5} />
-                    </button>
+                {/* 3. GRUPO DE AÇÕES SECUNDÁRIAS (Separado) */}
+                <div className="flex items-center p-1 bg-zinc-950/40 border border-zinc-800/60 rounded-xl gap-1 h-11">
+                    {[
+                        { icon: Trash2, action: onOpenWaste, title: "Registrar Falha", color: "hover:text-rose-400 hover:bg-zinc-800" },
+                        { icon: Settings2, action: onOpenSettings, title: "Configurações", color: "hover:text-amber-400 hover:bg-zinc-800", active: needsConfig },
+                        { icon: History, action: onOpenHistory, title: "Histórico", color: "hover:text-violet-400 hover:bg-zinc-800" },
+                        { icon: RotateCcw, action: onReset, title: "Resetar", color: "hover:text-zinc-100 hover:bg-zinc-800" }
+                    ].map((btn, idx) => (
+                        <button
+                            key={idx}
+                            onClick={btn.action}
+                            title={btn.title}
+                            className={`w-9 h-full rounded-lg flex items-center justify-center transition-all relative
+                                ${btn.active
+                                    ? 'text-amber-500 bg-amber-500/10'
+                                    : `text-zinc-500 ${btn.color}`}`}
+                        >
+                            <btn.icon size={18} strokeWidth={2.5} />
+                        </button>
+                    ))}
                 </div>
             </div>
 

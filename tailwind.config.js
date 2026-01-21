@@ -83,6 +83,9 @@ module.exports = {
                     "from": { opacity: "0", transform: "translateY(-10px)" },
                     "to": { opacity: "1", transform: "translateY(0)" },
                 },
+                shine: {
+                    "100%": { left: "125%" },
+                },
             },
             animation: {
                 "fade-in": "fadeIn 0.3s ease-out",
@@ -99,6 +102,7 @@ module.exports = {
                 "slide-down": "slideDown 0.3s ease-out",
                 "check-mark": "checkmark 0.4s ease-out forwards",
                 "error-x": "errorX 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                "shine": "shine 1s forwards",
             },
         },
     },
