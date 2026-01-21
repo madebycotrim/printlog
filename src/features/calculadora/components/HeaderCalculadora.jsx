@@ -106,6 +106,7 @@ export default function Header({
                         value={nomeProjeto}
                         onChange={(e) => setNomeProjeto(e.target.value)}
                         placeholder="NOME DO PROJETO..."
+                        aria-label="Nome do projeto"
                         className="absolute inset-0 bg-transparent border-none outline-none text-2xl lg:text-4xl font-black tracking-tight text-transparent caret-sky-500 selection:bg-sky-500/30 w-full z-20 placeholder:text-zinc-800/50"
                     />
                 </div>
@@ -189,30 +190,34 @@ export default function Header({
                     <button
                         onClick={onUploadGCode}
                         title="Importar G-Code / 3MF"
+                        aria-label="Importar G-Code ou 3MF"
                         className="hidden lg:flex h-12 lg:w-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 items-center justify-center text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all hover-lift"
                     >
-                        <FileCode size={18} />
+                        <FileCode size={18} aria-hidden="true" />
                     </button>
                     <button
                         onClick={onOpenWaste}
                         title="Registrar Falha"
+                        aria-label="Registrar Falha"
                         className="h-12 w-full lg:w-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/10 transition-all hover-lift"
                     >
-                        <Trash2 size={18} />
+                        <Trash2 size={18} aria-hidden="true" />
                     </button>
                     <button
                         onClick={onOpenSettings}
                         title="Configurações"
-                        className={`h-12 w-full lg:w-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center transition-all hover-lift ${needsConfig ? 'text-amber-500 border-amber-500/30 animate-pulse' : 'text-zinc-500 hover:text-white hover:border-zinc-800/30'}`}
+                        aria-label="Configurações"
+                        className={`h-12 w-full lg:w-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center transition-all hover-lift ${needsConfig ? 'text-amber-500 border-amber-500/30 animate-pulse motion-reduce:animate-none' : 'text-zinc-500 hover:text-white hover:border-zinc-800/30'}`}
                     >
-                        <Settings2 size={18} />
+                        <Settings2 size={18} aria-hidden="true" />
                     </button>
                     <button
                         onClick={onOpenHistory}
                         title="Histórico"
+                        aria-label="Histórico"
                         className="h-12 w-full lg:w-12 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all hover-lift"
                     >
-                        <History size={18} />
+                        <History size={18} aria-hidden="true" />
                     </button>
                 </div>
             </div>
