@@ -13,8 +13,8 @@ export default function SSOCallback() {
             <div className="relative z-10 flex flex-col items-center w-full max-w-xs sm:max-w-sm">
                 {/* O Componente do Clerk lida com o processamento */}
                 <AuthenticateWithRedirectCallback
-                    signInForceRedirectUrl="/dashboard"
-                    signUpForceRedirectUrl="/dashboard"
+                    signInForceRedirectUrl={`${window.location.origin}/dashboard`}
+                    signUpForceRedirectUrl={`${window.location.origin}/dashboard`}
                 />
 
                 {/* LOADER ANIMADO (Visual apenas, para manter a consistência enquanto o Clerk processa) */}
