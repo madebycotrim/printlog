@@ -265,14 +265,23 @@ export default function LoginPage() {
         if (!isLoaded || isGoogleLoading) return;
         setIsGoogleLoading(true);
         try {
+            const ssoRedirectUrl = `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`;
+            const completeRedirectUrl = `${window.location.origin}${redirectUrl}`;
+
+            console.log("--- DEBUG LOGIN SCRIPT ---");
+            console.log("Origin:", window.location.origin);
+            console.log("Target SSO Callback:", ssoRedirectUrl);
+            console.log("Target Final Redirect:", completeRedirectUrl);
+
             await signIn.authenticateWithRedirect({
                 strategy: "oauth_google",
                 // Passamos o redirect para o SSOCallback processar depois
-                redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
+                redirectUrl: ssoRedirectUrl,
                 // IMPORTANT: Force absolute URL to prevent Clerk from inferring production domain on localhost
-                redirectUrlComplete: `${window.location.origin}${redirectUrl}`,
+                redirectUrlComplete: completeRedirectUrl,
             });
         } catch (err) {
+            console.error("Clerk Login Error:", err);
             setIsGoogleLoading(false);
             handleClerkError(err);
         }

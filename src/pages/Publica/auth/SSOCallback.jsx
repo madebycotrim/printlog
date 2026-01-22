@@ -5,6 +5,11 @@ import { useLocation } from "wouter";
 export default function SSOCallback() {
     const [, setLocation] = useLocation();
 
+    console.log("--- DEBUG SSO CALLBACK ---");
+    console.log("Current Location:", window.location.href);
+    console.log("Origin:", window.location.origin);
+    console.log("Forcing Redirect To:", `${window.location.origin}/dashboard`);
+
     return (
         <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 overflow-hidden relative">
             {/* ELEMENTOS VISUAIS DE FUNDO */}

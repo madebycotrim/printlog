@@ -156,13 +156,23 @@ export default function RegisterPage() {
         }
         setIsGoogleLoading(true);
         try {
+            const ssoRedirectUrl = `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`;
+            const completeRedirectUrl = `${window.location.origin}${redirectUrl}`;
+
+            console.log("--- DEBUG REGISTER SCRIPT ---");
+            console.log("Redirect URL param:", redirectUrl);
+            console.log("Origin:", window.location.origin);
+            console.log("Target SSO Callback:", ssoRedirectUrl);
+            console.log("Target Final Redirect:", completeRedirectUrl);
+
             await signUp.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
+                redirectUrl: ssoRedirectUrl,
                 // IMPORTANT: Force absolute URL to prevent Clerk from inferring production domain on localhost
-                redirectUrlComplete: `${window.location.origin}${redirectUrl}`,
+                redirectUrlComplete: completeRedirectUrl,
             });
         } catch (err) {
+            console.error("Clerk Register Error:", err);
             setIsGoogleLoading(false);
             handleClerkError(err);
         }
