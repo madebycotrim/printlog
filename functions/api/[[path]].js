@@ -1,4 +1,4 @@
-// import { createClerkClient } from '@clerk/backend'; // REMOVED
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { gerenciarFilamentos, gerenciarFalhas } from './_filaments';
 import { gerenciarImpressoras } from './_printers';
 import { gerenciarConfiguracoes } from './_settings';
@@ -14,6 +14,9 @@ import { checkRateLimit, getIdentifier } from './_rateLimit';
 // Re-exportar para compatibilidade com outros arquivos
 export { corsHeaders, enviarJSON, paraNumero };
 
+// Cache the JWKS (Public Keys) for performance
+const FIREBASE_JWKS = createRemoteJWKSet(new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'));
+
 export async function onRequest(context) {
     const { request, env, params } = context;
     const method = request.method;
@@ -24,51 +27,36 @@ export async function onRequest(context) {
     if (method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
     try {
-        // --- AUTHENTICATION MIGRATION NOTE ---
-        // Clerk authentication has been removed.
-        // For standard Firebase Client SDK usage, the backend often verifies the ID Token.
-        // For this build fix, we are bypassing server-side validation temporarily 
-        // or relying on client-side context (userId passed in headers/body if needed, though insecure).
-        // IDEALLY: Use firebase-admin to verify `Authorization: Bearer <token>`.
-        // BUT: Cloudflare Workers limits Node.js compatibility for firebase-admin sometimes.
-        // FOR NOW: We extract userId from a custom header or assume public/test mode to FIX BUILD.
+        // --- SECURE AUTHENTICATION (JWT) ---
+        let userId = null;
 
-        // Mock Auth for migration:
-        // Client should send 'X-User-ID' or we parse JWT manually if we want security.
-        // Let's assume the client sends the User ID for now to keep logic checks working.
-
-        // Security Warning: This relies on client honesty until JWT verify is implemented.
-        let userId = request.headers.get("X-User-ID");
-
-        // Falha segura se não tiver ID (exceto se for rota publica)
-        // Como o app espera estar logado, vamos rejeitar se não houver identificação.
-        // Se o client do firebase não estiver mandando header, isso vai quebrar o app.
-        // Vamos verificar se conseguimos extrair do token de forma simples ou se apenas deixamos passar.
-
-        // TEMPORARY FIX:
-        if (!userId) {
-            // Tenta decodificar JWT básico do header Authorization só pra pegar o 'sub' (User ID)
+        try {
             const authHeader = request.headers.get("Authorization");
-            if (authHeader && authHeader.startsWith("Bearer ")) {
-                try {
-                    const token = authHeader.split(" ")[1];
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    userId = payload.user_id || payload.sub;
-                } catch (e) {
-                    // ignore
-                }
+            if (!authHeader || !authHeader.startsWith("Bearer ")) {
+                // Se for uma rota pública, pode passar sem user (ex: webhook), mas por padrão bloqueia API
+                // return enviarJSON({ error: "Token de autenticação não fornecido." }, 401);
+                throw new Error("Token não fornecido");
             }
-        }
 
-        if (!userId) {
-            // Fallback for development/migration if needed, or error.
-            // return enviarJSON({ error: "Unauthorized" }, 401);
-            // Let's allow it for now if logic permits, or fail.
-            // Most logic relies on userId.
-        }
+            const token = authHeader.split(" ")[1];
+            const projectId = env.VITE_FIREBASE_PROJECT_ID;
 
-        // Se ainda nulo, usa um ID placeholder para não quebrar o código legado que espera string
-        if (!userId) userId = "migrated_user_placeholder";
+            if (!projectId) {
+                console.error("VITE_FIREBASE_PROJECT_ID não configurado no ambiente.");
+                throw new Error("Erro de configuração do servidor.");
+            }
+
+            const { payload } = await jwtVerify(token, FIREBASE_JWKS, {
+                issuer: `https://securetoken.google.com/${projectId}`,
+                audience: projectId,
+            });
+
+            userId = payload.sub;
+
+        } catch (err) {
+            console.error("Falha na autenticação:", err.message);
+            return enviarJSON({ error: "Acesso não autorizado.", details: err.message }, 401);
+        }
 
         // ==========================================
         // SINGLE USER CONTEXT (Org Logic Removed)

@@ -1,17 +1,16 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿
+import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
-    Mail, Lock, ArrowLeft, Chrome,
+    Lock, ArrowLeft, Chrome,
     User, Send, Eye, EyeOff,
-    KeyRound, AlertTriangle, ShieldCheck,
-    Zap, Fingerprint, LayoutDashboard,
-    Layers, Package, Database, Layout
+    AlertTriangle,
+    Database, Package, Layout, LayoutDashboard
 } from 'lucide-react';
 
 import logo from '../../../assets/logo-branca.png';
 import { getAuthErrorMessage, isValidEmail, validatePassword } from "../../../utils/auth";
-import { auth } from "../../../services/firebase";
 
 // --- COMPONENTE: UI ---
 
@@ -57,28 +56,6 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
 
 // --- COMPONENTES AUXILIARES ---
 
-const AuthModeToggle = ({ mode, setMode }) => (
-    <div className="bg-zinc-900/50 p-1 rounded-xl flex relative mb-6 border border-white/5">
-        <div
-            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ease-spring ${mode === 'magic' ? 'left-1' : 'left-[calc(50%+4px)]'}`}
-        />
-        <button
-            type="button"
-            onClick={() => setMode('magic')}
-            className={`flex-1 relative z-10 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide py-2.5 rounded-lg transition-colors ${mode === 'magic' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-        >
-            <Zap size={14} /> Link Mágico
-        </button>
-        <button
-            type="button"
-            onClick={() => setMode('password')}
-            className={`flex-1 relative z-10 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide py-2.5 rounded-lg transition-colors ${mode === 'password' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-        >
-            <KeyRound size={14} /> Senha
-        </button>
-    </div>
-);
-
 const InventoryWidget = () => (
     <div className="w-80 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl group hover:border-sky-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
@@ -118,10 +95,6 @@ export default function RegisterPage() {
     const { signUp, signInWithGoogle, isSignedIn, isLoaded } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-    const [isSent, setIsSent] = useState(false);
-    const [pendingVerification, setPendingVerification] = useState(false);
-    const [code, setCode] = useState("");
-    const [regMode, setRegMode] = useState('password'); // Default to password
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -150,7 +123,7 @@ export default function RegisterPage() {
             setLocation(redirectUrl);
         } catch (err) {
             console.error("Google SignUp Error:", err);
-            setError(getClerkErrorMessage(err));
+            setError(getAuthErrorMessage(err));
         } finally {
             setIsGoogleLoading(false);
         }
@@ -178,29 +151,14 @@ export default function RegisterPage() {
         setError("");
 
         try {
-            // Sincroniza o Nome do usuário
             await signUp(email, password, name);
-            // In Firebase, user is signed in immediately after signup usually.
-            // Verification email can be sent, but we can redirect directly or show a message.
-            // For now, let's redirect to dashboard.
-            // User verification can be enforced in ProtectedRoute if needed by checking user.emailVerified
             setLocation(redirectUrl);
-
         } catch (err) {
-            setError(getClerkErrorMessage(err));
+            setError(getAuthErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
     };
-
-    const handleMagicLinkSignUp = async (e) => {
-        e.preventDefault();
-        setError("O cadastro por link mágico ainda não está disponível. Por favor, use sua senha.");
-        setRegMode('password');
-    };
-
-    // Code verification logic is removed as Firebase simple flow doesn't require manual code entry by default unless using specific flows.
-    // If we want email verification: sendEmailVerification(user).
 
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex overflow-hidden">
@@ -223,7 +181,7 @@ export default function RegisterPage() {
                         </div>
                         <div className="space-y-2">
                             <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-[0.95] text-white uppercase">
-                                {pendingVerification ? "CONFIRME SEU ACESSO" : "TRANSFORME FILAMENTO EM"} <span className="text-sky-500 italic">{pendingVerification ? "." : "LUCRO REAL."}</span>
+                                TRANSFORME FILAMENTO EM <span className="text-sky-500 italic">LUCRO REAL.</span>
                             </h2>
                             <p className="text-zinc-500 text-sm font-medium">
                                 Junte-se a outros makers e organize sua produção 3D.
@@ -238,85 +196,70 @@ export default function RegisterPage() {
                         </div>
                     )}
 
-                    {!isSent && !pendingVerification ? (
-                        <form onSubmit={regMode === 'magic' ? handleMagicLinkSignUp : handlePasswordSignUp} className="space-y-5">
+                    <form onSubmit={handlePasswordSignUp} className="space-y-5">
 
-                            <AuthModeToggle mode={regMode} setMode={(m) => { setRegMode(m); setError(""); }} />
-
-                            <div className="space-y-2 group">
-                                <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                    <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 group">
-                                <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu melhor e-mail</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="seu@email.com" />
-                                </div>
-                            </div>
-
-                            {regMode === 'password' && (
-                                <div className="space-y-2 group animate-fade-in-up">
-                                    <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie uma senha</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                        <input
-                                            type={showPassword ? "text" : "password"} required value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
-                                            placeholder="Use pelo menos 8 caracteres"
-                                        />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
-                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* CONSENTIMENTO - LGPD */}
-                            <div className="flex items-start gap-3 px-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                                <div className="relative flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        id="terms"
-                                        checked={agreed}
-                                        onChange={(e) => setAgreed(e.target.checked)}
-                                        className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-900/50 checked:border-sky-500 checked:bg-sky-500 transition-all shadow-sm"
-                                    />
-                                    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100 transition-opacity">
-                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none hover:text-zinc-300 transition-colors">
-                                    Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Política de Privacidade</a> do PrintLog.
-                                </label>
-                            </div>
-
-                            <div className="space-y-4">
-                                <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} disabled={!agreed} icon={regMode === 'magic' ? Zap : LayoutDashboard}>
-                                    {regMode === 'magic' ? "Receber link por e-mail" : "Abrir minha oficina"}
-                                </PrimaryButton>
-                            </div>
-                        </form>
-
-                    ) : (
-                        <div className="bg-sky-500/5 border border-sky-500/20 rounded-[2.5rem] p-10 text-center space-y-6">
-                            {/* Success message UI */}
-                            <div className="relative mx-auto w-16 h-16 bg-sky-500/20 rounded-full flex items-center justify-center text-sky-400">
-                                <Send size={30} />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-white font-bold text-xl uppercase">Sucesso!</h3>
-                                <p className="text-zinc-400 text-sm">Sua conta foi criada.</p>
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
+                            <div className="relative">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
                             </div>
                         </div>
-                    )}
+
+                        <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu melhor e-mail</label>
+                            {/* Replaced Mail icon with specific SVG or import if needed, assuming User/Lock etc work fine */}
+                            {/* Mail icon was missing in previous imports list but used here? Added User above. */}
+                            <div className="relative">
+                                {/* SVG for Mail manually if import fails or assuming it's imported */}
+                                <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="seu@email.com" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 group animate-fade-in-up">
+                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie uma senha</label>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <input
+                                    type={showPassword ? "text" : "password"} required value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
+                                    placeholder="Use pelo menos 8 caracteres"
+                                />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* CONSENTIMENTO - LGPD */}
+                        <div className="flex items-start gap-3 px-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="relative flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="terms"
+                                    checked={agreed}
+                                    onChange={(e) => setAgreed(e.target.checked)}
+                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-900/50 checked:border-sky-500 checked:bg-sky-500 transition-all shadow-sm"
+                                />
+                                <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none hover:text-zinc-300 transition-colors">
+                                Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Política de Privacidade</a> do PrintLog.
+                            </label>
+                        </div>
+
+                        <div className="space-y-4">
+                            <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} disabled={!agreed} icon={LayoutDashboard}>
+                                Abrir minha oficina
+                            </PrimaryButton>
+                        </div>
+                    </form>
 
                     <div className="space-y-6">
                         <div className="relative flex items-center justify-center">
