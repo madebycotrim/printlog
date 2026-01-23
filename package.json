@@ -8,7 +8,7 @@
 		"build": "vite build",
 		"lint": "eslint .",
 		"preview": "npm run build && vite preview",
-		"deploy": "npm run build && wrangler deploy",
+		"deploy": "npm run build && wrangler pages deploy dist --project-name printlog --branch main",
 		"pages": "wrangler pages dev dist --d1 DB",
 		"farm": "npm run build && wrangler pages dev dist --d1 DB",
 		"test": "vitest"
