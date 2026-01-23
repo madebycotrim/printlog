@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 import logo from '../../../assets/logo-branca.png';
-import { getClerkErrorMessage, isValidEmail, validatePassword } from "../../../utils/auth";
+import { getAuthErrorMessage, isValidEmail, validatePassword } from "../../../utils/auth";
 import { auth } from "../../../services/firebase";
 
 // --- COMPONENTE: UI ---

@@ -7,7 +7,7 @@ import {
     Eye, EyeOff, Zap, Cpu, Settings, Layers
 } from 'lucide-react';
 import logo from '../../../assets/logo-branca.png';
-import { getClerkErrorMessage } from "../../../utils/auth";
+import { getAuthErrorMessage } from "../../../utils/auth";
 
 // --- COMPONENTE: UI ---
 
@@ -110,7 +110,7 @@ export default function ForgotPasswordPage() {
             await resetPassword(email);
             setIsSent(true);
         } catch (err) {
-            setError(getClerkErrorMessage(err));
+            setError(getAuthErrorMessage(err));
         } finally {
             setIsLoading(false);
         }

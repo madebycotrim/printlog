@@ -7,7 +7,7 @@ import {
     Zap, Cpu, Layers, BoxSelect
 } from 'lucide-react';
 import logo from '../../../assets/logo-branca.png';
-import { getClerkErrorMessage, sanitizeInput, getRedirectUrl, isValidEmail } from "../../../utils/auth";
+import { getAuthErrorMessage, sanitizeInput, getRedirectUrl, isValidEmail } from "../../../utils/auth";
 import { auth } from "../../../services/firebase";
 // Note: We import auth mostly if we need direct access, but useAuth is preferred.
 

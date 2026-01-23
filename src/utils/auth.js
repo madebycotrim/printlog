@@ -3,7 +3,7 @@
  * Converte códigos de erro do Clerk em mensagens amigáveis
  */
 
-export const clerkErrorMessages = {
+export const authErrorMessages = {
     // Firebase Auth Errors
     'auth/invalid-email': 'Email inválido.',
     'auth/user-disabled': 'Usuário desativado.',
@@ -22,25 +22,25 @@ export const clerkErrorMessages = {
 };
 
 /**
- * Traduz erro do Clerk para PT-BR
- * @param {string} code - Código do erro Clerk
+ * Traduz erro de Autenticação para PT-BR
+ * @param {string} code - Código do erro (Firebase/Auth)
  * @returns {string} Mensagem traduzida
  */
-export function translateClerkError(code) {
-    return clerkErrorMessages[code] || 'Ocorreu um erro inesperado. Tente novamente.';
+export function translateAuthError(code) {
+    return authErrorMessages[code] || 'Ocorreu um erro inesperado. Tente novamente.';
 }
 
 /**
- * Extrai mensagem de erro de objeto Clerk
- * @param {Error} error - Erro do Clerk
+ * Extrai mensagem de erro de objeto de Autenticação
+ * @param {Error} error - Erro
  * @returns {string} Mensagem traduzida
  */
-export function getClerkErrorMessage(error) {
+export function getAuthErrorMessage(error) {
     if (!error) return 'Erro desconhecido.';
 
     // Firebase Auth throws an object with a 'code' property
     if (error.code) {
-        return translateClerkError(error.code);
+        return translateAuthError(error.code);
     }
 
     // Fallback para mensagem genérica
