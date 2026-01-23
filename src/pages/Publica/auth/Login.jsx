@@ -5,7 +5,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import {
     ArrowLeft, Chrome, Activity,
     LayoutDashboard, Lock, Eye, EyeOff, AlertCircle,
-    Cpu, Layers, BoxSelect
+    Cpu, Layers, BoxSelect, Mail
 } from 'lucide-react';
 import logo from '../../../assets/logo-branca.png';
 import { getAuthErrorMessage, getRedirectUrl, isValidEmail } from "../../../utils/auth";
@@ -232,32 +232,17 @@ export default function LoginPage() {
                     )}
 
                     <form onSubmit={handlePasswordSignIn} className="space-y-6">
-
-                        {/* REMOVED: LoginModeToggle */}
-
-                        <div className="space-y-2 group">
-                            {/* Removed ML specific logic, kept default auth field */}
-                        </div>
-                    </form>
-
-                    <form onSubmit={handlePasswordSignIn} className="space-y-6">
                         <div className="space-y-2 group">
                             <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
-                            {/* Fixed Email Icon missing in imports if necessary, using defaults */}
-                            {/* Re-adding Mail import if it was removed in optimized imports above, let's fix imports first */}
-                        </div>
-                    </form>
-
-                    {/* Redeclaring inputs properly to fix the mess above */}
-                    <form onSubmit={handlePasswordSignIn} className="space-y-6">
-                        <div className="space-y-2 group">
-                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
-                            <input
-                                type="email" required value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 px-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
-                                placeholder="seu@office.com"
-                            />
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <input
+                                    type="email" required value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
+                                    placeholder="seu@office.com"
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2 group animate-fade-in-up">

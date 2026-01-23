@@ -7,5 +7,6 @@
       "database_name": "printlog-db",
       "database_id": "e72abc4f-1170-4b93-bc18-9a251ea7a6f9"
     }
-  ]
+  ],
+  "pages_build_output_dir": "dist"
 }
