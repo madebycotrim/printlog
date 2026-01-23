@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useUser } from '../../../contexts/AuthContext';
 import { FileDown, Loader2 } from 'lucide-react';
 import { formatCurrency } from '../../../utils/numbers';
 import { PDF_COLORS, drawPDFHeader } from '../../../utils/pdfUtils';

@@ -2,7 +2,8 @@
 import { StrictMode, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Router } from "wouter";
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
+// import { ClerkProvider, useAuth } from "@clerk/clerk-react"; // REMOVED
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import GlobalSearch from "./components/GlobalSearch";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -14,7 +15,7 @@ import AppRoutes from "./routes/route";
 import { configurarInterceptadoresAxios } from "./utils/api";
 import { TourProvider } from "./contexts/TourContext";
 
-function ClerkAndAxiosGate({ children }) {
+function AuthAndAxiosGate({ children }) {
     const { getToken, isLoaded } = useAuth();
     const [ready, setReady] = useState(false);
 
@@ -30,7 +31,7 @@ function ClerkAndAxiosGate({ children }) {
         init();
     }, [isLoaded, getToken]);
 
-    // Enquanto o Clerk não carregar OU o Axios não estiver interceptado,
+    // Enquanto o Auth não carregar OU o Axios não estiver interceptado,
     // seguramos o usuário no Loading Global.
     if (!isLoaded || !ready) {
         return (
@@ -42,8 +43,6 @@ function ClerkAndAxiosGate({ children }) {
 
     return children;
 }
-
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 // React Query Setup
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -59,9 +58,9 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
-        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+        <AuthProvider>
             <QueryClientProvider client={queryClient}>
-                <ClerkAndAxiosGate>
+                <AuthAndAxiosGate>
                     {/* O Suspense aqui é para os imports lazy() das páginas */}
                     <Suspense fallback={
                         <div className="flex h-screen items-center justify-center bg-zinc-950">
@@ -82,8 +81,8 @@ createRoot(document.getElementById("root")).render(
                             </Router>
                         </TourProvider>
                     </Suspense>
-                </ClerkAndAxiosGate>
+                </AuthAndAxiosGate>
             </QueryClientProvider>
-        </ClerkProvider>
+        </AuthProvider>
     </StrictMode>
 );

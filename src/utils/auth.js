@@ -4,33 +4,21 @@
  */
 
 export const clerkErrorMessages = {
-    // Erros de Login
+    // Firebase Auth Errors
+    'auth/invalid-email': 'Email inválido.',
+    'auth/user-disabled': 'Usuário desativado.',
+    'auth/user-not-found': 'Usuário não encontrado.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/email-already-in-use': 'Este email já está em uso.',
+    'auth/weak-password': 'A senha é muito fraca.',
+    'auth/operation-not-allowed': 'Operação não permitida.',
+    'auth/invalid-credential': 'Credenciais inválidas.',
+    'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde.',
+
+    // Legacy / Generic Mappings
     'form_password_incorrect': 'Senha incorreta. Tente novamente.',
     'form_identifier_not_found': 'Usuário não encontrado.',
     'session_exists': 'Você já está conectado.',
-    'needs_second_factor': 'Código de verificação necessário.',
-
-    // Erros de Signup
-    'form_identifier_exists': 'Este email já está em uso.',
-    'form_password_pwned': 'Esta senha é muito comum. Escolha uma mais segura.',
-    'form_password_length_too_short': 'A senha deve ter no mínimo 8 caracteres.',
-    'form_password_validation_failed': 'Senha muito fraca. Use letras, números e símbolos.',
-
-    // Erros de Verificação
-    'form_code_incorrect': 'Código de verificação incorreto.',
-    'verification_expired': 'Código expirado. Solicite um novo.',
-    'verification_failed': 'Falha na verificação. Tente novamente.',
-
-    // Erros de Rede
-    'clerk_network_error': 'Erro de conexão. Verifique sua internet.',
-    'rate_limit_exceeded': 'Muitas tentativas. Aguarde alguns minutos.',
-
-    // Erros Genéricos
-    'authorization_invalid': 'Sessão inválida. Faça login novamente.',
-    'client_uat_without_clerk_js': 'Erro ao carregar sistema de autenticação.',
-    'session_not_found': 'Sessão não encontrada. Faça login novamente.',
-    'internal_error': 'Erro interno. Tente mais tarde.',
-    'form_username_invalid': 'Nome de usuário inválido.'
 };
 
 /**
@@ -50,10 +38,9 @@ export function translateClerkError(code) {
 export function getClerkErrorMessage(error) {
     if (!error) return 'Erro desconhecido.';
 
-    // Clerk retorna erros em error.errors[]
-    if (error.errors && error.errors.length > 0) {
-        const firstError = error.errors[0];
-        return translateClerkError(firstError.code);
+    // Firebase Auth throws an object with a 'code' property
+    if (error.code) {
+        return translateClerkError(error.code);
     }
 
     // Fallback para mensagem genérica

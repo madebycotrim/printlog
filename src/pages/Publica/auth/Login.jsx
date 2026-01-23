@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
-import { useSignIn, useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
     Mail, ArrowLeft, Chrome, Activity,
     LayoutDashboard, Send, Lock, Eye, EyeOff, KeyRound, AlertCircle,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import logo from '../../../assets/logo-branca.png';
 import { getClerkErrorMessage, sanitizeInput, getRedirectUrl, isValidEmail } from "../../../utils/auth";
+import { auth } from "../../../services/firebase";
+// Note: We import auth mostly if we need direct access, but useAuth is preferred.
 
 // --- COMPONENTES DE UI ---
 
@@ -78,6 +80,9 @@ const LoginModeToggle = ({ mode, setMode }) => (
         <div
             className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg shadow-sm transition-all duration-300 ease-spring ${mode === 'magic' ? 'left-1' : 'left-[calc(50%+4px)]'}`}
         />
+        {/* Desabilitamos o Link Mágico temporariamente no Firebase ou precisamos implementar envio de link manual */}
+        {/* Implementando apenas Senha como padrão para primeira versão Firebase simples, 
+            mas mantendo a UI se quisermos reativar depois com sendSignInLinkToEmail */}
         <button
             type="button"
             onClick={() => setMode('magic')}
@@ -158,12 +163,12 @@ const ProductionWidget = () => {
 };
 
 export default function LoginPage() {
-    const { isLoaded, signIn, setActive } = useSignIn();
-    const { isSignedIn } = useAuth();
+    const { signIn, signInWithGoogle, isSignedIn, isLoaded } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [isSent, setIsSent] = useState(false);
-    const [loginMode, setLoginMode] = useState('magic');
+    // Forcing password mode as default since Magic Link requires more complex setup in Firebase
+    const [loginMode, setLoginMode] = useState('password');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [email, setEmail] = useState("");
@@ -179,14 +184,8 @@ export default function LoginPage() {
         if (isLoaded && isSignedIn) setLocation(redirectUrl);
     }, [isLoaded, isSignedIn, setLocation, redirectUrl]);
 
-    const handleClerkError = (err) => {
-        const msg = getClerkErrorMessage(err);
-        setError(msg);
-    };
-
     const handlePasswordSignIn = async (e) => {
         e.preventDefault();
-        if (!isLoaded) return;
 
         // VALIDAÇÃO CLIENT-SIDE
         if (!isValidEmail(email)) {
@@ -202,32 +201,11 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const sanitizedEmail = sanitizeInput(email);
-
-            const result = await signIn.create({
-                identifier: sanitizedEmail,
-                password,
-            });
-
-            if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                // Pequeno delay para garantir propagação do estado
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                const redirectUrl = getRedirectUrl();
-                setLocation(redirectUrl);
-            } else if (result.status === "needs_second_factor") {
-                setError('Código de verificação necessário. Verifique seu email ou autenticador.');
-            } else {
-                setError('Falha no login. Verifique suas credenciais.');
-            }
+            await signIn(email, password);
+            const url = getRedirectUrl() || redirectUrl;
+            setLocation(url);
         } catch (err) {
-            // Se for erro de "Identifiers not found", personalizamos a mensagem
-            if (err.errors && err.errors[0]?.code === 'form_identifier_not_found') {
-                setError('Conta não encontrada. Verifique o e-mail ou cadastre-se.');
-            } else {
-                handleClerkError(err);
-            }
+            setError(getClerkErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
@@ -235,55 +213,30 @@ export default function LoginPage() {
 
     const handleMagicLinkSignIn = async (e) => {
         e.preventDefault();
-        if (!isLoaded || isLoading) return;
-        setIsLoading(true);
-        setError("");
-        try {
-            const { supportedFirstFactors } = await signIn.create({ identifier: email });
-            const emailCodeFactor = supportedFirstFactors.find((f) => f.strategy === "email_link");
+        // Magic Link not fully implemented in this iteration
+        setError("O login por link mágico ainda não está disponível. Por favor, use sua senha.");
+        setLoginMode('password');
 
-            if (emailCodeFactor) {
-                await signIn.prepareFirstFactor({
-                    strategy: "email_link",
-                    emailAddressId: emailCodeFactor.emailAddressId,
-                    // Incluímos o redirect na URL do Magic Link para o Clerk saber onde voltar
-                    redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
-                });
-                setIsSent(true);
-            } else {
-                setError("O login por link não está disponível para este e-mail.");
-            }
-        } catch (err) {
-            handleClerkError(err);
-            setIsSent(false);
-        } finally {
-            setIsLoading(false);
-        }
+        /* 
+        // Example implementation for future:
+        try {
+            await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+            setIsSent(true);
+        } ...
+        */
     };
 
-    const signInWithGoogle = async () => {
-        if (!isLoaded || isGoogleLoading) return;
+    const handleGoogleSignIn = async () => {
+        if (isGoogleLoading) return;
         setIsGoogleLoading(true);
         try {
-            const ssoRedirectUrl = `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`;
-            const completeRedirectUrl = `${window.location.origin}${redirectUrl}`;
-
-            console.log("--- DEBUG LOGIN SCRIPT ---");
-            console.log("Origin:", window.location.origin);
-            console.log("Target SSO Callback:", ssoRedirectUrl);
-            console.log("Target Final Redirect:", completeRedirectUrl);
-
-            await signIn.authenticateWithRedirect({
-                strategy: "oauth_google",
-                // Passamos o redirect para o SSOCallback processar depois
-                redirectUrl: ssoRedirectUrl,
-                // IMPORTANT: Force absolute URL to prevent Clerk from inferring production domain on localhost
-                redirectUrlComplete: completeRedirectUrl,
-            });
+            await signInWithGoogle();
+            setLocation(redirectUrl);
         } catch (err) {
-            console.error("Clerk Login Error:", err);
+            console.error("Google Login Error:", err);
+            setError(getClerkErrorMessage(err));
+        } finally {
             setIsGoogleLoading(false);
-            handleClerkError(err);
         }
     };
 
@@ -377,7 +330,6 @@ export default function LoginPage() {
                                     </label>
                                 )}
 
-                                <div id="clerk-captcha"></div>
                                 <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={loginMode === 'magic' ? Zap : LayoutDashboard}>
                                     {loginMode === 'magic' ? "Receber Link Mágico" : "Entrar na Oficina"}
                                 </PrimaryButton>
@@ -396,7 +348,7 @@ export default function LoginPage() {
                                 </p>
                             </div>
                             <button onClick={() => setIsSent(false)} className="text-zinc-500 text-xs font-bold uppercase hover:text-white">
-                                â† Voltar para o login
+                                ← Voltar para o login
                             </button>
                         </div>
                     )}
@@ -408,7 +360,7 @@ export default function LoginPage() {
                         </div>
 
                         <button
-                            onClick={signInWithGoogle}
+                            onClick={handleGoogleSignIn}
                             disabled={isGoogleLoading || isLoading}
                             className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50"
                         >
@@ -459,4 +411,3 @@ export default function LoginPage() {
         </div>
     );
 }
-

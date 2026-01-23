@@ -1,23 +1,21 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
-import { useSignUp, useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
     Mail, Lock, ArrowLeft, Chrome,
     User, Send, Eye, EyeOff,
     KeyRound, AlertTriangle, ShieldCheck,
     Zap, Fingerprint, LayoutDashboard,
-    Layers, Cpu, Database, Package, Layout
+    Layers, Package, Database, Layout
 } from 'lucide-react';
 
 import logo from '../../../assets/logo-branca.png';
 import { getClerkErrorMessage, isValidEmail, validatePassword } from "../../../utils/auth";
-
-
+import { auth } from "../../../services/firebase";
 
 // --- COMPONENTE: UI ---
 
 const Badge = ({ icon: Icon, label, color = "sky" }) => {
-    // ... (unchanged)
     const variants = {
         emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
         sky: "text-sky-400 bg-sky-500/10 border-sky-500/20",
@@ -29,8 +27,6 @@ const Badge = ({ icon: Icon, label, color = "sky" }) => {
         </div>
     );
 };
-
-// ... (PrimaryButton and InventoryWidget unchanged) ...
 
 const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", className = "", disabled, type = "button", isLoading }) => {
     const styles = {
@@ -119,20 +115,19 @@ const InventoryWidget = () => (
 );
 
 export default function RegisterPage() {
-    const { isLoaded, signUp, setActive } = useSignUp();
-    const { isSignedIn } = useAuth();
+    const { signUp, signInWithGoogle, isSignedIn, isLoaded } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [isSent, setIsSent] = useState(false);
     const [pendingVerification, setPendingVerification] = useState(false);
     const [code, setCode] = useState("");
-    const [regMode, setRegMode] = useState('magic');
+    const [regMode, setRegMode] = useState('password'); // Default to password
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [error, setError] = useState("");
-    const [agreed, setAgreed] = useState(false); // NEW STATE
+    const [agreed, setAgreed] = useState(false);
     const [, setLocation] = useLocation();
 
     // Captura o redirecionamento inteligente
@@ -143,44 +138,26 @@ export default function RegisterPage() {
         if (isLoaded && isSignedIn) setLocation(redirectUrl);
     }, [isLoaded, isSignedIn, setLocation, redirectUrl]);
 
-    const handleClerkError = (err) => {
-        const msg = getClerkErrorMessage(err);
-        setError(msg);
-    };
-
-    const signUpWithGoogle = async () => {
-        if (!isLoaded || isGoogleLoading) return;
+    const handleGoogleSignUp = async () => {
         if (!agreed) {
             setError("Você precisa aceitar os Termos e a Política de Privacidade.");
             return;
         }
+        if (isGoogleLoading) return;
         setIsGoogleLoading(true);
         try {
-            const ssoRedirectUrl = `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`;
-            const completeRedirectUrl = `${window.location.origin}${redirectUrl}`;
-
-            console.log("--- DEBUG REGISTER SCRIPT ---");
-            console.log("Redirect URL param:", redirectUrl);
-            console.log("Origin:", window.location.origin);
-            console.log("Target SSO Callback:", ssoRedirectUrl);
-            console.log("Target Final Redirect:", completeRedirectUrl);
-
-            await signUp.authenticateWithRedirect({
-                strategy: "oauth_google",
-                redirectUrl: ssoRedirectUrl,
-                // IMPORTANT: Force absolute URL to prevent Clerk from inferring production domain on localhost
-                redirectUrlComplete: completeRedirectUrl,
-            });
+            await signInWithGoogle();
+            setLocation(redirectUrl);
         } catch (err) {
-            console.error("Clerk Register Error:", err);
+            console.error("Google SignUp Error:", err);
+            setError(getClerkErrorMessage(err));
+        } finally {
             setIsGoogleLoading(false);
-            handleClerkError(err);
         }
     };
 
     const handlePasswordSignUp = async (e) => {
         e.preventDefault();
-        if (!isLoaded || isLoading) return;
 
         // VALIDAÇÕES CLIENT-SIDE
         if (!agreed) {
@@ -201,16 +178,16 @@ export default function RegisterPage() {
         setError("");
 
         try {
-            // Sincroniza o Nome do usuário com o firstName do Clerk
-            await signUp.create({
-                emailAddress: email,
-                password,
-                firstName: name
-            });
-            await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-            setPendingVerification(true);
+            // Sincroniza o Nome do usuário
+            await signUp(email, password, name);
+            // In Firebase, user is signed in immediately after signup usually.
+            // Verification email can be sent, but we can redirect directly or show a message.
+            // For now, let's redirect to dashboard.
+            // User verification can be enforced in ProtectedRoute if needed by checking user.emailVerified
+            setLocation(redirectUrl);
+
         } catch (err) {
-            handleClerkError(err);
+            setError(getClerkErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
@@ -218,43 +195,12 @@ export default function RegisterPage() {
 
     const handleMagicLinkSignUp = async (e) => {
         e.preventDefault();
-        if (!isLoaded || isLoading) return;
-        if (!agreed) {
-            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
-            return;
-        }
-        if (!isValidEmail(email)) {
-            setError("E-mail inválido.");
-            return;
-        }
-
-        setIsLoading(true);
-        setError("");
-        try {
-            await signUp.create({
-                emailAddress: email,
-                firstName: name
-            });
-            await signUp.prepareEmailAddressVerification({
-                strategy: 'email_link',
-                redirectUrl: `${window.location.origin}/sso-callback?redirect=${encodeURIComponent(redirectUrl)}`,
-            });
-            setIsSent(true);
-        } catch (err) { handleClerkError(err); setIsSent(false); } finally { setIsLoading(false); }
+        setError("O cadastro por link mágico ainda não está disponível. Por favor, use sua senha.");
+        setRegMode('password');
     };
 
-    const handleVerifyCode = async (e) => {
-        e.preventDefault();
-        if (!isLoaded || isLoading) return;
-        setIsLoading(true);
-        try {
-            const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
-            if (completeSignUp.status === "complete") {
-                await setActive({ session: completeSignUp.createdSessionId });
-                setLocation(redirectUrl);
-            }
-        } catch (err) { handleClerkError(err); } finally { setIsLoading(false); }
-    };
+    // Code verification logic is removed as Firebase simple flow doesn't require manual code entry by default unless using specific flows.
+    // If we want email verification: sendEmailVerification(user).
 
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex overflow-hidden">
@@ -353,38 +299,22 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="space-y-4">
-                                <div id="clerk-captcha"></div>
                                 <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} disabled={!agreed} icon={regMode === 'magic' ? Zap : LayoutDashboard}>
                                     {regMode === 'magic' ? "Receber link por e-mail" : "Abrir minha oficina"}
                                 </PrimaryButton>
                             </div>
                         </form>
 
-                    ) : pendingVerification ? (
-                        <form onSubmit={handleVerifyCode} className="space-y-6">
-                            <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
-                                <label className="text-xs font-bold uppercase text-sky-500 block">Código de Confirmação</label>
-                                <input
-                                    type="text" maxLength={6} required value={code}
-                                    onChange={(e) => setCode(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 text-center text-3xl font-mono font-bold tracking-[0.4em] text-white outline-none focus:border-sky-500"
-                                    placeholder="000000"
-                                />
-                                <p className="text-[11px] text-zinc-500 font-medium">Confira o código que chegou no seu e-mail.</p>
-                            </div>
-                            <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={ShieldCheck}>Validar e entrar</PrimaryButton>
-                            <button onClick={() => setPendingVerification(false)} className="block mx-auto text-zinc-500 text-xs font-bold hover:text-white">Corrigir e-mail</button>
-                        </form>
                     ) : (
                         <div className="bg-sky-500/5 border border-sky-500/20 rounded-[2.5rem] p-10 text-center space-y-6">
+                            {/* Success message UI */}
                             <div className="relative mx-auto w-16 h-16 bg-sky-500/20 rounded-full flex items-center justify-center text-sky-400">
                                 <Send size={30} />
                             </div>
                             <div className="space-y-2">
-                                <h3 className="text-white font-bold text-xl uppercase">E-mail enviado!</h3>
-                                <p className="text-zinc-400 text-sm">Dê uma olhada na sua caixa de entrada em <strong>{email}</strong> para ativar sua oficina.</p>
+                                <h3 className="text-white font-bold text-xl uppercase">Sucesso!</h3>
+                                <p className="text-zinc-400 text-sm">Sua conta foi criada.</p>
                             </div>
-                            <button onClick={() => setIsSent(false)} className="text-zinc-500 text-xs font-bold uppercase hover:text-white">← Tentar outro e-mail</button>
                         </div>
                     )}
 
@@ -393,14 +323,12 @@ export default function RegisterPage() {
                             <div className="absolute inset-0 border-t border-white/5" />
                             <span className="relative bg-zinc-950 px-4 text-[10px] font-bold uppercase text-zinc-600">Ou cadastre-se com</span>
                         </div>
-                        <button onClick={signUpWithGoogle} disabled={isGoogleLoading || isLoading || !agreed} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50 transition-colors">
+                        <button onClick={handleGoogleSignUp} disabled={isGoogleLoading || isLoading || !agreed} className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 font-bold text-sm text-white disabled:opacity-50 transition-colors">
                             {isGoogleLoading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Chrome size={20} /> Continuar com Google</>}
                         </button>
                         <p className="text-center text-zinc-500 text-sm">
                             Já tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
                         </p>
-
-
                     </div>
                 </div>
             </div>
@@ -431,4 +359,3 @@ export default function RegisterPage() {
         </div>
     );
 }
-

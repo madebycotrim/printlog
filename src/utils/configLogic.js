@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useClerk, useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "../contexts/AuthContext";
+import { auth } from "../services/firebase";
+import { updateProfile, updatePassword, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { Globe, WifiOff, Zap, Loader2, Activity } from 'lucide-react';
 import api from './api';
 import { calculatePasswordStrength } from './auth';
@@ -8,7 +10,7 @@ import { PDF_COLORS, drawPDFHeader } from './pdfUtils';
 import { useSidebarStore } from '../stores/sidebarStore';
 
 export const useLogicaConfiguracao = () => {
-    const { signOut: encerrarSessao } = useClerk();
+    const { signOut: encerrarSessao } = useAuth();
     const { user: usuario, isLoaded: estaCarregado } = useUser();
     const referenciaEntradaArquivo = useRef(null);
 
@@ -20,7 +22,12 @@ export const useLogicaConfiguracao = () => {
     const [exibirJanelaSenha, setExibirJanelaSenha] = useState(false);
     const [formularioSenha, setFormularioSenha] = useState({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
 
-    const temSenhaDefinida = useMemo(() => usuario?.passwordEnabled, [usuario]);
+    // Firebase do not expose "passwordEnabled" easily on client without checking providers.
+    // Assuming password is enabled if provider is password.
+    const temSenhaDefinida = useMemo(() => {
+        if (!auth.currentUser) return false;
+        return auth.currentUser.providerData.some(p => p.providerId === 'password');
+    }, [usuario]);
 
     useEffect(() => {
         if (estaCarregado && usuario) {
@@ -28,12 +35,6 @@ export const useLogicaConfiguracao = () => {
             setNomeOriginal(usuario.firstName || "");
         }
     }, [estaCarregado, usuario]);
-
-
-
-    // ... existing imports ...
-
-    // Inside hook...
 
     // --- SEGURANÇA E FORÇA DA SENHA ---
     const forcaSenha = useMemo(() => {
@@ -57,39 +58,24 @@ export const useLogicaConfiguracao = () => {
         [requisitosSenha]
     );
 
-
-
     // --- CARREGAMENTO E OTIMIZAÇÃO DE IMAGEM ---
     const manipularCarregamentoImagem = async (evento) => {
+        // Firebase Auth "photoURL" supports only URL. 
+        // We cannot upload file directly to "user" object like Clerk.
+        // We need Firebase Storage or another storage solution.
+        // For now, we will return an error or just skip implementation.
+        setAviso({ exibir: true, mensagem: "Upload de imagem requer configuração de Storage (não implementado).", tipo: 'erro' });
+
+        /* 
+        Implementation if Storage was available:
         const arquivo = evento.target.files[0];
         if (!arquivo) return;
         setEstaSalvando(true);
-        setAviso({ exibir: true, mensagem: "Otimizando imagem de perfil...", tipo: 'informativo' });
-
-        const comprimirImagem = (arquivoOriginal) => new Promise((resolver) => {
-            const leitor = new FileReader();
-            leitor.readAsDataURL(arquivoOriginal);
-            leitor.onload = (eventoLeitura) => {
-                const imagem = new Image();
-                imagem.src = eventoLeitura.target.result;
-                imagem.onload = () => {
-                    const quadro = document.createElement('canvas');
-                    const tamanho = 400;
-                    quadro.width = tamanho; quadro.height = tamanho;
-                    const contexto = quadro.getContext('2d');
-                    contexto.drawImage(imagem, 0, 0, tamanho, tamanho);
-                    quadro.toBlob((blob) => resolver(new File([blob], arquivoOriginal.name, { type: "image/jpeg" })), "image/jpeg", 0.8);
-                };
-            };
-        });
-
         try {
-            const imagemOtimizada = await comprimirImagem(arquivo);
-            await usuario.setProfileImage({ file: imagemOtimizada });
-            setAviso({ exibir: true, mensagem: "Foto de perfil atualizada!", tipo: 'sucesso' });
-        } catch {
-            setAviso({ exibir: true, mensagem: "Erro ao enviar imagem.", tipo: 'erro' });
-        } finally { setEstaSalvando(false); }
+           // upload to storage... get URL
+           // await updateProfile(auth.currentUser, { photoURL: url });
+        } ...
+        */
     };
 
     // --- AUXILIAR PARA BAIXAR ARQUIVOS ---
@@ -256,9 +242,12 @@ export const useLogicaConfiguracao = () => {
     const salvarAlteracoesGerais = async () => {
         setEstaSalvando(true);
         try {
-            await usuario.update({ firstName: primeiroNome });
-            setNomeOriginal(primeiroNome);
-            setAviso({ exibir: true, mensagem: "Nome de perfil atualizado.", tipo: 'sucesso' });
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, { displayName: primeiroNome });
+                // Note: AuthContext should update automatically via onAuthStateChanged
+                setNomeOriginal(primeiroNome);
+                setAviso({ exibir: true, mensagem: "Nome de perfil atualizado.", tipo: 'sucesso' });
+            }
         } catch {
             setAviso({ exibir: true, mensagem: "Erro ao salvar alterações.", tipo: 'erro' });
         } finally {
@@ -269,25 +258,33 @@ export const useLogicaConfiguracao = () => {
     const atualizarSenha = async () => {
         setEstaSalvando(true);
         try {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Reauthenticate is usually required before updating password
             if (temSenhaDefinida) {
-                await usuario.update({ password: formularioSenha.novaSenha, currentPassword: formularioSenha.senhaAtual });
-            } else {
-                await usuario.createPassword({ password: formularioSenha.novaSenha });
+                const credential = EmailAuthProvider.credential(user.email, formularioSenha.senhaAtual);
+                await reauthenticateWithCredential(user, credential);
             }
+
+            await updatePassword(user, formularioSenha.novaSenha);
+
             setAviso({ exibir: true, mensagem: "Senha de segurança atualizada!", tipo: 'sucesso' });
             setExibirJanelaSenha(false);
             setFormularioSenha({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
         } catch (erroServidor) {
-            setAviso({ exibir: true, mensagem: erroServidor.errors?.[0]?.longMessage || "Erro ao atualizar senha.", tipo: 'erro' });
+            console.error(erroServidor);
+            setAviso({ exibir: true, mensagem: "Erro ao atualizar senha. Verifique sua senha atual.", tipo: 'erro' });
         } finally { setEstaSalvando(false); }
     };
 
     const excluirContaPermanente = async () => {
         setEstaSalvando(true);
         try {
-            await api.delete('/users');
+            await api.delete('/users'); // Delete data from DB
+            await deleteUser(auth.currentUser); // Delete user from Firebase
             setAviso({ exibir: true, mensagem: "Sua conta foi removida. Saindo do sistema...", tipo: 'sucesso' });
-            setTimeout(() => encerrarSessao(), 2000);
+            // Logout handled by context usually or redirect
         } catch {
             setAviso({ exibir: true, mensagem: "Erro ao tentar excluir os dados.", tipo: 'erro' });
             setEstaSalvando(false);
@@ -305,7 +302,6 @@ export const useLogicaConfiguracao = () => {
         let isMounted = true;
 
         const verificarSaudeSistema = async () => {
-            // Se demorar muito, já define como desconectado para não ficar em loop infinito visual
             const timeoutId = setTimeout(() => {
                 if (isMounted) {
                     setStatusConexaoNuvem(prev => (prev.rotulo === 'Conectando' ? {
@@ -320,7 +316,7 @@ export const useLogicaConfiguracao = () => {
             try {
                 const inicio = Date.now();
                 const resposta = await api.get('/users/health');
-                const tempoResposta = Date.now() - inicio; // Medição local de latência para garantia
+                const tempoResposta = Date.now() - inicio;
 
                 clearTimeout(timeoutId);
 
@@ -366,7 +362,7 @@ export const useLogicaConfiguracao = () => {
         };
 
         verificarSaudeSistema();
-        const intervalo = setInterval(verificarSaudeSistema, 30000); // Polling a cada 30s
+        const intervalo = setInterval(verificarSaudeSistema, 30000);
 
         return () => {
             isMounted = false;

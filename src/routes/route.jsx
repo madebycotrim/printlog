@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react"; // Importar Suspense aqui também
 import { Switch, Route, Redirect } from "wouter";
-import { useAuth } from "@clerk/clerk-react"; // Importar para proteção de rotas públicas
+import { useAuth } from "../contexts/AuthContext"; // Importar para proteção de rotas públicas
 import { Loader2 } from "lucide-react";
 
 import ProtectedRoute from "./protectedRoute";
@@ -12,7 +12,7 @@ const LandingPage = lazy(() => import("../pages/Publica/LandingPage"));
 const Login = lazy(() => import("../pages/Publica/auth/Login"));
 const Register = lazy(() => import("../pages/Publica/auth/Register"));
 const ForgotPassword = lazy(() => import("../pages/Publica/auth/forgotPassword"));
-const SSOCallback = lazy(() => import("../pages/Publica/auth/SSOCallback"));
+// const SSOCallback = lazy(() => import("../pages/Publica/auth/SSOCallback")); // REMOVED
 const Dashboard = lazy(() => import("../pages/Principal/Dashboard"));
 const Calculadora = lazy(() => import("../pages/Principal/Calculadora"));
 const Projetos = lazy(() => import("../pages/Gestao/Projetos"));
@@ -63,7 +63,8 @@ export default function AppRoutes() {
                 </Route>
 
                 <Route path="/forgot-password" component={ForgotPassword} />
-                <Route path="/sso-callback" component={SSOCallback} />
+                <Route path="/forgot-password" component={ForgotPassword} />
+                {/* <Route path="/sso-callback" component={SSOCallback} /> */}
                 <Route path="/privacy-policy" component={PrivacyPolicy} />
                 <Route path="/terms-of-service" component={TermsOfService} />
 

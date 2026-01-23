@@ -1,12 +1,13 @@
 ﻿import React, { useState } from 'react';
 import { useLocation } from "wouter";
-import { useSignIn } from "@clerk/clerk-react";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
     Mail, ArrowLeft, CheckCircle2, ShieldCheck,
     Lock, ShieldAlert, RefreshCcw, Send,
     Eye, EyeOff, Zap, Cpu, Settings, Layers
 } from 'lucide-react';
 import logo from '../../../assets/logo-branca.png';
+import { getClerkErrorMessage } from "../../../utils/auth";
 
 // --- COMPONENTE: UI ---
 
@@ -91,13 +92,10 @@ const RecoveryStatusWidget = () => (
 );
 
 export default function ForgotPasswordPage() {
-    const { isLoaded, signIn, setActive } = useSignIn();
+    const { resetPassword, isLoaded } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [step, setStep] = useState(1);
     const [email, setEmail] = useState("");
-    const [code, setCode] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
+    const [isSent, setIsSent] = useState(false);
     const [error, setError] = useState("");
     const [, setLocation] = useLocation();
 
@@ -109,42 +107,10 @@ export default function ForgotPasswordPage() {
         setError("");
 
         try {
-            await signIn.create({
-                strategy: "reset_password_email_code",
-                identifier: email,
-            });
-            setStep(2);
+            await resetPassword(email);
+            setIsSent(true);
         } catch (err) {
-            setError(err.errors?.[0]?.longMessage || "Não encontramos esse e-mail na nossa base.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // 2. Validar código e definir nova senha
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        if (!isLoaded || isLoading) return;
-        setIsLoading(true);
-        setError("");
-
-        try {
-            const result = await signIn.attemptFirstFactor({
-                strategy: "reset_password_email_code",
-                code,
-                password,
-            });
-
-            if (result.status === "complete") {
-                // Ao finalizar, criamos a sessão e jogamos para o Dashboard
-                await setActive({ session: result.createdSessionId });
-                setLocation("/dashboard");
-            } else {
-                // Caso exija um segundo fator (2FA)
-                console.warn("Status adicional requerido:", result.status);
-            }
-        } catch (err) {
-            setError(err.errors?.[0]?.longMessage || "Código incorreto ou senha muito curta.");
+            setError(getClerkErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
@@ -159,12 +125,12 @@ export default function ForgotPasswordPage() {
                     <button
                         onClick={() => {
                             setError("");
-                            step === 1 ? setLocation('/login') : setStep(1);
+                            setLocation('/login');
                         }}
                         className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white"
                     >
                         <ArrowLeft size={16} />
-                        {step === 1 ? "Voltar ao login" : "Trocar e-mail"}
+                        Voltar ao login
                     </button>
                 </div>
 
@@ -191,8 +157,8 @@ export default function ForgotPasswordPage() {
                         </div>
                     )}
 
-                    <form onSubmit={step === 1 ? handleSendCode : handleResetPassword} className="space-y-6">
-                        {step === 1 ? (
+                    {!isSent ? (
+                        <form onSubmit={handleSendCode} className="space-y-6">
                             <div className="space-y-5">
                                 <div className="space-y-2 group">
                                     <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Qual seu e-mail cadastrado?</label>
@@ -206,44 +172,24 @@ export default function ForgotPasswordPage() {
                                     </div>
                                 </div>
 
-                                <div id="clerk-captcha"></div>
                                 <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={Zap}>
-                                    Receber código de acesso
+                                    Receber email de redefinição
                                 </PrimaryButton>
                             </div>
-                        ) : (
-                            <div className="space-y-6 animate-fade-in-up">
-                                <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-sky-500 block">Digite o código do e-mail</label>
-                                    <input
-                                        type="text" required value={code} onChange={(e) => setCode(e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 text-center text-3xl font-mono font-bold tracking-[0.4em] text-white outline-none focus:border-sky-500"
-                                        placeholder="000000"
-                                        maxLength={6}
-                                    />
-                                </div>
-
-                                <div className="space-y-2 group">
-                                    <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie sua nova senha</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                        <input
-                                            type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
-                                            placeholder="Mínimo de 8 caracteres"
-                                        />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
-                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={ShieldCheck}>
-                                    Redefinir senha e entrar
-                                </PrimaryButton>
+                        </form>
+                    ) : (
+                        <div className="space-y-6 animate-fade-in-up">
+                            <div className="space-y-4 text-center bg-sky-500/5 border border-sky-500/20 p-8 rounded-[2rem]">
+                                <label className="text-xs font-bold uppercase tracking-widest text-sky-500 block">E-mail Enviado</label>
+                                <p className="text-zinc-300">
+                                    Verifique sua caixa de entrada no e-mail <strong>{email}</strong>.
+                                </p>
                             </div>
-                        )}
-                    </form>
+                            <PrimaryButton type="button" onClick={() => setLocation('/login')} variant="sky" className="w-full" icon={CheckCircle2}>
+                                Voltar para Login
+                            </PrimaryButton>
+                        </div>
+                    )}
 
                     <div className="text-center pt-4">
                         <p className="text-zinc-500 text-sm">
@@ -289,4 +235,3 @@ export default function ForgotPasswordPage() {
         </div>
     );
 }
-

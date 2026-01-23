@@ -1,6 +1,6 @@
 import React, { useMemo, memo } from "react";
 import { Link, useLocation } from "wouter";
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useUser, useAuth } from "../contexts/AuthContext";
 import {
     LayoutGrid, Calculator, Package, Settings,
     Printer, HelpCircle, LogOut, ChevronLeft, ChevronRight,
@@ -139,7 +139,7 @@ import { useSidebarStore } from "../stores/sidebarStore";
 export default function MainSidebar() {
     const [, setLocation] = useLocation();
     const { user } = useUser();
-    const { signOut } = useClerk();
+    const { signOut } = useAuth();
 
     // Global State
     const { collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen } = useSidebarStore();

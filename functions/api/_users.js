@@ -69,13 +69,8 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
     // ==========================================
     if (method === 'DELETE') {
         try {
-            // 1. Remove conta do Clerk (autenticação)
-            const clerkRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${env.CLERK_SECRET_KEY}` }
-            });
-
-            if (!clerkRes.ok) throw new Error("Falha ao invalidar credenciais no Clerk");
+            // TODO: Implementar exclusão no Firebase via Admin SDK ou Cloud Functions
+            // Por enquanto, apenas removemos os dados do banco D1
 
             // 2. Remove todos os dados do usuário do banco D1
             await db.batch([
@@ -85,9 +80,9 @@ export async function gerenciarUsuarios({ request, db, userId, pathArray, env })
                 db.prepare("DELETE FROM projects WHERE user_id = ?").bind(userId)
             ]);
 
-            return enviarJSON({ success: true, message: "Conta e dados removidos permanentemente." });
+            return enviarJSON({ success: true, message: "Dados removidos. A conta deve ser excluída manualmente no Firebase." });
         } catch (err) {
-            return enviarJSON({ error: "Erro ao excluir conta", details: err.message }, 500);
+            return enviarJSON({ error: "Erro ao excluir dados", details: err.message }, 500);
         }
     }
 

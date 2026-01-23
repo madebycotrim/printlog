@@ -1,4 +1,4 @@
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "../contexts/AuthContext";
 import { Route, Redirect, useLocation } from "wouter";
 import { Suspense, useEffect } from "react";
 import { saveRedirectUrl } from "../utils/auth";
@@ -23,7 +23,7 @@ export default function ProtectedRoute({ path, component: Component }) {
     </div>
   );
 
-  // Se o Clerk ainda estiver carregando a sessão, mostra loading
+  // Se o Auth ainda estiver carregando a sessão, mostra loading
   if (!authLoaded) {
     return (
       <Route path={path}>
@@ -49,7 +49,7 @@ export default function ProtectedRoute({ path, component: Component }) {
         // Prepara os dados do usuário de forma segura
         const userData = {
           id: user?.id || "",
-          email: user?.primaryEmailAddress?.emailAddress || "",
+          email: user?.email || "",
           name: user?.firstName || user?.username || "Maker",
           role: user?.publicMetadata?.role || "user",
         };
