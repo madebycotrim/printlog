@@ -73,7 +73,7 @@ export async function gerenciarFalhas({ request, db, userId, tenantId }) {
                 const filamento = await db.prepare("SELECT peso_atual FROM filaments WHERE id = ? AND org_id = ?").bind(f.filamentId, tenantId).first();
                 if (filamento) {
                     const novoPeso = Math.max(0, filamento.peso_atual - paraNumero(f.weightWasted));
-                    await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ?").bind(novoPeso, f.filamentId).run();
+                    await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ? AND org_id = ?").bind(novoPeso, f.filamentId, tenantId).run();
                 }
             }
 

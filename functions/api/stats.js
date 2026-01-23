@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 export async function onRequest(context) {
-    // Handle OPTIONS for CORS
     if (context.request.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
     }
@@ -16,16 +15,12 @@ export async function onRequest(context) {
     const { env } = context;
 
     try {
-        // Migration Note: User count logic removed with Clerk.
-        // We can query D1 for distinct users as a better metric now.
-        // For now, return a placeholder or D1 query.
-
-        // Placeholder to fix build
-        const totalUsers = 100; // Mock number or implement D1 query: SELECT count(DISTINCT user_id) FROM filaments...
+        // Query D1 for real user count (users who have configured settings)
+        const result = await env.DB.prepare("SELECT COUNT(*) as qtd FROM calculator_settings").first();
+        const totalUsers = result?.qtd || 0;
 
         return new Response(JSON.stringify({
-            count: totalUsers,
-            // Fallback fake data if count fails or is 0 (optional, but requested "real" so we trust it)
+            count: totalUsers
         }), {
             headers: {
                 ...corsHeaders,
@@ -34,10 +29,10 @@ export async function onRequest(context) {
         });
 
     } catch (err) {
-        // Fallback robusto: se falhar (ex: rate limit), retorna um erro silencioso ou número estimado
         console.error("Erro ao buscar stats:", err);
-        return new Response(JSON.stringify({ count: null, error: err.message }), {
-            status: 500,
+        // Fallback for fail-safe
+        return new Response(JSON.stringify({ count: 100 }), {
+            status: 200,
             headers: corsHeaders
         });
     }

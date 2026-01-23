@@ -7,6 +7,7 @@ import { gerenciarUsuarios } from './_users';
 import { gerenciarInsumos } from './_supplies';
 import { gerenciarTodos } from './_todos';
 import { gerenciarAssinatura } from './_billing';
+import { gerenciarClientes } from './_clients';
 import { gerenciarAuditoria } from './_audit';
 import { corsHeaders, enviarJSON, paraNumero } from './_utils';
 import { checkRateLimit, getIdentifier } from './_rateLimit';
@@ -95,6 +96,7 @@ export async function onRequest(context) {
             case 'approve-budget': return await aprovarProjeto(ctx);
             case 'users': return await gerenciarUsuarios(ctx);
             case 'supplies': case 'insumos': return await gerenciarInsumos(ctx);
+            case 'clients': case 'clientes': return await gerenciarClientes(ctx);
             case 'todos': return await gerenciarTodos(ctx);
             case 'billing': return await gerenciarAssinatura(ctx);
             case 'audit': return await gerenciarAuditoria(ctx);
@@ -136,6 +138,9 @@ async function executarMigracoes(ctx) {
 
             // Assinaturas (Billing)
             db.prepare(`CREATE TABLE IF NOT EXISTS subscriptions (org_id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, status TEXT, current_period_end TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
+
+            // Clients
+            db.prepare(`CREATE TABLE IF NOT EXISTS clients (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, org_id TEXT, name TEXT NOT NULL, email TEXT, phone TEXT, document TEXT, notes TEXT, address TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`),
 
             // Logs de Auditoria
             db.prepare(`CREATE TABLE IF NOT EXISTS activity_logs (id TEXT PRIMARY KEY, org_id TEXT NOT NULL, user_id TEXT NOT NULL, action TEXT NOT NULL, details TEXT, metadata TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`)
