@@ -36,7 +36,7 @@ pnpm-debug.log*
 .wrangler/
 .wrangler.toml.bak
 wrangler.local.toml
-.dev.vars
+ 
 
 # =========================
 # AMBIENTE / SEGREDOS
