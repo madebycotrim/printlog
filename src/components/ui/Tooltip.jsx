@@ -3,10 +3,15 @@ import { HelpCircle } from 'lucide-react';
 
 export const Tooltip = ({ text, children }) => {
     return (
-        <div className="group/tooltip relative inline-flex items-center">
-            {children || <HelpCircle size={12} className="text-zinc-500 cursor-help hover:text-sky-400 transition-colors" />}
+        <div
+            className="group/tooltip relative inline-flex items-center outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-sm"
+            tabIndex={0}
+            role="button"
+            aria-label={text}
+        >
+            {children || <HelpCircle size={12} className="text-zinc-500 cursor-help hover:text-sky-400 transition-colors" aria-hidden="true" />}
 
-            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block z-50 w-max max-w-xs">
+            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block group-focus-visible/tooltip:block z-50 w-max max-w-xs">
                 <div className="relative">
                     <div className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl text-[10px] text-zinc-300 leading-relaxed max-w-[200px] text-center">
                         {text}
