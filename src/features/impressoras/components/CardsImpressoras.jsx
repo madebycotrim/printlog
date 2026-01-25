@@ -1,25 +1,24 @@
 import React, { memo, useMemo } from "react";
-import { Edit2, Trash2, Activity, Printer, Wrench, Power, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Edit2, Trash2, Activity, Printer, Wrench, Power, TrendingUp, CheckCircle2, Cpu } from "lucide-react";
 import { formatCurrency } from "../../../utils/numbers";
 import { SegmentedProgress } from "../../../components/ui/SegmentedProgress";
 import Button from "../../../components/ui/Button";
 
-
 /**
- * CONFIGURAÇÃO DE STATUS
+ * CONFIGURAÇÃO DE STATUS (Premium Theme)
  */
 const obterConfiguracaoStatus = (status) => {
     const mapa = {
-        idle: { label: "DISPONÍVEL", color: "text-zinc-500", dot: "bg-zinc-500", icon: Power },
-        printing: { label: "IMPRIMINDO", color: "text-emerald-400", dot: "bg-emerald-400", icon: Printer },
-        maintenance: { label: "MANUTENÇÃO", color: "text-rose-400", dot: "bg-rose-400", icon: Wrench },
-        completed: { label: "CONCLUÍDA", color: "text-sky-400", dot: "bg-sky-400", icon: CheckCircle2 },
+        idle: { label: "Disponível", color: "text-zinc-400", bg: "bg-zinc-500/10", border: "border-zinc-500/20", icon: Power },
+        printing: { label: "Imprimindo", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", icon: Printer },
+        maintenance: { label: "Manutenção", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", icon: Wrench },
+        completed: { label: "Concluída", color: "text-sky-400", bg: "bg-sky-500/10", border: "border-sky-500/20", icon: CheckCircle2 },
     };
     return mapa[status] || mapa.idle;
 };
 
 const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleStatus }) => {
-    // LÓGICA DE DADOS (Cálculo de saúde e retorno financeiro)
+    // LÓGICA DE DADOS
     const { configStatus, stats } = useMemo(() => {
         if (!printer) {
             return {
@@ -48,115 +47,120 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleSta
     if (!printer) return null;
 
     const IconeStatus = configStatus.icon;
+    const isPrinting = printer.status === 'printing';
 
     return (
         <div className={`
-            group relative bg-zinc-950/40/40 backdrop-blur-sm rounded-2xl overflow-hidden 
-            transition-all duration-300 hover-lift
-            border ${stats.ehCritico
-                ? 'border-rose-500/40 bg-rose-500/[0.03] shadow-[0_0_20px_rgba(244,63,94,0.05)]'
-                : 'border-zinc-800/60 hover:border-zinc-800/50/80 hover:shadow-xl shadow-sm'}
+            group relative flex flex-col justify-between 
+            bg-[#09090b] backdrop-blur-md rounded-3xl overflow-hidden 
+            transition-all duration-500 border
+            ${stats.ehCritico
+                ? 'border-rose-500/30 hover:border-rose-500/50 shadow-[0_0_30px_rgba(244,63,94,0.1)]'
+                : 'border-white/5 hover:border-white/10 hover:shadow-2xl hover:shadow-black/50'}
         `}>
-            <div className="flex h-[195px]">
+            {/* Trama de Fundo */}
+            <div className={`absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] transition-opacity duration-500 ${isPrinting ? 'opacity-[0.05]' : ''}`} />
 
-                {/* BARRA LATERAL (75px) */}
-                <div className="w-[75px] bg-zinc-950/40 border-r border-zinc-800/50 flex flex-col items-center py-6 justify-between shrink-0">
+            {/* Brilho Superior */}
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-500 ${isPrinting ? 'w-full via-emerald-400/30' : ''}`} />
+
+            <div className="flex flex-1 p-6 relative z-10">
+                {/* ICON / IMAGE BOX */}
+                <div className="mr-5 flex flex-col items-center gap-3">
                     <button
                         onClick={() => onToggleStatus?.(printer.id, printer.status)}
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 
-                            border active:scale-90 hover:scale-105 ${printer.status === 'printing'
-                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-inner hover:shadow-lg'
-                                : 'bg-zinc-900/50 border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:border-zinc-800/50 hover:bg-zinc-800/50'
-                            }`}
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border group/btn relative overflow-hidden
+                            ${isPrinting
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+                                : 'bg-zinc-900/50 border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10 hover:bg-zinc-800'}
+                        `}
                     >
-                        <IconeStatus size={24} strokeWidth={2} className={`transition-transform duration-300 ${printer.status === 'printing' ? 'animate-pulse' : 'group-hover:rotate-12'}`} />
+                        <IconeStatus size={22} strokeWidth={2} className={`transition-all duration-500 ${isPrinting ? 'animate-pulse scale-110' : 'group-hover/btn:scale-110'}`} />
+                        {isPrinting && <div className="absolute inset-0 bg-emerald-400/10 animate-ping rounded-2xl" />}
                     </button>
 
-                    <div className="rotate-180 [writing-mode:vertical-lr] flex items-center opacity-40 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[9px] font-black uppercase tracking-[0.4em] whitespace-nowrap text-zinc-500">
-                            {printer.marca || 'FABRICANTE'}
-                        </span>
-                    </div>
+                    <div className="h-full w-px bg-gradient-to-b from-white/10 to-transparent mx-auto" />
                 </div>
 
-                {/* PAINEL CENTRAL */}
-                <div className="flex-1 p-6 flex flex-col justify-between min-w-0">
-                    {/* CABEÇALHO */}
-                    <div className="flex justify-between items-start gap-2">
-                        <div className="min-w-0 flex-1">
-                            <h3 className="text-lg font-black uppercase tracking-tight truncate leading-none text-zinc-100 group-hover:text-emerald-400 transition-colors">
+                {/* INFO CONTENT */}
+                <div className="flex-1 min-w-0 flex flex-col">
+                    <div className="flex justify-between items-start mb-1">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">{printer.marca || 'GENÉRICA'}</span>
+                            <h3 className="text-lg font-bold text-zinc-100 uppercase tracking-tight truncate leading-none group-hover:text-white transition-colors">
                                 {printer.nome || "Sem Nome"}
                             </h3>
-                            <p className="text-[10px] font-mono font-bold text-zinc-600 mt-2.5 uppercase tracking-widest">
-                                SÉRIE: <span className="text-zinc-500">#{String(printer.id || '').slice(-6).toUpperCase()}</span>
-                            </p>
+                            <span className="text-[10px] text-zinc-600 font-mono mt-1">{printer.modelo || 'Padrão'}</span>
                         </div>
-                        <div className={`shrink-0 px-2 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 ${stats.ehCritico ? 'bg-rose-500/20 border-rose-500/40 text-rose-400 animate-pulse' : 'bg-zinc-950/40 border-zinc-800 ' + configStatus.color
-                            }`}>
-                            <div className={`h-1 w-1 rounded-full ${stats.ehCritico ? 'bg-rose-500' : configStatus.dot}`} />
-                            {stats.ehCritico ? 'ALERTA TÉCNICO' : configStatus.label}
+
+                        <div className={`px-2 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-md
+                            ${configStatus.bg} ${configStatus.border} ${configStatus.color}
+                        `}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${printer.status === 'printing' ? 'bg-emerald-400 animate-pulse' : stats.ehCritico ? 'bg-rose-500' : 'bg-current'}`} />
+                            {stats.ehCritico ? 'ALERTA' : configStatus.label}
                         </div>
                     </div>
 
-                    {/* MÉTRICA PRINCIPAL (HORAS) */}
-                    <div className="space-y-3">
-                        <div className="flex items-baseline justify-between">
-                            <div className="flex items-baseline gap-1.5">
-                                <span className={`text-4xl font-black tracking-tighter transition-colors ${stats.ehCritico ? 'text-rose-500' : 'text-zinc-100'}`}>
-                                    {Math.round(stats.hTotais)}
+                    <div className="mt-auto space-y-4">
+                        {/* HEALTH BAR */}
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between items-end">
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Saúde do Equipamento</span>
+                                <span className={`text-[10px] font-bold font-mono ${stats.ehCritico ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                    {Math.round(stats.health)}%
                                 </span>
-                                <span className="text-[10px] font-black text-zinc-500 uppercase">Horas</span>
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-tighter ${stats.ehCritico ? 'text-rose-400' : 'text-zinc-500'}`}>
-                                {Math.round(stats.health)}% SAÚDE
-                            </span>
+                            <SegmentedProgress pct={stats.health} color={stats.ehCritico ? '#f43f5e' : '#10b981'} pulse={stats.ehCritico} height={4} segments={20} />
                         </div>
-                        <SegmentedProgress pct={stats.health} color={stats.ehCritico ? '#f43f5e' : '#10b981'} pulse={stats.ehCritico} />
-                    </div>
 
-                    {/* RODAPÉ DE INFORMAÇÕES (IMPRESSORA) */}
-                    <div className="flex justify-between items-end pt-3 mt-1 border-t border-zinc-800/40">
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-1">Modelo</span>
-                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider truncate max-w-[120px]">
-                                {printer.modelo || 'Padrão'}
-                            </span>
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-1">Lucro Gerado</span>
-                            <div className="flex items-center gap-1.5">
-                                <TrendingUp size={12} className="text-emerald-500" />
-                                <span className="text-[12px] font-bold text-emerald-500/80 font-mono">
-                                    {formatCurrency(stats.rendimento)}
-                                </span>
+                        {/* STATS GRID */}
+                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                            <div>
+                                <span className="text-[9px] font-bold text-zinc-600 block mb-0.5 uppercase tracking-wider">Horas Totais</span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-sm font-bold text-zinc-300 font-mono">{Math.round(stats.hTotais)}</span>
+                                    <span className="text-[9px] text-zinc-600">t/h</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-[9px] font-bold text-zinc-600 block mb-0.5 uppercase tracking-wider">Retorno</span>
+                                <div className="flex items-center justify-end gap-1.5">
+                                    <TrendingUp size={12} className="text-emerald-500/80" />
+                                    <span className="text-sm font-bold text-emerald-400/90 font-mono">{formatCurrency(stats.rendimento)}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* AÇÕES DO RODAPÉ (h-11) */}
-            <div className="grid grid-cols-[1fr_50px_50px] h-11 bg-zinc-950/60 border-t border-zinc-800/50">
+            {/* ACTION FOOTER */}
+            <div className="grid grid-cols-2 border-t border-white/5 divide-x divide-white/5 bg-zinc-950/30">
                 <Button
                     variant="ghost"
                     onClick={() => onResetMaint?.(printer)}
-                    className="rounded-none h-full text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/50/30"
+                    className="h-10 rounded-none text-[10px] font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-white/5 transition-colors gap-2"
                 >
-                    <Activity size={14} className={`mr-2 transition-all duration-300 ${stats.ehCritico ? 'text-rose-500 animate-pulse' : 'text-zinc-600'}`} />
-                    Diagnóstico / Reset
+                    <Activity size={12} className={stats.ehCritico ? "text-rose-500 animate-pulse" : ""} />
+                    Diagnóstico
                 </Button>
-                <Button
-                    variant="ghost"
-                    onClick={() => onEdit?.(printer)}
-                    className="rounded-none h-full border-l border-zinc-800/50 px-0 flex items-center justify-center text-zinc-600 hover:text-zinc-100 hover:bg-zinc-800/50"
-                    icon={Edit2}
-                />
-                <Button
-                    variant="ghost"
-                    onClick={() => onDelete?.(printer.id)}
-                    className="rounded-none h-full border-l border-zinc-800/50 px-0 flex items-center justify-center text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10"
-                    icon={Trash2}
-                />
+
+                <div className="grid grid-cols-2 divide-x divide-white/5">
+                    <button
+                        onClick={() => onEdit?.(printer)}
+                        className="flex items-center justify-center hover:bg-white/5 text-zinc-500 hover:text-sky-400 transition-colors"
+                        title="Editar"
+                    >
+                        <Edit2 size={14} />
+                    </button>
+                    <button
+                        onClick={() => onDelete?.(printer.id)}
+                        className="flex items-center justify-center hover:bg-rose-500/10 text-zinc-600 hover:text-rose-500 transition-colors"
+                        title="Excluir"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -157,7 +157,31 @@ async function executarMigracoes(ctx) {
             }
         }
 
-        // 3. Backfill de Dados: Preenche org_id com user_id onde estiver NULL
+        // 3. Update existing tables (Add Columns)
+        // supplies: category, description, updated_at
+        try { await db.prepare("ALTER TABLE supplies ADD COLUMN category TEXT DEFAULT 'Outros'").run(); } catch { }
+        try { await db.prepare("ALTER TABLE supplies ADD COLUMN description TEXT").run(); } catch { }
+        try { await db.prepare("ALTER TABLE supplies ADD COLUMN updated_at DATETIME").run(); } catch { }
+
+        // 4. Create new tables (if not exists)
+        await db.batch([
+            // Supply Events (History)
+            db.prepare(`CREATE TABLE IF NOT EXISTS supply_events (
+                id TEXT PRIMARY KEY, 
+                supply_id TEXT NOT NULL, 
+                org_id TEXT, 
+                user_id TEXT, 
+                type TEXT CHECK(type IN ('create', 'update', 'manual', 'abertura', 'delete')), 
+                old_stock REAL, 
+                new_stock REAL, 
+                quantity_change REAL, 
+                cost REAL, 
+                notes TEXT, 
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )`)
+        ]);
+
+        // 5. Backfill de Dados: Preenche org_id com user_id onde estiver NULL
         for (const table of tables) {
             await db.prepare(`UPDATE ${table} SET org_id = user_id WHERE org_id IS NULL`).run();
         }

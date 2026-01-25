@@ -1,40 +1,50 @@
 import React from "react";
-import { AlertTriangle, BadgeDollarSign, Activity, Box, PackageCheck } from "lucide-react";
+import { AlertTriangle, BadgeDollarSign, Box, PackageCheck } from "lucide-react";
 import StatsWidget from "../../../components/ui/StatsWidget";
 import { formatCurrency } from "../../../utils/numbers";
 
-
-
 /**
- * Card de Visão Geral (Estoque)
+ * Card de Visão Geral (Estoque) - Semantic Colors
  */
 const StockOverviewCard = ({ totalItems = 0, lowStockCount = 0 }) => {
     const count = Math.max(0, parseInt(lowStockCount, 10) || 0);
     const total = Math.max(0, parseInt(totalItems, 10) || 0);
     const isAlert = count > 0;
 
-    // Cálculo de progresso visual (Inverso: quanto menos items em alerta, maior a barra)
-    // Se 10 itens total, e 2 em alerta (20%), saúde é 80%.
     const healthPercentage = total > 0 ? ((total - count) / total) * 100 : 100;
     const progressWidth = `${healthPercentage}%`;
+
+    // Colors styled to match components/StatusFilamentos.jsx
+    // Alert: Rose (Red)
+    // Healthy: Neutral/Zinc with subtle Emerald hints
 
     return (
         <div
             role="status"
-            aria-live="polite"
-            className={`relative h-[130px] p-6 rounded-2xl overflow-hidden flex items-center justify-between transition-all duration-500 group border
+            className={`relative h-[130px] p-6 rounded-3xl overflow-hidden flex items-center justify-between transition-all duration-500 group border
+        bg-[#09090b] shadow-2xl 
         ${isAlert
-                    ? 'bg-rose-950/10 border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.05)]'
-                    : 'bg-zinc-950/40/40 border-orange-500/30 backdrop-blur-sm shadow-[0_0_15px_rgba(249,115,22,0.05)]'}`}
+                    ? 'border-rose-500/30'
+                    : 'border-white/5 hover:border-white/10'}`}
         >
+            {/* Trama de Fundo */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
 
-            <div className={`absolute -right-4 -top-4 w-24 h-24 blur-[60px] transition-all duration-700
-          ${isAlert ? 'bg-rose-500/10' : 'bg-orange-500/10'}`}
+            {/* Linha de Brilho Superior */}
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-gradient-to-r from-transparent to-transparent shadow-[0_0_15px_rgba(255,255,255,0.1)] 
+          ${isAlert ? 'via-rose-500 shadow-rose-500/50' : 'via-white/20'}`}
             />
 
-            <div className="flex items-center gap-5 relative z-10">
-                <div className={`p-3.5 rounded-xl bg-zinc-950 border transition-all duration-500
-            ${isAlert ? 'border-rose-500/40 text-rose-500' : 'border-orange-500/20 text-orange-400'}`}>
+            <div className={`absolute -right-4 -top-4 w-32 h-32 blur-[80px] transition-all duration-700 
+          ${isAlert ? 'bg-rose-500/20' : 'bg-emerald-500/5'}`}
+            />
+
+            <div className="flex items-center gap-5 relative z-10 w-full">
+                {/* ICON BOX */}
+                <div className={`p-4 rounded-2xl bg-zinc-950/50 border backdrop-blur-md transition-all duration-500 shrink-0
+            ${isAlert
+                        ? 'border-rose-500/40 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
+                        : 'border-white/5 text-zinc-400 group-hover:text-white'}`}>
                     {isAlert ? (
                         <AlertTriangle size={24} strokeWidth={2.5} className="animate-pulse" />
                     ) : (
@@ -42,83 +52,93 @@ const StockOverviewCard = ({ totalItems = 0, lowStockCount = 0 }) => {
                     )}
                 </div>
 
-                <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${isAlert ? 'bg-rose-500 animate-pulse' : 'bg-orange-500'}`} />
-                        <p className={`text-[10px] font-bold uppercase tracking-[0.15em] ${isAlert ? 'text-rose-500/80' : 'text-zinc-500'}`}>
-                            Monitoramento do Estoque
-                        </p>
+                {/* CONTENT */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${isAlert ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
+                            <p className={`text-[10px] font-bold uppercase tracking-[0.15em] ${isAlert ? 'text-rose-500/80' : 'text-zinc-500'}`}>
+                                STATUS DO ESTOQUE
+                            </p>
+                        </div>
+                        <div className="h-1.5 w-16 bg-zinc-950 rounded-full overflow-hidden border border-white/5" title={isAlert ? "Atenção necessária" : "Estoque saudável"}>
+                            <div
+                                className={`h-full rounded-full transition-all duration-1000 ${isAlert ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                                style={{ width: progressWidth }}
+                            />
+                        </div>
                     </div>
-                    <h3 className={`text-xl font-bold tracking-tight leading-none transition-colors uppercase
-              ${isAlert ? 'text-rose-500' : 'text-zinc-100'}`}>
-                        {isAlert ? 'Reposição Necessária' : 'Estoque em Dia'}
+
+                    <h3 className={`text-xl font-bold tracking-tight leading-none transition-colors uppercase whitespace-nowrap overflow-hidden text-ellipsis
+                        ${isAlert ? 'text-rose-500' : 'text-zinc-100'}`}>
+                        {isAlert ? 'Reposição Necessária' : 'Estoque Saudável'}
                     </h3>
-                    <p className={`text-[11px] font-medium mt-2 uppercase tracking-wide
-              ${isAlert ? 'text-rose-400/70' : 'text-zinc-500'}`}>
+
+                    <p className={`text-[11px] font-medium mt-1.5 uppercase tracking-wide truncate
+                ${isAlert ? 'text-rose-400/70' : 'text-zinc-600'}`}>
                         {isAlert
-                            ? `${count} ${count === 1 ? 'item abaixo do limite' : 'itens abaixo do limite'}`
-                            : `Total de ${totalItems} itens cadastrados`
+                            ? `${count} itens em falta`
+                            : `Total: ${total} itens`
                         }
                     </p>
-                </div>
-            </div>
-
-            <div className="flex flex-col items-end relative z-10">
-                <div className="text-[9px] text-zinc-600 font-bold uppercase mb-2 tracking-widest">Status_Geral</div>
-                <div className="h-1.5 w-16 bg-zinc-950 rounded-full overflow-hidden border border-white/5" title={isAlert ? "Atenção necessária" : "Estoque saudável"}>
-                    <div
-                        className={`h-full rounded-full transition-all duration-1000 ${isAlert ? 'bg-rose-500' : 'bg-orange-500'}`}
-                        style={{ width: progressWidth }}
-                    />
                 </div>
             </div>
         </div>
     );
 };
 
-// StockOverviewCard mantido por ser específico
-/* StatCard e formatCurrency removidos em favor de componentes unificados */
-
 export default function StatusInsumos({
     totalItems = 0,
     lowStockCount = 0,
     valorTotal = 0,
-    itemsWithoutStock = 0
+    itemsWithoutStock = 0,
+    restockCost = 0
 }) {
-    const percentageAvailable = totalItems > 0 ? ((totalItems - itemsWithoutStock) / totalItems) * 100 : 0;
+    const hasZeroStock = itemsWithoutStock > 0;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {/* 1. Visão Geral + Alertas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* 1. Visão Geral (Saúde) */}
             <StockOverviewCard
                 totalItems={totalItems}
                 lowStockCount={lowStockCount}
             />
 
-            {/* 2. Valor em Estoque */}
-            {/* 2. Valor em Estoque */}
+            {/* 2. Financeiro -> VERDE (Emerald) */}
             <StatsWidget
                 title="Financeiro"
                 value={formatCurrency(valorTotal)}
                 icon={BadgeDollarSign}
-                iconColor="text-orange-500"
-                iconBg="border-orange-500/20 bg-zinc-950"
-                secondaryLabel="Valor em Estoque"
-                secondaryValue="Custo total dos insumos"
+                iconColor="text-emerald-400"
+                iconBg="border-emerald-500/20 bg-emerald-500/5"
+                glowColor="bg-emerald-500/20"
+                secondaryLabel="Valor Total"
+                secondaryValue="Em estoque"
             />
 
-            {/* 3. Itens Zerados */}
+            {/* 3. Custo de Reposição -> AZUL (Sky) - Mostra quanto precisa investir para repor estoques baixos */}
             <StatsWidget
-                title="Disponibilidade"
-                value={percentageAvailable.toFixed(1) + '%'}
+                title="Reposição"
+                value={formatCurrency(restockCost)}
                 icon={PackageCheck}
-                iconColor="text-orange-500"
-                iconBg="border-orange-500/20 bg-zinc-950"
-                secondaryLabel="Itens em Estoque"
-                secondaryValue={`${totalItems - itemsWithoutStock} de ${totalItems} itens`}
+                iconColor="text-sky-400"
+                iconBg="border-sky-500/20 bg-sky-500/5"
+                glowColor="bg-sky-500/20"
+                secondaryLabel="Custo Estimado"
+                secondaryValue="Para repor estoque"
             />
 
+            {/* 4. Esgotados -> AMARELO/LARANJA (Warning) se houver, ou NEUTRO */}
+            <StatsWidget
+                title="Esgotados"
+                value={itemsWithoutStock.toString()}
+                icon={AlertTriangle}
+                iconColor={hasZeroStock ? "text-orange-400" : "text-zinc-400"}
+                iconBg={hasZeroStock ? "border-orange-500/20 bg-orange-500/5" : "border-white/5 bg-zinc-900/50"}
+                glowColor={hasZeroStock ? "bg-orange-500/20" : "bg-white/5"}
+                secondaryLabel="Estoque Zero"
+                secondaryValue={hasZeroStock ? "Repor Urgente" : "Nenhum Item"}
+            />
         </div>
     );
 }

@@ -24,20 +24,43 @@ export default function SideBySideModal({
 }) {
     if (!isOpen) return null;
 
+    // Mantemos o comportamento original: renderiza header APENAS se o objeto header for passado explicitamente
+    // Mas adicionamos um botão de fechar flutuante se não houver header
+    const showFloatingClose = !header && onClose;
+
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/90 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="absolute inset-0" onClick={onClose} />
 
             <div className={`
-                relative bg-zinc-950 border border-zinc-800/80 rounded-[2rem] 
-                w-full ${maxWidth} shadow-2xl overflow-hidden flex flex-col md:flex-row 
-                max-h-[96vh] transition-all duration-300
+                relative bg-[#050506] border border-white/10 rounded-[2.5rem] 
+                w-full ${maxWidth} shadow-[0_0_80px_rgba(0,0,0,1)] overflow-hidden flex flex-col md:flex-row 
+                max-h-[96vh] transition-all duration-300 group
                 ${isSaving ? 'opacity-90 grayscale-[0.3]' : 'opacity-100'}
             `}>
 
+                {/* GRADE DE FUNDO (GLOBAL) */}
+                <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
+
+                {/* LINHA DE BRILHO SUPERIOR */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-sky-500 to-transparent shadow-[0_0_15px_rgba(14,165,233,0.5)] z-20" />
+
+                {/* Botão de Fechar Flutuante (Minimalista) */}
+                {showFloatingClose && (
+                    <button
+                        onClick={onClose}
+                        disabled={isSaving}
+                        className="absolute top-6 right-6 z-50 p-2.5 rounded-full bg-black/40 hover:bg-white/10 border border-white/5 text-zinc-500 hover:text-white transition-all backdrop-blur-md shadow-lg disabled:opacity-0"
+                        title="Fechar"
+                    >
+                        <X size={20} />
+                    </button>
+                )}
+
                 {/* Lateral de Visualização (Prévia) */}
-                <div className="w-full md:w-[320px] bg-zinc-950/40/30 border-b md:border-b-0 md:border-r border-zinc-800/50 p-10 flex flex-col justify-between shrink-0 relative overflow-hidden">
-                    <div className="absolute inset-0 z-0 pointer-events-none opacity-30 select-none">
+                <div className="w-full md:w-[320px] bg-[#080809] border-b md:border-b-0 md:border-r border-white/5 p-10 flex flex-col justify-between shrink-0 relative overflow-hidden">
+                    {/* Background Grid Local (Opcional, mas ajuda no contraste) */}
+                    <div className="absolute inset-0 z-0 pointer-events-none opacity-20 select-none">
                         <div className="absolute inset-0" style={{
                             backgroundImage: `linear-gradient(to right, #27272a 1px, transparent 1px), linear-gradient(to bottom, #27272a 1px, transparent 1px)`,
                             backgroundSize: '40px 40px',
@@ -48,14 +71,14 @@ export default function SideBySideModal({
                 </div>
 
                 {/* Conteúdo Principal */}
-                <div className="flex-1 flex flex-col bg-zinc-950">
+                <div className="flex-1 flex flex-col bg-transparent relative z-10">
 
-                    {/* Header Padrão */}
+                    {/* Header Padrão (Apenas se passado explicitamente) */}
                     {header && (
-                        <header className="px-10 py-6 border-b border-zinc-800/50 bg-zinc-950/40/10 flex justify-between items-center">
+                        <header className="px-10 py-6 border-b border-white/5 bg-white/[0.01] flex justify-between items-center">
                             <div className="flex items-center gap-4">
                                 {header.icon && (
-                                    <div className="p-2.5 rounded-xl bg-zinc-950/40 border border-zinc-800">
+                                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                                         <header.icon size={18} className="text-zinc-400" />
                                     </div>
                                 )}
@@ -68,7 +91,7 @@ export default function SideBySideModal({
                                     </p>
                                 </div>
                             </div>
-                            <button disabled={isSaving} onClick={onClose} className="p-2 rounded-full hover:bg-zinc-950/40 text-zinc-500 transition-all disabled:opacity-30">
+                            <button disabled={isSaving} onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-zinc-500 transition-all disabled:opacity-30">
                                 <X size={20} />
                             </button>
                         </header>
@@ -81,7 +104,7 @@ export default function SideBySideModal({
 
                     {/* Footer */}
                     {footer && (
-                        <footer className="p-8 border-t border-zinc-800/50 bg-zinc-950/40/10 flex flex-col gap-4">
+                        <footer className="p-8 border-t border-white/5 bg-[#080809] flex flex-col gap-4">
                             {footer}
                         </footer>
                     )}

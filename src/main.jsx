@@ -10,10 +10,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Toast from "./components/Toast";
 
 import "./styles/main.css";
-import "./styles/tour.css";
 import AppRoutes from "./routes/route";
 import { configurarInterceptadoresAxios } from "./utils/api";
-import { TourProvider } from "./contexts/TourContext";
+
 
 function AuthAndAxiosGate({ children }) {
     const { getToken, isLoaded } = useAuth();
@@ -68,18 +67,16 @@ createRoot(document.getElementById("root")).render(
                         </div>
                     }>
                         <Toast />
-                        <TourProvider>
-                            <Router>
-                                <ErrorBoundary
-                                    title="Erro na Busca Global"
-                                    message="A pesquisa encontrou um problema."
-                                    className="fixed bottom-4 right-4 z-[9999] w-80 bg-zinc-900 border-zinc-800 shadow-2xl"
-                                >
-                                    <GlobalSearch />
-                                </ErrorBoundary>
-                                <AppRoutes />
-                            </Router>
-                        </TourProvider>
+                        <Router>
+                            <ErrorBoundary
+                                title="Erro na Busca Global"
+                                message="A pesquisa encontrou um problema."
+                                className="fixed bottom-4 right-4 z-[9999] w-80 bg-zinc-900 border-zinc-800 shadow-2xl"
+                            >
+                                <GlobalSearch />
+                            </ErrorBoundary>
+                            <AppRoutes />
+                        </Router>
                     </Suspense>
                 </AuthAndAxiosGate>
             </QueryClientProvider>

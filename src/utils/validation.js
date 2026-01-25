@@ -62,7 +62,7 @@ export const schemas = {
     supply: {
         name: { type: 'string', minLength: 1, maxLength: 100, required: true },
         price: { type: 'number', min: 0, max: 100000, required: true },
-        unit: { type: 'string', enum: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm'], required: true },
+        unit: { type: 'string', enum: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha'], required: true },
         category: { type: 'string', maxLength: 50 },
         minStock: { type: 'number', min: 0, max: 10000 },
         currentStock: { type: 'number', min: 0, max: 10000 }

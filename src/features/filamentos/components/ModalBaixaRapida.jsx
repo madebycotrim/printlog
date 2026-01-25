@@ -1,18 +1,26 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { AlertTriangle, Activity, Terminal, ArrowDownToLine, Loader2, TrendingDown } from "lucide-react";
+import { AlertTriangle, Activity, Terminal, ArrowDownToLine, Loader2, TrendingDown, AlertOctagon } from "lucide-react";
 import SpoolSideView from "./Carretel";
 import { parseNumber } from "../../../utils/numbers";
 import { useToastStore } from "../../../stores/toastStore";
 import SideBySideModal from "../../../components/ui/SideBySideModal";
+import api from "../../../utils/api";
+import { UnifiedInput } from "../../../components/UnifiedInput";
 
 export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const [consumo, setConsumo] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
+    // Estados para Falha
+    const [isFailure, setIsFailure] = useState(false);
+    const [failureReason, setFailureReason] = useState("Falha de Aderência");
+
     // Reinicia o estado ao abrir o modal
     useEffect(() => {
         if (aberto) {
             setConsumo("");
+            setIsFailure(false);
+            setFailureReason("Falha de Aderência");
             setIsSaving(false);
         }
     }, [aberto]);
@@ -53,6 +61,23 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
 
         try {
             setIsSaving(true);
+
+            // 1. Se for falha, registrar no endpoint de falhas primeiro
+            if (isFailure) {
+                const pricePerGram = (Number(item?.preco || 0) / Math.max(1, Number(item?.peso_total || 1000)));
+                const costWasted = (pricePerGram * qtdConsumo).toFixed(2);
+
+                await api.post('/failures', {
+                    weightWasted: qtdConsumo,
+                    costWasted: costWasted,
+                    reason: failureReason,
+                    filamentId: item.id
+                });
+
+                useToastStore.getState().addToast("Falha registrada e descontada!", "info");
+            }
+
+            // 2. Atualiza o peso do filamento (Baixa)
             await aoSalvar({
                 ...item,
                 peso_atual: pesoFinal
@@ -64,7 +89,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
         } finally {
             setIsSaving(false);
         }
-    }, [inputValido, erroSaldoNegativo, isSaving, item, pesoFinal, aoSalvar, aoFechar]);
+    }, [inputValido, erroSaldoNegativo, isSaving, item, pesoFinal, aoSalvar, aoFechar, isFailure, qtdConsumo, failureReason]);
 
     // Atalhos de teclado
     useEffect(() => {
@@ -118,17 +143,17 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             <div className={`${erroSaldoNegativo ? 'border-rose-500/40 bg-rose-500/10' : 'border-zinc-800 bg-zinc-950/50'} border rounded-2xl p-5 backdrop-blur-md relative z-10 shadow-xl transition-all duration-300 w-full`}>
                 <div className="flex items-center gap-2 mb-3">
                     <Activity size={12} className={erroSaldoNegativo ? 'text-rose-500' : 'text-emerald-500/50'} />
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Cálculo de Massa</span>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Resumo do Peso</span>
                 </div>
 
                 <div className="space-y-4">
                     <div className="flex justify-between items-end">
                         <div>
-                            <p className="text-[9px] font-bold text-zinc-600 uppercase mb-1">Anterior</p>
+                            <p className="text-[9px] font-bold text-zinc-600 uppercase mb-1">Antes</p>
                             <p className="text-sm font-bold text-zinc-500 font-mono leading-none">{Math.round(pesoAnterior)}g</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-[9px] font-bold text-zinc-600 uppercase mb-1">Novo Saldo</p>
+                            <p className="text-[9px] font-bold text-zinc-600 uppercase mb-1">Peso Final</p>
                             <p className={`text-2xl font-bold font-mono leading-none ${erroSaldoNegativo ? 'text-rose-500' : 'text-zinc-100'}`}>
                                 {Math.round(pesoFinal)}<span className="text-xs ml-1 text-zinc-500 font-sans">g</span>
                             </p>
@@ -162,7 +187,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 ) : (
                     <Terminal size={16} />
                 )}
-                {isSaving ? "Processando..." : "Confirmar Baixa"}
+                {isSaving ? "Processando..." : "Confirmar Uso"}
             </button>
         </div>
     );
@@ -172,7 +197,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             isOpen={aberto}
             onClose={handleTentativaFechar}
             sidebar={sidebarContent}
-            header={{ title: "Baixa de Estoque", subtitle: "Registre o consumo de material da última impressão", icon: TrendingDown }}
+            header={{ title: "Registrar Uso", subtitle: "Lançar consumo de material do carretel", icon: TrendingDown }}
             footer={footerContent}
             isSaving={isSaving}
         >
@@ -180,7 +205,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 {/* Seção 01 */}
                 <section className="space-y-4">
                     <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        <h4>[01] Peso da Impressão</h4>
+                        <h4>[01] Peso Usado</h4>
                         <div className="h-px bg-zinc-800/50 flex-1" />
                     </div>
 
@@ -222,13 +247,48 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 {/* Seção 02 */}
                 <section className="space-y-4">
                     <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        <h4>[02] Previsão de Saldo</h4>
+                        <h4>[02] Resultado Final</h4>
                         <div className="h-px bg-zinc-800/50 flex-1" />
                     </div>
 
                     <div className="p-6 bg-zinc-950/40/20 border border-zinc-800/50 rounded-[1.5rem] space-y-5">
+                        {/* Toggles */}
+                        <div className="flex items-center justify-between p-1 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                            <button
+                                onClick={() => setIsFailure(false)}
+                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${!isFailure ? 'bg-zinc-800 text-zinc-100 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                Uso Normal
+                            </button>
+                            <button
+                                onClick={() => setIsFailure(true)}
+                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${isFailure ? 'bg-rose-500 text-white shadow-lg' : 'text-zinc-500 hover:text-rose-500'}`}
+                            >
+                                <AlertOctagon size={12} />
+                                Falha de Impressão
+                            </button>
+                        </div>
+
+                        {/* Reason Input (Conditional) */}
+                        {isFailure && (
+                            <div className="animate-in slide-in-from-top-2 fade-in duration-300">
+                                <UnifiedInput
+                                    label="O que aconteceu?"
+                                    type="select"
+                                    options={[{
+                                        items: [
+                                            "Falha de Aderência", "Entupimento de Bico", "Queda de Energia",
+                                            "Erro no Fatiamento", "Fim de Filamento", "Warping (Empenamento)", "Outros"
+                                        ].map(r => ({ value: r, label: r }))
+                                    }]}
+                                    value={failureReason}
+                                    onChange={(v) => setFailureReason(v)}
+                                />
+                            </div>
+                        )}
+
                         <div className="flex justify-between items-center h-6">
-                            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Status do Inventário</span>
+                            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Resumo do Peso</span>
 
                             {erroSaldoNegativo && (
                                 <div className="flex items-center gap-2 text-rose-500 text-[10px] font-bold uppercase animate-pulse">

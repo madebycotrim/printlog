@@ -56,7 +56,20 @@ const deleteFilamentApi = async (id) => {
     return id;
 };
 
+const fetchFilamentHistoryApi = async (id) => {
+    const { data } = await api.get(`/filaments/${id}/history`);
+    return data;
+};
+
 // ==================== HOOKS ====================
+
+export const useFilamentHistory = (id) => {
+    return useQuery({
+        queryKey: ['filament-history', id],
+        queryFn: () => fetchFilamentHistoryApi(id),
+        enabled: !!id,
+    });
+};
 
 export const useFilaments = () => {
     const query = useQuery({

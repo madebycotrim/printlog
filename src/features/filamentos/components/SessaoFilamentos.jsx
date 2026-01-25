@@ -8,7 +8,8 @@ export default function SessaoFilamentos({
     items = [],
     acoes,
     viewMode,
-    currentHumidity
+    currentHumidity,
+    currentTemperature
 }) {
     const [isOpen, setIsOpen] = useState(true);
 
@@ -106,12 +107,14 @@ export default function SessaoFilamentos({
                                     key={item.id}
                                     item={item}
                                     currentHumidity={currentHumidity}
+                                    currentTemperature={currentTemperature}
                                     {...acoes}
                                 />
                                 : <FilamentRow
                                     key={item.id}
                                     item={item}
                                     currentHumidity={currentHumidity}
+                                    currentTemperature={currentTemperature}
                                     {...acoes}
                                 />
                         ))

@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { Plus, Search, X, Trash2, AlertTriangle, PackageSearch, Loader2, Layers, Box, Zap, Hammer, Link, Edit2 } from "lucide-react";
+import { Plus, Search, X, Trash2, AlertTriangle, PackageSearch, Loader2, Layers, Box, Zap, Hammer, Link, Edit2, History } from "lucide-react";
 
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
@@ -13,7 +13,10 @@ import DataCard from "../../components/ui/DataCard";
 import Button from "../../components/ui/Button";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import ModalInsumo from "../../features/insumos/components/ModalInsumo";
+import ModalHistoricoInsumo from "../../features/insumos/components/ModalHistoricoInsumo";
 import StatusInsumos from "../../features/insumos/components/statusInsumos";
+import InsumoFilters from "../../features/insumos/components/InsumoFilters";
+import { SupplyCard } from "../../features/insumos/components/SupplyCard";
 
 // LÓGICA
 import { useSupplyStore } from "../../features/insumos/logic/supplies";
@@ -21,22 +24,29 @@ import { useSupplyStore } from "../../features/insumos/logic/supplies";
 export default function InsumosPage() {
     const [busca, setBusca] = useState("");
     const deferredBusca = useDeferredValue(busca);
-    const [activeCategory, setActiveCategory] = useState("Todos");
+
+    // Filtros e View Mode
+    const [viewMode, setViewMode] = useState("grid");
+    const [filters, setFilters] = useState({
+        lowStock: false,
+        categories: []
+    });
 
     // Definição das Categorias com Ícones
     const CATEGORIES = [
         { id: 'Todos', label: 'Geral', icon: Layers },
-        { id: 'Embalagem', label: 'Embalagens', icon: Box },
-        { id: 'Fixação', label: 'Fixação', icon: Link },
-        { id: 'Eletrônica', label: 'Eletrônica', icon: Zap },
-        { id: 'Acabamento', label: 'Acabamento', icon: Hammer },
-        { id: 'Outros', label: 'Outros', icon: PackageSearch },
+        { id: 'embalagem', label: 'Embalagens', icon: Box },
+        { id: 'fixacao', label: 'Fixação', icon: Link },
+        { id: 'eletronica', label: 'Eletrônica', icon: Zap },
+        { id: 'acabamento', label: 'Acabamento', icon: Hammer },
+        { id: 'outros', label: 'Outros', icon: PackageSearch },
     ];
 
     const { supplies, fetchSupplies, loading, deleteSupply } = useSupplyStore();
 
     // Estados de Modais
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
 
@@ -60,6 +70,7 @@ export default function InsumosPage() {
         let totalValor = 0;
         let baixoEstoque = 0;
         let zerados = 0;
+        let custoReposicao = 0;
 
         lista.forEach(item => {
             const preco = Number(item.price) || 0;
@@ -67,7 +78,13 @@ export default function InsumosPage() {
             const min = Number(item.minStock) || 0;
 
             totalValor += preco * estoque;
-            if (estoque < min) baixoEstoque++;
+
+            if (estoque < min) {
+                baixoEstoque++;
+                const qtdFaltante = min - estoque;
+                custoReposicao += qtdFaltante * preco;
+            }
+
             if (estoque === 0) zerados++;
         });
 
@@ -76,10 +93,22 @@ export default function InsumosPage() {
             const matchesSearch = (item.name || "").toLowerCase().includes(termo) ||
                 (item.description || "").toLowerCase().includes(termo);
 
-            const itemCategory = item.category || 'Outros';
-            const matchesCategory = activeCategory === 'Todos' || itemCategory === activeCategory;
+            // Filtro de Categoria (Multi-select)
+            const rawCategory = item.category || item.categoria || 'outros';
+            const itemCategory = rawCategory.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
 
-            return matchesSearch && matchesCategory;
+            // Check against lowercase IDs (filters.categories contains IDs like 'embalagem')
+            const matchesCategory = filters.categories.length === 0 || filters.categories.includes(itemCategory);
+
+            // Filtro de Baixo Estoque
+            let matchesLowStock = true;
+            if (filters.lowStock) {
+                const stock = Number(item.currentStock || item.estoque_atual || 0);
+                const min = Number(item.minStock || item.estoque_minimo || 0);
+                matchesLowStock = stock < min;
+            }
+
+            return matchesSearch && matchesCategory && matchesLowStock;
         });
 
         return {
@@ -88,15 +117,21 @@ export default function InsumosPage() {
                 totalValor,
                 baixoEstoque,
                 zerados,
+                custoReposicao,
                 totalItems: lista.length
             }
         };
-    }, [supplies, deferredBusca, activeCategory]);
+    }, [supplies, deferredBusca, filters]);
 
     // HANDLERS
     const handleEdit = (item) => {
         setEditingItem(item);
         setIsModalOpen(true);
+    };
+
+    const handleHistory = (item) => {
+        setEditingItem(item);
+        setIsHistoryOpen(true);
     };
 
     const handleDeleteClick = (item) => {
@@ -107,9 +142,8 @@ export default function InsumosPage() {
         if (!confirmacaoExclusao.item) return;
         try {
             await deleteSupply(confirmacaoExclusao.item.id);
-            showToast("Insumo removido com sucesso!", 'success');
         } catch (_error) {
-            showToast("Erro ao remover insumo.", 'error');
+            // Handled by store
         } finally {
             setConfirmacaoExclusao({ aberta: false, item: null });
         }
@@ -117,6 +151,7 @@ export default function InsumosPage() {
 
     const handleModalClose = () => {
         setIsModalOpen(false);
+        setIsHistoryOpen(false);
         setEditingItem(null);
     };
 
@@ -129,8 +164,8 @@ export default function InsumosPage() {
     const novoInsumoButton = (
         <Button
             onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-            className="bg-orange-500 hover:bg-orange-400 text-zinc-950 shadow-lg shadow-orange-900/40"
-            variant="custom"
+            className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
+            variant="secondary"
             icon={Plus}
         >
             Novo
@@ -143,6 +178,7 @@ export default function InsumosPage() {
                 <PageHeader
                     title="Meus Insumos"
                     subtitle="Gestão de Materiais Extras"
+                    accentColor="text-orange-500"
                     searchQuery={busca}
                     onSearchChange={setBusca}
                     placeholder="BUSCAR INSUMO..."
@@ -156,78 +192,34 @@ export default function InsumosPage() {
                             valorTotal={stats.totalValor}
                             lowStockCount={stats.baixoEstoque}
                             itemsWithoutStock={stats.zerados}
+                            restockCost={stats.custoReposicao}
                         />
                     </div>
 
-                    {/* ABAS DE NAVEGAÇÃO POR CATEGORIA */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-4 custom-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-                        {CATEGORIES.map(cat => {
-                            const isActive = activeCategory === cat.id;
-                            const Icon = cat.icon;
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setActiveCategory(cat.id)}
-                                    className={`
-                                        flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all duration-300 shrink-0
-                                        ${isActive
-                                            ? 'bg-zinc-800 border-zinc-700 text-white shadow-lg shadow-black/20'
-                                            : 'bg-zinc-950/40 border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'
-                                        }
-                                    `}
-                                >
-                                    <Icon size={14} className={isActive ? "text-orange-500" : "opacity-70"} />
-                                    <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? '' : ''}`}>
-                                        {cat.label}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                    {/* BARRA DE FILTROS E VIEW MODE */}
+                    <InsumoFilters
+                        filters={filters}
+                        setFilters={setFilters}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        categories={CATEGORIES.filter(cat =>
+                            cat.id === 'Todos' || supplies.some(item => (item.category || item.categoria || 'Outros') === cat.id)
+                        )}
+                    />
 
                     {/* LISTA DE CARDS */}
                     <div className="pb-12">
                         {itemsFiltrados.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 {itemsFiltrados.map(item => (
-                                    <DataCard
+                                    <SupplyCard
                                         key={item.id}
-                                        title={item.name}
-                                        subtitle={`ID: ${item?.id?.slice?.(0, 8) || '...'}`}
-                                        icon={CATEGORIES.find(c => c.id === item.category)?.icon || PackageSearch}
-                                        badge={item.category || 'Geral'}
-                                        color="orange"
-                                        onClick={() => handleEdit(item)}
-                                        headerActions={
-                                            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                                                <Button
-                                                    onClick={() => handleEdit(item)}
-                                                    variant="ghost"
-                                                    size="xs"
-                                                    className="w-8 h-8 p-0 text-zinc-400 hover:text-white hover:bg-zinc-800"
-                                                    icon={Edit2}
-                                                />
-                                                <Button
-                                                    onClick={() => handleDeleteClick(item)}
-                                                    variant="ghost"
-                                                    size="xs"
-                                                    className="w-8 h-8 p-0 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10"
-                                                    icon={Trash2}
-                                                />
-                                            </div>
-                                        }
-                                    >
-                                        <div className="grid grid-cols-2 gap-2 text-sm mt-2">
-                                            <div className="bg-zinc-950/50 p-2.5 rounded-lg border border-white/5">
-                                                <span className="block text-[10px] text-zinc-500 uppercase font-black tracking-wider mb-0.5">Preço</span>
-                                                <span className="text-emerald-400 font-mono font-bold">R$ {Number(item.price).toFixed(2)}</span>
-                                            </div>
-                                            <div className="bg-zinc-950/50 p-2.5 rounded-lg border border-white/5">
-                                                <span className="block text-[10px] text-zinc-500 uppercase font-black tracking-wider mb-0.5">Estoque</span>
-                                                <span className="text-zinc-200 font-mono font-bold">{item.currentStock} <span className="text-[10px] text-zinc-600">{item.unit}</span></span>
-                                            </div>
-                                        </div>
-                                    </DataCard>
+                                        item={item}
+                                        icon={CATEGORIES.find(c => c.id === item.category)?.icon}
+                                        onEdit={() => handleEdit(item)}
+                                        onDelete={() => handleDeleteClick(item)}
+                                        onHistory={() => handleHistory(item)}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -249,6 +241,12 @@ export default function InsumosPage() {
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 editingItem={editingItem}
+            />
+
+            <ModalHistoricoInsumo
+                isOpen={isHistoryOpen}
+                onClose={handleModalClose}
+                item={editingItem}
             />
 
             {/* POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) */}

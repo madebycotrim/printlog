@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { validateInput, schemas } from '../../../utils/validation';
-import { Loader2, Package, Box, AlertCircle, Terminal, Activity } from 'lucide-react';
+import { Loader2, Package, Box, AlertCircle, Terminal, Activity, Layers, Link, Zap, Hammer, PackageSearch, DollarSign, BarChart3, CheckCircle2 } from 'lucide-react';
 import { UnifiedInput } from '../../../components/UnifiedInput';
 import { useSupplyStore } from '../logic/supplies';
 import FormFeedback from '../../../components/FormFeedback';
 import { useFormFeedback } from '../../../hooks/useFormFeedback';
-import SideBySideModal from '../../../components/ui/SideBySideModal';
+import Modal from '../../../components/ui/Modal'; // Switched back to standard Modal
+import { SupplyCard } from './SupplyCard';
 
-// Utilitário de formatação de valores
+// Utilitário de formatação de valores melhorado
 const safeParse = (val) => {
+    if (val === undefined || val === null || val === '') return 0;
     if (typeof val === 'number') return isNaN(val) ? 0 : val;
-    if (!val) return 0;
-    if (typeof val === 'object') return 0; // Prevent [object Object] crashes
-    const parsed = parseFloat(String(val).replace(',', '.'));
+
+    // Converte virgula para ponto para suportar decimais brasileiros
+    const stringVal = String(val).replace(',', '.');
+    const parsed = parseFloat(stringVal);
+
     return isNaN(parsed) ? 0 : parsed;
 };
 
@@ -22,10 +26,18 @@ const INITIAL_STATE = {
     unit: 'un',
     minStock: '5',
     currentStock: '0',
-
-    category: 'Outros',
+    category: 'geral',
     description: ''
 };
+
+const CATEGORIES_CONFIG = [
+    { id: 'geral', label: 'Geral', icon: Layers, color: 'text-zinc-400', bg: 'bg-zinc-500/10', border: 'border-zinc-500/20' },
+    { id: 'embalagem', label: 'Embalagem', icon: Box, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+    { id: 'fixacao', label: 'Fixação', icon: Link, color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
+    { id: 'eletronica', label: 'Eletrônica', icon: Zap, color: 'text-violet-500', bg: 'bg-violet-500/10', border: 'border-violet-500/20' },
+    { id: 'acabamento', label: 'Acabamento', icon: Hammer, color: 'text-pink-500', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
+    { id: 'outros', label: 'Outros', icon: PackageSearch, color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
+];
 
 export default function ModalInsumo({ isOpen, onClose, editingItem }) {
     const { saveSupply } = useSupplyStore();
@@ -34,10 +46,6 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
     const [form, setForm] = useState(INITIAL_STATE);
     const [isDirty, setIsDirty] = useState(false);
 
-    const categoryOptions = useMemo(() => [
-        { items: ['Embalagem', 'Fixação', 'Eletrônica', 'Acabamento', 'Outros', 'Geral'].map(c => ({ value: c, label: c })) }
-    ], []);
-
     useEffect(() => {
         if (isOpen) {
             hide();
@@ -45,11 +53,12 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
             if (editingItem) {
                 setForm({
                     ...editingItem,
-                    price: String(editingItem.price).replace('.', ','),
-                    minStock: String(editingItem.minStock || 0),
-                    currentStock: String(editingItem.currentStock || 0),
-                    category: editingItem.category || 'Outros',
-                    description: editingItem.description || ''
+                    price: String(editingItem.price || editingItem.preco || 0).replace('.', ','),
+                    minStock: String(editingItem.minStock || editingItem.estoque_minimo || 0),
+                    currentStock: String(editingItem.currentStock || editingItem.estoque_atual || 0),
+                    category: (editingItem.category || editingItem.categoria || 'geral').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""),
+                    description: editingItem.description || editingItem.descricao || '',
+                    unit: editingItem.unit || editingItem.unidade || 'un'
                 });
             } else {
                 setForm(INITIAL_STATE);
@@ -74,16 +83,38 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
     }, [loading, isDirty, onClose]);
 
     const handleSubmit = async () => {
+        // Garantir que os valores numéricos sejam processados corretamente
+        const stock = safeParse(form.currentStock);
+        const min = safeParse(form.minStock);
+        const price = safeParse(form.price);
+
+        // PAYLOAD HÍBRIDO (Bilingue)
+        // Envia chaves em Inglês e Português para garantir compatibilidade com Backend misto
         const payload = {
             id: editingItem?.id,
             ...form,
             name: form.name?.trim(),
-            price: safeParse(form.price),
-            minStock: safeParse(form.minStock),
-            currentStock: safeParse(form.currentStock)
+
+            // Inglês
+            price: price,
+            minStock: min,
+            currentStock: stock,
+            category: form.category,
+            unit: form.unit,
+
+            // Português / Snake Case (Possíveis variações do Backend)
+            preco: price,
+            estoque_minimo: min,
+            min_stock: min,
+            estoque_atual: stock,
+            current_stock: stock,
+            categoria: form.category,
+            unidade: form.unit,
+            descricao: form.description
         };
 
         const check = validateInput(payload, schemas.supply);
+        // Note: validation checking only English keys in schema, which is fine since we include them.
         if (!check.valid) {
             showError(check.errors[0]);
             return;
@@ -101,189 +132,169 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
             setLoading(false);
         }
     };
-
-    // Validação robusta
+    // Validação
     const payloadValidacao = useMemo(() => ({
         ...form,
         name: form.name?.trim(),
+        // Validamos sobre os valores brutos ou processados? 
+        // schemas.supply provavelmente espera numeros.
         price: safeParse(form.price),
         minStock: safeParse(form.minStock),
         currentStock: safeParse(form.currentStock)
     }), [form]);
 
-    const validationResult = useMemo(() => validateInput(payloadValidacao, schemas.supply), [payloadValidacao]);
-    const isValid = validationResult.valid;
+    const isValid = useMemo(() => validateInput(payloadValidacao, schemas.supply).valid, [payloadValidacao]);
 
-    // Sidebar Content
-    const sidebarContent = (
-        <div className="flex flex-col items-center w-full space-y-10 relative z-10 h-full justify-between">
-            <div className="w-full">
-                {/* Header da Prévia */}
-                <div className="flex items-center gap-3 justify-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-10">
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                    <span>Prévia</span>
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                </div>
-
-                {/* Card do Ícone (Hero) */}
-                <div className="relative group p-10 rounded-[2.5rem] bg-zinc-950/50 border border-zinc-800 shadow-inner flex items-center justify-center backdrop-blur-sm w-fit mx-auto mb-10">
-                    <div className="relative scale-150">
-                        <div className="w-24 h-24 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 shadow-[0_0_50px_rgba(249,115,22,0.15)] relative">
-                            <Box size={48} className="text-orange-500" strokeWidth={1.5} />
-
-                            {/* Badge decorativa */}
-                            <div className="absolute -bottom-3 -right-3 bg-zinc-900 rounded-lg px-2.5 py-1.5 border border-zinc-800 flex items-center gap-2 shadow-xl z-20">
-                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                                <span className="text-[9px] font-bold text-zinc-300 uppercase tracking-wider">BOX</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Informações Principais */}
-                <div className="text-center space-y-3 w-full">
-                    <h3 className="text-xl font-bold text-zinc-100 tracking-tight truncate px-2 leading-tight">
-                        {form.name || "Novo Insumo"}
-                    </h3>
-                    <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest bg-zinc-800/50 px-3 py-1 rounded-full border border-zinc-800/50 inline-block">
-                        {form.unit} • Estoque: {form.currentStock}
-                    </span>
-                </div>
-            </div>
-
-            {/* Card de Valor (Bottom) */}
-            <div className="bg-zinc-950/50 border border-zinc-800 rounded-2xl p-6 relative z-10 w-full">
-                <div className="flex items-center gap-2 mb-2">
-                    <Activity size={12} className="text-orange-500/50" />
-                    <span className="text-[10px] font-bold text-orange-500/60 uppercase tracking-wider">Valor em Estoque</span>
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl font-bold text-zinc-100 tracking-tighter">
-                        R$ {(safeParse(form.price) * safeParse(form.currentStock)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
 
     // Footer Content
     const footerContent = (
         <div className="flex flex-col gap-4 w-full">
             <FormFeedback {...feedback} onClose={hide} />
 
-            {!isValid && isDirty && !loading && (
-                <div className="flex items-center gap-2 text-rose-500 animate-shake mb-2">
-                    <AlertCircle size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Preencha os campos obrigatórios</span>
-                </div>
-            )}
-
             <div className="flex gap-4">
-                <button disabled={loading} onClick={handleTentativaFechar} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
+                <button
+                    disabled={loading}
+                    onClick={handleTentativaFechar}
+                    className="flex-1 py-3 px-4 rounded-xl border border-zinc-800/50 bg-zinc-900/50 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 hover:border-zinc-700 transition-all disabled:opacity-50"
+                >
                     Cancelar
                 </button>
                 <button
                     disabled={!isValid || loading}
                     onClick={handleSubmit}
-                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${isValid && !loading ? "bg-orange-500 text-zinc-950 hover:bg-orange-400 active:scale-95 hover:shadow-xl shadow-lg shadow-orange-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
+                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-[0.98]
+                        ${isValid && !loading
+                            ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/20 hover:brightness-110 border border-orange-400/20"
+                            : "bg-zinc-900 border border-zinc-800 text-zinc-600 cursor-not-allowed"}`}
                 >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
-                    {loading ? "Processando..." : editingItem ? "Salvar Alterações" : "Adicionar Insumo"}
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : (editingItem ? <CheckCircle2 size={16} /> : <Package size={16} />)}
+                    {loading ? "Salvando..." : editingItem ? "Salvar Alterações" : "Adicionar Insumo"}
                 </button>
             </div>
         </div>
     );
 
     return (
-        <SideBySideModal
+        <Modal
             isOpen={isOpen}
             onClose={handleTentativaFechar}
-            sidebar={sidebarContent}
-            title={editingItem ? "Editar Insumo" : "Cadastrar Insumo"}
-            subtitle={editingItem ? "Atualize os dados do material" : "Adicione um novo material extra ao inventário"}
+            title={editingItem ? "Editar Insumo" : "Novo Insumo"}
+            subtitle={editingItem ? "Atualize as informações do material." : "Adicione um novo item ao seu estoque."}
+            icon={Package}
             footer={footerContent}
-            isSaving={loading}
+            isLoading={loading}
+            maxWidth="max-w-2xl"
         >
-            <div className={`space-y-8 ${loading ? 'pointer-events-none' : ''}`}>
-                {/* Seção 01 */}
-                <section className="space-y-5">
-                    <div className="flex items-center gap-4">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[01] Detalhes Básicos</h4>
-                        <div className="h-px bg-zinc-800/50 flex-1" />
+            <div className="space-y-10">
+                {/* 1. SELEÇÃO DE CATEGORIA (VISUAL) */}
+                <section className="space-y-3">
+                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                        <Layers size={14} className="text-zinc-400" />
+                        Categoria
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {CATEGORIES_CONFIG.map((cat) => (
+                            <button
+                                key={cat.id}
+                                onClick={() => updateForm('category', cat.id)}
+                                className={`
+                                    relative p-2 rounded-lg border flex items-center gap-3 transition-all duration-300 group
+                                    ${form.category === cat.id
+                                        ? `${cat.bg} ${cat.border} ring-1 ring-white/10`
+                                        : 'bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700'}
+                                `}
+                            >
+                                <div className={`
+                                    p-1.5 rounded-md transition-colors
+                                    ${form.category === cat.id ? 'bg-white/10' : 'bg-transparent'}
+                                `}>
+                                    <cat.icon
+                                        size={16}
+                                        className={`transition-colors duration-300 ${form.category === cat.id ? cat.color : 'text-zinc-500 group-hover:text-zinc-300'}`}
+                                    />
+                                </div>
+                                <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${form.category === cat.id ? 'text-zinc-100' : 'text-zinc-500'}`}>
+                                    {cat.label}
+                                </span>
+
+                                {form.category === cat.id && (
+                                    <div className={`absolute inset-0 rounded-lg bg-current opacity-5 pointer-events-none ${cat.color}`} />
+                                )}
+                            </button>
+                        ))}
                     </div>
-                    <div className="grid grid-cols-1 gap-5">
+                </section>
+
+                <div className="h-px bg-white/5" />
+
+                {/* 2. DADOS BÁSICOS */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-4">
+                            <Activity size={14} className="text-zinc-400" />
+                            Informações Básicas
+                        </h4>
                         <UnifiedInput
                             label="Nome do Insumo"
-                            placeholder="Ex: Caixa de Papelão, Cola, Lixa..."
+                            placeholder="Ex: Filamento PLA, Parafuso M3..."
                             value={form.name}
                             onChange={e => updateForm('name', e.target.value)}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-5">
+
+                    <UnifiedInput
+                        label="Descrição (Opcional)"
+                        placeholder="Detalhes adicionais..."
+                        value={form.description}
+                        onChange={e => updateForm('description', e.target.value)}
+                    />
+
+                    {/* Preço Unitário */}
+                    <UnifiedInput
+                        label="Custo Unitário"
+                        placeholder="0,00"
+                        suffix="R$"
+                        icon={DollarSign}
+                        value={form.price}
+                        onChange={e => updateForm('price', e.target.value)}
+                    />
+                </section>
+
+                <div className="h-px bg-white/5" />
+
+                {/* 3. ESTOQUE & CONTROLE */}
+                <section className="space-y-4">
+                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 mb-4">
+                        <BarChart3 size={14} className="text-zinc-400" />
+                        Estoque e Unidade
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <UnifiedInput
-                            label="Categoria"
+                            label="Estoque Atual"
+                            type="number"
+                            value={form.currentStock}
+                            onChange={e => updateForm('currentStock', e.target.value)}
+                        />
+
+                        <UnifiedInput
+                            label="Unidade"
                             type="select"
-                            options={categoryOptions}
-                            value={form.category}
-                            onChange={v => updateForm('category', v)}
+                            options={[{ items: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha'].map(u => ({ value: u, label: u })) }]}
+                            value={form.unit}
+                            onChange={v => updateForm('unit', v)}
                         />
-                        <UnifiedInput
-                            label="Descrição (Opcional)"
-                            placeholder="Detalhes adicionais..."
-                            value={form.description}
-                            onChange={e => updateForm('description', e.target.value)}
-                        />
-                    </div>
-                </section>
 
-                {/* Seção 02 */}
-                <section className="grid grid-cols-2 gap-x-12 gap-y-6">
-                    <div className="space-y-1.5">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">[02] Financeiro</h4>
                         <UnifiedInput
-                            label="Preço Unitário"
-                            placeholder="0,00"
-                            suffix="R$"
-                            value={form.price}
-                            onChange={e => updateForm('price', e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">[03] Estoque</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <UnifiedInput
-                                label="Atual"
-                                type="number"
-                                value={form.currentStock}
-                                onChange={e => updateForm('currentStock', e.target.value)}
-                            />
-                            <UnifiedInput
-                                label="Unidade"
-                                type="select"
-                                options={[{ items: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha'].map(u => ({ value: u, label: u })) }]}
-                                value={form.unit}
-                                onChange={v => updateForm('unit', v)}
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Seção 03 */}
-                <section className="space-y-5">
-                    <div className="flex items-center gap-4">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[04] Controle</h4>
-                        <div className="h-px bg-zinc-800/50 flex-1" />
-                    </div>
-                    <div className="w-1/2 pr-6">
-                        <UnifiedInput
-                            label="Estoque Mínimo (Alerta)"
+                            label="Mínimo (Alerta)"
                             type="number"
                             value={form.minStock}
                             onChange={e => updateForm('minStock', e.target.value)}
+                            tip="Quantidade para alerta de reposição"
                         />
                     </div>
                 </section>
             </div>
-        </SideBySideModal>
+        </Modal>
     );
 }

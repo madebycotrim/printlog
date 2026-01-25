@@ -4,26 +4,28 @@ import { Scan, AlertTriangle, Trash2, X, PackageSearch, Database, Plus, Search, 
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import Modal from "../../components/ui/Modal"; // Componente Unificado
+import Modal from "../../components/ui/Modal";
 import EmptyState from "../../components/ui/EmptyState";
 import Button from "../../components/ui/Button";
 import ConfirmModal from "../../components/ui/ConfirmModal";
-import api from "../../utils/api"; // Configured API instance
+import api from "../../utils/api";
 
 // LÓGICA E STORE (Zustand)
 import { useFilaments, useFilamentMutations } from "../../features/filamentos/logic/filamentQueries";
 
 // COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
 import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
-import SessaoFilamentos from "../../features/filamentos/components/SessaoFilamentos";
+import { VirtualRack } from "../../features/filamentos/components/redesign/VirtualRack"; // NEW COMPONENT
 import ModalFilamento from "../../features/filamentos/components/ModalFilamento.jsx";
 import ModalBaixaRapida from "../../features/filamentos/components/ModalBaixaRapida.jsx";
+import ModalHistoricoFilamento from "../../features/filamentos/components/ModalHistoricoFilamento.jsx";
 import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegistrarFalha';
-
 
 // NOVOS COMPONENTES (FILTROS)
 import { getColorFamily } from "../../utils/colorUtils";
 import FilamentFilters from "../../features/filamentos/components/FilamentFilters";
+
+import { useLocalWeather } from "../../hooks/useLocalWeather";
 
 const VIEW_MODE_KEY = "printlog_filaments_view";
 const DEFAULT_VIEW_MODE = "grid";
@@ -32,10 +34,8 @@ export default function FilamentosPage() {
   const [busca, setBusca] = useState("");
   const deferredBusca = useDeferredValue(busca);
 
-  // const { temp, humidity, loading: weatherLoading } = useLocalWeather();
-  const temp = 25; // Default/Mock value
-  const humidity = 50; // Default/Mock value
-  const weatherLoading = false;
+  const { temp, humidity, loading: weatherLoading } = useLocalWeather();
+
   const { data: filaments = [], isLoading: loading } = useFilaments();
   const { saveFilament, deleteFilament } = useFilamentMutations();
 
@@ -52,9 +52,8 @@ export default function FilamentosPage() {
   const [itemEdicao, setItemEdicao] = useState(null);
   const [itemConsumo, setItemConsumo] = useState(null);
   const [modalFalhaAberto, setModalFalhaAberto] = useState(false);
+  const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
-
-
 
   // Fetch Failures Stats
   const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });
@@ -70,8 +69,6 @@ export default function FilamentosPage() {
     fetchFailures();
   }, [fetchFailures]);
 
-  // Fetch automatico via React Query
-
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
@@ -81,13 +78,12 @@ export default function FilamentosPage() {
     const termo = deferredBusca.toLowerCase().trim();
     const listaOriginal = Array.isArray(filaments) ? filaments : [];
 
-    // 1. Extrair Metadados (Para filtros)
+    // 1. Extrair Metadados
     const allBrands = [...new Set(listaOriginal.map(f => f.marca).filter(Boolean))];
     const allMaterials = [...new Set(listaOriginal.map(f => f.material).filter(Boolean))];
 
-    // 2. Filtragem Complexa
+    // 2. Filtragem
     const filtrados = listaOriginal.filter(f => {
-      // Busca Textual
       const nome = (f.nome || "").toLowerCase();
       const material = (f.material || "").toLowerCase();
       const marca = (f.marca || "").toLowerCase();
@@ -95,17 +91,13 @@ export default function FilamentosPage() {
 
       if (!matchesSearch) return false;
 
-      // Filtro Status (Baixo Estoque)
       if (filters.lowStock) {
         const total = Math.max(1, Number(f.peso_total) || 1000);
         const ratio = (f.peso_atual || 0) / total;
         if (ratio > 0.2 && f.peso_atual >= 150) return false;
       }
 
-      // Filtro Materiais
       if (filters.materials.length > 0 && !filters.materials.includes(f.material)) return false;
-
-      // Filtro Marcas
       if (filters.brands.length > 0 && !filters.brands.includes(f.marca)) return false;
 
       return true;
@@ -124,13 +116,20 @@ export default function FilamentosPage() {
       if ((atual / total) <= 0.2 || atual < 150) lowStock++;
     });
 
-    // 3. Agrupamento Simplificado (Sem Abas)
-    const map = {
-      "Inventário": filtrados
-    };
+    const map = filtrados.reduce((acc, item) => {
+      const mat = item.material || "SEM MATERIAL";
+      if (!acc[mat]) acc[mat] = [];
+      acc[mat].push(item);
+      return acc;
+    }, {});
+
+    const sortedMap = Object.keys(map).sort().reduce((obj, key) => {
+      obj[key] = map[key];
+      return obj;
+    }, {});
 
     return {
-      grupos: map,
+      grupos: sortedMap,
       lowStockCount: lowStock,
       stats: { valorTotal: valorTotalAcumulado, pesoKg: totalG / 1000 },
       availableBrands: allBrands,
@@ -138,10 +137,26 @@ export default function FilamentosPage() {
     };
   }, [filaments, deferredBusca, filters]);
 
-  // HANDLERS MEMOIZADOS (Performance)
+  // HANDLERS
   const handleEdit = useCallback((item) => {
     setItemEdicao(item);
     setModalAberto(true);
+  }, []);
+
+  const handleDuplicate = useCallback((item) => {
+    const { id, created_at, ...rest } = item;
+    const newItem = {
+      ...rest,
+      nome: `${item.nome} (Cópia)`,
+      peso_atual: item.peso_total,
+    };
+    setItemEdicao(newItem);
+    setModalAberto(true);
+  }, []);
+
+  const handleHistory = useCallback((item) => {
+    setItemEdicao(item);
+    setModalHistoricoAberto(true);
   }, []);
 
   const handleDelete = useCallback((id) => {
@@ -154,22 +169,23 @@ export default function FilamentosPage() {
     setItemEdicao(null);
     setItemConsumo(null);
     setModalFalhaAberto(false);
+    setModalHistoricoAberto(false);
     setConfirmacaoExclusao({ aberta: false, item: null });
   }, []);
 
   const acoes = useMemo(() => ({
     onEdit: handleEdit,
     onDelete: handleDelete,
-    onConsume: setItemConsumo
-  }), [handleEdit, handleDelete]);
+    onConsume: setItemConsumo,
+    onDuplicate: handleDuplicate,
+    onHistory: handleHistory
+  }), [handleEdit, handleDelete, handleDuplicate, handleHistory]);
 
   const aoSalvarFilamento = async (dados) => {
     try {
       await saveFilament(dados);
       fecharModais();
-    } catch (_e) {
-      // Erro tratado pela mutation
-    }
+    } catch (_e) { }
   };
 
   const aoConfirmarExclusao = async () => {
@@ -177,20 +193,17 @@ export default function FilamentosPage() {
     if (!item) return;
     try {
       await deleteFilament(item.id);
-    } catch (_e) {
-      // Erro tratado pela mutation
-    } finally {
+    } catch (_e) { } finally {
       fecharModais();
     }
   };
 
   const extraControls = (
     <div className="flex items-center gap-4">
-      {/* Botão Desperdício */}
       <Button
-        variant="danger"
+        variant="ghost"
         size="md"
-        className="bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500/20 hover:border-rose-500/40"
+        className="text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20"
         onClick={() => setModalFalhaAberto(true)}
         title="Registrar Desperdício"
         icon={Trash2}
@@ -201,7 +214,8 @@ export default function FilamentosPage() {
   const novoButton = (
     <Button
       onClick={() => { setItemEdicao(null); setModalAberto(true); }}
-      variant="danger"
+      variant="secondary"
+      className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
       icon={Plus}
       data-tour="filament-add-btn"
     >
@@ -214,22 +228,22 @@ export default function FilamentosPage() {
       <div className="p-8 xl:p-12 max-w-[1600px] mx-auto w-full space-y-8 animate-in fade-in duration-500">
 
         <PageHeader
-          title="Meus Filamentos"
-          subtitle="Gestão de Estoque e Materiais"
+          title="Meus Carretéis"
+          subtitle="Gerencie seu estoque de filamentos de forma simples"
+          accentColor="text-rose-500"
           searchQuery={busca}
           onSearchChange={setBusca}
-          placeholder="BUSCAR MATERIAL..."
+          placeholder="BUSCAR NO ESTOQUE..."
           extraControls={extraControls}
           actionButton={novoButton}
         />
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div>
             <StatusFilamentos
               totalWeight={stats.pesoKg}
               lowStockCount={lowStockCount}
               valorTotal={stats.valorTotal}
-
               weather={{ temp, humidity, loading: weatherLoading }}
               failureStats={failureStats}
             />
@@ -241,24 +255,21 @@ export default function FilamentosPage() {
               setFilters={setFilters}
               viewMode={viewMode}
               setViewMode={setViewMode}
-
               availableBrands={availableBrands}
               availableMaterials={availableMaterials}
             />
           </div>
 
           {Object.entries(grupos).length > 0 ? (
-            <div className="space-y-8 pb-12">
-              {Object.entries(grupos).map(([tipo, items]) => (
-                <SessaoFilamentos
-                  key={tipo}
-                  tipo={tipo}
-                  items={items}
-                  viewMode={viewMode}
-                  currentHumidity={humidity}
-                  acoes={acoes}
-                />
-              ))}
+            <div className="pb-6">
+              {/* VIRTUAL RACK - New Visual Component */}
+              <VirtualRack
+                groupedFilaments={grupos}
+                currentHumidity={humidity}
+                currentTemperature={temp}
+                acoes={acoes}
+                viewMode={viewMode}
+              />
             </div>
           ) : (
             !loading && (
@@ -274,10 +285,9 @@ export default function FilamentosPage() {
         {/* --- MODAIS DE NEGOCIO --- */}
         <ModalFilamento aberto={modalAberto} aoFechar={fecharModais} aoSalvar={aoSalvarFilamento} dadosIniciais={itemEdicao} />
         <ModalBaixaRapida aberto={!!itemConsumo} aoFechar={fecharModais} item={itemConsumo} aoSalvar={aoSalvarFilamento} />
+        <ModalHistoricoFilamento aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
         <ModalRegistrarFalha aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
 
-        {/* --- POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) --- */}
-        {/* --- POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) --- */}
         <ConfirmModal
           isOpen={confirmacaoExclusao.aberta}
           onClose={fecharModais}
@@ -297,4 +307,3 @@ export default function FilamentosPage() {
     </ManagementLayout>
   );
 }
-

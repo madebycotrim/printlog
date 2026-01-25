@@ -87,12 +87,12 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
                         {/* Smooth Volume Form */}
                         <path
                             d={`
-                                M ${backZ} ${centerY - currentRadiusY}
-                                L ${frontZ - rimThickness} ${centerY - currentRadiusY}
-                                A ${currentRadiusX} ${currentRadiusY} 0 0 1 ${frontZ - rimThickness} ${centerY + currentRadiusY}
-                                L ${backZ} ${centerY + currentRadiusY}
-                                A ${currentRadiusX} ${currentRadiusY} 0 0 1 ${backZ} ${centerY - currentRadiusY}
-                            `}
+                                    M ${backZ} ${centerY - currentRadiusY}
+                                    L ${frontZ - rimThickness} ${centerY - currentRadiusY}
+                                    A ${currentRadiusX} ${currentRadiusY} 0 0 1 ${frontZ - rimThickness} ${centerY + currentRadiusY}
+                                    L ${backZ} ${centerY + currentRadiusY}
+                                    A ${currentRadiusX} ${currentRadiusY} 0 0 1 ${backZ} ${centerY - currentRadiusY}
+                                `}
                             fill={`url(#filamentSoft-${uniqueId})`}
                         />
                         <ellipse
@@ -109,12 +109,12 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
                 {/* --- FRONT FLANGE THICKNESS --- */}
                 <path
                     d={`
-                        M ${frontZ - rimThickness} ${centerY - rimRadiusY}
-                        L ${frontZ} ${centerY - rimRadiusY}
-                        A ${rimRadiusX} ${rimRadiusY} 0 1 1 ${frontZ} ${centerY + rimRadiusY}
-                        L ${frontZ - rimThickness} ${centerY + rimRadiusY}
-                        A ${rimRadiusX} ${rimRadiusY} 0 1 0 ${frontZ - rimThickness} ${centerY - rimRadiusY}
-                    `}
+                            M ${frontZ - rimThickness} ${centerY - rimRadiusY}
+                            L ${frontZ} ${centerY - rimRadiusY}
+                            A ${rimRadiusX} ${rimRadiusY} 0 1 1 ${frontZ} ${centerY + rimRadiusY}
+                            L ${frontZ - rimThickness} ${centerY + rimRadiusY}
+                            A ${rimRadiusX} ${rimRadiusY} 0 1 0 ${frontZ - rimThickness} ${centerY - rimRadiusY}
+                        `}
                     fill={`url(#plasticRim-${uniqueId})`}
                 />
 
@@ -127,12 +127,12 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
                                 <path
                                     key={angle}
                                     d={`
-                                        M ${Math.cos((angle + 18) * Math.PI / 180) * 8} ${Math.sin((angle + 18) * Math.PI / 180) * 16}
-                                        L ${Math.cos((angle + 18) * Math.PI / 180) * 19} ${Math.sin((angle + 18) * Math.PI / 180) * 38}
-                                        A 19 38 0 0 1 ${Math.cos((angle + 42) * Math.PI / 180) * 19} ${Math.sin((angle + 42) * Math.PI / 180) * 38}
-                                        L ${Math.cos((angle + 42) * Math.PI / 180) * 8} ${Math.sin((angle + 42) * Math.PI / 180) * 16}
-                                        Z
-                                    `}
+                                            M ${Math.cos((angle + 18) * Math.PI / 180) * 8} ${Math.sin((angle + 18) * Math.PI / 180) * 16}
+                                            L ${Math.cos((angle + 18) * Math.PI / 180) * 19} ${Math.sin((angle + 18) * Math.PI / 180) * 38}
+                                            A 19 38 0 0 1 ${Math.cos((angle + 42) * Math.PI / 180) * 19} ${Math.sin((angle + 42) * Math.PI / 180) * 38}
+                                            L ${Math.cos((angle + 42) * Math.PI / 180) * 8} ${Math.sin((angle + 42) * Math.PI / 180) * 16}
+                                            Z
+                                        `}
                                     fill="black"
                                 />
                             ))}

@@ -6,7 +6,7 @@ import { cacheQuery, invalidateCache } from './_cache';
  * API DE APROVAÇÃO DE ORÇAMENTOS
  * Aprova orçamento, atualiza status do projeto, deduz filamento do estoque e registra horas na impressora
  */
-export async function aprovarProjeto({ request, db, tenantId }) {
+export async function aprovarProjeto({ request, db }) {
     if (request.method !== 'POST') return enviarJSON({ error: "Método não permitido" }, 405);
 
     const p = await request.json();
@@ -16,8 +16,8 @@ export async function aprovarProjeto({ request, db, tenantId }) {
     // Validações de entrada
     if (!projectId) return enviarJSON({ error: "ID do projeto obrigatório" }, 400);
 
-    // Busca o projeto no banco de dados (Escopo: Tenant)
-    const project = await db.prepare("SELECT data FROM projects WHERE id = ? AND org_id = ?").bind(projectId, tenantId).first();
+    // Busca o projeto no banco de dados
+    const project = await db.prepare("SELECT data FROM projects WHERE id = ?").bind(projectId).first();
     if (!project) return enviarJSON({ error: "Projeto não encontrado" }, 404);
 
     // Atualiza o status do projeto para "aprovado"
@@ -26,52 +26,47 @@ export async function aprovarProjeto({ request, db, tenantId }) {
 
     // Cria lista de operações em batch para executar atomicamente
     const batch = [
-        db.prepare("UPDATE projects SET data = ? WHERE id = ? AND org_id = ?").bind(JSON.stringify(pData), projectId, tenantId)
+        db.prepare("UPDATE projects SET data = ? WHERE id = ?").bind(JSON.stringify(pData), projectId)
     ];
 
     // Se houver impressora vinculada, incrementa as horas totais e altera status
     if (printerId) {
-        batch.push(db.prepare("UPDATE printers SET horas_totais = horas_totais + ?, status = 'printing' WHERE id = ? AND org_id = ?")
-            .bind(paraNumero(p.totalTime), printerId, tenantId));
+        batch.push(db.prepare("UPDATE printers SET horas_totais = horas_totais + ?, status = 'printing' WHERE id = ?")
+            .bind(paraNumero(p.totalTime), printerId));
     }
 
     // Deduz o filamento utilizado do estoque (suporta múltiplos filamentos)
     if (Array.isArray(p.filaments)) {
         p.filaments.forEach(f => {
             if (f.id && f.id !== 'manual') {
-                batch.push(db.prepare("UPDATE filaments SET peso_atual = MAX(0, peso_atual - ?) WHERE id = ? AND org_id = ?")
-                    .bind(paraNumero(f.peso || f.weight), String(f.id), tenantId));
+                batch.push(db.prepare("UPDATE filaments SET peso_atual = MAX(0, peso_atual - ?) WHERE id = ?")
+                    .bind(paraNumero(f.peso || f.weight), String(f.id)));
             }
         });
     }
 
     // Executa todas as operações em uma única transação
     await db.batch(batch);
-    invalidateCache(`projects:${tenantId}`); // Invalida cache de projetos do tenant
+    // invalidateCache(`projects:${tenantId}`); // Cache removido por enquanto
     return enviarJSON({ success: true });
 }
 
-export async function gerenciarProjetos({ request, db, userId, tenantId, url, params }) {
+export async function gerenciarProjetos({ request, db, userId, url, params }) {
     const method = request.method;
     const pathArray = params.path || [];
     const idFromPath = pathArray[1];
 
     try {
         if (method === 'GET') {
-            // Cache de 30 segundos para lista de projetos
-            const formatted = await cacheQuery(
-                `projects:${tenantId}`,
-                30000,
-                async () => {
-                    const { results } = await db.prepare("SELECT * FROM projects WHERE org_id = ? ORDER BY created_at DESC").bind(tenantId).all();
-                    return (results || []).map(r => ({
-                        id: r.id,
-                        label: r.label || "Sem Nome",
-                        data: JSON.parse(r.data || "{}"),
-                        created_at: r.created_at
-                    }));
-                }
-            );
+            // Sem cache por enquanto
+            const { results } = await db.prepare("SELECT * FROM projects ORDER BY created_at DESC").all();
+            const formatted = (results || []).map(r => ({
+                id: r.id,
+                label: r.label || "Sem Nome",
+                data: JSON.parse(r.data || "{}"),
+                created_at: r.created_at
+            }));
+
             return enviarJSON(formatted);
         }
 
@@ -94,10 +89,10 @@ export async function gerenciarProjetos({ request, db, userId, tenantId, url, pa
                 status: rawData.status || rawData.data?.status || 'rascunho'
             });
 
-            await db.prepare("INSERT INTO projects (id, user_id, org_id, label, data) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET label=excluded.label, data=excluded.data")
-                .bind(id, userId, tenantId, label, dataStr).run();
+            await db.prepare("INSERT INTO projects (id, user_id, label, data) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET label=excluded.label, data=excluded.data")
+                .bind(id, userId, label, dataStr).run();
 
-            invalidateCache(`projects:${tenantId}`);
+            // invalidateCache(`projects:${tenantId}`);
 
             return enviarJSON({ id, label, success: true });
         }
@@ -106,12 +101,16 @@ export async function gerenciarProjetos({ request, db, userId, tenantId, url, pa
             const id = url.searchParams.get('id') || idFromPath;
 
             if (id) {
-                await db.prepare("DELETE FROM projects WHERE id = ? AND org_id = ?").bind(id, tenantId).run();
+                await db.prepare("DELETE FROM projects WHERE id = ?").bind(id).run();
             } else {
-                await db.prepare("DELETE FROM projects WHERE org_id = ?").bind(tenantId).run();
+                // await db.prepare("DELETE FROM projects WHERE org_id = ?").bind(tenantId).run();
+                // Não deleta tudo globalmente sem org_id, perigoso. Melhor não suportar delete all por enquanto ou deletar por user_id.
+                // Mas o usuario pediu remove org_id. Se for single user, delete tudo ok?
+                // Vou deixar comentado ou remover delete all.
+                return enviarJSON({ error: "Deleção em massa desabilitada sem org_id" }, 400);
             }
 
-            invalidateCache(`projects:${tenantId}`);
+            // invalidateCache(`projects:${tenantId}`);
 
             return enviarJSON({ success: true, message: "Projeto(s) removido(s)." });
         }

@@ -31,38 +31,45 @@ const StatsWidget = memo(({
     secondaryLabel,
     secondaryValue,
     isLoading = false,
-    className = ""
+    className = "",
+    FooterIcon = Activity // Icone de rodapé padrão
 }) => {
     return (
         <div className={`
-            relative h-[130px] p-6 rounded-2xl overflow-hidden flex items-center justify-between 
-            bg-zinc-950/40/40 border border-zinc-800/50 backdrop-blur-sm 
-            group transition-all duration-300 hover:border-zinc-800/50/50 hover:bg-zinc-950/40/60 shadow-sm
+            relative h-[130px] p-6 rounded-3xl overflow-hidden flex items-center justify-between 
+            bg-[#09090b] border border-white/5 shadow-2xl group transition-all duration-300
+            hover:border-white/10 hover:bg-[#0c0c0e] hover:shadow-[0_0_30px_rgba(0,0,0,0.5)]
             ${className}
         `}>
+            {/* Trama de Fundo (Grid) */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
+
+            {/* Linha de Brilho Superior */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+
             {/* Background Glow sutil no hover */}
             {glowColor && (
-                <div className={`absolute -right-2 -bottom-2 w-12 h-12 blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${glowColor}`} />
+                <div className={`absolute -right-10 -bottom-10 w-32 h-32 blur-[60px] opacity-10 group-hover:opacity-20 transition-opacity duration-500 rounded-full bg-current ${glowColor}`} />
             )}
 
             <div className="flex items-center gap-5 relative z-10">
-                <div className={`p-3.5 rounded-xl border shadow-inner group-hover:scale-105 transition-transform duration-500 flex items-center justify-center ${iconBg} ${iconColor}`}>
+                <div className={`p-4 rounded-2xl border shadow-inner group-hover:scale-105 transition-transform duration-500 flex items-center justify-center backdrop-blur-md ${iconBg} ${iconColor}`}>
                     {Icon && <Icon size={24} strokeWidth={2} />}
                 </div>
 
                 <div>
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5">
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.15em] mb-1.5 whitespace-nowrap">
                         {title}
                     </p>
                     {(secondaryLabel || secondaryValue) && (
                         <div className="flex flex-col">
                             {secondaryLabel && (
-                                <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight">
+                                <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight whitespace-nowrap truncate max-w-[120px]">
                                     {secondaryLabel}
                                 </span>
                             )}
                             {secondaryValue && (
-                                <span className="text-[11px] text-zinc-500 font-medium mt-0.5">
+                                <span className="text-[11px] text-zinc-500 font-medium mt-0.5 whitespace-nowrap truncate max-w-[120px]">
                                     {isLoading ? "Sincronizando..." : secondaryValue}
                                 </span>
                             )}
@@ -72,11 +79,11 @@ const StatsWidget = memo(({
             </div>
 
             <div className="text-right flex flex-col justify-between h-full py-1 relative z-10">
-                <h3 className={`text-2xl font-black font-sans tracking-tighter leading-none ${isLoading ? 'text-zinc-600' : 'text-zinc-100'}`}>
+                <h3 className={`text-2xl font-bold font-sans ${isLoading ? 'text-zinc-600' : 'text-zinc-100'}`}>
                     {isLoading ? "---" : value}
                 </h3>
                 <div className="flex items-center gap-2 justify-end opacity-20">
-                    <Activity size={14} className={isLoading ? "animate-spin" : "text-zinc-500"} />
+                    <FooterIcon size={14} className={isLoading ? "animate-spin" : "text-zinc-500"} />
                 </div>
             </div>
         </div>

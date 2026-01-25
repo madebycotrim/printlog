@@ -17,7 +17,11 @@ CREATE TABLE IF NOT EXISTS todos (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, or
 CREATE TABLE IF NOT EXISTS failures (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, org_id TEXT, date TEXT, filament_id TEXT, printer_id TEXT, model_name TEXT, weight_wasted REAL, cost_wasted REAL, reason TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
 
 -- Insumos
-CREATE TABLE IF NOT EXISTS supplies (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, org_id TEXT, name TEXT NOT NULL, price REAL, unit TEXT, min_stock REAL, current_stock REAL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+-- Insumos
+CREATE TABLE IF NOT EXISTS supplies (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, org_id TEXT, name TEXT NOT NULL, price REAL, unit TEXT, min_stock REAL, current_stock REAL, category TEXT DEFAULT 'Outros', description TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME);
+
+-- Histórico de Insumos
+CREATE TABLE IF NOT EXISTS supply_events (id TEXT PRIMARY KEY, supply_id TEXT NOT NULL, org_id TEXT, user_id TEXT, type TEXT CHECK(type IN ('create', 'update', 'manual', 'abertura', 'delete')), old_stock REAL, new_stock REAL, quantity_change REAL, cost REAL, notes TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
 
 -- Assinaturas (Billing)
 CREATE TABLE IF NOT EXISTS subscriptions (org_id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, status TEXT, current_period_end TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);

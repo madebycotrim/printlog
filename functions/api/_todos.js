@@ -6,7 +6,7 @@ export async function gerenciarTodos({ request, db, userId, tenantId, url }) {
     try {
         // LISTAR
         if (method === 'GET') {
-            const todos = await db.prepare("SELECT * FROM todos WHERE org_id = ? ORDER BY created_at DESC").bind(tenantId).all();
+            const todos = await db.prepare("SELECT * FROM todos ORDER BY created_at DESC").all();
             return enviarJSON(todos.results || []);
         }
 
@@ -16,8 +16,8 @@ export async function gerenciarTodos({ request, db, userId, tenantId, url }) {
             if (!text) return enviarJSON({ error: "Texto obrigatório" }, 400);
 
             const id = crypto.randomUUID();
-            await db.prepare("INSERT INTO todos (id, user_id, org_id, text, done) VALUES (?, ?, ?, ?, 0)")
-                .bind(id, userId, tenantId, text)
+            await db.prepare("INSERT INTO todos (id, user_id, text, done) VALUES (?, ?, ?, 0)")
+                .bind(id, userId, text)
                 .run();
 
             return enviarJSON({ id, text, done: 0, created_at: new Date().toISOString() }, 201);
@@ -29,14 +29,14 @@ export async function gerenciarTodos({ request, db, userId, tenantId, url }) {
             if (!id) return enviarJSON({ error: "ID obrigatório" }, 400);
 
             if (text !== undefined && done !== undefined) {
-                await db.prepare("UPDATE todos SET text = ?, done = ? WHERE id = ? AND org_id = ?")
-                    .bind(text, done ? 1 : 0, id, tenantId).run();
+                await db.prepare("UPDATE todos SET text = ?, done = ? WHERE id = ?")
+                    .bind(text, done ? 1 : 0, id).run();
             } else if (done !== undefined) {
-                await db.prepare("UPDATE todos SET done = ? WHERE id = ? AND org_id = ?")
-                    .bind(done ? 1 : 0, id, tenantId).run();
+                await db.prepare("UPDATE todos SET done = ? WHERE id = ?")
+                    .bind(done ? 1 : 0, id).run();
             } else if (text !== undefined) {
-                await db.prepare("UPDATE todos SET text = ? WHERE id = ? AND org_id = ?")
-                    .bind(text, id, tenantId).run();
+                await db.prepare("UPDATE todos SET text = ? WHERE id = ?")
+                    .bind(text, id).run();
             }
 
             return enviarJSON({ success: true });
@@ -56,8 +56,8 @@ export async function gerenciarTodos({ request, db, userId, tenantId, url }) {
 
             if (!targetId) return enviarJSON({ error: "ID obrigatório" }, 400);
 
-            await db.prepare("DELETE FROM todos WHERE id = ? AND org_id = ?")
-                .bind(targetId, tenantId)
+            await db.prepare("DELETE FROM todos WHERE id = ?")
+                .bind(targetId)
                 .run();
 
             return enviarJSON({ success: true });

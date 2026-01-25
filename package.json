@@ -11,6 +11,9 @@
 		"deploy": "npm run build && wrangler pages deploy dist --project-name printlog --branch main",
 		"pages": "wrangler pages dev dist --d1 DB",
 		"farm": "npm run build && wrangler pages dev dist --d1 DB",
+		"dev:live": "cross-env VITE_PROXY_TARGET=https://printlog.pages.dev npm run dev",
+		"db:pull": "node scripts/db-pull.js",
+		"db:reset": "node scripts/db-reset.js",
 		"test": "vitest"
 	},
 	"dependencies": {
@@ -42,6 +45,7 @@
 		"@types/react": "^19.1.10",
 		"@types/react-dom": "^19.1.7",
 		"@vitejs/plugin-react-swc": "^4.0.0",
+		"cross-env": "^10.1.0",
 		"eslint": "^9.39.2",
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"eslint-plugin-react-refresh": "^0.4.20",

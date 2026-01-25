@@ -30,17 +30,17 @@ export async function gerenciarConfiguracoes({ request, db, tenantId }) {
 
             const s = sanitizeFields(rawData, schemas.settings);
 
-            // Armazenamos o tenantId tanto no user_id (PK legada) quanto no org_id (nova coluna)
+            // Armazenamos o tenantId tanto no user_id (PK legada) sem org_id
             await db.prepare(`INSERT INTO calculator_settings (
-                    user_id, org_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
+                    user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
                     consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET 
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET 
                     custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
                     custo_hora_maquina=excluded.custo_hora_maquina, taxa_setup=excluded.taxa_setup, 
                     consumo_impressora_kw=excluded.consumo_impressora_kw, margem_lucro=excluded.margem_lucro, 
                     imposto=excluded.imposto, taxa_falha=excluded.taxa_falha, desconto=excluded.desconto,
                     whatsapp_template=excluded.whatsapp_template`)
-                .bind(tenantId, tenantId, paraNumero(s.custo_kwh), paraNumero(s.valor_hora_humana), paraNumero(s.custo_hora_maquina), paraNumero(s.taxa_setup),
+                .bind(tenantId, paraNumero(s.custo_kwh), paraNumero(s.valor_hora_humana), paraNumero(s.custo_hora_maquina), paraNumero(s.taxa_setup),
                     paraNumero(s.consumo_impressora_kw), paraNumero(s.margem_lucro), paraNumero(s.imposto), paraNumero(s.taxa_falha),
                     paraNumero(s.desconto), String(s.whatsapp_template || "")).run();
 

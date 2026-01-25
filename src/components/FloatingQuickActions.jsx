@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Calculator, Package, Printer, Box, HelpCircle, Zap, X } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { useTour } from '../contexts/TourContext';
 
 export default function QuickActionsDock({
     onNewFilament,
@@ -10,7 +9,6 @@ export default function QuickActionsDock({
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [location, setLocation] = useLocation();
-    const { startTour } = useTour();
 
     // Renderiza apenas no Dashboard
     if (location !== '/' && location !== '/dashboard') return null;
@@ -39,12 +37,6 @@ export default function QuickActionsDock({
             icon: Box,
             onClick: () => { onNewSupply(); setIsOpen(false); },
             color: 'text-amber-400'
-        },
-        {
-            label: 'Ajuda',
-            icon: HelpCircle,
-            onClick: () => { startTour(); setIsOpen(false); },
-            color: 'text-violet-400'
         }
     ];
 

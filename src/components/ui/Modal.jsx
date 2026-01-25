@@ -57,27 +57,21 @@ export default function Modal({
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-sky-500 to-transparent shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
 
                 {/* HEADER */}
-                <div className="p-8 pb-4 flex items-start justify-between shrink-0 relative z-10">
-                    <div className="flex items-start gap-4">
-                        <div className={`
-                            w-12 h-12 rounded-2xl border border-white/5 bg-white/[0.02]
-                            flex items-center justify-center shrink-0
-                            ${isLoading ? 'text-sky-500' : 'text-zinc-500'}
-                        `}>
-                            {isLoading ? (
-                                <Loader2 size={20} />
-                            ) : (
-                                Icon ? <Icon size={20} strokeWidth={2.5} /> : <Cpu size={20} strokeWidth={2.5} />
-                            )}
+                {/* HEADER */}
+                <div className="pr-6 pl-8 py-6 flex items-center justify-between shrink-0 relative z-10 bg-[#050506]">
+                    <div className="flex items-center gap-4">
+                        {/* Accent Pill (Matches PageHeader) */}
+                        <div className="text-rose-500 self-stretch flex items-center">
+                            <div className="w-1.5 h-10 rounded-full bg-current shadow-[0_0_15px_currentColor] opacity-80" />
                         </div>
 
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-sky-500 uppercase tracking-[0.3em] mb-1">
-                                {subtitle}
-                            </span>
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">
+                            <h3 className="text-2xl font-black text-white tracking-tight leading-none mb-1">
                                 {title}
                             </h3>
+                            <span className="text-xs font-medium text-zinc-500 tracking-wide leading-none">
+                                {subtitle}
+                            </span>
                         </div>
                     </div>
 

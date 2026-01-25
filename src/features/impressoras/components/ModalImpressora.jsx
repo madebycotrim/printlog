@@ -1,13 +1,13 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Zap, Timer, DollarSign, Tag, Binary, Terminal, Cpu, Activity, Loader2, AlertCircle } from "lucide-react";
+import { Zap, Timer, DollarSign, Tag, Terminal, Cpu, Activity, Loader2, AlertCircle, Printer } from "lucide-react";
 import { UnifiedInput } from "../../../components/UnifiedInput";
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
 import FormFeedback from "../../../components/FormFeedback";
-import SideBySideModal from "../../../components/ui/SideBySideModal";
+import Modal from "../../../components/ui/Modal";
 import { usePrinterModels } from "../logic/printerQueries";
 import { schemas, validateInput } from "../../../utils/validation";
 import { parseNumber as safeParse } from "../../../utils/numbers";
+
 export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais, isSaving }) {
     const { data: printerModels = [] } = usePrinterModels();
 
@@ -23,10 +23,8 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     // Feedback Hook
     const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
 
-
     useEffect(() => {
         if (aberto) {
-            // fetchPrinterModels removido (React Query auto-fetch)
             setIsDirty(false);
             hideFeedback();
 
@@ -112,7 +110,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
             }
 
             hideFeedback();
-            // A responsabilidade de feedback e loading é da mutação (pai)
             await aoSalvar(payload);
             showSuccess(dadosIniciais ? "Impressora atualizada!" : "Impressora cadastrada!");
             setTimeout(() => {
@@ -125,14 +122,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
         }
     };
 
-    const custoDesgaste = useMemo(() => {
-        const preco = safeParse(formulario.preco);
-        const vidaUtilEstimada = 5000;
-        if (preco <= 0) return "0,00";
-        return (preco / vidaUtilEstimada).toFixed(2);
-    }, [formulario.preco]);
-
-    // Validação em tempo real
+    // Validação
     const payloadValidacao = useMemo(() => {
         return {
             ...formulario,
@@ -142,61 +132,17 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
             potencia: safeParse(formulario.potencia),
             preco: safeParse(formulario.preco),
             horas_totais: safeParse(formulario.horas_totais),
-            ultima_manutencao_hora: formulario.ultima_manutencao_hora || 0,
             intervalo_manutencao: safeParse(formulario.intervalo_manutencao),
             historico: formulario.historico || []
         };
     }, [formulario]);
 
-    const validationResult = useMemo(() => validateInput(payloadValidacao, schemas.printer), [payloadValidacao]);
-    const isValid = validationResult.valid;
-
-    // Sidebar Content
-    const sidebarContent = (
-        <div className="flex flex-col items-center w-full space-y-10 relative z-10 h-full justify-between">
-            <div className="w-full">
-                <div className="flex items-center gap-3 justify-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-10">
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                    Prévia
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                </div>
-
-                <div className="relative group p-12 rounded-[2.5rem] bg-zinc-950/50 border border-zinc-800 shadow-inner flex items-center justify-center backdrop-blur-sm mx-auto w-fit mb-10">
-                    <Cpu size={64} className={`transition-colors duration-500 ${isSaving ? 'text-zinc-800 animate-pulse' : 'text-zinc-600 group-hover:text-emerald-500/50'}`} strokeWidth={1.5} />
-                </div>
-
-                <div className="text-center space-y-2 w-full">
-                    <h3 className="text-xl font-bold text-zinc-100 tracking-tight truncate leading-none">
-                        {formulario.nome || "Nova Impressora"}
-                    </h3>
-                    <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest bg-zinc-800/50 px-3 py-1 rounded-full border border-zinc-800/50 inline-block">
-                        {formulario.marca || "---"} • {formulario.modelo || "---"}
-                    </span>
-                </div>
-            </div>
-
-            <div className="bg-zinc-950/50 border border-zinc-800 rounded-2xl p-6 backdrop-blur-md relative z-10 shadow-xl w-full">
-                <div className="flex items-center gap-2 mb-2">
-                    <Activity size={12} className="text-emerald-500/50" />
-                    <span className="text-[10px] font-bold text-emerald-500/60 uppercase tracking-wider">Desgaste Estimado</span>
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl font-bold text-zinc-100 font-sans tracking-tighter">R$ {custoDesgaste}</span>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase">/h</span>
-                </div>
-            </div>
-        </div>
-    );
+    const isValid = useMemo(() => validateInput(payloadValidacao, schemas.printer).valid, [payloadValidacao]);
 
     // Footer Content
     const footerContent = (
         <div className="flex flex-col gap-4 w-full">
-            <FormFeedback
-                type={feedback.type}
-                message={feedback.message}
-                show={feedback.show}
-                onClose={hideFeedback}
-            />
+            <FormFeedback {...feedback} onClose={hideFeedback} />
 
             {!isValid && isDirty && !isSaving && (
                 <div className="flex items-center gap-2 text-rose-500 animate-shake mb-2">
@@ -206,57 +152,62 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
             )}
 
             <div className="flex gap-4">
-                <button disabled={isSaving} onClick={handleTentativaFechar} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
+                <button disabled={isSaving} onClick={handleTentativaFechar} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800/50 bg-zinc-900/50 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all disabled:opacity-50">
                     Cancelar
                 </button>
                 <button
                     disabled={!isValid || isSaving}
                     onClick={handleSalvarInterno}
-                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${isValid && !isSaving ? "bg-zinc-100 text-zinc-950 hover:bg-white active:scale-95 shadow-xl" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
+                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-[0.98]
+                        ${isValid && !isSaving ? "bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg" : "bg-zinc-900/40 text-zinc-600 cursor-not-allowed"}`}
                 >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
-                    {isSaving ? "Sincronizando..." : dadosIniciais ? "Salvar Alterações" : "Adicionar ao Sistema"}
+                    {isSaving ? "Sincronizando..." : dadosIniciais ? "Salvar Alterações" : "Adicionar Máquina"}
                 </button>
             </div>
         </div>
     );
 
     return (
-        <SideBySideModal
+        <Modal
             isOpen={aberto}
             onClose={handleTentativaFechar}
-            sidebar={sidebarContent}
-            title={dadosIniciais ? "Editar Impressora" : "Cadastrar Impressora"}
-            subtitle={dadosIniciais ? "Ajuste os detalhes técnicos da sua impressora" : "Configure uma nova impressora para o sistema"}
+            title={dadosIniciais ? "Editar Impressora" : "Nova Impressora"}
+            subtitle={dadosIniciais ? "Gerencie os detalhes técnicos do seu equipamento." : "Adicione uma nova impressora à sua frota."}
+            icon={Printer}
             footer={footerContent}
-            isSaving={isSaving}
+            isLoading={isSaving}
+            maxWidth="max-w-2xl"
         >
             <div className="space-y-8">
                 {/* Seção 01 */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        <h4>[01] Identificação</h4>
-                        <div className="h-px bg-zinc-800/50 flex-1" />
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">
+                        <Tag size={12} className="text-zinc-600" />
+                        IDENTIFICAÇÃO DE HARDWARE
                     </div>
-                    <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-1.5">
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
                             <div className="flex justify-between px-1">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase">Quem é o fabricante?</label>
-                                <button onClick={() => setEntradaManual(p => ({ ...p, marca: !p.marca }))} className="text-[9px] text-sky-500/70 hover:text-sky-400 font-bold uppercase tracking-tighter">
-                                    {entradaManual.marca ? "[ Lista ]" : "[ Manual ]"}
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase">Fabricante</label>
+                                <button onClick={() => setEntradaManual(p => ({ ...p, marca: !p.marca }))} className="text-[9px] text-sky-500/50 hover:text-sky-400 font-bold uppercase tracking-tighter">
+                                    {entradaManual.marca ? "Lista" : "Manual"}
                                 </button>
                             </div>
                             <UnifiedInput
                                 type={entradaManual.marca ? "text" : "select"}
                                 options={opcoesMarca} value={formulario.marca}
                                 onChange={val => updateForm({ marca: entradaManual.marca ? val.target.value : val, modelo: "" })}
+                                placeholder="Selecione..."
                             />
                         </div>
-                        <div className="space-y-1.5">
+
+                        <div className="space-y-1">
                             <div className="flex justify-between px-1">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase">Qual o modelo?</label>
-                                <button onClick={() => setEntradaManual(p => ({ ...p, modelo: !p.modelo }))} className="text-[9px] text-sky-500/70 hover:text-sky-400 font-bold uppercase tracking-tighter">
-                                    {entradaManual.modelo ? "[ Lista ]" : "[ Manual ]"}
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase">Modelo</label>
+                                <button onClick={() => setEntradaManual(p => ({ ...p, modelo: !p.modelo }))} className="text-[9px] text-sky-500/50 hover:text-sky-400 font-bold uppercase tracking-tighter">
+                                    {entradaManual.modelo ? "Lista" : "Manual"}
                                 </button>
                             </div>
                             <UnifiedInput
@@ -264,55 +215,78 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                                 options={opcoesModelo}
                                 disabled={!formulario.marca && !entradaManual.modelo}
                                 value={formulario.modelo}
-                                onChange={(val, item) => entradaManual.modelo
-                                    ? updateForm({ modelo: val.target.value })
-                                    : tratarMudancaModelo(val, item)
-                                }
+                                onChange={(val, item) => entradaManual.modelo ? updateForm({ modelo: val.target.value }) : tratarMudancaModelo(val, item)}
+                                placeholder="Selecione..."
                             />
                         </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase px-1">Qual o apelido ou nome da impressora?</label>
-                        <UnifiedInput icon={Tag} value={formulario.nome} placeholder="Ex: Ender 3 S1 - Lab 01" onChange={e => updateForm({ nome: e.target.value })} />
+
+                    <UnifiedInput
+                        label="Apelido da Máquina"
+                        icon={Terminal}
+                        value={formulario.nome}
+                        placeholder="Ex: Ender 3 V2 - Laboratório"
+                        onChange={e => updateForm({ nome: e.target.value })}
+                    />
+                </div>
+
+                <div className="h-px bg-white/5" />
+
+                {/* Seção 02: Detalhes Técnicos */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">
+                        <Cpu size={12} className="text-zinc-600" />
+                        ESPECIFICAÇÕES TÉCNICAS
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <UnifiedInput
+                            label="Potência (Watts)"
+                            icon={Zap}
+                            suffix="W"
+                            value={formulario.potencia}
+                            onChange={e => updateForm({ potencia: e.target.value })}
+                        />
+                        <UnifiedInput
+                            label="Valor de Compra"
+                            icon={DollarSign}
+                            suffix="BRL"
+                            value={formulario.preco}
+                            onChange={e => updateForm({ preco: e.target.value })}
+                        />
                     </div>
                 </div>
 
-                {/* Seção 02 e 03 */}
-                <div className="grid grid-cols-2 gap-12">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                            <h4>[02] Operacional</h4>
-                            <div className="h-px bg-zinc-800/50 flex-1" />
-                        </div>
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase px-1">Qual a potência? (Watts)</label>
-                                <UnifiedInput icon={Zap} suffix="W" value={formulario.potencia} onChange={e => updateForm({ potencia: e.target.value })} />
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase px-1">Quanto custou a impressora?</label>
-                                <UnifiedInput icon={DollarSign} suffix="BRL" value={formulario.preco} onChange={e => updateForm({ preco: e.target.value })} />
-                            </div>
-                        </div>
+                <div className="h-px bg-white/5" />
+
+                {/* Seção 03: Manutenção */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">
+                        <Activity size={12} className="text-zinc-600" />
+                        MANUTENÇÃO PREVENTIVA
                     </div>
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                            <h4>[03] Manutenção</h4>
-                            <div className="h-px bg-zinc-800/50 flex-1" />
-                        </div>
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase px-1">Qual o tempo de uso total? (Horas)</label>
-                                <UnifiedInput icon={Timer} suffix="Hrs" value={formulario.horas_totais} onChange={e => updateForm({ horas_totais: e.target.value })} />
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase px-1">A cada quantas horas deve ser feita a manutenção?</label>
-                                <UnifiedInput icon={Activity} suffix="Hrs" value={formulario.intervalo_manutencao} onChange={e => updateForm({ intervalo_manutencao: e.target.value })} />
-                            </div>
-                        </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <UnifiedInput
+                            label="Horímetro Total"
+                            icon={Timer}
+                            suffix="h"
+                            value={formulario.horas_totais}
+                            onChange={e => updateForm({ horas_totais: e.target.value })}
+                            tip="Tempo total de impressão acumulado"
+                        />
+                        <UnifiedInput
+                            label="Intervalo de Revisão"
+                            icon={Activity}
+                            suffix="h"
+                            value={formulario.intervalo_manutencao}
+                            onChange={e => updateForm({ intervalo_manutencao: e.target.value })}
+                            tip="Alertar manutenção a cada X horas"
+                        />
                     </div>
                 </div>
+
             </div>
-        </SideBySideModal>
+        </Modal>
     );
 }

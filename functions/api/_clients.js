@@ -9,8 +9,8 @@ export async function gerenciarClientes(ctx) {
     if (method === "GET" && !client_id) {
         try {
             const { results } = await db.prepare(
-                `SELECT * FROM clients WHERE org_id = ? ORDER BY name ASC`
-            ).bind(tenantId).all();
+                `SELECT * FROM clients ORDER BY name ASC`
+            ).all();
             return enviarJSON(results || []);
         } catch (error) {
             // Se a tabela não existir, retorna array vazio (primeiro acesso)
@@ -27,10 +27,9 @@ export async function gerenciarClientes(ctx) {
         const id = crypto.randomUUID();
 
         await db.prepare(
-            `INSERT INTO clients (id, user_id, org_id, name, email, phone, document, notes, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO clients (id, user_id, name, email, phone, document, notes, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
             id,
-            tenantId,
             tenantId,
             data.name,
             data.email || null,
@@ -47,7 +46,7 @@ export async function gerenciarClientes(ctx) {
     if (method === "PUT" && client_id) {
         const data = await request.json();
         await db.prepare(
-            `UPDATE clients SET name = ?, email = ?, phone = ?, document = ?, notes = ?, address = ? WHERE id = ? AND org_id = ?`
+            `UPDATE clients SET name = ?, email = ?, phone = ?, document = ?, notes = ?, address = ? WHERE id = ?`
         ).bind(
             data.name,
             data.email || null,
@@ -55,8 +54,7 @@ export async function gerenciarClientes(ctx) {
             data.document || null,
             data.notes || null,
             data.address || null,
-            client_id,
-            tenantId
+            client_id
         ).run();
 
         return enviarJSON({ message: "Cliente atualizado com sucesso!" });
@@ -65,8 +63,8 @@ export async function gerenciarClientes(ctx) {
     // Deletar Cliente
     if (method === "DELETE" && client_id) {
         await db.prepare(
-            `DELETE FROM clients WHERE id = ? AND org_id = ?`
-        ).bind(client_id, tenantId).run();
+            `DELETE FROM clients WHERE id = ?`
+        ).bind(client_id).run();
 
         return enviarJSON({ message: "Cliente removido com sucesso!" });
     }

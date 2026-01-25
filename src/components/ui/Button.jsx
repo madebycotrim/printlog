@@ -7,7 +7,8 @@ const variants = {
     danger: "bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-900/20 active:scale-95",
     ghost: "hover:bg-zinc-800/50 text-zinc-500 hover:text-zinc-300 active:scale-95",
     outline: "border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 bg-transparent active:scale-95",
-    glass: "bg-zinc-950/40 backdrop-blur-md border border-zinc-800/50 text-zinc-300 hover:bg-zinc-900/60 hover:text-white"
+    glass: "bg-zinc-950/40 backdrop-blur-md border border-zinc-800/50 text-zinc-300 hover:bg-zinc-900/60 hover:text-white",
+    neutral: "bg-zinc-100 hover:bg-white text-zinc-950 shadow-lg shadow-zinc-500/10 active:scale-95"
 };
 
 const sizes = {

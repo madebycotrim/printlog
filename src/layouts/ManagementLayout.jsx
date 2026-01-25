@@ -3,7 +3,6 @@ import MainSidebar from './mainSidebar';
 import { useSidebarStore } from '../stores/sidebarStore';
 import { Menu } from 'lucide-react';
 import { InstallPwa } from '../components/InstallPwa';
-import TourGuide from '../components/TourGuide';
 import FloatingQuickActions from '../components/FloatingQuickActions';
 import ModalFilamento from '../features/filamentos/components/ModalFilamento';
 import ModalImpressora from '../features/impressoras/components/ModalImpressora';
@@ -55,8 +54,7 @@ export default function ManagementLayout({ children }) {
     const themeGradient = getThemeColorClass();
 
     return (
-        <div className="flex h-screen w-full bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden">
-            <TourGuide />
+        <div className="flex h-screen w-full bg-[#0c0c0e] text-zinc-200 font-sans antialiased overflow-hidden">
             <FloatingQuickActions
                 onNewFilament={() => setFilamentModalOpen(true)}
                 onNewPrinter={() => setPrinterModalOpen(true)}

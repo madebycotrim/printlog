@@ -1,32 +1,27 @@
 import React from 'react';
 import { Filter, Grid, List as ListIcon, X } from 'lucide-react';
 
-export default function FilamentFilters({
+export default function InsumoFilters({
     filters,
     setFilters,
     viewMode,
     setViewMode,
-    availableBrands = [],
-    availableMaterials = []
+    categories = [] // Array of { id, label }
 }) {
-    // Helper to toggle array filters
-    const toggleFilter = (key, value) => {
+    // Toggle Category Filter
+    const toggleCategory = (catId) => {
         setFilters(prev => {
-            const current = prev[key] || [];
-            const newArray = current.includes(value)
-                ? current.filter(item => item !== value)
-                : [...current, value];
-            return { ...prev, [key]: newArray };
+            const current = prev.categories || [];
+            const newArray = current.includes(catId)
+                ? current.filter(c => c !== catId)
+                : [...current, catId];
+            return { ...prev, categories: newArray };
         });
     };
 
-    // Limits
-    const MAX_MATERIALS_VISIBLE = 5;
-
-    const hasActiveFilters = filters.lowStock || filters.materials?.length > 0 || filters.brands?.length > 0;
+    const hasActiveFilters = filters.lowStock || filters.categories?.length > 0;
 
     return (
-
         <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
 
@@ -43,7 +38,7 @@ export default function FilamentFilters({
                         className={`
                             px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
                             ${filters.lowStock
-                                ? 'bg-rose-500/10 border-rose-500 text-rose-500'
+                                ? 'bg-orange-500/10 border-orange-500 text-orange-500'
                                 : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                         `}
                     >
@@ -52,43 +47,28 @@ export default function FilamentFilters({
 
                     <div className="w-px h-4 bg-zinc-800 mx-2" />
 
-                    {/* Material Filters */}
-                    {availableMaterials.slice(0, MAX_MATERIALS_VISIBLE).map(mat => (
-                        <button
-                            key={mat}
-                            onClick={() => toggleFilter('materials', mat)}
-                            className={`
-                                px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                                ${filters.materials?.includes(mat)
-                                    ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
-                                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
-                            `}
-                        >
-                            {mat}
-                        </button>
-                    ))}
 
-                    {/* Brand Filters (Just a few popular) */}
-                    {availableBrands.slice(0, 3).map(brand => (
+                    {/* Category Filters */}
+                    {categories.filter(c => c.id !== 'Todos').map(cat => (
                         <button
-                            key={brand}
-                            onClick={() => toggleFilter('brands', brand)}
+                            key={cat.id}
+                            onClick={() => toggleCategory(cat.id)}
                             className={`
-                                px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                                ${filters.brands?.includes(brand)
-                                    ? 'bg-sky-500/10 border-sky-500 text-sky-500'
-                                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
+                                px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border shadow-sm
+                                ${filters.categories?.includes(cat.id)
+                                    ? 'bg-orange-500 text-zinc-900 border-orange-500 shadow-orange-500/20 hover:bg-orange-400'
+                                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 hover:bg-zinc-800'}
                             `}
                         >
-                            {brand}
+                            {cat.label}
                         </button>
                     ))}
 
                     {/* Clear Button */}
                     {hasActiveFilters && (
                         <button
-                            onClick={() => setFilters({ lowStock: false, materials: [], brands: [] })}
-                            className="ml-2 text-[10px] text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider underline decoration-rose-500/30 hover:decoration-rose-500"
+                            onClick={() => setFilters({ lowStock: false, categories: [] })}
+                            className="ml-2 text-[10px] text-orange-500 hover:text-orange-400 font-bold uppercase tracking-wider underline decoration-orange-500/30 hover:decoration-orange-500"
                         >
                             Limpar
                         </button>

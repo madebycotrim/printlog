@@ -3,12 +3,9 @@ import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-import { cloudflare } from '@cloudflare/vite-plugin'
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    cloudflare(),
     react(),
     tailwindcss(),
     VitePWA({
@@ -36,6 +33,15 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    proxy: process.env.VITE_PROXY_TARGET ? {
+      '/api': {
+        target: process.env.VITE_PROXY_TARGET,
+        changeOrigin: true,
+        secure: false,
+      }
+    } : {}
+  },
   test: {
     globals: true,
     environment: 'jsdom',

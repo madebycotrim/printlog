@@ -4,7 +4,31 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                brand: {
+                // Semantic Roles defined in design_system_colors.md
+                primary: {
+                    DEFAULT: "#3b82f6", // Blue-500 (Tech Blue)
+                    hover: "#2563eb",   // Blue-600
+                    light: "#60a5fa",   // Blue-400
+                    glow: "rgba(59, 130, 246, 0.5)",
+                },
+                surface: {
+                    base: "#09090b",    // Zinc-950 (Deep Background)
+                    card: "#131316",    // Custom Charcoal (Card Background)
+                    hover: "#18181b",   // Zinc-900 (Interactive)
+                    active: "#27272a",  // Zinc-800
+                },
+                secondary: {
+                    DEFAULT: "#71717a", // Zinc-500 (Industrial Slate)
+                    dark: "#52525b",    // Zinc-600
+                    light: "#a1a1aa",   // Zinc-400
+                },
+                status: {
+                    success: "#10b981", // Emerald-500
+                    warning: "#f59e0b", // Amber-500 (Replaces Red for Warnings)
+                    error: "#f43f5e",   // Rose-500 (Exclusive for Errors)
+                    info: "#0ea5e9",    // Sky-500
+                },
+                brand: { // Legacy support during migration
                     500: "#0284c7",
                     600: "#0369a1",
                 },

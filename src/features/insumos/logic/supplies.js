@@ -1,6 +1,22 @@
 import { create } from 'zustand';
 import api from '../../../utils/api';
 import { useToastStore } from '../../../stores/toastStore';
+import { useQuery } from '@tanstack/react-query';
+
+export const useSupplyHistory = (id) => {
+    return useQuery({
+        queryKey: ['supply-history', id],
+        queryFn: async () => {
+            // Note: The correct endpoint should be /insumos/:id/history if that is how backend is routed.
+            // _supplies.js is mapped to /insumos?
+            // Filament logic used /filaments/:id/history.
+            // Assuming /insumos/:id/history works via [[path]].js
+            const res = await api.get(`/insumos/${id}/history`);
+            return res.data;
+        },
+        enabled: !!id
+    });
+};
 
 /**
  * STORE: GERENCIAMENTO DE INSUMOS
@@ -27,13 +43,8 @@ export const useSupplyStore = create((set, get) => ({
     // Salva ou Atualiza um insumo
     saveSupply: async (supply) => {
         try {
-            // Normaliza os dados
-            const payload = {
-                ...supply,
-                price: Number(String(supply.price).replace(',', '.')),
-                minStock: Number(supply.minStock || 0),
-                currentStock: Number(supply.currentStock || 0)
-            };
+            // O payload já vem normalizado do Modal
+            const payload = { ...supply };
 
             const res = await api.post('/insumos', payload);
 
