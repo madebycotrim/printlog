@@ -41,14 +41,20 @@ export default function Modal({
             <div
                 className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                 onClick={() => !isLoading && onClose()}
+                aria-hidden="true"
             />
 
             {/* JANELA PRINCIPAL - Arredondamento ajustado para 2.5rem */}
-            <div className={`
-                relative z-[1000] w-full ${maxWidth} max-h-[90vh] 
-                bg-[#050506] border border-white/10 rounded-[2.5rem] 
-                shadow-[0_0_80px_rgba(0,0,0,1)] flex flex-col overflow-hidden
-            `}>
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title"
+                className={`
+                    relative z-[1000] w-full ${maxWidth} max-h-[90vh]
+                    bg-[#050506] border border-white/10 rounded-[2.5rem]
+                    shadow-[0_0_80px_rgba(0,0,0,1)] flex flex-col overflow-hidden
+                `}
+            >
 
                 {/* GRADE DE FUNDO */}
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
@@ -65,9 +71,9 @@ export default function Modal({
                             ${isLoading ? 'text-sky-500' : 'text-zinc-500'}
                         `}>
                             {isLoading ? (
-                                <Loader2 size={20} />
+                                <Loader2 size={20} className="animate-spin" aria-hidden="true" />
                             ) : (
-                                Icon ? <Icon size={20} strokeWidth={2.5} /> : <Cpu size={20} strokeWidth={2.5} />
+                                Icon ? <Icon size={20} strokeWidth={2.5} aria-hidden="true" /> : <Cpu size={20} strokeWidth={2.5} aria-hidden="true" />
                             )}
                         </div>
 
@@ -75,7 +81,7 @@ export default function Modal({
                             <span className="text-[9px] font-black text-sky-500 uppercase tracking-[0.3em] mb-1">
                                 {subtitle}
                             </span>
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">
+                            <h3 id="modal-title" className="text-2xl font-black text-white uppercase tracking-tighter italic">
                                 {title}
                             </h3>
                         </div>
@@ -85,9 +91,10 @@ export default function Modal({
                         type="button"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="p-2 rounded-xl text-zinc-600 hover:text-white hover:bg-white/5 group disabled:opacity-20"
+                        aria-label="Fechar modal"
+                        className="p-2 rounded-xl text-zinc-600 hover:text-white hover:bg-white/5 group disabled:opacity-20 transition-colors"
                     >
-                        <X size={20} />
+                        <X size={20} aria-hidden="true" />
                     </button>
                 </div>
 
@@ -109,7 +116,7 @@ export default function Modal({
                             <div className="w-1 h-1 rounded-full bg-zinc-800" />
                             <div className="w-1 h-1 rounded-full bg-zinc-800" />
                         </div>
-                        <Fingerprint size={12} className="text-zinc-800" />
+                        <Fingerprint size={12} className="text-zinc-800" aria-hidden="true" />
                     </div>
                 )}
             </div>
