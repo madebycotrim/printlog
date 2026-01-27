@@ -1,24 +1,34 @@
 import React, { useState, useMemo } from "react";
-import { createPortal } from "react-dom";
-import { X, Search, Check, Layers, Package, CheckCircle2 } from "lucide-react";
+import { Search, Check, Layers, Package, CheckCircle2 } from "lucide-react";
 import { useFilaments } from "../logic/filamentQueries";
 import SpoolSideView from "./Carretel";
+import Modal from "../../../components/ui/Modal";
 
 export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
     const { data: filamentos = [] } = useFilaments();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedIds, setSelectedIds] = useState([]);
+    const [filterMaterial, setFilterMaterial] = useState("Todos");
+
+    // Extract unique materials
+    const materials = useMemo(() => {
+        const unique = new Set(filamentos.map(f => f.material).filter(Boolean));
+        return ["Todos", ...Array.from(unique).sort()];
+    }, [filamentos]);
 
     // Filtra filamentos
     const filteredFilaments = useMemo(() => {
-        if (!searchTerm) return filamentos;
-        const lower = searchTerm.toLowerCase();
-        return filamentos.filter(f =>
-            f.nome.toLowerCase().includes(lower) ||
-            f.marca?.toLowerCase().includes(lower) ||
-            f.material?.toLowerCase().includes(lower)
-        );
-    }, [filamentos, searchTerm]);
+        return filamentos.filter(f => {
+            const matchesSearch = !searchTerm || (
+                f.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                f.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                f.material?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            const matchesMaterial = filterMaterial === "Todos" || f.material === filterMaterial;
+
+            return matchesSearch && matchesMaterial;
+        });
+    }, [filamentos, searchTerm, filterMaterial]);
 
     // Toggle seleção
     const toggleSelection = (id) => {
@@ -36,32 +46,64 @@ export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
         setSelectedIds([]); // Limpa após confirmar
     };
 
-    if (!isOpen) return null;
+    // FOOTER CONTENT
+    const footerContent = (
+        <div className="flex justify-between items-center w-full">
+            <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                    Selecionados:
+                </span>
+                <span className="px-3 py-1 rounded-full bg-zinc-800 text-[11px] font-mono font-bold text-zinc-200">
+                    {selectedIds.length}
+                </span>
+            </div>
 
-    return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85vh] animate-in zoom-in-95 duration-200">
+            <div className="flex gap-3">
+                <button
+                    onClick={onClose}
+                    className="px-6 h-12 rounded-xl border border-zinc-800 text-[11px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all"
+                >
+                    Cancelar
+                </button>
+                <button
+                    onClick={() => {
+                        onConfirm([{ id: 'manual', nome: 'Manual', material: 'PLA', marca: 'Genérico', cor_hex: '#ffffff' }]);
+                        onClose();
+                    }}
+                    className="px-6 h-12 rounded-xl border border-zinc-700 bg-zinc-800/50 text-[11px] font-black uppercase tracking-wider text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50 transition-all flex items-center gap-2"
+                >
+                    <span className="w-2 h-2 rounded-full bg-zinc-500" />
+                    Manual
+                </button>
+                <button
+                    onClick={handleConfirm}
+                    disabled={selectedIds.length === 0}
+                    className="px-8 h-12 rounded-xl bg-sky-500 text-white text-[11px] font-black uppercase tracking-wider shadow-lg shadow-sky-500/20 hover:bg-sky-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                >
+                    <CheckCircle2 size={16} />
+                    Confirmar Seleção
+                </button>
+            </div>
+        </div>
+    );
 
-                {/* HEADER */}
-                <div className="flex items-center justify-between px-8 py-6 border-b border-zinc-800 bg-zinc-900/50">
-                    <div className="flex flex-col gap-1">
-                        <h2 className="text-xl font-black text-zinc-100 uppercase tracking-tight flex items-center gap-3">
-                            <Layers className="text-sky-500" size={24} />
-                            Seleção de Materiais
-                        </h2>
-                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">
-                            Escolha as cores que farão parte desta impressão
-                        </p>
-                    </div>
-                    <button onClick={onClose} className="p-2 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 rounded-xl transition-all">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                {/* SEARCH BAR */}
-                <div className="px-8 py-4 border-b border-zinc-800/50 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-20">
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Seleção de Materiais"
+            subtitle="Escolha as cores que farão parte desta impressão"
+            icon={Layers}
+            footer={footerContent}
+            maxWidth="max-w-4xl"
+            padding="p-0"
+            color="sky"
+        >
+            <div className="flex flex-col h-full">
+                {/* SEARCH BAR & FILTERS - STICKY */}
+                <div className="border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20 flex flex-col">
+                    <div className="px-8 pt-4 pb-2 relative">
+                        <Search className="absolute left-12 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
                         <input
                             type="text"
                             placeholder="Buscar por nome, material ou marca..."
@@ -71,11 +113,29 @@ export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
                             autoFocus
                         />
                     </div>
+
+                    {/* FILTERS */}
+                    <div className="px-8 pb-4 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+                        {materials.map(mat => (
+                            <button
+                                key={mat}
+                                onClick={() => setFilterMaterial(mat)}
+                                className={`
+                                    px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all whitespace-nowrap
+                                    ${filterMaterial === mat
+                                        ? "bg-sky-500/10 border-sky-500 text-sky-400 shadow-[0_0_10px_rgba(14,165,233,0.2)]"
+                                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"}
+                                `}
+                            >
+                                {mat}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* CONTENT GRID */}
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-zinc-950/30">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="p-8 pb-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {filteredFilaments.map(item => {
                             const isSelected = selectedIds.includes(item.id);
                             const capacidade = Math.max(1, Number(item.peso_total) || 1000);
@@ -86,44 +146,36 @@ export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
                                 <button
                                     key={item.id}
                                     onClick={() => toggleSelection(item.id)}
-                                    className={`relative group flex items-start gap-4 p-4 rounded-2xl border text-left transition-all duration-200
+                                    className={`relative group flex flex-col items-center p-6 rounded-[2rem] border transition-all duration-300
                                         ${isSelected
-                                            ? "bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_-5px_rgba(14,165,233,0.3)]"
-                                            : "bg-zinc-900/20 border-zinc-800/50 hover:bg-zinc-900/40 hover:border-zinc-700"}`}
+                                            ? "bg-zinc-950 border-sky-500/50 shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)] scale-[1.02]"
+                                            : "bg-zinc-950 border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/30"}`}
                                 >
-                                    {/* SELECTION INDICATOR */}
-                                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border flex items-center justify-center transition-all
-                                        ${isSelected ? "bg-sky-500 border-sky-500 scale-100" : "border-zinc-700 bg-transparent scale-90 opacity-50 group-hover:opacity-100"}`}>
-                                        {isSelected && <Check size={12} className="text-white" strokeWidth={4} />}
+
+                                    {/* SPOOL CENTER */}
+                                    <div className="py-2 transition-transform duration-300 group-hover:scale-110">
+                                        <SpoolSideView color={item.cor_hex || "#333"} percent={percent} size={110} />
                                     </div>
 
-                                    {/* SPOOL MINI */}
-                                    <div className="shrink-0">
-                                        <SpoolSideView color={item.cor_hex || "#333"} percent={percent} size={48} />
-                                    </div>
+                                    {/* INFO - BOTTOM */}
+                                    <div className="mt-4 flex flex-col items-center gap-2 w-full">
+                                        <h4 className={`text-sm font-black uppercase text-center tracking-wider truncate w-full transition-colors
+                                            ${isSelected ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "text-zinc-300 group-hover:text-white"}`}>
+                                            {item.cor_nome || item.nome}
+                                        </h4>
 
-                                    {/* INFO */}
-                                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded w-fit
-                                            ${isSelected ? "bg-sky-500/20 text-sky-300" : "bg-zinc-800/50 text-zinc-500"}`}>
-                                            {item.material}
-                                        </span>
-                                        <div>
-                                            <h4 className={`text-[13px] font-black uppercase truncate leading-tight 
-                                                ${isSelected ? "text-zinc-100" : "text-zinc-400 group-hover:text-zinc-200"}`}>
-                                                {item.nome}
-                                            </h4>
-                                            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">
-                                                {item.marca}
+                                        {/* BADGE */}
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300
+                                            ${isSelected
+                                                ? "bg-zinc-900 border-sky-500/30 text-sky-200 shadow-sm"
+                                                : "bg-zinc-900/50 border-zinc-800 text-zinc-500 group-hover:border-zinc-700/80 group-hover:bg-zinc-900"
+                                            }`}>
+                                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                                                {item.material}
                                             </span>
-                                        </div>
-
-                                        <div className="mt-2 flex items-baseline gap-1">
-                                            <span className="text-[11px] font-mono font-bold text-zinc-300">
+                                            <div className={`w-px h-2.5 ${isSelected ? "bg-sky-500/30" : "bg-zinc-800"}`} />
+                                            <span className="text-[10px] font-bold font-mono leading-none">
                                                 {Math.round(atual)}g
-                                            </span>
-                                            <span className="text-[9px] font-bold text-zinc-600 uppercase">
-                                                Disponíveis
                                             </span>
                                         </div>
                                     </div>
@@ -133,53 +185,13 @@ export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
                     </div>
 
                     {filteredFilaments.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-4 opacity-50">
+                        <div className="flex flex-col items-center justify-center py-10 text-zinc-500 gap-4 opacity-50">
                             <Package size={48} strokeWidth={1} />
                             <p className="text-xs font-bold uppercase tracking-widest">Nenhum material encontrado</p>
                         </div>
                     )}
                 </div>
-
-                {/* FOOTER */}
-                <div className="shrink-0 p-6 border-t border-zinc-800 bg-zinc-900/80 backdrop-blur-xl flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
-                            Selecionados:
-                        </span>
-                        <span className="px-3 py-1 rounded-full bg-zinc-800 text-[11px] font-mono font-bold text-zinc-200">
-                            {selectedIds.length}
-                        </span>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onClose}
-                            className="px-6 h-12 rounded-xl border border-zinc-800 text-[11px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={() => {
-                                onConfirm([{ id: 'manual', nome: 'Manual', material: 'PLA', marca: 'Genérico', cor_hex: '#ffffff' }]);
-                                onClose();
-                            }}
-                            className="px-6 h-12 rounded-xl border border-zinc-700 bg-zinc-800/50 text-[11px] font-black uppercase tracking-wider text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50 transition-all flex items-center gap-2"
-                        >
-                            <span className="w-2 h-2 rounded-full bg-zinc-500" />
-                            Manual
-                        </button>
-                        <button
-                            onClick={handleConfirm}
-                            disabled={selectedIds.length === 0}
-                            className="px-8 h-12 rounded-xl bg-sky-500 text-white text-[11px] font-black uppercase tracking-wider shadow-lg shadow-sky-500/20 hover:bg-sky-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
-                        >
-                            <CheckCircle2 size={16} />
-                            Confirmar Seleção
-                        </button>
-                    </div>
-                </div>
             </div>
-        </div>,
-        document.body
+        </Modal>
     );
 }

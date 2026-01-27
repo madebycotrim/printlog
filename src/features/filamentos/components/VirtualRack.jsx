@@ -1,7 +1,7 @@
 import React from "react";
 import { Plus } from "lucide-react";
-import { FilamentCardVisual } from "./FilamentCardVisual";
-import { FilamentRow } from "../CardsFilamentos"; // Import Legacy Row for List Mode
+import { FilamentCard } from "./FilamentCard";
+import { FilamentRow } from "./FilamentRow";
 
 export const VirtualRack = ({
     groupedFilaments,
@@ -32,7 +32,7 @@ export const VirtualRack = ({
                     {viewMode === 'grid' ? (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
                             {items.map(item => (
-                                <FilamentCardVisual
+                                <FilamentCard
                                     key={item.id}
                                     item={item}
                                     currentHumidity={currentHumidity}

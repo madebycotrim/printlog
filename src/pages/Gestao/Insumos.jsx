@@ -174,66 +174,66 @@ export default function InsumosPage() {
 
     return (
         <ManagementLayout>
-            <div className="p-8 xl:p-12 max-w-[1600px] mx-auto w-full space-y-8 animate-in fade-in duration-500">
-                <PageHeader
-                    title="Meus Insumos"
-                    subtitle="Gestão de Materiais Extras"
-                    accentColor="text-orange-500"
-                    searchQuery={busca}
-                    onSearchChange={setBusca}
-                    placeholder="BUSCAR INSUMO..."
-                    actionButton={novoInsumoButton}
+
+            <PageHeader
+                title="Meus Insumos"
+                subtitle="Gestão de Materiais Extras"
+                accentColor="text-orange-500"
+                searchQuery={busca}
+                onSearchChange={setBusca}
+                placeholder="BUSCAR INSUMO..."
+                actionButton={novoInsumoButton}
+            />
+
+            <div className="space-y-8">
+                <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+                    <StatusInsumos
+                        totalItems={stats.totalItems}
+                        valorTotal={stats.totalValor}
+                        lowStockCount={stats.baixoEstoque}
+                        itemsWithoutStock={stats.zerados}
+                        restockCost={stats.custoReposicao}
+                    />
+                </div>
+
+                {/* BARRA DE FILTROS E VIEW MODE */}
+                <InsumoFilters
+                    filters={filters}
+                    setFilters={setFilters}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    categories={CATEGORIES.filter(cat =>
+                        cat.id === 'Todos' || supplies.some(item => (item.category || item.categoria || 'Outros') === cat.id)
+                    )}
                 />
 
-                <div className="space-y-8">
-                    <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-                        <StatusInsumos
-                            totalItems={stats.totalItems}
-                            valorTotal={stats.totalValor}
-                            lowStockCount={stats.baixoEstoque}
-                            itemsWithoutStock={stats.zerados}
-                            restockCost={stats.custoReposicao}
-                        />
-                    </div>
-
-                    {/* BARRA DE FILTROS E VIEW MODE */}
-                    <InsumoFilters
-                        filters={filters}
-                        setFilters={setFilters}
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        categories={CATEGORIES.filter(cat =>
-                            cat.id === 'Todos' || supplies.some(item => (item.category || item.categoria || 'Outros') === cat.id)
-                        )}
-                    />
-
-                    {/* LISTA DE CARDS */}
-                    <div className="pb-12">
-                        {itemsFiltrados.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                {itemsFiltrados.map(item => (
-                                    <SupplyCard
-                                        key={item.id}
-                                        item={item}
-                                        icon={CATEGORIES.find(c => c.id === item.category)?.icon}
-                                        onEdit={() => handleEdit(item)}
-                                        onDelete={() => handleDeleteClick(item)}
-                                        onHistory={() => handleHistory(item)}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            !loading && (
-                                <EmptyState
-                                    title="Nenhum insumo encontrado"
-                                    description="Adicione novos itens para controlar seu estoque."
-                                    icon={PackageSearch}
+                {/* LISTA DE CARDS */}
+                <div className="pb-12">
+                    {itemsFiltrados.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {itemsFiltrados.map(item => (
+                                <SupplyCard
+                                    key={item.id}
+                                    item={item}
+                                    icon={CATEGORIES.find(c => c.id === item.category)?.icon}
+                                    onEdit={() => handleEdit(item)}
+                                    onDelete={() => handleDeleteClick(item)}
+                                    onHistory={() => handleHistory(item)}
                                 />
-                            )
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        !loading && (
+                            <EmptyState
+                                title="Nenhum insumo encontrado"
+                                description="Adicione novos itens para controlar seu estoque."
+                                icon={PackageSearch}
+                            />
+                        )
+                    )}
                 </div>
             </div>
+
 
             {/* --- MODAIS --- */}
 

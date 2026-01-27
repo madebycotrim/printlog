@@ -1,5 +1,46 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2, Cpu, Fingerprint } from "lucide-react";
+
+// Theme Configuration
+const MODAL_THEMES = {
+    sky: {
+        pill: "text-sky-500",
+        gradient: "via-sky-500",
+        shadow: "shadow-[0_0_15px_rgba(14,165,233,0.5)]",
+        scrollbar: "rgba(14,165,233,0.2)"
+    },
+    emerald: {
+        pill: "text-emerald-500",
+        gradient: "via-emerald-500",
+        shadow: "shadow-[0_0_15px_rgba(16,185,129,0.5)]",
+        scrollbar: "rgba(16,185,129,0.2)"
+    },
+    amber: {
+        pill: "text-amber-500",
+        gradient: "via-amber-500",
+        shadow: "shadow-[0_0_15px_rgba(245,158,11,0.5)]",
+        scrollbar: "rgba(245,158,11,0.2)"
+    },
+    rose: {
+        pill: "text-rose-500",
+        gradient: "via-rose-500",
+        shadow: "shadow-[0_0_15px_rgba(244,63,94,0.5)]",
+        scrollbar: "rgba(244,63,94,0.2)"
+    },
+    purple: {
+        pill: "text-purple-500",
+        gradient: "via-purple-500",
+        shadow: "shadow-[0_0_15px_rgba(168,85,247,0.5)]",
+        scrollbar: "rgba(168,85,247,0.2)"
+    },
+    orange: {
+        pill: "text-orange-500",
+        gradient: "via-orange-500",
+        shadow: "shadow-[0_0_15px_rgba(249,115,22,0.5)]",
+        scrollbar: "rgba(249,115,22,0.2)"
+    }
+};
 
 export default function Modal({
     isOpen,
@@ -10,8 +51,11 @@ export default function Modal({
     children,
     footer,
     isLoading = false,
-    maxWidth = "max-w-lg"
+    maxWidth = "max-w-lg",
+    padding = "px-8 py-4 mb-2",
+    color = "sky"
 }) {
+    const theme = MODAL_THEMES[color] || MODAL_THEMES.sky;
 
     // Bloqueio de scroll e Esc Key
     useEffect(() => {
@@ -34,7 +78,7 @@ export default function Modal({
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
 
             {/* OVERLAY */}
@@ -54,14 +98,14 @@ export default function Modal({
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
 
                 {/* LINHA DE BRILHO SUPERIOR */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-sky-500 to-transparent shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
+                <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent ${theme.gradient} to-transparent ${theme.shadow}`} />
 
                 {/* HEADER */}
                 {/* HEADER */}
                 <div className="pr-6 pl-8 py-6 flex items-center justify-between shrink-0 relative z-10 bg-[#050506]">
                     <div className="flex items-center gap-4">
                         {/* Accent Pill (Matches PageHeader) */}
-                        <div className="text-rose-500 self-stretch flex items-center">
+                        <div className={`${theme.pill} self-stretch flex items-center`}>
                             <div className="w-1.5 h-10 rounded-full bg-current shadow-[0_0_15px_currentColor] opacity-80" />
                         </div>
 
@@ -86,7 +130,7 @@ export default function Modal({
                 </div>
 
                 {/* ÁREA DE CONTEÚDO */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 px-8 py-4 mb-2">
+                <div className={`flex-1 overflow-y-auto custom-scrollbar relative z-10 ${padding}`}>
                     <div className="relative">
                         {children}
                     </div>
@@ -118,9 +162,10 @@ export default function Modal({
                     border-radius: 10px; 
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { 
-                    background: rgba(14,165,233,0.2); 
+                    background: ${theme.scrollbar}; 
                 }
             `}} />
-        </div>
+        </div>,
+        document.body
     );
 }

@@ -138,30 +138,7 @@ export default function CalculadoraPage() {
 
 
 
-    // ... inside component ...
-    // Note: I cannot simply inject the hook call here because hooks must be called at the top level.
-    // I will fix this in the next tool call properly by getting processarArquivo from the hook I called earlier. 
 
-    // Actually, I already called useFileProcessor above but didn't destructure processarArquivo.
-    // Let me fix the previous replacement first or handle it here. 
-    // Wait, in the FIRST tool call I replaced lines 70-117 with:
-    // const { isProcessing, checkPendingFiles } = useFileProcessor();
-    // I missed `processarArquivo` there!
-
-    // This tool call serves to replace handleFileSelected and DragDrop usage of processarArquivo
-    // BUT since I removed the definition of processarArquivo in the first edit, I need to make sure it's available.
-
-    // Let's assume I will fix the hook destructuring in a separate step or re-do the first one if I could (I can't).
-    // I will replace `const { isDragging, dragHandlers } = useDragDrop(processarArquivo);` 
-    // and `const handleFileSelected ...` 
-
-    // Strategy: I'll use `multi_replace` next time to fix everything. For now, let's just abort this singular specific replacement 
-    // because I need to fix the hook destructuring first.
-
-    // actually, let's try to fix the hook destructuring AND this part in one go with multi_replace if I hadn't already sent a replace_file_content.
-    // Since I sent replace_file_content for lines 70-117, I need to fix the destructuring there. 
-
-    // I will use this step to fix the hook usage to Include processarArquivo.
 
     const { isDragging, dragHandlers } = useDragDrop(processarArquivo);
 

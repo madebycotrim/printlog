@@ -7,6 +7,12 @@ import { useToastStore } from '../../../stores/toastStore';
  * useProjectsStore - Gestão de Orçamentos e Produção
  * Controla o ciclo de vida do projeto: Rascunho -> Orçamento -> Produção -> Finalizado.
  */
+import { registerFilamentHistoryApi } from '../../filamentos/logic/filamentQueries';
+
+/**
+ * useProjectsStore - Gestão de Orçamentos e Produção
+ * Controla o ciclo de vida do projeto: Rascunho -> Orçamento -> Produção -> Finalizado.
+ */
 export const useProjectsStore = create((set, get) => ({
     projects: [],
     isLoading: false,
@@ -113,6 +119,20 @@ export const useProjectsStore = create((set, get) => ({
                 // Garante que o tempo nunca seja NaN para não quebrar o Worker
                 totalTime: isNaN(Number(resultados.tempoTotalHoras)) ? 0 : Number(resultados.tempoTotalHoras)
             });
+
+            // --- NOVO: Registrar histórico de consumo para cada filamento ---
+            await Promise.all(filamentosParaBaixa.map(async (fil) => {
+                try {
+                    await registerFilamentHistoryApi({
+                        id: fil.id,
+                        type: 'consumo',
+                        qtd: fil.peso,
+                        obs: `Uso em Projeto: ${projeto.label || 'Sem Nome'}`
+                    });
+                } catch (err) {
+                    console.error(`Erro ao registrar histórico para filamento ${fil.id}:`, err);
+                }
+            }));
 
             // Sincroniza a lista local
             await get().fetchHistory();

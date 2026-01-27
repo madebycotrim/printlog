@@ -130,7 +130,10 @@ export default function ManagementLayout({ children }) {
                     </div>
                 )}
 
-                {children}
+                {/* UNIVERSAL PAGE CONTAINER */}
+                <div className="p-8 xl:p-12 max-w-[1600px] mx-auto w-full space-y-8 animate-in fade-in duration-500 min-h-full">
+                    {children}
+                </div>
             </main>
         </div>
     );

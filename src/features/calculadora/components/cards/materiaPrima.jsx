@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Package, DollarSign, Tag, Layers, Loader2, X, Search, Disc } from "lucide-react";
+import { Plus, Layers, X } from "lucide-react";
 import { useFilaments } from "../../../filamentos/logic/filamentQueries";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 import ModalSelecaoFilamento from "../../../filamentos/components/ModalSelecaoFilamento";
@@ -37,7 +37,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
     return (
         <div
             style={{ zIndex: ordemVisual }}
-            className="group flex items-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-lg transition-all relative h-10 animate-in slide-in-from-right-2 duration-300 mb-1.5"
+            className="group flex items-center bg-zinc-900/20 hover:bg-zinc-900/40 border border-zinc-800/40 hover:border-zinc-700/60 rounded-lg transition-all relative h-10 animate-in slide-in-from-right-2 duration-300 mb-1.5"
         >
 
             {/* 1. NOME/SELECT (Trigger Modal) */}
@@ -112,25 +112,10 @@ export default function MaterialModule() {
     const { custoRolo, pesoModelo, idFilamentoSelecionado, slots: materialSlots } = dadosFormulario.material;
 
     // Helpers para atualização
-    const setCustoRolo = (v) => atualizarCampo('material', 'custoRolo', v);
-    const setPesoModelo = (v) => atualizarCampo('material', 'pesoModelo', v);
-    const setIdFilamentoSelecionado = (v) => atualizarCampo('material', 'idFilamentoSelecionado', v);
     const setMaterialSlots = (v) => atualizarCampo('material', 'slots', v);
 
-    const [modo, setModo] = useState(idFilamentoSelecionado === "multi" ? "multi" : "single");
     const [modalSelecaoAberto, setModalSelecaoAberto] = useState(false);
-    const [modalSingleAberto, setModalSingleAberto] = useState(false); // Novo estado para Single Mode
     const { data: filamentos = [], isLoading: carregando } = useFilaments();
-
-    // Fetch automatico via React Query
-
-    useEffect(() => {
-        if (idFilamentoSelecionado === "multi") {
-            setModo("multi");
-        } else {
-            setModo("single");
-        }
-    }, [idFilamentoSelecionado]);
 
     // Agrupa filamentos por tipo para o select
     const opcoesSelecao = useMemo(() => {
@@ -175,113 +160,15 @@ export default function MaterialModule() {
     };
 
     const pesoTotalSomado = useMemo(() => {
-        if (modo === "single") return parseNumber(pesoModelo);
         const slotsSeguros = Array.isArray(materialSlots) ? materialSlots : [];
         return slotsSeguros.reduce((acc, s) => acc + parseNumber(s?.weight), 0);
-    }, [materialSlots, pesoModelo, modo]);
-
-    const alternarModo = (novoModo) => {
-        setModo(novoModo);
-        if (novoModo === "multi") {
-            setIdFilamentoSelecionado("multi");
-        } else {
-            setIdFilamentoSelecionado("manual");
-        }
-    };
-
-    // Handler para importação no modo Single
-    const handleImportSingle = (selectedItems) => {
-        if (!selectedItems || selectedItems.length === 0) return;
-        const item = selectedItems[0];
-
-        setIdFilamentoSelecionado(String(item.id));
-
-        if (Number(item.peso_total) > 0) {
-            const precoPorKg = ((Number(item.preco) / Number(item.peso_total)) * 1000).toFixed(2);
-            setCustoRolo(String(precoPorKg));
-        }
-        setModalSingleAberto(false);
-    };
+    }, [materialSlots]);
 
     return (
         <div className="flex flex-col gap-5 h-full animate-in fade-in duration-500">
-            {/* SELETOR DE MODO */}
-            <div className="grid grid-cols-2 bg-zinc-950 border border-zinc-800 p-1 rounded-xl shrink-0">
-                {["single", "multi"].map(m => (
-                    <button
-                        key={m}
-                        type="button"
-                        onClick={() => alternarModo(m)}
-                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all focus:outline-none
-                        ${modo === m ? "bg-zinc-800 text-sky-400 shadow-sm" : "text-zinc-600 hover:text-zinc-400"}`}
-                    >
-                        {m === "single" ? <Disc size={14} strokeWidth={2.5} /> : <Layers size={14} strokeWidth={2.5} />}
-                        {m === "single" ? "Uma cor" : "Várias cores"}
-                    </button>
-                ))}
-            </div>
 
-            {/* SINGLE MODE */}
-            <div className={`space-y-4 relative ${modo === 'single' ? '' : 'hidden'}`}>
-                {/* MATERIAL UTILIZADO - HEADER MINIMALISTA */}
-                <div>
-                    <div className="flex justify-between items-center mb-1.5 px-1">
-                        <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.15em]">
-                            Material Utilizado
-                        </label>
-                        <button
-                            onClick={() => setModalSingleAberto(true)}
-                            className="text-zinc-600 hover:text-sky-400 transition-colors"
-                            title="Buscar no Estoque"
-                        >
-                            <Search size={14} strokeWidth={2.5} />
-                        </button>
-                    </div>
-                    <UnifiedInput
-                        type="select"
-                        icon={carregando ? Loader2 : Tag}
-                        className={carregando ? "animate-spin" : ""}
-                        options={opcoesSelecao}
-                        value={String(idFilamentoSelecionado || "manual")}
-                        onChange={(id) => {
-                            setIdFilamentoSelecionado(id);
-                            if (id !== 'manual') {
-                                const item = filamentos.find(f => String(f.id) === String(id));
-                                if (item && Number(item.peso_total) > 0) {
-                                    const precoPorKg = ((Number(item.preco) / Number(item.peso_total)) * 1000).toFixed(2);
-                                    setCustoRolo(String(precoPorKg));
-                                }
-                            }
-                        }}
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10">
-                    <UnifiedInput
-                        label="Peso da Peça"
-                        suffix="g"
-                        align="right"
-                        placeholder="0"
-                        icon={Package}
-                        type="text"
-                        value={pesoModelo || ""}
-                        onChange={(e) => setPesoModelo(e.target.value.replace(',', '.'))}
-                    />
-                    <UnifiedInput
-                        label="Preço do Kg"
-                        suffix="R$"
-                        align="right"
-                        placeholder="0.00"
-                        icon={DollarSign}
-                        type="text"
-                        value={custoRolo || ""}
-                        onChange={(e) => setCustoRolo(e.target.value.replace(',', '.'))}
-                    />
-                </div>
-            </div>
-
-            {/* MULTI MODE */}
-            <div className={`flex-1 flex flex-col gap-2 relative z-10 ${modo === 'multi' ? '' : 'hidden'}`}>
+            {/* MULTI MODE (ALWAYS VISIBLE NOW) */}
+            <div className={`flex-1 flex flex-col gap-2 relative z-10`}>
                 <div className="flex items-center justify-between px-1 shrink-0">
                     <div className="flex items-center gap-2">
                         <Layers size={16} strokeWidth={2.5} className="text-zinc-600" />
@@ -353,13 +240,6 @@ export default function MaterialModule() {
                     });
                     setMaterialSlots([...materialSlots, ...newSlots]);
                 }}
-            />
-
-            {/* Modal para Single Mode */}
-            <ModalSelecaoFilamento
-                isOpen={modalSingleAberto}
-                onClose={() => setModalSingleAberto(false)}
-                onConfirm={handleImportSingle}
             />
         </div>
     );

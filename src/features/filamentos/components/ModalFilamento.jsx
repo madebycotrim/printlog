@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { PaintbrushVertical, DollarSign, Layers, Plus, Terminal, AlertCircle, Loader2, Calendar, Tag } from "lucide-react";
+import { Terminal, AlertCircle, Loader2, Trash2 } from "lucide-react";
 import SpoolVectorView from "./Carretel";
-import { UnifiedInput } from "../../../components/UnifiedInput";
 import FormFeedback from "../../../components/FormFeedback";
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
 import { validateInput, schemas } from "../../../utils/validation";
-import Modal from "../../../components/ui/Modal";
+import SideBySideModal from "../../../components/ui/SideBySideModal";
 import { parseNumber } from "../../../utils/numbers";
+import FilamentIdentificationForm from "./FilamentIdentificationForm";
+import FilamentStockForm from "./FilamentStockForm";
 
 // Limpeza avançada de valores numéricos
 const safeParse = parseNumber;
@@ -15,35 +16,18 @@ const INITIAL_STATE = {
     marca: "",
     nome: "",
     material: "",
-    cor_hex: "#3b82f6",
+    cor_hex: "",
+    diametro: "1.75",
     preco: "",
     peso_total: "1000",
     data_abertura: new Date().toISOString().split('T')[0]
 };
 
-const CORES_MAIS_VENDIDAS = [
-    "#000000", // Preto
-    "#ffffff", // Branco
-    "#9ca3af", // Cinza/Prata
-    "#ef4444", // Vermelho
-    "#3b82f6", // Azul
-    "#22c55e", // Verde
-    "#eab308", // Amarelo
-    "#f97316", // Laranja
-    "#a855f7", // Roxo
-    "#ec4899", // Rosa
-    "#1e3a8a", // Azul Marinho
-    "#78350f", // Marrom
-    "#ffd700", // Dourado
-    "#06b6d4", // Ciano/Turquesa
-    "#f5f5f5", // Natural/Transparente
-];
-
 export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosIniciais = null }) {
     const [form, setForm] = useState(INITIAL_STATE);
-    const [manualEntry, setManualEntry] = useState({ marca: false });
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showErrors, setShowErrors] = useState(false);
     const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
 
     useEffect(() => {
@@ -54,7 +38,8 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                     marca: dadosIniciais.marca || "",
                     nome: dadosIniciais.nome || "",
                     material: dadosIniciais.material || "PLA",
-                    cor_hex: dadosIniciais.cor_hex || INITIAL_STATE.cor_hex,
+                    cor_hex: dadosIniciais.cor_hex || "",
+                    diametro: dadosIniciais.diametro || "1.75",
                     preco: String(dadosIniciais.preco || ""),
                     peso_total: String(dadosIniciais.peso_total || "1000"),
                     peso_atual: dadosIniciais.peso_atual,
@@ -65,34 +50,12 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             } else {
                 setForm(INITIAL_STATE);
             }
-            setManualEntry({ marca: false });
             setIsDirty(false);
             setIsSaving(false);
+            setShowErrors(false);
         }
     }, [aberto, dadosIniciais]);
 
-    const handleTentativaFechar = useCallback(() => {
-        if (isSaving) return;
-        if (isDirty) {
-            if (window.confirm("Você tem alterações não salvas. Deseja realmente sair?")) {
-                aoFechar();
-            }
-        } else {
-            aoFechar();
-        }
-    }, [isSaving, isDirty, aoFechar]);
-
-    const marcasOptions = useMemo(() => [{
-        group: "Fabricantes",
-        items: ["Voolt3D", "3D Lab", "Cliever", "Printalot", "GTMax3D", "F3D", "Creality", "Bambu Lab", "eSun", "Polymaker", "Sunlu", "Overture"].map(m => ({ value: m, label: m }))
-    }], []);
-
-    const tiposOptions = useMemo(() => [{
-        group: "Materiais",
-        items: ["PLA", "PLA+", "PETG", "ABS", "ASA", "TPU", "Nylon", "PC", "Silk", "Mármore", "Madeira", "Glow"].map(t => ({ value: t, label: t }))
-    }], []);
-
-    // Atualiza nome se material mudar e nome estiver vazio ou padrão
     const updateForm = (field, value) => {
         if (isSaving) return;
         setForm(prev => ({ ...prev, [field]: value }));
@@ -105,14 +68,21 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         const pesoTotalNum = Math.max(1, safeParse(form.peso_total));
         const precoNum = Math.max(0, safeParse(form.preco));
 
-        let pesoAtualFinal = dadosIniciais
-            ? Math.min(Number(form.peso_atual) || pesoTotalNum, pesoTotalNum)
-            : pesoTotalNum;
+        // Logic: If empty/undefined, assume New Spool (Full). If number (incl 0), use it.
+        let pesoAtualFinal;
+        if (form.peso_atual === "" || form.peso_atual === undefined || form.peso_atual === null) {
+            pesoAtualFinal = pesoTotalNum;
+        } else {
+            pesoAtualFinal = Number(form.peso_atual);
+        }
+        // Clamp to ensure it doesn't exceed total or go below 0
+        pesoAtualFinal = Math.min(Math.max(0, pesoAtualFinal), pesoTotalNum);
 
         const payload = {
             ...form,
             nome: form.nome.trim(),
             marca: form.marca.trim(),
+            diametro: form.diametro,
             preco: precoNum,
             peso_total: pesoTotalNum,
             peso_atual: pesoAtualFinal,
@@ -121,7 +91,13 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
 
         const check = validateInput(payload, schemas.filament);
         if (!check.valid) {
-            showError(check.errors[0]);
+            setShowErrors(true);
+            const shakeElement = document.querySelector('.animate-shake');
+            if (shakeElement) {
+                shakeElement.classList.remove('animate-shake');
+                void shakeElement.offsetWidth;
+                shakeElement.classList.add('animate-shake');
+            }
             return;
         }
 
@@ -129,233 +105,178 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             setIsSaving(true);
             hideFeedback();
             await aoSalvar(payload);
-            // Sucesso é gerido globalmente pelo filamentQueries.js (Toast)
             aoFechar();
         } catch (error) {
             console.error("Erro ao salvar filamento:", error);
-            // Erro também é gerido globalmente, mas mantemos o log
+            showError("Erro ao salvar. Verifique os dados.");
         } finally {
             setIsSaving(false);
         }
     }, [form, dadosIniciais, aoSalvar, isSaving, showSuccess, showError, hideFeedback, aoFechar]);
 
-    const isPresetColor = CORES_MAIS_VENDIDAS.some(c => c.toLowerCase() === form.cor_hex.toLowerCase());
+    // Spool Interaction (Drag to set weight)
+    const spoolRef = React.useRef(null);
+    const handleSpoolInteraction = (e) => {
+        if (!spoolRef.current) return;
+        const rect = spoolRef.current.getBoundingClientRect();
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    // Validação em tempo real
-    const payloadValidacao = useMemo(() => {
-        const pesoTotalNum = Math.max(1, safeParse(form.peso_total));
-        const precoNum = Math.max(0, safeParse(form.preco));
+        // Calculate percentage from bottom (100%) to top (0%) of the spool area
+        const padding = 20;
+        const height = rect.height - (padding * 2);
+        const y = Math.max(0, Math.min(height, (clientY - rect.top - padding)));
 
-        let pesoAtualFinal = dadosIniciais
-            ? Math.min(Number(form.peso_atual) || pesoTotalNum, pesoTotalNum)
-            : pesoTotalNum;
+        // Invert: Bottom is full (100%), Top is empty (0%)? Or typical slider?
+        // Actually physically, top is full. Let's assume Top Y=0 is 100%, Bottom Y=Height is 0%.
+        const percent = 1 - (y / height);
 
-        return {
-            ...form,
-            nome: form?.nome?.trim(),
-            marca: form?.marca?.trim(),
-            preco: precoNum,
-            peso_total: pesoTotalNum,
-            peso_atual: pesoAtualFinal,
-            favorito: form?.favorito || false
-        };
-    }, [form, dadosIniciais]);
+        const total = safeParse(form.peso_total);
+        if (total > 0) {
+            updateForm('peso_atual', Math.round(total * Math.max(0, Math.min(1, percent))));
+        }
+    };
 
-    const isValid = useMemo(() => validateInput(payloadValidacao, schemas.filament).valid, [payloadValidacao]);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Sidebar Content (Prévia) matches ModalCliente aesthetic
+    const sidebarContent = (
+        <div className="flex flex-col items-center w-full h-full relative z-10 justify-between py-8 px-6">
+
+            {/* Top Info Section */}
+            <div className="w-full text-center space-y-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] border border-zinc-800 rounded-full px-3 py-1 bg-zinc-900/50">
+                        {form.marca || "Marca"}
+                        <span className="mx-1 text-zinc-700">|</span>
+                        {form.material || "Material"}
+                    </span>
+                </div>
+
+                <h2 className="text-2xl font-black text-white tracking-tight leading-none break-words line-clamp-2 drop-shadow-lg">
+                    {form.nome || "Novo Filamento"}
+                </h2>
+            </div>
+
+            {/* Central Spool Visualization */}
+            <div className="w-full flex-1 flex items-center justify-center select-none my-4">
+                {/* Visual Container */}
+                <div className="relative w-[220px] h-[220px]">
+
+                    {/* HIT BOX - INTERACTION LAYER */}
+                    <div
+                        className="absolute inset-0 z-50 cursor-ns-resize rounded-full"
+                        ref={spoolRef}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseDown={() => setIsDragging(true)}
+                        onMouseUp={() => setIsDragging(false)}
+                        onMouseLeave={() => { setIsDragging(false); setIsHovered(false); }}
+                        onMouseMove={(e) => isDragging && handleSpoolInteraction(e)}
+                        onClick={handleSpoolInteraction}
+                        onTouchStart={() => setIsDragging(true)}
+                        onTouchEnd={() => setIsDragging(false)}
+                        onTouchMove={(e) => isDragging && handleSpoolInteraction(e)}
+                        title="Arraste ou clique para ajustar o peso"
+                    />
+
+                    {/* GLOW BACKGROUND */}
+                    <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full opacity-15 blur-[60px] transition-all duration-700 pointer-events-none"
+                        style={{ backgroundColor: form.cor_hex || "#333" }}
+                    />
+
+                    {/* MAIN SPOOL SVG */}
+                    <div className={`transform transition-transform duration-500 ${isHovered ? "scale-105" : ""} active:scale-95 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none`}>
+                        <SpoolVectorView
+                            color={form.cor_hex || "#202024"}
+                            size={220}
+                            percent={
+                                Math.min(100, (Number(form.peso_atual !== undefined ? form.peso_atual : form.peso_total) / Math.max(1, Number(form.peso_total))) * 100)
+                            }
+                        />
+                    </div>
+
+                    {/* PERCENTAGE INDICATOR */}
+                    <div className={`absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center transition-all duration-300 transform pointer-events-none z-40 ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}>
+                        <span className="text-3xl font-black text-white drop-shadow-lg tabular-nums tracking-tighter">
+                            {Math.round((Number(form.peso_atual !== undefined ? form.peso_atual : form.peso_total) / Math.max(1, Number(form.peso_total))) * 100)}%
+                        </span>
+                    </div>
+
+                    {/* DRAG HINT */}
+                    <div className={`absolute right-[-40px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-opacity duration-500 pointer-events-none ${isHovered ? "opacity-40" : "opacity-0"}`}>
+                        <div className="w-1 h-1 bg-white rounded-full" />
+                        <div className="w-0.5 h-12 bg-gradient-to-b from-transparent via-white to-transparent" />
+                        <div className="w-1 h-1 bg-white rounded-full" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Tech Details */}
+            <div className="w-full flex justify-center pb-2">
+                <div className="flex items-center gap-3 bg-zinc-900/80 backdrop-blur border border-zinc-800 rounded-xl px-4 py-2 hover:bg-zinc-800/80 transition-colors shadow-lg">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Hex</span>
+                    <div className="w-px h-3 bg-zinc-700" />
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded shadow-sm border border-zinc-600" style={{ backgroundColor: form.cor_hex || "#333" }} />
+                        <span className="text-xs font-mono font-bold text-zinc-300 uppercase">{form.cor_hex || "#---"}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    );
 
     // Footer Content
-    const footerContent = (
+    const footerContent = ({ onClose }) => (
         <div className="flex flex-col gap-4 w-full">
             <FormFeedback {...feedback} onClose={hideFeedback} />
 
-            {!isValid && isDirty && !isSaving && (
-                <div className="flex items-center gap-2 text-rose-500 animate-shake mb-2">
-                    <AlertCircle size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Preencha os campos obrigatórios</span>
-                </div>
-            )}
-
             <div className="flex gap-4">
-                <button disabled={isSaving} onClick={handleTentativaFechar} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800/50 bg-zinc-900/50 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all disabled:opacity-50">
+                <button disabled={isSaving} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
                     Cancelar
                 </button>
                 <button
-                    disabled={!isValid || isSaving}
+                    disabled={isSaving}
                     onClick={handleSalvar}
-                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-[0.98]
-                        ${isValid && !isSaving ? "bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg" : "bg-zinc-900/40 text-zinc-600 cursor-not-allowed"}`}
+                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!isSaving ? "bg-[#3b82f6] text-white hover:bg-[#2563eb] active:scale-95 hover:shadow-xl shadow-lg shadow-blue-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
                 >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
-                    {isSaving ? "Sincronizando..." : dadosIniciais?.id ? "Salvar Alterações" : "Adicionar ao Estoque"}
+                    {isSaving ? "Salvando..." : dadosIniciais?.id ? "Salvar Alterações" : "Cadastrar Filamento"}
                 </button>
             </div>
         </div>
     );
 
     return (
-        <Modal
+        <SideBySideModal
             isOpen={aberto}
-            onClose={handleTentativaFechar}
-            title={dadosIniciais?.id ? "Editar Filamento" : "Novo Filamento"}
-            subtitle={dadosIniciais?.id ? "Ajuste os detalhes do material." : "Adicione um novo material ao seu estoque."}
-            icon={Layers}
+            onClose={aoFechar}
+            sidebar={sidebarContent}
+            header={{
+                title: dadosIniciais?.id ? "Editar Filamento" : "Novo Filamento",
+                subtitle: dadosIniciais?.id ? "Atualize os dados do seu material." : "Adicione um novo item ao seu estoque."
+            }}
             footer={footerContent}
-            isLoading={isSaving}
-            maxWidth="max-w-4xl"
+            isSaving={isSaving}
+            isDirty={isDirty}
         >
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="space-y-8 relative">
 
-                {/* LEFT: PREVIEW (VIRTUAL SPOOL) */}
-                <div className="w-full lg:w-1/3 flex flex-col items-center gap-6 sticky top-0">
-                    <div className="relative group w-full aspect-square max-w-[220px] bg-zinc-900/50 rounded-3xl border border-white/5 flex items-center justify-center p-6">
-                        {/* Glow Effect */}
-                        <div
-                            className="absolute inset-0 rounded-3xl opacity-20 blur-2xl transition-all duration-700"
-                            style={{ backgroundColor: form.cor_hex }}
-                        />
+                <FilamentIdentificationForm
+                    form={form}
+                    updateForm={updateForm}
+                    showErrors={showErrors}
+                />
 
-                        <div className="relative z-10">
-                            <SpoolVectorView
-                                color={form.cor_hex}
-                                size={160}
-                                percent={
-                                    Math.min(100, (Number(form.peso_atual !== undefined ? form.peso_atual : form.peso_total) / Math.max(1, Number(form.peso_total))) * 100)
-                                }
-                            />
-                        </div>
-                    </div>
-
-                    {/* Labels below the spool */}
-                    <div className="flex flex-col items-center gap-2 -mt-2">
-                        <div className="flex items-center gap-2">
-                            <div className="px-3 py-1 bg-zinc-900/80 rounded-full border border-white/10 text-[10px] font-bold text-white uppercase tracking-wider">
-                                {form.material || "PLA"}
-                            </div>
-                            <div className="px-3 py-1 bg-zinc-900/80 rounded-full border border-white/10 text-[10px] font-mono text-zinc-400">
-                                {form.peso_total}g
-                            </div>
-                        </div>
-
-                        {/* Visual Percentage (Only if editing) */}
-                        {dadosIniciais && (
-                            <span className="text-[10px] font-bold text-zinc-600">
-                                {Math.round((Number(form.peso_atual) / Math.max(1, Number(form.peso_total))) * 100)}% RESTANTE
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Color Picker (Mini) */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 px-2">
-                        {CORES_MAIS_VENDIDAS.map(c => (
-                            <button key={c} onClick={() => updateForm('cor_hex', c)}
-                                className={`w-6 h-6 rounded-full border border-zinc-800 transition-all hover:scale-110 ${c.toLowerCase() === form.cor_hex.toLowerCase() ? "ring-2 ring-white scale-110" : "opacity-50 hover:opacity-100"}`}
-                                style={{ backgroundColor: c }}
-                                title={c}
-                            />
-                        ))}
-                        <div className="relative w-6 h-6 rounded-full border border-zinc-700 overflow-hidden group hover:scale-110 transition-transform">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-500 via-yellow-500 to-sky-500 opacity-50 group-hover:opacity-100" />
-                            <input type="color" value={form.cor_hex} onChange={(e) => updateForm('cor_hex', e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* RIGHT: FORM */}
-                <div className="flex-1 w-full space-y-6">
-                    {/* Seção 01: Identificação */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">
-                            <Tag size={12} className="text-zinc-600" />
-                            IDENTIFICAÇÃO
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <div className="flex justify-between px-1">
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase">Fabricante</label>
-                                    <button onClick={() => setManualEntry(p => ({ ...p, marca: !p.marca }))} className="text-[9px] text-sky-500/50 hover:text-sky-400 font-bold uppercase tracking-tighter">
-                                        {manualEntry.marca ? "Lista" : "Manual"}
-                                    </button>
-                                </div>
-                                <UnifiedInput
-                                    type={manualEntry.marca ? "text" : "select"}
-                                    options={marcasOptions} value={form.marca}
-                                    onChange={(v) => updateForm('marca', manualEntry.marca ? v.target.value : v)}
-                                    placeholder="Selecione..."
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase px-1">Material</label>
-                                <UnifiedInput
-                                    type="select"
-                                    options={tiposOptions} value={form.material}
-                                    onChange={(v) => updateForm('material', v)}
-                                    placeholder="Selecione..."
-                                />
-                            </div>
-                        </div>
-
-                        <UnifiedInput
-                            label="Nome / Cor"
-                            icon={PaintbrushVertical}
-                            value={form.nome}
-                            onChange={(e) => updateForm('nome', e.target.value)}
-                            placeholder="Ex: Azul Metálico"
-                        />
-                    </div>
-
-                    <div className="h-px bg-white/5" />
-
-                    {/* Seção 02: Detalhes Técnicos */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">
-                            <DollarSign size={12} className="text-zinc-600" />
-                            DADOS DE ESTOQUE
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                            <UnifiedInput
-                                label="Custo Total (R$)"
-                                icon={DollarSign}
-                                suffix="BRL"
-                                value={form.preco}
-                                onChange={(e) => updateForm('preco', e.target.value)}
-                            />
-                            <UnifiedInput
-                                label="Peso Original (g)"
-                                icon={Layers}
-                                suffix="g"
-                                value={form.peso_total}
-                                onChange={(e) => {
-                                    const newVal = e.target.value;
-                                    setForm(prev => ({
-                                        ...prev,
-                                        peso_total: newVal,
-                                        peso_atual: !dadosIniciais ? newVal : prev.peso_atual
-                                    }));
-                                }}
-                            />
-                            <UnifiedInput
-                                label="Peso Restante (g)"
-                                icon={Layers}
-                                suffix="g"
-                                value={form.peso_atual !== undefined ? form.peso_atual : form.peso_total}
-                                onChange={(e) => updateForm('peso_atual', e.target.value)}
-                                className="border-blue-500/30"
-                                placeholder={form.peso_total}
-                            />
-                        </div>
-                        {/* Data de Abertura (Hidden to save space) */}
-                        {/* <UnifiedInput
-                            label="Data de Abertura"
-                            type="date"
-                            icon={Calendar}
-                            value={form.data_abertura}
-                            onChange={(e) => updateForm('data_abertura', e.target.value)}
-                        /> */}
-                    </div>
-                </div>
+                <FilamentStockForm
+                    form={form}
+                    updateForm={updateForm}
+                    setForm={setForm}
+                    showErrors={showErrors}
+                    dadosIniciais={dadosIniciais}
+                />
             </div>
-        </Modal>
+        </SideBySideModal>
     );
 }

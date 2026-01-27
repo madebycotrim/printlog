@@ -100,7 +100,7 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
     );
 
     // Footer Content
-    const footerContent = (
+    const footerContent = ({ onClose }) => (
         <div className="flex justify-between items-center w-full">
             <div className="flex gap-2.5">
                 {tarefas.map((t, i) => (
@@ -141,6 +141,7 @@ export default function DiagnosticsModal({ printer, onClose, onResolve, complete
                 icon: Wrench
             }}
             footer={footerContent}
+            isDirty={totalConcluidas > 0 || tarefasExtras.length > 0}
         >
             <div className="max-w-2xl mx-auto space-y-8">
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-5">

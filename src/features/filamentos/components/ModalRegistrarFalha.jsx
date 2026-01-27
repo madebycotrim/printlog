@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AlertOctagon, Layers, Loader2, Save, Ban } from 'lucide-react';
+import SpoolVectorView from './Carretel';
 import { UnifiedInput } from '../../../components/UnifiedInput';
 import { useFilaments } from '../logic/filamentQueries';
 import FormFeedback from '../../../components/FormFeedback';
@@ -10,6 +11,7 @@ import { parseNumber } from "../../../utils/numbers";
 
 export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
     const [loading, setLoading] = useState(false);
+    const [showErrors, setShowErrors] = useState(false);
     const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
 
     // Form State
@@ -29,7 +31,10 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
     ];
 
     const handleSubmit = async () => {
-        if (!form.weightWasted) return;
+        if (!form.weightWasted) {
+            setShowErrors(true);
+            return;
+        }
         setLoading(true);
         hideFeedback();
         try {
@@ -41,6 +46,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
             setTimeout(() => {
                 aoFechar();
                 setForm({ weightWasted: '', costWasted: '', reason: 'Falha de Aderência', filamentId: 'manual' });
+                setShowErrors(false);
                 hideFeedback();
             }, 1500);
         } catch (error) {
@@ -84,55 +90,90 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
         }
     ], [filaments]);
 
-    // Sidebar Content
+    // Sidebar Content match ModalFilamento aesthetic
     const sidebarContent = (
-        <div className="flex flex-col items-center w-full space-y-10 relative z-10 h-full justify-between">
-            <div className="w-full">
-                <div className="flex items-center gap-3 justify-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-10">
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                    <span>Resumo</span>
-                    <div className="h-px w-4 bg-zinc-900/50" />
+        <div className="flex flex-col items-center w-full h-full relative z-10 justify-between py-6">
+            {/* Contextual Header */}
+            <div className="w-full flex justify-between items-center px-6">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)] animate-pulse" />
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Alerta</span>
                 </div>
-
-                <div className="relative group p-10 rounded-[2.5rem] bg-rose-500/5 border border-rose-500/20 shadow-inner flex items-center justify-center backdrop-blur-sm mx-auto w-fit mb-10">
-                    <AlertOctagon size={64} className="text-rose-500" strokeWidth={1.5} />
-                </div>
-
-                <div className="text-center space-y-3 w-full">
-                    <h3 className="text-xl font-bold text-rose-500 tracking-tight truncate px-2 leading-tight">
-                        {form.reason}
-                    </h3>
-                    <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest bg-zinc-800/50 px-3 py-1 rounded-full border border-zinc-800/50 inline-block">
-                        {form.filamentId !== 'manual' ? (filaments.find(f => String(f.id) === String(form.filamentId))?.nome || 'Filamento Selecionado') : 'Entrada Manual'}
-                    </span>
+                <div className="text-[10px] font-mono font-bold text-zinc-700">
+                    FALHA
                 </div>
             </div>
 
-            <div className="bg-rose-950/20 border border-rose-500/20 rounded-2xl p-6 relative z-10 w-full">
-                <div className="flex items-center gap-2 mb-2">
-                    <Ban size={12} strokeWidth={2.5} className="text-rose-500/50" />
-                    <span className="text-[10px] font-bold text-rose-500/60 uppercase tracking-wider">Prejuízo Estimado</span>
+            {/* Central Icon Visualization */}
+            <div className="relative group w-full flex-1 flex items-center justify-center select-none">
+                {/* Dynamic Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full opacity-20 blur-[60px] bg-rose-500 transition-all duration-700 pointer-events-none" />
+
+                {/* Icon Container or Spool View */}
+                <div className="relative z-10 transform transition-transform duration-500 group-hover:scale-105 pointer-events-none drop-shadow-2xl">
+                    {form.filamentId !== 'manual' && filaments.find(f => String(f.id) === String(form.filamentId)) ? (
+                        <SpoolVectorView
+                            color={filaments.find(f => String(f.id) === String(form.filamentId)).cor_hex}
+                            size={200}
+                            percent={80} // Fixed visual for failure mode
+                        />
+                    ) : (
+                        <div className="w-48 h-48 rounded-full bg-zinc-900/50 border border-rose-500/20 flex items-center justify-center backdrop-blur-sm shadow-[0_0_30px_rgba(244,63,94,0.1)]">
+                            <AlertOctagon size={80} className="text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]" strokeWidth={1.5} />
+                        </div>
+                    )}
                 </div>
-                <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl font-bold text-rose-500 tracking-tighter">R$ {form.costWasted || '0.00'}</span>
+
+                {/* Info Overlay */}
+                <div className="absolute inset-x-0 bottom-6 text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    <p className="text-[9px] font-bold text-rose-500/80 uppercase tracking-widest mb-1">Motivo</p>
+                    <h3 className="text-xl font-bold text-white drop-shadow-lg leading-tight px-4 line-clamp-2">
+                        {form.reason}
+                    </h3>
+                </div>
+            </div>
+
+            {/* Prejuízo Card */}
+            <div className="w-full px-6 pb-2">
+                <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-800/80 p-5 rounded-3xl flex flex-col gap-4 shadow-xl">
+                    <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Material Afetado</span>
+                            <span className="text-xs font-bold text-zinc-300 truncate max-w-[180px]">
+                                {form.filamentId !== 'manual' ? (filaments.find(f => String(f.id) === String(form.filamentId))?.nome || 'Selecionando...') : 'Registro Manual'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-zinc-800/50" />
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">Prejuízo Estimado</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-sm font-mono text-zinc-500">R$</span>
+                            <span className="text-2xl font-bold font-mono text-rose-400 tracking-tighter shadow-rose-500/10 drop-shadow-md">
+                                {form.costWasted || '0.00'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
 
     // Footer Content
-    const footerContent = (
+    const footerContent = ({ onClose }) => (
         <div className="flex flex-col gap-4 w-full">
             <FormFeedback {...feedback} onClose={hideFeedback} />
 
             <div className="flex gap-4">
-                <button disabled={loading} onClick={aoFechar} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
+                <button disabled={loading} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
                     Cancelar
                 </button>
                 <button
-                    disabled={loading || !form.weightWasted}
+                    disabled={loading}
                     onClick={handleSubmit}
-                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!loading && form.weightWasted ? "bg-rose-500 text-white hover:bg-rose-400 active:scale-95 hover:shadow-xl shadow-lg shadow-rose-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
+                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!loading ? "bg-rose-500 text-white hover:bg-rose-400 active:scale-95 hover:shadow-xl shadow-lg shadow-rose-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
                 >
                     {loading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Save size={16} strokeWidth={2.5} />}
                     Confirmar Prejuízo
@@ -146,10 +187,10 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
             isOpen={aberto}
             onClose={aoFechar}
             sidebar={sidebarContent}
-            title="Registrar Falha"
-            subtitle="Registre desperdícios para abater do lucro bruto mensal"
+            header={{ title: "Registrar Falha", subtitle: "Registre desperdícios para abater do lucro bruto mensal" }}
             footer={footerContent}
             isSaving={loading}
+            isDirty={!!form.weightWasted}
             maxWidth="max-w-4xl"
         >
             <div className="space-y-6">
@@ -170,6 +211,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                             placeholder="0"
                             value={form.weightWasted}
                             onChange={(e) => handleWeightChange(e.target.value)}
+                            error={showErrors && !form.weightWasted}
                         />
                         <UnifiedInput
                             label="Custo Est."

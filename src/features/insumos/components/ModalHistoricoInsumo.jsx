@@ -42,8 +42,10 @@ export default function ModalHistoricoInsumo({ isOpen, onClose, item }) {
             isOpen={isOpen}
             onClose={onClose}
             sidebar={sidebarContent}
-            title="Histórico de Movimentação"
-            subtitle="Rastreabilidade do insumo"
+            header={{
+                title: "Histórico de Movimentação",
+                subtitle: "Rastreabilidade do insumo"
+            }}
             maxWidth="max-w-4xl"
         >
             <div className="relative">

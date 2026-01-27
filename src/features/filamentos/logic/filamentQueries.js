@@ -61,6 +61,11 @@ const fetchFilamentHistoryApi = async (id) => {
     return data;
 };
 
+export const registerFilamentHistoryApi = async ({ id, type, qtd, obs }) => {
+    const { data } = await api.post(`/filaments/${id}/history`, { type, qtd, obs });
+    return data;
+};
+
 // ==================== HOOKS ====================
 
 export const useFilamentHistory = (id) => {
@@ -139,6 +144,13 @@ export const useFilamentMutations = () => {
         }
     });
 
+    const registerHistoryMutation = useMutation({
+        mutationFn: registerFilamentHistoryApi,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['filament-history']);
+        }
+    });
+
     const deleteMutation = useMutation({
         mutationFn: deleteFilamentApi,
         onSuccess: (idRemovido) => {
@@ -152,6 +164,7 @@ export const useFilamentMutations = () => {
         saveFilament: saveMutation.mutateAsync,
         updateWeight: updateWeightMutation.mutateAsync,
         deleteFilament: deleteMutation.mutateAsync,
-        isSaving: saveMutation.isPending || updateWeightMutation.isPending || deleteMutation.isPending
+        registerHistory: registerHistoryMutation.mutateAsync,
+        isSaving: saveMutation.isPending || updateWeightMutation.isPending || deleteMutation.isPending || registerHistoryMutation.isPending
     };
 };

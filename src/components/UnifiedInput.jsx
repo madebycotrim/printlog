@@ -180,7 +180,7 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
 /* ---------- COMPONENTE PRINCIPAL: UNIFIED INPUT ---------- */
 export const UnifiedInput = ({
   label, subtitle, icon: Icon, suffix, isLucro, type, options, variant = "default",
-  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, tooltip, ...props
+  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, tooltip, error, ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
@@ -229,7 +229,7 @@ export const UnifiedInput = ({
       {label && !isGhost && (
         <div className="flex justify-between items-end px-1.5 h-3">
           <div className="flex items-center gap-1.5">
-            <label className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.15em] select-none uppercase">
+            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500" : "text-zinc-500"}`}>
               {label}
             </label>
             {tooltip && <Tooltip text={tooltip} />}
@@ -246,8 +246,11 @@ export const UnifiedInput = ({
         ref={containerRef}
         onClick={handleContainerClick}
         className={`relative flex items-center h-10 transition duration-300 ease-in-out cursor-pointer
-          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950/50 border border-zinc-800/60 rounded-xl shadow-sm"}
-          ${!isGhost && (isActive || isLucro
+          ${isGhost ? "bg-transparent border-none" : "bg-zinc-950/50 border rounded-xl shadow-sm"}
+          ${!isGhost && error
+            ? "border-rose-500/50 shadow-[0_0_15px_-3px_rgba(244,63,94,0.15)] ring-1 ring-rose-500/20"
+            : (!isGhost ? "border-zinc-800/60" : "")}
+          ${!isGhost && !error && (isActive || isLucro
             ? "border-sky-500/50 shadow-[0_0_15px_-3px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/20"
             : "hover:border-zinc-700 hover:bg-zinc-900/40")}
           ${!isSelect ? "cursor-text" : "cursor-pointer"}`}

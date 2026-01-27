@@ -24,46 +24,54 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
     }, [item, apiStats]);
 
     const sidebarContent = (
-        <div className="flex flex-col items-center w-full space-y-10 relative z-10 h-full justify-between">
-            <div className="w-full flex flex-col items-center">
-                <div className="flex items-center gap-3 justify-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-10">
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                    <span>Timeline</span>
-                    <div className="h-px w-4 bg-zinc-900/50" />
+        <div className="flex flex-col items-center w-full h-full relative z-10 justify-between py-6">
+            {/* Contextual Header */}
+            {/* Contextual Header */}
+            <div className="w-full text-center space-y-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] border border-zinc-800 rounded-full px-3 py-1 bg-zinc-900/50">
+                        {item?.marca || "MARCA"}
+                        <span className="mx-1 text-zinc-700">|</span>
+                        {item?.material || "MATERIAL"}
+                    </span>
                 </div>
+                <h2 className="text-2xl font-black text-white tracking-tight leading-none break-words line-clamp-2 drop-shadow-lg">
+                    {item?.nome}
+                </h2>
+            </div>
 
-                <div className="relative group p-8 rounded-[2.5rem] bg-zinc-950/50 border border-zinc-800 shadow-inner flex items-center justify-center backdrop-blur-sm mb-6">
-                    <SpoolSideView color={item?.cor_hex} percent={(item?.peso_atual / item?.peso_total) * 100} size={80} />
-                </div>
+            {/* Spool Visualization */}
+            <div className="relative w-full flex-1 flex items-center justify-center select-none">
+                {/* Dynamic Glow */}
+                <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full opacity-20 blur-3xl transition-all duration-700 pointer-events-none"
+                    style={{ backgroundColor: item?.cor_hex }}
+                />
 
-                <div className="text-center">
-                    <h3 className="text-lg font-bold text-zinc-100">{item?.nome}</h3>
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest mt-1">ID: {String(item?.id || '').slice(-4)}</p>
+                {/* Spool */}
+                <div className="relative z-10 pointer-events-none drop-shadow-2xl">
+                    <SpoolSideView
+                        color={item?.cor_hex}
+                        size={180}
+                        percent={(item?.peso_atual / item?.peso_total) * 100}
+                    />
                 </div>
             </div>
 
-            <div className="w-full space-y-3">
-                <div className="bg-zinc-950/40 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-zinc-900 rounded-lg text-zinc-400">
-                            <TrendingDown size={16} />
-                        </div>
-                        <div>
-                            <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Média Diária</p>
-                            <p className="text-sm font-bold text-zinc-200">{stats.mediaDiaria}g / dia</p>
-                        </div>
+            {/* Stats Card */}
+            {/* Compact Stats Pill */}
+            <div className="w-full flex justify-center pb-2">
+                <div className="flex items-center gap-3 bg-zinc-900/80 backdrop-blur border border-zinc-800 rounded-xl px-4 py-2 hover:bg-zinc-800/80 transition-colors shadow-lg">
+                    <div className="flex items-center gap-2">
+                        <TrendingDown size={12} className="text-emerald-500" />
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Média</span>
+                        <span className="text-xs font-mono font-bold text-zinc-300">{stats.mediaDiaria}g</span>
                     </div>
-                </div>
-
-                <div className="bg-zinc-950/40 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-zinc-900 rounded-lg text-emerald-500">
-                            <Clock size={16} />
-                        </div>
-                        <div>
-                            <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Previsão</p>
-                            <p className="text-sm font-bold text-emerald-400">Acaba em ~{stats.diasRestantes} dias</p>
-                        </div>
+                    <div className="w-px h-3 bg-zinc-700" />
+                    <div className="flex items-center gap-2">
+                        <Clock size={12} className="text-sky-500" />
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Prev.</span>
+                        <span className="text-xs font-mono font-bold text-zinc-300">~{stats.diasRestantes}d</span>
                     </div>
                 </div>
             </div>
@@ -75,42 +83,49 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
             isOpen={aberto}
             onClose={aoFechar}
             sidebar={sidebarContent}
-            title="Histórico de Uso"
-            subtitle="Rastreabilidade completa do carretel"
-            maxWidth="max-w-4xl"
+            header={{ title: "Histórico de Uso", subtitle: "Rastreabilidade completa do carretel" }}
+            maxWidth="max-w-5xl"
+            className="min-h-[600px]"
         >
-            <div className="relative">
-                {/* Linha do tempo vertical */}
-                <div className="absolute left-4 top-4 bottom-4 w-px bg-zinc-800/50" />
+            <div className="relative pt-4 pb-12">
+                {/* Linha do tempo com gradiente */}
+                <div className="absolute left-[19px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-zinc-800 via-zinc-800/50 to-transparent" />
 
-                <div className="space-y-6 pl-4">
+                <div className="space-y-8">
                     {history.map((log, idx) => (
-                        <div key={idx} className="relative pl-8 group">
-                            {/* Bolinha da timeline */}
-                            <div className={`absolute left-0 top-1.5 w-8 h-8 -ml-4 rounded-full border-4 border-zinc-950 z-10 flex items-center justify-center
-                                ${log.type === 'falha' ? 'bg-rose-500 text-rose-100' :
-                                    log.type === 'abertura' ? 'bg-emerald-500 text-emerald-100' : 'bg-zinc-800 text-zinc-400'}`}>
-                                {log.type === 'falha' ? <AlertCircle size={12} /> :
-                                    log.type === 'abertura' ? <Calendar size={12} /> : <ArrowDownCircle size={12} />}
+                        <div key={idx} className="relative pl-14 group">
+                            {/* Ícone Conector */}
+                            <div className={`absolute left-0 top-1 w-10 h-10 rounded-full border-4 border-[#09090b] z-10 flex items-center justify-center shadow-lg transition-transform group-hover:scale-105
+                                ${log.type === 'falha' ? 'bg-zinc-900 text-rose-500 shadow-rose-900/10' :
+                                    log.type === 'abertura' ? 'bg-zinc-900 text-emerald-500 shadow-emerald-900/10' : 'bg-zinc-900 text-zinc-600 shadow-black/40'}`}>
+                                {log.type === 'falha' ? <AlertCircle size={18} strokeWidth={2} /> :
+                                    log.type === 'abertura' ? <Calendar size={18} strokeWidth={2} /> : <ArrowDownCircle size={18} strokeWidth={2} />}
                             </div>
 
-                            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 hover:border-zinc-700 transition-colors">
-                                <div className="flex justify-between items-start mb-1">
-                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border
-                                        ${log.type === 'falha' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
-                                            log.type === 'abertura' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-zinc-800/50 border-zinc-700 text-zinc-400'}`}>
+                            {/* Conteúdo Limpo */}
+                            <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest
+                                        ${log.type === 'falha' ? 'text-rose-600' :
+                                            log.type === 'abertura' ? 'text-emerald-600' : 'text-zinc-600'}`}>
                                         {log.type}
                                     </span>
-                                    <span className="text-[10px] font-mono text-zinc-600">
+                                    <span className="text-[10px] text-zinc-700">•</span>
+                                    <span className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-widest">
                                         {new Date(log.date).toLocaleDateString('pt-BR')}
                                     </span>
                                 </div>
-                                <h4 className="text-sm font-bold text-zinc-200">{log.obs}</h4>
-                                {log.qtd > 0 && (
-                                    <p className="text-xs text-zinc-500 mt-1 font-mono">
-                                        -{log.qtd}g
-                                    </p>
-                                )}
+
+                                <div className="flex justify-between items-baseline pr-4">
+                                    <h4 className="text-lg font-bold text-zinc-100 leading-snug">
+                                        {log.obs}
+                                    </h4>
+                                    {log.qtd > 0 && (
+                                        <span className="text-sm font-bold text-zinc-400 font-mono tracking-tight">
+                                            -{log.qtd}g
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

@@ -16,7 +16,7 @@ const WrapperCard = React.memo(({ children, title, step, className = "", zPriori
 
     return (
         <div className={`relative ${zPriority} ${className} mx-2`}>
-            <div className={`relative bg-zinc-900/20 border border-zinc-800 backdrop-blur-md rounded-2xl p-5 flex flex-col gap-4 group focus-within:z-50 focus-within:border-sky-500/30 hover:border-zinc-700 transition-all duration-300 hover:shadow-lg`}>
+            <div className={`relative bg-zinc-950 border border-zinc-800/80 backdrop-blur-md rounded-2xl p-5 flex flex-col gap-4 group focus-within:z-50 focus-within:border-sky-500/30 hover:border-zinc-700 transition-all duration-300 hover:shadow-lg`}>
                 <div className="flex items-center justify-between border-b border-zinc-800/50 pb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-[10px] font-black text-sky-500 shadow-sm group-hover:scale-110 transition-transform">

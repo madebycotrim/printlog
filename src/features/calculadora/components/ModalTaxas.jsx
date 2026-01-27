@@ -153,6 +153,7 @@ export default function ModalTaxas({ isOpen, onClose, onApply }) {
             title="Taxas de Venda"
             subtitle="Plataformas & Marketplaces"
             icon={Store}
+            color="sky"
         >
             <div className="max-h-[60vh] overflow-y-auto custom-scrollbar space-y-2 p-1">
 

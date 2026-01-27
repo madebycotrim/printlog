@@ -115,7 +115,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
     );
 
     // Footer Content
-    const footerContent = (
+    const footerContent = ({ onClose }) => (
         <div className="flex flex-col gap-4 w-full">
             <FormFeedback
                 type={feedback.type}
@@ -132,7 +132,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
             )}
 
             <div className="flex gap-4">
-                <button disabled={isSaving} onClick={handleTentativaFechar} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
+                <button disabled={isSaving} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
                     Cancelar
                 </button>
                 <button
@@ -150,12 +150,15 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
     return (
         <SideBySideModal
             isOpen={isOpen}
-            onClose={handleTentativaFechar}
+            onClose={onClose}
             sidebar={sidebarContent}
-            title={clienteParaEditar ? "Editar Cliente" : (reduced ? "Cadastro Rápido" : "Cadastrar Cliente")}
-            subtitle={clienteParaEditar ? "Atualize os dados de contato do cliente" : (reduced ? "Preencha apenas os dados essenciais para começar" : "Adicione um novo parceiro ou cliente à sua base")}
+            header={{
+                title: clienteParaEditar ? "Editar Cliente" : (reduced ? "Cadastro Rápido" : "Cadastrar Cliente"),
+                subtitle: clienteParaEditar ? "Atualize os dados de contato do cliente" : (reduced ? "Preencha apenas os dados essenciais para começar" : "Adicione um novo parceiro ou cliente à sua base")
+            }}
             footer={footerContent}
-            isSaving={isSaving} // Optional, for visual feedback on the main area if supported
+            isSaving={isSaving}
+            isDirty={isDirty}
         >
             <div className="space-y-8">
                 {/* Seção 01 - Identificação */}

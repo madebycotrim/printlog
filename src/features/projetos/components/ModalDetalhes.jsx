@@ -9,13 +9,8 @@ import { CONFIG_STATUS } from "../../../utils/constants";
 import SideBySideModal from "../../../components/ui/SideBySideModal";
 
 export default function ModalDetalhes({ item, onClose, onExcluir }) {
+    // Escape is now handled by SideBySideModal
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-    useEffect(() => {
-        const handleEsc = (e) => (e.key === 'Escape') && onClose();
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, [onClose]);
 
     const handleDelete = () => {
         setShowDeleteConfirm(false);

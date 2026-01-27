@@ -198,6 +198,29 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
             const rawData = await request.json();
             const id = rawData.id || idFromPath || crypto.randomUUID();
 
+            // ROTA ESPECÍFICA: POST /filaments/:id/history (Registro Manual de Histórico)
+            if (method === 'POST' && pathArray[2] === 'history' && idFromPath) {
+                const { type, qtd, obs } = rawData;
+
+                if (!type || qtd === undefined) {
+                    return enviarJSON({ error: "Campos type e qtd são obrigatórios." }, 400);
+                }
+
+                try {
+                    await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
+                        id TEXT PRIMARY KEY, filament_id TEXT, date TEXT, type TEXT, amount REAL, obs TEXT
+                    )`).run();
+
+                    await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs) VALUES (?, ?, ?, ?, ?, ?)`)
+                        .bind(crypto.randomUUID(), idFromPath, new Date().toISOString(), type, paraNumero(qtd), obs || "Registro Manual")
+                        .run();
+
+                    return enviarJSON({ success: true, message: "Histórico registrado." });
+                } catch (e) {
+                    return enviarJSON({ error: "Erro ao gravar log", details: e.message }, 500);
+                }
+            }
+
             if (method === 'PATCH') {
                 // Atualização parcial (apenas peso ou favorito)
                 if (rawData.peso_atual !== undefined) {

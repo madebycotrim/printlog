@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Activity, Printer, Zap } from 'lucide-react';
 import { formatarMoeda } from '../../../utils/numbers';
+import StatsWidget from "../../../components/ui/StatsWidget";
 import { calcularEstatisticasGlobais, calcularRoiPorImpressora } from '../logic/roi';
 import { Sparkline } from '../../../components/charts/ChartComponents';
 import { subDays, format, parseISO } from 'date-fns';
@@ -66,52 +67,48 @@ export default function DashboardFinanceiro({ projects, printers }) {
 
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-tour="dashboard-kpi">
-                <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 hover:bg-zinc-900/60 transition-colors">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
-                            <TrendingUp size={20} />
-                        </div>
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Receita Total</span>
-                    </div>
-                    <div className="text-2xl font-mono font-bold text-white mb-2">
-                        {formatarMoeda(stats.receitaTotal)}
-                    </div>
-                    <div className="h-10 -mx-2">
-                        <Sparkline data={sparklineData} color="#10b981" />
-                    </div>
-                </div>
 
-                <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 hover:bg-zinc-900/60 transition-colors">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-rose-500/10 rounded-lg text-rose-500">
-                            <TrendingDown size={20} />
+                {/* 1. Receita */}
+                <StatsWidget
+                    title="Receita Total"
+                    value={formatarMoeda(stats.receitaTotal)}
+                    icon={TrendingUp}
+                    colorTheme="emerald"
+                    secondaryLabel="Faturamento"
+                    secondaryValue={
+                        <div className="h-8 w-24 opacity-50 block mt-1">
+                            <Sparkline data={sparklineData} color="#10b981" />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Custos</span>
-                    </div>
-                    <div className="text-2xl font-mono font-bold text-zinc-200">
-                        {formatarMoeda(stats.custoTotal)}
-                    </div>
-                    <div className="mt-2 flex gap-2 text-[10px] uppercase font-bold text-zinc-600">
-                        <span>Mat: {formatarMoeda(stats.custoMaterial)}</span>
-                        <span>•</span>
-                        <span>Ener: {formatarMoeda(stats.custoEnergia)}</span>
-                    </div>
-                </div>
+                    }
+                />
 
-                <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 hover:bg-zinc-900/60 transition-colors relative overflow-hidden group">
-                    {/* Glow effect for profit */}
-                    <div className="absolute top-0 right-0 p-8 bg-sky-500/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                    <div className="flex items-center gap-3 mb-2 relative z-10">
-                        <div className="p-2 bg-sky-500/10 rounded-lg text-sky-500">
-                            <DollarSign size={20} />
+                {/* 2. Custos */}
+                <StatsWidget
+                    title="Custos"
+                    value={formatarMoeda(stats.custoTotal)}
+                    icon={TrendingDown}
+                    colorTheme="rose"
+                    secondaryLabel="Operacional"
+                    secondaryValue={
+                        <div className="flex gap-2 text-[10px] uppercase font-bold text-zinc-500">
+                            <span>Mat: {formatarMoeda(stats.custoMaterial)}</span>
+                            <span>•</span>
+                            <span>Ener: {formatarMoeda(stats.custoEnergia)}</span>
                         </div>
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Lucro Líquido</span>
-                    </div>
-                    <div className="text-3xl font-mono font-bold text-sky-400 relative z-10">
-                        {formatarMoeda(stats.lucroTotal)}
-                    </div>
-                </div>
+                    }
+                />
+
+                {/* 3. Lucro */}
+                <StatsWidget
+                    title="Lucro Líquido"
+                    value={formatarMoeda(stats.lucroTotal)}
+                    icon={DollarSign}
+                    colorTheme="sky"
+                    glowColor="bg-sky-500/20"
+                    secondaryLabel="Resultado"
+                    secondaryValue="Margem Líquida"
+                    FooterIcon={Activity}
+                />
             </div>
 
             {/* ROI Table */}

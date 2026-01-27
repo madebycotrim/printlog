@@ -24,6 +24,7 @@ export default function ConfirmModal({
             subtitle={isDestructive ? "Ação Irreversível" : "Confirmação"}
             icon={Icon}
             maxWidth="max-w-md"
+            color={isDestructive ? "rose" : "sky"}
             footer={
                 <div className="flex gap-3 w-full">
                     <Button
@@ -46,16 +47,17 @@ export default function ConfirmModal({
                 </div>
             }
         >
-            <div className="p-6 text-center space-y-4">
-                <p className="text-zinc-300 text-sm font-medium leading-relaxed">
+            <div className="p-8 text-center space-y-6">
+                <div className="text-zinc-300 text-sm font-medium leading-relaxed">
                     {message}
-                </p>
+                </div>
                 {description && (
-                    <div className={`p-4 rounded-xl border ${isDestructive
-                            ? "bg-rose-500/5 border-rose-500/10 text-rose-400"
-                            : "bg-zinc-900/50 border-zinc-800 text-zinc-500"
+                    <div className={`p-4 rounded-xl border flex items-start gap-3 text-left ${isDestructive
+                        ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500"
                         }`}>
-                        <p className="text-[10px] font-black uppercase tracking-widest leading-tight opacity-80">
+                        <AlertTriangle size={16} className={`shrink-0 ${isDestructive ? "text-rose-500" : "text-zinc-500"}`} />
+                        <p className="text-[10px] font-bold uppercase tracking-wider leading-relaxed opacity-90 pt-0.5">
                             {description}
                         </p>
                     </div>

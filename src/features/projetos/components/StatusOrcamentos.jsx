@@ -1,93 +1,7 @@
 import React, { useMemo } from "react";
-import {
-    TrendingUp,
-    Wallet,
-    Clock,
-    Activity,
-    AlertCircle,
-    Check,
-    BadgeDollarSign
-} from "lucide-react";
+import { TrendingUp, Clock, Activity, AlertCircle, BadgeDollarSign } from "lucide-react";
 import StatsWidget from "../../../components/ui/StatsWidget";
-
 import { formatCurrency, formatDecimal, parseNumber } from "../../../utils/numbers";
-
-// StatCard removido - Substituído por StatsWidget universal
-
-/**
- * Componente de Saúde da Operação (Baseado no lucro real)
- */
-const OperationHealthCard = ({ bruto, lucro }) => {
-    const margemPercent = bruto > 0 ? (lucro / bruto) * 100 : 0;
-
-    // Lógica de status: Abaixo de 15% é crítico, acima de 25% é alta performance
-    const ehCritico = margemPercent < 15 && bruto > 0;
-    const ehAltaPerformance = margemPercent >= 25;
-
-    const estilosStatus = ehCritico
-        ? {
-            container: "bg-rose-950/10 border-rose-500/40 shadow-[0_10px_30px_rgba(244,63,94,0.1)]",
-            glow: "bg-rose-500/20",
-            iconBox: "border-rose-500/40 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.2)]",
-            indicator: "bg-rose-500 animate-pulse",
-            title: "text-rose-500",
-            subtitle: "text-rose-400/80",
-            bar: "bg-rose-500"
-        }
-        : {
-            container: "bg-zinc-950/40/40 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.05)]",
-            glow: "bg-amber-500/10",
-            iconBox: "border-amber-500/20 text-amber-500",
-            indicator: "bg-amber-500",
-            title: "text-zinc-100",
-            subtitle: "text-zinc-500",
-            bar: "bg-amber-500"
-        };
-
-    return (
-        <div className={`relative h-[130px] p-6 rounded-2xl overflow-hidden flex items-center justify-between transition-all duration-500 group border ${estilosStatus.container}`}>
-            <div className={`absolute -right-4 -top-4 w-24 h-24 blur-[60px] transition-all duration-700 ${estilosStatus.glow}`} />
-
-            <div className="flex items-center gap-5 relative z-10">
-                <div className={`p-3.5 rounded-xl bg-zinc-950 border transition-all duration-500 ${estilosStatus.iconBox}`}>
-                    {ehCritico ? (
-                        <AlertCircle size={24} strokeWidth={2.5} className="animate-pulse" />
-                    ) : (
-                        <TrendingUp size={24} strokeWidth={2.5} />
-                    )}
-                </div>
-
-                <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${estilosStatus.indicator}`} />
-                        <p className={`text-[10px] font-bold uppercase tracking-[0.15em] ${ehCritico ? 'text-rose-500' : 'text-zinc-500'}`}>
-                            SAÚDE DA OPERAÇÃO
-                        </p>
-                    </div>
-                    <h3 className={`text-xl font-black tracking-tight leading-none transition-colors uppercase italic ${estilosStatus.title}`}>
-                        {ehCritico ? 'Margem Crítica' : ehAltaPerformance ? 'Alta Performance' : 'Margem Estável'}
-                    </h3>
-                    <p className={`text-[11px] font-bold mt-1.5 uppercase tracking-wide font-mono ${estilosStatus.subtitle}`}>
-                        ROI: {formatDecimal(margemPercent, 1)}% <span className="opacity-40 ml-1">// LÍQUIDO</span>
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex flex-col items-end relative z-10">
-                <div className="text-[9px] text-zinc-500 font-bold uppercase mb-2 tracking-[0.2em]">EFICIÊNCIA</div>
-                <div className="h-1.5 w-20 bg-zinc-950 rounded-full overflow-hidden border border-white/5">
-                    <div
-                        className={`h-full rounded-full transition-all duration-1000 ${estilosStatus.bar}`}
-                        style={{ width: `${Math.min(100, margemPercent * 2)}%` }} // Multiplicador visual
-                    />
-                </div>
-                <span className="text-[10px] font-mono font-bold text-zinc-500 mt-2 italic">
-                    {formatCurrency(lucro)}
-                </span>
-            </div>
-        </div>
-    );
-};
 
 export default function StatusOrcamentos({
     totalBruto = 0,
@@ -95,7 +9,6 @@ export default function StatusOrcamentos({
     projetosAtivos = 0,
     horasEstimadas = 0
 }) {
-
     const metrics = useMemo(() => ({
         bruto: parseNumber(totalBruto),
         lucro: parseNumber(totalLucro),
@@ -103,13 +16,30 @@ export default function StatusOrcamentos({
         horas: formatDecimal(horasEstimadas, 1)
     }), [totalBruto, totalLucro, projetosAtivos, horasEstimadas]);
 
+    // Health Logic
+    const margemPercent = metrics.bruto > 0 ? (metrics.lucro / metrics.bruto) * 100 : 0;
+    const ehCritico = margemPercent < 15 && metrics.bruto > 0;
+    const ehAltaPerformance = margemPercent >= 25;
+
+    let theme = 'amber';
+    if (ehCritico) theme = 'rose';
+    else if (ehAltaPerformance) theme = 'emerald';
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
-
-            {/* 1. Saúde Financeira (Gauge de Margem) */}
-            <OperationHealthCard
-                bruto={metrics.bruto}
-                lucro={metrics.lucro}
+            {/* 1. Saúde Financeira */}
+            <StatsWidget
+                title="Saúde da Operação"
+                value={ehCritico ? 'Margem Crítica' : ehAltaPerformance ? 'Alta Performance' : 'Margem Estável'}
+                icon={ehCritico ? AlertCircle : TrendingUp}
+                colorTheme={theme}
+                isAlert={ehCritico}
+                secondaryLabel="ROI Líquido"
+                secondaryValue={`${formatDecimal(margemPercent, 1)}% sobre faturamento`}
+                progress={{
+                    value: Math.min(100, margemPercent * 2), // Visual scaling
+                    color: ehCritico ? 'bg-rose-500' : (ehAltaPerformance ? 'bg-emerald-500' : 'bg-amber-500')
+                }}
             />
 
             {/* 2. Volume Comercial */}
@@ -117,9 +47,7 @@ export default function StatusOrcamentos({
                 title="Comercial"
                 value={formatCurrency(metrics.bruto)}
                 icon={BadgeDollarSign}
-                iconColor="text-amber-500"
-                iconBg="border-amber-500/20 bg-zinc-950"
-                glowColor="bg-amber-500/20"
+                colorTheme="amber"
                 secondaryLabel="Faturamento Total"
                 secondaryValue={`${metrics.ativos} pedidos processados`}
             />
@@ -129,9 +57,7 @@ export default function StatusOrcamentos({
                 title="Manufatura"
                 value={`${metrics.horas}h`}
                 icon={Clock}
-                iconColor="text-orange-500"
-                iconBg="border-orange-500/20 bg-zinc-950"
-                glowColor="bg-orange-500/20"
+                colorTheme="orange"
                 secondaryLabel="Carga Horária"
                 secondaryValue="Tempo total estimado"
             />

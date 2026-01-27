@@ -16,16 +16,16 @@ export default function FinanceiroPage() {
 
     return (
         <ManagementLayout>
-            <div className="relative z-10 p-8 xl:p-12 max-w-[1600px] mx-auto w-full">
 
-                <PageHeader
-                    title="Financeiro"
-                    subtitle="Fluxo de caixa, Lucratividade e ROI"
-                />
+            <PageHeader
+                title="Financeiro"
+                subtitle="Fluxo de caixa, Lucratividade e ROI"
+                accentColor="text-emerald-500"
+            />
 
-                <DashboardFinanceiro projects={projects} printers={printers} />
+            <DashboardFinanceiro projects={projects} printers={printers} />
 
-            </div>
+
         </ManagementLayout>
     );
 }

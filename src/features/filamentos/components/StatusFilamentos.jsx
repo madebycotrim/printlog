@@ -1,21 +1,9 @@
-// StatusFilamentos.jsx (Atualizado)
 import React, { useMemo } from "react";
 import { AlertTriangle, BadgeDollarSign, Trash2, TrendingUp, TrendingDown, Droplets } from "lucide-react";
 import StatsWidget from "../../../components/ui/StatsWidget";
+import { formatCurrency } from "../../../utils/numbers";
 
-/**
- * Utilitário de formatação de moeda
- */
-const formatCurrency = (val) => {
-  const numericValue = typeof val === 'number' ? val : parseFloat(val) || 0;
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    notation: numericValue >= 100000 ? "compact" : "standard",
-  }).format(numericValue);
-};
-
-export default function StatusFilamentos({
+function StatusFilamentos({
   totalWeight = 0,
   lowStockCount = 0,
   valorTotal = 0,
@@ -32,7 +20,7 @@ export default function StatusFilamentos({
     const isHigh = humidityVal !== null && humidityVal > 50;
 
     return {
-      financial: (valorTotal || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+      financial: formatCurrency(valorTotal || 0),
       temperature: tempVal !== null ? `${tempVal}°C` : "--°C",
       humidity: humidityVal !== null ? `${humidityVal}%` : "--%",
       weatherLoading: isWeatherLoading,
@@ -45,11 +33,9 @@ export default function StatusFilamentos({
       {/* 1. Saúde do Estoque */}
       <StatsWidget
         title={lowStockCount > 0 ? "Reposição" : "Saudável"}
-        value={lowStockCount > 0 ? `${lowStockCount} Itens` : "Estoque OK"}
+        value={lowStockCount > 0 ? `${lowStockCount} Itens` : "OK"}
         icon={AlertTriangle}
-        iconColor={lowStockCount > 0 ? "text-rose-500" : "text-emerald-500"}
-        iconBg={lowStockCount > 0 ? "border-rose-500/20 bg-rose-500/5" : "border-emerald-500/20 bg-emerald-500/5"}
-        glowColor={lowStockCount > 0 ? "bg-rose-500/20" : "bg-emerald-500/20"}
+        colorTheme={lowStockCount > 0 ? 'rose' : 'emerald'}
         secondaryLabel="Total em Estoque"
         secondaryValue={`${(totalWeight || 0).toFixed(2)}kg`}
         isAlert={lowStockCount > 0}
@@ -60,9 +46,7 @@ export default function StatusFilamentos({
         title="Patrimônio"
         value={displayStats.financial}
         icon={BadgeDollarSign}
-        iconColor="text-emerald-400"
-        iconBg="border-emerald-500/20 bg-emerald-500/5"
-        glowColor="bg-emerald-500/20"
+        colorTheme="emerald"
         secondaryLabel="Valor Investido"
         secondaryValue="Em Materiais"
         FooterIcon={TrendingUp}
@@ -73,9 +57,7 @@ export default function StatusFilamentos({
         title="Ambiente"
         value={displayStats.humidity}
         icon={Droplets}
-        iconColor="text-cyan-400"
-        iconBg="border-cyan-500/20 bg-cyan-500/5"
-        glowColor="bg-cyan-500/20"
+        colorTheme={displayStats.isHighHumidity ? 'rose' : 'sky'}
         secondaryLabel="Temperatura"
         secondaryValue={displayStats.temperature}
         isAlert={displayStats.isHighHumidity}
@@ -86,9 +68,7 @@ export default function StatusFilamentos({
         title="Perda (30d)"
         value={failureStats?.totalWeight ? `${Math.round(failureStats.totalWeight)}g` : '0g'}
         icon={Trash2}
-        iconColor="text-rose-400"
-        iconBg="border-rose-500/20 bg-rose-500/5"
-        glowColor="bg-rose-500/20"
+        colorTheme="rose"
         secondaryLabel="Prejuízo Estimado"
         secondaryValue={formatCurrency(failureStats?.totalCost || 0)}
         FooterIcon={TrendingDown}
@@ -96,3 +76,5 @@ export default function StatusFilamentos({
     </div>
   );
 }
+
+export default React.memo(StatusFilamentos);

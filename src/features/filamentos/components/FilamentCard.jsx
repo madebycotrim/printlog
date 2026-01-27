@@ -1,9 +1,10 @@
 import React, { memo, useMemo } from "react";
 import { Edit2, Trash2, ArrowDownFromLine, Copy, History, Droplet } from "lucide-react";
-import SpoolVectorView from "../Carretel"; // Adjust path if necessary, assuming it's in ../../components/Carretel or sibling
-import { Tooltip } from "../../../../components/ui/Tooltip";
+import SpoolVectorView from "./Carretel";
+import { FilamentStatus } from "./FilamentStatus";
+import { Tooltip } from "../../../components/ui/Tooltip";
 
-export const FilamentCardVisual = memo(({ item, currentHumidity, currentTemperature, onEdit, onDelete, onConsume, onDuplicate, onHistory }) => {
+export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, onEdit, onDelete, onConsume, onDuplicate, onHistory }) => {
     // Stats Logic
     const stats = useMemo(() => {
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
@@ -13,18 +14,13 @@ export const FilamentCardVisual = memo(({ item, currentHumidity, currentTemperat
     }, [item?.peso_atual, item?.peso_total]);
 
     const corHex = item?.cor_hex || "#3b82f6";
-    const isHygroscopic = ['PLA', 'PETG', 'TPU', 'NYLON', 'ABS', 'ASA'].includes(item?.material?.toUpperCase());
-    const moistureRisk = isHygroscopic && (currentHumidity > 50);
+
+
 
     return (
         <div className="group relative w-full aspect-[3/4] rounded-3xl transition-all duration-300">
 
-            {/* Moisture Indicator (Top Right) */}
-            {moistureRisk && (
-                <div className="absolute top-3 right-3 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 shadow-lg shadow-sky-500/5 transition-all duration-300 group-hover:bg-sky-500/20" title="Risco de Umidade">
-                    <Droplet size={14} fill="currentColor" />
-                </div>
-            )}
+
 
             {/* 1. VISUAL LAYER (Base) */}
             <div className={`
@@ -84,12 +80,9 @@ export const FilamentCardVisual = memo(({ item, currentHumidity, currentTemperat
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-center gap-2">
-                        {stats.ehCritico && (
-                            <span className="text-[9px] font-bold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
-                                ACABANDO
-                            </span>
-                        )}
+                    {/* Universal Status Badge */}
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                        <FilamentStatus item={item} currentHumidity={currentHumidity} />
                     </div>
                 </div>
 

@@ -15,11 +15,12 @@ import { useFilaments, useFilamentMutations } from "../../features/filamentos/lo
 
 // COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
 import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
-import { VirtualRack } from "../../features/filamentos/components/redesign/VirtualRack"; // NEW COMPONENT
+import { VirtualRack } from "../../features/filamentos/components/VirtualRack";
 import ModalFilamento from "../../features/filamentos/components/ModalFilamento.jsx";
 import ModalBaixaRapida from "../../features/filamentos/components/ModalBaixaRapida.jsx";
 import ModalHistoricoFilamento from "../../features/filamentos/components/ModalHistoricoFilamento.jsx";
 import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegistrarFalha';
+import ModalExcluirFilamento from '../../features/filamentos/components/ModalExcluirFilamento';
 
 // NOVOS COMPONENTES (FILTROS)
 import { getColorFamily } from "../../utils/colorUtils";
@@ -37,7 +38,7 @@ export default function FilamentosPage() {
   const { temp, humidity, loading: weatherLoading } = useLocalWeather();
 
   const { data: filaments = [], isLoading: loading } = useFilaments();
-  const { saveFilament, deleteFilament } = useFilamentMutations();
+  const { saveFilament, deleteFilament, isSaving } = useFilamentMutations();
 
   const [viewMode, setViewMode] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
 
@@ -198,18 +199,7 @@ export default function FilamentosPage() {
     }
   };
 
-  const extraControls = (
-    <div className="flex items-center gap-4">
-      <Button
-        variant="ghost"
-        size="md"
-        className="text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20"
-        onClick={() => setModalFalhaAberto(true)}
-        title="Registrar Desperdício"
-        icon={Trash2}
-      />
-    </div>
-  );
+  const extraControls = null;
 
   const novoButton = (
     <Button
@@ -225,85 +215,75 @@ export default function FilamentosPage() {
 
   return (
     <ManagementLayout>
-      <div className="p-8 xl:p-12 max-w-[1600px] mx-auto w-full space-y-8 animate-in fade-in duration-500">
 
-        <PageHeader
-          title="Meus Carretéis"
-          subtitle="Gerencie seu estoque de filamentos de forma simples"
-          accentColor="text-rose-500"
-          searchQuery={busca}
-          onSearchChange={setBusca}
-          placeholder="BUSCAR NO ESTOQUE..."
-          extraControls={extraControls}
-          actionButton={novoButton}
-        />
+      <PageHeader
+        title="Meus Carretéis"
+        subtitle="Gerencie seu estoque de filamentos de forma simples"
+        accentColor="text-rose-500"
+        searchQuery={busca}
+        onSearchChange={setBusca}
+        placeholder="BUSCAR NO ESTOQUE..."
+        extraControls={extraControls}
+        actionButton={novoButton}
+      />
 
-        <div className="space-y-6">
-          <div>
-            <StatusFilamentos
-              totalWeight={stats.pesoKg}
-              lowStockCount={lowStockCount}
-              valorTotal={stats.valorTotal}
-              weather={{ temp, humidity, loading: weatherLoading }}
-              failureStats={failureStats}
-            />
-          </div>
-
-          <div>
-            <FilamentFilters
-              filters={filters}
-              setFilters={setFilters}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              availableBrands={availableBrands}
-              availableMaterials={availableMaterials}
-            />
-          </div>
-
-          {Object.entries(grupos).length > 0 ? (
-            <div className="pb-6">
-              {/* VIRTUAL RACK - New Visual Component */}
-              <VirtualRack
-                groupedFilaments={grupos}
-                currentHumidity={humidity}
-                currentTemperature={temp}
-                acoes={acoes}
-                viewMode={viewMode}
-              />
-            </div>
-          ) : (
-            !loading && (
-              <EmptyState
-                title="Nenhum material encontrado"
-                description="Tente ajustar os filtros ou adicione um novo material."
-                icon={PackageSearch}
-              />
-            )
-          )}
+      <div className="space-y-6">
+        <div>
+          <StatusFilamentos
+            totalWeight={stats.pesoKg}
+            lowStockCount={lowStockCount}
+            valorTotal={stats.valorTotal}
+            weather={{ temp, humidity, loading: weatherLoading }}
+            failureStats={failureStats}
+          />
         </div>
 
-        {/* --- MODAIS DE NEGOCIO --- */}
-        <ModalFilamento aberto={modalAberto} aoFechar={fecharModais} aoSalvar={aoSalvarFilamento} dadosIniciais={itemEdicao} />
-        <ModalBaixaRapida aberto={!!itemConsumo} aoFechar={fecharModais} item={itemConsumo} aoSalvar={aoSalvarFilamento} />
-        <ModalHistoricoFilamento aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
-        <ModalRegistrarFalha aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
+        <div>
+          <FilamentFilters
+            filters={filters}
+            setFilters={setFilters}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            availableBrands={availableBrands}
+            availableMaterials={availableMaterials}
+          />
+        </div>
 
-        <ConfirmModal
-          isOpen={confirmacaoExclusao.aberta}
-          onClose={fecharModais}
-          onConfirm={aoConfirmarExclusao}
-          title="Excluir Material?"
-          message={
-            <span>
-              Você está prestes a remover permanentemente o material <br />
-              <span className="text-zinc-100 font-bold uppercase tracking-tight">"{confirmacaoExclusao.item?.nome}"</span>
-            </span>
-          }
-          description="Atenção: Esta ação não pode ser desfeita e os dados históricos vinculados a este lote serão afetados."
-          confirmText="Confirmar Exclusão"
-          isDestructive
-        />
+        {Object.entries(grupos).length > 0 ? (
+          <div className="pb-6">
+            {/* VIRTUAL RACK - New Visual Component */}
+            <VirtualRack
+              groupedFilaments={grupos}
+              currentHumidity={humidity}
+              currentTemperature={temp}
+              acoes={acoes}
+              viewMode={viewMode}
+            />
+          </div>
+        ) : (
+          !loading && (
+            <EmptyState
+              title="Nenhum material encontrado"
+              description="Tente ajustar os filtros ou adicione um novo material."
+              icon={PackageSearch}
+            />
+          )
+        )}
       </div>
+
+      {/* --- MODAIS DE NEGOCIO --- */}
+      <ModalFilamento aberto={modalAberto} aoFechar={fecharModais} aoSalvar={aoSalvarFilamento} dadosIniciais={itemEdicao} />
+      <ModalBaixaRapida aberto={!!itemConsumo} aoFechar={fecharModais} item={itemConsumo} aoSalvar={aoSalvarFilamento} />
+      <ModalHistoricoFilamento aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
+      <ModalRegistrarFalha aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
+
+      <ModalExcluirFilamento
+        aberto={confirmacaoExclusao.aberta}
+        aoFechar={fecharModais}
+        aoConfirmar={aoConfirmarExclusao}
+        item={confirmacaoExclusao.item}
+        isLoading={isSaving}
+      />
     </ManagementLayout>
   );
 }

@@ -1,0 +1,1 @@
+ALTER TABLE filaments ADD COLUMN diametro TEXT DEFAULT '1.75';

@@ -28,7 +28,8 @@ const generateColors = (hex) => {
 export default function Carretel({ color = "#3b82f6", percent = 100, size = 128, className = "" }) {
     const uniqueId = useId().replace(/:/g, "");
     const { base, light, dark } = useMemo(() => generateColors(color), [color]);
-    const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+    // Force at least 1% visual so it looks like "1g" (not empty/invisible)
+    const safePercent = Math.max(1, Math.min(100, Number(percent) || 0));
 
     // --- PROJECTION CONSTANTS ---
     const centerY = 50;
@@ -52,6 +53,18 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
     const currentRadiusX = bedRadiusX + ((maxFilamentX - bedRadiusX) * (safePercent / 100));
 
     const rimThickness = 5;
+
+    // Detect if color is very dark to add "wireframe" stroke support
+    const isDark = useMemo(() => {
+        const rgb = parseInt(color.replace('#', ''), 16);
+        const r = (rgb >> 16) & 0xff;
+        const g = (rgb >> 8) & 0xff;
+        const b = (rgb >> 0) & 0xff;
+        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // SMPTE C, Rec. 709 weightings
+        return luma < 40; // Threshold for "very dark"
+    }, [color]);
+
+    const strokeStyle = isDark ? { stroke: "rgba(255,255,255,0.15)", strokeWidth: "0.5" } : {};
 
     return (
         <div className={`relative flex items-center justify-center shrink-0 select-none ${className}`} style={{ width: size, height: size }}>
@@ -79,29 +92,29 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
                 </defs>
 
                 {/* --- BACK FLANGE --- */}
-                <ellipse cx={backZ} cy={centerY} rx={rimRadiusX} ry={rimRadiusY} fill="#18181b" />
+                <ellipse cx={backZ} cy={centerY} rx={rimRadiusX} ry={rimRadiusY} fill="#18181b" {...strokeStyle} />
 
                 {/* --- FILAMENT MASS --- */}
-                {safePercent > 0 && (
-                    <g>
-                        {/* Smooth Volume Form */}
-                        <path
-                            d={`
+                <g>
+                    {/* Smooth Volume Form */}
+                    <path
+                        d={`
                                     M ${backZ} ${centerY - currentRadiusY}
                                     L ${frontZ - rimThickness} ${centerY - currentRadiusY}
                                     A ${currentRadiusX} ${currentRadiusY} 0 0 1 ${frontZ - rimThickness} ${centerY + currentRadiusY}
                                     L ${backZ} ${centerY + currentRadiusY}
                                     A ${currentRadiusX} ${currentRadiusY} 0 0 1 ${backZ} ${centerY - currentRadiusY}
                                 `}
-                            fill={`url(#filamentSoft-${uniqueId})`}
-                        />
-                        <ellipse
-                            cx={frontZ - rimThickness} cy={centerY}
-                            rx={currentRadiusX} ry={currentRadiusY}
-                            fill={`url(#filamentSoft-${uniqueId})`}
-                        />
-                    </g>
-                )}
+                        fill={`url(#filamentSoft-${uniqueId})`}
+                        {...strokeStyle}
+                    />
+                    <ellipse
+                        cx={frontZ - rimThickness} cy={centerY}
+                        rx={currentRadiusX} ry={currentRadiusY}
+                        fill={`url(#filamentSoft-${uniqueId})`}
+                        {...strokeStyle}
+                    />
+                </g>
 
                 {/* --- INNER HUB --- */}
                 <ellipse cx={frontZ} cy={centerY} rx={hubRadiusX} ry={hubRadiusY} fill={`url(#plasticBody-${uniqueId})`} />
@@ -116,6 +129,7 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
                             A ${rimRadiusX} ${rimRadiusY} 0 1 0 ${frontZ - rimThickness} ${centerY - rimRadiusY}
                         `}
                     fill={`url(#plasticRim-${uniqueId})`}
+                    {...strokeStyle}
                 />
 
                 {/* --- FRONT FACE --- */}
@@ -144,6 +158,7 @@ export default function Carretel({ color = "#3b82f6", percent = 100, size = 128,
                     cx={frontZ} cy={centerY} rx={rimRadiusX} ry={rimRadiusY}
                     fill={`url(#plasticBody-${uniqueId})`}
                     mask={`url(#vectorMask-${uniqueId})`}
+                    {...strokeStyle}
                 />
 
                 {/* --- PREMIUM DETAILS (Subtle) --- */}
