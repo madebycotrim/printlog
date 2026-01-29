@@ -199,35 +199,41 @@ export default function RegisterPage() {
                     <form onSubmit={handlePasswordSignUp} className="space-y-5">
 
                         <div className="space-y-2 group">
-                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
+                            <label htmlFor="name" className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
                             <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
+                                <User aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <input id="name" type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
                             </div>
                         </div>
 
                         <div className="space-y-2 group">
-                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu melhor e-mail</label>
+                            <label htmlFor="email" className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu melhor e-mail</label>
                             {/* Replaced Mail icon with specific SVG or import if needed, assuming User/Lock etc work fine */}
                             {/* Mail icon was missing in previous imports list but used here? Added User above. */}
                             <div className="relative">
                                 {/* SVG for Mail manually if import fails or assuming it's imported */}
-                                <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="seu@email.com" />
+                                <svg aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="seu@email.com" />
                             </div>
                         </div>
 
                         <div className="space-y-2 group animate-fade-in-up">
-                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie uma senha</label>
+                            <label htmlFor="password" className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Crie uma senha</label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <Lock aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                 <input
+                                    id="password"
                                     type={showPassword ? "text" : "password"} required value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700"
                                     placeholder="Use pelo menos 8 caracteres"
                                 />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors"
+                                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                                >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
