@@ -1,1 +1,0 @@
-SELECT * FROM pragma_table_info('filaments');

@@ -17,7 +17,7 @@ export default function FilamentStockForm({ form, updateForm, showErrors, setFor
         if (valor > 0.20) cor = "text-rose-500";
 
         return (
-            <span className={`font-mono ${cor} font-bold tracking-tight flex items-center gap-1`}>
+            <span className={`font-mono ${cor} font-bold text-[10px] tracking-tight flex items-center gap-1`}>
                 <Coins size={10} /> {valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 3 })} /g
             </span>
         );
