@@ -1,5 +1,5 @@
 import { jwtVerify, createRemoteJWKSet } from 'jose';
-import { gerenciarFilamentos, gerenciarFalhas } from './_filaments'; // Forced reload for SQL fix
+import { gerenciarFilamentos, gerenciarFalhas } from './_filaments_v2'; // Forced rename to v2
 import { gerenciarImpressoras } from './_printers';
 import { gerenciarConfiguracoes } from './_settings';
 import { gerenciarProjetos, aprovarProjeto } from './_projects';
