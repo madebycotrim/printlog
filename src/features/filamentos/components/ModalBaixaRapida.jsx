@@ -107,14 +107,6 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         modelName: "Baixa Rápida"
                     });
 
-                    // Also register in individual history
-                    await registerHistory({
-                        id: item.id,
-                        type: 'falha',
-                        qtd: qtdConsumo,
-                        obs: `Falha: ${failureReason}`
-                    });
-
                     useToastStore.getState().addToast("Falha registrada e descontada!", "info");
                 } else {
                     await registerHistory({

@@ -48,7 +48,7 @@ export const VirtualRack = ({
                             {/* Slot Vazio (Adicionar Rápido) */}
                             <button
                                 onClick={() => acoes.onEdit({ material })} // Abre modal de novo item com material preenchido
-                                className="group flex flex-col items-center justify-center min-h-[320px] rounded-3xl border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-transparent hover:bg-zinc-900/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]"
+                                className="group flex flex-col items-center justify-center w-full aspect-[3/4] rounded-3xl border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-transparent hover:bg-zinc-900/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]"
                             >
                                 <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-zinc-800 group-hover:border-zinc-500 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                                     <Plus size={24} className="text-zinc-600 group-hover:text-zinc-200" />

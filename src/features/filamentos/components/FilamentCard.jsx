@@ -32,7 +32,7 @@ export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, o
                 ${stats.ehCritico ? 'border-rose-500/20 bg-rose-500/5' : ''}
             `}>
                 {/* Spool Centered */}
-                <div className="relative transform transition-all duration-500 -translate-y-6 group-hover:scale-75 group-hover:-translate-y-[85px]">
+                <div className="relative transform transition-all duration-500 -translate-y-6 group-hover:scale-[0.6] group-hover:-translate-y-[95px]">
                     {/* Ambient Glow */}
                     <div
                         className="absolute inset-0 rounded-full blur-[50px] transition-all duration-500 opacity-20 group-hover:opacity-30"
@@ -79,60 +79,57 @@ export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, o
             </div>
 
             {/* 2. INFO OVERLAY (Hover Only) */}
-            <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10 flex flex-col gap-3">
+            {/* 2. INFO OVERLAY (Hover Only) */}
+            {/* 2. INFO OVERLAY (Hover Only) */}
+            <div className="absolute inset-x-0 bottom-0 p-5 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10 flex flex-col justify-end">
 
                 {/* Header Info */}
-                <div className="text-center space-y-0.5">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{item?.marca || "Genérica"}</span>
-                    <h3 className="text-lg font-bold text-white uppercase tracking-tight leading-none truncate w-full">
+                <div className="text-center mb-4">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.15em] mb-1 block drop-shadow-sm">{item?.marca || "Genérica"}</span>
+                    <h3 className="text-xl font-black text-white uppercase tracking-tight leading-none truncate w-full mb-3 drop-shadow-md">
                         {item?.nome || "Sem Nome"}
                     </h3>
 
-                    {/* Minimal Stats Row */}
-                    <div className="flex items-center justify-center gap-2 mt-1 mb-2 opacity-90">
-                        {/* Price */}
-                        <span className="text-xs font-medium text-emerald-400/90 tracking-wide">
-                            {Number(item?.preco) > 0 ? formatCurrency(stats.valorRestante) : '--'}
-                        </span>
-
-                        <span className="text-zinc-700 text-[10px]">•</span>
-
-                        {/* Weight */}
-                        {/* Weight */}
-                        <div className="flex items-baseline gap-0.5">
-                            <span className={`text-xs font-medium ${stats.ehCritico ? 'text-rose-400' : 'text-zinc-400'}`}>
-                                {Math.round(stats.atual)}
-                            </span>
-                            <span className="text-[10px] text-zinc-500 opacity-70">
-                                / {Number(item?.peso_total) || 1000}g
+                    {/* Modern Stats Row */}
+                    <div className="flex items-center justify-center gap-3">
+                        {/* Price Badge */}
+                        <div className="px-3 py-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex items-center gap-2 shadow-sm backdrop-blur-sm">
+                            <span className="text-[10px] font-bold text-emerald-500 tracking-wide">
+                                {Number(item?.preco) > 0 ? formatCurrency(stats.valorRestante) : 'R$ --'}
                             </span>
                         </div>
-                    </div>
 
-                    {/* Universal Status Badge */}
-                    <div className="flex items-center justify-center gap-2 mt-2">
-                        <FilamentStatus item={item} currentHumidity={currentHumidity} />
+                        {/* Weight Badge */}
+                        <div className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 shadow-sm backdrop-blur-sm ${stats.ehCritico
+                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                            : 'bg-zinc-900/60 border-white/5 text-zinc-300'
+                            }`}>
+                            <span className="text-[10px] font-bold">{Math.round(stats.atual)}g</span>
+                            <span className="text-[9px] text-zinc-500 font-medium">/ {Number(item?.peso_total) || 1000}g</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* Actions Grid */}
-                <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/5">
-                    <button onClick={() => onConsume(item)} className="col-span-4 h-9 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all group/btn">
-                        <ArrowDownFromLine size={14} className="opacity-70 group-hover/btn:opacity-100" /> <span>Registrar Uso</span>
+                <div className="space-y-3 pt-4 border-t border-white/5">
+                    <button onClick={() => onConsume(item)} className="w-full h-8 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/30 text-emerald-500 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] transition-all group/btn shadow-lg shadow-emerald-900/10 hover:shadow-emerald-900/20 active:scale-[0.98]">
+                        <ArrowDownFromLine size={14} className="opacity-70 group-hover/btn:opacity-100 transition-opacity" /> <span>Registrar Uso</span>
                     </button>
 
-                    <button onClick={() => onHistory(item)} className="h-8 text-zinc-500 hover:text-white hover:bg-white/5 rounded-md flex items-center justify-center transition-colors" title="Histórico">
-                        <History size={14} />
-                    </button>
-                    <button onClick={() => onDuplicate(item)} className="h-8 text-zinc-500 hover:text-white hover:bg-white/5 rounded-md flex items-center justify-center transition-colors" title="Duplicar">
-                        <Copy size={14} />
-                    </button>
-                    <button onClick={() => onEdit(item)} className="h-8 text-zinc-500 hover:text-white hover:bg-white/5 rounded-md flex items-center justify-center transition-colors" title="Editar">
-                        <Edit2 size={14} />
-                    </button>
-                    <button onClick={() => onDelete(item?.id)} className="h-8 text-rose-500/70 hover:text-rose-400 hover:bg-rose-500/10 rounded-md flex items-center justify-center transition-colors" title="Excluir">
-                        <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center justify-between px-2 text-zinc-500">
+                        <button onClick={() => onHistory(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors" title="Histórico">
+                            <History size={14} strokeWidth={1.5} />
+                        </button>
+                        <button onClick={() => onDuplicate(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors" title="Duplicar">
+                            <Copy size={14} strokeWidth={1.5} />
+                        </button>
+                        <button onClick={() => onEdit(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors" title="Editar">
+                            <Edit2 size={14} strokeWidth={1.5} />
+                        </button>
+                        <button onClick={() => onDelete(item?.id)} className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors" title="Excluir">
+                            <Trash2 size={14} strokeWidth={1.5} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

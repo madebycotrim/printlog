@@ -10,29 +10,60 @@ import { cacheQuery, invalidateCache } from './_cache';
  * API DE GERENCIAMENTO DE FALHAS
  * Registra falhas de impressão e atualiza automaticamente o estoque de filamentos
  */
+// --------------------------------------------------------------------------------
+// API DE GERENCIAMENTO DE FALHAS (Unificado com Logs)
+// --------------------------------------------------------------------------------
 export async function gerenciarFalhas({ request, db, userId }) {
     const method = request.method;
 
     try {
+        // Garantir campos na tabela filament_logs para suportar falhas detalhadas
+        try {
+            await db.prepare("ALTER TABLE filament_logs ADD COLUMN user_id TEXT").run();
+        } catch (e) { }
+        try {
+            await db.prepare("ALTER TABLE filament_logs ADD COLUMN printer_id TEXT").run();
+        } catch (e) { }
+        try {
+            await db.prepare("ALTER TABLE filament_logs ADD COLUMN model_name TEXT").run();
+        } catch (e) { }
+        try {
+            await db.prepare("ALTER TABLE filament_logs ADD COLUMN cost REAL").run();
+        } catch (e) { }
+
         if (method === 'GET') {
-            // Retorna histórico de falhas e estatísticas agregadas
+            // Retorna histórico de falhas (agora vindo de filament_logs)
             const { results } = await db.prepare(`
-                SELECT * FROM failures 
-                ORDER BY created_at DESC 
+                SELECT * FROM filament_logs 
+                WHERE type = 'falha'
+                ORDER BY date DESC 
                 LIMIT 50
             `).all();
 
-            // Calcula estatísticas totais de peso e custo desperdiçados
+            // Calcula estatísticas
             const stats = await db.prepare(`
                 SELECT 
-                    SUM(weight_wasted) as total_weight, 
-                    SUM(cost_wasted) as total_cost, 
+                    SUM(amount) as total_weight, 
+                    SUM(cost) as total_cost, 
                     COUNT(*) as total_failures 
-                FROM failures 
+                FROM filament_logs 
+                WHERE type = 'falha'
             `).first();
 
+            // Normaliza retorno para o frontend (mapeando colunas novas para as esperadas se necessário)
+            const history = (results || []).map(r => ({
+                id: r.id,
+                date: r.date,
+                filamentId: r.filament_id,
+                printerId: r.printer_id,
+                modelName: r.model_name,
+                weightWasted: r.amount,
+                costWasted: r.cost,
+                reason: r.obs
+            }));
+
             return enviarJSON({
-                history: results || [],
+                history: history,
                 stats: {
                     totalWeight: stats?.total_weight || 0,
                     totalCost: stats?.total_cost || 0,
@@ -44,6 +75,7 @@ export async function gerenciarFalhas({ request, db, userId }) {
         if (method === 'POST') {
             const rawData = await request.json();
 
+            // Validação
             const validation = validateInput(rawData, schemas.failure);
             if (!validation.valid) {
                 return enviarJSON({ error: "Dados inválidos", details: validation.errors }, 400);
@@ -53,23 +85,27 @@ export async function gerenciarFalhas({ request, db, userId }) {
             const id = crypto.randomUUID();
             const date = new Date().toISOString();
 
-            // 1. Registra a falha no histórico
+            // 1. Registra a falha na tabela UNIFICADA (filament_logs)
+            // Campos: id, filament_id, date, type, amount (weight), obs (reason), user_id, printer_id, model_name, cost
             await db.prepare(`
-                INSERT INTO failures (id, user_id, date, filament_id, printer_id, model_name, weight_wasted, cost_wasted, reason)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO filament_logs (
+                    id, filament_id, date, type, amount, obs, 
+                    user_id, printer_id, model_name, cost
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
                 id,
-                userId,     // Autor da ação
-                date,
                 f.filamentId,
+                date,
+                'falha',
+                paraNumero(f.weightWasted),
+                f.reason || "Falha genérica",
+                userId,
                 f.printerId || null,
                 f.modelName || "Impressão sem nome",
-                paraNumero(f.weightWasted),
-                paraNumero(f.costWasted),
-                f.reason || "Falha genérica"
+                paraNumero(f.costWasted)
             ).run();
 
-            // 2. Deduz automaticamente o peso desperdiçado do estoque (se houver filamento vinculado)
+            // 2. Deduz do estoque (se houver filamento)
             if (f.filamentId && f.filamentId !== 'manual') {
                 const filamento = await db.prepare("SELECT peso_atual FROM filaments WHERE id = ?").bind(f.filamentId).first();
                 if (filamento) {
@@ -78,7 +114,7 @@ export async function gerenciarFalhas({ request, db, userId }) {
                 }
             }
 
-            return enviarJSON({ success: true, message: "Falha registrada e estoque atualizado." });
+            return enviarJSON({ success: true, message: "Falha registrada com sucesso." });
         }
 
     } catch (error) {
@@ -96,8 +132,7 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
             if (pathArray[2] === 'history' && idFromPath) {
                 const filamentId = idFromPath;
 
-                // 1. Buscar Falhas
-                const failures = await db.prepare("SELECT * FROM failures WHERE filament_id = ? ORDER BY date DESC").bind(filamentId).all();
+                // 1. (Removido busca em 'failures' separada - agora tudo está em logs ou projects)
 
                 // 2. Buscar Consumo em Projetos (Aprovados ou não, se já teve cálculo/uso)
                 const { results: allProjects } = await db.prepare("SELECT * FROM projects ORDER BY created_at DESC LIMIT 100").all();
@@ -134,33 +169,33 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                     obs: 'Carretel Aberto'
                 }] : [];
 
-                // 4. Buscar Logs Manuais (Tabela nova de logs de ajuste)
-                let manualLogs = [];
+                // 4. Buscar Logs (Inclui: 'manual', 'falha', 'ajuste', etc.)
+                // Agora 'fails' também virão daqui
+                let allLogs = [];
                 try {
-                    // Tenta buscar, se tabela não existir vai dar erro (catch ignora) ou retorna vazio
+                    // Ensure columns exist just in case read happens before write
+                    try { await db.prepare("ALTER TABLE filament_logs ADD COLUMN user_id TEXT").run(); } catch (e) { }
+                    try { await db.prepare("ALTER TABLE filament_logs ADD COLUMN printer_id TEXT").run(); } catch (e) { }
+
                     const { results } = await db.prepare("SELECT * FROM filament_logs WHERE filament_id = ? ORDER BY date DESC").bind(filamentId).all();
                     if (results) {
-                        manualLogs = results.map(l => ({
+                        allLogs = results.map(l => ({
                             id: l.id,
                             date: l.date,
-                            type: l.type || 'manual',
+                            type: l.type || 'manual', // 'falha' | 'manual' | ...
                             qtd: l.amount,
-                            obs: l.obs || "Ajuste Manual"
+                            // Se for falha, podemos querer mostrar reason, senão obs
+                            obs: l.obs || "Registro",
+                            // Campos extras opcionais
+                            printerId: l.printer_id,
+                            cost: l.cost
                         }));
                     }
                 } catch (e) { }
 
-                // 5. Normalizar Falhas
-                const normalizedFailures = (failures.results || []).map(f => ({
-                    id: f.id,
-                    date: f.date,
-                    type: 'falha',
-                    qtd: f.weight_wasted,
-                    obs: f.reason || "Falha Registrada"
-                }));
-
-                // 6. Combinar e Ordenar
-                const history = [...opening, ...consumptions, ...normalizedFailures, ...manualLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // 5. Combinar e Ordenar
+                // (normalizedFailures foi removido pois agora estao em allLogs)
+                const history = [...opening, ...consumptions, ...allLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 // 7. Calcular Estatísticas
                 const totalConsumed = history.reduce((acc, h) => acc + (h.qtd || 0), 0);
