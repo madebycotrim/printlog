@@ -35,6 +35,12 @@ const fetchFilamentsApi = async () => {
 
 const saveFilamentApi = async (filamentData) => {
     const treated = normalizeFilament(filamentData);
+
+
+
+    // Ensure ID is undefined if falsy/empty string to prevent 500 errors on creation
+    if (!treated.id) delete treated.id;
+
     let response;
 
     if (treated.id) {
@@ -117,7 +123,10 @@ export const useFilamentMutations = () => {
             });
             addToast("Filamento salvo com sucesso!", "success");
         },
-        onError: () => addToast("Falha ao salvar filamento.", "error")
+        onError: (err) => {
+            console.error("Erro detalhado ao salvar filamento:", err);
+            addToast("Falha ao salvar filamento.", "error");
+        }
     });
 
     const updateWeightMutation = useMutation({

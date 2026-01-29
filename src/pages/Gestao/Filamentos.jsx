@@ -1,13 +1,11 @@
 ﻿import React, { useState, useEffect, useMemo, useDeferredValue, useCallback } from "react";
-import { Scan, AlertTriangle, Trash2, X, PackageSearch, Database, Plus, Search, LayoutGrid, List } from "lucide-react";
+import { PackageSearch, Plus } from "lucide-react";
 
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import Modal from "../../components/ui/Modal";
 import EmptyState from "../../components/ui/EmptyState";
 import Button from "../../components/ui/Button";
-import ConfirmModal from "../../components/ui/ConfirmModal";
 import api from "../../utils/api";
 
 // LÓGICA E STORE (Zustand)
@@ -23,7 +21,7 @@ import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegis
 import ModalExcluirFilamento from '../../features/filamentos/components/ModalExcluirFilamento';
 
 // NOVOS COMPONENTES (FILTROS)
-import { getColorFamily } from "../../utils/colorUtils";
+import { normalizeString } from "../../utils/stringUtils";
 import FilamentFilters from "../../features/filamentos/components/FilamentFilters";
 
 import { useLocalWeather } from "../../hooks/useLocalWeather";
@@ -74,21 +72,28 @@ export default function FilamentosPage() {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
 
-  // PROCESSAMENTO DE DADOS
+  // 1. Pre-processamento (Memoized) - Gera string de busca indexada
+  const searchableFilaments = useMemo(() => {
+    const list = Array.isArray(filaments) ? filaments : [];
+    return list.map(f => ({
+      ...f,
+      // Cria uma "row" virtual de busca
+      _searchStr: normalizeString(`${f.nome || ""} ${f.material || ""} ${f.marca || ""}`)
+    }));
+  }, [filaments]);
+
+  // 2. PROCESSAMENTO DE DADOS (Filtragem e Agrupamento)
   const { grupos, stats, lowStockCount, availableBrands, availableMaterials } = useMemo(() => {
-    const termo = deferredBusca.toLowerCase().trim();
-    const listaOriginal = Array.isArray(filaments) ? filaments : [];
+    const termo = normalizeString(deferredBusca);
 
-    // 1. Extrair Metadados
-    const allBrands = [...new Set(listaOriginal.map(f => f.marca).filter(Boolean))];
-    const allMaterials = [...new Set(listaOriginal.map(f => f.material).filter(Boolean))];
+    // 2.1 Extrair Metadados (usando a lista processada)
+    const allBrands = [...new Set(searchableFilaments.map(f => f.marca).filter(Boolean))];
+    const allMaterials = [...new Set(searchableFilaments.map(f => f.material).filter(Boolean))];
 
-    // 2. Filtragem
-    const filtrados = listaOriginal.filter(f => {
-      const nome = (f.nome || "").toLowerCase();
-      const material = (f.material || "").toLowerCase();
-      const marca = (f.marca || "").toLowerCase();
-      const matchesSearch = nome.includes(termo) || material.includes(termo) || marca.includes(termo);
+    // 2.2 Filtragem Otimizada
+    const filtrados = searchableFilaments.filter(f => {
+      // Busca direta na string pré-processada (O(1) vs O(Regex))
+      const matchesSearch = !termo || f._searchStr.includes(termo);
 
       if (!matchesSearch) return false;
 
@@ -108,7 +113,12 @@ export default function FilamentosPage() {
     let valorTotalAcumulado = 0;
     let lowStock = 0;
 
-    listaOriginal.forEach(f => {
+    // Loop na lista original/completa para stats globais? 
+    // O código original fazia loop na "listaOriginal" (agora searchableFilaments) para calcular lowStockCount GLOBAL e stats GLOBAIS?
+    // Vamos verificar o código original:
+    // "listaOriginal.forEach(f => { ... })" -> Sim, era na lista completa.
+
+    searchableFilaments.forEach(f => {
       const atual = Number(f.peso_atual) || 0;
       const total = Math.max(1, Number(f.peso_total) || 1000);
       const preco = Number(f.preco) || 0;
@@ -136,7 +146,7 @@ export default function FilamentosPage() {
       availableBrands: allBrands,
       availableMaterials: allMaterials
     };
-  }, [filaments, deferredBusca, filters]);
+  }, [searchableFilaments, deferredBusca, filters]);
 
   // HANDLERS
   const handleEdit = useCallback((item) => {

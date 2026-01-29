@@ -3,6 +3,7 @@ import { Search, Check, Layers, Package, CheckCircle2 } from "lucide-react";
 import { useFilaments } from "../logic/filamentQueries";
 import SpoolSideView from "./Carretel";
 import Modal from "../../../components/ui/Modal";
+import { normalizeString } from "../../../utils/stringUtils";
 
 export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
     const { data: filamentos = [] } = useFilaments();
@@ -19,10 +20,11 @@ export default function ModalSelecaoFilamento({ isOpen, onClose, onConfirm }) {
     // Filtra filamentos
     const filteredFilaments = useMemo(() => {
         return filamentos.filter(f => {
-            const matchesSearch = !searchTerm || (
-                f.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                f.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                f.material?.toLowerCase().includes(searchTerm.toLowerCase())
+            const term = normalizeString(searchTerm);
+            const matchesSearch = !term || (
+                normalizeString(f.nome).includes(term) ||
+                normalizeString(f.marca).includes(term) ||
+                normalizeString(f.material).includes(term)
             );
             const matchesMaterial = filterMaterial === "Todos" || f.material === filterMaterial;
 

@@ -1,0 +1,1 @@
+ALTER TABLE filaments ADD COLUMN tags TEXT DEFAULT '[]';

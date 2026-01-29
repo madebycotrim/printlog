@@ -20,12 +20,7 @@ export const FilamentStatus = ({ item, currentHumidity, className = "" }) => {
                     <span className="text-[9px] font-bold uppercase tracking-wider">Estoque Crítico</span>
                 </div>
             )}
-            {moistureRisk && (
-                <div className="flex items-center gap-1 text-sky-400">
-                    <Droplet size={10} className="fill-current" />
-                    <span className="text-[9px] font-bold uppercase tracking-wider">Risco Umidade</span>
-                </div>
-            )}
+
             {!stats.ehCritico && !moistureRisk && (
                 <span className="text-[10px] text-zinc-600 font-mono flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />

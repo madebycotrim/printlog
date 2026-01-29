@@ -92,12 +92,12 @@ const StatsWidget = memo(({
                     {(secondaryLabel || secondaryValue) && (
                         <div className="flex flex-col">
                             {secondaryLabel && (
-                                <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight whitespace-nowrap truncate max-w-[120px]">
+                                <span className="text-[13px] text-zinc-200 font-bold uppercase tracking-tight leading-tight whitespace-nowrap truncate max-w-[150px]">
                                     {secondaryLabel}
                                 </span>
                             )}
                             {secondaryValue && (
-                                <span className="text-[11px] text-zinc-500 font-medium mt-0.5 whitespace-nowrap truncate max-w-[120px]">
+                                <span className="text-[11px] text-zinc-500 font-medium mt-0.5 whitespace-nowrap truncate max-w-[150px]">
                                     {isLoading ? "Sincronizando..." : secondaryValue}
                                 </span>
                             )}

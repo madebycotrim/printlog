@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Terminal, AlertCircle, Loader2, Trash2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Terminal, Loader2 } from "lucide-react";
 import SpoolVectorView from "./Carretel";
 import FormFeedback from "../../../components/FormFeedback";
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
@@ -28,7 +28,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
-    const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
+    const { feedback, showError, hide: hideFeedback } = useFormFeedback();
 
     useEffect(() => {
         if (aberto) {
@@ -112,7 +112,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         } finally {
             setIsSaving(false);
         }
-    }, [form, dadosIniciais, aoSalvar, isSaving, showSuccess, showError, hideFeedback, aoFechar]);
+    }, [form, aoSalvar, isSaving, showError, hideFeedback, aoFechar]);
 
     // Spool Interaction (Drag to set weight)
     const spoolRef = React.useRef(null);
@@ -165,18 +165,44 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
 
                     {/* HIT BOX - INTERACTION LAYER */}
                     <div
-                        className="absolute inset-0 z-50 cursor-ns-resize rounded-full"
+                        className="absolute inset-0 z-50 cursor-ns-resize rounded-full focus:ring-4 focus:ring-blue-500/50 focus:outline-none"
                         ref={spoolRef}
+                        tabIndex={0}
+                        role="slider"
+                        aria-label="Ajustar peso restante"
+                        aria-valuemin={0}
+                        aria-valuemax={Number(form.peso_total) || 1000}
+                        aria-valuenow={Number(form.peso_atual ?? form.peso_total)}
+                        aria-valuetext={`${Math.round((Number(form.peso_atual ?? form.peso_total) / Math.max(1, Number(form.peso_total))) * 100)}% restante`}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseDown={() => setIsDragging(true)}
                         onMouseUp={() => setIsDragging(false)}
                         onMouseLeave={() => { setIsDragging(false); setIsHovered(false); }}
                         onMouseMove={(e) => isDragging && handleSpoolInteraction(e)}
                         onClick={handleSpoolInteraction}
+                        onKeyDown={(e) => {
+                            const total = Number(form.peso_total) || 1000;
+                            const current = Number(form.peso_atual ?? total);
+                            const step = e.shiftKey ? 10 : 50; // shift for fine grain
+
+                            if (e.key === "ArrowUp" || e.key === "ArrowRight") {
+                                e.preventDefault();
+                                updateForm("peso_atual", Math.min(total, current + step));
+                            } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
+                                e.preventDefault();
+                                updateForm("peso_atual", Math.max(0, current - step));
+                            } else if (e.key === "Home") {
+                                e.preventDefault();
+                                updateForm("peso_atual", total);
+                            } else if (e.key === "End") {
+                                e.preventDefault();
+                                updateForm("peso_atual", 0);
+                            }
+                        }}
                         onTouchStart={() => setIsDragging(true)}
                         onTouchEnd={() => setIsDragging(false)}
                         onTouchMove={(e) => isDragging && handleSpoolInteraction(e)}
-                        title="Arraste ou clique para ajustar o peso"
+                        title="Arraste ou use setas do teclado para ajustar o peso"
                     />
 
                     {/* GLOW BACKGROUND */}

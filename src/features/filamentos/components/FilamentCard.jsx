@@ -2,7 +2,7 @@ import React, { memo, useMemo } from "react";
 import { Edit2, Trash2, ArrowDownFromLine, Copy, History, Droplet } from "lucide-react";
 import SpoolVectorView from "./Carretel";
 import { FilamentStatus } from "./FilamentStatus";
-import { Tooltip } from "../../../components/ui/Tooltip";
+import { formatCurrency } from "../../../utils/numbers";
 
 export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, onEdit, onDelete, onConsume, onDuplicate, onHistory }) => {
     // Stats Logic
@@ -10,8 +10,9 @@ export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, o
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
         const atual = Math.max(0, Number(item?.peso_atual) || 0);
         const pct = Math.min(100, Math.max(0, Math.round((atual / capacidade) * 100)));
-        return { atual, pct, ehCritico: pct <= 20 };
-    }, [item?.peso_atual, item?.peso_total]);
+        const valorRestante = (Number(item?.preco || 0) / capacidade) * atual;
+        return { atual, pct, ehCritico: pct <= 20, valorRestante };
+    }, [item?.peso_atual, item?.peso_total, item?.preco]);
 
     const corHex = item?.cor_hex || "#3b82f6";
 
@@ -40,12 +41,26 @@ export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, o
                     <SpoolVectorView color={corHex} percent={stats.pct} size={140} />
                 </div>
 
+
                 {/* Name/Brand (Always Visible, Hidden on Hover) */}
                 <div className="absolute bottom-14 flex flex-col items-center text-center transition-all duration-300 group-hover:opacity-0 transform translate-y-0 group-hover:translate-y-2 px-4">
                     <h3 className="text-xl font-bold text-white uppercase tracking-tight leading-none drop-shadow-lg line-clamp-2">
                         {item?.nome || "Sem Nome"}
                     </h3>
                 </div>
+
+                {/* Humidity Risk Icon (Top Right) */}
+                {(() => {
+                    const isHygroscopic = ['PLA', 'PETG', 'TPU', 'NYLON', 'ABS', 'ASA'].includes(item?.material?.toUpperCase());
+                    const moistureRisk = isHygroscopic && (currentHumidity > 50);
+                    if (!moistureRisk) return null;
+
+                    return (
+                        <div className="absolute top-4 right-4 p-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 group-hover:scale-110 transition-transform shadow-[0_0_10px_rgba(56,189,248,0.2)]">
+                            <Droplet size={14} className="fill-current animate-pulse" />
+                        </div>
+                    );
+                })()}
 
                 {/* Minimal Badge (Always Visible) */}
                 <div className={`
@@ -59,6 +74,8 @@ export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, o
                     <div className="w-px h-3 bg-white/10" />
                     <span className="text-[10px] font-mono font-bold">{Math.round(stats.atual)}g</span>
                 </div>
+
+
             </div>
 
             {/* 2. INFO OVERLAY (Hover Only) */}
@@ -70,14 +87,26 @@ export const FilamentCard = memo(({ item, currentHumidity, currentTemperature, o
                     <h3 className="text-lg font-bold text-white uppercase tracking-tight leading-none truncate w-full">
                         {item?.nome || "Sem Nome"}
                     </h3>
-                    {/* Weight Stats (New) */}
-                    <div className="flex items-baseline justify-center gap-1 mt-0.5 mb-1">
-                        <span className={`text-sm font-bold font-mono ${stats.ehCritico ? 'text-rose-400' : 'text-zinc-200'}`}>
-                            {Math.round(stats.atual)}
+
+                    {/* Minimal Stats Row */}
+                    <div className="flex items-center justify-center gap-2 mt-1 mb-2 opacity-90">
+                        {/* Price */}
+                        <span className="text-xs font-medium text-emerald-400/90 tracking-wide">
+                            {Number(item?.preco) > 0 ? formatCurrency(stats.valorRestante) : '--'}
                         </span>
-                        <span className="text-[10px] font-bold text-zinc-600 uppercase">
-                            / {Number(item?.peso_total) || 1000}g
-                        </span>
+
+                        <span className="text-zinc-700 text-[10px]">•</span>
+
+                        {/* Weight */}
+                        {/* Weight */}
+                        <div className="flex items-baseline gap-0.5">
+                            <span className={`text-xs font-medium ${stats.ehCritico ? 'text-rose-400' : 'text-zinc-400'}`}>
+                                {Math.round(stats.atual)}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 opacity-70">
+                                / {Number(item?.peso_total) || 1000}g
+                            </span>
+                        </div>
                     </div>
 
                     {/* Universal Status Badge */}

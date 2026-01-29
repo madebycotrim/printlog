@@ -105,6 +105,14 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         filamentId: item.id
                     });
 
+                    // Also register in individual history
+                    await registerHistory({
+                        id: item.id,
+                        type: 'falha',
+                        qtd: qtdConsumo,
+                        obs: `Falha: ${failureReason}`
+                    });
+
                     useToastStore.getState().addToast("Falha registrada e descontada!", "info");
                 } else {
                     await registerHistory({
@@ -116,6 +124,8 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 }
             } catch (historyError) {
                 console.warn("Erro ao registrar histórico/falha:", historyError);
+                const msg = historyError.response?.data?.details || historyError.message;
+                useToastStore.getState().addToast(`Erro no histórico: ${msg}`, "error");
             }
 
             await aoSalvar({

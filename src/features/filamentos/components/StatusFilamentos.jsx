@@ -32,12 +32,12 @@ function StatusFilamentos({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* 1. Saúde do Estoque */}
       <StatsWidget
-        title={lowStockCount > 0 ? "Reposição" : "Saudável"}
-        value={lowStockCount > 0 ? `${lowStockCount} Itens` : "OK"}
+        title="Total em Estoque"
+        value={`${(totalWeight || 0).toFixed(2)}kg`}
         icon={AlertTriangle}
         colorTheme={lowStockCount > 0 ? 'rose' : 'emerald'}
-        secondaryLabel="Total em Estoque"
-        secondaryValue={`${(totalWeight || 0).toFixed(2)}kg`}
+        secondaryLabel="Status"
+        secondaryValue={lowStockCount > 0 ? `${lowStockCount} Itens Baixos` : "Saudável"}
         isAlert={lowStockCount > 0}
       />
 

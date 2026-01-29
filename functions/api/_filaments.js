@@ -143,7 +143,7 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                         manualLogs = results.map(l => ({
                             id: l.id,
                             date: l.date,
-                            type: 'manual',
+                            type: l.type || 'manual',
                             qtd: l.amount,
                             obs: l.obs || "Ajuste Manual"
                         }));
@@ -195,6 +195,9 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
         }
 
         if (['POST', 'PUT', 'PATCH'].includes(method)) {
+            // DEBUG: REMOVE THIS LINE AFTER VERIFICATION
+            // throw new Error("DEBUG: O código foi atualizado com sucesso! (Pode remover este erro)");
+
             const rawData = await request.json();
             const id = rawData.id || idFromPath || crypto.randomUUID();
 
@@ -211,9 +214,24 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                         id TEXT PRIMARY KEY, filament_id TEXT, date TEXT, type TEXT, amount REAL, obs TEXT
                     )`).run();
 
-                    await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs) VALUES (?, ?, ?, ?, ?, ?)`)
-                        .bind(crypto.randomUUID(), idFromPath, new Date().toISOString(), type, paraNumero(qtd), obs || "Registro Manual")
-                        .run();
+                    // Ensure 'type' column exists (migration for older DBs)
+                    try { await db.prepare("ALTER TABLE filament_logs ADD COLUMN type TEXT").run(); } catch (e) { }
+
+                    const logId = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : String(Date.now() + Math.random());
+                    const logDate = new Date().toISOString();
+                    const logType = String(type || 'manual');
+                    const logAmount = (Number(qtd) || 0); // Hard fallback
+                    const logObs = String(obs || "Registro Manual");
+                    const logFilamentId = String(idFromPath);
+                    const logAmountNumeric = Number(logAmount); // Ensure number
+
+                    try {
+                        await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs) VALUES (?, ?, ?, ?, ?, ?)`)
+                            .bind(logId, logFilamentId, logDate, logType, logAmountNumeric, logObs)
+                            .run();
+                    } catch (dbError) {
+                        throw new Error(`DB Error: ${dbError.message} | Values: id=${typeof logId}, filId=${typeof logFilamentId} (${logFilamentId}), type=${typeof logType} (${logType}), amt=${typeof logAmountNumeric} (${logAmountNumeric})`);
+                    }
 
                     return enviarJSON({ success: true, message: "Histórico registrado." });
                 } catch (e) {
@@ -266,12 +284,14 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
             // Campos extras que não estão na validação mas salvamos
             const tags = JSON.stringify(rawData.tags || []);
 
-            await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, peso_total, peso_atual, preco, data_abertura, favorito, tags) 
+
+
+            await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, diametro, peso_total, peso_atual, preco, data_abertura, favorito, tags) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
-                nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex,
+                nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex, diametro=excluded.diametro,
                 peso_total=excluded.peso_total, peso_atual=excluded.peso_atual, preco=excluded.preco, 
                 favorito=excluded.favorito, tags=excluded.tags`)
-                .bind(id, userId, da.nome, da.marca, da.material, da.cor_hex, paraNumero(da.peso_total),
+                .bind(id, userId, da.nome, da.marca, da.material, da.cor_hex, da.diametro || '1.75', paraNumero(da.peso_total),
                     paraNumero(da.peso_atual), paraNumero(da.preco), rawData.data_abertura, da.favorito ? 1 : 0, tags).run();
 
             // invalidateCache(`filaments:${tenantId}`);
