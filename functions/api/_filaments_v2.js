@@ -17,21 +17,28 @@ export async function gerenciarFalhas({ request, db, userId }) {
     const method = request.method;
 
     try {
-        // Garantir campos na tabela filament_logs para suportar falhas detalhadas
-        try {
-            await db.prepare("ALTER TABLE filament_logs ADD COLUMN user_id TEXT").run();
-        } catch (e) { }
-        try {
-            await db.prepare("ALTER TABLE filament_logs ADD COLUMN printer_id TEXT").run();
-        } catch (e) { }
-        try {
-            await db.prepare("ALTER TABLE filament_logs ADD COLUMN model_name TEXT").run();
-        } catch (e) { }
-        try {
-            await db.prepare("ALTER TABLE filament_logs ADD COLUMN cost REAL").run();
-        } catch (e) { }
+        // (Removido: Auto-migration agora é feito no setup, não em cada request)
+        // Isso evita latência e previne erros de concorrência.
+
 
         if (method === 'GET') {
+            console.log("🔍 Entrou em gerenciarFalhas GET. User:", userId);
+
+            // Ensure table exists (Lazy Initialization)
+            await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
+                id TEXT PRIMARY KEY, 
+                filament_id TEXT NOT NULL, 
+                date TEXT NOT NULL, 
+                type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
+                amount REAL DEFAULT 0, 
+                obs TEXT,
+                user_id TEXT NOT NULL,
+                printer_id TEXT,
+                model_name TEXT,
+                cost REAL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )`).run();
+
             // Retorna histórico de falhas (agora vindo de filament_logs)
             const { results } = await db.prepare(`
                 SELECT * FROM filament_logs 
@@ -41,14 +48,31 @@ export async function gerenciarFalhas({ request, db, userId }) {
             `).all();
 
             // Calcula estatísticas
-            const stats = await db.prepare(`
-                SELECT 
-                    SUM(amount) as total_weight, 
-                    SUM(cost) as total_cost, 
-                    COUNT(*) as total_failures 
-                FROM filament_logs 
-                WHERE type = 'falha'
-            `).first();
+            let stats = { total_weight: 0, total_cost: 0, total_failures: 0 };
+            try {
+                const s = await db.prepare(`
+                    SELECT 
+                        SUM(amount) as total_weight, 
+                        SUM(cost) as total_cost, 
+                        COUNT(*) as total_failures 
+                    FROM filament_logs 
+                    WHERE type = 'falha'
+                `).first();
+                if (s) stats = s;
+            } catch (e) {
+                // Fallback: Se der erro (ex: coluna 'cost' não existe), tenta sem ela ou retorna zerado
+                try {
+                    const s = await db.prepare(`
+                        SELECT 
+                            SUM(amount) as total_weight, 
+                            0 as total_cost, 
+                            COUNT(*) as total_failures 
+                        FROM filament_logs 
+                        WHERE type = 'falha'
+                    `).first();
+                    if (s) stats = s;
+                } catch (e2) { }
+            }
 
             // Normaliza retorno para o frontend (mapeando colunas novas para as esperadas se necessário)
             const history = (results || []).map(r => ({
@@ -118,7 +142,13 @@ export async function gerenciarFalhas({ request, db, userId }) {
         }
 
     } catch (error) {
-        return enviarJSON({ error: "Erro ao processar falhas", details: error.message }, 500);
+        console.error("FATAL ERROR in gerenciarFalhas:", error);
+        console.error("Stack:", error.stack);
+        return enviarJSON({
+            error: "Erro ao processar falhas",
+            details: error.message,
+            stack: error.stack
+        }, 500);
     }
 }
 
@@ -132,7 +162,8 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
             if (pathArray[2] === 'history' && idFromPath) {
                 const filamentId = idFromPath;
 
-                // 1. (Removido busca em 'failures' separada - agora tudo está em logs ou projects)
+                // 1. (Tabela 'failures' foi migrada e unificada em 'filament_logs')
+                // Não é mais necessário buscar nela.
 
                 // 2. Buscar Consumo em Projetos (Aprovados ou não, se já teve cálculo/uso)
                 const { results: allProjects } = await db.prepare("SELECT * FROM projects ORDER BY created_at DESC LIMIT 100").all();
@@ -194,7 +225,6 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                 } catch (e) { }
 
                 // 5. Combinar e Ordenar
-                // (normalizedFailures foi removido pois agora estao em allLogs)
                 const history = [...opening, ...consumptions, ...allLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 // 7. Calcular Estatísticas
@@ -246,7 +276,17 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
 
                 try {
                     await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
-                        id TEXT PRIMARY KEY, filament_id TEXT, date TEXT, type TEXT, amount REAL, obs TEXT
+                        id TEXT PRIMARY KEY, 
+                        filament_id TEXT NOT NULL, 
+                        date TEXT NOT NULL, 
+                        type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
+                        amount REAL DEFAULT 0, 
+                        obs TEXT,
+                        user_id TEXT NOT NULL,
+                        printer_id TEXT,
+                        model_name TEXT,
+                        cost REAL DEFAULT 0,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )`).run();
 
                     // Ensure 'type' column exists (migration for older DBs)
@@ -261,8 +301,8 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                     const logAmountNumeric = Number(logAmount); // Ensure number
 
                     try {
-                        await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs) VALUES (?, ?, ?, ?, ?, ?)`)
-                            .bind(logId, logFilamentId, logDate, logType, logAmountNumeric, logObs)
+                        await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+                            .bind(logId, logFilamentId, logDate, logType, logAmountNumeric, logObs, userId)
                             .run();
                     } catch (dbError) {
                         throw new Error(`DB Error: ${dbError.message} | Values: id=${typeof logId}, filId=${typeof logFilamentId} (${logFilamentId}), type=${typeof logType} (${logType}), amt=${typeof logAmountNumeric} (${logAmountNumeric})`);
@@ -288,11 +328,21 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                         if (Math.abs(diff) >= 1) {
                             try {
                                 await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
-                                    id TEXT PRIMARY KEY, filament_id TEXT, date TEXT, type TEXT, amount REAL, obs TEXT
+                                    id TEXT PRIMARY KEY, 
+                                    filament_id TEXT NOT NULL, 
+                                    date TEXT NOT NULL, 
+                                    type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
+                                    amount REAL DEFAULT 0, 
+                                    obs TEXT,
+                                    user_id TEXT NOT NULL,
+                                    printer_id TEXT,
+                                    model_name TEXT,
+                                    cost REAL DEFAULT 0,
+                                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                                 )`).run();
 
-                                await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs) VALUES (?, ?, ?, ?, ?, ?)`)
-                                    .bind(crypto.randomUUID(), id, new Date().toISOString(), 'manual', diff, "Ajuste Manual (Baixa/Correção)").run();
+                                await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+                                    .bind(crypto.randomUUID(), id, new Date().toISOString(), 'manual', diff, "Ajuste Manual (Baixa/Correção)", userId).run();
                             } catch (e) { console.error("Erro ao logar ajuste:", e); }
                         }
                     }

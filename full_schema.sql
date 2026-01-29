@@ -1,8 +1,12 @@
 -- ==================================================================
--- SCHEMA MESTRE: RESET TOTAL E CRIAÇÃO (SEM ORG_ID)
+-- SCHEMA MESTRE V3: RESET TOTAL (COM PERDA DE DADOS)
 -- ==================================================================
+-- ATENCAO: ESTE SCRIPT APAGA TUDO. USE COM CUIDADO.
 
--- A. REMOVE TABELAS ANTIGAS (ORDEM INVERSA DE DEPENDÊNCIA SE HOUVESSE FK)
+-- 1. LIMPEZA TOTAL (DROP TABLES & VIEWS)
+-- DROP VIEW IF EXISTS filament_logs;  -- (Removido para evitar erro se for tabela)
+DROP TABLE IF EXISTS filament_logs; 
+DROP TABLE IF EXISTS failures;      
 DROP TABLE IF EXISTS activity_logs;
 DROP TABLE IF EXISTS subscriptions;
 DROP TABLE IF EXISTS clients;
@@ -12,18 +16,17 @@ DROP TABLE IF EXISTS todos;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS calculator_settings;
 DROP TABLE IF EXISTS printers;
-DROP TABLE IF EXISTS failures;
-DROP TABLE IF EXISTS filament_logs;
 DROP TABLE IF EXISTS filaments;
 
 -- ==================================================================
--- SCHEMA COMPLETO DO PRINTLOG (ATUALIZADO)
+-- RECRIACAO DAS TABELAS (ESTRUTURA FINAL)
 -- ==================================================================
 
 -- 1. Filamentos
-CREATE TABLE IF NOT EXISTS filaments (
+CREATE TABLE filaments (
     id TEXT PRIMARY KEY, 
     user_id TEXT NOT NULL, 
+    org_id TEXT,
     nome TEXT NOT NULL, 
     marca TEXT, 
     material TEXT, 
@@ -37,34 +40,27 @@ CREATE TABLE IF NOT EXISTS filaments (
     tags TEXT DEFAULT '[]'
 );
 
--- 2. Logs de Histórico de Filamentos
-CREATE TABLE IF NOT EXISTS filament_logs (
+-- 2. Logs de Histórico de Filamentos (Unificado: Falhas + Ajustes + Aberturas)
+-- Substitui antiga tabela 'failures'
+CREATE TABLE filament_logs (
     id TEXT PRIMARY KEY, 
-    filament_id TEXT, 
-    date TEXT, 
-    type TEXT, 
-    amount REAL, 
-    obs TEXT
-);
-
--- 3. Falhas (Global)
-CREATE TABLE IF NOT EXISTS failures (
-    id TEXT PRIMARY KEY, 
-    user_id TEXT NOT NULL, 
-    date TEXT, 
-    filament_id TEXT, 
+    filament_id TEXT NOT NULL, 
+    date TEXT NOT NULL, 
+    type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
+    amount REAL DEFAULT 0, 
+    obs TEXT,
+    user_id TEXT NOT NULL,    
     printer_id TEXT, 
     model_name TEXT, 
-    weight_wasted REAL, 
-    cost_wasted REAL, 
-    reason TEXT, 
+    cost REAL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Impressoras
-CREATE TABLE IF NOT EXISTS printers (
+-- 3. Impressoras
+CREATE TABLE printers (
     id TEXT PRIMARY KEY, 
     user_id TEXT NOT NULL, 
+    org_id TEXT,
     nome TEXT NOT NULL, 
     marca TEXT, 
     modelo TEXT, 
@@ -78,9 +74,10 @@ CREATE TABLE IF NOT EXISTS printers (
     historico TEXT
 );
 
--- 5. Configurações da Calculadora
-CREATE TABLE IF NOT EXISTS calculator_settings (
+-- 4. Configurações da Calculadora
+CREATE TABLE calculator_settings (
     user_id TEXT PRIMARY KEY, 
+    org_id TEXT,
     custo_kwh REAL, 
     valor_hora_humana REAL, 
     custo_hora_maquina REAL, 
@@ -95,29 +92,32 @@ CREATE TABLE IF NOT EXISTS calculator_settings (
     primary_color TEXT DEFAULT 'sky'
 );
 
--- 6. Projetos
-CREATE TABLE IF NOT EXISTS projects (
+-- 5. Projetos
+CREATE TABLE projects (
     id TEXT PRIMARY KEY, 
     user_id TEXT NOT NULL, 
+    org_id TEXT,
     label TEXT NOT NULL, 
     data TEXT, 
     tags TEXT DEFAULT '[]', 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 7. Tarefas (Todos)
-CREATE TABLE IF NOT EXISTS todos (
+-- 6. Tarefas (Todos)
+CREATE TABLE todos (
     id TEXT PRIMARY KEY, 
     user_id TEXT NOT NULL, 
+    org_id TEXT,
     text TEXT NOT NULL, 
     done INTEGER DEFAULT 0, 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. Insumos (Supplies)
-CREATE TABLE IF NOT EXISTS supplies (
+-- 7. Insumos (Supplies)
+CREATE TABLE supplies (
     id TEXT PRIMARY KEY, 
     user_id TEXT NOT NULL, 
+    org_id TEXT,
     name TEXT NOT NULL, 
     price REAL, 
     unit TEXT, 
@@ -129,10 +129,11 @@ CREATE TABLE IF NOT EXISTS supplies (
     updated_at DATETIME
 );
 
--- 9. Histórico de Insumos (Supply Events)
-CREATE TABLE IF NOT EXISTS supply_events (
+-- 8. Histórico de Insumos (Supply Events)
+CREATE TABLE supply_events (
     id TEXT PRIMARY KEY, 
     supply_id TEXT NOT NULL, 
+    org_id TEXT,
     user_id TEXT, 
     type TEXT CHECK(type IN ('create', 'update', 'manual', 'abertura', 'delete')), 
     old_stock REAL, 
@@ -143,10 +144,11 @@ CREATE TABLE IF NOT EXISTS supply_events (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 10. Clientes
-CREATE TABLE IF NOT EXISTS clients (
+-- 9. Clientes
+CREATE TABLE clients (
     id TEXT PRIMARY KEY, 
     user_id TEXT NOT NULL, 
+    org_id TEXT,
     name TEXT NOT NULL, 
     email TEXT, 
     phone TEXT, 
@@ -156,18 +158,19 @@ CREATE TABLE IF NOT EXISTS clients (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 11. Assinaturas (Billing)
-CREATE TABLE IF NOT EXISTS subscriptions (
-    user_id TEXT PRIMARY KEY, 
+-- 10. Assinaturas (Billing)
+CREATE TABLE subscriptions (
+    org_id TEXT PRIMARY KEY, 
     plan_id TEXT NOT NULL, 
     status TEXT, 
     current_period_end TEXT, 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 12. Logs de Auditoria
-CREATE TABLE IF NOT EXISTS activity_logs (
+-- 11. Logs de Auditoria
+CREATE TABLE activity_logs (
     id TEXT PRIMARY KEY, 
+    org_id TEXT NOT NULL, 
     user_id TEXT NOT NULL, 
     action TEXT NOT NULL, 
     details TEXT, 

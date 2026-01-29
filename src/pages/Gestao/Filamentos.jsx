@@ -61,7 +61,12 @@ export default function FilamentosPage() {
       .then(res => {
         if (res.data?.stats) setFailureStats(res.data.stats);
       })
-      .catch(err => console.error("Erro ao buscar falhas:", err));
+      .catch(err => {
+        console.error("Erro ao buscar falhas:", err);
+        if (err.response?.data) {
+          console.error("Detalhes do erro backend:", err.response.data);
+        }
+      });
   }, []);
 
   useEffect(() => {

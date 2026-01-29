@@ -22,6 +22,8 @@ export function AuthProvider({ children }) {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             // Map Firebase user to a structure similar to what the app expects
             if (currentUser) {
+                console.log("🔐 User ID Logged In:", currentUser.uid);
+                sessionStorage.setItem('uid', currentUser.uid);
                 setUser({
                     id: currentUser.uid,
                     email: currentUser.email,
@@ -33,6 +35,7 @@ export function AuthProvider({ children }) {
                     publicMetadata: { role: "user" }
                 });
             } else {
+                sessionStorage.removeItem('uid');
                 setUser(null);
             }
             setIsLoaded(true);
