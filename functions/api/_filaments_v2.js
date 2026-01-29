@@ -62,7 +62,7 @@ export async function gerenciarFalhas({ request, db, userId }) {
                 userId,     // Autor da ação
                 date,
                 f.filamentId,
-                f.printerId,
+                f.printerId || null,
                 f.modelName || "Impressão sem nome",
                 paraNumero(f.weightWasted),
                 paraNumero(f.costWasted),
@@ -291,8 +291,8 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                 nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex, diametro=excluded.diametro,
                 peso_total=excluded.peso_total, peso_atual=excluded.peso_atual, preco=excluded.preco, 
                 favorito=excluded.favorito, tags=excluded.tags`)
-                .bind(id, userId, da.nome, da.marca, da.material, da.cor_hex, da.diametro || '1.75', paraNumero(da.peso_total),
-                    paraNumero(da.peso_atual), paraNumero(da.preco), rawData.data_abertura, da.favorito ? 1 : 0, tags).run();
+                .bind(id, userId, da.nome, da.marca || null, da.material || null, da.cor_hex, da.diametro || '1.75', paraNumero(da.peso_total),
+                    paraNumero(da.peso_atual), paraNumero(da.preco), rawData.data_abertura || null, da.favorito ? 1 : 0, tags).run();
 
             // invalidateCache(`filaments:${tenantId}`);
             return enviarJSON({ id, ...da, success: true });

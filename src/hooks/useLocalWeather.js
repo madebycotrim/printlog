@@ -30,8 +30,24 @@ export const useLocalWeather = () => {
                 }
             },
             (error) => {
-                console.warn("Permissão de localização negada ou erro:", error);
-                setWeather(prev => ({ ...prev, loading: false, error: "Permissão negada" }));
+                console.warn("Permissão de localização negada/erro, usando padrão:", error);
+
+                // Fallback para São Paulo
+                const latitude = -23.5505;
+                const longitude = -46.6333;
+
+                fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m&timezone=auto`
+                ).then(res => res.json()).then(data => {
+                    setWeather({
+                        temp: data.current.temperature_2m,
+                        humidity: data.current.relative_humidity_2m,
+                        loading: false,
+                        error: null // Limpa erro pois usamos fallback
+                    });
+                }).catch(() => {
+                    setWeather(prev => ({ ...prev, loading: false, error: "Permissão negada e erro no fallback" }));
+                });
             }
         );
     }, []);

@@ -102,7 +102,9 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         weightWasted: qtdConsumo,
                         costWasted: costWasted,
                         reason: failureReason,
-                        filamentId: item.id
+                        filamentId: item.id,
+                        printerId: null,
+                        modelName: "Baixa Rápida"
                     });
 
                     // Also register in individual history
