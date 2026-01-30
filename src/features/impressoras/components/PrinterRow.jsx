@@ -59,13 +59,14 @@ export const PrinterRow = memo(({ printer, onEdit, onDelete, onResetMaint, onTog
             <div className="relative shrink-0">
                 <button
                     onClick={() => onToggleStatus?.(printer.id, printer.status)}
+                    aria-label={`Alterar status de ${printer.nome}: atualmente ${configStatus.label}`}
                     className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 border
                         ${isPrinting
                             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                             : 'bg-zinc-900/50 border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10'}
                     `}
                 >
-                    <IconeStatus size={18} strokeWidth={2} className={`${isPrinting ? 'animate-pulse' : ''}`} />
+                    <IconeStatus aria-hidden="true" size={18} strokeWidth={2} className={`${isPrinting ? 'animate-pulse' : ''}`} />
                 </button>
             </div>
 
@@ -119,8 +120,9 @@ export const PrinterRow = memo(({ printer, onEdit, onDelete, onResetMaint, onTog
                     onClick={() => onResetMaint?.(printer)}
                     className="h-8 w-8 p-0"
                     title="Diagnóstico"
+                    aria-label={`Diagnóstico de ${printer.nome}`}
                 >
-                    <Activity size={14} className={stats.ehCritico ? "text-rose-500 animate-pulse" : ""} />
+                    <Activity aria-hidden="true" size={14} className={stats.ehCritico ? "text-rose-500 animate-pulse" : ""} />
                 </Button>
 
                 <Button
@@ -129,8 +131,9 @@ export const PrinterRow = memo(({ printer, onEdit, onDelete, onResetMaint, onTog
                     onClick={() => onEdit?.(printer)}
                     className="h-8 w-8 p-0 hover:text-sky-400"
                     title="Editar"
+                    aria-label={`Editar ${printer.nome}`}
                 >
-                    <Edit2 size={14} />
+                    <Edit2 aria-hidden="true" size={14} />
                 </Button>
 
                 <Button
@@ -139,8 +142,9 @@ export const PrinterRow = memo(({ printer, onEdit, onDelete, onResetMaint, onTog
                     onClick={() => onDelete?.(printer.id)}
                     className="h-8 w-8 p-0 hover:text-rose-500"
                     title="Excluir"
+                    aria-label={`Excluir ${printer.nome}`}
                 >
-                    <Trash2 size={14} />
+                    <Trash2 aria-hidden="true" size={14} />
                 </Button>
             </div>
         </div>
