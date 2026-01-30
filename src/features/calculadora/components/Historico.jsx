@@ -5,7 +5,7 @@ import {
     Database, Loader2, Calendar, TrendingUp, Clock, Check,
     AlertTriangle, CheckCircle2, ExternalLink
 } from "lucide-react";
-import { useProjectsStore } from "../../projetos/logic/projects";
+import { useProjectsStore } from "../../projetos/logic/projetos";
 import { formatCurrency, formatDecimal } from "../../../utils/numbers";
 import Modal from "../../../components/ui/Modal";
 export default function Historico({ open, onClose, onRestore }) {

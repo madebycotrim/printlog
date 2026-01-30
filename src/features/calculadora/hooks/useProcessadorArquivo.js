@@ -4,7 +4,7 @@ import { useToastStore } from '../../../stores/toastStore';
 import { useTransferStore } from '../../../stores/transferStore';
 import { analisarArquivoProjeto } from '../../../utils/projectParser';
 
-export function useFileProcessor() {
+export function useProcessadorArquivo() {
     const { addToast } = useToastStore();
     const { dadosFormulario, atualizarCampo } = useCalculatorStore();
     const [isProcessing, setIsProcessing] = useState(false);

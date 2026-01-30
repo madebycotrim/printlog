@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 import CookieConsent from '../../components/cookieConsent';
 import Navbar from './components/Navbar';

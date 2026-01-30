@@ -4,47 +4,47 @@ import StatsWidget from "../../../components/ui/StatsWidget";
 import { formatCurrency } from "../../../utils/numbers";
 
 function StatusFilamentos({
-  totalWeight = 0,
-  lowStockCount = 0,
+  pesoTotal = 0,
+  contagemEstoqueBaixo = 0,
   valorTotal = 0,
-  weather = { loading: true },
-  failureStats = { totalWeight: 0, totalCost: 0 }
+  clima = { loading: true },
+  estatisticasFalhas = { totalWeight: 0, totalCost: 0 }
 }) {
 
-  const displayStats = useMemo(() => {
-    const isWeatherLoading = !weather || weather.isLoading;
-    const data = weather.data || weather;
+  const estatisticasExibicao = useMemo(() => {
+    const climaCarregando = !clima || clima.isLoading;
+    const dados = clima.data || clima;
 
-    const tempVal = !isWeatherLoading && data?.temp !== undefined ? Math.round(data.temp) : null;
-    const humidityVal = !isWeatherLoading && data?.humidity !== undefined ? Math.round(data.humidity) : null;
-    const isHigh = humidityVal !== null && humidityVal > 50;
+    const valorTemp = !climaCarregando && dados?.temp !== undefined ? Math.round(dados.temp) : null;
+    const valorUmidade = !climaCarregando && dados?.humidity !== undefined ? Math.round(dados.humidity) : null;
+    const ehAlta = valorUmidade !== null && valorUmidade > 50;
 
     return {
-      financial: formatCurrency(valorTotal || 0),
-      temperature: tempVal !== null ? `${tempVal}°C` : "--°C",
-      humidity: humidityVal !== null ? `${humidityVal}%` : "--%",
-      weatherLoading: isWeatherLoading,
-      isHighHumidity: isHigh
+      financeiro: formatCurrency(valorTotal || 0),
+      temperatura: valorTemp !== null ? `${valorTemp}°C` : "--°C",
+      umidade: valorUmidade !== null ? `${valorUmidade}%` : "--%",
+      climaCarregando: climaCarregando,
+      ehUmidadeAlta: ehAlta
     };
-  }, [valorTotal, weather]);
+  }, [valorTotal, clima]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* 1. Saúde do Estoque */}
       <StatsWidget
         title="Total em Estoque"
-        value={`${(totalWeight || 0).toFixed(2)}kg`}
+        value={`${(pesoTotal || 0).toFixed(2)}kg`}
         icon={AlertTriangle}
-        colorTheme={lowStockCount > 0 ? 'rose' : 'emerald'}
+        colorTheme={contagemEstoqueBaixo > 0 ? 'rose' : 'emerald'}
         secondaryLabel="Status"
-        secondaryValue={lowStockCount > 0 ? `${lowStockCount} Itens Baixos` : "Saudável"}
-        isAlert={lowStockCount > 0}
+        secondaryValue={contagemEstoqueBaixo > 0 ? `${contagemEstoqueBaixo} Itens Baixos` : "Saudável"}
+        isAlert={contagemEstoqueBaixo > 0}
       />
 
       {/* 2. Valor em Estoque */}
       <StatsWidget
         title="Patrimônio"
-        value={displayStats.financial}
+        value={estatisticasExibicao.financeiro}
         icon={BadgeDollarSign}
         colorTheme="emerald"
         secondaryLabel="Valor Investido"
@@ -55,22 +55,22 @@ function StatusFilamentos({
       {/* 3. Clima (Umidade) */}
       <StatsWidget
         title="Ambiente"
-        value={displayStats.humidity}
+        value={estatisticasExibicao.umidade}
         icon={Droplets}
-        colorTheme={displayStats.isHighHumidity ? 'rose' : 'sky'}
+        colorTheme={estatisticasExibicao.ehUmidadeAlta ? 'rose' : 'sky'}
         secondaryLabel="Temperatura"
-        secondaryValue={displayStats.temperature}
-        isAlert={displayStats.isHighHumidity}
+        secondaryValue={estatisticasExibicao.temperatura}
+        isAlert={estatisticasExibicao.ehUmidadeAlta}
       />
 
       {/* 4. Desperdício - Monitoramento de Falhas */}
       <StatsWidget
         title="Perda (30d)"
-        value={failureStats?.totalWeight ? `${Math.round(failureStats.totalWeight)}g` : '0g'}
+        value={estatisticasFalhas?.totalWeight ? `${Math.round(estatisticasFalhas.totalWeight)}g` : '0g'}
         icon={Trash2}
         colorTheme="rose"
         secondaryLabel="Prejuízo Estimado"
-        secondaryValue={formatCurrency(failureStats?.totalCost || 0)}
+        secondaryValue={formatCurrency(estatisticasFalhas?.totalCost || 0)}
         FooterIcon={TrendingDown}
       />
     </div>

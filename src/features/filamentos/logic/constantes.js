@@ -5,12 +5,12 @@ export const CORES_MAIS_VENDIDAS = [
     "#14b8a6", "#6366f1", "#84cc16", "#f43f5e"
 ];
 
-export const MARCAS_OPTIONS = [{
+export const OPCOES_MARCAS = [{
     group: "Fabricantes",
     items: ["3D Lab", "3DFila", "3DX Filamentos", "3N3", "Anycubic", "Bambu Lab", "Brasfila", "Cliever", "ColorFabb", "Creality", "Elegoo", "eSun", "F3D", "Fillamentum", "Geeetech", "GTMax3D", "Hatchbox", "Kingroon", "MatterHackers", "National 3D", "Overture", "Polymaker", "Printalot", "Prusament", "Sunlu", "Tríade 3D", "Voxelab", "Voolt3D"].map(m => ({ value: m, label: m }))
 }];
 
-export const TIPOS_OPTIONS = [
+export const OPCOES_TIPOS = [
     {
         group: "Materiais",
         items: [

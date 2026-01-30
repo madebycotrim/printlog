@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { Activity, Package, Printer, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
-import { useFilaments } from '../../filamentos/logic/filamentQueries';
-import { useProjectsStore } from '../../projetos/logic/projects';
+import { useFilamentos } from '../../filamentos/logic/consultasFilamento';
+import { useProjectsStore } from '../../projetos/logic/projetos';
 import DashboardCard from './DashboardCard';
 
 export default function ActivityFeedWidget() {
-    const { data: filaments = [] } = useFilaments();
+    const { data: filaments = [] } = useFilamentos();
     const { projects } = useProjectsStore();
 
     // Generate activity feed from recent data

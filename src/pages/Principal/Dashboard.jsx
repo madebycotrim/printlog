@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, LayoutGrid, RotateCcw, EyeOff, Eye, Plus, Check, Box, Printer, Package, Calculator, Layers, Search, Command, PenTool, FileDown } from 'lucide-react';
 import ManagementLayout from '../../layouts/ManagementLayout';
-import DateRangeSelector from '../../components/DateRangeSelector';
+import SeletorIntervaloData from '../../components/SeletorIntervaloData';
 import { exportDashboardToPDF, exportToExcel } from '../../utils/exportDashboard';
 import { useDashboardData } from '../../features/dashboard/hooks/useDashboardData';
 import FinancialSummaryWidget from '../../features/dashboard/components/FinancialSummaryWidget';
@@ -23,12 +23,12 @@ import { useSidebarStore } from '../../stores/sidebarStore';
 
 
 // Error handling
-import ErrorBoundary from '../../components/ErrorBoundary';
+import LimiteErro from '../../components/LimiteErro';
 
-// Importar modais para ações rápidas
-import { useFilaments, useFilamentMutations } from '../../features/filamentos/logic/filamentQueries';
-import { usePrinters, usePrinterMutations } from '../../features/impressoras/logic/printerQueries';
-import { useProjectsStore } from '../../features/projetos/logic/projects';
+// Importar modais para a��es r�pidas
+import { useFilamentos, useMutacoesFilamento } from '../../features/filamentos/logic/consultasFilamento';
+import { usePrinters, usePrinterMutations } from '../../features/impressoras/logic/consultasImpressora';
+import { useProjectsStore } from '../../features/projetos/logic/projetos';
 import { useLocation } from 'wouter';
 import { useDashboardLayoutStore } from '../../features/dashboard/logic/layout';
 import ModalFilamento from '../../features/filamentos/components/ModalFilamento';
@@ -49,8 +49,8 @@ const widgetNames = {
     performance: 'Performance',
     material_stats: 'Estoque de Materiais',
     live_printers: 'Status ao Vivo',
-    revenue_chart: 'Evolução Financeira',
-    cost_distribution: 'Distribuição de Custos',
+    revenue_chart: 'Evolu��o Financeira',
+    cost_distribution: 'Distribui��o de Custos',
     smart_suggestions: 'O que Fazer Agora'
 };
 
@@ -89,7 +89,7 @@ export default function Dashboard() {
 
     const resetLayout = useCallback(() => {
         originalResetLayout();
-        addToast('Layout restaurado para o padrão.', 'success');
+        addToast('Layout restaurado para o padr�o.', 'success');
     }, [originalResetLayout, addToast]);
 
 
@@ -124,7 +124,7 @@ export default function Dashboard() {
 
     const [draggedId, setDraggedId] = useState(null);
 
-    // Estados para modais de ações rápidas
+    // Estados para modais de a��es r�pidas
 
     // Sidebar width for positioning
     const { width: larguraSidebar } = useSidebarStore(); // Added this line
@@ -136,7 +136,7 @@ export default function Dashboard() {
         criticalAlertsCount
     } = useDashboardData();
 
-    const { data: filaments = [] } = useFilaments();
+    const { data: filamentos = [] } = useFilamentos();
     const { data: printers = [] } = usePrinters();
     const { projects, fetchHistory, updateProjectStatus } = useProjectsStore();
 
@@ -149,17 +149,13 @@ export default function Dashboard() {
         };
 
         if (format === 'pdf') {
-            exportDashboardToPDF({ projects, printers, filaments, stats });
+            exportDashboardToPDF({ projects, printers, filamentos, stats });
             addToast('Exportando Dashboard em PDF...', 'success');
         } else if (format === 'excel') {
             exportToExcel({ projects });
             addToast('Exportando dados para Excel...', 'success');
         }
     };
-
-
-
-    console.log('[Dashboard Debug] State:', { layout, hidden, editMode, projects, filaments, printers });
 
     // Keyboard Shortcuts
     useEffect(() => {
@@ -195,7 +191,7 @@ export default function Dashboard() {
 
 
 
-    // Handlers de Ações Inteligentes
+    // Handlers de A��es Inteligentes
     const handleDuplicateProject = (proj) => {
         setLocation(`/ calculadora ? load = ${proj.id} `);
     };
@@ -222,7 +218,7 @@ export default function Dashboard() {
                 content = <FleetSummaryWidget printers={printers} />;
                 break;
             case 'alerts':
-                content = <AlertsWidget filaments={filaments} printers={printers} projects={projects} />;
+                content = <AlertsWidget filamentos={filamentos} printers={printers} projects={projects} />;
                 break;
             case 'recent_projects':
                 content = <RecentProjectsWidget projects={projects?.filter(p => p.data?.status !== 'finalizado') || []} onDuplicate={handleDuplicateProject} onConclude={handleConcludeProject} />;
@@ -240,7 +236,7 @@ export default function Dashboard() {
                 content = <PerformanceMetricsWidget projects={projects} />;
                 break;
             case 'material_stats':
-                content = <MaterialStatsWidget filaments={filaments} />;
+                content = <MaterialStatsWidget filamentos={filamentos} />;
                 break;
             case 'live_printers':
                 content = <LivePrinterStatusWidget printers={printers} />;
@@ -252,19 +248,19 @@ export default function Dashboard() {
                 content = <CostDistributionWidget projects={projects} />;
                 break;
             case 'smart_suggestions':
-                content = <SmartSuggestionsWidget filaments={filaments} printers={printers} projects={projects} />;
+                content = <SmartSuggestionsWidget filamentos={filamentos} printers={printers} projects={projects} />;
                 break;
             default:
                 content = null;
         }
         return (
-            <ErrorBoundary
+            <LimiteErro
                 key={id}
                 title={`Erro: ${widgetNames[id] || 'Widget'}`}
                 message="Falha ao renderizar este componente."
             >
                 {content}
-            </ErrorBoundary>
+            </LimiteErro>
         );
     };
 
@@ -272,12 +268,12 @@ export default function Dashboard() {
     const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
     const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
 
-    const { saveFilament } = useFilamentMutations();
+    const { salvarFilamento } = useMutacoesFilamento();
     const { upsertPrinter } = usePrinterMutations();
 
     // Handlers para salvar
-    const handleSaveFilament = async (data) => {
-        await saveFilament(data);
+    const handlesalvarFilamento = async (data) => {
+        return await salvarFilamento(data);
         // Modal fecha automaticamente pelo sucesso ou manualmente
         // mas aqui vamos garantir o estado
         if (!data.id) setFilamentModalOpen(false);
@@ -322,7 +318,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-center space-y-2">
                         <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Analisar Arquivo</h2>
-                        <p className="text-sm font-bold text-sky-400 uppercase tracking-[0.2em]">Solte para ir à Calculadora</p>
+                        <p className="text-sm font-bold text-sky-400 uppercase tracking-[0.2em]">Solte para ir � Calculadora</p>
                     </div>
                 </div>
             </div>
@@ -337,13 +333,13 @@ export default function Dashboard() {
                                 Dashboard
                             </h1>
                             <p className="text-sm text-zinc-500 font-medium tracking-wide">
-                                Visão geral da sua operação
+                                Vis�o geral da sua opera��o
                             </p>
                         </div>
 
                         <div className="flex items-center gap-3">
                             {/* DATE RANGE SELECTOR */}
-                            <DateRangeSelector />
+                            <SeletorIntervaloData />
 
                             {/* EXPORT BUTTON */}
                             <div className="relative group">
@@ -357,7 +353,7 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {/* BOTÃO GLOBAL SEARCH - NOVA ADIÇÃO */}
+                            {/* BOT�O GLOBAL SEARCH - NOVA ADI��O */}
                             <button
                                 onClick={() => window.dispatchEvent(new Event('open-global-search'))}
                                 className="h-10 w-10 md:w-auto px-0 md:px-4 rounded-xl flex items-center justify-center gap-3 bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700 hover:bg-zinc-800/80 transition-all group"
@@ -370,7 +366,7 @@ export default function Dashboard() {
                                     </kbd>
                                 </div>
                             </button>
-                            {/* BOTÃO TOGGLE EDIT */}
+                            {/* BOT�O TOGGLE EDIT */}
                             <button
                                 onClick={toggleEditMode}
                                 className={`
@@ -381,10 +377,10 @@ export default function Dashboard() {
                             `}
                             >
                                 {editMode ? <Check size={14} strokeWidth={3} /> : <PenTool size={14} />}
-                                {editMode ? "Concluir Edição" : "Editar Layout"}
+                                {editMode ? "Concluir Edi��o" : "Editar Layout"}
                             </button>
 
-                            {/* MENU DE WIDGETS (Visível apenas em modo de edição) */}
+                            {/* MENU DE WIDGETS (Vis�vel apenas em modo de edi��o) */}
                             <div className={`
                             overflow-hidden transition-all duration-300 flex items-center gap-2
                             ${editMode ? 'w-auto opacity-100 translate-x-0' : 'w-0 opacity-0 translate-x-4 pointer-events-none'}
@@ -392,17 +388,17 @@ export default function Dashboard() {
                                 <button
                                     onClick={resetLayout}
                                     className="h-10 px-4 bg-zinc-900/50 border border-zinc-800 hover:border-rose-500/50 text-zinc-400 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap"
-                                    title="Resetar Layout para o padrão"
+                                    title="Resetar Layout para o padr�o"
                                 >
                                     <RotateCcw size={14} />
-                                    Resetar Padrão
+                                    Resetar Padr�o
                                 </button>
                             </div>
                         </div>
                     </header>
 
-                    {/* MODAIS AÇÕES RÁPIDAS */}
-                    <ModalFilamento aberto={isFilamentModalOpen} aoFechar={() => setFilamentModalOpen(false)} aoSalvar={handleSaveFilament} />
+                    {/* MODAIS A��ES R�PIDAS */}
+                    <ModalFilamento aberto={isFilamentModalOpen} aoFechar={() => setFilamentModalOpen(false)} aoSalvar={handlesalvarFilamento} />
                     <ModalImpressora aberto={isPrinterModalOpen} aoFechar={() => setPrinterModalOpen(false)} aoSalvar={handleSavePrinter} />
                     <ModalInsumo isOpen={isSupplyModalOpen} onClose={() => setSupplyModalOpen(false)} />
 
@@ -412,7 +408,7 @@ export default function Dashboard() {
                             <div className="p-4 rounded-full bg-zinc-800 mb-4">
                                 <LayoutGrid className="w-8 h-8 text-zinc-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Seu Dashboard está vazio</h3>
+                            <h3 className="text-xl font-bold text-white mb-2">Seu Dashboard est� vazio</h3>
                             <p className="text-zinc-400 max-w-md mx-auto mb-6">
                                 Todos os widgets foram ocultados. Use a barra abaixo para adicionar widgets ao seu painel.
                             </p>
@@ -489,9 +485,9 @@ export default function Dashboard() {
                                                     <button onClick={(e) => { e.stopPropagation(); hideWidget(widgetId); }} className="p-1.5 rounded-md hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 transition-all" title="Ocultar Widget"><EyeOff size={14} /></button>
                                                 </div>
                                             )}
-                                            <ErrorBoundary title="Erro no Renderizador">
+                                            <LimiteErro title="Erro no Renderizador">
                                                 {renderWidgetContent(widgetId)}
-                                            </ErrorBoundary>
+                                            </LimiteErro>
                                         </div>
                                     </div>
                                 </div>
@@ -538,7 +534,7 @@ export default function Dashboard() {
 
                             {hidden.length === 0 ? (
                                 <div className="flex-1 text-center py-2 text-zinc-600 text-sm font-medium italic">
-                                    Todos os widgets estão ativos
+                                    Todos os widgets est�o ativos
                                 </div>
                             ) : (
                                 <div className={`flex items-center gap-3 py-2 ${hidden.length > 3 ? 'overflow-x-auto custom-scrollbar' : ''}`}>
@@ -562,4 +558,7 @@ export default function Dashboard() {
         </div>
     );
 }
+
+
+
 

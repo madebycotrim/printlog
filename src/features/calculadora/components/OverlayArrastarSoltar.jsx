@@ -1,7 +1,7 @@
 import React from 'react';
 import { Upload } from "lucide-react";
 
-export default function DragDropOverlay({ isDragging }) {
+export default function OverlayArrastarSoltar({ isDragging }) {
     return (
         <div className={`
             absolute inset-0 z-[200] bg-zinc-950/80 backdrop-blur-md flex items-center justify-center 

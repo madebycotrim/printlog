@@ -1,4 +1,4 @@
-ï»¿
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -113,7 +113,7 @@ export default function RegisterPage() {
 
     const handleGoogleSignUp = async () => {
         if (!agreed) {
-            setError("VocÃª precisa aceitar os Termos e a PolÃ­tica de Privacidade.");
+            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
             return;
         }
         if (isGoogleLoading) return;
@@ -132,13 +132,13 @@ export default function RegisterPage() {
     const handlePasswordSignUp = async (e) => {
         e.preventDefault();
 
-        // VALIDAÃ‡Ã•ES CLIENT-SIDE
+        // VALIDAÇÕES CLIENT-SIDE
         if (!agreed) {
-            setError("VocÃª precisa aceitar os Termos e a PolÃ­tica de Privacidade.");
+            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
             return;
         }
         if (!isValidEmail(email)) {
-            setError("E-mail invÃ¡lido. Verifique o endereÃ§o digitado.");
+            setError("E-mail inválido. Verifique o endereço digitado.");
             return;
         }
         const passwordCheck = validatePassword(password);
@@ -184,7 +184,7 @@ export default function RegisterPage() {
                                 TRANSFORME FILAMENTO EM <span className="text-sky-500 italic">LUCRO REAL.</span>
                             </h2>
                             <p className="text-zinc-500 text-sm font-medium">
-                                Junte-se a outros makers e organize sua produÃ§Ã£o 3D.
+                                Junte-se a outros makers e organize sua produção 3D.
                             </p>
                         </div>
                     </div>
@@ -202,7 +202,7 @@ export default function RegisterPage() {
                             <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: JoÃ£o ou Minha Oficina 3D" />
+                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
                             </div>
                         </div>
 
@@ -250,7 +250,7 @@ export default function RegisterPage() {
                                 </div>
                             </div>
                             <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none hover:text-zinc-300 transition-colors">
-                                Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">PolÃ­tica de Privacidade</a> do PrintLog.
+                                Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Política de Privacidade</a> do PrintLog.
                             </label>
                         </div>
 
@@ -270,7 +270,7 @@ export default function RegisterPage() {
                             {isGoogleLoading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Chrome size={20} /> Continuar com Google</>}
                         </button>
                         <p className="text-center text-zinc-500 text-sm">
-                            JÃ¡ tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
+                            Já tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
                         </p>
                     </div>
                 </div>
@@ -289,7 +289,7 @@ export default function RegisterPage() {
                             <Layout size={24} />
                         </div>
                         <span className="text-sm font-bold text-white block uppercase">Tudo em uma tela</span>
-                        <span className="text-[11px] text-zinc-500 block mt-1">Tudo o que vocÃª precisa em uma Ãºnica tela</span>
+                        <span className="text-[11px] text-zinc-500 block mt-1">Tudo o que você precisa em uma única tela</span>
                     </div>
 
                     <div className="absolute -bottom-40 -left-20 opacity-10 font-mono text-[10px] text-sky-500 space-y-1 text-left">

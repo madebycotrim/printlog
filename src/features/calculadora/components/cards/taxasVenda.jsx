@@ -4,7 +4,7 @@ import { UnifiedInput } from "../../../../components/UnifiedInput";
 import { useCalculatorStore } from "../../../../stores/calculatorStore";
 
 import { useSettings } from "../../../sistema/logic/settingsQueries";
-import { DEFAULT_PLATFORMS } from "../../logic/constants";
+import { DEFAULT_PLATFORMS } from "../../logic/constantes";
 
 export default function CardCanal({ onOpenTaxas }) {
   const { dadosFormulario, atualizarCampo } = useCalculatorStore();

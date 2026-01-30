@@ -1,4 +1,4 @@
-Ôªøimport React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
     CheckCircle2, AlertTriangle, AlertCircle,
     Settings2, BarChart3,
@@ -16,7 +16,7 @@ import Summary from "../../features/calculadora/components/Resumo.jsx";
 import HistoryDrawer from "../../features/calculadora/components/Historico.jsx";
 import PainelConfiguracoesCalculo from "../../features/calculadora/components/ConfigCalculo.jsx";
 import ModalRegistrarFalha from "../../features/filamentos/components/ModalRegistrarFalha.jsx";
-import DragDropOverlay from "../../features/calculadora/components/DragDropOverlay.jsx";
+import OverlayArrastarSoltar from "../../features/calculadora/components/OverlayArrastarSoltar.jsx";
 import ModalTaxas from "../../features/calculadora/components/ModalTaxas.jsx"; // Importado
 
 // Cards de Entrada
@@ -26,24 +26,24 @@ import CardCanal from "../../features/calculadora/components/cards/taxasVenda.js
 import CardEmbalagem from "../../features/calculadora/components/cards/custos.jsx";
 import CardPreco from "../../features/calculadora/components/cards/lucroDescontos.jsx";
 
-// L√≥gica e Armazenamento
-import { calcularTudo } from "../../features/calculadora/logic/calculator";
+// LÛgica e Armazenamento
+import { calcularTudo } from "../../features/calculadora/logic/calculadora";
 import { useSettings } from "../../features/sistema/logic/settingsQueries";
-import { usePrinters } from "../../features/impressoras/logic/printerQueries";
-import { useProjectsStore } from "../../features/projetos/logic/projects.js";
-import { useClientStore } from "../../features/clientes/logic/clients.js";
+import { usePrinters } from "../../features/impressoras/logic/consultasImpressora";
+import { useProjectsStore } from "../../features/projetos/logic/projetos.js";
+import { useClientStore } from "../../features/clientes/logic/clientes.js";
 
 import { useToastStore } from "../../stores/toastStore";
 import { useCalculatorStore } from "../../stores/calculatorStore"; // Novo Store
 // import { analisarArquivoProjeto } from "../../utils/projectParser"; // Removed
-import { useFileProcessor } from "../../features/calculadora/hooks/useFileProcessor"; // Imported
+import { useProcessadorArquivo } from "../../features/calculadora/hooks/useProcessadorArquivo"; // Imported
 import { useDragDrop } from "../../hooks/useDragDrop";
 import { useTransferStore } from "../../stores/transferStore";
 import { formatCurrency } from "../../utils/numbers";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 
-/* ---------- COMPONENTE PRINCIPAL DA P√ÅGINA ---------- */
+/* ---------- COMPONENTE PRINCIPAL DA P¡GINA ---------- */
 export default function CalculadoraPage() {
     const { addToast } = useToastStore();
     const [abaAtiva, setAbaAtiva] = useState("resumo");
@@ -68,7 +68,7 @@ export default function CalculadoraPage() {
     const fileInputRef = useRef(null);
     const [hardwareSelecionado, setHardwareSelecionado] = useState(null);
 
-    const { isProcessing, checkPendingFiles, processarArquivo } = useFileProcessor();
+    const { isProcessing, checkPendingFiles, processarArquivo } = useProcessadorArquivo();
 
     // Carregamento Inicial
     useEffect(() => {
@@ -82,7 +82,7 @@ export default function CalculadoraPage() {
     // Sincroniza Config (Merge com dados do backend se store estiver vazia ou para garantir defaults)
     useEffect(() => {
         if (settings && !isLoadingSettings) {
-            // Atualiza apenas a config, mantendo o resto do formul√°rio que pode ter sido editado
+            // Atualiza apenas a config, mantendo o resto do formul·rio que pode ter sido editado
             const currentConfig = dadosFormulario.config;
             const newConfig = {
                 custoKwh: settings.custoKwh || currentConfig.custoKwh,
@@ -95,15 +95,15 @@ export default function CalculadoraPage() {
                 taxaFalha: settings.taxaFalha || currentConfig.taxaFalha
             };
 
-            // S√≥ atualiza se houver diferen√ßa REAL nos valores para evitar loops infinitos
-            // Compara√ß√£o simples via stringify resolve o problema de refer√™ncia de objeto
+            // SÛ atualiza se houver diferenÁa REAL nos valores para evitar loops infinitos
+            // ComparaÁ„o simples via stringify resolve o problema de referÍncia de objeto
             if (JSON.stringify(currentConfig) !== JSON.stringify(newConfig)) {
                 atualizarCampo('config', null, newConfig);
             }
         }
     }, [settings, isLoadingSettings, atualizarCampo, dadosFormulario.config]);
 
-    // Sele√ß√£o autom√°tica de impressora
+    // SeleÁ„o autom·tica de impressora
     useEffect(() => {
         if (printers.length > 0 && !hardwareSelecionado) {
             setHardwareSelecionado(printers[0]);
@@ -115,12 +115,12 @@ export default function CalculadoraPage() {
         await refetch();
     };
 
-    // L√≥gica de Hardware/Impressora
+    // LÛgica de Hardware/Impressora
     const lidarSelecaoHardware = (printer) => {
         if (!printer) return;
         setHardwareSelecionado(printer);
 
-        // Atualiza consumo se dispon√≠vel
+        // Atualiza consumo se disponÌvel
         if (printer?.consumo_w) {
             const consumoKw = (printer.consumo_w / 1000).toFixed(3);
             atualizarCampo('config', 'consumoKw', consumoKw);
@@ -151,7 +151,7 @@ export default function CalculadoraPage() {
         if (file) await processarArquivo(file);
     };
 
-    // C√°lculos (Agora calculando aqui APENAS para o Resumo e Hist√≥rico, os componentes filhos calculam o que precisam)
+    // C·lculos (Agora calculando aqui APENAS para o Resumo e HistÛrico, os componentes filhos calculam o que precisam)
     const resultados = useMemo(() => {
         return calcularTudo(dadosFormulario);
     }, [dadosFormulario]);
@@ -169,11 +169,11 @@ export default function CalculadoraPage() {
         }
     ]);
 
-    // Hist√≥rico
-    // Hist√≥rico
+    // HistÛrico
+    // HistÛrico
     const lidarSalvarNoHistorico = async () => {
         if (!dadosFormulario.nomeProjeto) {
-            addToast("D√° um nome pro seu projeto", "warning");
+            addToast("D· um nome pro seu projeto", "warning");
             return;
         }
 
@@ -232,11 +232,11 @@ export default function CalculadoraPage() {
             {...dragHandlers}
             className="flex h-screen bg-zinc-950 text-zinc-200 font-sans antialiased overflow-hidden relative"
         >
-            <DragDropOverlay isDragging={isDragging} />
+            <OverlayArrastarSoltar isDragging={isDragging} />
 
             <ManagementLayout>
                 <div className="flex-1 flex flex-col lg:flex-row h-full relative">
-                    {/* --- √ÅREA DE INPUTS (ESQUERDA) --- */}
+                    {/* --- ¡REA DE INPUTS (ESQUERDA) --- */}
                     <div className="flex-1 flex flex-col min-w-0">
                         <HeaderCalculadora
                             nomeProjeto={dadosFormulario.nomeProjeto}
@@ -289,7 +289,7 @@ export default function CalculadoraPage() {
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-material">
                                         <WrapperCard
-                                            title="Mat√©ria-Prima"
+                                            title="MatÈria-Prima"
                                             step="01"
                                             zPriority="z-20"
                                             hasNext={true}
@@ -300,7 +300,7 @@ export default function CalculadoraPage() {
                                     </div>
                                     <div data-tour="calc-print-time">
                                         <WrapperCard
-                                            title="Tempo de Produ√ß√£o"
+                                            title="Tempo de ProduÁ„o"
                                             step="02"
                                             zPriority="z-10"
                                             subtotal={(resultados?.custoEnergia + resultados?.custoMaquina + resultados?.custoMaoDeObra) > 0
@@ -342,7 +342,7 @@ export default function CalculadoraPage() {
 
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-profit">
-                                        <WrapperCard title="Pre√ßo e Lucro" step="05">
+                                        <WrapperCard title="PreÁo e Lucro" step="05">
                                             <CardPreco />
                                         </WrapperCard>
                                     </div>
@@ -355,7 +355,7 @@ export default function CalculadoraPage() {
                             <button
                                 onClick={toggleAutoSave}
                                 className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-wider transition-colors hover:text-zinc-300"
-                                title={isEnabled ? "Clique para pausar o salvamento" : "Clique para ativar o salvamento autom√°tico"}
+                                title={isEnabled ? "Clique para pausar o salvamento" : "Clique para ativar o salvamento autom·tico"}
                             >
                                 {!isEnabled ? (
                                     <>
@@ -370,7 +370,7 @@ export default function CalculadoraPage() {
                                 ) : lastSaved ? (
                                     <>
                                         <Cloud size={12} strokeWidth={2.5} className="text-zinc-600" />
-                                        <span className="text-zinc-500">Salvo √†s {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <span className="text-zinc-500">Salvo ‡s {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </>
                                 ) : (
                                     <>
@@ -433,8 +433,8 @@ export default function CalculadoraPage() {
                             if (falha?.costWasted) {
                                 setModalConfig({
                                     open: true,
-                                    title: "Recuperar o Preju√≠zo?",
-                                    message: `Voc√™ teve um preju√≠zo de R$ ${falha.costWasted}. Quer adicionar esse valor no projeto pra recuperar o dinheiro?`,
+                                    title: "Recuperar o PrejuÌzo?",
+                                    message: `VocÍ teve um prejuÌzo de R$ ${falha.costWasted}. Quer adicionar esse valor no projeto pra recuperar o dinheiro?`,
                                     icon: AlertTriangle,
                                     color: "text-amber-500",
                                     customAction: () => {
@@ -456,7 +456,7 @@ export default function CalculadoraPage() {
                         isOpen={modalConfig.open}
                         onClose={() => setModalConfig({ ...modalConfig, open: false })}
                         title={modalConfig.title}
-                        subtitle="Notifica√ß√£o de Sistema"
+                        subtitle="NotificaÁ„o de Sistema"
                         icon={modalConfig.icon}
                         footer={
                             <div className="flex gap-2 w-full">
@@ -476,7 +476,7 @@ export default function CalculadoraPage() {
                                                 'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
                                         }`}
                                 >
-                                    {modalConfig.customAction ? 'N√£o, Deixa pra L√°' : 'Entendi'}
+                                    {modalConfig.customAction ? 'N„o, Deixa pra L·' : 'Entendi'}
                                 </button>
                             </div>
                         }

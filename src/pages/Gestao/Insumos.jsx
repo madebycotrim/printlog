@@ -1,11 +1,11 @@
-Ôªøimport React, { useState, useEffect, useMemo, useDeferredValue } from "react";
+import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { Plus, Search, X, Trash2, AlertTriangle, PackageSearch, Loader2, Layers, Box, Zap, Hammer, Link, Edit2, History } from "lucide-react";
 
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
 import Modal from "../../components/ui/Modal";
-import EmptyState from "../../components/ui/EmptyState";
+import EstadoVazio from "../../components/ui/EstadoVazio";
 import { useToastStore } from "../../stores/toastStore";
 
 // COMPONENTES DA FUNCIONALIDADE
@@ -18,7 +18,7 @@ import StatusInsumos from "../../features/insumos/components/statusInsumos";
 import InsumoFilters from "../../features/insumos/components/InsumoFilters";
 import { SupplyCard } from "../../features/insumos/components/SupplyCard";
 
-// L√ìGICA
+// L”GICA
 import { useSupplyStore } from "../../features/insumos/logic/supplies";
 
 export default function InsumosPage() {
@@ -32,12 +32,12 @@ export default function InsumosPage() {
         categories: []
     });
 
-    // Defini√ß√£o das Categorias com √çcones
+    // DefiniÁ„o das Categorias com Õcones
     const CATEGORIES = [
         { id: 'Todos', label: 'Geral', icon: Layers },
         { id: 'embalagem', label: 'Embalagens', icon: Box },
-        { id: 'fixacao', label: 'Fixa√ß√£o', icon: Link },
-        { id: 'eletronica', label: 'Eletr√¥nica', icon: Zap },
+        { id: 'fixacao', label: 'FixaÁ„o', icon: Link },
+        { id: 'eletronica', label: 'EletrÙnica', icon: Zap },
         { id: 'acabamento', label: 'Acabamento', icon: Hammer },
         { id: 'outros', label: 'Outros', icon: PackageSearch },
     ];
@@ -61,12 +61,12 @@ export default function InsumosPage() {
         fetchSupplies();
     }, [fetchSupplies]);
 
-    // L√ìGICA DE ESTAT√çSTICAS E FILTRAGEM
+    // L”GICA DE ESTATÕSTICAS E FILTRAGEM
     const { itemsFiltrados, stats } = useMemo(() => {
         const termo = deferredBusca.toLowerCase().trim();
         const lista = Array.isArray(supplies) ? supplies : [];
 
-        // Estat√≠sticas
+        // EstatÌsticas
         let totalValor = 0;
         let baixoEstoque = 0;
         let zerados = 0;
@@ -177,7 +177,7 @@ export default function InsumosPage() {
 
             <PageHeader
                 title="Meus Insumos"
-                subtitle="Gest√£o de Materiais Extras"
+                subtitle="Gest„o de Materiais Extras"
                 accentColor="text-orange-500"
                 searchQuery={busca}
                 onSearchChange={setBusca}
@@ -224,7 +224,7 @@ export default function InsumosPage() {
                         </div>
                     ) : (
                         !loading && (
-                            <EmptyState
+                            <EstadoVazio
                                 title="Nenhum insumo encontrado"
                                 description="Adicione novos itens para controlar seu estoque."
                                 icon={PackageSearch}
@@ -249,7 +249,7 @@ export default function InsumosPage() {
                 item={editingItem}
             />
 
-            {/* POPUP DE CONFIRMA√á√ÉO DE EXCLUS√ÉO (UNIFICADO) */}
+            {/* POPUP DE CONFIRMA«√O DE EXCLUS√O (UNIFICADO) */}
             <ConfirmModal
                 isOpen={confirmacaoExclusao.aberta}
                 onClose={() => setConfirmacaoExclusao({ aberta: false, item: null })}
@@ -257,12 +257,12 @@ export default function InsumosPage() {
                 title="Excluir Insumo?"
                 message={
                     <span>
-                        Voc√™ est√° prestes a remover permanentemente o insumo <br />
+                        VocÍ est· prestes a remover permanentemente o insumo <br />
                         <span className="text-zinc-100 font-bold uppercase tracking-tight">"{confirmacaoExclusao.item?.name}"</span>
                     </span>
                 }
-                description="Aten√ß√£o: Esta a√ß√£o n√£o pode ser desfeita."
-                confirmText="Confirmar Exclus√£o"
+                description="AtenÁ„o: Esta aÁ„o n„o pode ser desfeita."
+                confirmText="Confirmar Exclus„o"
                 isDestructive
             />
         </ManagementLayout>

@@ -10,8 +10,8 @@ import ModalInsumo from '../features/insumos/components/ModalInsumo';
 
 import { useLocation } from 'wouter';
 import { useState } from 'react';
-import { useFilamentMutations } from '../features/filamentos/logic/filamentQueries';
-import { usePrinterMutations } from '../features/impressoras/logic/printerQueries';
+import { useMutacoesFilamento } from '../features/filamentos/logic/consultasFilamento';
+import { usePrinterMutations } from '../features/impressoras/logic/consultasImpressora';
 
 export default function ManagementLayout({ children }) {
     const { width: larguraSidebar, isMobile, setIsMobile, setMobileOpen } = useSidebarStore();
@@ -22,7 +22,7 @@ export default function ManagementLayout({ children }) {
     const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
     const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
 
-    const { saveFilament } = useFilamentMutations();
+    const { salvarFilamento } = useMutacoesFilamento();
     const { upsertPrinter } = usePrinterMutations();
 
     // Resize Handler
@@ -67,7 +67,7 @@ export default function ManagementLayout({ children }) {
                 aberto={isFilamentModalOpen}
                 aoFechar={() => setFilamentModalOpen(false)}
                 aoSalvar={async (data) => {
-                    await saveFilament(data);
+                    await salvarFilamento(data);
                     if (!data.id) setFilamentModalOpen(false);
                 }}
             />

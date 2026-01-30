@@ -4,16 +4,16 @@ import { PackageSearch, Plus } from "lucide-react";
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import EmptyState from "../../components/ui/EmptyState";
+import EstadoVazio from "../../components/ui/EstadoVazio";
 import Button from "../../components/ui/Button";
 import api from "../../utils/api";
 
 // LÓGICA E STORE (Zustand)
-import { useFilaments, useFilamentMutations } from "../../features/filamentos/logic/filamentQueries";
+import { useFilamentos, useMutacoesFilamento } from "../../features/filamentos/logic/consultasFilamento";
 
 // COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
 import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
-import { VirtualRack } from "../../features/filamentos/components/VirtualRack";
+import { RackVirtual } from "../../features/filamentos/components/RackVirtual";
 import ModalFilamento from "../../features/filamentos/components/ModalFilamento.jsx";
 import ModalBaixaRapida from "../../features/filamentos/components/ModalBaixaRapida.jsx";
 import ModalHistoricoFilamento from "../../features/filamentos/components/ModalHistoricoFilamento.jsx";
@@ -22,7 +22,7 @@ import ModalExcluirFilamento from '../../features/filamentos/components/ModalExc
 
 // NOVOS COMPONENTES (FILTROS)
 import { normalizeString } from "../../utils/stringUtils";
-import FilamentFilters from "../../features/filamentos/components/FilamentFilters";
+import FiltrosFilamento from "../../features/filamentos/components/FiltrosFilamento";
 
 import { useLocalWeather } from "../../hooks/useLocalWeather";
 
@@ -35,12 +35,12 @@ export default function FilamentosPage() {
 
   const { temp, humidity, loading: weatherLoading } = useLocalWeather();
 
-  const { data: filaments = [], isLoading: loading } = useFilaments();
-  const { saveFilament, deleteFilament, isSaving } = useFilamentMutations();
+  const { data: filaments = [], isLoading: loading } = useFilamentos();
+  const { salvarFilamento, excluirFilamento, salvando } = useMutacoesFilamento();
 
-  const [viewMode, setViewMode] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
+  const [modoVisualizacao, setModoVisualizacao] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
 
-  const [filters, setFilters] = useState({
+  const [filtros, setFiltros] = useState({
     lowStock: false,
     materials: [],
     brands: []
@@ -74,8 +74,8 @@ export default function FilamentosPage() {
   }, [fetchFailures]);
 
   useEffect(() => {
-    localStorage.setItem(VIEW_MODE_KEY, viewMode);
-  }, [viewMode]);
+    localStorage.setItem(VIEW_MODE_KEY, modoVisualizacao);
+  }, [modoVisualizacao]);
 
   // 1. Pre-processamento (Memoized) - Gera string de busca indexada
   const searchableFilaments = useMemo(() => {
@@ -102,14 +102,14 @@ export default function FilamentosPage() {
 
       if (!matchesSearch) return false;
 
-      if (filters.lowStock) {
+      if (filtros.lowStock) {
         const total = Math.max(1, Number(f.peso_total) || 1000);
         const ratio = (f.peso_atual || 0) / total;
         if (ratio > 0.2 && f.peso_atual >= 150) return false;
       }
 
-      if (filters.materials.length > 0 && !filters.materials.includes(f.material)) return false;
-      if (filters.brands.length > 0 && !filters.brands.includes(f.marca)) return false;
+      if (filtros.materials.length > 0 && !filtros.materials.includes(f.material)) return false;
+      if (filtros.brands.length > 0 && !filtros.brands.includes(f.marca)) return false;
 
       return true;
     });
@@ -151,7 +151,7 @@ export default function FilamentosPage() {
       availableBrands: allBrands,
       availableMaterials: allMaterials
     };
-  }, [searchableFilaments, deferredBusca, filters]);
+  }, [searchableFilaments, deferredBusca, filtros]);
 
   // HANDLERS
   const handleEdit = useCallback((item) => {
@@ -199,7 +199,7 @@ export default function FilamentosPage() {
 
   const aoSalvarFilamento = async (dados) => {
     try {
-      await saveFilament(dados);
+      return await salvarFilamento(dados);
       fecharModais();
     } catch (_e) { }
   };
@@ -208,7 +208,7 @@ export default function FilamentosPage() {
     const { item } = confirmacaoExclusao;
     if (!item) return;
     try {
-      await deleteFilament(item.id);
+      await excluirFilamento(item.id);
     } catch (_e) { } finally {
       fecharModais();
     }
@@ -243,41 +243,37 @@ export default function FilamentosPage() {
       />
 
       <div className="space-y-6">
-        <div>
-          <StatusFilamentos
-            totalWeight={stats.pesoKg}
-            lowStockCount={lowStockCount}
-            valorTotal={stats.valorTotal}
-            weather={{ temp, humidity, loading: weatherLoading }}
-            failureStats={failureStats}
-          />
-        </div>
+        <StatusFilamentos
+          pesoTotal={stats.pesoKg}
+          contagemEstoqueBaixo={lowStockCount}
+          valorTotal={stats.valorTotal}
+          clima={{ ...{ temp, humidity }, isLoading: weatherLoading }}
+          estatisticasFalhas={failureStats}
+        />
 
-        <div>
-          <FilamentFilters
-            filters={filters}
-            setFilters={setFilters}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            availableBrands={availableBrands}
-            availableMaterials={availableMaterials}
-          />
-        </div>
+        <FiltrosFilamento
+          filtros={filtros}
+          setFiltros={setFiltros}
+          modoVisualizacao={modoVisualizacao}
+          setModoVisualizacao={setModoVisualizacao}
+          marcasDisponiveis={availableBrands}
+          materiaisDisponiveis={availableMaterials}
+        />
 
         {Object.entries(grupos).length > 0 ? (
           <div className="pb-6">
             {/* VIRTUAL RACK - New Visual Component */}
-            <VirtualRack
-              groupedFilaments={grupos}
-              currentHumidity={humidity}
-              currentTemperature={temp}
+            <RackVirtual
+              filamentosAgrupados={grupos}
+              umidadeAtual={humidity}
+              temperaturaAtual={temp}
               acoes={acoes}
-              viewMode={viewMode}
+              modoVisualizacao={modoVisualizacao}
             />
           </div>
         ) : (
           !loading && (
-            <EmptyState
+            <EstadoVazio
               title="Nenhum material encontrado"
               description="Tente ajustar os filtros ou adicione um novo material."
               icon={PackageSearch}
@@ -297,7 +293,7 @@ export default function FilamentosPage() {
         aoFechar={fecharModais}
         aoConfirmar={aoConfirmarExclusao}
         item={confirmacaoExclusao.item}
-        isLoading={isSaving}
+        carregando={salvando}
       />
     </ManagementLayout>
   );

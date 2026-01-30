@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronDown } from 'lucide-react';
 import { useDateRangeStore, presets } from '../stores/dateRangeStore';
 
-export default function DateRangeSelector() {
+export default function SeletorIntervaloData() {
     const [isOpen, setIsOpen] = useState(false);
     const { preset, setPreset } = useDateRangeStore();
     const dropdownRef = useRef(null);

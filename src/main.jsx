@@ -5,9 +5,9 @@ import { Router } from "wouter";
 // import { ClerkProvider, useAuth } from "@clerk/clerk-react"; // REMOVED
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Loader2 } from "lucide-react";
-import GlobalSearch from "./components/GlobalSearch";
-import ErrorBoundary from "./components/ErrorBoundary";
-import Toast from "./components/Toast";
+import BuscaGlobal from "./components/BuscaGlobal";
+import LimiteErro from "./components/LimiteErro";
+import Notificacao from "./components/Notificacao";
 
 import "./styles/main.css";
 import AppRoutes from "./routes/route";
@@ -66,15 +66,15 @@ createRoot(document.getElementById("root")).render(
                             <Loader2 className="animate-spin text-sky-500" size={40} />
                         </div>
                     }>
-                        <Toast />
+                        <Notificacao />
                         <Router>
-                            <ErrorBoundary
+                            <LimiteErro
                                 title="Erro na Busca Global"
                                 message="A pesquisa encontrou um problema."
                                 className="fixed bottom-4 right-4 z-[9999] w-80 bg-zinc-900 border-zinc-800 shadow-2xl"
                             >
-                                <GlobalSearch />
-                            </ErrorBoundary>
+                                <BuscaGlobal />
+                            </LimiteErro>
                             <AppRoutes />
                         </Router>
                     </Suspense>

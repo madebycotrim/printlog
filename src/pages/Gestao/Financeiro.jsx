@@ -1,9 +1,9 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import { useProjectsStore } from '../../features/projetos/logic/projects';
-import { usePrinters } from '../../features/impressoras/logic/printerQueries';
+import { useProjectsStore } from '../../features/projetos/logic/projetos';
+import { usePrinters } from '../../features/impressoras/logic/consultasImpressora';
 import DashboardFinanceiro from '../../features/financeiro/components/DashboardFinanceiro';
 
 export default function FinanceiroPage() {

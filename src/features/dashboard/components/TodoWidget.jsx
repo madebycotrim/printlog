@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckSquare, Plus, Trash2, Square, Check, Loader2 } from 'lucide-react';
 import api from '../../../utils/api';
 import DashboardCard from './DashboardCard';
-import EmptyState from '../../../components/ui/EmptyState';
+import EstadoVazio from '../../../components/ui/EstadoVazio';
 
 export default function TodoWidget() {
     const [tasks, setTasks] = useState([]);
@@ -81,7 +81,7 @@ export default function TodoWidget() {
             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 -mr-2 mb-2">
                 {!loading && tasks.length === 0 && (
                     <div className="flex-1 flex flex-col justify-center">
-                        <EmptyState
+                        <EstadoVazio
                             icon={CheckSquare}
                             title="Sem tarefas"
                             description="" // Empty description for minimal look

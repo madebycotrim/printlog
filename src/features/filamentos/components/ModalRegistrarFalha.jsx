@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { AlertOctagon, Layers, Loader2, Save, Ban } from 'lucide-react';
-import SpoolVectorView from './Carretel';
+import VisualizacaoCarretel from './VisualizacaoCarretel';
 import { UnifiedInput } from '../../../components/UnifiedInput';
-import { useFilaments } from '../logic/filamentQueries';
+import { useFilamentos } from '../logic/consultasFilamento';
 import FormFeedback from '../../../components/FormFeedback';
 import { useFormFeedback } from '../../../hooks/useFormFeedback';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
@@ -10,90 +10,95 @@ import api from '../../../utils/api';
 import { parseNumber } from "../../../utils/numbers";
 
 export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
-    const [loading, setLoading] = useState(false);
-    const [showErrors, setShowErrors] = useState(false);
-    const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
+    const [carregando, setCarregando] = useState(false);
+    const [mostrarErros, setMostrarErros] = useState(false);
+    const { feedback, showSuccess, showError, hide: esconderFeedback } = useFormFeedback();
 
-    // Form State
-    const [form, setForm] = useState({
-        weightWasted: '',
-        costWasted: '',
-        reason: 'Falha de Aderência',
-        filamentId: 'manual',
+    // Estado do Formulário
+    const [formulario, setFormulario] = useState({
+        pesoDesperdiciado: '',
+        custoDesperdiciado: '',
+        motivo: 'Falha de Aderência',
+        idFilamento: 'manual',
     });
 
-    const { data: filaments = [] } = useFilaments();
+    const { data: filamentos = [] } = useFilamentos();
 
-    const reasons = [
+    const motivos = [
         "Falha de Aderência", "Entupimento de Bico", "Queda de Energia",
         "Erro no Fatiamento", "Fim de Filamento", "Warping (Empenamento)",
         "Layer Shift", "Outros"
     ];
 
-    const handleSubmit = async () => {
-        if (!form.weightWasted) {
-            setShowErrors(true);
+    const manipularEnvio = async () => {
+        if (!formulario.pesoDesperdiciado) {
+            setMostrarErros(true);
             return;
         }
-        setLoading(true);
-        hideFeedback();
+        setCarregando(true);
+        esconderFeedback();
         try {
-            await api.post('/failures', form);
+            await api.post('/failures', {
+                weightWasted: formulario.pesoDesperdiciado,
+                costWasted: formulario.custoDesperdiciado,
+                reason: formulario.motivo,
+                filamentId: formulario.idFilamento
+            });
 
             showSuccess('Falha registrada com sucesso!');
             if (aoSalvar) aoSalvar();
 
             setTimeout(() => {
                 aoFechar();
-                setForm({ weightWasted: '', costWasted: '', reason: 'Falha de Aderência', filamentId: 'manual' });
-                setShowErrors(false);
-                hideFeedback();
+                setFormulario({ pesoDesperdiciado: '', custoDesperdiciado: '', motivo: 'Falha de Aderência', idFilamento: 'manual' });
+                setMostrarErros(false);
+                esconderFeedback();
             }, 1500);
         } catch (error) {
             console.error(error);
             showError('Erro ao registrar falha. Tente novamente.');
         } finally {
-            setLoading(false);
+            setCarregando(false);
         }
     };
 
-    const handleFilamentChange = (id) => {
-        const fil = filaments.find(f => String(f.id) === String(id));
-        let cost = '';
+    const manipularMudancaFilamento = (id) => {
+        const fil = filamentos.find(f => String(f.id) === String(id));
+        let custo = '';
 
-        if (fil && form.weightWasted) {
-            const pricePerGram = (Number(fil.preco) / Number(fil.peso_total));
-            cost = (pricePerGram * Number(form.weightWasted)).toFixed(2);
+        if (fil && formulario.pesoDesperdiciado) {
+            const precoPorGrama = (Number(fil.preco) / Number(fil.peso_total));
+            custo = (precoPorGrama * Number(formulario.pesoDesperdiciado)).toFixed(2);
         }
-        setForm(prev => ({ ...prev, filamentId: id, costWasted: cost }));
+        setFormulario(anterior => ({ ...anterior, idFilamento: id, custoDesperdiciado: custo }));
     };
 
-    const handleWeightChange = (val) => {
-        const weight = val.replace(',', '.');
-        let cost = form.costWasted;
+    const manipularMudancaPeso = (val) => {
+        const peso = val.replace(',', '.');
+        let custo = formulario.custoDesperdiciado;
 
-        if (form.filamentId !== 'manual') {
-            const fil = filaments.find(f => String(f.id) === String(form.filamentId));
+        if (formulario.idFilamento !== 'manual') {
+            const fil = filamentos.find(f => String(f.id) === String(formulario.idFilamento));
             if (fil) {
-                const pricePerGram = (Number(fil.preco) / Number(fil.peso_total));
-                cost = (pricePerGram * parseNumber(weight)).toFixed(2);
+                const precoPorGrama = (Number(fil.preco) / Number(fil.peso_total));
+                custo = (precoPorGrama * parseNumber(peso)).toFixed(2);
             }
         }
-        setForm(prev => ({ ...prev, weightWasted: weight, costWasted: cost }));
+        setFormulario(anterior => ({ ...anterior, pesoDesperdiciado: peso, custoDesperdiciado: custo }));
     };
 
-    const filamentOptions = useMemo(() => [
+    const opcoesFilamento = useMemo(() => [
         { group: "Ações", items: [{ value: "manual", label: "Nenhum / Apenas Registrar" }] },
         {
             group: "Meus Filamentos",
-            items: filaments.map(f => ({ value: String(f.id), label: f.nome, color: f.cor_hex }))
+            items: filamentos.map(f => ({ value: String(f.id), label: f.nome, color: f.cor_hex }))
         }
-    ], [filaments]);
+    ], [filamentos]);
 
-    // Sidebar Content match ModalFilamento aesthetic
-    const sidebarContent = (
+    // Conteúdo da Barra Lateral segue estética do ModalFilamento
+    const conteudoLateral = (
         <div className="flex flex-col items-center w-full h-full relative z-10 justify-between py-6">
-            {/* Contextual Header */}
+            {/* Cabeçalho Contextual */}
             <div className="w-full flex justify-between items-center px-6">
                 <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)] animate-pulse" />
@@ -104,18 +109,18 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                 </div>
             </div>
 
-            {/* Central Icon Visualization */}
+            {/* Visualização Central do Ícone */}
             <div className="relative group w-full flex-1 flex items-center justify-center select-none">
-                {/* Dynamic Glow */}
+                {/* Brilho Dinâmico */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full opacity-20 blur-[60px] bg-rose-500 transition-all duration-700 pointer-events-none" />
 
-                {/* Icon Container or Spool View */}
+                {/* Container de Ícone ou Visualização do Carretel */}
                 <div className="relative z-10 transform transition-transform duration-500 group-hover:scale-105 pointer-events-none drop-shadow-2xl">
-                    {form.filamentId !== 'manual' && filaments.find(f => String(f.id) === String(form.filamentId)) ? (
-                        <SpoolVectorView
-                            color={filaments.find(f => String(f.id) === String(form.filamentId)).cor_hex}
-                            size={200}
-                            percent={80} // Fixed visual for failure mode
+                    {formulario.idFilamento !== 'manual' && filamentos.find(f => String(f.id) === String(formulario.idFilamento)) ? (
+                        <VisualizacaoCarretel
+                            cor={filamentos.find(f => String(f.id) === String(formulario.idFilamento)).cor_hex}
+                            tamanho={200}
+                            porcentagem={80} // Visual fixo para modo de falha
                         />
                     ) : (
                         <div className="w-48 h-48 rounded-full bg-zinc-900/50 border border-rose-500/20 flex items-center justify-center backdrop-blur-sm shadow-[0_0_30px_rgba(244,63,94,0.1)]">
@@ -124,23 +129,23 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                     )}
                 </div>
 
-                {/* Info Overlay */}
+                {/* Sobreposição de Informações */}
                 <div className="absolute inset-x-0 bottom-6 text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                     <p className="text-[9px] font-bold text-rose-500/80 uppercase tracking-widest mb-1">Motivo</p>
                     <h3 className="text-xl font-bold text-white drop-shadow-lg leading-tight px-4 line-clamp-2">
-                        {form.reason}
+                        {formulario.motivo}
                     </h3>
                 </div>
             </div>
 
-            {/* Prejuízo Card */}
+            {/* Cartão de Prejuízo */}
             <div className="w-full px-6 pb-2">
                 <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-800/80 p-5 rounded-3xl flex flex-col gap-4 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="flex flex-col">
                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Material Afetado</span>
                             <span className="text-xs font-bold text-zinc-300 truncate max-w-[180px]">
-                                {form.filamentId !== 'manual' ? (filaments.find(f => String(f.id) === String(form.filamentId))?.nome || 'Selecionando...') : 'Registro Manual'}
+                                {formulario.idFilamento !== 'manual' ? (filamentos.find(f => String(f.id) === String(formulario.idFilamento))?.nome || 'Selecionando...') : 'Registro Manual'}
                             </span>
                         </div>
                     </div>
@@ -152,7 +157,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                         <div className="flex items-baseline gap-1">
                             <span className="text-sm font-mono text-zinc-500">R$</span>
                             <span className="text-2xl font-bold font-mono text-rose-400 tracking-tighter shadow-rose-500/10 drop-shadow-md">
-                                {form.costWasted || '0.00'}
+                                {formulario.custoDesperdiciado || '0.00'}
                             </span>
                         </div>
                     </div>
@@ -161,21 +166,21 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
         </div>
     );
 
-    // Footer Content
-    const footerContent = ({ onClose }) => (
+    // Conteúdo do Rodapé
+    const conteudoRodape = ({ onClose }) => (
         <div className="flex flex-col gap-4 w-full">
-            <FormFeedback {...feedback} onClose={hideFeedback} />
+            <FormFeedback {...feedback} onClose={esconderFeedback} />
 
             <div className="flex gap-4">
-                <button disabled={loading} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
+                <button disabled={carregando} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
                     Cancelar
                 </button>
                 <button
-                    disabled={loading}
-                    onClick={handleSubmit}
-                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!loading ? "bg-rose-500 text-white hover:bg-rose-400 active:scale-95 hover:shadow-xl shadow-lg shadow-rose-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
+                    disabled={carregando}
+                    onClick={manipularEnvio}
+                    className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!carregando ? "bg-rose-500 text-white hover:bg-rose-400 active:scale-95 hover:shadow-xl shadow-lg shadow-rose-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
                 >
-                    {loading ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Save size={16} strokeWidth={2.5} />}
+                    {carregando ? <Loader2 size={16} strokeWidth={2.5} className="animate-spin" /> : <Save size={16} strokeWidth={2.5} />}
                     Confirmar Prejuízo
                 </button>
             </div>
@@ -186,11 +191,11 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
         <SideBySideModal
             isOpen={aberto}
             onClose={aoFechar}
-            sidebar={sidebarContent}
+            sidebar={conteudoLateral}
             header={{ title: "Registrar Falha", subtitle: "Registre desperdícios para abater do lucro bruto mensal" }}
-            footer={footerContent}
-            isSaving={loading}
-            isDirty={!!form.weightWasted}
+            footer={conteudoRodape}
+            isSaving={carregando}
+            isDirty={!!formulario.pesoDesperdiciado}
             maxWidth="max-w-4xl"
         >
             <div className="space-y-6">
@@ -198,9 +203,9 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                     <UnifiedInput
                         label="O que aconteceu?"
                         type="select"
-                        options={[{ items: reasons.map(r => ({ value: r, label: r })) }]}
-                        value={form.reason}
-                        onChange={(v) => setForm({ ...form, reason: v })}
+                        options={[{ items: motivos.map(r => ({ value: r, label: r })) }]}
+                        value={formulario.motivo}
+                        onChange={(v) => setFormulario({ ...formulario, motivo: v })}
                     />
 
                     <div className="grid grid-cols-2 gap-4">
@@ -209,17 +214,17 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                             suffix="g"
                             type="number"
                             placeholder="0"
-                            value={form.weightWasted}
-                            onChange={(e) => handleWeightChange(e.target.value)}
-                            error={showErrors && !form.weightWasted}
+                            value={formulario.pesoDesperdiciado}
+                            onChange={(e) => manipularMudancaPeso(e.target.value)}
+                            error={mostrarErros && !formulario.pesoDesperdiciado}
                         />
                         <UnifiedInput
                             label="Custo Est."
                             suffix="R$"
                             type="number"
                             placeholder="0.00"
-                            value={form.costWasted}
-                            onChange={(e) => setForm({ ...form, costWasted: e.target.value })}
+                            value={formulario.custoDesperdiciado}
+                            onChange={(e) => setFormulario({ ...formulario, custoDesperdiciado: e.target.value })}
                         />
                     </div>
                 </div>
@@ -231,9 +236,9 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                     </div>
                     <UnifiedInput
                         type="select"
-                        options={filamentOptions}
-                        value={form.filamentId}
-                        onChange={handleFilamentChange}
+                        options={opcoesFilamento}
+                        value={formulario.idFilamento}
+                        onChange={manipularMudancaFilamento}
                     />
                 </div>
             </div>

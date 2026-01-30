@@ -1,4 +1,4 @@
-ï»¿
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -54,7 +54,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
 
 // --- HOOKS & COMPONENTES AUXILIARES ---
 
-// Hook para animar nÃºmeros (Count Up)
+// Hook para animar números (Count Up)
 const useCounter = (end, duration = 2000) => {
     const [count, setCount] = useState(0);
     useEffect(() => {
@@ -80,7 +80,7 @@ const OficinaStatusWidget = () => (
     <div className="w-80 bg-zinc-950/40 backdrop-blur-xl border border-zinc-800/50 rounded-[2rem] p-6 shadow-2xl group hover:border-emerald-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
-                <Badge label="Em operaÃ§Ã£o" color="emerald" icon={Activity} />
+                <Badge label="Em operação" color="emerald" icon={Activity} />
                 <h4 className="text-white font-bold text-lg mt-2 group-hover:text-emerald-400 transition-colors">Status da Oficina</h4>
             </div>
             <Cpu className="text-zinc-600 group-hover:text-emerald-500 transition-colors" size={20} />
@@ -97,7 +97,7 @@ const OficinaStatusWidget = () => (
                 </div>
                 <div className="flex justify-between items-center pt-1">
                     <span className="text-[9px] text-zinc-500 font-bold uppercase">Temperatura do Bico</span>
-                    <span className="text-[10px] text-white font-mono">215Â°C</span>
+                    <span className="text-[10px] text-white font-mono">215°C</span>
                 </div>
             </div>
         </div>
@@ -114,8 +114,8 @@ const ProductionWidget = () => {
                     <Layers size={20} />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-[9px] font-bold text-sky-500 uppercase">ProduÃ§Ã£o do MÃªs</span>
-                    <span className="text-[11px] font-bold text-white uppercase">PeÃ§as Prontas</span>
+                    <span className="text-[9px] font-bold text-sky-500 uppercase">Produção do Mês</span>
+                    <span className="text-[11px] font-bold text-white uppercase">Peças Prontas</span>
                 </div>
             </div>
             <div className="flex items-baseline gap-1">
@@ -158,9 +158,9 @@ export default function LoginPage() {
     const handlePasswordSignIn = async (e) => {
         e.preventDefault();
 
-        // VALIDAÃ‡ÃƒO CLIENT-SIDE
+        // VALIDAÇÃO CLIENT-SIDE
         if (!isValidEmail(email)) {
-            setError("Por favor, insira um e-mail vÃ¡lido.");
+            setError("Por favor, insira um e-mail válido.");
             return;
         }
         if (!password) {
@@ -256,7 +256,7 @@ export default function LoginPage() {
                                     type={showPassword ? "text" : "password"} required value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
-                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                    placeholder="••••••••"
                                 />
                                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -306,7 +306,7 @@ export default function LoginPage() {
 
                         <div className="text-center pt-6">
                             <p className="text-zinc-500 text-sm">
-                                Ainda nÃ£o tem acesso?
+                                Ainda não tem acesso?
                                 <button
                                     onClick={() => setLocation('/register')}
                                     className="text-sky-500 font-bold hover:text-sky-400 ml-2"

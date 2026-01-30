@@ -3,7 +3,7 @@ import { Route, Redirect, useLocation } from "wouter";
 import { Suspense, useEffect } from "react";
 import { saveRedirectUrl } from "../utils/auth";
 import { Loader2 } from "lucide-react";
-import ErrorBoundary from "../components/ErrorBoundary";
+import LimiteErro from "../components/LimiteErro";
 
 export default function ProtectedRoute({ path, component: Component }) {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
@@ -57,7 +57,7 @@ export default function ProtectedRoute({ path, component: Component }) {
         // Renderização com Suspense para Lazy loading
         return (
           <Suspense fallback={<SimpleLoader />}>
-            <ErrorBoundary
+            <LimiteErro
               title="Erro na Página"
               message="Ocorreu um erro crítico ao carregar esta tela. Tente recarregar."
               className="h-screen w-full flex flex-col items-center justify-center p-8 bg-zinc-950/80"
@@ -65,7 +65,7 @@ export default function ProtectedRoute({ path, component: Component }) {
               backLabel="Voltar ao Início"
             >
               <Component user={userData} />
-            </ErrorBoundary>
+            </LimiteErro>
           </Suspense>
         );
       }}

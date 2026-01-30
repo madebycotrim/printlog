@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Printer, Wrench, AlertTriangle, CheckCircle } from 'lucide-react';
 import DashboardCard from './DashboardCard';
-import { usePrinters } from '../../impressoras/logic/printerQueries';
-import { useProjectsStore } from '../../projetos/logic/projects';
+import { usePrinters } from '../../impressoras/logic/consultasImpressora';
+import { useProjectsStore } from '../../projetos/logic/projetos';
 
 export default function FleetSummaryWidget({ className = '', maintenanceInterval = 300 }) {
     const { data: printers = [] } = usePrinters();

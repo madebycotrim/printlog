@@ -1,4 +1,4 @@
-ï»¿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Search, ChevronRight, Terminal, Activity, AlertTriangle,
     Coins, Code, Send, Globe, Info, CheckCircle2,
@@ -14,7 +14,7 @@ import PageHeader from "../../components/ui/PageHeader";
 import DataCard from "../../components/ui/DataCard";
 import Button from "../../components/ui/Button";
 import ConfirmModal from "../../components/ui/ConfirmModal";
-import EmptyState from "../../components/ui/EmptyState";
+import EstadoVazio from "../../components/ui/EstadoVazio";
 
 
 
@@ -27,7 +27,7 @@ export default function CentralMaker() {
         isOpen: false, title: "", message: "", icon: AlertCircle, color: "sky"
     });
 
-    // Filtros e LÃ³gica de Busca
+    // Filtros e Lógica de Busca
     const filteredData = useMemo(() => {
         return WIKI_DATA.filter(category => {
             const term = searchTerm.toLowerCase();
@@ -44,7 +44,7 @@ export default function CentralMaker() {
         setPopupConfig({
             isOpen: true,
             title: "Copiado",
-            message: "Comando tÃ©cnico copiado para a Ã¡rea de transferÃªncia.",
+            message: "Comando técnico copiado para a área de transferência.",
             icon: CheckCircle2,
             color: "emerald"
         });
@@ -56,7 +56,7 @@ export default function CentralMaker() {
 
                 <PageHeader
                     title="Central Maker"
-                    subtitle="Guias tÃ©cnicos, configuraÃ§Ãµes e soluÃ§Ãµes de problemas"
+                    subtitle="Guias técnicos, configurações e soluções de problemas"
                     searchQuery={searchTerm}
                     onSearchChange={setSearchTerm}
                     placeholder="BUSCAR GUIA..."
@@ -68,13 +68,13 @@ export default function CentralMaker() {
                     }
                 />
 
-                {/* Filtros em PÃ­lulas (Estilo Dashboard) */}
+                {/* Filtros em Pílulas (Estilo Dashboard) */}
                 <div className="flex flex-wrap items-center gap-2 mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                     {[
                         { id: 'todos', label: 'Todos', icon: LayoutGrid },
-                        { id: 'critico', label: 'CrÃ­ticos', icon: AlertTriangle },
+                        { id: 'critico', label: 'Críticos', icon: AlertTriangle },
                         { id: 'lucro', label: 'Financeiro', icon: Coins },
-                        { id: 'setup', label: 'TÃ©cnico', icon: Wrench },
+                        { id: 'setup', label: 'Técnico', icon: Wrench },
                     ].map((filter) => (
                         <button
                             key={filter.id}
@@ -93,7 +93,7 @@ export default function CentralMaker() {
                     ))}
                 </div>
 
-                {/* Grid de ConteÃºdo */}
+                {/* Grid de Conteúdo */}
                 {filteredData.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                         {filteredData.map((category) => (
@@ -131,7 +131,7 @@ export default function CentralMaker() {
                     </div>
                 ) : (
                     // Estado Vazio (Zero State)
-                    <EmptyState
+                    <EstadoVazio
                         title="Nenhum resultado encontrado"
                         description="Tente buscar por outro termo ou categoria."
                         icon={Search}
@@ -144,7 +144,7 @@ export default function CentralMaker() {
                 isOpen={!!selectedArticle}
                 onClose={() => setSelectedArticle(null)}
                 title={selectedArticle?.title || "Leitura"}
-                subtitle="Detalhes do TÃ³pico"
+                subtitle="Detalhes do Tópico"
                 icon={BookOpen}
                 maxWidth="max-w-3xl"
             >
@@ -166,14 +166,14 @@ export default function CentralMaker() {
                         </div>
                     </div>
 
-                    {/* ConteÃºdo do Texto */}
+                    {/* Conteúdo do Texto */}
                     <div className="prose prose-invert max-w-none">
                         <p className="text-zinc-300 text-sm leading-8 tracking-wide font-medium whitespace-pre-line text-justify">
                             {selectedArticle?.content}
                         </p>
                     </div>
 
-                    {/* Snippet de cÃ³digo (se houver) */}
+                    {/* Snippet de código (se houver) */}
                     {selectedArticle?.gcode && (
                         <div className="relative group/code mt-8">
                             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-sky-500/20 rounded-xl opacity-50 blur group-hover/code:opacity-75 transition duration-500" />
@@ -188,7 +188,7 @@ export default function CentralMaker() {
                                         size="xs"
                                         onClick={() => handleCopyCode(selectedArticle.gcode)}
                                         className="text-zinc-600 hover:text-emerald-400 hover:bg-emerald-500/10"
-                                        title="Copiar CÃ³digo"
+                                        title="Copiar Código"
                                         icon={Copy}
                                     />
                                 </div>
@@ -201,18 +201,18 @@ export default function CentralMaker() {
                         </div>
                     )}
 
-                    {/* Dica de RodapÃ© */}
+                    {/* Dica de Rodapé */}
                     <div className="pt-6 border-t border-white/5 flex items-start gap-4 opacity-60">
                         <Lightbulb size={16} className="text-amber-500 shrink-0 mt-0.5" />
                         <p className="text-[10px] text-zinc-500 font-medium leading-relaxed uppercase tracking-wide">
-                            Dica de Mestre: Sempre teste os comandos em uma impressÃ£o pequena antes de aplicar em peÃ§as grandes.
+                            Dica de Mestre: Sempre teste os comandos em uma impressão pequena antes de aplicar em peças grandes.
                         </p>
                     </div>
 
                 </div>
             </Modal>
 
-            {/* NotificaÃ§Ãµes */}
+            {/* Notificações */}
             <Modal
                 isOpen={popupConfig.isOpen}
                 onClose={() => setPopupConfig({ ...popupConfig, isOpen: false })}

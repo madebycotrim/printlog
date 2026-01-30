@@ -2,9 +2,9 @@ import React from 'react';
 import { PackageSearch, Ghost } from 'lucide-react';
 
 /**
- * EmptyState - Componente padrão para exibir quando não há itens.
+ * EstadoVazio - Componente padrão para exibir quando não há itens.
  */
-export default function EmptyState({
+export default function EstadoVazio({
     title = "Nada por aqui...",
     description = "Não encontramos nenhum registro.",
     icon: Icon = Ghost,

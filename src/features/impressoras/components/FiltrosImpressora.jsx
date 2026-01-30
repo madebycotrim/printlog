@@ -1,7 +1,7 @@
 import React from 'react';
 import { Filter, Grid, List as ListIcon } from 'lucide-react';
 
-export default function PrinterFilters({
+export default function FiltrosImpressora({
     filters,
     setFilters,
     viewMode,

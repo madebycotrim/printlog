@@ -161,15 +161,13 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
     <div ref={containerRef} className="w-full h-full flex items-center">
       {/* Gatilho interno */}
       <div className="w-full h-full flex items-center select-none">
-        <span className={`text-[11px] font-mono font-bold uppercase truncate transition-colors ${selected ? "text-zinc-100" : "text-zinc-600"
+        <div className={`flex items-center gap-2 w-full text-[11px] font-mono font-bold uppercase transition-colors ${selected ? "text-zinc-100" : "text-zinc-600"
           }`}>
-          <div className="flex items-center gap-2 truncate">
-            {selected?.color && selected.color !== 'transparent' && (
-              <div className="w-2 h-2 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: selected.color }} />
-            )}
-            {selected ? selected.label : placeholder}
-          </div>
-        </span>
+          {selected?.color && selected.color !== 'transparent' && (
+            <div className="w-2 h-2 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: selected.color }} />
+          )}
+          <span className="truncate">{selected ? selected.label : placeholder}</span>
+        </div>
       </div>
 
       {isOpen && createPortal(dropdownContent, document.body)}

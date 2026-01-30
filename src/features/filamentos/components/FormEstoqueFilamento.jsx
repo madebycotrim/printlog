@@ -4,14 +4,14 @@ import { UnifiedInput } from "../../../components/UnifiedInput";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { parseNumber } from "../../../utils/numbers";
 
-export default function FilamentStockForm({ form, updateForm, showErrors, setForm, dadosIniciais }) {
+export default function FormularioEstoqueFilamento({ formulario, atualizarFormulario, mostrarErros, setFormulario, dadosIniciais }) {
 
     const custoPorGrama = useMemo(() => {
-        const p = parseNumber(form.preco);
-        const w = parseNumber(form.peso_total);
-        if (!p || !w) return null;
+        const preco = parseNumber(formulario.preco);
+        const peso = parseNumber(formulario.peso_total);
+        if (!preco || !peso) return null;
 
-        const valor = p / w;
+        const valor = preco / peso;
         let cor = "text-emerald-500";
         if (valor > 0.10) cor = "text-yellow-500";
         if (valor > 0.20) cor = "text-rose-500";
@@ -21,7 +21,7 @@ export default function FilamentStockForm({ form, updateForm, showErrors, setFor
                 <Coins size={10} /> {valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 3 })} /g
             </span>
         );
-    }, [form.preco, form.peso_total]);
+    }, [formulario.preco, formulario.peso_total]);
 
     return (
         <section className="space-y-5">
@@ -38,13 +38,13 @@ export default function FilamentStockForm({ form, updateForm, showErrors, setFor
                     </div>
                     <UnifiedInput
                         icon={DollarSign}
-                        value={form.preco}
+                        value={formulario.preco}
                         onChange={(e) => {
                             const v = e.target.value;
-                            if (/^[0-9.,]*$/.test(v)) updateForm('preco', v);
+                            if (/^[0-9.,]*$/.test(v)) atualizarFormulario('preco', v);
                         }}
                         placeholder="0,00"
-                        error={showErrors && form.preco === ""}
+                        error={mostrarErros && formulario.preco === ""}
                         align="right"
                     />
                 </div>
@@ -56,19 +56,19 @@ export default function FilamentStockForm({ form, updateForm, showErrors, setFor
                     <UnifiedInput
                         icon={Disc}
                         suffix="g"
-                        value={form.peso_total}
+                        value={formulario.peso_total}
                         onChange={(e) => {
-                            const newVal = e.target.value;
-                            if (/^[0-9.]*$/.test(newVal)) {
-                                setForm(prev => ({
-                                    ...prev,
-                                    peso_total: newVal,
-                                    // Don't auto-fill peso_atual anymore, keep it empty for new items
-                                    peso_atual: !dadosIniciais ? form.peso_atual : prev.peso_atual
+                            const novoValor = e.target.value;
+                            if (/^[0-9.]*$/.test(novoValor)) {
+                                setFormulario(anterior => ({
+                                    ...anterior,
+                                    peso_total: novoValor,
+                                    // Não preenche mais automaticamente peso_atual, mantém vazio para novos itens
+                                    peso_atual: !dadosIniciais ? formulario.peso_atual : anterior.peso_atual
                                 }));
                             }
                         }}
-                        error={showErrors && !parseNumber(form.peso_total)}
+                        error={mostrarErros && !parseNumber(formulario.peso_total)}
                         align="right"
                     />
                 </div>
@@ -87,10 +87,10 @@ export default function FilamentStockForm({ form, updateForm, showErrors, setFor
                     <UnifiedInput
                         icon={Layers}
                         suffix="g"
-                        value={form.peso_atual !== undefined ? form.peso_atual : ""}
+                        value={formulario.peso_atual !== undefined ? formulario.peso_atual : ""}
                         onChange={(e) => {
                             const v = e.target.value;
-                            if (/^[0-9.]*$/.test(v)) updateForm('peso_atual', v);
+                            if (/^[0-9.]*$/.test(v)) atualizarFormulario('peso_atual', v);
                         }}
                         className="border-blue-500/30"
                         align="right"

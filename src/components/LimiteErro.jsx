@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertOctagon, RefreshCw, Home } from 'lucide-react';
 
-class ErrorBoundary extends React.Component {
+class LimiteErro extends React.Component {
     constructor(props) {
         super(props);
         this.state = { hasError: false, error: null };
@@ -64,4 +64,4 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-export default ErrorBoundary;
+export default LimiteErro;

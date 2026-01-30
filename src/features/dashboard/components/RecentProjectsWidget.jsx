@@ -3,7 +3,7 @@ import { FolderOpen, ArrowRight, Copy, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '../../../utils/numbers';
 import { useLocation } from 'wouter';
 import DashboardCard from './DashboardCard';
-import EmptyState from '../../../components/ui/EmptyState';
+import EstadoVazio from '../../../components/ui/EstadoVazio';
 
 export default function RecentProjectsWidget({ projects, onDuplicate, onConclude }) {
     const [, setLocation] = useLocation();
@@ -82,7 +82,7 @@ export default function RecentProjectsWidget({ projects, onDuplicate, onConclude
                         </div>
                     ))
                 ) : (
-                    <EmptyState
+                    <EstadoVazio
                         icon={FolderOpen}
                         title="Sem projetos recentes"
                         description="Crie orçamentos para controlar seus lucros."

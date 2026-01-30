@@ -12,7 +12,7 @@ export const schemas = {
     filament: {
         nome: { type: 'string', minLength: 1, maxLength: 100, required: true },
         marca: { type: 'string', maxLength: 50 },
-        material: { type: 'string', maxLength: 20, required: true },
+        material: { type: 'string', maxLength: 20 },
         cor_hex: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/, required: true },
         peso_total: { type: 'number', min: 1, max: 10000, required: true },
         peso_atual: { type: 'number', min: 0, max: 10000, required: true },

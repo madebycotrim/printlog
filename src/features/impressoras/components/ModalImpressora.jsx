@@ -4,7 +4,7 @@ import { UnifiedInput } from "../../../components/UnifiedInput";
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
 import FormFeedback from "../../../components/FormFeedback";
 import Modal from "../../../components/ui/Modal";
-import { usePrinterModels } from "../logic/printerQueries";
+import { usePrinterModels } from "../logic/consultasImpressora";
 import { schemas, validateInput } from "../../../utils/validation";
 import { parseNumber as safeParse } from "../../../utils/numbers";
 

@@ -1,13 +1,13 @@
-ï»¿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Inbox, Loader2, SearchX, Plus, Search, FolderOpen, Layers, Clock, Hammer, CheckCircle2, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 // Layout & Store
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import { useProjectsStore } from "../../features/projetos/logic/projects";
-import { useClientStore } from "../../features/clientes/logic/clients";
-import EmptyState from "../../components/ui/EmptyState";
+import { useProjectsStore } from "../../features/projetos/logic/projetos";
+import { useClientStore } from "../../features/clientes/logic/clientes";
+import EstadoVazio from "../../components/ui/EstadoVazio";
 import { formatCurrency } from "../../utils/numbers";
 
 // Sub-componentes
@@ -18,10 +18,10 @@ import DataCard from "../../components/ui/DataCard";
 import Button from "../../components/ui/Button";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 
-// 1. CONFIGURAÃ‡ÃƒO DE STATUS
+// 1. CONFIGURAÇÃO DE STATUS
 import { CONFIG_STATUS } from "../../utils/constants";
 
-// 2. HOOK DE LÃ“GICA
+// 2. HOOK DE LÓGICA
 function useOrcamentosLogic(projetos, filtroStatus, termoBusca) {
     const [buscaDebounced, setBuscaDebounced] = useState(termoBusca);
 
@@ -99,12 +99,12 @@ export default function OrcamentosPage() {
         <ManagementLayout>
 
             <PageHeader
-                title="Meus OrÃ§amentos"
-                subtitle="GestÃ£o de Propostas Comerciais"
+                title="Meus Orçamentos"
+                subtitle="Gestão de Propostas Comerciais"
                 accentColor="text-amber-500"
                 searchQuery={termoBusca}
                 onSearchChange={setTermoBusca}
-                placeholder="BUSCAR ORÃ‡AMENTO..."
+                placeholder="BUSCAR ORÇAMENTO..."
                 actionButton={novoOrcamentoButton}
             />
 
@@ -124,8 +124,8 @@ export default function OrcamentosPage() {
                     {[
                         { id: "todos", label: "Geral", icon: Layers },
                         { id: "aprovado", label: "Aguardando", icon: Clock },
-                        { id: "producao", label: "ProduÃ§Ã£o", icon: Hammer },
-                        { id: "finalizado", label: "ConcluÃ­do", icon: CheckCircle2 }
+                        { id: "producao", label: "Produção", icon: Hammer },
+                        { id: "finalizado", label: "Concluído", icon: CheckCircle2 }
                     ].map((tab) => {
                         const isActive = filtroStatus === tab.id;
                         const Icon = tab.icon;
@@ -150,7 +150,7 @@ export default function OrcamentosPage() {
                     })}
                 </div>
 
-                {/* 3. CONTEÃšDO PRINCIPAL (GRID) */}
+                {/* 3. CONTEÚDO PRINCIPAL (GRID) */}
                 {loading ? (
                     <div className="w-full h-96 flex flex-col items-center justify-center gap-6 border border-white/5 bg-white/[0.02] rounded-[3rem]">
                         <div className="relative">
@@ -175,8 +175,8 @@ export default function OrcamentosPage() {
                             return (
                                 <DataCard
                                     key={item.id}
-                                    title={item.label || ent.nomeProjeto || "Sem TÃ­tulo"}
-                                    subtitle={ent.clienteNome || "Cliente nÃ£o informado"}
+                                    title={item.label || ent.nomeProjeto || "Sem Título"}
+                                    subtitle={ent.clienteNome || "Cliente não informado"}
                                     status={{
                                         label: config.label,
                                         color: config.color,
@@ -208,9 +208,9 @@ export default function OrcamentosPage() {
                 ) : (
                     <div className="w-full">
                         {termoBusca ? (
-                            <EmptyState
+                            <EstadoVazio
                                 title="Nenhum registro localizado"
-                                description={`CritÃ©rio: "${termoBusca}"`}
+                                description={`Critério: "${termoBusca}"`}
                                 icon={SearchX}
                                 action={
                                     <Button
@@ -224,9 +224,9 @@ export default function OrcamentosPage() {
                                 }
                             />
                         ) : (
-                            <EmptyState
-                                title="Nenhum orÃ§amento ainda"
-                                description="Seus projetos salvos aparecerÃ£o aqui."
+                            <EstadoVazio
+                                title="Nenhum orçamento ainda"
+                                description="Seus projetos salvos aparecerão aqui."
                                 icon={FolderOpen}
                             />
                         )}

@@ -1,13 +1,13 @@
-Ôªøimport React, { useEffect, useState, useDeferredValue } from 'react';
+import React, { useEffect, useState, useDeferredValue } from 'react';
 import { Users, Plus, PackageSearch, Trash2, AlertTriangle } from 'lucide-react';
 import ManagementLayout from "../../layouts/ManagementLayout";
 import PageHeader from "../../components/ui/PageHeader";
-import { useClientStore } from '../../features/clientes/logic/clients';
+import { useClientStore } from '../../features/clientes/logic/clientes';
 import TabelaClientes from '../../features/clientes/components/TabelaClientes';
 import ModalCliente from '../../features/clientes/components/ModalCliente';
 import ModalHistoricoCliente from '../../features/clientes/components/ModalHistoricoCliente';
 import StatusClientes from '../../features/clientes/components/StatusClientes';
-import { useProjectsStore } from '../../features/projetos/logic/projects';
+import { useProjectsStore } from '../../features/projetos/logic/projetos';
 import Modal from "../../components/ui/Modal";
 import Button from "../../components/ui/Button";
 import { useToastStore } from "../../stores/toastStore";
@@ -85,7 +85,7 @@ export default function ClientesPage() {
 
             <PageHeader
                 title="Meus Clientes"
-                subtitle="Gest√£o de Contatos e Hist√≥rico"
+                subtitle="Gest„o de Contatos e HistÛrico"
                 accentColor="text-indigo-500"
                 searchQuery={busca}
                 onSearchChange={setBusca}
@@ -96,7 +96,7 @@ export default function ClientesPage() {
             {/* Stats Bar */}
             <StatusClientes clients={clients} />
 
-            {/* Conte√∫do Principal */}
+            {/* Conte˙do Principal */}
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {clientesFiltrados.length > 0 ? (
                     <TabelaClientes
@@ -134,12 +134,12 @@ export default function ClientesPage() {
                 projetos={projects}
             />
 
-            {/* Popup Exclus√£o */}
+            {/* Popup Exclus„o */}
             <Modal
                 isOpen={confirmacaoExclusao.aberta}
                 onClose={() => setConfirmacaoExclusao({ aberta: false, item: null })}
                 title="Excluir Cliente?"
-                subtitle="Gest√£o de Contatos"
+                subtitle="Gest„o de Contatos"
                 icon={AlertTriangle}
                 footer={
                     <div className="flex gap-3 w-full">
@@ -153,21 +153,21 @@ export default function ClientesPage() {
                             onClick={confirmDelete}
                             className="flex-1 h-12 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-900/20 flex items-center justify-center gap-2"
                         >
-                            <Trash2 size={16} /> Confirmar Exclus√£o
+                            <Trash2 size={16} /> Confirmar Exclus„o
                         </button>
                     </div>
                 }
             >
                 <div className="p-8 text-center space-y-4">
                     <p className="text-zinc-400 text-sm font-medium leading-relaxed">
-                        Voc√™ est√° prestes a remover o cliente <br />
+                        VocÍ est· prestes a remover o cliente <br />
                         <span className="text-zinc-100 font-bold uppercase tracking-tight">
                             "{confirmacaoExclusao.item?.nome}"
                         </span>
                     </p>
                     <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10">
                         <p className="text-[10px] text-rose-500/80 font-black uppercase tracking-widest">
-                            Aten√ß√£o: O hist√≥rico de projetos deste cliente ser√° desvinculado.
+                            AtenÁ„o: O histÛrico de projetos deste cliente ser· desvinculado.
                         </p>
                     </div>
                 </div>

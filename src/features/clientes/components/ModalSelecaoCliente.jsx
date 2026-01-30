@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Search, Check, Users, User, CheckCircle2, Building2, Phone, Mail } from "lucide-react";
-import { useClientStore } from "../logic/clients";
+import { useClientStore } from "../logic/clientes";
 
 export default function ModalSelecaoCliente({ isOpen, onClose, onConfirm, onCreateNew }) {
     const { clients = [], fetchClients } = useClientStore();
@@ -182,3 +182,4 @@ export default function ModalSelecaoCliente({ isOpen, onClose, onConfirm, onCrea
         document.body
     );
 }
+

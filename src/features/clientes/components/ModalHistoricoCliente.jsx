@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Calendar, Package, Clock, History } from 'lucide-react';
 import { formatarMoeda } from '../../../utils/numbers';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
-import EmptyState from '../../../components/ui/EmptyState';
+import EstadoVazio from '../../../components/ui/EstadoVazio';
 
 export default function ModalHistoricoCliente({ isOpen, onClose, cliente, projetos }) {
     // Filtra projetos deste cliente
@@ -67,7 +67,7 @@ export default function ModalHistoricoCliente({ isOpen, onClose, cliente, projet
             <div className="space-y-4">
                 {historico.length === 0 ? (
                     <div className="py-20">
-                        <EmptyState
+                        <EstadoVazio
                             icon={Package}
                             title="Nenhum pedido encontrado"
                             description="Este cliente ainda não possui histórico."

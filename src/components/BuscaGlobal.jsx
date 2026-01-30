@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, FolderOpen, Users, Printer, ChevronRight, X, Command } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { useProjectsStore } from '../features/projetos/logic/projects';
-import { useClientStore } from '../features/clientes/logic/clients';
-import { usePrinters } from '../features/impressoras/logic/printerQueries';
+import { useProjectsStore } from '../features/projetos/logic/projetos';
+import { useClientStore } from '../features/clientes/logic/clientes';
+import { usePrinters } from '../features/impressoras/logic/consultasImpressora';
 
-export default function GlobalSearch() {
+export default function BuscaGlobal() {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);

@@ -1,4 +1,4 @@
-Ôªøimport React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from "wouter";
 import {
     Home, Terminal, ArrowLeft,
@@ -8,13 +8,13 @@ import {
 // --- VISUAL: MONITOR DE ERRO (Console) ---
 const GCodeTerminal = () => {
     const [lines] = useState([
-        "> G28 ; Voltando ao in√≠cio",
+        "> G28 ; Voltando ao inÌcio",
         "> G1 Z15.0 ; Subindo o bico",
         "> M104 S205 ; Aquecendo...",
         "> ERRO: A camada deslocou no eixo Z",
-        "> ALERTA: Caminho n√£o encontrado",
-        "> CR√çTICO: P√ÅGINA_N√ÉO_EXISTE",
-        "> IMPRESS√ÉO PARADA."
+        "> ALERTA: Caminho n„o encontrado",
+        "> CRÕTICO: P¡GINA_N√O_EXISTE",
+        "> IMPRESS√O PARADA."
     ]);
 
     return (
@@ -26,7 +26,7 @@ const GCodeTerminal = () => {
             </div>
             <div className="space-y-1.5 opacity-90">
                 {lines.map((line, i) => (
-                    <div key={i} className={`${line.includes('ERRO') || line.includes('CR√çTICO') || line.includes('PARADA') ? 'text-rose-500 font-bold' : 'text-zinc-500'}`}>
+                    <div key={i} className={`${line.includes('ERRO') || line.includes('CRÕTICO') || line.includes('PARADA') ? 'text-rose-500 font-bold' : 'text-zinc-500'}`}>
                         <span className="opacity-30 mr-3 text-zinc-600">{(i + 100).toString()}:</span>
                         {line}
                     </div>
@@ -37,7 +37,7 @@ const GCodeTerminal = () => {
     );
 };
 
-// --- VISUAL: PE√áA COM DESLOCAMENTO ---
+// --- VISUAL: PE«A COM DESLOCAMENTO ---
 const LayerShiftVisual = () => {
     return (
         <div className="relative flex flex-col items-center justify-center opacity-90 scale-125 mb-8">
@@ -89,7 +89,7 @@ export default function NotFound() {
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 mb-10 backdrop-blur-md shadow-[0_0_30px_rgba(225,29,72,0.2)]">
                         <AlertOctagon size={14} className="text-rose-500" />
                         <span className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">
-                            Erro de Impress√£o ‚Ä¢ 404
+                            Erro de Impress„o ï 404
                         </span>
                     </div>
 
@@ -105,7 +105,7 @@ export default function NotFound() {
                     </p>
 
                     <p className="text-zinc-400 text-sm leading-relaxed mb-8 max-w-xs mx-auto font-medium">
-                        O bico tentou ir para um lugar que n√£o existe. O link pode estar errado ou a p√°gina mudou de posi√ß√£o.
+                        O bico tentou ir para um lugar que n„o existe. O link pode estar errado ou a p·gina mudou de posiÁ„o.
                     </p>
 
                     <GCodeTerminal />
@@ -124,7 +124,7 @@ export default function NotFound() {
                             className="h-14 px-8 rounded-2xl bg-white text-black font-bold text-[11px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2 shadow-xl w-full sm:w-auto hover:shadow-rose-500/20"
                         >
                             <Home size={16} />
-                            Voltar ao In√≠cio
+                            Voltar ao InÌcio
                         </button>
                     </div>
 

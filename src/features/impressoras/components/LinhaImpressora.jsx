@@ -17,7 +17,7 @@ const obterConfiguracaoStatus = (status) => {
     return mapa[status] || mapa.idle;
 };
 
-export const PrinterRow = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleStatus }) => {
+export const LinhaImpressora = memo(({ printer, onEdit, onDelete, onResetMaint, onToggleStatus }) => {
     // LÓGICA DE DADOS
     const { configStatus, stats } = useMemo(() => {
         if (!printer) {

@@ -6,7 +6,7 @@ import { useToastStore } from "../../../stores/toastStore";
 
 import { useSettings, useUpdateSettings } from "../../sistema/logic/settingsQueries";
 
-import { DEFAULT_PLATFORMS } from "../logic/constants";
+import { DEFAULT_PLATFORMS } from "../logic/constantes";
 
 export default function ModalTaxas({ isOpen, onClose, onApply }) {
     const { addToast } = useToastStore();

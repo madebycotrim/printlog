@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Layers, X } from "lucide-react";
-import { useFilaments } from "../../../filamentos/logic/filamentQueries";
+import { useFilamentos } from "../../../filamentos/logic/consultasFilamento";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
 import ModalSelecaoFilamento from "../../../filamentos/components/ModalSelecaoFilamento";
 import { formatDecimal, parseNumber } from "../../../../utils/numbers";
@@ -115,7 +115,7 @@ export default function MaterialModule() {
     const setMaterialSlots = (v) => atualizarCampo('material', 'slots', v);
 
     const [modalSelecaoAberto, setModalSelecaoAberto] = useState(false);
-    const { data: filamentos = [], isLoading: carregando } = useFilaments();
+    const { data: filamentos = [], isLoading: carregando } = useFilamentos();
 
     // Agrupa filamentos por tipo para o select
     const opcoesSelecao = useMemo(() => {
@@ -244,3 +244,4 @@ export default function MaterialModule() {
         </div>
     );
 }
+

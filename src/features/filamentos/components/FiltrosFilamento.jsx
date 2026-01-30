@@ -1,29 +1,29 @@
 import React from 'react';
 import { Filter, Grid, List as ListIcon, X } from 'lucide-react';
 
-export default function FilamentFilters({
-    filters,
-    setFilters,
-    viewMode,
-    setViewMode,
-    availableBrands = [],
-    availableMaterials = []
+export default function FiltrosFilamento({
+    filtros,
+    setFiltros,
+    modoVisualizacao,
+    setModoVisualizacao,
+    marcasDisponiveis = [],
+    materiaisDisponiveis = []
 }) {
-    // Helper to toggle array filters
-    const toggleFilter = (key, value) => {
-        setFilters(prev => {
-            const current = prev[key] || [];
-            const newArray = current.includes(value)
-                ? current.filter(item => item !== value)
-                : [...current, value];
-            return { ...prev, [key]: newArray };
+    // Helper para alternar filtros de array
+    const alternarFiltro = (chave, valor) => {
+        setFiltros(anterior => {
+            const atual = anterior[chave] || [];
+            const novoArray = atual.includes(valor)
+                ? atual.filter(item => item !== valor)
+                : [...atual, valor];
+            return { ...anterior, [chave]: novoArray };
         });
     };
 
-    // Limits
-    const MAX_MATERIALS_VISIBLE = 5;
+    // Limites
+    const MAX_MATERIAIS_VISIVEIS = 5;
 
-    const hasActiveFilters = filters.lowStock || filters.materials?.length > 0 || filters.brands?.length > 0;
+    const possuiFiltrosAtivos = filtros.estoqueBaixo || filtros.materiais?.length > 0 || filtros.marcas?.length > 0;
 
     return (
 
@@ -37,12 +37,12 @@ export default function FilamentFilters({
                         <span className="text-[10px] font-bold uppercase tracking-widest">Filtros:</span>
                     </div>
 
-                    {/* Status Toggle */}
+                    {/* Alternar Status */}
                     <button
-                        onClick={() => setFilters(prev => ({ ...prev, lowStock: !prev.lowStock }))}
+                        onClick={() => setFiltros(anterior => ({ ...anterior, estoqueBaixo: !anterior.estoqueBaixo }))}
                         className={`
                             px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                            ${filters.lowStock
+                            ${filtros.estoqueBaixo
                                 ? 'bg-rose-500/10 border-rose-500 text-rose-500'
                                 : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                         `}
@@ -52,14 +52,14 @@ export default function FilamentFilters({
 
                     <div className="w-px h-4 bg-zinc-800 mx-2" />
 
-                    {/* Material Filters */}
-                    {availableMaterials.slice(0, MAX_MATERIALS_VISIBLE).map(mat => (
+                    {/* Filtros de Material */}
+                    {materiaisDisponiveis.slice(0, MAX_MATERIAIS_VISIVEIS).map(mat => (
                         <button
                             key={mat}
-                            onClick={() => toggleFilter('materials', mat)}
+                            onClick={() => alternarFiltro('materiais', mat)}
                             className={`
                                 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                                ${filters.materials?.includes(mat)
+                                ${filtros.materiais?.includes(mat)
                                     ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
                                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
@@ -68,26 +68,26 @@ export default function FilamentFilters({
                         </button>
                     ))}
 
-                    {/* Brand Filters (Just a few popular) */}
-                    {availableBrands.slice(0, 3).map(brand => (
+                    {/* Filtros de Marca (Apenas alguns populares) */}
+                    {marcasDisponiveis.slice(0, 3).map(marca => (
                         <button
-                            key={brand}
-                            onClick={() => toggleFilter('brands', brand)}
+                            key={marca}
+                            onClick={() => alternarFiltro('marcas', marca)}
                             className={`
                                 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                                ${filters.brands?.includes(brand)
+                                ${filtros.marcas?.includes(marca)
                                     ? 'bg-sky-500/10 border-sky-500 text-sky-500'
                                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
                         >
-                            {brand}
+                            {marca}
                         </button>
                     ))}
 
-                    {/* Clear Button */}
-                    {hasActiveFilters && (
+                    {/* Botão Limpar */}
+                    {possuiFiltrosAtivos && (
                         <button
-                            onClick={() => setFilters({ lowStock: false, materials: [], brands: [] })}
+                            onClick={() => setFiltros({ estoqueBaixo: false, materiais: [], marcas: [] })}
                             className="ml-2 text-[10px] text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider underline decoration-rose-500/30 hover:decoration-rose-500"
                         >
                             Limpar
@@ -95,19 +95,19 @@ export default function FilamentFilters({
                     )}
                 </div>
 
-                {/* --- VIEW MODE SWITCHER --- */}
+                {/* --- ALTERNADOR DE MODO DE VISUALIZAÇÃO --- */}
                 <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-lg shrink-0">
                     <button
-                        onClick={() => setViewMode('grid')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${viewMode === 'grid'
+                        onClick={() => setModoVisualizacao('grid')}
+                        className={`p-1.5 rounded-md transition-all duration-300 ${modoVisualizacao === 'grid'
                             ? 'bg-zinc-800 text-zinc-200 shadow-sm'
                             : 'text-zinc-500 hover:text-zinc-400'}`}
                     >
                         <Grid size={16} />
                     </button>
                     <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${viewMode === 'list'
+                        onClick={() => setModoVisualizacao('list')}
+                        className={`p-1.5 rounded-md transition-all duration-300 ${modoVisualizacao === 'list'
                             ? 'bg-zinc-800 text-zinc-200 shadow-sm'
                             : 'text-zinc-500 hover:text-zinc-400'}`}
                     >

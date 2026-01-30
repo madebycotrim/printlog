@@ -1,40 +1,40 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AlertTriangle, Terminal, ArrowDownToLine, Loader2, TrendingDown, AlertOctagon } from "lucide-react";
-import SpoolVectorView from "./Carretel";
+import VisualizacaoCarretel from "./VisualizacaoCarretel";
 import { parseNumber } from "../../../utils/numbers";
 import { useToastStore } from "../../../stores/toastStore";
 import SideBySideModal from "../../../components/ui/SideBySideModal";
 import api from "../../../utils/api";
 import { UnifiedInput } from "../../../components/UnifiedInput";
-import { useFilamentMutations } from "../logic/filamentQueries";
+import { useMutacoesFilamento } from "../logic/consultasFilamento";
 
 export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const [consumo, setConsumo] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
-    const [showErrors, setShowErrors] = useState(false);
+    const [salvando, setSalvando] = useState(false);
+    const [mostrarErros, setMostrarErros] = useState(false);
 
     // Mutation Hook
-    const { registerHistory } = useFilamentMutations();
+    const { registrarHistorico } = useMutacoesFilamento();
 
     // Estados para Falha
-    const [isFailure, setIsFailure] = useState(false);
-    const [failureReason, setFailureReason] = useState("Falha de Aderência");
+    const [ehFalha, setEhFalha] = useState(false);
+    const [motivoFalha, setMotivoFalha] = useState("Falha de Aderência");
 
     // Interaction States
-    const [isHovered, setIsHovered] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
+    const [emFoco, setEmFoco] = useState(false);
+    const [arrastando, setArrastando] = useState(false);
     const spoolRef = useRef(null);
 
     // Reinicia o estado ao abrir o modal
     useEffect(() => {
         if (aberto) {
             setConsumo("");
-            setIsFailure(false);
-            setFailureReason("Falha de Aderência");
-            setIsSaving(false);
-            setShowErrors(false);
-            setIsHovered(false);
-            setIsDragging(false);
+            setEhFalha(false);
+            setMotivoFalha("Falha de Aderência");
+            setSalvando(false);
+            setMostrarErros(false);
+            setEmFoco(false);
+            setArrastando(false);
         }
     }, [aberto]);
 
@@ -60,7 +60,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
 
     // Spool Interaction Logic (Adapted for Consumption)
     const handleSpoolInteraction = (e) => {
-        if (!spoolRef.current || isSaving) return;
+        if (!spoolRef.current || salvando) return;
         const rect = spoolRef.current.getBoundingClientRect();
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -84,24 +84,24 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     };
 
     const confirmar = useCallback(async () => {
-        if (isSaving) return;
+        if (salvando) return;
 
         if (!inputValido || erroSaldoNegativo) {
-            setShowErrors(true);
+            setMostrarErros(true);
             return;
         }
 
         try {
-            setIsSaving(true);
+            setSalvando(true);
             try {
-                if (isFailure) {
+                if (ehFalha) {
                     const pricePerGram = (Number(item?.preco || 0) / Math.max(1, Number(item?.peso_total || 1000)));
                     const costWasted = (pricePerGram * qtdConsumo).toFixed(2);
 
                     await api.post('/failures', {
                         weightWasted: qtdConsumo,
                         costWasted: costWasted,
-                        reason: failureReason,
+                        reason: motivoFalha,
                         filamentId: item.id,
                         printerId: null,
                         modelName: "Baixa Rápida"
@@ -109,7 +109,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
 
                     useToastStore.getState().addToast("Falha registrada e descontada!", "info");
                 } else {
-                    await registerHistory({
+                    await registrarHistorico({
                         id: item.id,
                         type: 'consumo',
                         qtd: qtdConsumo,
@@ -131,26 +131,26 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             console.error("Erro crítico ao atualizar estoque:", error);
             useToastStore.getState().addToast("Erro ao processar baixa de estoque.", "error");
         } finally {
-            setIsSaving(false);
+            setSalvando(false);
         }
-    }, [inputValido, erroSaldoNegativo, isSaving, item, pesoFinal, aoSalvar, aoFechar, isFailure, qtdConsumo, failureReason, registerHistory]);
+    }, [inputValido, erroSaldoNegativo, salvando, item, pesoFinal, aoSalvar, aoFechar, ehFalha, qtdConsumo, motivoFalha, registrarHistorico]);
 
     // Atalhos de teclado
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === "Enter" && !isSaving) {
+            if (e.key === "Enter" && !salvando) {
                 confirmar();
             }
             // Escape is handled by SideBySideModal now
         };
         if (aberto) window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [aberto, isSaving, confirmar]);
+    }, [aberto, salvando, confirmar]);
 
     if (!aberto || !item) return null;
 
     const adicionarConsumo = (valor) => {
-        if (isSaving) return;
+        if (salvando) return;
         const atual = parseNumber(consumo) || 0;
         setConsumo((atual + valor).toString());
     };
@@ -178,15 +178,15 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                     <div
                         className="absolute inset-0 z-50 cursor-ns-resize rounded-full"
                         ref={spoolRef}
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseDown={() => setIsDragging(true)}
-                        onMouseUp={() => setIsDragging(false)}
-                        onMouseLeave={() => { setIsDragging(false); setIsHovered(false); }}
-                        onMouseMove={(e) => isDragging && handleSpoolInteraction(e)}
+                        onMouseEnter={() => setEmFoco(true)}
+                        onMouseDown={() => setArrastando(true)}
+                        onMouseUp={() => setArrastando(false)}
+                        onMouseLeave={() => { setArrastando(false); setEmFoco(false); }}
+                        onMouseMove={(e) => arrastando && handleSpoolInteraction(e)}
                         onClick={handleSpoolInteraction}
-                        onTouchStart={() => setIsDragging(true)}
-                        onTouchEnd={() => setIsDragging(false)}
-                        onTouchMove={(e) => isDragging && handleSpoolInteraction(e)}
+                        onTouchStart={() => setArrastando(true)}
+                        onTouchEnd={() => setArrastando(false)}
+                        onTouchMove={(e) => arrastando && handleSpoolInteraction(e)}
                         title="Arraste para definir o consumo"
                     />
 
@@ -197,23 +197,23 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                     />
 
                     {/* SPOOL */}
-                    <div className={`transform transition-transform duration-500 ${isHovered ? "scale-105" : ""} active:scale-95 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none`}>
-                        <SpoolVectorView
-                            color={corFilamento}
-                            size={220}
-                            percent={pctFinal}
+                    <div className={`transform transition-transform duration-500 ${emFoco ? "scale-105" : ""} active:scale-95 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none`}>
+                        <VisualizacaoCarretel
+                            cor={corFilamento}
+                            tamanho={220}
+                            porcentagem={pctFinal}
                         />
                     </div>
 
                     {/* PERCENTAGE INDICATOR */}
-                    <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center transition-all duration-300 transform pointer-events-none z-40 ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}>
+                    <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center transition-all duration-300 transform pointer-events-none z-40 ${emFoco ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}>
                         <span className="text-3xl font-black text-white drop-shadow-lg tabular-nums tracking-tighter">
                             {Math.round(pctFinal)}%
                         </span>
                     </div>
 
                     {/* DRAG HINT */}
-                    <div className={`absolute right-[-40px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-opacity duration-500 pointer-events-none ${isHovered ? "opacity-40" : "opacity-0"}`}>
+                    <div className={`absolute right-[-40px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-opacity duration-500 pointer-events-none ${emFoco ? "opacity-40" : "opacity-0"}`}>
                         <div className="w-1 h-1 bg-white rounded-full" />
                         <div className="w-0.5 h-12 bg-gradient-to-b from-transparent via-white to-transparent" />
                         <div className="w-1 h-1 bg-white rounded-full" />
@@ -228,7 +228,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Atual</span>
                         <p className="text-xs font-mono font-bold text-zinc-400">{Math.round(pesoAnterior)}g</p>
                     </div>
-                    <ArrowDownToLine size={16} className={`text-zinc-600 ${isDragging ? "animate-bounce" : ""}`} />
+                    <ArrowDownToLine size={16} className={`text-zinc-600 ${arrastando ? "animate-bounce" : ""}`} />
                     <div className="text-right">
                         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Final</span>
                         <p className={`text-xl font-mono font-bold ${erroSaldoNegativo ? 'text-rose-500' : 'text-zinc-100'}`}>
@@ -244,22 +244,22 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const footerContent = ({ onClose }) => (
         <div className="flex gap-4 w-full">
             <button
-                disabled={isSaving}
+                disabled={salvando}
                 onClick={onClose}
                 className="flex-1 py-4 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-500 hover:text-zinc-200 transition-all tracking-widest disabled:opacity-20"
             >
                 Cancelar
             </button>
             <button
-                disabled={isSaving}
+                disabled={salvando}
                 onClick={confirmar}
                 className={`flex-[2] py-4 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 tracking-widest
-                                ${isSaving
+                                ${salvando
                         ? 'bg-zinc-950/40 text-zinc-700 border border-zinc-800 cursor-not-allowed opacity-50'
                         : 'bg-zinc-100 text-zinc-950 hover:bg-white active:scale-95 shadow-xl'}`}
             >
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
-                {isSaving ? "Processando..." : "Confirmar Uso"}
+                {salvando ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
+                {salvando ? "Processando..." : "Confirmar Uso"}
             </button>
         </div>
     );
@@ -271,7 +271,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             sidebar={sidebarContent}
             header={{ title: "Registrar Uso", subtitle: "Lançar consumo de material do carretel", icon: TrendingDown }}
             footer={footerContent}
-            isSaving={isSaving}
+            salvando={salvando}
             isDirty={consumo !== "" && consumo !== "0"}
         >
             <div className="space-y-8 relative">
@@ -290,14 +290,14 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         <input
                             id="input-consumo"
                             autoFocus
-                            disabled={isSaving}
+                            disabled={salvando}
                             type="number"
                             min="0"
                             step="0.1"
                             value={consumo}
                             onChange={e => setConsumo(e.target.value)}
                             placeholder="0.00"
-                            className={`w-full bg-zinc-900/50 border rounded-2xl py-6 pl-14 pr-24 text-4xl font-bold text-zinc-100 outline-none transition-all shadow-inner font-mono ${erroSaldoNegativo || (showErrors && inputVazio) ? 'border-rose-500/40 focus:border-rose-500/60 ring-4 ring-rose-500/5' : 'border-zinc-800 focus:border-zinc-800/30 focus:bg-zinc-950/40'}`}
+                            className={`w-full bg-zinc-900/50 border rounded-2xl py-6 pl-14 pr-24 text-4xl font-bold text-zinc-100 outline-none transition-all shadow-inner font-mono ${erroSaldoNegativo || (mostrarErros && inputVazio) ? 'border-rose-500/40 focus:border-rose-500/60 ring-4 ring-rose-500/5' : 'border-zinc-800 focus:border-zinc-800/30 focus:bg-zinc-950/40'}`}
                         />
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-l border-zinc-800 pl-5">
                             GRAMAS
@@ -308,7 +308,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         {[10, 25, 50, 100, 250].map(val => (
                             <button
                                 key={val}
-                                disabled={isSaving}
+                                disabled={salvando}
                                 onClick={() => adicionarConsumo(val)}
                                 className="py-2.5 bg-zinc-950/40 border border-zinc-800 hover:border-zinc-500 text-[10px] font-bold text-zinc-500 hover:text-zinc-100 rounded-xl transition-all active:scale-95 uppercase tracking-widest disabled:opacity-30"
                             >
@@ -329,14 +329,14 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         {/* Toggles */}
                         <div className="flex items-center justify-between p-1 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
                             <button
-                                onClick={() => setIsFailure(false)}
-                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${!isFailure ? 'bg-zinc-800 text-zinc-100 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                onClick={() => setEhFalha(false)}
+                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${!ehFalha ? 'bg-zinc-800 text-zinc-100 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
                             >
                                 Uso Normal
                             </button>
                             <button
-                                onClick={() => setIsFailure(true)}
-                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${isFailure ? 'bg-rose-500 text-white shadow-lg' : 'text-zinc-500 hover:text-rose-500'}`}
+                                onClick={() => setEhFalha(true)}
+                                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${ehFalha ? 'bg-rose-500 text-white shadow-lg' : 'text-zinc-500 hover:text-rose-500'}`}
                             >
                                 <AlertOctagon size={12} />
                                 Falha de Impressão
@@ -344,7 +344,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         </div>
 
                         {/* Reason Input (Conditional) */}
-                        {isFailure && (
+                        {ehFalha && (
                             <div className="animate-in slide-in-from-top-2 fade-in duration-300">
                                 <UnifiedInput
                                     label="O que aconteceu?"
@@ -355,8 +355,8 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                                             "Erro no Fatiamento", "Fim de Filamento", "Warping (Empenamento)", "Outros"
                                         ].map(r => ({ value: r, label: r }))
                                     }]}
-                                    value={failureReason}
-                                    onChange={(v) => setFailureReason(v)}
+                                    value={motivoFalha}
+                                    onChange={(v) => setMotivoFalha(v)}
                                 />
                             </div>
                         )}

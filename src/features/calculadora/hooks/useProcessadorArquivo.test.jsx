@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useFileProcessor } from './useFileProcessor';
+import { useProcessadorArquivo } from './useProcessadorArquivo';
 import { useCalculatorStore } from '../../../stores/calculatorStore';
 import { useToastStore } from '../../../stores/toastStore';
 import { useTransferStore } from '../../../stores/transferStore';
@@ -12,7 +12,7 @@ vi.mock('../../../stores/toastStore');
 vi.mock('../../../stores/transferStore');
 vi.mock('../../../utils/projectParser');
 
-describe('useFileProcessor', () => {
+describe('useProcessadorArquivo', () => {
     const mockAtualizarCampo = vi.fn();
     const mockAddToast = vi.fn();
     const mockClearPendingFile = vi.fn();
@@ -37,7 +37,7 @@ describe('useFileProcessor', () => {
     });
 
     it('should initialize with default states', () => {
-        const { result } = renderHook(() => useFileProcessor());
+        const { result } = renderHook(() => useProcessadorArquivo());
         expect(result.current.isProcessing).toBe(false);
     });
 
@@ -52,7 +52,7 @@ describe('useFileProcessor', () => {
             weightGrams: 100
         });
 
-        const { result } = renderHook(() => useFileProcessor());
+        const { result } = renderHook(() => useProcessadorArquivo());
 
         await act(async () => {
             await result.current.processarArquivo(file);
@@ -79,7 +79,7 @@ describe('useFileProcessor', () => {
             message: 'Parse Error'
         });
 
-        const { result } = renderHook(() => useFileProcessor());
+        const { result } = renderHook(() => useProcessadorArquivo());
 
         await act(async () => {
             await result.current.processarArquivo(file);
@@ -101,7 +101,7 @@ describe('useFileProcessor', () => {
         // Instead we allow the integration to flow.
         projectParser.analisarArquivoProjeto.mockResolvedValue({ success: false, message: 'Ignored' });
 
-        const { result } = renderHook(() => useFileProcessor());
+        const { result } = renderHook(() => useProcessadorArquivo());
 
         // Use fake timers because of setTimeout in checkPendingFiles
         vi.useFakeTimers();

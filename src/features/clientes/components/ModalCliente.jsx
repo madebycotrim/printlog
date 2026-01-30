@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { User, Building2, Phone, Mail, MapPin, Loader2, AlertCircle, Terminal } from 'lucide-react';
-import { useClientStore } from '../logic/clients';
+import { useClientStore } from '../logic/clientes';
 import { UnifiedInput } from '../../../components/UnifiedInput';
 import FormFeedback from '../../../components/FormFeedback';
 import { useFormFeedback } from '../../../hooks/useFormFeedback';
@@ -33,7 +33,8 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
             setIsDirty(false);
             hideFeedback();
         }
-    }, [isOpen, clienteParaEditar, initialForm, hideFeedback, initialData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, clienteParaEditar, initialForm, hideFeedback]);
 
     const updateForm = (updates) => {
         setFormData(prev => ({ ...prev, ...updates }));
@@ -242,3 +243,4 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
         </SideBySideModal>
     );
 }
+

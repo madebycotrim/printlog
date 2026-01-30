@@ -10,8 +10,8 @@ import {
 import logo from "../assets/logo-colorida.png";
 import logoBranca from "../assets/logo-branca.png";
 
-import { useFilaments } from "../features/filamentos/logic/filamentQueries";
-import { usePrinters } from "../features/impressoras/logic/printerQueries";
+import { useFilamentos } from "../features/filamentos/logic/consultasFilamento";
+import { usePrinters } from "../features/impressoras/logic/consultasImpressora";
 import { analisarSaudeImpressora } from "../features/impressoras/logic/diagnostics";
 
 // --- THEME ---
@@ -144,7 +144,7 @@ export default function MainSidebar() {
     // Global State
     const { collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen } = useSidebarStore();
 
-    const { data: filaments = [] } = useFilaments();
+    const { data: filaments = [] } = useFilamentos();
     const { data: printers = [] } = usePrinters();
 
 

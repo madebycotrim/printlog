@@ -48,5 +48,5 @@ export const prepararParaD1 = (dados = {}) => {
 
 /**
  * (DEPRECATED) ZUSTAND STORE REMOVIDO
- * Migrado para React Query em src/features/impressoras/logic/printerQueries.js
+ * Migrado para React Query em src/features/impressoras/logic/consultasImpressora.js
  */
