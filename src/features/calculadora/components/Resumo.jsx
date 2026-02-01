@@ -15,7 +15,7 @@ import { useCalculatorStore } from "../../../stores/calculatorStore";
 import { generateProfessionalPDF } from "../../../utils/pdfGenerator";
 import { useSettings } from "../../sistema/logic/settingsQueries";
 import Modal from "../../../components/ui/Modal";
-import { CHART_COLORS } from "../logic/chartColors";
+import { CHART_COLORS } from "../logic/coresGrafico";
 
 /* ---------- SUB-COMPONENTE: NÚMERO ANIMADO ---------- */
 const AnimatedNumber = ({ value, duration = 800, className }) => {
