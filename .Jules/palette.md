@@ -1,0 +1,3 @@
+## 2026-02-03 - Accessibility for Custom FAB Menus
+**Learning:** Custom Floating Action Button (FAB) menus often miss critical ARIA attributes (`role="dialog"`, `aria-expanded`) and keyboard support (`Escape` key), making them inaccessible to screen reader users who can't perceive the visual state change.
+**Action:** Always verify custom interactive components with a screen reader mindset: ensure state changes (open/closed) are communicated via `aria-expanded` and the content is properly hidden/exposed using `aria-hidden` or by removing it from the DOM. Add `Escape` key handlers for all overlay/modal interactions.

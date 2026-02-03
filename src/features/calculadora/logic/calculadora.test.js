@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcularTudo } from './calculator';
+import { calcularTudo } from './calculadora';
 
 describe('Calculadora de Preços (calcularTudo)', () => {
     it('deve calcular custos básicos corretamente', () => {
