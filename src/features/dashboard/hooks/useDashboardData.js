@@ -1,18 +1,22 @@
-import { useMemo, useState, useEffect, useCallback } from 'react'; // Added useState, useEffect, useCallback
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import api from '../../../utils/api';
 import { useFilamentos } from '../../filamentos/logic/consultasFilamento';
 import { usePrinters } from '../../impressoras/logic/consultasImpressora';
 import { useSupplyStore } from '../../insumos/logic/supplies';
+import { useReports } from './useReports';
 
 /**
  * Hook customizado para agregar dados do dashboard
- * Combina informações de impressoras, filamentos e orçamentos
+ * Combina informações de impressoras, filamentos, orçamentos e relatórios do servidor
  */
 export function useDashboardData() {
     const { data: filaments = [], isLoading: filamentsLoading } = useFilamentos();
     const { data: printers = [], isLoading: printersLoading } = usePrinters();
     const { fetchSupplies, loading: suppliesLoading } = useSupplyStore();
-    const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 }); // New state
+    const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });
+
+    // Consumir relatórios do servidor (Views)
+    const { dashboard, costs, lowStock, printerUsage, loading: reportsLoading } = useReports();
 
     // Ensure supplies are loaded
     useEffect(() => {
@@ -33,36 +37,25 @@ export function useDashboardData() {
         fetchFailures();
     }, [fetchFailures]);
 
-    // Alertas críticos de filamentos
-    const filamentAlerts = useMemo(() => {
-        if (!Array.isArray(filaments)) return [];
+    // Alertas do Servidor (View alertas_estoque_baixo)
+    const serverAlerts = useMemo(() => {
+        if (!Array.isArray(lowStock)) return [];
+        return lowStock.map(item => ({
+            id: item.id,
+            type: item.tipo === 'filamento' ? 'filament' : 'supply',
+            severity: item.percentual <= 10 ? 'critical' : 'warning',
+            title: `${item.tipo === 'filamento' ? 'Filamento' : 'Insumo'} Baixo`,
+            message: `${item.nome} - ${Math.round(item.percentual)}% restante (${item.atual} / ${item.minimo})`,
+            item: item
+        }));
+    }, [lowStock]);
 
-        return filaments
-            .filter(f => {
-                const atual = Number(f.peso_atual) || 0;
-                const total = Math.max(1, Number(f.peso_total) || 1000);
-                const percentual = (atual / total) * 100;
-                return percentual <= 20 || atual < 150;
-            })
-            .map(f => ({
-                id: f.id,
-                type: 'filament',
-                severity: 'critical',
-                title: 'Filamento em estoque crítico',
-                message: `${f.nome} ${f.material} - ${Math.round((Number(f.peso_atual) / Number(f.peso_total)) * 100)}% restante`,
-                item: f
-            }));
-    }, [filaments]);
-
-    // Alertas de impressoras
+    // Alertas de impressoras (mantido client-side pois depende de status realtime da UI/Socket muitas vezes)
     const printerAlerts = useMemo(() => {
         if (!Array.isArray(printers)) return [];
 
         return printers
-            .filter(p => {
-                // Alertas para impressoras com problemas ou manutenção necessária
-                return p.status === 'maintenance' || p.status === 'error';
-            })
+            .filter(p => p.status === 'maintenance' || p.status === 'error')
             .map(p => ({
                 id: p.id,
                 type: 'printer',
@@ -75,15 +68,14 @@ export function useDashboardData() {
 
     // Combinar todos os alertas
     const allAlerts = useMemo(() => {
-        return [...filamentAlerts, ...printerAlerts].sort((a, b) => {
-            // Críticos primeiro
+        return [...serverAlerts, ...printerAlerts].sort((a, b) => {
             if (a.severity === 'critical' && b.severity !== 'critical') return -1;
             if (a.severity !== 'critical' && b.severity === 'critical') return 1;
             return 0;
         });
-    }, [filamentAlerts, printerAlerts]);
+    }, [serverAlerts, printerAlerts]);
 
-    // Estatísticas financeiras de filamentos
+    // Estatísticas financeiras de filamentos (calculado no cliente para manter reatividade imediata)
     const filamentFinancials = useMemo(() => {
         if (!Array.isArray(filaments)) return { totalValue: 0, totalWeight: 0 };
 
@@ -92,8 +84,8 @@ export function useDashboardData() {
 
         filaments.forEach(f => {
             const atual = Number(f.peso_atual) || 0;
-            const total = Math.max(1, Number(f.peso_total) || 1000);
             const preco = Number(f.preco) || 0;
+            const total = Math.max(1, Number(f.peso_total) || 1000);
 
             totalWeight += atual;
             totalValue += (preco / total) * atual;
@@ -101,7 +93,7 @@ export function useDashboardData() {
 
         return {
             totalValue,
-            totalWeight: totalWeight / 1000, // Converter para kg
+            totalWeight: totalWeight / 1000,
             materialCount: filaments.length
         };
     }, [filaments]);
@@ -109,33 +101,29 @@ export function useDashboardData() {
     // Status de impressoras
     const printerStats = useMemo(() => {
         if (!Array.isArray(printers)) return { total: 0, active: 0, idle: 0, error: 0 };
-
-        const stats = {
+        return {
             total: printers.length,
-            active: 0,
-            idle: 0,
-            maintenance: 0,
-            error: 0
+            active: printers.filter(p => p.status === 'printing').length,
+            idle: printers.filter(p => p.status === 'idle').length,
+            maintenance: printers.filter(p => p.status === 'maintenance').length,
+            error: printers.filter(p => p.status === 'error').length
         };
-
-        printers.forEach(p => {
-            if (p.status === 'printing') stats.active++;
-            else if (p.status === 'idle') stats.idle++;
-            else if (p.status === 'maintenance') stats.maintenance++;
-            else if (p.status === 'error') stats.error++;
-        });
-
-        return stats;
     }, [printers]);
 
     return {
         alerts: allAlerts,
         filamentFinancials,
         printerStats,
-        loading: filamentsLoading || printersLoading || suppliesLoading,
+        loading: filamentsLoading || printersLoading || suppliesLoading || reportsLoading,
         criticalAlertsCount: allAlerts.filter(a => a.severity === 'critical').length,
-        failureStats, // Expose failure stats
-        fetchFailures // Explore fetch function
+        failureStats,
+
+        // Novos dados dos relatórios
+        reports: {
+            dashboard, // Consumo diário (para gráficos)
+            costs,     // Custos por projeto
+            printerUsage // Uso consolidado
+        }
     };
-};
+}
 

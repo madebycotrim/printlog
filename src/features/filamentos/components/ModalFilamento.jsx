@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Terminal, Loader2 } from "lucide-react";
 import VisualizacaoCarretel from "./VisualizacaoCarretel";
 import FormFeedback from "../../../components/FormFeedback";
+import { useToastStore } from '../../../stores/toastStore';
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
 import { validateInput, schemas } from "../../../utils/validation";
 import SideBySideModal from "../../../components/ui/SideBySideModal";
@@ -45,7 +46,8 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                     peso_atual: dadosIniciais.peso_atual,
                     data_abertura: dadosIniciais.data_abertura
                         ? (dadosIniciais.data_abertura.split('T')[0])
-                        : (dadosIniciais.created_at ? dadosIniciais.created_at.split('T')[0] : new Date().toISOString().split('T')[0])
+                        : (dadosIniciais.created_at ? dadosIniciais.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+                    versao: dadosIniciais.versao // Optimistic Locking
                 });
             } else {
                 setFormulario(ESTADO_INICIAL);
@@ -56,34 +58,32 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         }
     }, [aberto, dadosIniciais]);
 
-    const atualizarFormulario = (campo, valor) => {
+    const actualizarFormulario = (campo, valor) => {
         if (salvando) return;
         setFormulario(anterior => ({ ...anterior, [campo]: valor }));
         setModificado(true);
+        if (mostrarErros) setMostrarErros(false);
     };
 
-    const manipularSalvar = useCallback(async () => {
-        console.log("🎯 [DEBUG] ============================================");
-        console.log("🎯 [DEBUG] manipularSalvar FOI CHAMADO!");
-        console.log("🎯 [DEBUG] Valor de salvando:", salvando);
-        console.log("🎯 [DEBUG] ============================================");
+    const handleFechar = useCallback(() => {
+        if (salvando) return;
+        setMostrarErros(false);
+        aoFechar();
+    }, [salvando, aoFechar]);
 
-        if (salvando) {
-            console.log("⚠️ [DEBUG] Salvamento já em andamento, retornando...");
-            return;
-        }
+    const manipularSalvar = useCallback(async () => {
+        if (salvando) return;
 
         const pesoTotalNum = Math.max(1, safeParse(formulario.peso_total));
         const precoNum = Math.max(0, safeParse(formulario.preco));
 
-        // Lógica: Se vazio/undefined, assume Carretel Novo (Cheio). Se for número (incluindo 0), usa ele.
+        // Lógica: Se vazio/undefined, assume Carretel Novo (Cheio).
         let pesoAtualFinal;
         if (formulario.peso_atual === "" || formulario.peso_atual === undefined || formulario.peso_atual === null) {
             pesoAtualFinal = pesoTotalNum;
         } else {
             pesoAtualFinal = Number(formulario.peso_atual);
         }
-        // Limita para garantir que não exceda o total ou fique abaixo de 0
         pesoAtualFinal = Math.min(Math.max(0, pesoAtualFinal), pesoTotalNum);
 
         const payload = {
@@ -95,15 +95,14 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             preco: precoNum,
             peso_total: pesoTotalNum,
             peso_atual: pesoAtualFinal,
-            favorito: formulario.favorito || false
+            favorito: formulario.favorito || false,
+            versao: formulario.versao
         };
-
-        console.log("🔍 [DEBUG] Payload a ser enviado:", payload);
 
         const check = validateInput(payload, schemas.filament);
         if (!check.valid) {
             console.error("❌ [VALIDATION ERROR] Erros de validação:", check.errors);
-            showError(`Validação falhou: ${check.errors.join(', ')}`);
+
             setMostrarErros(true);
             const shakeElement = document.querySelector('.animate-shake');
             if (shakeElement) {
@@ -115,12 +114,9 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         }
 
         try {
-            console.log("✅ [DEBUG] Validação passou, iniciando salvamento...");
             setSalvando(true);
             esconderFeedback();
-            console.log("📡 [DEBUG] Chamando aoSalvar com payload:", payload);
             const resultado = await aoSalvar(payload);
-            console.log("✅ [DEBUG] aoSalvar retornou com sucesso:", resultado);
             aoFechar();
         } catch (error) {
             console.error("❌ [ERROR] Erro ao salvar filamento:", error);
@@ -128,7 +124,6 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             console.error("❌ [ERROR] Error message:", error.message);
             showError("Erro ao salvar. Verifique os dados.");
         } finally {
-            console.log("🏁 [DEBUG] Finalizando processo de salvamento");
             setSalvando(false);
         }
     }, [formulario, aoSalvar, salvando, showError, esconderFeedback, aoFechar]);
@@ -150,8 +145,8 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         const pesoTotal = Number(formulario.peso_total) || 1000;
         const novoPeso = Math.round(percentual * pesoTotal);
 
-        atualizarFormulario('peso_atual', novoPeso);
-    }, [formulario.peso_total, salvando, atualizarFormulario]);
+        actualizarFormulario('peso_atual', novoPeso);
+    }, [formulario.peso_total, salvando, actualizarFormulario]);
 
     // Conteúdo da Barra Lateral (Prévia) segue estética do ModalCliente
     const conteudoLateral = (
@@ -201,16 +196,16 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
 
                             if (e.key === "ArrowUp" || e.key === "ArrowRight") {
                                 e.preventDefault();
-                                atualizarFormulario("peso_atual", Math.min(total, current + step));
+                                actualizarFormulario("peso_atual", Math.min(total, current + step));
                             } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
                                 e.preventDefault();
-                                atualizarFormulario("peso_atual", Math.max(0, current - step));
+                                actualizarFormulario("peso_atual", Math.max(0, current - step));
                             } else if (e.key === "Home") {
                                 e.preventDefault();
-                                atualizarFormulario("peso_atual", total);
+                                actualizarFormulario("peso_atual", total);
                             } else if (e.key === "End") {
                                 e.preventDefault();
-                                atualizarFormulario("peso_atual", 0);
+                                actualizarFormulario("peso_atual", 0);
                             }
                         }}
                         onTouchStart={() => setArrastando(true)}
@@ -272,8 +267,9 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
         <div className="flex flex-col gap-4 w-full">
             <FormFeedback {...feedback} onClose={esconderFeedback} />
 
-            <div className="flex gap-4">
-                <button disabled={salvando} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
+            <div className="flex gap-3">
+                <button
+                    disabled={salvando} onClick={onClose} className="flex-1 py-3 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-400 hover:text-zinc-100 transition-all disabled:opacity-20">
                     Cancelar
                 </button>
                 <button
@@ -291,7 +287,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
     return (
         <SideBySideModal
             isOpen={aberto}
-            onClose={aoFechar}
+            onClose={handleFechar}
             sidebar={conteudoLateral}
             header={{
                 title: dadosIniciais?.id ? "Editar Filamento" : "Novo Filamento",
@@ -299,19 +295,19 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             }}
             footer={footerContent}
             salvando={salvando}
-            modificado={modificado}
+            isDirty={modificado}
         >
             <div className="space-y-8 relative">
 
                 <FormularioIdentificacaoFilamento
                     formulario={formulario}
-                    atualizarFormulario={atualizarFormulario}
+                    atualizarFormulario={actualizarFormulario}
                     mostrarErros={mostrarErros}
                 />
 
                 <FormularioEstoqueFilamento
                     formulario={formulario}
-                    atualizarFormulario={atualizarFormulario}
+                    atualizarFormulario={actualizarFormulario}
                     setFormulario={setFormulario}
                     mostrarErros={mostrarErros}
                     dadosIniciais={dadosIniciais}

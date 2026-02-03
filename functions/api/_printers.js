@@ -1,8 +1,6 @@
 import { enviarJSON, paraNumero } from './_utils';
 import { validateInput, schemas, sanitizeFields } from './_validation';
-import { cacheQuery, invalidateCache } from './_cache';
-import { checkDataLimit } from './_billing';
-import { logActivity } from './_audit';
+import { construirQueryComSoftDelete, softDelete } from './_helpers';
 
 /**
  * API DE GERENCIAMENTO DE IMPRESSORAS
@@ -17,8 +15,8 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
         // GET: BUSCAR TODAS AS IMPRESSORAS
         // ==========================================
         if (method === 'GET') {
-            // Removido cacheQuery com org_id por enquanto
-            const { results } = await db.prepare("SELECT * FROM printers").all();
+            const query = construirQueryComSoftDelete("SELECT * FROM impressoras", "impressoras");
+            const { results } = await db.prepare(query).all();
             return enviarJSON(results || []);
         }
 
@@ -29,14 +27,7 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
             const id = idFromPath || url.searchParams.get('id');
             if (!id) return enviarJSON({ error: "ID da impressora necessário." }, 400);
 
-            await db.prepare("DELETE FROM printers WHERE id = ?").bind(id).run();
-
-            // invalidateCache(`printers:${tenantId}`); // Cache off
-
-            // Log Auditoria (simplificado)
-            const user = userId || 'system';
-            // await logActivity(db, tenantId, user, 'PRINTER_DELETED', `Printer ${id} deleted`); // Audit removido pois depende de tenantId/org_id
-
+            await softDelete(db, 'impressoras', id);
             return enviarJSON({ success: true, message: "Impressora removida com sucesso." });
         }
 
@@ -48,14 +39,7 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
             const id = rawData.id || idFromPath || crypto.randomUUID();
 
             // Verifica se é criação nova
-            const existing = await db.prepare("SELECT 1 FROM printers WHERE id = ?").bind(id).first();
-
-            /*
-            if (!existing) {
-                const limitCheck = await checkDataLimit(db, tenantId, 'printers');
-                 // Limit check removido pois depende de tenantId
-            }
-            */
+            const existing = await db.prepare("SELECT 1 FROM impressoras WHERE id = ?").bind(id).first();
 
             const validation = validateInput(rawData, schemas.printer);
             if (!validation.valid) {
@@ -69,13 +53,14 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
                 ? rawData.historico
                 : JSON.stringify(rawData.historico || rawData.history || []);
 
-            // Upsert: insere novo registro ou atualiza existente
-            await db.prepare(`INSERT INTO printers (id, user_id, nome, marca, modelo, status, potencia, preco, rendimento_total, horas_totais, ultima_manutencao_hora, intervalo_manutencao, historico) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
+            // Upsert usando versao
+            await db.prepare(`INSERT INTO impressoras (id, usuario_id, nome, marca, modelo, status, potencia, preco, rendimento_total, horas_totais, ultima_manutencao_hora, intervalo_manutencao, historico, versao) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1) ON CONFLICT(id) DO UPDATE SET 
                 nome=excluded.nome, marca=excluded.marca, modelo=excluded.modelo, status=excluded.status, 
                 potencia=excluded.potencia, preco=excluded.preco, rendimento_total=excluded.rendimento_total,
                 horas_totais=excluded.horas_totais, ultima_manutencao_hora=excluded.ultima_manutencao_hora, 
-                intervalo_manutencao=excluded.intervalo_manutencao, historico=excluded.historico`)
+                intervalo_manutencao=excluded.intervalo_manutencao, historico=excluded.historico,
+                versao=versao+1`)
                 .bind(
                     id,
                     userId,
@@ -91,8 +76,6 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
                     paraNumero(da.intervalo_manutencao, 300),
                     historico
                 ).run();
-
-            // invalidateCache(`printers:${tenantId}`); // Cache off
 
             return enviarJSON({ id, ...da, success: true });
         }

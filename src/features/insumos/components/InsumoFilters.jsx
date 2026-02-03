@@ -1,11 +1,9 @@
 import React from 'react';
-import { Filter, Grid, List as ListIcon, X } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 export default function InsumoFilters({
     filters,
     setFilters,
-    viewMode,
-    setViewMode,
     categories = [] // Array of { id, label }
 }) {
     // Toggle Category Filter
@@ -54,10 +52,10 @@ export default function InsumoFilters({
                             key={cat.id}
                             onClick={() => toggleCategory(cat.id)}
                             className={`
-                                px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border shadow-sm
+                                px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
                                 ${filters.categories?.includes(cat.id)
-                                    ? 'bg-orange-500 text-zinc-900 border-orange-500 shadow-orange-500/20 hover:bg-orange-400'
-                                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 hover:bg-zinc-800'}
+                                    ? 'bg-orange-500/10 border-orange-500 text-orange-500'
+                                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
                         >
                             {cat.label}
@@ -75,26 +73,10 @@ export default function InsumoFilters({
                     )}
                 </div>
 
-                {/* --- VIEW MODE SWITCHER --- */}
-                <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-lg shrink-0">
-                    <button
-                        onClick={() => setViewMode('grid')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${viewMode === 'grid'
-                            ? 'bg-zinc-800 text-zinc-200 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-400'}`}
-                    >
-                        <Grid size={16} />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${viewMode === 'list'
-                            ? 'bg-zinc-800 text-zinc-200 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-400'}`}
-                    >
-                        <ListIcon size={16} />
-                    </button>
-                </div>
             </div>
+
         </div>
     );
 }
+
+

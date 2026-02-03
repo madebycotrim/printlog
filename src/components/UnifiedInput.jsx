@@ -178,7 +178,7 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
 /* ---------- COMPONENTE PRINCIPAL: UNIFIED INPUT ---------- */
 export const UnifiedInput = ({
   label, subtitle, icon: Icon, suffix, isLucro, type, options, variant = "default",
-  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, tooltip, error, ...props
+  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, tooltip, error, accentColor, ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
@@ -227,7 +227,7 @@ export const UnifiedInput = ({
       {label && !isGhost && (
         <div className="flex justify-between items-end px-1.5 h-3">
           <div className="flex items-center gap-1.5">
-            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500" : "text-zinc-500"}`}>
+            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
               {label}
             </label>
             {tooltip && <Tooltip text={tooltip} />}
@@ -249,14 +249,18 @@ export const UnifiedInput = ({
             ? "border-rose-500/50 shadow-[0_0_15px_-3px_rgba(244,63,94,0.15)] ring-1 ring-rose-500/20"
             : (!isGhost ? "border-zinc-800/60" : "")}
           ${!isGhost && !error && (isActive || isLucro
-            ? "border-sky-500/50 shadow-[0_0_15px_-3px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/20"
+            ? (accentColor
+              ? `border-${accentColor}-500/50 shadow-[0_0_15px_-3px_rgba(var(--${accentColor}-500-rgb),0.15)] ring-1 ring-${accentColor}-500/20`
+              : "border-sky-500/50 shadow-[0_0_15px_-3px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/20")
             : "hover:border-zinc-700 hover:bg-zinc-900/40")}
           ${!isSelect ? "cursor-text" : "cursor-pointer"}`}
       >
         {/* Ícone agora responde ao clique do container pai */}
         {Icon && (
           <div className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none
-            ${isActive || isLucro ? "text-sky-500" : "text-zinc-600"}`}>
+            ${isActive || isLucro
+              ? (accentColor ? `text-${accentColor}-500` : "text-sky-500")
+              : "text-zinc-600"}`}>
             <Icon size={14} strokeWidth={2.5} />
           </div>
         )}

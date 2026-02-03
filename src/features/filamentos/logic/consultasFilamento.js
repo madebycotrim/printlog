@@ -22,6 +22,7 @@ export const normalizarFilamento = (f) => {
         preco: Math.max(0, Number(f.preco) || 0),
         favorito: Boolean(f.favorito),
         data_abertura: f.created_at || f.data_abertura || new Date().toISOString(),
+        versao: f.versao || 1 // Optimistic Locking
     };
 };
 
@@ -34,26 +35,18 @@ const buscarFilamentosApi = async () => {
 };
 
 const salvarFilamentoApi = async (dadosFilamento) => {
-    console.log("📥 [API] salvarFilamentoApi chamado com:", dadosFilamento);
     const tratado = normalizarFilamento(dadosFilamento);
-    console.log("🔄 [API] Dados normalizados:", tratado);
 
     // Garantir que ID seja undefined se vazio para prevenir erros 500 na criação
     if (!tratado.id) delete tratado.id;
-    console.log("🆔 [API] Dados após check de ID:", tratado);
 
     let resposta;
 
     if (tratado.id) {
-        console.log(`📡 [API] Enviando PUT /filaments/${tratado.id}`);
         resposta = await api.put(`/filaments/${tratado.id}`, tratado);
     } else {
-        console.log("📡 [API] Enviando POST /filaments com payload:", tratado);
         resposta = await api.post('/filaments', tratado);
     }
-
-    console.log("✅ [API] Resposta recebida:", resposta);
-    console.log("✅ [API] resposta.data:", resposta.data);
 
     return normalizarFilamento(resposta.data?.data || resposta.data);
 };
@@ -118,22 +111,17 @@ export const useMutacoesFilamento = () => {
     const mutacaoSalvar = useMutation({
         mutationFn: salvarFilamentoApi,
         onSuccess: (itemSalvo) => {
-            console.log("🎊 [MUTATION] onSuccess chamado com:", itemSalvo);
             queryClient.setQueryData(['filamentos'], (antigo) => {
-                console.log("📝 [MUTATION] Dados antigos:", antigo);
                 if (!antigo) return [itemSalvo];
                 const existe = antigo.find(f => f.id === itemSalvo.id);
                 if (existe) {
-                    console.log("✏️ [MUTATION] Atualizando item existente");
                     return antigo.map(f => f.id === itemSalvo.id ? itemSalvo : f);
                 } else {
-                    console.log("➕ [MUTATION] Adicionando novo item à lista");
                     return [itemSalvo, ...antigo];
                 }
             });
             // Invalidar a query para forçar refetch e garantir UI atualizada
             queryClient.invalidateQueries(['filamentos']);
-            console.log("🔄 [MUTATION] Query invalidada, UI deve atualizar");
             addToast("Filamento salvo com sucesso!", "success");
         },
         onError: (err) => {
@@ -180,7 +168,7 @@ export const useMutacoesFilamento = () => {
         mutationFn: excluirFilamentoApi,
         onSuccess: (idRemovido) => {
             queryClient.setQueryData(['filamentos'], (antigo) => antigo?.filter(f => f.id !== idRemovido));
-            addToast("Filamento removido.", "info");
+            addToast("Filamento removido com sucesso!", "success");
         },
         onError: () => addToast("Erro: O servidor impediu a exclusão.", "error")
     });

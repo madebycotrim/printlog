@@ -33,6 +33,7 @@ export default function StatusInsumos({
                     value: healthPercentage,
                     color: isAlert ? 'bg-rose-500' : 'bg-emerald-500'
                 }}
+                valueSize="text-xl"
             />
 
             {/* 2. Financeiro */}
@@ -43,6 +44,7 @@ export default function StatusInsumos({
                 colorTheme="emerald"
                 secondaryLabel="Valor Total"
                 secondaryValue="Em estoque"
+                valueSize="text-xl"
             />
 
             {/* 3. Custo de Reposição */}
@@ -53,6 +55,7 @@ export default function StatusInsumos({
                 colorTheme="sky"
                 secondaryLabel="Custo Estimado"
                 secondaryValue="Para repor estoque"
+                valueSize="text-xl"
             />
 
             {/* 4. Esgotados */}
@@ -64,6 +67,7 @@ export default function StatusInsumos({
                 colorTheme={zero > 0 ? 'amber' : 'zinc'}
                 secondaryLabel="Estoque Zerado"
                 secondaryValue={zero > 0 ? "Repor Urgente" : "Nenhum Item"}
+                valueSize="text-xl"
             />
         </div>
     );

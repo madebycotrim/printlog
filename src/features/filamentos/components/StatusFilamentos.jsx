@@ -39,6 +39,7 @@ function StatusFilamentos({
         secondaryLabel="Status"
         secondaryValue={contagemEstoqueBaixo > 0 ? `${contagemEstoqueBaixo} Itens Baixos` : "Saudável"}
         isAlert={contagemEstoqueBaixo > 0}
+        valueSize="text-xl"
       />
 
       {/* 2. Valor em Estoque */}
@@ -50,6 +51,7 @@ function StatusFilamentos({
         secondaryLabel="Valor Investido"
         secondaryValue="Em Materiais"
         FooterIcon={TrendingUp}
+        valueSize="text-xl"
       />
 
       {/* 3. Clima (Umidade) */}
@@ -61,6 +63,7 @@ function StatusFilamentos({
         secondaryLabel="Temperatura"
         secondaryValue={estatisticasExibicao.temperatura}
         isAlert={estatisticasExibicao.ehUmidadeAlta}
+        valueSize="text-xl"
       />
 
       {/* 4. Desperdício - Monitoramento de Falhas */}
@@ -72,6 +75,7 @@ function StatusFilamentos({
         secondaryLabel="Prejuízo Estimado"
         secondaryValue={formatCurrency(estatisticasFalhas?.totalCost || 0)}
         FooterIcon={TrendingDown}
+        valueSize="text-xl"
       />
     </div>
   );

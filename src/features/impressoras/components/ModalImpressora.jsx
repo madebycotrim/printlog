@@ -3,7 +3,7 @@ import { Zap, Timer, DollarSign, Tag, Terminal, Cpu, Activity, Loader2, AlertCir
 import { UnifiedInput } from "../../../components/UnifiedInput";
 import { useFormFeedback } from "../../../hooks/useFormFeedback";
 import FormFeedback from "../../../components/FormFeedback";
-import Modal from "../../../components/ui/Modal";
+import SideBySideModal from "../../../components/ui/SideBySideModal";
 import { usePrinterModels } from "../logic/consultasImpressora";
 import { schemas, validateInput } from "../../../utils/validation";
 import { parseNumber as safeParse } from "../../../utils/numbers";
@@ -14,11 +14,12 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     const [formulario, setFormulario] = useState({
         id: null, nome: "", marca: "", modelo: "", potencia: "", preco: "",
         status: "idle", horas_totais: "0", ultima_manutencao_hora: 0,
-        intervalo_manutencao: "300", historico: []
+        intervalo_manutencao: "300", historico: [], versao: 1
     });
 
     const [entradaManual, setEntradaManual] = useState({ marca: false, modelo: false });
     const [isDirty, setIsDirty] = useState(false);
+    const [mostrarErros, setMostrarErros] = useState(false);
 
     // Feedback Hook
     const { feedback, showSuccess, showError, hide: hideFeedback } = useFormFeedback();
@@ -26,6 +27,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     useEffect(() => {
         if (aberto) {
             setIsDirty(false);
+            setMostrarErros(false);
             hideFeedback();
 
             if (dadosIniciais) {
@@ -40,13 +42,14 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                     horas_totais: String(dadosIniciais.horas_totais ?? "0"),
                     ultima_manutencao_hora: dadosIniciais.ultima_manutencao_hora ?? 0,
                     intervalo_manutencao: String(dadosIniciais.intervalo_manutencao ?? "300"),
-                    historico: dadosIniciais.historico || []
+                    historico: dadosIniciais.historico || [],
+                    versao: dadosIniciais.versao
                 });
             } else {
                 setFormulario({
                     id: null, nome: "", marca: "", modelo: "", potencia: "", preco: "",
                     status: "idle", horas_totais: "0", ultima_manutencao_hora: 0,
-                    intervalo_manutencao: "300", historico: []
+                    intervalo_manutencao: "300", historico: [], versao: 1
                 });
                 setEntradaManual({ marca: false, modelo: false });
             }
@@ -70,6 +73,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     const updateForm = (updates) => {
         setFormulario(prev => ({ ...prev, ...updates }));
         setIsDirty(true);
+        if (mostrarErros) setMostrarErros(false);
     };
 
     const tratarMudancaModelo = (valor, item) => {
@@ -85,9 +89,11 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
         if (isSaving) return;
         if (isDirty) {
             if (window.confirm("Você tem alterações não salvas. Deseja realmente sair?")) {
+                setMostrarErros(false);
                 aoFechar();
             }
         } else {
+            setMostrarErros(false);
             aoFechar();
         }
     }, [isDirty, isSaving, aoFechar]);
@@ -105,16 +111,14 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
 
             const check = validateInput(payload, schemas.printer);
             if (!check.valid) {
-                showError(check.errors[0]);
+                setMostrarErros(true);
                 return;
             }
 
             hideFeedback();
             await aoSalvar(payload);
-            showSuccess(dadosIniciais ? "Impressora atualizada!" : "Impressora cadastrada!");
-            setTimeout(() => {
-                aoFechar();
-            }, 1000);
+            await aoSalvar(payload);
+            aoFechar();
 
         } catch (error) {
             console.error("Erro ao salvar impressora:", error);
@@ -156,10 +160,10 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                     Cancelar
                 </button>
                 <button
-                    disabled={!isValid || isSaving}
+                    disabled={isSaving}
                     onClick={handleSalvarInterno}
                     className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-[0.98]
-                        ${isValid && !isSaving ? "bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg" : "bg-zinc-900/40 text-zinc-600 cursor-not-allowed"}`}
+                        ${!isSaving ? "bg-zinc-100 text-zinc-950 hover:bg-white shadow-lg" : "bg-zinc-900/40 text-zinc-600 cursor-not-allowed"}`}
                 >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
                     {isSaving ? "Sincronizando..." : dadosIniciais ? "Salvar Alterações" : "Adicionar Máquina"}
@@ -169,14 +173,16 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
     );
 
     return (
-        <Modal
+        <SideBySideModal
             isOpen={aberto}
             onClose={handleTentativaFechar}
-            title={dadosIniciais ? "Editar Impressora" : "Nova Impressora"}
-            subtitle={dadosIniciais ? "Gerencie os detalhes técnicos do seu equipamento." : "Adicione uma nova impressora à sua frota."}
-            icon={Printer}
+            sidebar={null}
+            header={{
+                title: dadosIniciais ? "Editar Impressora" : "Nova Impressora",
+                subtitle: dadosIniciais ? "Gerencie os detalhes técnicos do seu equipamento." : "Adicione uma nova impressora à sua frota."
+            }}
             footer={footerContent}
-            isLoading={isSaving}
+            isSaving={isSaving}
             maxWidth="max-w-2xl"
         >
             <div className="space-y-8">
@@ -190,7 +196,9 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <div className="flex justify-between px-1">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase">Fabricante</label>
+                                <label className={`text-[10px] font-bold uppercase ${mostrarErros && !formulario.marca ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                                    Fabricante {mostrarErros && !formulario.marca && "*"}
+                                </label>
                                 <button onClick={() => setEntradaManual(p => ({ ...p, marca: !p.marca }))} className="text-[9px] text-sky-500/50 hover:text-sky-400 font-bold uppercase tracking-tighter">
                                     {entradaManual.marca ? "Lista" : "Manual"}
                                 </button>
@@ -200,12 +208,15 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                                 options={opcoesMarca} value={formulario.marca}
                                 onChange={val => updateForm({ marca: entradaManual.marca ? val.target.value : val, modelo: "" })}
                                 placeholder="Selecione..."
+                                error={mostrarErros && !formulario.marca}
                             />
                         </div>
 
                         <div className="space-y-1">
                             <div className="flex justify-between px-1">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase">Modelo</label>
+                                <label className={`text-[10px] font-bold uppercase ${mostrarErros && !formulario.modelo ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                                    Modelo {mostrarErros && !formulario.modelo && "*"}
+                                </label>
                                 <button onClick={() => setEntradaManual(p => ({ ...p, modelo: !p.modelo }))} className="text-[9px] text-sky-500/50 hover:text-sky-400 font-bold uppercase tracking-tighter">
                                     {entradaManual.modelo ? "Lista" : "Manual"}
                                 </button>
@@ -217,6 +228,7 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                                 value={formulario.modelo}
                                 onChange={(val, item) => entradaManual.modelo ? updateForm({ modelo: val.target.value }) : tratarMudancaModelo(val, item)}
                                 placeholder="Selecione..."
+                                error={mostrarErros && !formulario.modelo}
                             />
                         </div>
                     </div>
@@ -287,6 +299,6 @@ export default function PrinterModal({ aberto, aoFechar, aoSalvar, dadosIniciais
                 </div>
 
             </div>
-        </Modal>
+        </SideBySideModal>
     );
 }

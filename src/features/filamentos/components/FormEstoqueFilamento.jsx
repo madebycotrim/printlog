@@ -33,7 +33,9 @@ export default function FormularioEstoqueFilamento({ formulario, atualizarFormul
             <div className="grid grid-cols-3 gap-x-4 gap-y-5">
                 <div className="space-y-1.5 w-full">
                     <div className="flex justify-between items-end px-1 min-h-[18px]">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Preço Pago</label>
+                        <label className={`text-[10px] font-bold uppercase tracking-wide ${mostrarErros && formulario.preco === "" ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                            Preço Pago {mostrarErros && formulario.preco === "" && "*"}
+                        </label>
                         {custoPorGrama}
                     </div>
                     <UnifiedInput
@@ -51,7 +53,9 @@ export default function FormularioEstoqueFilamento({ formulario, atualizarFormul
 
                 <div className="space-y-1.5 w-full">
                     <div className="flex justify-between items-end px-1 min-h-[18px]">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Peso Total (g)</label>
+                        <label className={`text-[10px] font-bold uppercase tracking-wide ${mostrarErros && !parseNumber(formulario.peso_total) ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                            Peso Total (g) {mostrarErros && !parseNumber(formulario.peso_total) && "*"}
+                        </label>
                     </div>
                     <UnifiedInput
                         icon={Disc}

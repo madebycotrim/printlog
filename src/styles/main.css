@@ -66,6 +66,7 @@
 
     input[type=number] {
         -moz-appearance: textfield;
+        appearance: textfield;
     }
 }
 
@@ -296,6 +297,7 @@
     margin-bottom: 8px;
     background: linear-gradient(to right, #ffffff, #a1a1aa);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1.2;
 }

@@ -1,24 +1,44 @@
+
 import { enviarJSON } from './_utils';
 
-export async function resetSchema({ db }) {
-    const commands = [
-        "DROP TABLE IF EXISTS filament_logs",
-        "DROP TABLE IF EXISTS failures",
-        "DROP TABLE IF EXISTS activity_logs",
-        "DROP TABLE IF EXISTS subscriptions",
-        "DROP TABLE IF EXISTS clients",
-        "DROP TABLE IF EXISTS supply_events",
-        "DROP TABLE IF EXISTS supplies",
-        "DROP TABLE IF EXISTS todos",
-        "DROP TABLE IF EXISTS projects",
-        "DROP TABLE IF EXISTS calculator_settings",
-        "DROP TABLE IF EXISTS printers",
-        "DROP TABLE IF EXISTS filaments",
+export async function onRequest(context) {
+    const { env } = context;
+    const db = env.DB;
 
-        `CREATE TABLE filaments (
+    // ==========================================
+    // ESTÁGIO 1: DROPS (Limpeza)
+    // ==========================================
+    const drops = [
+        "DROP TRIGGER IF EXISTS atualizar_percentual_filamento",
+        "DROP TRIGGER IF EXISTS atualizar_timestamp_filamentos",
+        "DROP TRIGGER IF EXISTS atualizar_timestamp_impressoras",
+        "DROP TRIGGER IF EXISTS atualizar_timestamp_projetos",
+        "DROP TRIGGER IF EXISTS atualizar_timestamp_insumos",
+        "DROP VIEW IF EXISTS dashboard_consumo",
+        "DROP VIEW IF EXISTS custos_projetos",
+        "DROP VIEW IF EXISTS alertas_estoque_baixo",
+        "DROP VIEW IF EXISTS uso_impressoras",
+        "DROP TABLE IF EXISTS filamentos_log",
+        "DROP TABLE IF EXISTS sistema_log",
+        "DROP TABLE IF EXISTS impressoras_log",
+        "DROP TABLE IF EXISTS assinaturas",
+        "DROP TABLE IF EXISTS clientes",
+        "DROP TABLE IF EXISTS insumos_log",
+        "DROP TABLE IF EXISTS insumos",
+        "DROP TABLE IF EXISTS tarefas",
+        "DROP TABLE IF EXISTS projetos",
+        "DROP TABLE IF EXISTS configuracoes_calculadora",
+        "DROP TABLE IF EXISTS impressoras",
+        "DROP TABLE IF EXISTS filamentos"
+    ];
+
+    // ==========================================
+    // ESTÁGIO 2: CREATE TABLES
+    // ==========================================
+    const tables = [
+        `CREATE TABLE filamentos (
             id TEXT PRIMARY KEY, 
-            user_id TEXT NOT NULL, 
-            org_id TEXT,
+            usuario_id TEXT NOT NULL, 
             nome TEXT NOT NULL, 
             marca TEXT, 
             material TEXT, 
@@ -29,27 +49,34 @@ export async function resetSchema({ db }) {
             preco REAL, 
             data_abertura TEXT, 
             favorito INTEGER DEFAULT 0, 
-            tags TEXT DEFAULT '[]'
+            tags TEXT DEFAULT '[]',
+            percentual_restante REAL,
+            dias_desde_abertura INTEGER,
+            versao INTEGER DEFAULT 1,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deletado_em DATETIME
         )`,
-
-        `CREATE TABLE filament_logs (
+        `CREATE TABLE filamentos_log (
             id TEXT PRIMARY KEY, 
-            filament_id TEXT NOT NULL, 
-            date TEXT NOT NULL, 
-            type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
-            amount REAL DEFAULT 0, 
-            obs TEXT,
-            user_id TEXT NOT NULL,    
-            printer_id TEXT, 
-            model_name TEXT, 
-            cost REAL DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            filamento_id TEXT NOT NULL, 
+            data TEXT NOT NULL, 
+            tipo TEXT NOT NULL CHECK(tipo IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
+            quantidade REAL DEFAULT 0, 
+            observacao TEXT,
+            usuario_id TEXT NOT NULL,    
+            impressora_id TEXT, 
+            nome_modelo TEXT, 
+            custo REAL DEFAULT 0,
+            projeto_id TEXT,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (filamento_id) REFERENCES filamentos(id) ON DELETE CASCADE,
+            FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE SET NULL,
+            FOREIGN KEY (impressora_id) REFERENCES impressoras(id) ON DELETE SET NULL
         )`,
-
-        `CREATE TABLE printers (
+        `CREATE TABLE impressoras (
             id TEXT PRIMARY KEY, 
-            user_id TEXT NOT NULL, 
-            org_id TEXT,
+            usuario_id TEXT NOT NULL, 
             nome TEXT NOT NULL, 
             marca TEXT, 
             modelo TEXT, 
@@ -60,12 +87,28 @@ export async function resetSchema({ db }) {
             horas_totais REAL DEFAULT 0, 
             ultima_manutencao_hora REAL DEFAULT 0, 
             intervalo_manutencao REAL DEFAULT 300, 
-            historico TEXT
+            historico TEXT,
+            versao INTEGER DEFAULT 1,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deletado_em DATETIME
         )`,
-
-        `CREATE TABLE calculator_settings (
-            user_id TEXT PRIMARY KEY, 
-            org_id TEXT,
+        `CREATE TABLE impressoras_log (
+            id TEXT PRIMARY KEY,
+            impressora_id TEXT NOT NULL,
+            usuario_id TEXT NOT NULL,
+            data TEXT NOT NULL,
+            tipo TEXT NOT NULL CHECK(tipo IN ('manutencao', 'ajuste', 'uso', 'observacao')),
+            observacao TEXT,
+            horas_operacao REAL,
+            custo REAL DEFAULT 0,
+            projeto_id TEXT,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (impressora_id) REFERENCES impressoras(id) ON DELETE CASCADE,
+            FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE SET NULL
+        )`,
+        `CREATE TABLE configuracoes_calculadora (
+            usuario_id TEXT PRIMARY KEY, 
             custo_kwh REAL, 
             valor_hora_humana REAL, 
             custo_hora_maquina REAL, 
@@ -76,94 +119,257 @@ export async function resetSchema({ db }) {
             taxa_falha REAL, 
             desconto REAL, 
             whatsapp_template TEXT, 
-            theme TEXT DEFAULT 'dark', 
-            primary_color TEXT DEFAULT 'sky'
+            tema TEXT DEFAULT 'dark', 
+            cor_primaria TEXT DEFAULT 'sky',
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
-
-        `CREATE TABLE projects (
+        `CREATE TABLE projetos (
             id TEXT PRIMARY KEY, 
-            user_id TEXT NOT NULL, 
-            org_id TEXT,
-            label TEXT NOT NULL, 
+            usuario_id TEXT NOT NULL, 
+            nome TEXT NOT NULL, 
             data TEXT, 
             tags TEXT DEFAULT '[]', 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            versao INTEGER DEFAULT 1,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deletado_em DATETIME
         )`,
-
-        `CREATE TABLE todos (
+        `CREATE TABLE tarefas (
             id TEXT PRIMARY KEY, 
-            user_id TEXT NOT NULL, 
-            org_id TEXT,
-            text TEXT NOT NULL, 
-            done INTEGER DEFAULT 0, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            usuario_id TEXT NOT NULL, 
+            texto TEXT NOT NULL, 
+            concluida INTEGER DEFAULT 0, 
+            versao INTEGER DEFAULT 1,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deletado_em DATETIME
         )`,
-
-        `CREATE TABLE supplies (
+        `CREATE TABLE insumos (
             id TEXT PRIMARY KEY, 
-            user_id TEXT NOT NULL, 
-            org_id TEXT,
-            name TEXT NOT NULL, 
-            price REAL, 
-            unit TEXT, 
-            min_stock REAL, 
-            current_stock REAL, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
-            category TEXT DEFAULT 'Outros', 
-            description TEXT, 
-            updated_at DATETIME
+            usuario_id TEXT NOT NULL, 
+            nome TEXT NOT NULL, 
+            preco REAL, 
+            unidade TEXT, 
+            estoque_minimo REAL, 
+            estoque_atual REAL, 
+            categoria TEXT DEFAULT 'Outros', 
+            marca TEXT,
+            link_compra TEXT,
+            descricao TEXT, 
+            unidade_uso TEXT,
+            rendimento_estoque REAL DEFAULT 1,
+            versao INTEGER DEFAULT 1,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP, 
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deletado_em DATETIME
         )`,
-
-        `CREATE TABLE supply_events (
+        `CREATE TABLE insumos_log (
             id TEXT PRIMARY KEY, 
-            supply_id TEXT NOT NULL, 
-            org_id TEXT,
-            user_id TEXT, 
-            type TEXT CHECK(type IN ('create', 'update', 'manual', 'abertura', 'delete')), 
-            old_stock REAL, 
-            new_stock REAL, 
-            quantity_change REAL, 
-            cost REAL, 
-            notes TEXT, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            insumo_id TEXT NOT NULL, 
+            usuario_id TEXT, 
+            tipo TEXT CHECK(tipo IN ('criacao', 'atualizacao', 'manual', 'abertura', 'exclusao', 'consumo')), 
+            estoque_anterior REAL, 
+            estoque_novo REAL, 
+            mudanca_quantidade REAL, 
+            custo REAL, 
+            observacoes TEXT, 
+            projeto_id TEXT,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (insumo_id) REFERENCES insumos(id) ON DELETE CASCADE,
+            FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE SET NULL
         )`,
-
-        `CREATE TABLE clients (
+        `CREATE TABLE clientes (
             id TEXT PRIMARY KEY, 
-            user_id TEXT NOT NULL, 
-            org_id TEXT,
-            name TEXT NOT NULL, 
+            usuario_id TEXT NOT NULL, 
+            nome TEXT NOT NULL, 
             email TEXT, 
-            phone TEXT, 
-            document TEXT, 
-            notes TEXT, 
-            address TEXT, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            telefone TEXT, 
+            documento TEXT, 
+            observacoes TEXT, 
+            endereco TEXT, 
+            versao INTEGER DEFAULT 1,
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deletado_em DATETIME
         )`,
-
-        `CREATE TABLE subscriptions (
-            org_id TEXT PRIMARY KEY, 
-            plan_id TEXT NOT NULL, 
+        `CREATE TABLE assinaturas (
+            plano_id TEXT NOT NULL, 
             status TEXT, 
-            current_period_end TEXT, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            fim_periodo_atual TEXT, 
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
-
-        `CREATE TABLE activity_logs (
+        `CREATE TABLE sistema_log (
             id TEXT PRIMARY KEY, 
-            org_id TEXT NOT NULL, 
-            user_id TEXT NOT NULL, 
-            action TEXT NOT NULL, 
-            details TEXT, 
-            metadata TEXT, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            usuario_id TEXT NOT NULL, 
+            acao TEXT NOT NULL, 
+            detalhes TEXT, 
+            metadados TEXT, 
+            ip_address TEXT,
+            user_agent TEXT,
+            nivel TEXT CHECK(nivel IN ('info', 'warning', 'error')) DEFAULT 'info',
+            criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
         )`
     ];
 
+    // ==========================================
+    // ESTÁGIO 3: INDICES
+    // ==========================================
+    const indices = [
+        "CREATE INDEX idx_filamentos_usuario ON filamentos(usuario_id) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_filamentos_material ON filamentos(material) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_filamentos_favorito ON filamentos(favorito) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_filamentos_log_filamento ON filamentos_log(filamento_id)",
+        "CREATE INDEX idx_filamentos_log_projeto ON filamentos_log(projeto_id)",
+        "CREATE INDEX idx_filamentos_log_data ON filamentos_log(data DESC)",
+        "CREATE INDEX idx_filamentos_log_tipo ON filamentos_log(tipo)",
+        "CREATE INDEX idx_impressoras_usuario ON impressoras(usuario_id) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_impressoras_status ON impressoras(status) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_impressoras_log_impressora ON impressoras_log(impressora_id)",
+        "CREATE INDEX idx_impressoras_log_projeto ON impressoras_log(projeto_id)",
+        "CREATE INDEX idx_impressoras_log_data ON impressoras_log(data DESC)",
+        "CREATE INDEX idx_insumos_usuario ON insumos(usuario_id) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_insumos_categoria ON insumos(categoria) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_insumos_log_insumo ON insumos_log(insumo_id)",
+        "CREATE INDEX idx_insumos_log_projeto ON insumos_log(projeto_id)",
+        "CREATE INDEX idx_projetos_usuario ON projetos(usuario_id) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_projetos_data ON projetos(criado_em DESC) WHERE deletado_em IS NULL",
+        "CREATE INDEX idx_sistema_log_usuario ON sistema_log(usuario_id)",
+        "CREATE INDEX idx_sistema_log_data ON sistema_log(criado_em DESC)",
+        "CREATE INDEX idx_sistema_log_nivel ON sistema_log(nivel)"
+    ];
+
+    // ==========================================
+    // ESTÁGIO 4: TRIGGERS
+    // ==========================================
+    const triggers = [
+        `CREATE TRIGGER atualizar_percentual_filamento 
+        AFTER UPDATE OF peso_atual, peso_total ON filamentos
+        WHEN NEW.peso_total > 0
+        BEGIN
+            UPDATE filamentos 
+            SET percentual_restante = (NEW.peso_atual / NEW.peso_total) * 100
+            WHERE id = NEW.id;
+        END`,
+        `CREATE TRIGGER atualizar_timestamp_filamentos
+        AFTER UPDATE ON filamentos
+        BEGIN
+            UPDATE filamentos 
+            SET atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = NEW.id;
+        END`,
+        `CREATE TRIGGER atualizar_timestamp_impressoras
+        AFTER UPDATE ON impressoras
+        BEGIN
+            UPDATE impressoras 
+            SET atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = NEW.id;
+        END`,
+        `CREATE TRIGGER atualizar_timestamp_projetos
+        AFTER UPDATE ON projetos
+        BEGIN
+            UPDATE projetos 
+            SET atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = NEW.id;
+        END`,
+        `CREATE TRIGGER atualizar_timestamp_insumos
+        AFTER UPDATE ON insumos
+        BEGIN
+            UPDATE insumos 
+            SET atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = NEW.id;
+        END`
+    ];
+
+    // ==========================================
+    // ESTÁGIO 5: VIEWS
+    // ==========================================
+    const views = [
+        `CREATE VIEW dashboard_consumo AS
+        SELECT 
+            DATE(data) as dia,
+            tipo,
+            SUM(quantidade) as total_quantidade,
+            SUM(custo) as total_custo,
+            COUNT(*) as num_movimentacoes
+        FROM filamentos_log
+        GROUP BY DATE(data), tipo`,
+        `CREATE VIEW custos_projetos AS
+        SELECT 
+            p.id,
+            p.nome,
+            p.criado_em,
+            COALESCE(SUM(fl.custo), 0) as custo_filamentos,
+            COALESCE(SUM(il.custo), 0) as custo_insumos,
+            COALESCE(SUM(fl.custo), 0) + COALESCE(SUM(il.custo), 0) as custo_total
+        FROM projetos p
+        LEFT JOIN filamentos_log fl ON fl.projeto_id = p.id
+        LEFT JOIN insumos_log il ON il.projeto_id = p.id
+        WHERE p.deletado_em IS NULL
+        GROUP BY p.id, p.nome, p.criado_em`,
+        `CREATE VIEW alertas_estoque_baixo AS
+        SELECT 
+            f.id,
+            f.nome,
+            f.material,
+            f.cor_hex,
+            f.peso_atual,
+            f.percentual_restante
+        FROM filamentos f
+        WHERE f.deletado_em IS NULL 
+          AND f.percentual_restante < 20
+        UNION ALL
+        SELECT 
+            i.id,
+            i.nome,
+            i.categoria as material,
+            NULL as cor_hex,
+            i.estoque_atual as peso_atual,
+            (i.estoque_atual / NULLIF(i.estoque_minimo, 0)) * 100 as percentual_restante
+        FROM insumos i
+        WHERE i.deletado_em IS NULL 
+          AND i.estoque_atual < i.estoque_minimo`,
+        `CREATE VIEW uso_impressoras AS
+        SELECT 
+            imp.id,
+            imp.nome,
+            imp.horas_totais,
+            imp.rendimento_total,
+            COUNT(il.id) as num_usos,
+            SUM(il.horas_operacao) as horas_em_projetos
+        FROM impressoras imp
+        LEFT JOIN impressoras_log il ON il.impressora_id = imp.id AND il.tipo = 'uso'
+        WHERE imp.deletado_em IS NULL
+        GROUP BY imp.id, imp.nome, imp.horas_totais, imp.rendimento_total`
+    ];
+
+    // Execute in sequence
     try {
-        await db.batch(commands.map(cmd => db.prepare(cmd)));
-        return enviarJSON({ message: "Schema reset successfully (All tables dropped and recreated)" });
-    } catch (e) {
-        return enviarJSON({ error: "Reset failed", details: e.message }, 500);
+        console.log("Starting DB Reset...");
+
+        for (const sql of drops) {
+            try { await db.prepare(sql).run(); } catch (e) { console.warn("Drop failed:", e.message); }
+        }
+
+        for (const sql of tables) {
+            await db.prepare(sql).run();
+        }
+
+        for (const sql of indices) {
+            await db.prepare(sql).run();
+        }
+
+        for (const sql of triggers) {
+            await db.prepare(sql).run();
+        }
+
+        for (const sql of views) {
+            await db.prepare(sql).run();
+        }
+
+        return enviarJSON({ success: true, message: "Banco de dados resetado com sucesso (Manual batch)!" });
+    } catch (err) {
+        console.error("Critical Reset Error:", err);
+        return enviarJSON({ error: "Erro crítico no reset", details: err.message }, 500);
     }
 }

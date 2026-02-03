@@ -23,15 +23,19 @@ export function AuthProvider({ children }) {
             // Map Firebase user to a structure similar to what the app expects
             if (currentUser) {
                 sessionStorage.setItem('uid', currentUser.uid);
+                const localAvatar = localStorage.getItem(`printlog_avatar_${currentUser.uid}`);
                 setUser({
                     id: currentUser.uid,
                     email: currentUser.email,
                     firstName: currentUser.displayName?.split(" ")[0] || "Maker",
                     fullName: currentUser.displayName,
-                    imageUrl: currentUser.photoURL,
+                    imageUrl: localAvatar || currentUser.photoURL,
                     primaryEmailAddress: { emailAddress: currentUser.email },
                     username: currentUser.displayName,
-                    publicMetadata: { role: "user" }
+                    publicMetadata: { role: "user" },
+                    createdAt: currentUser.metadata.creationTime,
+                    passwordEnabled: currentUser.providerData.some(p => p.providerId === 'password'),
+                    providerData: currentUser.providerData // Expose full provider data for specific checks (Google vs Email)
                 });
             } else {
                 sessionStorage.removeItem('uid');
@@ -79,6 +83,26 @@ export function AuthProvider({ children }) {
         return null;
     };
 
+    const updateUserData = async (data) => {
+        if (auth.currentUser) {
+            // 1. Atualiza Estado Local IMEDIATAMENTE (Feedback UI Instantâneo)
+            setUser(prev => ({ ...prev, ...data, imageUrl: data.photoURL || prev?.imageUrl }));
+
+            // 2. Tenta atualizar no Firebase (apenas se for dados seguros/cloud)
+            // Se for Base64 (data:image...), não enviamos para o Firebase Auth pois excede o limite.
+            const isBase64 = data.photoURL && data.photoURL.startsWith('data:image');
+
+            if (!isBase64) {
+                try {
+                    await updateProfile(auth.currentUser, data);
+                } catch (error) {
+                    console.warn("Aviso: Falha ao atualizar perfil remoto (pode ser ignorado se for apenas local):", error);
+                    // Não revertemos o estado local pois queremos manter a "ilusão" de sucesso para o usuário em modo offline/local
+                }
+            }
+        }
+    };
+
     const value = {
         user,
         isLoaded,
@@ -88,7 +112,8 @@ export function AuthProvider({ children }) {
         signOut,
         resetPassword,
         signInWithGoogle,
-        getToken
+        getToken,
+        updateUserData
     };
 
     return (
@@ -114,7 +139,8 @@ export function useAuth() {
         signIn: context.signIn,
         signUp: context.signUp,
         resetPassword: context.resetPassword,
-        signInWithGoogle: context.signInWithGoogle
+        signInWithGoogle: context.signInWithGoogle,
+        updateUserData: context.updateUserData
     };
 }
 

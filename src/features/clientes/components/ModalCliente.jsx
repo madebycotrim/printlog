@@ -22,6 +22,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
 
     const [formData, setFormData] = useState(initialForm);
     const [isDirty, setIsDirty] = useState(false);
+    const [mostrarErros, setMostrarErros] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -31,6 +32,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
                 setFormData({ ...initialForm, ...initialData });
             }
             setIsDirty(false);
+            setMostrarErros(false);
             hideFeedback();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -39,15 +41,18 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
     const updateForm = (updates) => {
         setFormData(prev => ({ ...prev, ...updates }));
         setIsDirty(true);
+        if (mostrarErros) setMostrarErros(false);
     };
 
     const handleTentativaFechar = useCallback(() => {
         if (isSaving) return;
         if (isDirty) {
             if (window.confirm("Você tem alterações não salvas. Deseja realmente sair?")) {
+                setMostrarErros(false);
                 onClose();
             }
         } else {
+            setMostrarErros(false);
             onClose();
         }
     }, [isSaving, isDirty, onClose]);
@@ -56,7 +61,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
         if (isSaving) return;
 
         if (!formData.nome.trim()) {
-            showError("O nome do cliente é obrigatório.");
+            setMostrarErros(true);
             return;
         }
 
@@ -64,56 +69,17 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
             hideFeedback();
             const result = await saveClient(formData);
             if (result) {
-                showSuccess(clienteParaEditar ? 'Cliente atualizado com sucesso!' : 'Novo cliente cadastrado!');
                 if (onSuccess) {
                     // Se result for objeto com id, usa-o. Se não, tenta usar result direto.
                     const newId = result.id || result.data?.id || (typeof result === 'object' ? result.id : null);
                     onSuccess(newId);
                 }
-                setTimeout(() => {
-                    onClose();
-                }, 1000);
+                onClose();
             }
         } catch {
             showError("Erro ao salvar cliente.");
         }
     };
-
-    // Sidebar Content (Prévia)
-    const sidebarContent = (
-        <div className="flex flex-col items-center w-full space-y-10 relative z-10 h-full justify-between">
-            <div className="w-full">
-                <div className="flex items-center gap-3 justify-center text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-10">
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                    <span>Prévia</span>
-                    <div className="h-px w-4 bg-zinc-900/50" />
-                </div>
-
-                <div className="relative group p-10 rounded-[2.5rem] bg-zinc-950/50 border border-zinc-800 shadow-inner flex items-center justify-center backdrop-blur-sm mx-auto w-fit mb-10">
-                    <div className="relative scale-110">
-                        <User size={80} className="text-zinc-600" strokeWidth={1} />
-                    </div>
-                </div>
-
-                <div className="text-center space-y-3 w-full">
-                    <h3 className="text-xl font-bold text-zinc-100 tracking-tight truncate px-2 leading-tight">
-                        {formData.nome || "Novo Cliente"}
-                    </h3>
-                    {formData.empresa ? (
-                        <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest bg-zinc-800/50 px-3 py-1 rounded-full border border-zinc-800/50 inline-block">
-                            {formData.empresa}
-                        </span>
-                    ) : (
-                        <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">
-                            Pessoa Física
-                        </span>
-                    )}
-                </div>
-            </div>
-
-
-        </div>
-    );
 
     // Footer Content
     const footerContent = ({ onClose }) => (
@@ -152,7 +118,7 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
         <SideBySideModal
             isOpen={isOpen}
             onClose={onClose}
-            sidebar={sidebarContent}
+            sidebar={null}
             header={{
                 title: clienteParaEditar ? "Editar Cliente" : (reduced ? "Cadastro Rápido" : "Cadastrar Cliente"),
                 subtitle: clienteParaEditar ? "Atualize os dados de contato do cliente" : (reduced ? "Preencha apenas os dados essenciais para começar" : "Adicione um novo parceiro ou cliente à sua base")
@@ -170,12 +136,15 @@ export default function ModalCliente({ isOpen, onClose, clienteParaEditar = null
                     </div>
                     <div className="grid grid-cols-2 gap-x-8 gap-y-5">
                         <div className="space-y-1.5 col-span-2 md:col-span-1">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Nome Completo</label>
+                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && !formData.nome ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                                Nome Completo {mostrarErros && !formData.nome && "*"}
+                            </label>
                             <UnifiedInput
                                 icon={User}
                                 value={formData.nome}
                                 onChange={(e) => updateForm({ nome: e.target.value })}
                                 placeholder="Ex: João da Silva"
+                                error={mostrarErros && !formData.nome}
                             />
                         </div>
                         <div className="space-y-1.5 col-span-2 md:col-span-1">

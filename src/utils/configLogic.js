@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useUser } from "../contexts/AuthContext";
-import { auth } from "../services/firebase";
-import { updateProfile, updatePassword, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { auth, storage } from "../services/firebase";
+import { updateProfile, updatePassword, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Globe, WifiOff, Zap, Loader2, Activity } from 'lucide-react';
 import api from './api';
 import { calculatePasswordStrength } from './auth';
@@ -10,7 +11,7 @@ import { PDF_COLORS, drawPDFHeader } from './pdfUtils';
 import { useSidebarStore } from '../stores/sidebarStore';
 
 export const useLogicaConfiguracao = () => {
-    const { signOut: encerrarSessao } = useAuth();
+    const { signOut: encerrarSessao, updateUserData } = useAuth();
     const { user: usuario, isLoaded: estaCarregado } = useUser();
     const referenciaEntradaArquivo = useRef(null);
 
@@ -18,9 +19,31 @@ export const useLogicaConfiguracao = () => {
     const [estaSalvando, setEstaSalvando] = useState(false);
     const [aviso, setAviso] = useState({ exibir: false, mensagem: '', tipo: 'sucesso' });
     const [primeiroNome, setPrimeiroNome] = useState("");
+    const [nomeOficina, setNomeOficina] = useState("");
     const [nomeOriginal, setNomeOriginal] = useState("");
     const [exibirJanelaSenha, setExibirJanelaSenha] = useState(false);
+    const [exibirModalReauth, setExibirModalReauth] = useState(false);
     const [formularioSenha, setFormularioSenha] = useState({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
+
+    // --- STORAGE STATS ---
+    const [storageStats, setStorageStats] = useState({ userUsage: 0, maxStorage: 1024 * 1024 * 1024, percentage: 0 });
+
+    const formatBytes = (bytes, decimals = 1) => {
+        if (!+bytes) return '0 B';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    };
+
+    useEffect(() => {
+        if (estaCarregado && usuario?.id) {
+            api.get(`/stats?userId=${usuario.id}`)
+                .then(res => setStorageStats(res.data))
+                .catch(console.error);
+        }
+    }, [estaCarregado, usuario]);
 
     // Firebase do not expose "passwordEnabled" easily on client without checking providers.
     // Assuming password is enabled if provider is password.
@@ -32,6 +55,8 @@ export const useLogicaConfiguracao = () => {
     useEffect(() => {
         if (estaCarregado && usuario) {
             setPrimeiroNome(usuario.firstName || "");
+            const savedWorkshopName = localStorage.getItem('printlog_workshop_name') || "";
+            setNomeOficina(savedWorkshopName);
             setNomeOriginal(usuario.firstName || "");
         }
     }, [estaCarregado, usuario]);
@@ -58,24 +83,63 @@ export const useLogicaConfiguracao = () => {
         [requisitosSenha]
     );
 
-    // --- CARREGAMENTO E OTIMIZAÇÃO DE IMAGEM ---
+    // --- CARREGAMENTO DE IMAGEM (LOCAL STORAGE - SEM FIREBASE STORAGE) ---
     const manipularCarregamentoImagem = async (evento) => {
-        // Firebase Auth "photoURL" supports only URL. 
-        // We cannot upload file directly to "user" object like Clerk.
-        // We need Firebase Storage or another storage solution.
-        // For now, we will return an error or just skip implementation.
-        setAviso({ exibir: true, mensagem: "Upload de imagem requer configuração de Storage (não implementado).", tipo: 'erro' });
-
-        /* 
-        Implementation if Storage was available:
         const arquivo = evento.target.files[0];
         if (!arquivo) return;
+
+        // Validação básica
+        if (!arquivo.type.startsWith('image/')) {
+            setAviso({ exibir: true, mensagem: "Apenas arquivos de imagem.", tipo: 'erro' });
+            return;
+        }
+
+        if (arquivo.size > 2 * 1024 * 1024) { // Limitado a 2MB para não explodir o LocalStorage
+            setAviso({ exibir: true, mensagem: "Imagem muito grande! Máximo 2MB.", tipo: 'erro' });
+            return;
+        }
+
         setEstaSalvando(true);
         try {
-           // upload to storage... get URL
-           // await updateProfile(auth.currentUser, { photoURL: url });
-        } ...
-        */
+            const user = auth.currentUser;
+            if (!user) throw new Error("Usuário não autenticado");
+
+            // Converter para Base64
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+
+                try {
+                    // 1. Salva no LocalStorage (Persistência Local)
+                    const storageKey = `printlog_avatar_${user.uid}`;
+                    localStorage.setItem(storageKey, base64String);
+
+                    // 2. Atualiza Estado do App (Feedback Imediato)
+                    // Nota: Não enviamos para o Firebase Auth (updateProfile) pois ele tem limite de caracteres baixo para photoURL
+                    await updateUserData({ photoURL: base64String });
+
+                    setAviso({ exibir: true, mensagem: "Foto salva localmente!", tipo: 'sucesso' });
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        setAviso({ exibir: true, mensagem: "Espaço local cheio!", tipo: 'erro' });
+                    } else {
+                        throw e;
+                    }
+                } finally {
+                    setEstaSalvando(false);
+                }
+            };
+            reader.readAsDataURL(arquivo);
+
+        } catch (erro) {
+            console.error("Erro ao processar imagem:", erro);
+            setAviso({ exibir: true, mensagem: "Falha ao salvar a imagem.", tipo: 'erro' });
+            setEstaSalvando(false);
+        } finally {
+            if (referenciaEntradaArquivo.current) {
+                referenciaEntradaArquivo.current.value = "";
+            }
+        }
     };
 
     // --- AUXILIAR PARA BAIXAR ARQUIVOS ---
@@ -96,9 +160,18 @@ export const useLogicaConfiguracao = () => {
         setEstaSalvando(true);
         try {
             const resposta = await api.get('/users/backup');
+
+            if (resposta.data && resposta.data.error) {
+                console.error("Erro do backend:", resposta.data);
+                throw new Error(`Erro do Servidor: ${resposta.data.error} - ${resposta.data.details || ''}`);
+            }
+
             const dadosCompletos = resposta.data.data;
 
-            if (!dadosCompletos) throw new Error("Dados não encontrados");
+            if (!dadosCompletos) {
+                console.error("Estrutura de resposta inválida:", resposta.data);
+                throw new Error("Dados não encontrados ou resposta inválida");
+            }
 
             const dataAtual = new Date().toISOString().split('T')[0];
             const nomeArquivo = `RELATORIO_SISTEMA_${dataAtual}`;
@@ -244,9 +317,14 @@ export const useLogicaConfiguracao = () => {
         try {
             if (auth.currentUser) {
                 await updateProfile(auth.currentUser, { displayName: primeiroNome });
+
+                // Save workshop name to local storage
+                localStorage.setItem('printlog_workshop_name', nomeOficina);
+                window.dispatchEvent(new Event('workshopNameUpdated'));
+
                 // Note: AuthContext should update automatically via onAuthStateChanged
                 setNomeOriginal(primeiroNome);
-                setAviso({ exibir: true, mensagem: "Nome de perfil atualizado.", tipo: 'sucesso' });
+                setAviso({ exibir: true, mensagem: "Perfil atualizado com sucesso!", tipo: 'sucesso' });
             }
         } catch {
             setAviso({ exibir: true, mensagem: "Erro ao salvar alterações.", tipo: 'erro' });
@@ -274,21 +352,115 @@ export const useLogicaConfiguracao = () => {
             setFormularioSenha({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
         } catch (erroServidor) {
             console.error(erroServidor);
-            setAviso({ exibir: true, mensagem: "Erro ao atualizar senha. Verifique sua senha atual.", tipo: 'erro' });
+            if (erroServidor.code === 'auth/requires-recent-login') {
+                const user = auth.currentUser;
+                const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+
+                if (isGoogle) {
+                    try {
+                        setAviso({ exibir: true, mensagem: "Por favor, confirme seu login com o Google para alterar a senha.", tipo: 'sucesso' });
+
+                        const provider = new GoogleAuthProvider();
+                        provider.setCustomParameters({ login_hint: user.email });
+
+                        await reauthenticateWithPopup(user, provider);
+                        await atualizarSenha(); // Recursive retry
+                        return;
+                    } catch (googleErro) {
+                        console.error(googleErro);
+                        if (googleErro.code === 'auth/user-mismatch') {
+                            setAviso({ exibir: true, mensagem: "Conta incorreta selecionada! Use o mesmo e-mail: " + user.email, tipo: 'erro' });
+                        } else {
+                            setAviso({ exibir: true, mensagem: "Reautenticação cancelada ou falhou.", tipo: 'erro' });
+                        }
+                    }
+                } else {
+                    setAviso({ exibir: true, mensagem: "Login recente necessário. Saia e entre novamente.", tipo: 'erro' });
+                }
+            } else {
+                setAviso({ exibir: true, mensagem: "Erro ao atualizar senha. Verifique os dados.", tipo: 'erro' });
+            }
         } finally { setEstaSalvando(false); }
     };
 
-    const excluirContaPermanente = async () => {
+    const confirmarExclusao = async (senha = null) => {
         setEstaSalvando(true);
         try {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Se senha foi fornecida (via ReauthModal), reautentica primeiro
+            if (senha) {
+                const credential = EmailAuthProvider.credential(user.email, senha);
+                await reauthenticateWithCredential(user, credential);
+                setExibirModalReauth(false); // Fecha modal se sucesso
+            }
+
+            // Tenta deletar
             await api.delete('/users'); // Delete data from DB
-            await deleteUser(auth.currentUser); // Delete user from Firebase
+            await deleteUser(user); // Delete user from Firebase
+
             setAviso({ exibir: true, mensagem: "Sua conta foi removida. Saindo do sistema...", tipo: 'sucesso' });
-            // Logout handled by context usually or redirect
-        } catch {
-            setAviso({ exibir: true, mensagem: "Erro ao tentar excluir os dados.", tipo: 'erro' });
+        } catch (erro) {
+            console.error(erro);
+            // Se erro for de login recente, verifica o provider:
+            if (erro.code === 'auth/requires-recent-login') {
+                const user = auth.currentUser;
+                const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+
+                if (isGoogle) {
+                    try {
+                        setAviso({ exibir: true, mensagem: "Por favor, confirme seu login com o Google na janela que abrir.", tipo: 'sucesso' });
+
+                        const provider = new GoogleAuthProvider();
+                        // 'prompt: select_account' força a escolha, evitando loops silenciosos ou bloqueios
+                        provider.setCustomParameters({ login_hint: user.email, prompt: 'select_account' });
+
+                        console.log("Iniciando reauthenticateWithPopup...");
+                        await reauthenticateWithPopup(user, provider);
+                        console.log("Reautenticação concluída com sucesso!");
+
+                        // Se sucesso, tenta excluir novamente
+                        setAviso({ exibir: true, mensagem: "Login confirmado. Excluindo conta...", tipo: 'sucesso' });
+                        await confirmarExclusao();
+                        return;
+                    } catch (googleErro) {
+                        console.error("Erro CRÍTICO na Reautenticação Google:", googleErro);
+
+                        let msg = "Falha na reautenticação do Google.";
+                        if (googleErro.code === 'auth/popup-closed-by-user') {
+                            msg = "A janela foi fechada antes de terminar. Tente novamente.";
+                        } else if (googleErro.code === 'auth/popup-blocked') {
+                            msg = "O navegador bloqueou a janela. Habilite pop-ups para este site.";
+                        } else if (googleErro.code === 'auth/cancelled-popup-request') {
+                            msg = "Operação cancelada (múltiplos cliques?). Tente mais devagar.";
+                        } else if (googleErro.code === 'auth/user-mismatch') {
+                            msg = `Conta incorreta! Faça login com ${user.email}`;
+                        }
+
+                        setAviso({ exibir: true, mensagem: msg, tipo: 'erro' });
+                    }
+                } else {
+                    // Fallback para senha
+                    setExibirModalReauth(true);
+                    setAviso({ exibir: true, mensagem: "Confirme sua senha para continuar.", tipo: 'sucesso' });
+                }
+            } else if (erro.code === 'auth/wrong-password') {
+                setAviso({ exibir: true, mensagem: "Senha incorreta.", tipo: 'erro' });
+            } else {
+                setAviso({ exibir: true, mensagem: "Erro ao excluir conta. Tente novamente mais tarde.", tipo: 'erro' });
+            }
+        } finally {
+            // Se abriu modal, não para loading visual da pagina, mas o modal tem seu proprio loading?
+            // Aqui decidimos parar o loading geral se NÃO estivermos esperando reauth
+            // Mas como o modal abre, podemos parar o loading geral principal
             setEstaSalvando(false);
         }
+    };
+
+    const excluirContaPermanente = async () => {
+        // Wrapper simples que chama a primeira vez sem senha
+        confirmarExclusao();
     };
 
     const [statusConexaoNuvem, setStatusConexaoNuvem] = useState({
@@ -381,7 +553,10 @@ export const useLogicaConfiguracao = () => {
         setAviso,
         primeiroNome,
         setPrimeiroNome,
-        temAlteracao: primeiroNome !== nomeOriginal,
+        setPrimeiroNome,
+        nomeOficina,
+        setNomeOficina,
+        temAlteracao: primeiroNome !== nomeOriginal || nomeOficina !== (localStorage.getItem('printlog_workshop_name') || ""),
         exibirJanelaSenha,
         setExibirJanelaSenha,
         formularioSenha,
@@ -396,6 +571,16 @@ export const useLogicaConfiguracao = () => {
         manipularCarregamentoImagem,
         atualizarSenha,
         exportarRelatorio,
-        excluirContaPermanente
+        atualizarSenha,
+        exportarRelatorio,
+        excluirContaPermanente,
+        confirmarExclusao, // Expose internal re-churn function or just use the state
+        exibirModalReauth,
+        setExibirModalReauth,
+        setExibirModalReauth,
+        confirmarExclusao,
+
+        storageStats,
+        formatBytes
     };
 };

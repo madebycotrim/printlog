@@ -80,6 +80,7 @@ export default function DashboardFinanceiro({ projects, printers }) {
                             <Sparkline data={sparklineData} color="#10b981" />
                         </div>
                     }
+                    valueSize="text-xl"
                 />
 
                 {/* 2. Custos */}
@@ -96,6 +97,7 @@ export default function DashboardFinanceiro({ projects, printers }) {
                             <span>Ener: {formatarMoeda(stats.custoEnergia)}</span>
                         </div>
                     }
+                    valueSize="text-xl"
                 />
 
                 {/* 3. Lucro */}
@@ -108,6 +110,7 @@ export default function DashboardFinanceiro({ projects, printers }) {
                     secondaryLabel="Resultado"
                     secondaryValue="Margem Líquida"
                     FooterIcon={Activity}
+                    valueSize="text-xl"
                 />
             </div>
 

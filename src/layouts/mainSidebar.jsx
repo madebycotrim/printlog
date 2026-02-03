@@ -4,7 +4,7 @@ import { useUser, useAuth } from "../contexts/AuthContext";
 import {
     LayoutGrid, Calculator, Package, Settings,
     Printer, HelpCircle, LogOut, ChevronLeft, ChevronRight,
-    Layers, FolderOpen, Users, Wallet, X
+    Layers, FolderOpen, Users, Wallet, X, Trash2
 } from "lucide-react";
 
 import logo from "../assets/logo-colorida.png";
@@ -28,82 +28,85 @@ const THEME = {
  * COMPONENT: TECH NAV ITEM
  * Featuring a glassmorphic active state with a precise colored border.
  */
-const SidebarItem = memo(({ href, icon: Icon, label, collapsed, badge, color = "sky", onHover, onClick }) => {
+const SidebarItem = memo(({ href, icon: Icon, label, collapsed, badge, color = "sky", onHover, onClick, isButton = false }) => {
     const [location] = useLocation();
-    const isActive = location === href || (href !== "/" && location.startsWith(href));
+    const isActive = !isButton && href && (location === href || (href !== "/" && location.startsWith(href)));
     const activeClass = THEME[color] || THEME.sky;
 
-    return (
-        <Link href={href} onClick={onClick}>
-            <div
-                className={`relative group px-3 py-1`}
-                onMouseEnter={onHover}
-            >
-                {collapsed && (
-                    <div className="
-                        fixed left-[72px] z-[9999] px-3 py-2 
-                        bg-[#0c0c0e] border border-white/10 rounded-lg 
-                        text-zinc-200 text-[12px] font-medium
-                        opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 
-                        transition-all duration-300 pointer-events-none shadow-2xl
-                        flex items-center gap-3
-                    ">
-                        <span>{label}</span>
-                        {badge && <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />}
+    const content = (
+        <div
+            className={`relative group px-3 py-1`}
+            onMouseEnter={onHover}
+            onClick={onClick}
+        >
+            {collapsed && (
+                <div className="
+                    fixed left-[72px] z-[9999] px-3 py-2 
+                    bg-[#0c0c0e] border border-white/10 rounded-lg 
+                    text-zinc-200 text-[12px] font-medium
+                    opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 
+                    transition-all duration-300 pointer-events-none shadow-2xl
+                    flex items-center gap-3
+                ">
+                    <span>{label}</span>
+                    {badge && <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />}
+                </div>
+            )}
+
+            <div className={`
+            relative flex items-center h-10 rounded-lg cursor-pointer overflow-hidden transition-all duration-300
+            ${isActive
+                    ? "bg-white/[0.03] border border-white/[0.05] shadow-lg backdrop-blur-sm"
+                    : "border border-transparent hover:bg-white/[0.02] text-zinc-500 hover:text-zinc-300"
+                }
+            ${collapsed ? "justify-center px-0 w-10 mx-auto" : "pl-3 w-full"}
+`}>
+                {/* ACTIVE ACCENT BAR */}
+                {isActive && !collapsed && (
+                    <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${activeClass.split(' ')[1].replace('border-', 'bg-')} `} />
+                )}
+
+                {/* ICON WITH GLOW */}
+                <Icon
+                    size={16}
+                    strokeWidth={isActive ? 2.5 : 2}
+                    className={`
+                    relative z-10 transition-all duration-300
+                    ${isActive ? `${activeClass.split(' ')[0]} drop-shadow-md` : "opacity-70 group-hover:opacity-100"}
+`}
+                />
+
+                {!collapsed && (
+                    <div className="flex-1 ml-3 flex items-center justify-between">
+                        <span className={`
+text-[13px] font-medium transition-all duration-300
+                        ${isActive ? "text-zinc-100" : ""}
+`}>
+                            {label}
+                        </span>
                     </div>
                 )}
 
-                <div className={`
-                    relative flex items-center h-10 rounded-lg cursor-pointer overflow-hidden transition-all duration-300
-                    ${isActive
-                        ? "bg-white/[0.03] border border-white/[0.05] shadow-lg backdrop-blur-sm"
-                        : "border border-transparent hover:bg-white/[0.02] text-zinc-500 hover:text-zinc-300"}
-                    ${collapsed ? "justify-center px-0 w-10 mx-auto" : "pl-3 w-full"}
-                `}>
-                    {/* ACTIVE ACCENT BAR */}
-                    {isActive && !collapsed && (
-                        <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${activeClass.split(' ')[1].replace('border-', 'bg-')}`} />
-                    )}
-
-                    {/* ICON WITH GLOW */}
-                    <Icon
-                        size={16}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className={`
-                            relative z-10 transition-all duration-300
-                            ${isActive ? `${activeClass.split(' ')[0]} drop-shadow-md` : "opacity-70 group-hover:opacity-100"}
-                        `}
-                    />
-
-                    {!collapsed && (
-                        <div className="flex-1 ml-3 flex items-center justify-between">
-                            <span className={`
-                                text-[13px] font-medium transition-all duration-300
-                                ${isActive ? "text-zinc-100" : ""}
-                            `}>
-                                {label}
-                            </span>
-                        </div>
-                    )}
-
-                    {/* BADGE */}
-                    {badge && (
-                        <div className={`absolute ${collapsed ? "top-2 right-2" : "right-3"} flex h-1.5 w-1.5`}>
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
-                        </div>
-                    )}
-                </div>
+                {/* BADGE */}
+                {badge && (
+                    <div className={`absolute ${collapsed ? "top-2 right-2" : "right-3"} flex h-1.5 w-1.5`}>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
+                    </div>
+                )}
             </div>
-        </Link>
+        </div>
     );
+
+    if (isButton) return content;
+    return <Link href={href} onClick={onClick}>{content}</Link>;
 });
 
 const SidebarSection = ({ title, collapsed }) => (
     <div className={`
-        px-6 mt-6 mb-2 transition-all duration-500 ease-in-out
+px-6 mt-6 mb-2 transition-all duration-500 ease-in-out
         ${collapsed ? "opacity-0 h-0 overflow-hidden mt-0" : "opacity-100"}
-    `}>
+`}>
         <div className="flex items-center gap-2 opacity-40">
             <span className="text-[11px] font-semibold text-white">{title}</span>
             <div className="h-px bg-white flex-1 opacity-20" />
@@ -129,7 +132,7 @@ const ROUTES_MAP = {
 const prefetchRoute = (path) => {
     const importer = ROUTES_MAP[path];
     if (importer) {
-        // console.log(`Prefetching ${path}...`);
+        // console.log(`Prefetching ${ path }...`);
         importer();
     }
 };
@@ -139,6 +142,7 @@ import { useSidebarStore } from "../stores/sidebarStore";
 export default function MainSidebar() {
     const [, setLocation] = useLocation();
     const { user } = useUser();
+    const [workshopName, setWorkshopName] = React.useState(localStorage.getItem('printlog_workshop_name') || "");
     const { signOut } = useAuth();
 
     // Global State
@@ -158,6 +162,15 @@ export default function MainSidebar() {
         });
         return { lowStock, criticalPrinter };
     }, [filaments, printers]);
+
+    // Listen for workshop name updates
+    React.useEffect(() => {
+        const handleUpdate = () => {
+            setWorkshopName(localStorage.getItem('printlog_workshop_name') || "");
+        };
+        window.addEventListener('workshopNameUpdated', handleUpdate);
+        return () => window.removeEventListener('workshopNameUpdated', handleUpdate);
+    }, []);
 
     const handleLogout = async () => {
         await signOut();
@@ -188,12 +201,12 @@ export default function MainSidebar() {
             )}
 
             <aside className={`
-                fixed left-0 top-0 h-screen z-[9999] flex flex-col 
-                bg-[#09090b] border-r border-white/5 shadow-2xl
-                transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]
-                ${sidebarWidthClass}
-                ${mobileTransformClass}
-            `}>
+            fixed left-0 top-0 h-screen z-[9999] flex flex-col
+bg-[#09090b] border-r border-white/5 shadow-2xl
+transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]
+            ${sidebarWidthClass}
+            ${mobileTransformClass}
+`}>
                 {/* GRID TEXTURE BACKGROUND */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
                     backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
@@ -203,9 +216,9 @@ export default function MainSidebar() {
 
                 {/* HEADER */}
                 <header className={`
-                    h-[88px] flex items-center shrink-0 relative
-                    ${renderCollapsed ? "justify-center px-0" : "px-6 justify-between"}
-                `}>
+h-[88px] flex items-center shrink-0 relative
+                ${renderCollapsed ? "justify-center px-0" : "px-6 justify-between"}
+`}>
                     {!renderCollapsed ? (
                         <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-500">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 border border-white/5 flex items-center justify-center shadow-lg relative group overflow-hidden">
@@ -254,6 +267,7 @@ export default function MainSidebar() {
 
                     <SidebarSection title="Sistema" collapsed={renderCollapsed} />
                     <SidebarItem href="/configuracoes" icon={Settings} label="Configurações" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/configuracoes')} onClick={isMobile ? handleCloseMobile : undefined} />
+
                     <SidebarItem href="/central-maker" icon={HelpCircle} label="Central Maker" collapsed={renderCollapsed} color="purple" onHover={() => prefetchRoute('/central-maker')} onClick={isMobile ? handleCloseMobile : undefined} />
                 </nav>
 
@@ -273,9 +287,9 @@ export default function MainSidebar() {
                     <div
                         onClick={renderCollapsed ? handleLogout : undefined}
                         className={`
-                            flex items-center gap-3 w-full 
-                            ${renderCollapsed ? 'justify-center cursor-pointer group/logout' : ''}
-                        `}
+                        flex items-center gap-3 w-full 
+                        ${renderCollapsed ? 'justify-center cursor-pointer group/logout' : ''}
+`}
                         title={renderCollapsed ? "Sair" : undefined}
                     >
                         {/* Avatar */}
@@ -283,9 +297,9 @@ export default function MainSidebar() {
                             <img
                                 src={user?.imageUrl}
                                 className={`
-                                    w-9 h-9 rounded-full object-cover bg-zinc-800 ring-2 ring-zinc-950 transition-all
-                                    ${renderCollapsed ? 'group-hover/logout:ring-rose-500/50 group-hover/logout:opacity-80' : ''}
-                                `}
+w-9 h-9 rounded-full object-cover bg-zinc-800 ring-2 ring-zinc-950 transition-all
+                                ${renderCollapsed ? 'group-hover/logout:ring-rose-500/50 group-hover/logout:opacity-80' : ''}
+`}
                                 alt="Profile"
                             />
                             {renderCollapsed && (
@@ -306,7 +320,7 @@ export default function MainSidebar() {
                                         {user?.firstName || "Maker"}
                                     </span>
                                     <span className="text-[10px] text-zinc-500 truncate leading-none">
-                                        {user?.publicMetadata?.role || "Maker"}
+                                        {workshopName || "Oficina Maker"}
                                     </span>
                                 </div>
 

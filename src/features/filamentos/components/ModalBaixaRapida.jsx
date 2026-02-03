@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AlertTriangle, Terminal, ArrowDownToLine, Loader2, TrendingDown, AlertOctagon } from "lucide-react";
+import { useQueryClient } from '@tanstack/react-query';
 import VisualizacaoCarretel from "./VisualizacaoCarretel";
 import { parseNumber } from "../../../utils/numbers";
 import { useToastStore } from "../../../stores/toastStore";
@@ -83,6 +84,8 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
         setConsumo(calculatedConsumption.toString());
     };
 
+    const queryClient = useQueryClient();
+
     const confirmar = useCallback(async () => {
         if (salvando) return;
 
@@ -93,35 +96,42 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
 
         try {
             setSalvando(true);
-            try {
-                if (ehFalha) {
-                    const pricePerGram = (Number(item?.preco || 0) / Math.max(1, Number(item?.peso_total || 1000)));
-                    const costWasted = (pricePerGram * qtdConsumo).toFixed(2);
 
-                    await api.post('/failures', {
-                        weightWasted: qtdConsumo,
-                        costWasted: costWasted,
-                        reason: motivoFalha,
-                        filamentId: item.id,
-                        printerId: null,
-                        modelName: "Baixa Rápida"
-                    });
+            if (ehFalha) {
+                const pricePerGram = (Number(item?.preco || 0) / Math.max(1, Number(item?.peso_total || 1000)));
+                const costWasted = (pricePerGram * qtdConsumo).toFixed(2);
 
-                    useToastStore.getState().addToast("Falha registrada e descontada!", "info");
-                } else {
-                    await registrarHistorico({
-                        id: item.id,
-                        type: 'consumo',
-                        qtd: qtdConsumo,
-                        obs: 'Baixa Manual'
-                    });
-                }
-            } catch (historyError) {
-                console.warn("Erro ao registrar histórico/falha:", historyError);
-                const msg = historyError.response?.data?.details || historyError.message;
-                useToastStore.getState().addToast(`Erro no histórico: ${msg}`, "error");
+                await api.post('/failures', {
+                    peso_perdido: qtdConsumo,
+                    custo_perdido: costWasted,
+                    observacao: motivoFalha,
+                    filamento_id: item.id,
+                    impressora_id: null,
+                    nome_modelo: "Baixa Rápida"
+                });
+
+                useToastStore.getState().addToast("Falha registrada e descontada!", "info");
+
+                // Em falhas, o backend atualiza o peso e a versão. 
+                // Não devemos chamar aoSalvar() pois causaria conflito de versão (409).
+                // Apenas invalidamos o cache para refetch.
+                queryClient.invalidateQueries(['filamentos']);
+                queryClient.invalidateQueries(['historico-filamento']);
+
+                aoFechar();
+                return; // Encerra aqui, não chama aoSalvar
             }
 
+            // Se for consumo normal (não falha):
+            await registrarHistorico({
+                id: item.id,
+                tipo: 'consumo',
+                qtd: qtdConsumo,
+                obs: 'Baixa Manual'
+            });
+
+            // Para consumo normal, o registrarHistorico APENAS cria log.
+            // Precisamos chamar aoSalvar para efetivamente atualizar o peso no banco.
             await aoSalvar({
                 ...item,
                 peso_atual: pesoFinal
@@ -129,11 +139,12 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             aoFechar();
         } catch (error) {
             console.error("Erro crítico ao atualizar estoque:", error);
-            useToastStore.getState().addToast("Erro ao processar baixa de estoque.", "error");
+            const msg = error.response?.data?.details || error.message || "Erro desconhecido";
+            useToastStore.getState().addToast(`Erro ao processar baixa: ${msg}`, "error");
         } finally {
             setSalvando(false);
         }
-    }, [inputValido, erroSaldoNegativo, salvando, item, pesoFinal, aoSalvar, aoFechar, ehFalha, qtdConsumo, motivoFalha, registrarHistorico]);
+    }, [inputValido, erroSaldoNegativo, salvando, item, pesoFinal, aoSalvar, aoFechar, ehFalha, qtdConsumo, motivoFalha, registrarHistorico, queryClient]);
 
     // Atalhos de teclado
     useEffect(() => {
@@ -304,17 +315,37 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-5 gap-3">
-                        {[10, 25, 50, 100, 250].map(val => (
-                            <button
-                                key={val}
-                                disabled={salvando}
-                                onClick={() => adicionarConsumo(val)}
-                                className="py-2.5 bg-zinc-950/40 border border-zinc-800 hover:border-zinc-500 text-[10px] font-bold text-zinc-500 hover:text-zinc-100 rounded-xl transition-all active:scale-95 uppercase tracking-widest disabled:opacity-30"
-                            >
-                                +{val}g
-                            </button>
-                        ))}
+                    <div className="grid grid-cols-4 gap-2">
+                        {(() => {
+                            const maxVal = pesoAnterior;
+                            let presets = [];
+
+                            if (maxVal <= 50) presets = [5, 10, 15, 20];
+                            else if (maxVal <= 200) presets = [10, 25, 50, 80];
+                            else if (maxVal <= 500) presets = [25, 50, 100, 150];
+                            else presets = [50, 100, 250, 400];
+
+                            // Filter valid and slice to dynamic count but max 3 to keep layout
+                            const validPresets = presets.filter(n => n < maxVal).slice(0, 3);
+
+                            return validPresets.map(val => (
+                                <button
+                                    key={val}
+                                    disabled={salvando}
+                                    onClick={() => adicionarConsumo(val)}
+                                    className="py-2.5 bg-zinc-950/40 border border-zinc-800 hover:border-zinc-500 text-[10px] font-bold text-zinc-500 hover:text-zinc-100 rounded-xl transition-all active:scale-95 uppercase tracking-widest disabled:opacity-30"
+                                >
+                                    +{val}g
+                                </button>
+                            ));
+                        })()}
+                        <button
+                            disabled={salvando}
+                            onClick={() => setConsumo(pesoAnterior.toString())}
+                            className="py-2.5 bg-rose-500/10 border border-rose-500/20 text-[10px] font-bold text-rose-500 hover:text-zinc-100 hover:bg-rose-500 rounded-xl transition-all active:scale-95 uppercase tracking-widest disabled:opacity-30"
+                        >
+                            RESTANTE
+                        </button>
                     </div>
                 </section>
 

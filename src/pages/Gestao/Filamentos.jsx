@@ -41,7 +41,7 @@ export default function FilamentosPage() {
   const [modoVisualizacao, setModoVisualizacao] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
 
   const [filtros, setFiltros] = useState({
-    lowStock: false,
+    estoqueBaixo: false,
     materials: [],
     brands: []
   });
@@ -102,14 +102,29 @@ export default function FilamentosPage() {
 
       if (!matchesSearch) return false;
 
-      if (filtros.lowStock) {
-        const total = Math.max(1, Number(f.peso_total) || 1000);
-        const ratio = (f.peso_atual || 0) / total;
-        if (ratio > 0.2 && f.peso_atual >= 150) return false;
+      if (filtros.estoqueBaixo) {
+        // Robust parsing: handle strings with commas (e.g. "950,00")
+        const parseNum = (val) => {
+          if (typeof val === 'number') return val;
+          if (typeof val === 'string') return Number(val.replace(',', '.')) || 0;
+          return 0;
+        };
+
+        const total = Math.max(1, parseNum(f.peso_total) || 1000);
+        const atual = parseNum(f.peso_atual);
+
+        const ratio = atual / total;
+
+        // Strict Low Stock Definition:
+        // Must be <= 20% OR < 150g (critical absolute)
+        const isLowStock = ratio <= 0.20 || atual < 150;
+
+        // If NOT low stock, filter it out
+        if (!isLowStock) return false;
       }
 
-      if (filtros.materials.length > 0 && !filtros.materials.includes(f.material)) return false;
-      if (filtros.brands.length > 0 && !filtros.brands.includes(f.marca)) return false;
+      if (filtros.materials?.length > 0 && !filtros.materials.includes(f.material)) return false;
+      if (filtros.brands?.length > 0 && !filtros.brands.includes(f.marca)) return false;
 
       return true;
     });
@@ -190,11 +205,11 @@ export default function FilamentosPage() {
   }, []);
 
   const acoes = useMemo(() => ({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-    onConsume: setItemConsumo,
-    onDuplicate: handleDuplicate,
-    onHistory: handleHistory
+    aoEditar: handleEdit,
+    aoExcluir: handleDelete,
+    aoConsumir: setItemConsumo,
+    aoDuplicar: handleDuplicate,
+    aoVerHistorico: handleHistory
   }), [handleEdit, handleDelete, handleDuplicate, handleHistory]);
 
   const aoSalvarFilamento = async (dados) => {

@@ -7,10 +7,11 @@
  */
 export const schemas = {
     filament: {
-        nome: { type: 'string', minLength: 1, maxLength: 100, required: true },
+        nome: { type: 'string', minLength: 1, maxLength: 100 },
         marca: { type: 'string', maxLength: 50 },
-        material: { type: 'string', maxLength: 20 },
-        cor_hex: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/, required: true },
+        material: { type: 'string', maxLength: 20, required: true },
+        cor_hex: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
+        diametro: { type: 'string', maxLength: 10 }, // Can be "1.75", "2.85"
         peso_total: { type: 'number', min: 1, max: 10000, required: true },
         peso_atual: { type: 'number', min: 0, max: 10000, required: true },
         preco: { type: 'number', min: 0, max: 100000, required: true },
@@ -29,7 +30,7 @@ export const schemas = {
     },
 
     project: {
-        label: { type: 'string', minLength: 1, maxLength: 200, required: true },
+        nome: { type: 'string', minLength: 1, maxLength: 200, required: true },
         data: { type: 'object', required: true }
     },
 
@@ -47,22 +48,26 @@ export const schemas = {
     },
 
     failure: {
-        filamentId: { type: 'string', required: true },
-        printerId: { type: 'string' },
-        modelName: { type: 'string', maxLength: 200 },
-        weightWasted: { type: 'number', min: 0, required: true },
-        costWasted: { type: 'number', min: 0 },
-        reason: { type: 'string', maxLength: 500 }
+        filamento_id: { type: 'string', required: true },
+        impressora_id: { type: 'string' },
+        nome_modelo: { type: 'string', maxLength: 200 },
+        peso_perdido: { type: 'number', min: 0, required: true },
+        custo_perdido: { type: 'number', min: 0 },
+        observacao: { type: 'string', maxLength: 500 }
     },
 
     supply: {
-        name: { type: 'string', minLength: 1, maxLength: 100, required: true },
-        price: { type: 'number', min: 0, max: 100000, required: true },
-        unit: { type: 'string', enum: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha'], required: true },
-        minStock: { type: 'number', min: 0, max: 10000 },
-        currentStock: { type: 'number', min: 0, max: 10000 },
-        category: { type: 'string', maxLength: 50 },
-        description: { type: 'string', maxLength: 500 }
+        nome: { type: 'string', minLength: 1, maxLength: 100, required: true },
+        preco: { type: 'number', min: 0, max: 100000, required: true },
+        unidade: { type: 'string', enum: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha'], required: true },
+        estoque_minimo: { type: 'number', min: 0, max: 10000 },
+        estoque_atual: { type: 'number', min: 0, max: 10000 },
+        categoria: { type: 'string', maxLength: 50 },
+        descricao: { type: 'string', maxLength: 500 },
+        marca: { type: 'string', maxLength: 100 },
+        link_compra: { type: 'string', maxLength: 1000 },
+        unidade_uso: { type: 'string', maxLength: 20 },
+        rendimento_estoque: { type: 'number', min: 0 }
     }
 };
 

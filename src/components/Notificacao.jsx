@@ -18,55 +18,55 @@ const ToastItem = ({ message, type = 'success', onClose }) => {
         return () => clearTimeout(timer);
     }, [onClose, isPaused]);
 
-    // Configuração de Estilos por Tipo
+    // Configuração de Estilos por Tipo - CORES VIBRANTES E PREMIUM
     const configs = {
         success: {
-            color: 'text-emerald-500',
-            border: 'border-emerald-500/30',
-            bg: 'bg-emerald-500/5',
-            glow: 'shadow-[0_0_20px_rgba(16,185,129,0.15)]',
-            icon: <Check size={18} strokeWidth={3} />,
-            label: 'SISTEMA_NOMINAL'
+            color: 'text-emerald-400',
+            border: 'border-emerald-500/50',
+            bg: 'bg-emerald-500/20',
+            glow: 'shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+            icon: <Check size={20} strokeWidth={3} />,
+            label: 'SUCESSO'
         },
         sucesso: {
-            color: 'text-emerald-500',
-            border: 'border-emerald-500/30',
-            bg: 'bg-emerald-500/5',
-            glow: 'shadow-[0_0_20px_rgba(16,185,129,0.15)]',
-            icon: <Check size={18} strokeWidth={3} />,
-            label: 'SISTEMA_NOMINAL'
+            color: 'text-emerald-400',
+            border: 'border-emerald-500/50',
+            bg: 'bg-emerald-500/20',
+            glow: 'shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+            icon: <Check size={20} strokeWidth={3} />,
+            label: 'SUCESSO'
         },
         error: {
-            color: 'text-rose-500',
-            border: 'border-rose-500/30',
-            bg: 'bg-rose-500/5',
-            glow: 'shadow-[0_0_20px_rgba(244,63,94,0.15)]',
-            icon: <AlertOctagon size={18} strokeWidth={3} />,
-            label: 'ERRO_DE_NÚCLEO'
+            color: 'text-rose-400',
+            border: 'border-rose-500/50',
+            bg: 'bg-rose-500/20',
+            glow: 'shadow-[0_0_30px_rgba(244,63,94,0.3)]',
+            icon: <X size={20} strokeWidth={3} />,
+            label: 'ERRO'
         },
         erro: {
-            color: 'text-rose-500',
-            border: 'border-rose-500/30',
-            bg: 'bg-rose-500/5',
-            glow: 'shadow-[0_0_20px_rgba(244,63,94,0.15)]',
-            icon: <AlertOctagon size={18} strokeWidth={3} />,
-            label: 'ERRO_DE_NÚCLEO'
+            color: 'text-rose-400',
+            border: 'border-rose-500/50',
+            bg: 'bg-rose-500/20',
+            glow: 'shadow-[0_0_30px_rgba(244,63,94,0.3)]',
+            icon: <X size={20} strokeWidth={3} />,
+            label: 'ERRO'
         },
         info: {
-            color: 'text-sky-500',
-            border: 'border-sky-500/30',
-            bg: 'bg-sky-500/5',
-            glow: 'shadow-[0_0_20px_rgba(14,165,233,0.15)]',
-            icon: <Info size={18} strokeWidth={3} />,
-            label: 'INFO_LOG'
+            color: 'text-sky-400',
+            border: 'border-sky-500/50',
+            bg: 'bg-sky-500/20',
+            glow: 'shadow-[0_0_30px_rgba(14,165,233,0.3)]',
+            icon: <Info size={20} strokeWidth={3} />,
+            label: 'INFO'
         },
         warning: {
-            color: 'text-amber-500',
-            border: 'border-amber-500/30',
-            bg: 'bg-amber-500/5',
-            glow: 'shadow-[0_0_20px_rgba(245,158,11,0.15)]',
-            icon: <TriangleAlert size={18} strokeWidth={3} />,
-            label: 'AVISO_OPERACIONAL'
+            color: 'text-amber-400',
+            border: 'border-amber-500/50',
+            bg: 'bg-amber-500/20',
+            glow: 'shadow-[0_0_30px_rgba(245,158,11,0.3)]',
+            icon: <TriangleAlert size={20} strokeWidth={3} />,
+            label: 'ATENÇÃO'
         }
     };
 

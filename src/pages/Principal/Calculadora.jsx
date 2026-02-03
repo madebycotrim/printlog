@@ -26,7 +26,7 @@ import CardCanal from "../../features/calculadora/components/cards/taxasVenda.js
 import CardEmbalagem from "../../features/calculadora/components/cards/custos.jsx";
 import CardPreco from "../../features/calculadora/components/cards/lucroDescontos.jsx";
 
-// Lógica e Armazenamento
+// Lï¿½gica e Armazenamento
 import { calcularTudo } from "../../features/calculadora/logic/calculadora";
 import { useSettings } from "../../features/sistema/logic/settingsQueries";
 import { usePrinters } from "../../features/impressoras/logic/consultasImpressora";
@@ -43,7 +43,7 @@ import { formatCurrency } from "../../utils/numbers";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 
-/* ---------- COMPONENTE PRINCIPAL DA PÁGINA ---------- */
+/* ---------- COMPONENTE PRINCIPAL DA Pï¿½GINA ---------- */
 export default function CalculadoraPage() {
     const { addToast } = useToastStore();
     const [abaAtiva, setAbaAtiva] = useState("resumo");
@@ -82,7 +82,7 @@ export default function CalculadoraPage() {
     // Sincroniza Config (Merge com dados do backend se store estiver vazia ou para garantir defaults)
     useEffect(() => {
         if (settings && !isLoadingSettings) {
-            // Atualiza apenas a config, mantendo o resto do formulário que pode ter sido editado
+            // Atualiza apenas a config, mantendo o resto do formulï¿½rio que pode ter sido editado
             const currentConfig = dadosFormulario.config;
             const newConfig = {
                 custoKwh: settings.custoKwh || currentConfig.custoKwh,
@@ -95,15 +95,15 @@ export default function CalculadoraPage() {
                 taxaFalha: settings.taxaFalha || currentConfig.taxaFalha
             };
 
-            // Só atualiza se houver diferença REAL nos valores para evitar loops infinitos
-            // Comparação simples via stringify resolve o problema de referência de objeto
+            // Sï¿½ atualiza se houver diferenï¿½a REAL nos valores para evitar loops infinitos
+            // Comparaï¿½ï¿½o simples via stringify resolve o problema de referï¿½ncia de objeto
             if (JSON.stringify(currentConfig) !== JSON.stringify(newConfig)) {
                 atualizarCampo('config', null, newConfig);
             }
         }
     }, [settings, isLoadingSettings, atualizarCampo, dadosFormulario.config]);
 
-    // Seleção automática de impressora
+    // Seleï¿½ï¿½o automï¿½tica de impressora
     useEffect(() => {
         if (printers.length > 0 && !hardwareSelecionado) {
             setHardwareSelecionado(printers[0]);
@@ -115,12 +115,12 @@ export default function CalculadoraPage() {
         await refetch();
     };
 
-    // Lógica de Hardware/Impressora
+    // Lï¿½gica de Hardware/Impressora
     const lidarSelecaoHardware = (printer) => {
         if (!printer) return;
         setHardwareSelecionado(printer);
 
-        // Atualiza consumo se disponível
+        // Atualiza consumo se disponï¿½vel
         if (printer?.consumo_w) {
             const consumoKw = (printer.consumo_w / 1000).toFixed(3);
             atualizarCampo('config', 'consumoKw', consumoKw);
@@ -151,7 +151,7 @@ export default function CalculadoraPage() {
         if (file) await processarArquivo(file);
     };
 
-    // Cálculos (Agora calculando aqui APENAS para o Resumo e Histórico, os componentes filhos calculam o que precisam)
+    // Cï¿½lculos (Agora calculando aqui APENAS para o Resumo e Histï¿½rico, os componentes filhos calculam o que precisam)
     const resultados = useMemo(() => {
         return calcularTudo(dadosFormulario);
     }, [dadosFormulario]);
@@ -169,11 +169,11 @@ export default function CalculadoraPage() {
         }
     ]);
 
-    // Histórico
-    // Histórico
+    // Histï¿½rico
+    // Histï¿½rico
     const lidarSalvarNoHistorico = async () => {
         if (!dadosFormulario.nomeProjeto) {
-            addToast("Dá um nome pro seu projeto", "warning");
+            addToast("Dï¿½ um nome pro seu projeto", "warning");
             return;
         }
 
@@ -236,7 +236,7 @@ export default function CalculadoraPage() {
 
             <ManagementLayout>
                 <div className="flex-1 flex flex-col lg:flex-row h-full relative">
-                    {/* --- ÁREA DE INPUTS (ESQUERDA) --- */}
+                    {/* --- ï¿½REA DE INPUTS (ESQUERDA) --- */}
                     <div className="flex-1 flex flex-col min-w-0">
                         <HeaderCalculadora
                             nomeProjeto={dadosFormulario.nomeProjeto}
@@ -289,7 +289,7 @@ export default function CalculadoraPage() {
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-material">
                                         <WrapperCard
-                                            title="Matéria-Prima"
+                                            title="Matï¿½ria-Prima"
                                             step="01"
                                             zPriority="z-20"
                                             hasNext={true}
@@ -300,7 +300,7 @@ export default function CalculadoraPage() {
                                     </div>
                                     <div data-tour="calc-print-time">
                                         <WrapperCard
-                                            title="Tempo de Produção"
+                                            title="Tempo de Produï¿½ï¿½o"
                                             step="02"
                                             zPriority="z-10"
                                             subtotal={(resultados?.custoEnergia + resultados?.custoMaquina + resultados?.custoMaoDeObra) > 0
@@ -342,7 +342,7 @@ export default function CalculadoraPage() {
 
                                 <div className="flex flex-col gap-6">
                                     <div data-tour="calc-profit">
-                                        <WrapperCard title="Preço e Lucro" step="05">
+                                        <WrapperCard title="Preï¿½o e Lucro" step="05">
                                             <CardPreco />
                                         </WrapperCard>
                                     </div>
@@ -355,7 +355,7 @@ export default function CalculadoraPage() {
                             <button
                                 onClick={toggleAutoSave}
                                 className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-wider transition-colors hover:text-zinc-300"
-                                title={isEnabled ? "Clique para pausar o salvamento" : "Clique para ativar o salvamento automático"}
+                                title={isEnabled ? "Clique para pausar o salvamento" : "Clique para ativar o salvamento automï¿½tico"}
                             >
                                 {!isEnabled ? (
                                     <>
@@ -370,7 +370,7 @@ export default function CalculadoraPage() {
                                 ) : lastSaved ? (
                                     <>
                                         <Cloud size={12} strokeWidth={2.5} className="text-zinc-600" />
-                                        <span className="text-zinc-500">Salvo às {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <span className="text-zinc-500">Salvo ï¿½s {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </>
                                 ) : (
                                     <>
@@ -433,8 +433,8 @@ export default function CalculadoraPage() {
                             if (falha?.costWasted) {
                                 setModalConfig({
                                     open: true,
-                                    title: "Recuperar o Prejuízo?",
-                                    message: `Você teve um prejuízo de R$ ${falha.costWasted}. Quer adicionar esse valor no projeto pra recuperar o dinheiro?`,
+                                    title: "Recuperar o Prejuï¿½zo?",
+                                    message: `Vocï¿½ teve um prejuï¿½zo de R$ ${falha.costWasted}. Quer adicionar esse valor no projeto pra recuperar o dinheiro?`,
                                     icon: AlertTriangle,
                                     color: "text-amber-500",
                                     customAction: () => {
@@ -456,7 +456,7 @@ export default function CalculadoraPage() {
                         isOpen={modalConfig.open}
                         onClose={() => setModalConfig({ ...modalConfig, open: false })}
                         title={modalConfig.title}
-                        subtitle="Notificação de Sistema"
+                        subtitle="Notificaï¿½ï¿½o de Sistema"
                         icon={modalConfig.icon}
                         footer={
                             <div className="flex gap-2 w-full">
@@ -476,7 +476,7 @@ export default function CalculadoraPage() {
                                                 'bg-sky-600 hover:bg-sky-500 shadow-sky-900/20'
                                         }`}
                                 >
-                                    {modalConfig.customAction ? 'Não, Deixa pra Lá' : 'Entendi'}
+                                    {modalConfig.customAction ? 'Nï¿½o, Deixa pra Lï¿½' : 'Entendi'}
                                 </button>
                             </div>
                         }

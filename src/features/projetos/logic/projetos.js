@@ -50,7 +50,7 @@ export const useProjectsStore = create((set, get) => ({
             // PAYLOAD BLINDADO: Nunca enviamos valores undefined ou null para o banco D1
             const payloadParaBanco = {
                 id: String(id || crypto.randomUUID()), // Garante String e ID único
-                label: String(nomeProjeto),
+                nome: String(nomeProjeto),
                 entradas: entradas || {},
                 resultados: resultados || {},
                 status: statusAtual,
@@ -115,7 +115,7 @@ export const useProjectsStore = create((set, get) => ({
             await api.post('/approve-budget', {
                 projectId: String(projeto.id),
                 printerId: entradas.idImpressoraSelecionada ? String(entradas.idImpressoraSelecionada) : (entradas.selectedPrinterId ? String(entradas.selectedPrinterId) : null),
-                filaments: filamentosParaBaixa,
+                filamentos: filamentosParaBaixa,
                 // Garante que o tempo nunca seja NaN para não quebrar o Worker
                 totalTime: isNaN(Number(resultados.tempoTotalHoras)) ? 0 : Number(resultados.tempoTotalHoras)
             });
@@ -127,7 +127,7 @@ export const useProjectsStore = create((set, get) => ({
                         id: fil.id,
                         tipo: 'consumo',
                         qtd: fil.peso,
-                        obs: `Uso em Projeto: ${projeto.label || 'Sem Nome'}`
+                        obs: `Uso em Projeto: ${projeto.nome || projeto.label || 'Sem Nome'}`
                     });
                 } catch (err) {
                     console.error(`Erro ao registrar histórico para filamento ${fil.id}:`, err);
@@ -159,7 +159,7 @@ export const useProjectsStore = create((set, get) => ({
 
             const payloadAtualizado = {
                 id: String(projetoId),
-                label: String(projetoAtual.label),
+                nome: String(projetoAtual.nome || projetoAtual.label),
                 entradas: projetoAtual.data?.entradas || {},
                 resultados: projetoAtual.data?.resultados || {},
                 status: String(novoStatus),

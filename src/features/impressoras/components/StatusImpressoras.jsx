@@ -48,6 +48,7 @@ export default function StatusImpressoras({ criticalCount = 0, totalCount = 0, s
           value: porcentagemSaude,
           color: ehSaudavel ? 'bg-emerald-500' : 'bg-rose-500'
         }}
+        valueSize="text-xl"
       />
 
       <StatsWidget
@@ -57,6 +58,7 @@ export default function StatusImpressoras({ criticalCount = 0, totalCount = 0, s
         colorTheme="emerald"
         secondaryLabel="Peças Finalizadas"
         secondaryValue="Histórico geral"
+        valueSize="text-xl"
       />
 
       <StatsWidget
@@ -66,6 +68,7 @@ export default function StatusImpressoras({ criticalCount = 0, totalCount = 0, s
         colorTheme="amber"
         secondaryLabel="Total de Filamento"
         secondaryValue="Consumo acumulado"
+        valueSize="text-xl"
       />
     </div>
   );

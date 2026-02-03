@@ -12,8 +12,8 @@ export async function gerenciarConfiguracoes({ request, db, tenantId }) {
                 `settings:${tenantId}`,
                 60000,
                 async () => {
-                    // Nota: A tabela usa user_id como PK, que agora armazena o tenantId (Org ou User)
-                    return await db.prepare("SELECT * FROM calculator_settings WHERE user_id = ?").bind(tenantId).first();
+                    // Nota: A tabela usa usuario_id como PK
+                    return await db.prepare("SELECT * FROM configuracoes_calculadora WHERE usuario_id = ?").bind(tenantId).first();
                 }
             );
             return enviarJSON(data || {});
@@ -30,11 +30,11 @@ export async function gerenciarConfiguracoes({ request, db, tenantId }) {
 
             const s = sanitizeFields(rawData, schemas.settings);
 
-            // Armazenamos o tenantId tanto no user_id (PK legada) sem org_id
-            await db.prepare(`INSERT INTO calculator_settings (
-                    user_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
+            // Armazenamos o tenantId tanto no usuario_id (PK legada) sem org_id
+            await db.prepare(`INSERT INTO configuracoes_calculadora (
+                    usuario_id, custo_kwh, valor_hora_humana, custo_hora_maquina, taxa_setup, 
                     consumo_impressora_kw, margem_lucro, imposto, taxa_falha, desconto, whatsapp_template
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET 
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(usuario_id) DO UPDATE SET 
                     custo_kwh=excluded.custo_kwh, valor_hora_humana=excluded.valor_hora_humana, 
                     custo_hora_maquina=excluded.custo_hora_maquina, taxa_setup=excluded.taxa_setup, 
                     consumo_impressora_kw=excluded.consumo_impressora_kw, margem_lucro=excluded.margem_lucro, 

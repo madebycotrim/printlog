@@ -1,49 +1,17 @@
 import { enviarJSON, paraNumero } from './_utils';
 import { validateInput, schemas, sanitizeFields } from './_validation';
-import { cacheQuery, invalidateCache } from './_cache';
+import { construirQueryComSoftDelete, softDelete, enviarJSON as enviarJSONHelper } from './_helpers';
 
-/**
- * API DE GERENCIAMENTO DE FALHAS
- * Registra falhas de impressão e atualiza automaticamente o estoque de filamentos
- */
-/**
- * API DE GERENCIAMENTO DE FALHAS
- * Registra falhas de impressão e atualiza automaticamente o estoque de filamentos
- */
-// --------------------------------------------------------------------------------
-// API DE GERENCIAMENTO DE FALHAS (Unificado com Logs)
-// --------------------------------------------------------------------------------
 export async function gerenciarFalhas({ request, db, userId }) {
     const method = request.method;
 
     try {
-        // (Removido: Auto-migration agora é feito no setup, não em cada request)
-        // Isso evita latência e previne erros de concorrência.
-
-
         if (method === 'GET') {
-            console.log("🔍 Entrou em gerenciarFalhas GET. User:", userId);
-
-            // Ensure table exists (Lazy Initialization)
-            await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
-                id TEXT PRIMARY KEY, 
-                filament_id TEXT NOT NULL, 
-                date TEXT NOT NULL, 
-                type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
-                amount REAL DEFAULT 0, 
-                obs TEXT,
-                user_id TEXT NOT NULL,
-                printer_id TEXT,
-                model_name TEXT,
-                cost REAL DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`).run();
-
-            // Retorna histórico de falhas (agora vindo de filament_logs)
+            // Retorna histórico de falhas
             const { results } = await db.prepare(`
-                SELECT * FROM filament_logs 
-                WHERE type = 'falha'
-                ORDER BY date DESC 
+                SELECT * FROM filamentos_log 
+                WHERE tipo = 'falha'
+                ORDER BY data DESC 
                 LIMIT 50
             `).all();
 
@@ -52,38 +20,24 @@ export async function gerenciarFalhas({ request, db, userId }) {
             try {
                 const s = await db.prepare(`
                     SELECT 
-                        SUM(amount) as total_weight, 
-                        SUM(cost) as total_cost, 
+                        SUM(quantidade) as total_weight, 
+                        SUM(custo) as total_cost, 
                         COUNT(*) as total_failures 
-                    FROM filament_logs 
-                    WHERE type = 'falha'
+                    FROM filamentos_log 
+                    WHERE tipo = 'falha'
                 `).first();
                 if (s) stats = s;
-            } catch (e) {
-                // Fallback: Se der erro (ex: coluna 'cost' não existe), tenta sem ela ou retorna zerado
-                try {
-                    const s = await db.prepare(`
-                        SELECT 
-                            SUM(amount) as total_weight, 
-                            0 as total_cost, 
-                            COUNT(*) as total_failures 
-                        FROM filament_logs 
-                        WHERE type = 'falha'
-                    `).first();
-                    if (s) stats = s;
-                } catch (e2) { }
-            }
+            } catch (e) { }
 
-            // Normaliza retorno para o frontend (mapeando colunas novas para as esperadas se necessário)
             const history = (results || []).map(r => ({
                 id: r.id,
-                date: r.date,
-                filamentId: r.filament_id,
-                printerId: r.printer_id,
-                modelName: r.model_name,
-                weightWasted: r.amount,
-                costWasted: r.cost,
-                reason: r.obs
+                date: r.data,
+                filamentId: r.filamento_id,
+                printerId: r.impressora_id,
+                modelName: r.nome_modelo,
+                weightWasted: r.quantidade,
+                costWasted: r.custo,
+                reason: r.observacao
             }));
 
             return enviarJSON({
@@ -98,8 +52,6 @@ export async function gerenciarFalhas({ request, db, userId }) {
 
         if (method === 'POST') {
             const rawData = await request.json();
-
-            // Validação
             const validation = validateInput(rawData, schemas.failure);
             if (!validation.valid) {
                 return enviarJSON({ error: "Dados inválidos", details: validation.errors }, 400);
@@ -109,32 +61,24 @@ export async function gerenciarFalhas({ request, db, userId }) {
             const id = crypto.randomUUID();
             const date = new Date().toISOString();
 
-            // 1. Registra a falha na tabela UNIFICADA (filament_logs)
-            // Campos: id, filament_id, date, type, amount (weight), obs (reason), user_id, printer_id, model_name, cost
             await db.prepare(`
-                INSERT INTO filament_logs (
-                    id, filament_id, date, type, amount, obs, 
-                    user_id, printer_id, model_name, cost
+                INSERT INTO filamentos_log (
+                    id, filamento_id, data, tipo, quantidade, observacao, 
+                    usuario_id, impressora_id, nome_modelo, custo
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
-                id,
-                f.filamentId,
-                date,
-                'falha',
-                paraNumero(f.weightWasted),
-                f.reason || "Falha genérica",
-                userId,
-                f.printerId || null,
-                f.modelName || "Impressão sem nome",
-                paraNumero(f.costWasted)
+                id, f.filamento_id, date, 'falha', paraNumero(f.peso_perdido),
+                f.observacao || "Falha genérica", userId, f.impressora_id || null,
+                f.nome_modelo || "Impressão sem nome", paraNumero(f.custo_perdido)
             ).run();
 
-            // 2. Deduz do estoque (se houver filamento)
-            if (f.filamentId && f.filamentId !== 'manual') {
-                const filamento = await db.prepare("SELECT peso_atual FROM filaments WHERE id = ?").bind(f.filamentId).first();
+            if (f.filamento_id && f.filamento_id !== 'manual') {
+                const filamento = await db.prepare("SELECT peso_atual, versao FROM filamentos WHERE id = ?").bind(f.filamento_id).first();
                 if (filamento) {
-                    const novoPeso = Math.max(0, filamento.peso_atual - paraNumero(f.weightWasted));
-                    await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ?").bind(novoPeso, f.filamentId).run();
+                    const novoPeso = Math.max(0, filamento.peso_atual - paraNumero(f.peso_perdido));
+                    // Atualiza estoque e versão
+                    await db.prepare("UPDATE filamentos SET peso_atual = ?, versao = versao + 1 WHERE id = ?")
+                        .bind(novoPeso, f.filamento_id).run();
                 }
             }
 
@@ -143,12 +87,7 @@ export async function gerenciarFalhas({ request, db, userId }) {
 
     } catch (error) {
         console.error("FATAL ERROR in gerenciarFalhas:", error);
-        console.error("Stack:", error.stack);
-        return enviarJSON({
-            error: "Erro ao processar falhas",
-            details: error.message,
-            stack: error.stack
-        }, 500);
+        return enviarJSON({ error: "Erro ao processar falhas", details: error.message }, 500);
     }
 }
 
@@ -158,76 +97,62 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
 
     try {
         if (method === 'GET') {
-            // Rota de Histórico Individual: /filaments/:id/history
+            // Histórico
             if (pathArray[2] === 'history' && idFromPath) {
                 const filamentId = idFromPath;
+                // FILTRO SOFT DELETE NÃO DEVE IMPEDIR VISUALIZAR HISTÓRICO SE TIVER O ID
+                // Mas a busca do filamento em si pode informar se foi deletado
 
-                // 1. (Tabela 'failures' foi migrada e unificada em 'filament_logs')
-                // Não é mais necessário buscar nela.
+                const filament = await db.prepare("SELECT * FROM filamentos WHERE id = ?").bind(filamentId).first();
+                // Se filamento não existe ou foi deletado (opcional: mostrar mas marcar como deletado)
 
-                // 2. Buscar Consumo em Projetos (Aprovados ou não, se já teve cálculo/uso)
-                const { results: allProjects } = await db.prepare("SELECT * FROM projects ORDER BY created_at DESC LIMIT 100").all();
-
+                // Busca Projetos (Consumo)
+                const { results: allProjects } = await db.prepare("SELECT * FROM projetos ORDER BY criado_em DESC LIMIT 100").all();
                 const consumptions = [];
                 (allProjects || []).forEach(proj => {
                     try {
                         const data = JSON.parse(proj.data || "{}");
-                        // Verifica se este filamento está listado nos inputs do projeto
                         if (Array.isArray(data.entradas?.filamentos)) {
                             const usage = data.entradas.filamentos.find(f => String(f.id) === String(filamentId));
-                            // Se tiver uso > 0
                             if (usage && (usage.peso || usage.weight)) {
                                 consumptions.push({
                                     id: proj.id,
-                                    date: proj.created_at,
-                                    type: 'consumo', // Frontend pode tratar isso como 'Impressão'
+                                    date: proj.criado_em,
+                                    type: 'consumo',
                                     qtd: paraNumero(usage.peso || usage.weight),
-                                    obs: data.entradas?.nomeProjeto || proj.label || "Projeto / Impressão",
-                                    status: data.status // Passa status para frontend mostrar (Rascunho/Aprovado)
+                                    obs: data.entradas?.nomeProjeto || proj.nome || "Projeto / Impressão",
+                                    status: data.status
                                 });
                             }
                         }
                     } catch (e) { }
                 });
 
-                // 3. Buscar Dados do Filamento (Abertura)
-                const filament = await db.prepare("SELECT * FROM filaments WHERE id = ?").bind(filamentId).first();
                 const opening = filament ? [{
                     id: 'opening',
-                    date: filament.data_abertura || filament.created_at || new Date().toISOString(),
+                    date: filament.data_abertura || filament.criado_em || new Date().toISOString(),
                     type: 'abertura',
                     qtd: 0,
-                    obs: 'Carretel Aberto'
+                    obs: 'Carretel Aberto' + (filament.deletado_em ? ' (Deletado)' : '')
                 }] : [];
 
-                // 4. Buscar Logs (Inclui: 'manual', 'falha', 'ajuste', etc.)
-                // Agora 'fails' também virão daqui
                 let allLogs = [];
                 try {
-                    // Ensure columns exist just in case read happens before write
-                    try { await db.prepare("ALTER TABLE filament_logs ADD COLUMN user_id TEXT").run(); } catch (e) { }
-                    try { await db.prepare("ALTER TABLE filament_logs ADD COLUMN printer_id TEXT").run(); } catch (e) { }
-
-                    const { results } = await db.prepare("SELECT * FROM filament_logs WHERE filament_id = ? ORDER BY date DESC").bind(filamentId).all();
+                    const { results } = await db.prepare("SELECT * FROM filamentos_log WHERE filamento_id = ? ORDER BY data DESC").bind(filamentId).all();
                     if (results) {
                         allLogs = results.map(l => ({
                             id: l.id,
-                            date: l.date,
-                            type: l.type || 'manual', // 'falha' | 'manual' | ...
-                            qtd: l.amount,
-                            // Se for falha, podemos querer mostrar reason, senão obs
-                            obs: l.obs || "Registro",
-                            // Campos extras opcionais
-                            printerId: l.printer_id,
-                            cost: l.cost
+                            date: l.data,
+                            type: l.tipo || 'manual',
+                            qtd: l.quantidade,
+                            obs: l.observacao || "Registro",
+                            printerId: l.impressora_id,
+                            cost: l.custo
                         }));
                     }
                 } catch (e) { }
 
-                // 5. Combinar e Ordenar
                 const history = [...opening, ...consumptions, ...allLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                // 7. Calcular Estatísticas
                 const totalConsumed = history.reduce((acc, h) => acc + (h.qtd || 0), 0);
                 const firstDate = new Date(opening[0]?.date || new Date());
                 const now = new Date();
@@ -236,153 +161,160 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
 
                 return enviarJSON({
                     history,
-                    stats: {
-                        dailyAvg,
-                        daysActive,
-                        totalConsumed
-                    }
+                    stats: { dailyAvg, daysActive, totalConsumed }
                 });
             }
 
-            // Sem cache por enquanto
-            const { results } = await db.prepare("SELECT * FROM filaments ORDER BY favorito DESC, nome ASC").all();
-            return enviarJSON(results || []);
+            // Listar Filamentos (COM SOFT DELETE)
+            if (pathArray[2] === 'restore' && method === 'POST') {
+                const id = idFromPath;
+                if (!id) return enviarJSON({ error: "ID necessário." }, 400);
+
+                // RESTAURAR
+                const { restaurar } = await import('./_helpers');
+                await restaurar(db, 'filamentos', id);
+                return enviarJSON({ success: true, message: "Item restaurado." });
+            }
+
+            const apenasDeletados = url.searchParams.get('deleted') === 'true';
+            const query = construirQueryComSoftDelete("SELECT * FROM filamentos", "filamentos", apenasDeletados);
+            const { results } = await db.prepare(`${query} ORDER BY favorito DESC, nome ASC`).all();
+
+            // Se pedir deletados, incluir flag para UI saber
+            const finalResults = results?.map(r => ({ ...r, deleted: !!r.deletado_em })) || [];
+
+            return enviarJSON(finalResults);
         }
 
         if (method === 'DELETE') {
             const id = idFromPath || url.searchParams.get('id');
             if (!id) return enviarJSON({ error: "ID do filamento necessário." }, 400);
 
-            await db.prepare("DELETE FROM filaments WHERE id = ?").bind(id).run();
-            // invalidateCache(`filaments:${tenantId}`);
-
+            await softDelete(db, 'filamentos', id);
             return enviarJSON({ success: true, message: "Filamento removido com sucesso." });
         }
 
         if (['POST', 'PUT', 'PATCH'].includes(method)) {
-            // DEBUG: REMOVE THIS LINE AFTER VERIFICATION
-            // throw new Error("DEBUG: O código foi atualizado com sucesso! (Pode remover este erro)");
-
             const rawData = await request.json();
             const id = rawData.id || idFromPath || crypto.randomUUID();
 
-            // ROTA ESPECÍFICA: POST /filaments/:id/history (Registro Manual de Histórico)
+            // POST /history
             if (method === 'POST' && pathArray[2] === 'history' && idFromPath) {
-                const { type, qtd, obs } = rawData;
+                // Log manual
+                const { type, qtd, obs, tipo, quantidade, observacao } = rawData;
+                const valorQtd = quantidade ?? qtd;
+                const valorTipo = tipo ?? type;
+                if (!valorTipo || valorQtd === undefined) return enviarJSON({ error: "Campos obrigatórios." }, 400);
 
-                if (!type || qtd === undefined) {
-                    return enviarJSON({ error: "Campos type e qtd são obrigatórios." }, 400);
-                }
-
-                try {
-                    await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
-                        id TEXT PRIMARY KEY, 
-                        filament_id TEXT NOT NULL, 
-                        date TEXT NOT NULL, 
-                        type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
-                        amount REAL DEFAULT 0, 
-                        obs TEXT,
-                        user_id TEXT NOT NULL,
-                        printer_id TEXT,
-                        model_name TEXT,
-                        cost REAL DEFAULT 0,
-                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                    )`).run();
-
-                    // Ensure 'type' column exists (migration for older DBs)
-                    try { await db.prepare("ALTER TABLE filament_logs ADD COLUMN type TEXT").run(); } catch (e) { }
-
-                    const logId = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : String(Date.now() + Math.random());
-                    const logDate = new Date().toISOString();
-                    const logType = String(type || 'manual');
-                    const logAmount = (Number(qtd) || 0); // Hard fallback
-                    const logObs = String(obs || "Registro Manual");
-                    const logFilamentId = String(idFromPath);
-                    const logAmountNumeric = Number(logAmount); // Ensure number
-
-                    try {
-                        await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-                            .bind(logId, logFilamentId, logDate, logType, logAmountNumeric, logObs, userId)
-                            .run();
-                    } catch (dbError) {
-                        throw new Error(`DB Error: ${dbError.message} | Values: id=${typeof logId}, filId=${typeof logFilamentId} (${logFilamentId}), type=${typeof logType} (${logType}), amt=${typeof logAmountNumeric} (${logAmountNumeric})`);
-                    }
-
-                    return enviarJSON({ success: true, message: "Histórico registrado." });
-                } catch (e) {
-                    return enviarJSON({ error: "Erro ao gravar log", details: e.message }, 500);
-                }
+                const logId = crypto.randomUUID();
+                await db.prepare(`INSERT INTO filamentos_log (id, filamento_id, data, tipo, quantidade, observacao, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+                    .bind(logId, String(idFromPath), new Date().toISOString(), valorTipo || 'manual', Number(valorQtd), observacao || obs || "Manual", userId).run();
+                return enviarJSON({ success: true, message: "Histórico registrado." });
             }
 
             if (method === 'PATCH') {
-                // Atualização parcial (apenas peso ou favorito)
+                // Simplificado para update rápido (favorito, peso)
+                // Implementar Optimistic Locking se versão vier no body
+                let params = [];
+                let sets = [];
+
                 if (rawData.peso_atual !== undefined) {
                     const novoPeso = paraNumero(rawData.peso_atual);
+                    sets.push("peso_atual = ?");
+                    params.push(novoPeso);
 
-                    // Busca peso antigo para calcular diferença e logar
-                    const current = await db.prepare("SELECT peso_atual FROM filaments WHERE id = ?").bind(id).first();
+                    // Log de ajuste se necessário
+                    const current = await db.prepare("SELECT peso_atual FROM filamentos WHERE id = ?").bind(id).first();
                     if (current) {
                         const diff = (current.peso_atual || 0) - novoPeso;
-                        // Se houve redução (consumo), loga. Se for aumento (correçâo), loga também?
-                        // Vamos logar qualquer mudança significativa (> 1g) como ajuste manual
                         if (Math.abs(diff) >= 1) {
                             try {
-                                await db.prepare(`CREATE TABLE IF NOT EXISTS filament_logs (
-                                    id TEXT PRIMARY KEY, 
-                                    filament_id TEXT NOT NULL, 
-                                    date TEXT NOT NULL, 
-                                    type TEXT NOT NULL CHECK(type IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
-                                    amount REAL DEFAULT 0, 
-                                    obs TEXT,
-                                    user_id TEXT NOT NULL,
-                                    printer_id TEXT,
-                                    model_name TEXT,
-                                    cost REAL DEFAULT 0,
-                                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                                )`).run();
-
-                                await db.prepare(`INSERT INTO filament_logs (id, filament_id, date, type, amount, obs, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-                                    .bind(crypto.randomUUID(), id, new Date().toISOString(), 'manual', diff, "Ajuste Manual (Baixa/Correção)", userId).run();
-                            } catch (e) { console.error("Erro ao logar ajuste:", e); }
+                                await db.prepare(`INSERT INTO filamentos_log (id, filamento_id, data, tipo, quantidade, observacao, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+                                    .bind(crypto.randomUUID(), id, new Date().toISOString(), 'manual', diff, "Ajuste Manual", userId).run();
+                            } catch (e) { }
                         }
                     }
-
-                    await db.prepare("UPDATE filaments SET peso_atual = ? WHERE id = ?")
-                        .bind(novoPeso, id).run();
                 }
+
                 if (rawData.favorito !== undefined) {
-                    await db.prepare("UPDATE filaments SET favorito = ? WHERE id = ?")
-                        .bind(rawData.favorito ? 1 : 0, id).run();
+                    sets.push("favorito = ?");
+                    params.push(rawData.favorito ? 1 : 0);
                 }
 
-                // invalidateCache(`filaments:${tenantId}`);
+                // Sempre incrementa versão
+                sets.push("versao = versao + 1");
+
+                // Se cliente mandou versao para validar
+                let whereClause = "WHERE id = ?";
+                if (rawData.versaoCurrent) {
+                    whereClause += " AND versao = ?";
+                    params.push(id, rawData.versaoCurrent);
+                } else {
+                    params.push(id);
+                }
+
+                const res = await db.prepare(`UPDATE filamentos SET ${sets.join(', ')} ${whereClause}`).bind(...params).run();
+
+                if (rawData.versaoCurrent && res.meta.changes === 0) {
+                    return enviarJSON({ error: "Conflito de versão. Recarregue os dados." }, 409);
+                }
                 return enviarJSON({ success: true, message: "Filamento atualizado." });
             }
 
-            // Validação completa para Criar/Editar
+            // CREATE / UPDATE COMPLETO
             const validation = validateInput(rawData, schemas.filament);
             if (!validation.valid) {
                 return enviarJSON({ error: "Dados inválidos", details: validation.errors }, 400);
             }
 
             const da = sanitizeFields(rawData, schemas.filament);
-            // Campos extras que não estão na validação mas salvamos
             const tags = JSON.stringify(rawData.tags || []);
+            const now = new Date().toISOString();
 
+            // Verifica se é Create ou Update baseado no ID ou method
+            // Se for update, verificar versão
 
+            // Tenta Insert primeiro, se falhar faz Update (Upsert logic do SQLite não suporta Optimistic Locking facilmente numa query só)
+            // Melhor: Check existence
+            const existing = await db.prepare("SELECT id, versao FROM filamentos WHERE id = ?").bind(id).first();
 
-            await db.prepare(`INSERT INTO filaments (id, user_id, nome, marca, material, cor_hex, diametro, peso_total, peso_atual, preco, data_abertura, favorito, tags) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET 
-                nome=excluded.nome, marca=excluded.marca, material=excluded.material, cor_hex=excluded.cor_hex, diametro=excluded.diametro,
-                peso_total=excluded.peso_total, peso_atual=excluded.peso_atual, preco=excluded.preco, 
-                favorito=excluded.favorito, tags=excluded.tags`)
-                .bind(id, userId, da.nome, da.marca || null, da.material || null, da.cor_hex, da.diametro || '1.75', paraNumero(da.peso_total),
-                    paraNumero(da.peso_atual), paraNumero(da.preco), rawData.data_abertura || null, da.favorito ? 1 : 0, tags).run();
+            if (existing) {
+                // UPDATE
+                if (rawData.versao && existing.versao !== rawData.versao) {
+                    return enviarJSON({ error: "Conflito de versão. Dados desatualizados." }, 409);
+                }
 
-            // invalidateCache(`filaments:${tenantId}`);
-            return enviarJSON({ id, ...da, success: true });
+                await db.prepare(`
+                    UPDATE filamentos SET 
+                        nome=?, marca=?, material=?, cor_hex=?, diametro=?, 
+                        peso_total=?, peso_atual=?, preco=?, favorito=?, tags=?,
+                        VERSAO = versao + 1
+                    WHERE id = ?
+                `).bind(
+                    da.nome, da.marca || null, da.material, da.cor_hex || null, da.diametro || null,
+                    da.peso_total, da.peso_atual, da.preco, da.favorito ? 1 : 0, tags,
+                    id
+                ).run();
+
+                return enviarJSON({ success: true, id });
+            } else {
+                // INSERT
+                await db.prepare(`
+                    INSERT INTO filamentos (
+                        id, usuario_id, nome, marca, material, cor_hex, diametro, 
+                        peso_total, peso_atual, preco, data_abertura, favorito, tags, 
+                        versao, criado_em, atualizado_em
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                `).bind(
+                    id, userId, da.nome, da.marca || null, da.material, da.cor_hex || null, da.diametro || null,
+                    da.peso_total, da.peso_atual, da.preco, rawData.data_abertura || null,
+                    da.favorito ? 1 : 0, tags, now, now
+                ).run();
+
+                return enviarJSON({ success: true, id });
+            }
         }
     } catch (error) {
-        return enviarJSON({ error: "Erro ao processar filamentos", details: error.message }, 500);
+        return enviarJSON({ error: "Erro processando filamento", details: error.message }, 500);
     }
 }

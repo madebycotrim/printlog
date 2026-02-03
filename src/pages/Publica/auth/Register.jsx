@@ -113,7 +113,7 @@ export default function RegisterPage() {
 
     const handleGoogleSignUp = async () => {
         if (!agreed) {
-            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
+            setError("Vocï¿½ precisa aceitar os Termos e a Polï¿½tica de Privacidade.");
             return;
         }
         if (isGoogleLoading) return;
@@ -123,7 +123,14 @@ export default function RegisterPage() {
             setLocation(redirectUrl);
         } catch (err) {
             console.error("Google SignUp Error:", err);
-            setError(getAuthErrorMessage(err));
+
+            if (err.code === 'auth/popup-closed-by-user') {
+                setError("O login foi cancelado (janela fechada). Tente novamente.");
+            } else if (err.code === 'auth/popup-blocked') {
+                setError("O navegador bloqueou o pop-up. Por favor, permita pop-ups para continuar.");
+            } else {
+                setError(getAuthErrorMessage(err));
+            }
         } finally {
             setIsGoogleLoading(false);
         }
@@ -132,13 +139,13 @@ export default function RegisterPage() {
     const handlePasswordSignUp = async (e) => {
         e.preventDefault();
 
-        // VALIDAÇÕES CLIENT-SIDE
+        // VALIDAï¿½ï¿½ES CLIENT-SIDE
         if (!agreed) {
-            setError("Você precisa aceitar os Termos e a Política de Privacidade.");
+            setError("Vocï¿½ precisa aceitar os Termos e a Polï¿½tica de Privacidade.");
             return;
         }
         if (!isValidEmail(email)) {
-            setError("E-mail inválido. Verifique o endereço digitado.");
+            setError("E-mail invï¿½lido. Verifique o endereï¿½o digitado.");
             return;
         }
         const passwordCheck = validatePassword(password);
@@ -184,7 +191,7 @@ export default function RegisterPage() {
                                 TRANSFORME FILAMENTO EM <span className="text-sky-500 italic">LUCRO REAL.</span>
                             </h2>
                             <p className="text-zinc-500 text-sm font-medium">
-                                Junte-se a outros makers e organize sua produção 3D.
+                                Junte-se a outros makers e organize sua produï¿½ï¿½o 3D.
                             </p>
                         </div>
                     </div>
@@ -202,7 +209,7 @@ export default function RegisterPage() {
                             <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">Seu Nome ou Nome da Oficina</label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
-                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: João ou Minha Oficina 3D" />
+                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] transition-all duration-300 text-white placeholder:text-zinc-700" placeholder="Ex: Joï¿½o ou Minha Oficina 3D" />
                             </div>
                         </div>
 
@@ -250,7 +257,7 @@ export default function RegisterPage() {
                                 </div>
                             </div>
                             <label htmlFor="terms" className="text-xs text-zinc-500 leading-relaxed cursor-pointer select-none hover:text-zinc-300 transition-colors">
-                                Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Política de Privacidade</a> do PrintLog.
+                                Li e concordo com os <a href="/terms-of-service" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Termos de Uso</a> e a <a href="/privacy-policy" target="_blank" className="text-sky-500 hover:text-sky-400 hover:underline font-bold">Polï¿½tica de Privacidade</a> do PrintLog.
                             </label>
                         </div>
 
@@ -270,7 +277,7 @@ export default function RegisterPage() {
                             {isGoogleLoading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Chrome size={20} /> Continuar com Google</>}
                         </button>
                         <p className="text-center text-zinc-500 text-sm">
-                            Já tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
+                            Jï¿½ tem acesso? <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">Entrar agora</button>
                         </p>
                     </div>
                 </div>
@@ -289,7 +296,7 @@ export default function RegisterPage() {
                             <Layout size={24} />
                         </div>
                         <span className="text-sm font-bold text-white block uppercase">Tudo em uma tela</span>
-                        <span className="text-[11px] text-zinc-500 block mt-1">Tudo o que você precisa em uma única tela</span>
+                        <span className="text-[11px] text-zinc-500 block mt-1">Tudo o que vocï¿½ precisa em uma ï¿½nica tela</span>
                     </div>
 
                     <div className="absolute -bottom-40 -left-20 opacity-10 font-mono text-[10px] text-sky-500 space-y-1 text-left">

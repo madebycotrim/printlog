@@ -12,7 +12,19 @@ export const useSupplyHistory = (id) => {
             // Filament logic used /filaments/:id/history.
             // Assuming /insumos/:id/history works via [[path]].js
             const res = await api.get(`/insumos/${id}/history`);
-            return res.data;
+            const rawHistory = res.data?.history || [];
+
+            // Normalize backend (snake_case PT-BR) to frontend (camelCase EN)
+            return {
+                history: rawHistory.map(log => ({
+                    id: log.id,
+                    created_at: log.criado_em,
+                    notes: log.observacoes,
+                    quantity_change: Number(log.mudanca_quantidade),
+                    type: (log.tipo === 'manual' && Number(log.mudanca_quantidade) < 0) ? 'consumo' : log.tipo,
+                    user_id: log.usuario_id
+                }))
+            };
         },
         enabled: !!id
     });
@@ -31,7 +43,24 @@ export const useSupplyStore = create((set, get) => ({
         set({ loading: true });
         try {
             const res = await api.get('/insumos');
-            set({ supplies: Array.isArray(res.data) ? res.data : [] });
+            const rawData = Array.isArray(res.data) ? res.data : [];
+
+            // Normalizar dados para garantir que campos camelCase existam
+            const normalized = rawData.map(item => ({
+                ...item,
+                currentStock: item.estoque_atual ?? item.current_stock ?? item.currentStock ?? 0,
+                minStock: item.estoque_minimo ?? item.min_stock ?? item.minStock ?? 0,
+                purchaseLink: item.link_compra ?? item.purchase_link ?? item.purchaseLink ?? '',
+                category: item.categoria ?? item.category ?? 'geral',
+                brand: item.marca ?? item.brand ?? '',
+                usageUnit: item.unidade_uso ?? item.usage_unit ?? item.usageUnit ?? '',
+                stockYield: item.rendimento_estoque ?? item.stock_yield ?? item.stockYield ?? 1,
+                unit: item.unidade ?? item.unit ?? 'un',
+                price: item.preco ?? item.price ?? 0,
+                name: item.nome ?? item.name ?? ''
+            }));
+
+            set({ supplies: normalized });
         } catch (error) {
             console.error("Erro ao buscar insumos:", error);
             useToastStore.getState().addToast("Erro ao carregar insumos.", "error");
@@ -43,8 +72,21 @@ export const useSupplyStore = create((set, get) => ({
     // Salva ou Atualiza um insumo
     saveSupply: async (supply) => {
         try {
-            // O payload já vem normalizado do Modal
-            const payload = { ...supply };
+            // O payload vem em camelCase (frontend), precisamos converter para snake_case (backend PT-BR)
+            const payload = {
+                id: supply.id,
+                nome: supply.name,
+                preco: supply.price,
+                unidade: supply.unit,
+                estoque_minimo: supply.minStock,
+                estoque_atual: supply.currentStock,
+                categoria: supply.category,
+                marca: supply.brand,
+                link_compra: supply.purchaseLink,
+                descricao: supply.description,
+                unidade_uso: supply.usageUnit,
+                rendimento_estoque: supply.stockYield
+            };
 
             const res = await api.post('/insumos', payload);
 
@@ -81,9 +123,20 @@ export const useSupplyStore = create((set, get) => ({
             const currentItem = get().supplies.find(s => String(s.id) === String(id));
             if (!currentItem) return;
 
+            // Converter para PT-BR
             const payload = {
-                ...currentItem,
-                currentStock: Number(newStock)
+                id: currentItem.id,
+                nome: currentItem.name,
+                preco: currentItem.price,
+                unidade: currentItem.unit,
+                estoque_minimo: currentItem.minStock,
+                estoque_atual: Number(newStock),
+                categoria: currentItem.category,
+                marca: currentItem.brand,
+                link_compra: currentItem.purchaseLink,
+                descricao: currentItem.description,
+                unidade_uso: currentItem.usageUnit,
+                rendimento_estoque: currentItem.stockYield
             };
 
             // Reusa o saveSupply mas sem toast explicito (ou opcional)

@@ -3,6 +3,7 @@ import { Edit2, Trash2, ArrowDownFromLine, Copy, History, Droplet } from "lucide
 import VisualizacaoCarretel from "./VisualizacaoCarretel";
 import { StatusFilamento } from "./StatusFilamento";
 import { formatCurrency } from "../../../utils/numbers";
+import { Tooltip } from "../../../components/ui/Tooltip";
 
 export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico }) => {
     // Lógica de Estatísticas
@@ -28,7 +29,7 @@ export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoE
                 ${estatisticas.ehCritico ? 'border-rose-500/20 bg-rose-500/5' : ''}
             `}>
                 {/* Carretel Centralizado */}
-                <div className="relative transform transition-all duration-500 -translate-y-6 group-hover:scale-[0.6] group-hover:-translate-y-[95px]">
+                <div className="relative transform transition-all duration-500 -translate-y-6 group-hover:scale-[0.6] group-hover:-translate-y-[90px]">
                     {/* Brilho Ambiente */}
                     <div
                         className="absolute inset-0 rounded-full blur-[50px] transition-all duration-500 opacity-20 group-hover:opacity-30"
@@ -83,21 +84,25 @@ export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoE
                     </h3>
 
                     {/* Linha de Estatísticas Modernas */}
-                    <div className="flex items-center justify-center gap-3">
-                        {/* Badge de Preço */}
-                        <div className="px-3 py-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex items-center gap-2 shadow-sm backdrop-blur-sm">
-                            <span className="text-[10px] font-bold text-emerald-500 tracking-wide">
+                    <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-3 text-[10px] font-medium opacity-90">
+                            {/* Preço */}
+                            <span className="text-emerald-400 font-bold tracking-wide">
                                 {Number(item?.preco) > 0 ? formatCurrency(estatisticas.valorRestante) : 'R$ --'}
                             </span>
-                        </div>
 
-                        {/* Badge de Peso */}
-                        <div className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 shadow-sm backdrop-blur-sm ${estatisticas.ehCritico
-                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-                            : 'bg-zinc-900/60 border-white/5 text-zinc-300'
-                            }`}>
-                            <span className="text-[10px] font-bold">{Math.round(estatisticas.atual)}g</span>
-                            <span className="text-[9px] text-zinc-500 font-medium">/ {Number(item?.peso_total) || 1000}g</span>
+                            {/* Divisor */}
+                            <div className="w-px h-3 bg-white/20" />
+
+                            {/* Peso */}
+                            <div className="flex items-baseline gap-1">
+                                <span className={`font-bold ${estatisticas.ehCritico ? 'text-rose-400' : 'text-white'}`}>
+                                    {Math.round(estatisticas.atual)}g
+                                </span>
+                                <span className="text-zinc-500 text-[9px]">
+                                    / {Number(item?.peso_total) || 1000}g
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -109,18 +114,26 @@ export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoE
                     </button>
 
                     <div className="flex items-center justify-between px-2 text-zinc-500">
-                        <button onClick={() => aoVerHistorico(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors" title="Histórico">
-                            <History size={14} strokeWidth={1.5} />
-                        </button>
-                        <button onClick={() => aoDuplicar(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors" title="Duplicar">
-                            <Copy size={14} strokeWidth={1.5} />
-                        </button>
-                        <button onClick={() => aoEditar(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors" title="Editar">
-                            <Edit2 size={14} strokeWidth={1.5} />
-                        </button>
-                        <button onClick={() => aoExcluir(item?.id)} className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors" title="Excluir">
-                            <Trash2 size={14} strokeWidth={1.5} />
-                        </button>
+                        <Tooltip text="Histórico">
+                            <button onClick={() => aoVerHistorico(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors">
+                                <History size={14} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip text="Duplicar">
+                            <button onClick={() => aoDuplicar(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors">
+                                <Copy size={14} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip text="Editar">
+                            <button onClick={() => aoEditar(item)} className="p-1.5 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors">
+                                <Edit2 size={14} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip text="Excluir">
+                            <button onClick={() => aoExcluir(item?.id)} className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors">
+                                <Trash2 size={14} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
                     </div>
                 </div>
             </div>

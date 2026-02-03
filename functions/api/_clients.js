@@ -9,7 +9,7 @@ export async function gerenciarClientes(ctx) {
     if (method === "GET" && !client_id) {
         try {
             const { results } = await db.prepare(
-                `SELECT * FROM clients ORDER BY name ASC`
+                `SELECT * FROM clientes WHERE deletado_em IS NULL ORDER BY nome ASC`
             ).all();
             return enviarJSON(results || []);
         } catch (error) {
@@ -27,16 +27,16 @@ export async function gerenciarClientes(ctx) {
         const id = crypto.randomUUID();
 
         await db.prepare(
-            `INSERT INTO clients (id, user_id, name, email, phone, document, notes, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO clientes (id, usuario_id, nome, email, telefone, documento, observacoes, endereco) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
             id,
             tenantId,
-            data.name,
+            data.name || data.nome,
             data.email || null,
-            data.phone || null,
-            data.document || null,
-            data.notes || null,
-            data.address || null
+            data.phone || data.telefone || null,
+            data.document || data.documento || null,
+            data.notes || data.observacoes || null,
+            data.address || data.endereco || null
         ).run();
 
         return enviarJSON({ message: "Cliente criado com sucesso!", id }, 201);
@@ -46,25 +46,25 @@ export async function gerenciarClientes(ctx) {
     if (method === "PUT" && client_id) {
         const data = await request.json();
         await db.prepare(
-            `UPDATE clients SET name = ?, email = ?, phone = ?, document = ?, notes = ?, address = ? WHERE id = ?`
+            `UPDATE clientes SET nome = ?, email = ?, telefone = ?, documento = ?, observacoes = ?, endereco = ? WHERE id = ?`
         ).bind(
-            data.name,
+            data.name || data.nome,
             data.email || null,
-            data.phone || null,
-            data.document || null,
-            data.notes || null,
-            data.address || null,
+            data.phone || data.telefone || null,
+            data.document || data.documento || null,
+            data.notes || data.observacoes || null,
+            data.address || data.endereco || null,
             client_id
         ).run();
 
         return enviarJSON({ message: "Cliente atualizado com sucesso!" });
     }
 
-    // Deletar Cliente
+    // Deletar Cliente (Soft Delete)
     if (method === "DELETE" && client_id) {
         await db.prepare(
-            `DELETE FROM clients WHERE id = ?`
-        ).bind(client_id).run();
+            `UPDATE clientes SET deletado_em = ? WHERE id = ?`
+        ).bind(new Date().toISOString(), client_id).run();
 
         return enviarJSON({ message: "Cliente removido com sucesso!" });
     }

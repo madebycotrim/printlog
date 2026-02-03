@@ -1,10 +1,7 @@
 import { enviarJSON, paraNumero } from './_utils';
 import { validateInput, schemas, sanitizeFields } from './_validation';
-import { cacheQuery, invalidateCache } from './_cache';
+import { construirQueryComSoftDelete, softDelete } from './_helpers';
 
-/**
- * API DE GERENCIAMENTO DE INSUMOS
- */
 /**
  * API DE GERENCIAMENTO DE INSUMOS
  */
@@ -20,21 +17,42 @@ export async function gerenciarInsumos({ request, db, userId, pathArray, url }) 
         if (method === 'GET' && subRoute === 'history') {
             if (!idFromPath) return enviarJSON({ error: "ID necessário" }, 400);
 
-            const history = await db.prepare(`
-                SELECT * FROM supply_events 
-                WHERE supply_id = ? 
-                ORDER BY created_at DESC
+            // Fetch Supply Details (for creation date)
+            const supply = await db.prepare("SELECT criado_em, estoque_atual FROM insumos WHERE id = ?").bind(idFromPath).first();
+
+            // Fetch Logs
+            const logs = await db.prepare(`
+                SELECT * FROM insumos_log 
+                WHERE insumo_id = ? 
+                ORDER BY criado_em DESC
             `).bind(idFromPath).all();
 
-            return enviarJSON({ history: history.results || [] });
+            const history = logs.results || [];
+
+            // Synthesize Creation Log from Supply Data
+            if (supply) {
+                history.push({
+                    id: 'creation-event',
+                    insumo_id: idFromPath,
+                    tipo: 'criacao',
+                    mudanca_quantidade: 0,
+                    observacoes: 'Item criado no sistema',
+                    criado_em: supply.criado_em
+                });
+            }
+
+            // Sort merged list by date DESC
+            history.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+
+            return enviarJSON({ history });
         }
 
         // ==========================================
         // GET: LISTAR INSUMOS
         // ==========================================
         if (method === 'GET') {
-            // Removido cacheQuery por enquanto para simplificar e evitar problemas de cache com org_id
-            const { results } = await db.prepare("SELECT * FROM supplies ORDER BY name ASC").all();
+            const query = construirQueryComSoftDelete("SELECT * FROM insumos", "insumos");
+            const { results } = await db.prepare(`${query} ORDER BY nome ASC`).all();
             return enviarJSON(results || []);
         }
 
@@ -45,11 +63,7 @@ export async function gerenciarInsumos({ request, db, userId, pathArray, url }) 
             const id = idFromPath || url.searchParams.get('id');
             if (!id) return enviarJSON({ error: "ID do insumo necessário." }, 400);
 
-            await db.batch([
-                db.prepare("DELETE FROM supplies WHERE id = ?").bind(id),
-                db.prepare("DELETE FROM supply_events WHERE supply_id = ?").bind(id)
-            ]);
-
+            await softDelete(db, 'insumos', id);
             return enviarJSON({ success: true, message: "Insumo removido com sucesso." });
         }
 
@@ -66,42 +80,54 @@ export async function gerenciarInsumos({ request, db, userId, pathArray, url }) 
             }
 
             const data = sanitizeFields(rawData, schemas.supply);
-            const newStock = paraNumero(data.currentStock);
-            const newPrice = paraNumero(data.price);
+            const newStock = paraNumero(data.estoque_atual);
+            const newPrice = paraNumero(data.preco);
 
             // 1. Buscar estado atual para comparação
-            const currentItem = await db.prepare("SELECT * FROM supplies WHERE id = ?").bind(id).first();
+            const currentItem = await db.prepare("SELECT * FROM insumos WHERE id = ?").bind(id).first();
 
             const isNew = !currentItem;
-            const oldStock = currentItem ? (currentItem.currentStock || 0) : 0;
+            const oldStock = currentItem ? (currentItem.estoque_atual || 0) : 0;
             const stockDiff = newStock - oldStock;
+
+            // Check version conflict if updating
+            if (!isNew && rawData.versao && currentItem.versao !== rawData.versao) {
+                return enviarJSON({ error: "Conflito de versão." }, 409);
+            }
 
             // 2. Preparar batch de operações
             const commands = [];
 
             // Upsert do Insumo
             commands.push(db.prepare(`
-                INSERT INTO supplies (id, user_id, name, price, unit, min_stock, current_stock, category, description, updated_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                INSERT INTO insumos (id, usuario_id, nome, preco, unidade, estoque_minimo, estoque_atual, categoria, marca, link_compra, descricao, atualizado_em, unidade_uso, rendimento_estoque, versao) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1) 
                 ON CONFLICT(id) DO UPDATE SET 
-                name=excluded.name, price=excluded.price, unit=excluded.unit, 
-                min_stock=excluded.min_stock, current_stock=excluded.current_stock,
-                category=excluded.category, description=excluded.description, updated_at=excluded.updated_at
+                nome=excluded.nome, preco=excluded.preco, unidade=excluded.unidade, 
+                estoque_minimo=excluded.estoque_minimo, estoque_atual=excluded.estoque_atual,
+                categoria=excluded.categoria, marca=excluded.marca, link_compra=excluded.link_compra,
+                descricao=excluded.descricao, atualizado_em=excluded.atualizado_em,
+                unidade_uso=excluded.unidade_uso, rendimento_estoque=excluded.rendimento_estoque,
+                versao=versao+1
             `).bind(
                 id, userId,
-                data.name, newPrice, data.unit || 'un',
-                paraNumero(data.minStock), newStock,
-                rawData.category || rawData.categoria || data.category || 'geral',
-                data.description || '',
-                new Date().toISOString()
+                data.nome, newPrice, data.unidade || 'un',
+                paraNumero(data.estoque_minimo), newStock,
+                data.categoria || 'geral',
+                data.marca || '',
+                data.link_compra || '',
+                data.descricao || '',
+                new Date().toISOString(),
+                data.unidade_uso || '',
+                paraNumero(data.rendimento_estoque) || 1
             ));
 
-            // 3. Registrar Evento se houve mudança de estoque ou é novo
-            if (isNew || Math.abs(stockDiff) > 0.001) {
-                const eventType = isNew ? 'create' : (Math.abs(stockDiff) > 0 ? 'manual' : 'update');
+            // 3. Registrar Evento APENAS se houve mudança de estoque (IGNORAR CRIAÇÃO)
+            if (!isNew && Math.abs(stockDiff) > 0.001) {
+                const eventType = Math.abs(stockDiff) > 0 ? 'manual' : 'atualizacao';
 
                 commands.push(db.prepare(`
-                    INSERT INTO supply_events (id, supply_id, user_id, type, old_stock, new_stock, quantity_change, cost, notes)
+                    INSERT INTO insumos_log (id, insumo_id, usuario_id, tipo, estoque_anterior, estoque_novo, mudanca_quantidade, custo, observacoes)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `).bind(
                     crypto.randomUUID(),
@@ -111,7 +137,7 @@ export async function gerenciarInsumos({ request, db, userId, pathArray, url }) 
                     newStock,
                     stockDiff,
                     0,
-                    isNew ? 'Insumo cadastrado' : 'Ajuste manual de estoque'
+                    'Ajuste manual de estoque'
                 ));
             }
 

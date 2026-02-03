@@ -15,7 +15,9 @@ export default function FormularioIdentificacaoFilamento({ formulario, atualizar
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-5">
                 <div className="space-y-1.5 col-span-2">
-                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Nome do Filamento</label>
+                    <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && !formulario.nome ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                        Nome do Filamento {mostrarErros && !formulario.nome && "*"}
+                    </label>
                     <UnifiedInput
                         icon={PaintbrushVertical}
                         value={formulario.nome}
@@ -24,6 +26,7 @@ export default function FormularioIdentificacaoFilamento({ formulario, atualizar
                         error={mostrarErros && !formulario.nome}
                     />
                 </div>
+
 
                 {/* Seletor de Cor */}
                 <div className="space-y-1.5 col-span-2">
@@ -67,7 +70,9 @@ export default function FormularioIdentificacaoFilamento({ formulario, atualizar
                 {/* Material & Diâmetro */}
                 <div className="space-y-1.5 col-span-2 md:col-span-1">
                     <div className="flex justify-between items-end px-1 min-h-[22px]">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Tipo de Material</label>
+                        <label className={`text-[10px] font-bold uppercase tracking-wide ${mostrarErros && !formulario.material ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                            Tipo de Material {mostrarErros && !formulario.material && "*"}
+                        </label>
                         <div className="flex items-center bg-zinc-900 rounded-md p-0.5 border border-zinc-800">
                             <button
                                 onClick={() => atualizarFormulario('diametro', "1.75")}
@@ -93,6 +98,6 @@ export default function FormularioIdentificacaoFilamento({ formulario, atualizar
                     />
                 </div>
             </div>
-        </section>
+        </section >
     );
 }

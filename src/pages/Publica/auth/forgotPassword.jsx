@@ -58,15 +58,15 @@ const RecoveryStatusWidget = () => (
     <div className="w-80 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl group hover:border-amber-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
-                <Badge label="Segurança" color="amber" icon={Settings} />
-                <h4 className="text-white font-bold text-lg mt-2 uppercase group-hover:text-amber-400 transition-colors">Recuperação</h4>
+                <Badge label="Seguranï¿½a" color="amber" icon={Settings} />
+                <h4 className="text-white font-bold text-lg mt-2 uppercase group-hover:text-amber-400 transition-colors">Recuperaï¿½ï¿½o</h4>
             </div>
             <Cpu className="text-zinc-600 group-hover:text-amber-500 transition-colors" size={20} />
         </div>
         <div className="space-y-4">
             <div className="p-4 bg-zinc-900/30 rounded-2xl border border-zinc-800/30 space-y-3 group-hover:bg-amber-500/5 transition-colors duration-500">
                 <div className="flex justify-between text-[10px] font-bold uppercase text-zinc-500">
-                    <span>Nível de Proteção</span>
+                    <span>Nï¿½vel de Proteï¿½ï¿½o</span>
                     <span className="text-amber-400">100%</span>
                 </div>
                 <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
@@ -173,7 +173,7 @@ export default function ForgotPasswordPage() {
                                 </div>
 
                                 <PrimaryButton type="submit" variant="sky" className="w-full" isLoading={isLoading} icon={Zap}>
-                                    Receber email de redefinição
+                                    Receber email de redefiniï¿½ï¿½o
                                 </PrimaryButton>
                             </div>
                         </form>
@@ -193,7 +193,7 @@ export default function ForgotPasswordPage() {
 
                     <div className="text-center pt-4">
                         <p className="text-zinc-500 text-sm">
-                            Já lembrou a senha?
+                            Jï¿½ lembrou a senha?
                             <button onClick={() => setLocation('/login')} className="text-sky-500 font-bold hover:text-sky-400 ml-2">
                                 Ir para o Login
                             </button>
@@ -218,12 +218,12 @@ export default function ForgotPasswordPage() {
                                 <CheckCircle2 size={24} />
                             </div>
                             <div className="text-left">
-                                <span className="text-[10px] font-bold uppercase text-emerald-500 block">Proteção Maker</span>
+                                <span className="text-[10px] font-bold uppercase text-emerald-500 block">Proteï¿½ï¿½o Maker</span>
                                 <span className="text-[12px] font-bold text-white uppercase">Oficina Blindada</span>
                             </div>
                         </div>
                         <p className="text-[10px] text-zinc-500 text-left leading-relaxed uppercase font-bold opacity-60">
-                            Sua conta está segura com criptografia de ponta a ponta.
+                            Sua conta estï¿½ segura com criptografia de ponta a ponta.
                         </p>
                     </div>
 

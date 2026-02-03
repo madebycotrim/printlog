@@ -60,7 +60,7 @@ export default function FiltrosFilamento({
                             className={`
                                 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
                                 ${filtros.materiais?.includes(mat)
-                                    ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+                                    ? 'bg-rose-500/10 border-rose-500 text-rose-500'
                                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
                         >
@@ -76,7 +76,7 @@ export default function FiltrosFilamento({
                             className={`
                                 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
                                 ${filtros.marcas?.includes(marca)
-                                    ? 'bg-sky-500/10 border-sky-500 text-sky-500'
+                                    ? 'bg-rose-500/10 border-rose-500 text-rose-500'
                                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
                         >

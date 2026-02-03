@@ -36,7 +36,8 @@ const StatsWidget = memo(({
     progress, // { value: number (0-100), color: string (class) }
     isAlert = false, // If true, triggers error theme defaults
     colorTheme = null, // 'rose', 'emerald', 'sky', 'amber' (overrides isAlert)
-    children // Custom content
+    children, // Custom content
+    valueSize = "text-2xl" // Default size
 }) => {
     // --- Universal Color Logic ---
     const themes = {
@@ -107,7 +108,7 @@ const StatsWidget = memo(({
             </div>
 
             <div className="text-right flex flex-col justify-between h-full py-1 relative z-10 min-w-[80px]">
-                <h3 className={`text-2xl font-bold font-sans ${isLoading ? 'text-zinc-600' : (isAlert ? 'text-rose-500' : 'text-zinc-100')}`}>
+                <h3 className={`${valueSize} font-bold font-sans ${isLoading ? 'text-zinc-600' : (isAlert ? 'text-rose-500' : 'text-zinc-100')}`}>
                     {isLoading ? "---" : value}
                 </h3>
 
@@ -131,12 +132,14 @@ const StatsWidget = memo(({
             </div>
 
             {/* Custom Children (Charts, Extra Details) */}
-            {children && (
-                <div className="absolute inset-x-6 bottom-4 md:inset-x-auto md:w-1/3 md:right-6 md:bottom-3 z-0 opacity-50 contrast-125 pointer-events-none mix-blend-plus-lighter">
-                    {children}
-                </div>
-            )}
-        </div>
+            {
+                children && (
+                    <div className="absolute inset-x-6 bottom-4 md:inset-x-auto md:w-1/3 md:right-6 md:bottom-3 z-0 opacity-50 contrast-125 pointer-events-none mix-blend-plus-lighter">
+                        {children}
+                    </div>
+                )
+            }
+        </div >
     );
 });
 

@@ -34,6 +34,10 @@ export default defineConfig({
     })
   ],
   server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none'
+    },
     proxy: process.env.VITE_PROXY_TARGET ? {
       '/api': {
         target: process.env.VITE_PROXY_TARGET,

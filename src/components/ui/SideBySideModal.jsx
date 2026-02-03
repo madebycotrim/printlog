@@ -23,7 +23,8 @@ export default function SideBySideModal({
     isSaving,
     isDirty = false,
     maxWidth = "max-w-5xl",
-    className = ""
+    className = "",
+    contentClassName = "p-10"
 }) {
     const [showExitConfirm, setShowExitConfirm] = useState(false);
 
@@ -69,7 +70,8 @@ export default function SideBySideModal({
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
 
                 {/* LINHA DE BRILHO SUPERIOR */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-sky-500 to-transparent shadow-[0_0_15px_rgba(14,165,233,0.5)] z-20" />
+                {/* LINHA DE BRILHO SUPERIOR */}
+                <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent ${header?.color ? `via-${header.color}-500 shadow-[0_0_15px_rgba(var(--${header.color}-500-rgb),0.5)]` : 'via-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.5)]'} to-transparent z-20`} />
 
                 {/* Botão de Fechar Absoluto (Sempre presente) */}
                 <button
@@ -102,11 +104,12 @@ export default function SideBySideModal({
                 <div className="flex-1 flex flex-col bg-transparent relative z-10">
 
                     {/* Corpo Rolável */}
-                    <div className={`p-10 overflow-y-auto custom-scrollbar flex-1 space-y-8 ${isSaving ? 'pointer-events-none' : ''}`}>
+                    <div className={`${contentClassName} overflow-y-auto custom-scrollbar flex-1 space-y-8 ${isSaving ? 'pointer-events-none' : ''}`}>
 
                         {/* Header Padrão (Universal Branding Style) - Injetado no topo do conteúdo */}
+                        {/* Header Padrão (Universal Branding Style) - Injetado no topo do conteúdo */}
                         {header && (
-                            <div className="flex flex-col gap-2 border-l-4 border-sky-500 pl-6 mb-8 animate-in slide-in-from-left-2 fade-in duration-500">
+                            <div className={`flex flex-col gap-2 border-l-4 pl-6 mb-8 animate-in slide-in-from-left-2 fade-in duration-500 ${header.color ? `border-${header.color}-500` : 'border-sky-500'}`}>
                                 <h2 className="text-2xl font-bold text-white tracking-tight leading-none">
                                     {header.title}
                                 </h2>
@@ -126,12 +129,7 @@ export default function SideBySideModal({
                     {(showExitConfirm || footer) && (
                         <footer className="p-8 border-t border-white/5 bg-[#080809] flex flex-col gap-4 relative z-20 min-h-[100px] justify-center">
                             {showExitConfirm ? (
-                                <div className="animate-in slide-in-from-bottom-2 fade-in duration-200 space-y-3 w-full">
-                                    <div className="flex items-center justify-between bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 px-4">
-                                        <span className="text-[10px] font-bold text-rose-500 flex items-center gap-2 uppercase tracking-wide">
-                                            <AlertCircle size={14} /> Tem certeza que deseja descartar?
-                                        </span>
-                                    </div>
+                                <div className="flex flex-col gap-3 w-full animate-in fade-in duration-200">
                                     <div className="flex gap-4">
                                         <button
                                             onClick={() => setShowExitConfirm(false)}
@@ -145,6 +143,9 @@ export default function SideBySideModal({
                                         >
                                             <Trash2 size={14} /> Sim, Descartar
                                         </button>
+                                    </div>
+                                    <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-rose-500 uppercase tracking-widest opacity-80">
+                                        <AlertCircle size={12} /> Tem certeza que deseja descartar alterações?
                                     </div>
                                 </div>
                             ) : (

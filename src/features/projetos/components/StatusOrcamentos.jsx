@@ -40,6 +40,7 @@ export default function StatusOrcamentos({
                     value: Math.min(100, margemPercent * 2), // Visual scaling
                     color: ehCritico ? 'bg-rose-500' : (ehAltaPerformance ? 'bg-emerald-500' : 'bg-amber-500')
                 }}
+                valueSize="text-xl"
             />
 
             {/* 2. Volume Comercial */}
@@ -50,6 +51,7 @@ export default function StatusOrcamentos({
                 colorTheme="amber"
                 secondaryLabel="Faturamento Total"
                 secondaryValue={`${metrics.ativos} pedidos processados`}
+                valueSize="text-xl"
             />
 
             {/* 3. Capacidade de Manufatura */}
@@ -60,6 +62,7 @@ export default function StatusOrcamentos({
                 colorTheme="orange"
                 secondaryLabel="Carga Horária"
                 secondaryValue="Tempo total estimado"
+                valueSize="text-xl"
             />
         </div>
     );

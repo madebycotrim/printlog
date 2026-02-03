@@ -69,25 +69,38 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
 
             {/* 4. AÇÕES (Revelar no Hover) */}
             <div className="flex items-center gap-1 pl-4 border-l border-white/5 opacity-40 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                <button
-                    onClick={() => aoConsumir(item)}
-                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-800/50 hover:bg-emerald-500/10 text-zinc-400 hover:text-emerald-400 transition-colors"
-                    title="Baixa Rápida"
-                >
-                    <ArrowDownFromLine size={14} />
-                </button>
-                <button onClick={() => aoDuplicar(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-blue-400 transition-colors" title="Duplicar">
-                    <Copy size={14} />
-                </button>
-                <button onClick={() => aoVerHistorico(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-amber-400 transition-colors" title="Histórico">
-                    <History size={14} />
-                </button>
-                <button onClick={() => aoEditar(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-zinc-200 transition-colors" title="Editar">
-                    <Edit2 size={14} />
-                </button>
-                <button onClick={() => aoExcluir(item?.id)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-rose-500/10 text-zinc-500 hover:text-rose-500 transition-colors" title="Excluir">
-                    <Trash2 size={14} />
-                </button>
+                <Tooltip text="Baixa Rápida">
+                    <button
+                        onClick={() => aoConsumir(item)}
+                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-800/50 hover:bg-emerald-500/10 text-zinc-400 hover:text-emerald-400 transition-colors"
+                    >
+                        <ArrowDownFromLine size={14} />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Duplicar">
+                    <button onClick={() => aoDuplicar(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-blue-400 transition-colors">
+                        <Copy size={14} />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Histórico">
+                    <button onClick={() => aoVerHistorico(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-amber-400 transition-colors">
+                        <History size={14} />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Editar">
+                    <button onClick={() => aoEditar(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-zinc-200 transition-colors">
+                        <Edit2 size={14} />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Excluir">
+                    <button onClick={() => aoExcluir(item?.id)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-rose-500/10 text-zinc-500 hover:text-rose-500 transition-colors">
+                        <Trash2 size={14} />
+                    </button>
+                </Tooltip>
             </div>
         </div>
     );
