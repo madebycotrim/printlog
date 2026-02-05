@@ -1,23 +1,23 @@
-import React, { memo } from "react";
+﻿import React, { memo } from "react";
 import { Activity } from "lucide-react";
 
 /**
- * StatsWidget - Card Estatístico Universal
+ * StatsWidget - Card EstatÃ­stico Universal
  * 
- * Unifica a exibição de cards de status em:
+ * Unifica a exibiÃ§Ã£o de cards de status em:
  * - StatusFilamentos (Estoque, Financeiro, Clima)
  * - StatusOrcamentos (Comercial, Manufatura)
  * - StatusImpressoras (Futuro uso)
  * 
  * @param {Object} props
- * @param {string} props.title - Título pequeno (label superior)
+ * @param {string} props.title - TÃ­tulo pequeno (label superior)
  * @param {string|number|ReactNode} props.value - Valor principal grande
- * @param {LucideIcon} props.icon - Ícone principal
- * @param {string} [props.iconColor] - Classe de cor do ícone (ex: 'text-amber-500')
- * @param {string} [props.iconBg] - Classe de fundo/borda do ícone (ex: 'border-amber-500/20')
+ * @param {LucideIcon} props.icon - Ãcone principal
+ * @param {string} [props.iconColor] - Classe de cor do Ã­cone (ex: 'text-amber-500')
+ * @param {string} [props.iconBg] - Classe de fundo/borda do Ã­cone (ex: 'border-amber-500/20')
  * @param {string} [props.glowColor] - Cor do efeito de brilho (ex: 'bg-amber-500/20')
- * @param {string} [props.secondaryLabel] - Label da informação secundária
- * @param {string|ReactNode} [props.secondaryValue] - Valor da informação secundária
+ * @param {string} [props.secondaryLabel] - Label da informaÃ§Ã£o secundÃ¡ria
+ * @param {string|ReactNode} [props.secondaryValue] - Valor da informaÃ§Ã£o secundÃ¡ria
  * @param {boolean} [props.isLoading] - Estado de carregamento
  * @param {string} [props.className] - Classes extras
  */
@@ -99,7 +99,7 @@ const StatsWidget = memo(({
                             )}
                             {secondaryValue && (
                                 <span className="text-[11px] text-zinc-500 font-medium mt-0.5 whitespace-nowrap truncate max-w-[150px]">
-                                    {isLoading ? "Sincronizando..." : secondaryValue}
+                                    {isLoading ? "Carregando..." : secondaryValue}
                                 </span>
                             )}
                         </div>
@@ -146,3 +146,4 @@ const StatsWidget = memo(({
 StatsWidget.displayName = "StatsWidget";
 
 export default StatsWidget;
+

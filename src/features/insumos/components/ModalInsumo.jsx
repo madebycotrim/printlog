@@ -129,7 +129,9 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
 
         // MANUAL VALIDATION FOR MANDATORY FIELDS (that might pass schema if schema is loose)
         const isNameValid = !!form.name?.trim();
-        const isPriceValid = safeParse(form.price) > 0;
+        // Allow price 0. Only check if it's a valid number. safeParse returns 0 for empty/invalid.
+        // We might want to ensure it's not negative.
+        const isPriceValid = safeParse(form.price) >= 0;
 
         if (!check.valid || !isNameValid || !isPriceValid) {
             setMostrarErros(true);
@@ -285,10 +287,10 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Qtd. Atual</label>
                             <UnifiedInput
-                                type="number"
                                 value={form.currentStock}
                                 onChange={e => updateForm('currentStock', e.target.value)}
                                 placeholder="0"
+                                inputMode="decimal"
                             />
                         </div>
 
@@ -310,11 +312,11 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Mínimo (Alerta)</label>
                             <UnifiedInput
-                                type="number"
                                 value={form.minStock}
                                 onChange={e => updateForm('minStock', e.target.value)}
                                 placeholder="5"
                                 icon={AlertCircle}
+                                inputMode="decimal"
                             />
                         </div>
 
@@ -360,11 +362,11 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-bold text-sky-500 uppercase tracking-wide px-1">Rendimento por UN</label>
                                         <UnifiedInput
-                                            type="number"
                                             value={form.stockYield}
                                             onChange={e => updateForm('stockYield', e.target.value)}
                                             placeholder="Ex: 30"
                                             suffix={form.usageUnit || 'un'}
+                                            inputMode="decimal"
                                         />
                                         <p className="text-[9px] text-zinc-500 px-1">Qtd. que 1 unidade rende.</p>
                                     </div>
@@ -407,8 +409,8 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                         {/* Preço Unitário */}
                         {/* Preço Unitário */}
                         <div className="space-y-1.5 md:col-span-1">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && !safeParse(form.price) ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
-                                Custo Médio Unitário {mostrarErros && !safeParse(form.price) && "*"}
+                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && safeParse(form.price) < 0 ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                                Custo Médio Unitário
                             </label>
                             <UnifiedInput
                                 value={form.price}
@@ -416,7 +418,8 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                                 placeholder="0,00"
                                 suffix="BRL"
                                 icon={DollarSign}
-                                error={mostrarErros && !safeParse(form.price)}
+                                inputMode="decimal"
+                                error={mostrarErros && safeParse(form.price) < 0}
                             />
                         </div>
                     </div>

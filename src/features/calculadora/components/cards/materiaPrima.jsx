@@ -64,7 +64,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                     placeholder="0"
                     type="text"
                     align="center"
-                    suffix="g"
+                    suffix={dadosSlot.unit || 'g'}
                     compact={true}
                     value={dadosSlot.weight || ""}
                     onChange={(e) => aoAtualizar(indice, { weight: e.target.value.replace(',', '.') })}
@@ -236,7 +236,9 @@ export default function MaterialModule() {
                         const precoKg = Number(item.peso_total) > 0
                             ? ((Number(item.preco) / Number(item.peso_total)) * 1000).toFixed(2)
                             : "0.00";
-                        return { id: item.id, weight: '', priceKg: String(precoKg) };
+                        // Detect unit based on type
+                        const unit = item.tipo === 'SLA' ? 'ml' : 'g';
+                        return { id: item.id, weight: '', priceKg: String(precoKg), unit };
                     });
                     setMaterialSlots([...materialSlots, ...newSlots]);
                 }}

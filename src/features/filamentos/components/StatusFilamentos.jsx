@@ -7,16 +7,18 @@ function StatusFilamentos({
   pesoTotal = 0,
   contagemEstoqueBaixo = 0,
   valorTotal = 0,
-  clima = { loading: true },
+  weatherData = { temp: null, humidity: null, loading: true },
   estatisticasFalhas = { totalWeight: 0, totalCost: 0 }
 }) {
 
   const estatisticasExibicao = useMemo(() => {
-    const climaCarregando = !clima || clima.isLoading;
-    const dados = clima.data || clima;
+    const { temp, humidity, loading } = weatherData;
+    const climaCarregando = !!loading;
 
-    const valorTemp = !climaCarregando && dados?.temp !== undefined ? Math.round(dados.temp) : null;
-    const valorUmidade = !climaCarregando && dados?.humidity !== undefined ? Math.round(dados.humidity) : null;
+    // Se loading for false mas temp/humidity forem null, ainda não temos dados
+    const valorTemp = !climaCarregando && temp !== null && temp !== undefined ? Math.round(temp) : null;
+    const valorUmidade = !climaCarregando && humidity !== null && humidity !== undefined ? Math.round(humidity) : null;
+
     const ehAlta = valorUmidade !== null && valorUmidade > 50;
 
     return {
@@ -26,14 +28,14 @@ function StatusFilamentos({
       climaCarregando: climaCarregando,
       ehUmidadeAlta: ehAlta
     };
-  }, [valorTotal, clima]);
+  }, [valorTotal, weatherData]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* 1. Saúde do Estoque */}
       <StatsWidget
         title="Total em Estoque"
-        value={`${(pesoTotal || 0).toFixed(2)}kg`}
+        value={`${(pesoTotal || 0).toFixed(2)} kg/L`}
         icon={AlertTriangle}
         colorTheme={contagemEstoqueBaixo > 0 ? 'rose' : 'emerald'}
         secondaryLabel="Status"
@@ -69,7 +71,7 @@ function StatusFilamentos({
       {/* 4. Desperdício - Monitoramento de Falhas */}
       <StatsWidget
         title="Perda (30d)"
-        value={estatisticasFalhas?.totalWeight ? `${Math.round(estatisticasFalhas.totalWeight)}g` : '0g'}
+        value={estatisticasFalhas?.totalWeight ? `${Math.round(estatisticasFalhas.totalWeight)} g/ml` : '0 g/ml'}
         icon={Trash2}
         colorTheme="rose"
         secondaryLabel="Prejuízo Estimado"

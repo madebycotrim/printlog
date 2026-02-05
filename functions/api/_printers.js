@@ -54,12 +54,13 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
                 : JSON.stringify(rawData.historico || rawData.history || []);
 
             // Upsert usando versao
-            await db.prepare(`INSERT INTO impressoras (id, usuario_id, nome, marca, modelo, status, potencia, preco, rendimento_total, horas_totais, ultima_manutencao_hora, intervalo_manutencao, historico, versao) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1) ON CONFLICT(id) DO UPDATE SET 
+            await db.prepare(`INSERT INTO impressoras (id, usuario_id, nome, marca, modelo, status, potencia, preco, rendimento_total, horas_totais, ultima_manutencao_hora, intervalo_manutencao, historico, imagem, tipo, versao) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1) ON CONFLICT(id) DO UPDATE SET 
                 nome=excluded.nome, marca=excluded.marca, modelo=excluded.modelo, status=excluded.status, 
                 potencia=excluded.potencia, preco=excluded.preco, rendimento_total=excluded.rendimento_total,
                 horas_totais=excluded.horas_totais, ultima_manutencao_hora=excluded.ultima_manutencao_hora, 
-                intervalo_manutencao=excluded.intervalo_manutencao, historico=excluded.historico,
+                intervalo_manutencao=excluded.intervalo_manutencao, historico=excluded.historico, imagem=excluded.imagem,
+                tipo=excluded.tipo,
                 versao=versao+1`)
                 .bind(
                     id,
@@ -74,7 +75,9 @@ export async function gerenciarImpressoras({ request, db, userId, pathArray, url
                     paraNumero(da.horas_totais),
                     paraNumero(rawData.ultima_manutencao_hora),
                     paraNumero(da.intervalo_manutencao, 300),
-                    historico
+                    historico,
+                    da.imagem || "",
+                    da.tipo || 'FDM'
                 ).run();
 
             return enviarJSON({ id, ...da, success: true });

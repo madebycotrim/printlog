@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+ï»¿import React, { useEffect, useMemo, useState } from "react";
 import { Inbox, Loader2, SearchX, Plus, Search, FolderOpen, Layers, Clock, Hammer, CheckCircle2, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -18,10 +18,10 @@ import DataCard from "../../components/ui/DataCard";
 import Button from "../../components/ui/Button";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 
-// 1. CONFIGURAÇÃO DE STATUS
+// 1. CONFIGURAÃ‡ÃƒO DE STATUS
 import { CONFIG_STATUS } from "../../utils/constants";
 
-// 2. HOOK DE LÓGICA
+// 2. HOOK DE LÃ“GICA
 function useOrcamentosLogic(projetos, filtroStatus, termoBusca) {
     const [buscaDebounced, setBuscaDebounced] = useState(termoBusca);
 
@@ -99,12 +99,12 @@ export default function OrcamentosPage() {
         <ManagementLayout>
 
             <PageHeader
-                title="Meus Orçamentos"
-                subtitle="Gestão de Propostas Comerciais"
+                title="Meus OrÃ§amentos"
+                subtitle="GestÃ£o de Propostas Comerciais"
                 accentColor="text-amber-500"
                 searchQuery={termoBusca}
                 onSearchChange={setTermoBusca}
-                placeholder="BUSCAR ORÇAMENTO..."
+                placeholder="BUSCAR ORÃ‡AMENTO..."
                 actionButton={novoOrcamentoButton}
             />
 
@@ -124,8 +124,8 @@ export default function OrcamentosPage() {
                     {[
                         { id: "todos", label: "Geral", icon: Layers },
                         { id: "aprovado", label: "Aguardando", icon: Clock },
-                        { id: "producao", label: "Produção", icon: Hammer },
-                        { id: "finalizado", label: "Concluído", icon: CheckCircle2 }
+                        { id: "producao", label: "ProduÃ§Ã£o", icon: Hammer },
+                        { id: "finalizado", label: "ConcluÃ­do", icon: CheckCircle2 }
                     ].map((tab) => {
                         const isActive = filtroStatus === tab.id;
                         const Icon = tab.icon;
@@ -150,18 +150,8 @@ export default function OrcamentosPage() {
                     })}
                 </div>
 
-                {/* 3. CONTEÚDO PRINCIPAL (GRID) */}
-                {loading ? (
-                    <div className="w-full h-96 flex flex-col items-center justify-center gap-6 border border-white/5 bg-white/[0.02] rounded-[3rem]">
-                        <div className="relative">
-                            <Loader2 className="text-amber-500" size={40} strokeWidth={1} />
-                            <div className="absolute inset-0 bg-amber-500/10 blur-3xl opacity-20" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">
-                            Sincronizando registros...
-                        </span>
-                    </div>
-                ) : filtrados.length > 0 ? (
+                {/* 3. CONTEÃšDO PRINCIPAL (GRID) */}
+                {filtrados.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                         {filtrados.map(item => {
                             const d = item.data || {};
@@ -175,8 +165,8 @@ export default function OrcamentosPage() {
                             return (
                                 <DataCard
                                     key={item.id}
-                                    title={item.label || ent.nomeProjeto || "Sem Título"}
-                                    subtitle={ent.clienteNome || "Cliente não informado"}
+                                    title={item.label || ent.nomeProjeto || "Sem TÃ­tulo"}
+                                    subtitle={ent.clienteNome || "Cliente nÃ£o informado"}
                                     status={{
                                         label: config.label,
                                         color: config.color,
@@ -210,7 +200,7 @@ export default function OrcamentosPage() {
                         {termoBusca ? (
                             <EstadoVazio
                                 title="Nenhum registro localizado"
-                                description={`Critério: "${termoBusca}"`}
+                                description={`CritÃ©rio: "${termoBusca}"`}
                                 icon={SearchX}
                                 action={
                                     <Button
@@ -225,8 +215,8 @@ export default function OrcamentosPage() {
                             />
                         ) : (
                             <EstadoVazio
-                                title="Nenhum orçamento ainda"
-                                description="Seus projetos salvos aparecerão aqui."
+                                title="Nenhum orÃ§amento ainda"
+                                description="Seus projetos salvos aparecerÃ£o aqui."
                                 icon={FolderOpen}
                             />
                         )}
@@ -249,4 +239,5 @@ export default function OrcamentosPage() {
         </ManagementLayout>
     );
 }
+
 

@@ -136,7 +136,7 @@ export async function gerenciarInsumos({ request, db, userId, pathArray, url }) 
                     oldStock,
                     newStock,
                     stockDiff,
-                    0,
+                    Math.abs(stockDiff * newPrice),
                     'Ajuste manual de estoque'
                 ));
             }

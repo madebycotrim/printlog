@@ -35,48 +35,56 @@ export default function RecentProjectsWidget({ projects, onDuplicate, onConclude
         >
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 -mr-2 space-y-2">
                 {projects && projects.length > 0 ? (
-                    projects.slice(0, 4).map((proj) => (
+                    projects.slice(0, 5).map((proj) => (
                         <div
                             key={proj.id}
-                            className="group/item relative flex items-center justify-between p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:bg-zinc-800/40 hover:border-violet-500/20 transition-all overflow-hidden"
+                            className="group/item relative flex items-center justify-between p-2.5 rounded-lg border border-white/5 hover:bg-zinc-800/60 hover:border-zinc-700 transition-all cursor-default"
                         >
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-9 h-9 rounded-lg bg-black/20 border border-white/5 flex items-center justify-center font-black text-[9px] text-zinc-600 group-hover/item:border-violet-500/30 group-hover/item:text-violet-400 transition-colors shrink-0">
-                                    #{String(proj.id).slice(0, 3)}
+                                {/* Icon / Avatar */}
+                                <div className="w-8 h-8 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 group-hover/item:text-zinc-300 group-hover/item:border-zinc-700 transition-colors shrink-0">
+                                    {String(proj.label || 'PRO').substring(0, 2).toUpperCase()}
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="text-xs font-bold text-zinc-300 group-hover/item:text-white truncate transition-colors">
+
+                                <div className="min-w-0 flex flex-col">
+                                    <h4 className="text-xs font-bold text-zinc-300 group-hover/item:text-zinc-100 truncate transition-colors leading-tight">
                                         {proj.label}
                                     </h4>
-                                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">
-                                        {new Date(proj.created_at || Date.now()).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                                    </p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[9px] text-zinc-500 font-medium">
+                                            {new Date(proj.created_at || Date.now()).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                        </span>
+                                        {/* Status Dot */}
+                                        <div className={`w-1.5 h-1.5 rounded-full ${proj.data?.status === 'finalizado' ? 'bg-emerald-500/50' : 'bg-amber-500/50'}`} />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 shrink-0 px-2">
-                                <div className="text-right hidden sm:block">
-                                    <span className="block text-xs font-mono font-bold text-emerald-400">
+                            <div className="flex items-center gap-3 shrink-0 pl-2">
+                                <div className="text-right">
+                                    <span className="block text-xs font-mono font-bold text-zinc-200">
                                         {formatCurrency(proj.resultados?.precoFinal || 0)}
                                     </span>
                                 </div>
 
-                                {/* Actions (Show on Hover) */}
-                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100 transition-all sm:translate-x-2 sm:group-hover/item:translate-x-0">
+                                {/* Actions - Always visible on mobile, hover on desktop */}
+                                <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => handleDuplicate(proj)}
-                                        className="p-1.5 rounded-md hover:bg-sky-500/10 hover:text-sky-400 text-zinc-500 transition-colors"
+                                        className="p-1.5 rounded-md hover:bg-zinc-700 text-zinc-500 hover:text-zinc-200 transition-colors"
                                         title="Duplicar"
                                     >
                                         <Copy size={12} />
                                     </button>
-                                    <button
-                                        onClick={() => handleConclude(proj.id)}
-                                        className="p-1.5 rounded-md hover:bg-emerald-500/10 hover:text-emerald-400 text-zinc-500 transition-colors"
-                                        title="Concluir"
-                                    >
-                                        <CheckCircle size={12} />
-                                    </button>
+                                    {proj.data?.status !== 'finalizado' && (
+                                        <button
+                                            onClick={() => handleConclude(proj.id)}
+                                            className="p-1.5 rounded-md hover:bg-emerald-500/20 text-zinc-500 hover:text-emerald-400 transition-colors"
+                                            title="Concluir"
+                                        >
+                                            <CheckCircle size={12} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

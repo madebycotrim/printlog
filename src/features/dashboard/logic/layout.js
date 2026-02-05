@@ -6,7 +6,6 @@ const WIDGET_DIMENSIONS = {
     financial: { w: 2, h: 1 },
     fleet_summary: { w: 2, h: 1 },
     alerts: { w: 1, h: 1 },
-    todo: { w: 1, h: 2 },
     highlights: { w: 2, h: 1 },
     recent_projects: { w: 2, h: 2 },
     activity_feed: { w: 1, h: 2 },
@@ -240,7 +239,7 @@ export const useDashboardLayoutStore = create(
         }),
         {
             name: 'dashboard-layout-storage',
-            version: 11,
+            version: 14,
             migrate: (persistedState, version) => {
                 const cleanColSpans = Object.fromEntries(
                     Object.entries(WIDGET_DIMENSIONS).map(([id, dim]) => [id, getColClass(dim.w)])
@@ -249,18 +248,19 @@ export const useDashboardLayoutStore = create(
                     Object.entries(WIDGET_DIMENSIONS).map(([id, dim]) => [id, getRowClass(dim.h)])
                 );
 
-                if (version < 13) {
+                if (version < 14) {
                     return {
-                        version: 13,
+                        version: 14,
                         layout: [
                             'financial', 'fleet_summary',
-                            'recent_projects', 'todo', 'activity_feed',
+                            'revenue_chart', 'cost_distribution',
+                            'recent_projects', 'material_stats', 'live_printers',
                             'highlights', 'performance', 'alerts'
                         ],
                         colSpans: cleanColSpans,
                         rowSpans: cleanRowSpans,
                         customSizes: {},
-                        hidden: [],
+                        hidden: ['todo', 'activity_feed'],
                         editMode: false,
                         expandedWidgets: []
                     };

@@ -8,12 +8,16 @@
 export const schemas = {
     filament: {
         nome: { type: 'string', minLength: 1, maxLength: 100 },
-        marca: { type: 'string', maxLength: 50 },
+        marca: { type: 'string', maxLength: 50, required: true },
         material: { type: 'string', maxLength: 20, required: true },
+        tipo: { type: 'string', enum: ['FDM', 'SLA'] },
         cor_hex: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
         diametro: { type: 'string', maxLength: 10 }, // Can be "1.75", "2.85"
+        densidade: { type: 'number', min: 0, max: 20 },
+        tempo_exposicao: { type: 'number', min: 0, max: 100 }, // Resin Exposure Time (s)
         peso_total: { type: 'number', min: 1, max: 10000, required: true },
         peso_atual: { type: 'number', min: 0, max: 10000, required: true },
+        unidade: { type: 'string', enum: ['g', 'ml'] },
         preco: { type: 'number', min: 0, max: 100000, required: true },
         favorito: { type: 'boolean' }
     },
@@ -22,6 +26,7 @@ export const schemas = {
         nome: { type: 'string', minLength: 1, maxLength: 100, required: true },
         marca: { type: 'string', maxLength: 50 },
         modelo: { type: 'string', maxLength: 50 },
+        tipo: { type: 'string', enum: ['FDM', 'SLA'] },
         status: { type: 'string', enum: ['idle', 'printing', 'offline', 'maintenance'] },
         potencia: { type: 'number', min: 0, max: 5000 },
         preco: { type: 'number', min: 0, max: 1000000 },

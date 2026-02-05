@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, ChevronDown } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import { UnifiedInput } from '../../../components/UnifiedInput';
 import Button from '../../../components/ui/Button';
@@ -13,36 +13,56 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
     const [loading, setLoading] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
 
+    // Fractional Logic
+    const stockYield = Number(item?.stockYield || 1);
+    const usageUnit = item?.usageUnit || '';
+    const isFractional = stockYield > 1 && !!usageUnit;
+
+    // Base Unit Determination
+    const baseUnit = (isFractional ? usageUnit : item?.unit || '').toUpperCase();
+
+    // Unit Conversion Logic
+    const UNIT_MAP = {
+        'M': { options: ['M', 'CM', 'MM'], factors: { 'M': 1, 'CM': 0.01, 'MM': 0.001 } },
+        'KG': { options: ['KG', 'G'], factors: { 'KG': 1, 'G': 0.001 } },
+        'L': { options: ['L', 'ML'], factors: { 'L': 1, 'ML': 0.001 } }
+    };
+
+    const availableUnits = UNIT_MAP[baseUnit] || { options: [baseUnit], factors: { [baseUnit]: 1 } };
+    const [selectedUnit, setSelectedUnit] = useState(baseUnit);
+
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && item) {
             setAmount('');
             setShowErrors(false);
+            const unit = (isFractional ? usageUnit : item.unit || '').toUpperCase();
+            setSelectedUnit(unit);
         }
-    }, [isOpen]);
+    }, [isOpen, item, isFractional, usageUnit]);
 
     if (!item) return null;
 
-    // Fractional Logic
-    const stockYield = Number(item.stockYield || 1);
-    const usageUnit = item.usageUnit || '';
-    const isFractional = stockYield > 1 && !!usageUnit;
-
-    // Display Values
+    // Current Stock Calculations (Always in Base Unit for visualization)
     const currentStock = Number(item.currentStock || 0);
-    const effectiveStock = currentStock * stockYield;
-    const displayUnit = isFractional ? usageUnit : item.unit;
+    const effectiveStock = currentStock * stockYield; // Total in Base Unit (e.g., Total Meters)
 
-    // Math for UI
-    const parsedAmount = Number(amount.replace(',', '.')) || 0;
+    // Display Logic
     const currentDisplayVal = isFractional ? effectiveStock : currentStock;
-    const finalDisplayVal = Math.max(0, currentDisplayVal - parsedAmount);
+    const conversionFactor = availableUnits.factors[selectedUnit] || 1;
+
+    // Prediction Logic:
+    // Input is in `selectedUnit`. Convert to `baseUnit` to subtract from Total.
+    const parsedAmount = Number(amount.replace(',', '.')) || 0;
+    const normalizedAmount = parsedAmount * conversionFactor; // e.g. 50 CM * 0.01 = 0.5 M
+
+    const finalDisplayVal = Math.max(0, currentDisplayVal - normalizedAmount);
 
     // Formatting helper
     const fmt = (n) => typeof n === 'number' ? n.toFixed(isFractional ? 1 : 0).replace('.0', '') : n;
 
     const handleConfirm = async () => {
         const val = Number(amount.replace(',', '.'));
-        // Validation: If invalid, show errors and stop (mimicking ModalBaixaRapida)
+
         if (!val || val <= 0) {
             setShowErrors(true);
             return;
@@ -50,19 +70,24 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
 
         setLoading(true);
         try {
-            // Calculate new stock in standard units
-            let deductionInUnits = val;
+            // 1. Convert Input (Selected Unit) -> Base Unit (Usage Unit)
+            // e.g. User input 50 CM. baseUnit is M. normalized = 0.5 M.
+            const amountInBaseUnit = val * conversionFactor;
 
+            // 2. Convert Base Unit -> Stock Unit (e.g. Un)
+            // If fractional (1 Un = 5 M), then deductionInStock = 0.5 / 5 = 0.1 Un.
+            // If not fractional, deductionInStock = amountInBaseUnit.
+            let deductionInStockUnits = amountInBaseUnit;
             if (isFractional) {
-                deductionInUnits = val / stockYield;
+                deductionInStockUnits = amountInBaseUnit / stockYield;
             }
 
-            const newStock = Math.max(0, currentStock - deductionInUnits);
+            const newStock = Math.max(0, currentStock - deductionInStockUnits);
 
             // Call Store
             const success = await quickUpdateStock(item.id, newStock);
             if (success) {
-                addToast(`Consumo de ${val} ${displayUnit} registrado!`, "success");
+                addToast(`Consumo de ${val} ${selectedUnit} registrado!`, "success");
                 onClose();
             }
         } catch (error) {
@@ -92,7 +117,7 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
                     <Button
                         variant="primary"
                         onClick={handleConfirm}
-                        disabled={loading} // Now only disabled while loading, allowing click for validation
+                        disabled={loading}
                         className="flex-[2] h-14 bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/20 text-[11px] font-bold tracking-widest uppercase"
                     >
                         {loading ? <Loader2 className="animate-spin" /> : "Confirmar Uso"}
@@ -121,7 +146,7 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
                                     <span className="text-2xl font-black text-white tracking-tighter">
                                         {fmt(currentDisplayVal)}
                                     </span>
-                                    <span className="text-xs font-bold text-zinc-600 uppercase">{displayUnit}</span>
+                                    <span className="text-xs font-bold text-zinc-600 uppercase">{baseUnit}</span>
                                 </div>
                             </div>
 
@@ -137,59 +162,93 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
                                     <span className={`text-2xl font-black tracking-tighter ${finalDisplayVal === 0 ? 'text-rose-500' : 'text-sky-500'}`}>
                                         {fmt(finalDisplayVal)}
                                     </span>
-                                    <span className={`text-xs font-bold uppercase ${finalDisplayVal === 0 ? 'text-rose-500/50' : 'text-sky-500/50'}`}>{displayUnit}</span>
+                                    <span className={`text-xs font-bold uppercase ${finalDisplayVal === 0 ? 'text-rose-500/50' : 'text-sky-500/50'}`}>{baseUnit}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Input & Presets */}
+                {/* Input with Unit Selector */}
                 <div className="space-y-4">
-                    <UnifiedInput
-                        label={`Quantidade a debitar (${displayUnit}) *`}
-                        value={amount}
-                        onChange={(e) => {
-                            setAmount(e.target.value);
-                            if (showErrors && e.target.value) setShowErrors(false); // Clear error on typing
-                        }}
-                        placeholder="0"
-                        type="number"
-                        min="0"
-                        autoFocus
-                        variant="default"
-                        error={showErrors && (!amount || parseFloat(amount) <= 0)} // Pass error state
-                    />
+                    <div className="flex gap-3 items-start">
+                        <div className="flex-1">
+                            <UnifiedInput
+                                label="Quantidade a debitar *"
+                                value={amount}
+                                onChange={(e) => {
+                                    setAmount(e.target.value);
+                                    if (showErrors && e.target.value) setShowErrors(false);
+                                }}
+                                placeholder="0"
+                                type="text"
+                                inputMode="decimal"
+                                min="0"
+                                autoFocus
+                                variant="default"
+                                error={showErrors && (!amount || Number(amount.replace(',', '.')) <= 0)}
+                            />
+                        </div>
+
+                        {/* Unit Selector */}
+                        <div className="w-28 shrink-0 relative">
+                            <label className="text-[10px] uppercase font-bold text-zinc-500 mb-1.5 block tracking-wider">Unidade</label>
+                            <div className="relative">
+                                <select
+                                    value={selectedUnit}
+                                    onChange={(e) => setSelectedUnit(e.target.value)}
+                                    className="w-full h-10 pl-3 pr-8 bg-black/20 border border-zinc-800 rounded-lg text-xs font-bold text-zinc-200 uppercase focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 appearance-none cursor-pointer hover:bg-black/40 transition-colors"
+                                >
+                                    {availableUnits.options.map(u => (
+                                        <option key={u} value={u} className="bg-zinc-900 text-zinc-300">{u}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Quick Add Presets */}
                     <div className="grid grid-cols-4 gap-2">
                         {(() => {
-                            const maxVal = isFractional ? effectiveStock : currentStock;
+                            // Calculate sensible presets based on current Unit/Stock
+                            // Since amount is in `selectedUnit`, presets should be too.
+                            // But `maxVal` (Stock) is in `baseUnit`.
+                            // So we need to show presets that make sense for the SELECTED unit.
+
+                            // Heuristic: If Base=M and Selected=CM, stock might be 5M = 500CM. Presets should be 10, 50, 100 CM.
+                            // If Selected=Base, standard presets.
+
+                            const maxValInSelectedUnit = (isFractional ? effectiveStock : currentStock) / conversionFactor;
+
                             let presets = [];
+                            if (maxValInSelectedUnit <= 10) presets = [1, 2, 3, 5];
+                            else if (maxValInSelectedUnit <= 50) presets = [5, 10, 20];
+                            else if (maxValInSelectedUnit <= 500) presets = [10, 50, 100];
+                            else presets = [50, 100, 200];
 
-                            if (maxVal <= 10) presets = [1, 2, 3, 4, 5];
-                            else if (maxVal <= 50) presets = [1, 5, 10];
-                            else if (maxVal <= 100) presets = [5, 10, 25];
-                            else presets = [10, 50, 100];
-
-                            // Filter valid and slice to dynamic count but max 3 to keep layout
-                            const validPresets = presets.filter(n => n < maxVal).slice(0, 3);
+                            // Filter valid and slice
+                            const validPresets = presets.filter(n => n < maxValInSelectedUnit).slice(0, 3);
 
                             return validPresets.map((val) => (
                                 <button
                                     key={val}
                                     onClick={() => {
                                         const current = Number(Math.max(0, parseFloat((String(amount || 0)).replace(',', '.'))));
-                                        setAmount(prev => (current + val).toString());
+                                        setAmount((current + val).toString());
                                     }}
                                     className="py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/40 text-[11px] font-bold text-zinc-400 uppercase hover:bg-zinc-800 hover:text-white hover:border-zinc-700 transition-all active:scale-95"
                                 >
-                                    +{val} {isFractional && isNaN(val) ? '' : ''}
+                                    +{val} {selectedUnit}
                                 </button>
                             ));
                         })()}
                         <button
-                            onClick={() => setAmount(isFractional ? effectiveStock.toString() : currentStock.toString())}
+                            onClick={() => {
+                                // "All" means Total Stock -> Converted to Selected Unit
+                                const allInSelected = (isFractional ? effectiveStock : currentStock) / conversionFactor;
+                                setAmount(fmt(allInSelected).toString());
+                            }}
                             className="py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-[11px] font-bold text-rose-500 uppercase hover:bg-rose-500 hover:text-white transition-all active:scale-95"
                         >
                             Tudo

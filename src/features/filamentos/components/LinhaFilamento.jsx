@@ -1,20 +1,21 @@
 import React, { memo, useMemo } from "react";
-import { Edit2, Trash2, ArrowDownFromLine, Copy, History, Droplet } from "lucide-react";
+import { Edit2, Trash2, ArrowDownFromLine, Copy, History, Droplet, QrCode } from "lucide-react";
 import VisualizacaoCarretel from "./VisualizacaoCarretel";
 import { StatusFilamento } from "./StatusFilamento";
-import { SegmentedProgress } from "../../../components/ui/SegmentedProgress";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { formatCurrency } from "../../../utils/numbers";
+import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
 /**
  * MODO LISTA: LinhaFilamento
  */
-export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico }) => {
+export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta }) => {
     const estatisticas = useMemo(() => {
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
         const atual = Math.max(0, Number(item?.peso_atual) || 0);
         return {
             atual,
+            capacidade,
             porcentagem: Math.min(100, Math.max(0, Math.round((atual / capacidade) * 100)))
         };
     }, [item?.peso_atual, item?.peso_total]);
@@ -23,6 +24,8 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
     const corHex = item?.cor_hex || "#3b82f6";
     const ehHigroscopico = ['PLA', 'PETG', 'TPU', 'NYLON', 'ABS', 'ASA'].includes(item?.material?.toUpperCase());
     const riscoUmidade = ehHigroscopico && (umidadeAtual > 50);
+    const realTipo = item?.tipo === 'SLA' || MATERIAIS_RESINA_FLAT.some(m => m.toLowerCase() === (item?.material || "").toLowerCase()) ? 'SLA' : 'FDM';
+    const unidade = realTipo === 'SLA' ? 'ml' : 'g';
 
     return (
         <div className={`
@@ -33,7 +36,7 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
             {/* 1. ÍCONE (Flutuante) */}
             <div className="relative shrink-0">
                 <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl`} style={{ backgroundColor: corHex }} />
-                <VisualizacaoCarretel cor={corHex} porcentagem={estatisticas.porcentagem} tamanho={42} />
+                <VisualizacaoCarretel cor={corHex} porcentagem={estatisticas.porcentagem} tamanho={42} tipo={realTipo} />
             </div>
 
             {/* 2. INFORMAÇÕES PRINCIPAIS */}
@@ -56,14 +59,14 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
 
             {/* 3. ESTATÍSTICAS TÉCNICAS (Condensado) */}
             <div className="hidden md:flex flex-col items-end gap-1 px-4 min-w-[140px]">
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-1.5 align-baseline">
                     <span className={`text-xl font-bold font-mono tracking-tighter ${ehCritico ? 'text-rose-400' : 'text-zinc-200'}`}>
                         {Math.round(estatisticas.atual)}
                     </span>
-                    <span className="text-[9px] text-zinc-600 font-bold uppercase">g</span>
-                </div>
-                <div className="w-full max-w-[120px]">
-                    <SegmentedProgress pct={estatisticas.porcentagem} color={corHex} pulse={ehCritico} height={3} segments={12} />
+                    <span className="text-zinc-500 text-sm font-mono font-bold">
+                        / {estatisticas.capacidade}
+                    </span>
+                    <span className="text-[9px] text-zinc-600 font-bold uppercase ml-1">{unidade}</span>
                 </div>
             </div>
 
@@ -87,6 +90,12 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
                 <Tooltip text="Histórico">
                     <button onClick={() => aoVerHistorico(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-amber-400 transition-colors">
                         <History size={14} />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Etiqueta QR">
+                    <button onClick={() => aoImprimirEtiqueta && aoImprimirEtiqueta(item)} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-zinc-500 hover:text-purple-400 transition-colors">
+                        <QrCode size={14} />
                     </button>
                 </Tooltip>
 

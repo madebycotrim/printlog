@@ -1,3 +1,4 @@
+import React from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -60,15 +61,26 @@ export { presets };
 
 // Hook for filtering data by date range
 export const useFilteredByDate = (data, dateField = 'createdAt') => {
-    const range = useDateRangeStore(state => state.getActiveRange());
+    const preset = useDateRangeStore(state => state.preset);
+    const customRange = useDateRangeStore(state => state.customRange);
 
-    if (!data || !Array.isArray(data)) return [];
-    if (!range.from && !range.to) return data;
+    const range = React.useMemo(() => {
+        if (preset === 'custom') {
+            return customRange;
+        }
+        return presets[preset]?.getValue() || presets.all.getValue();
+    }, [preset, customRange]);
 
-    return data.filter(item => {
-        const itemDate = new Date(item[dateField]);
-        if (range.from && itemDate < range.from) return false;
-        if (range.to && itemDate > range.to) return false;
-        return true;
-    });
+    return React.useMemo(() => {
+        if (!data || !Array.isArray(data)) return [];
+        if (!range.from && !range.to) return data;
+
+        return data.filter(item => {
+            if (!item[dateField]) return false;
+            const itemDate = new Date(item[dateField]);
+            if (range.from && itemDate < range.from) return false;
+            if (range.to && itemDate > range.to) return false;
+            return true;
+        });
+    }, [data, range, dateField]);
 };

@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect, useMemo, useDeferredValue, useCallback } from "react";
-import { PackageSearch, Plus } from "lucide-react";
+import { PackageSearch, Plus, ScanBarcode } from "lucide-react";
 
 // LAYOUT E COMPONENTES GLOBAIS
 import ManagementLayout from "../../layouts/ManagementLayout";
@@ -7,20 +7,28 @@ import PageHeader from "../../components/ui/PageHeader";
 import EstadoVazio from "../../components/ui/EstadoVazio";
 import Button from "../../components/ui/Button";
 import api from "../../utils/api";
+import { useToastStore } from '../../stores/toastStore';
 
 // LÓGICA E STORE (Zustand)
 import { useFilamentos, useMutacoesFilamento } from "../../features/filamentos/logic/consultasFilamento";
+import { MATERIAIS_RESINA_FLAT, MATERIAIS_FDM_FLAT } from "../../features/filamentos/logic/constantes";
 
 // COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
 import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
-import { RackVirtual } from "../../features/filamentos/components/RackVirtual";
+import { CartaoFilamento } from "../../features/filamentos/components/CardFilamento";
+import { LinhaFilamento } from "../../features/filamentos/components/LinhaFilamento";
 import ModalFilamento from "../../features/filamentos/components/ModalFilamento.jsx";
 import ModalBaixaRapida from "../../features/filamentos/components/ModalBaixaRapida.jsx";
 import ModalHistoricoFilamento from "../../features/filamentos/components/ModalHistoricoFilamento.jsx";
 import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegistrarFalha';
 import ModalExcluirFilamento from '../../features/filamentos/components/ModalExcluirFilamento';
+import ModalEtiqueta from '../../features/filamentos/components/ModalEtiqueta';
+import ModalScanner from '../../features/scanner/components/ModalScanner';
 
-// NOVOS COMPONENTES (FILTROS)
+// NOVOS COMPONENTES (COMPARTILHADOS)
+import { VirtualShelves } from "../../components/materials/VirtualShelves";
+
+// FILTROS
 import { normalizeString } from "../../utils/stringUtils";
 import FiltrosFilamento from "../../features/filamentos/components/FiltrosFilamento";
 
@@ -36,15 +44,27 @@ export default function FilamentosPage() {
   const { temp, humidity, loading: weatherLoading } = useLocalWeather();
 
   const { data: filaments = [], isLoading: loading } = useFilamentos();
-  const { salvarFilamento, excluirFilamento, salvando } = useMutacoesFilamento();
+  const { salvarFilamento, excluirFilamento, registrarHistorico, salvando } = useMutacoesFilamento();
 
   const [modoVisualizacao, setModoVisualizacao] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
 
   const [filtros, setFiltros] = useState({
     estoqueBaixo: false,
     materials: [],
-    brands: []
+    brands: [],
+    sortOption: 'name' // 'name', 'quantity_asc', 'quantity_desc', 'oldest', 'newest'
   });
+
+  const { addToast } = useToastStore();
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const saved = localStorage.getItem('printlog_filaments_active_tab');
+    return ['all', 'FDM', 'SLA'].includes(saved) ? saved : 'all';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('printlog_filaments_active_tab', activeTab);
+  }, [activeTab]);
 
   // Estados de Controle de Modais
   const [modalAberto, setModalAberto] = useState(false);
@@ -53,6 +73,8 @@ export default function FilamentosPage() {
   const [modalFalhaAberto, setModalFalhaAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
+  const [itemEtiqueta, setItemEtiqueta] = useState(null);
+  const [modalScannerAberto, setModalScannerAberto] = useState(false);
 
   // Fetch Failures Stats
   const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });
@@ -91,54 +113,84 @@ export default function FilamentosPage() {
   const { grupos, stats, lowStockCount, availableBrands, availableMaterials } = useMemo(() => {
     const termo = normalizeString(deferredBusca);
 
-    // 2.1 Extrair Metadados (usando a lista processada)
-    const allBrands = [...new Set(searchableFilaments.map(f => f.marca).filter(Boolean))];
-    const allMaterials = [...new Set(searchableFilaments.map(f => f.material).filter(Boolean))];
+    // 2.1 Pré-processamento de Tipo (SLA vs FDM)
+    const itemsWithTypes = searchableFilaments.map(f => {
+      const mat = (f.material || "").trim();
+      const tipo = (f.tipo || "").toUpperCase();
+      const isKnownResin =
+        tipo === 'SLA' ||
+        tipo === 'RESINA' ||
+        MATERIAIS_RESINA_FLAT.includes(mat) ||
+        MATERIAIS_RESINA_FLAT.some(r => mat.toLowerCase().includes(r.toLowerCase())) ||
+        mat.toLowerCase().includes('resina') ||
+        mat.toLowerCase().includes('resin');
 
-    // 2.2 Filtragem Otimizada
-    const filtrados = searchableFilaments.filter(f => {
-      // Busca direta na string pré-processada (O(1) vs O(Regex))
+      return { ...f, isKnownResin };
+    });
+
+    // 2.2 Filtragem por TAB (Contexto Principal)
+    const tabFiltered = itemsWithTypes.filter(f => {
+      if (activeTab === 'FDM' && f.isKnownResin) return false;
+      if (activeTab === 'SLA' && !f.isKnownResin) return false;
+      return true;
+    });
+
+    // 2.3 Extrair Metadados do CONTEXTO ATUAL (Tab)
+    const contextBrands = [...new Set(tabFiltered.map(f => f.marca).filter(Boolean))];
+    const contextMaterials = [...new Set(tabFiltered.map(f => f.material).filter(Boolean))];
+
+    // 2.4 Filtragem Final (Busca + Chips)
+    const filtrados = tabFiltered.filter(f => {
+      // Busca
       const matchesSearch = !termo || f._searchStr.includes(termo);
-
       if (!matchesSearch) return false;
 
+      // Baixo Estoque
       if (filtros.estoqueBaixo) {
-        // Robust parsing: handle strings with commas (e.g. "950,00")
         const parseNum = (val) => {
           if (typeof val === 'number') return val;
           if (typeof val === 'string') return Number(val.replace(',', '.')) || 0;
           return 0;
         };
-
         const total = Math.max(1, parseNum(f.peso_total) || 1000);
         const atual = parseNum(f.peso_atual);
-
         const ratio = atual / total;
-
-        // Strict Low Stock Definition:
-        // Must be <= 20% OR < 150g (critical absolute)
+        // Agora usamos < 20% OU < 150g(or ml)
         const isLowStock = ratio <= 0.20 || atual < 150;
-
-        // If NOT low stock, filter it out
         if (!isLowStock) return false;
       }
 
+      // Filtros de Marca/Material
       if (filtros.materials?.length > 0 && !filtros.materials.includes(f.material)) return false;
       if (filtros.brands?.length > 0 && !filtros.brands.includes(f.marca)) return false;
 
       return true;
     });
 
+    // 2.5 Ordenação (NOVO)
+    const itemsOrdenados = [...filtrados].sort((a, b) => {
+      // Ordenação Personalizada
+      switch (filtros.sortOption) {
+        case 'quantity_asc': // Menos Restante (Prioridade para acabar)
+          return (Number(a.peso_atual) || 0) - (Number(b.peso_atual) || 0);
+        case 'quantity_desc': // Mais Cheio
+          return (Number(b.peso_atual) || 0) - (Number(a.peso_atual) || 0);
+        case 'oldest': // Mais Antigo (FIFO)
+          return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+        case 'newest': // Mais Novo
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        case 'name': // Nome A-Z
+        default:
+          return (a.nome || "").localeCompare(b.nome || "");
+      }
+    });
+
+    // 2.6 Estatísticas (Contexto Filtrado)
     let totalG = 0;
     let valorTotalAcumulado = 0;
     let lowStock = 0;
 
-    // Loop na lista original/completa para stats globais? 
-    // O código original fazia loop na "listaOriginal" (agora searchableFilaments) para calcular lowStockCount GLOBAL e stats GLOBAIS?
-    // Vamos verificar o código original:
-    // "listaOriginal.forEach(f => { ... })" -> Sim, era na lista completa.
-
-    searchableFilaments.forEach(f => {
+    itemsOrdenados.forEach(f => {
       const atual = Number(f.peso_atual) || 0;
       const total = Math.max(1, Number(f.peso_total) || 1000);
       const preco = Number(f.preco) || 0;
@@ -147,14 +199,23 @@ export default function FilamentosPage() {
       if ((atual / total) <= 0.2 || atual < 150) lowStock++;
     });
 
-    const map = filtrados.reduce((acc, item) => {
+    // 2.7 Agrupamento (Mantendo a ordem dos itens DENTRO do grupo)
+    const map = itemsOrdenados.reduce((acc, item) => {
       const mat = item.material || "SEM MATERIAL";
       if (!acc[mat]) acc[mat] = [];
       acc[mat].push(item);
       return acc;
     }, {});
 
-    const sortedMap = Object.keys(map).sort().reduce((obj, key) => {
+    // Ordenar os GRUPOS (Sempre FDM primeiro, depois Alfabetico)
+    const sortedMap = Object.keys(map).sort((a, b) => {
+      const aIsFDM = MATERIAIS_FDM_FLAT.includes(a);
+      const bIsFDM = MATERIAIS_FDM_FLAT.includes(b);
+
+      if (aIsFDM && !bIsFDM) return -1;
+      if (!aIsFDM && bIsFDM) return 1;
+      return a.localeCompare(b);
+    }).reduce((obj, key) => {
       obj[key] = map[key];
       return obj;
     }, {});
@@ -163,12 +224,12 @@ export default function FilamentosPage() {
       grupos: sortedMap,
       lowStockCount: lowStock,
       stats: { valorTotal: valorTotalAcumulado, pesoKg: totalG / 1000 },
-      availableBrands: allBrands,
-      availableMaterials: allMaterials
+      availableBrands: contextBrands,
+      availableMaterials: contextMaterials
     };
-  }, [searchableFilaments, deferredBusca, filtros]);
+  }, [searchableFilaments, deferredBusca, filtros, activeTab]);
 
-  // HANDLERS
+  /* --- HANDLERS --- */
   const handleEdit = useCallback((item) => {
     setItemEdicao(item);
     setModalAberto(true);
@@ -180,6 +241,7 @@ export default function FilamentosPage() {
       ...rest,
       nome: `${item.nome} (Cópia)`,
       peso_atual: item.peso_total,
+      lockedType: true // Prevent type change on duplicate
     };
     setItemEdicao(newItem);
     setModalAberto(true);
@@ -204,20 +266,54 @@ export default function FilamentosPage() {
     setConfirmacaoExclusao({ aberta: false, item: null });
   }, []);
 
-  const acoes = useMemo(() => ({
-    aoEditar: handleEdit,
-    aoExcluir: handleDelete,
-    aoConsumir: setItemConsumo,
-    aoDuplicar: handleDuplicate,
-    aoVerHistorico: handleHistory
-  }), [handleEdit, handleDelete, handleDuplicate, handleHistory]);
-
   const aoSalvarFilamento = async (dados) => {
     try {
       return await salvarFilamento(dados);
       fecharModais();
     } catch (_e) { }
   };
+
+  const handleScan = useCallback((codigo) => {
+    // Tenta encontrar o filamento pelo ID
+    const encontrado = filaments.find(f => f.id === codigo);
+
+    if (encontrado) {
+      setModalScannerAberto(false);
+      setItemEdicao(encontrado);
+      setModalAberto(true);
+      addToast(`${encontrado.nome} localizado com sucesso.`, 'success');
+    } else {
+      addToast('Nenhum material encontrado com este código.', 'error');
+    }
+  }, [filaments, addToast]);
+
+  const handleQuickDry = useCallback(async (item) => {
+    try {
+      // Use PATCH to update only the drying date, avoiding full validation
+      await api.patch(`/filaments/${item.id}`, {
+        data_secagem: new Date().toISOString()
+      });
+
+      // Update local state optimistically
+      await salvarFilamento({
+        ...item,
+        data_secagem: new Date().toISOString()
+      });
+
+      // TODO: Backend needs to support 'secagem' type in history
+      // await registrarHistorico({
+      //   id: item.id,
+      //   tipo: 'secagem',
+      //   qtd: 0,
+      //   obs: 'Secagem rápida realizada'
+      // });
+
+      // Note: salvarFilamento already shows success toast
+    } catch (error) {
+      console.error("Erro ao secar rápido:", error);
+      addToast("Erro ao registrar secagem.", 'error');
+    }
+  }, [salvarFilamento, addToast]);
 
   const aoConfirmarExclusao = async () => {
     const { item } = confirmacaoExclusao;
@@ -229,30 +325,72 @@ export default function FilamentosPage() {
     }
   };
 
-  const extraControls = null;
+  const acoes = useMemo(() => ({
+    aoEditar: handleEdit,
+    aoExcluir: handleDelete,
+    aoConsumir: setItemConsumo,
+    aoDuplicar: handleDuplicate,
+    aoVerHistorico: handleHistory,
+    aoImprimirEtiqueta: setItemEtiqueta,
+    aoSecar: handleQuickDry
+  }), [handleEdit, handleDelete, handleDuplicate, handleHistory, handleQuickDry]);
+
+  /* TABS CONTROL */
+  const extraControls = (
+    <div className="flex bg-zinc-900/50 p-1 rounded-lg border border-zinc-800/50">
+      {['all', 'FDM', 'SLA'].map(tab => (
+        <button
+          key={tab}
+          onClick={() => setActiveTab(tab)}
+          className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all ${activeTab === tab
+            ? 'bg-zinc-800 text-white shadow-sm'
+            : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+        >
+          {tab === 'all' ? 'Todos' : tab}
+        </button>
+      ))}
+    </div>
+  );
 
   const novoButton = (
-    <Button
-      onClick={() => { setItemEdicao(null); setModalAberto(true); }}
-      variant="secondary"
-      className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
-      icon={Plus}
-      data-tour="filament-add-btn"
-    >
-      Novo
-    </Button>
+    <div className="flex items-center gap-2">
+      <Button
+        onClick={() => setModalScannerAberto(true)}
+        variant="secondary"
+        size="icon"
+        className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 w-11 h-11"
+        icon={ScanBarcode}
+      />
+      <Button
+        onClick={() => {
+          // Context-Aware New Item:
+          // If we are in SLA tab, default to SLA. Otherwise (FDM or All) default to FDM.
+          const defaultType = activeTab === 'SLA' ? 'SLA' : 'FDM';
+
+          setItemEdicao({ tipo: defaultType });
+          setModalAberto(true);
+        }}
+        variant="secondary"
+        className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
+        icon={Plus}
+        data-tour="filament-add-btn"
+      >
+        Novo
+      </Button>
+    </div>
   );
 
   return (
     <ManagementLayout>
 
       <PageHeader
-        title="Meus Carretéis"
-        subtitle="Gerencie seu estoque de filamentos de forma simples"
+        title="Meus Materiais"
+        subtitle="Gerencie seu estoque de filamentos e resinas"
         accentColor="text-rose-500"
         searchQuery={busca}
         onSearchChange={setBusca}
-        placeholder="BUSCAR NO ESTOQUE..."
+        placeholder="BUSCAR MATERIAL..."
         extraControls={extraControls}
         actionButton={novoButton}
       />
@@ -262,7 +400,7 @@ export default function FilamentosPage() {
           pesoTotal={stats.pesoKg}
           contagemEstoqueBaixo={lowStockCount}
           valorTotal={stats.valorTotal}
-          clima={{ ...{ temp, humidity }, isLoading: weatherLoading }}
+          weatherData={{ temp, humidity, loading: weatherLoading }}
           estatisticasFalhas={failureStats}
         />
 
@@ -277,13 +415,39 @@ export default function FilamentosPage() {
 
         {Object.entries(grupos).length > 0 ? (
           <div className="pb-6">
-            {/* VIRTUAL RACK - New Visual Component */}
-            <RackVirtual
-              filamentosAgrupados={grupos}
-              umidadeAtual={humidity}
-              temperaturaAtual={temp}
-              acoes={acoes}
-              modoVisualizacao={modoVisualizacao}
+            <VirtualShelves
+              groups={grupos}
+              viewMode={modoVisualizacao}
+              onAdd={(groupMaterial) => {
+                setItemEdicao({ material: groupMaterial });
+                setModalAberto(true);
+              }}
+              renderItem={(item) => modoVisualizacao === 'grid' ? (
+                <CartaoFilamento
+                  item={item}
+                  umidadeAtual={humidity}
+                  temperaturaAtual={temp}
+                  aoEditar={acoes.aoEditar}
+                  aoExcluir={acoes.aoExcluir}
+                  aoConsumir={acoes.aoConsumir}
+                  aoDuplicar={acoes.aoDuplicar}
+                  aoVerHistorico={acoes.aoVerHistorico}
+                  aoImprimirEtiqueta={acoes.aoImprimirEtiqueta}
+                  aoSecar={acoes.aoSecar}
+                />
+              ) : (
+                <LinhaFilamento
+                  item={item}
+                  umidadeAtual={humidity}
+                  temperaturaAtual={temp}
+                  aoEditar={acoes.aoEditar}
+                  aoExcluir={acoes.aoExcluir}
+                  aoConsumir={acoes.aoConsumir}
+                  aoDuplicar={acoes.aoDuplicar}
+                  aoVerHistorico={acoes.aoVerHistorico}
+                  aoImprimirEtiqueta={acoes.aoImprimirEtiqueta}
+                />
+              )}
             />
           </div>
         ) : (
@@ -302,6 +466,12 @@ export default function FilamentosPage() {
       <ModalBaixaRapida aberto={!!itemConsumo} aoFechar={fecharModais} item={itemConsumo} aoSalvar={aoSalvarFilamento} />
       <ModalHistoricoFilamento aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
       <ModalRegistrarFalha aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
+      <ModalEtiqueta isOpen={!!itemEtiqueta} onClose={() => setItemEtiqueta(null)} item={itemEtiqueta} />
+      <ModalScanner
+        isOpen={modalScannerAberto}
+        onClose={() => setModalScannerAberto(false)}
+        onScan={handleScan}
+      />
 
       <ModalExcluirFilamento
         aberto={confirmacaoExclusao.aberta}

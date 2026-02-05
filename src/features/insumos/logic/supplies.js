@@ -37,9 +37,19 @@ export const useSupplyHistory = (id) => {
 export const useSupplyStore = create((set, get) => ({
     supplies: [],
     loading: false,
+    lastFetch: 0,
 
     // Busca insumos do backend
-    fetchSupplies: async () => {
+    fetchSupplies: async (force = false) => {
+        const now = Date.now();
+        const { lastFetch, supplies, loading } = get();
+
+        // Throttling: Se já buscou há menos de 5 segundos e tem dados, não busca de novo.
+        // Exceto se for forced ou se loading estiver travado (mas loading false aqui garante que não está)
+        if (!force && supplies.length > 0 && (now - lastFetch < 5000) && !loading) {
+            return;
+        }
+
         set({ loading: true });
         try {
             const res = await api.get('/insumos');
@@ -63,9 +73,12 @@ export const useSupplyStore = create((set, get) => ({
             set({ supplies: normalized });
         } catch (error) {
             console.error("Erro ao buscar insumos:", error);
-            useToastStore.getState().addToast("Erro ao carregar insumos.", "error");
+            // Don't show toast on 429 loops to avoid spam, or handle gracefully
+            if (error.response?.status !== 429) {
+                useToastStore.getState().addToast("Erro ao carregar insumos.", "error");
+            }
         } finally {
-            set({ loading: false });
+            set({ loading: false, lastFetch: Date.now() });
         }
     },
 
@@ -91,7 +104,7 @@ export const useSupplyStore = create((set, get) => ({
             const res = await api.post('/insumos', payload);
 
             if (res.data?.success) {
-                await get().fetchSupplies(); // Reload simples
+                await get().fetchSupplies(true); // Reload simples
                 useToastStore.getState().addToast("Insumo salvo com sucesso!", "success");
                 return true;
             }
@@ -108,7 +121,7 @@ export const useSupplyStore = create((set, get) => ({
         if (!id) return;
         try {
             await api.delete(`/insumos?id=${id}`);
-            await get().fetchSupplies(); // Reload
+            await get().fetchSupplies(true); // Reload
             useToastStore.getState().addToast("Insumo removido.", "success");
         } catch (error) {
             console.error("Erro ao remover insumo:", error);

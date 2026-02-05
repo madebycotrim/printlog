@@ -22,7 +22,10 @@ export const normalizarFilamento = (f) => {
         preco: Math.max(0, Number(f.preco) || 0),
         favorito: Boolean(f.favorito),
         data_abertura: f.created_at || f.data_abertura || new Date().toISOString(),
-        versao: f.versao || 1 // Optimistic Locking
+        versao: f.versao || 1, // Optimistic Locking
+        tipo: f.tipo || 'FDM',
+        unidade: f.unidade || 'g',
+        densidade: Number(f.densidade) || 1.25 // Default density for Resin
     };
 };
 

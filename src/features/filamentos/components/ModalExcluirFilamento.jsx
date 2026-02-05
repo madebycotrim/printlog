@@ -3,8 +3,25 @@ import { Trash2, AlertTriangle, AlertCircle, PackageOpen, X } from 'lucide-react
 import Modal from '../../../components/ui/Modal';
 import VisualizacaoCarretel from './VisualizacaoCarretel';
 import { useMemo } from 'react';
+import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
 export default function ModalExcluirFilamento({ aberto, aoFechar, aoConfirmar, item, carregando = false }) {
+
+    const isResin = useMemo(() => {
+        if (!item) return false;
+
+        const mat = (item.material || "").trim();
+        const tipo = (item.tipo || "").toUpperCase();
+
+        return (
+            tipo === 'SLA' ||
+            tipo === 'RESINA' ||
+            MATERIAIS_RESINA_FLAT.includes(mat) ||
+            MATERIAIS_RESINA_FLAT.some(r => mat.toLowerCase().includes(r.toLowerCase())) ||
+            mat.toLowerCase().includes('resina') ||
+            mat.toLowerCase().includes('resin')
+        );
+    }, [item]);
 
     const retorno = useMemo(() => {
         if (!item) return { titulo: "Excluir Material", descricao: "Ação irreversível" };
@@ -13,11 +30,14 @@ export default function ModalExcluirFilamento({ aberto, aoFechar, aoConfirmar, i
         const total = Number(item.peso_total) || 1000;
         const porcentagem = (peso / total) * 100;
 
+        const termo = isResin ? "esta resina" : "este carretel";
+        const Termo = isResin ? "Resina" : "Carretel";
+
         if (porcentagem > 90) {
             return {
                 icone: AlertTriangle,
                 titulo: "Excluir Material Novo?",
-                subtitulo: "Este carretel está praticamente cheio.",
+                subtitulo: `${Termo === 'Resina' ? 'Esta resina está praticamente cheia' : 'Este carretel está praticamente cheio'}.`,
                 aviso: "Você está descartando um material novo. Certifique-se de que é isso mesmo que deseja.",
                 cor: "rose"
             };
@@ -25,20 +45,20 @@ export default function ModalExcluirFilamento({ aberto, aoFechar, aoConfirmar, i
             return {
                 icone: AlertCircle,
                 titulo: "Excluir Material em Uso?",
-                subtitulo: `Ainda restam ${Math.round(peso)}g neste carretel.`,
+                subtitulo: `Ainda restam ${Math.round(peso)}${isResin ? 'ml' : 'g'} n${isResin ? 'esta resina' : 'este carretel'}.`,
                 aviso: "Ao excluir, você perderá todo o histórico de uso vinculado a este lote.",
                 cor: "amber"
             };
         } else {
             return {
                 icone: PackageOpen,
-                titulo: "Descartar Carretel Vazio",
+                titulo: `Descartar ${Termo} Vazi${isResin ? 'a' : 'o'}`,
                 subtitulo: "O material está no fim.",
                 aviso: "Esta ação apenas remove o registro do sistema. O histórico será arquivado.",
                 cor: "zinc"
             };
         }
-    }, [item]);
+    }, [item, isResin]);
 
     if (!item) return null;
 
@@ -89,6 +109,7 @@ export default function ModalExcluirFilamento({ aberto, aoFechar, aoConfirmar, i
                         cor={item.cor_hex}
                         tamanho={140}
                         porcentagem={(item.peso_atual / item.peso_total) * 100}
+                        tipo={isResin ? 'SLA' : 'FDM'}
                     />
                 </div>
 

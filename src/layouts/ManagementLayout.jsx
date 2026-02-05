@@ -7,23 +7,73 @@ import FloatingQuickActions from '../components/FloatingQuickActions';
 import ModalFilamento from '../features/filamentos/components/ModalFilamento';
 import ModalImpressora from '../features/impressoras/components/ModalImpressora';
 import ModalInsumo from '../features/insumos/components/ModalInsumo';
+import ModalScanner from '../features/scanner/components/ModalScanner';
 
 import { useLocation } from 'wouter';
 import { useState } from 'react';
-import { useMutacoesFilamento } from '../features/filamentos/logic/consultasFilamento';
-import { usePrinterMutations } from '../features/impressoras/logic/consultasImpressora';
+import { useMutacoesFilamento, useFilamentos } from '../features/filamentos/logic/consultasFilamento';
+import { usePrinterMutations, usePrinters } from '../features/impressoras/logic/consultasImpressora';
+import { useSupplyStore } from '../features/insumos/logic/supplies';
+import { identifyItem } from '../features/scanner/logic/scannerService';
+import { useToastStore } from '../stores/toastStore';
 
 export default function ManagementLayout({ children }) {
     const { width: larguraSidebar, isMobile, setIsMobile, setMobileOpen } = useSidebarStore();
     const [location] = useLocation();
+    const { addToast } = useToastStore();
+
+    // Data for Scanner
+    const { data: filaments = [] } = useFilamentos();
+    const { data: printers = [] } = usePrinters();
+    const supplies = useSupplyStore(state => state.supplies);
+    const fetchSupplies = useSupplyStore(state => state.fetchSupplies);
+
+    // Ensure supplies are loaded for scanning - REMOVED TO PREVENT LOOP
+    // Supplies will be loaded by individual pages or lazily when needed.
+    // useEffect(() => {
+    //     if (supplies.length === 0) fetchSupplies();
+    // }, []);
 
     // Modal states
     const [isFilamentModalOpen, setFilamentModalOpen] = useState(false);
     const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
     const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
+    const [isScannerOpen, setScannerOpen] = useState(false);
+    const [scannerError, setScannerError] = useState(null);
+
+    // Edit States (to open modal with data)
+    const [editingFilament, setEditingFilament] = useState(null);
+    const [editingPrinter, setEditingPrinter] = useState(null);
+    const [editingSupply, setEditingSupply] = useState(null);
 
     const { salvarFilamento } = useMutacoesFilamento();
     const { upsertPrinter } = usePrinterMutations();
+
+    const handleScan = (code) => {
+        setScannerError(null); // Clear previous errors
+        const result = identifyItem(code, { filaments, printers, supplies });
+
+        if (result) {
+            setScannerOpen(false);
+            if (result.type === 'filament') {
+                setEditingFilament(result.item);
+                setFilamentModalOpen(true);
+            } else if (result.type === 'printer') {
+                setEditingPrinter(result.item);
+                setPrinterModalOpen(true);
+            } else if (result.type === 'supply') {
+                setEditingSupply(result.item);
+                setSupplyModalOpen(true);
+            }
+            addToast("Item identificado com sucesso!", "success");
+        } else {
+            // Show error inside modal instead of toast for better visibility
+            setScannerError("Item não encontrado ou código inválido.");
+
+            // Optional: Backup toast if modal is closed unexpectedly, but here we want inline feedback.
+            // addToast("Item não encontrado.", "error"); 
+        }
+    };
 
     // Resize Handler
     useEffect(() => {
@@ -56,16 +106,25 @@ export default function ManagementLayout({ children }) {
     return (
         <div className="flex h-screen w-full bg-[#0c0c0e] text-zinc-200 font-sans antialiased overflow-hidden">
             <FloatingQuickActions
-                onNewFilament={() => setFilamentModalOpen(true)}
-                onNewPrinter={() => setPrinterModalOpen(true)}
-                onNewSupply={() => setSupplyModalOpen(true)}
+                onNewFilament={() => { setEditingFilament(null); setFilamentModalOpen(true); }}
+                onNewPrinter={() => { setEditingPrinter(null); setPrinterModalOpen(true); }}
+                onNewSupply={() => { setEditingSupply(null); setSupplyModalOpen(true); }}
+                onScan={() => setScannerOpen(true)}
             />
             <InstallPwa />
 
             {/* Modals */}
+            <ModalScanner
+                isOpen={isScannerOpen}
+                onClose={() => { setScannerOpen(false); setScannerError(null); }}
+                onScan={handleScan}
+                errorMessage={scannerError}
+            />
+
             <ModalFilamento
                 aberto={isFilamentModalOpen}
-                aoFechar={() => setFilamentModalOpen(false)}
+                aoFechar={() => { setFilamentModalOpen(false); setEditingFilament(null); }}
+                dadosIniciais={editingFilament}
                 aoSalvar={async (data) => {
                     await salvarFilamento(data);
                     if (!data.id) setFilamentModalOpen(false);
@@ -73,7 +132,8 @@ export default function ManagementLayout({ children }) {
             />
             <ModalImpressora
                 aberto={isPrinterModalOpen}
-                aoFechar={() => setPrinterModalOpen(false)}
+                aoFechar={() => { setPrinterModalOpen(false); setEditingPrinter(null); }}
+                dadosIniciais={editingPrinter}
                 aoSalvar={async (data) => {
                     await upsertPrinter(data);
                     if (!data.id) setPrinterModalOpen(false);
@@ -81,7 +141,8 @@ export default function ManagementLayout({ children }) {
             />
             <ModalInsumo
                 isOpen={isSupplyModalOpen}
-                onClose={() => setSupplyModalOpen(false)}
+                onClose={() => { setSupplyModalOpen(false); setEditingSupply(null); }}
+                dadosIniciais={editingSupply}
             />
             <MainSidebar />
 

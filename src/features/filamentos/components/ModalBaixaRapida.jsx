@@ -8,6 +8,7 @@ import SideBySideModal from "../../../components/ui/SideBySideModal";
 import api from "../../../utils/api";
 import { UnifiedInput } from "../../../components/UnifiedInput";
 import { useMutacoesFilamento } from "../logic/consultasFilamento";
+import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
 export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const [consumo, setConsumo] = useState("");
@@ -26,18 +27,36 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const [arrastando, setArrastando] = useState(false);
     const spoolRef = useRef(null);
 
+    // Resin Logic (moved up for init)
+    const isResin = React.useMemo(() => {
+        if (!item) return false;
+        const mat = (item.material || "").trim();
+        const tipo = (item.tipo || "").toUpperCase();
+        return (
+            tipo === 'SLA' ||
+            tipo === 'RESINA' ||
+            MATERIAIS_RESINA_FLAT.includes(mat) ||
+            MATERIAIS_RESINA_FLAT.some(r => mat.toLowerCase().includes(r.toLowerCase())) ||
+            mat.toLowerCase().includes('resina') ||
+            mat.toLowerCase().includes('resin')
+        );
+    }, [item]);
+    const unitLabel = isResin ? "MILILITROS" : "GRAMAS";
+    const unitSuffix = isResin ? "ml" : "g";
+    const corFilamento = item?.cor_hex || "#3b82f6";
+
     // Reinicia o estado ao abrir o modal
     useEffect(() => {
         if (aberto) {
             setConsumo("");
             setEhFalha(false);
-            setMotivoFalha("Falha de Aderência");
+            setMotivoFalha(isResin ? "Falha de Aderência (Plataforma)" : "Falha de Aderência");
             setSalvando(false);
             setMostrarErros(false);
             setEmFoco(false);
             setArrastando(false);
         }
-    }, [aberto]);
+    }, [aberto, isResin]);
 
     // Lógica de cálculo centralizada e segura
     const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
@@ -57,7 +76,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
     const inputValido = consumo !== "" && qtdConsumo > 0;
     const inputVazio = consumo === "";
 
-    const corFilamento = item?.cor_hex || "#3b82f6";
+
 
     // Spool Interaction Logic (Adapted for Consumption)
     const handleSpoolInteraction = (e) => {
@@ -207,12 +226,13 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         style={{ backgroundColor: corFilamento }}
                     />
 
-                    {/* SPOOL */}
+                    {/* SPOOL / BOTTLE */}
                     <div className={`transform transition-transform duration-500 ${emFoco ? "scale-105" : ""} active:scale-95 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none`}>
                         <VisualizacaoCarretel
                             cor={corFilamento}
                             tamanho={220}
                             porcentagem={pctFinal}
+                            tipo={isResin ? 'SLA' : 'FDM'} // Force SLA visual if detected as resin
                         />
                     </div>
 
@@ -237,13 +257,13 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 <div className="bg-zinc-900/80 backdrop-blur border border-zinc-800 rounded-xl p-4 flex justify-between items-center shadow-lg">
                     <div>
                         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Atual</span>
-                        <p className="text-xs font-mono font-bold text-zinc-400">{Math.round(pesoAnterior)}g</p>
+                        <p className="text-xs font-mono font-bold text-zinc-400">{Math.round(pesoAnterior)}{unitSuffix}</p>
                     </div>
                     <ArrowDownToLine size={16} className={`text-zinc-600 ${arrastando ? "animate-bounce" : ""}`} />
                     <div className="text-right">
                         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Final</span>
                         <p className={`text-xl font-mono font-bold ${erroSaldoNegativo ? 'text-rose-500' : 'text-zinc-100'}`}>
-                            {Math.round(pesoFinal)}g
+                            {Math.round(pesoFinal)}{unitSuffix}
                         </p>
                     </div>
                 </div>
@@ -280,7 +300,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             isOpen={aberto}
             onClose={aoFechar}
             sidebar={sidebarContent}
-            header={{ title: "Registrar Uso", subtitle: "Lançar consumo de material do carretel", icon: TrendingDown }}
+            header={{ title: "Registrar Uso", subtitle: isResin ? "Lançar consumo de resina do frasco" : "Lançar consumo de material do carretel", icon: TrendingDown }}
             footer={footerContent}
             salvando={salvando}
             isDirty={consumo !== "" && consumo !== "0"}
@@ -290,7 +310,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 {/* Seção 01 */}
                 <section className="space-y-4">
                     <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        <h4>[01] Peso Usado</h4>
+                        <h4>[01] {isResin ? 'Volume Usado' : 'Peso Usado'}</h4>
                         <div className="h-px bg-zinc-800/50 flex-1" />
                     </div>
 
@@ -311,7 +331,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                             className={`w-full bg-zinc-900/50 border rounded-2xl py-6 pl-14 pr-24 text-4xl font-bold text-zinc-100 outline-none transition-all shadow-inner font-mono ${erroSaldoNegativo || (mostrarErros && inputVazio) ? 'border-rose-500/40 focus:border-rose-500/60 ring-4 ring-rose-500/5' : 'border-zinc-800 focus:border-zinc-800/30 focus:bg-zinc-950/40'}`}
                         />
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-l border-zinc-800 pl-5">
-                            GRAMAS
+                            {unitLabel}
                         </div>
                     </div>
 
@@ -320,13 +340,25 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                             const maxVal = pesoAnterior;
                             let presets = [];
 
-                            if (maxVal <= 50) presets = [5, 10, 15, 20];
-                            else if (maxVal <= 200) presets = [10, 25, 50, 80];
-                            else if (maxVal <= 500) presets = [25, 50, 100, 150];
-                            else presets = [50, 100, 250, 400];
+                            // Lógica de Curva de Consumo baseada no estoque atual
+                            if (isResin) {
+                                // RESINA (ML) - Geralmente consumos menores
+                                if (maxVal > 800) presets = [50, 100, 250];
+                                else if (maxVal > 300) presets = [25, 50, 100];
+                                else if (maxVal > 100) presets = [10, 25, 50];
+                                else if (maxVal > 30) presets = [5, 10, 20];
+                                else presets = [1, 5, 10];
+                            } else {
+                                // FILAMENTO (G) - Consumos maiores
+                                if (maxVal > 800) presets = [50, 100, 250]; // Rolo cheio
+                                else if (maxVal > 400) presets = [25, 50, 100]; // Meio rolo
+                                else if (maxVal > 100) presets = [10, 25, 50]; // Finalzinho
+                                else if (maxVal > 40) presets = [5, 10, 25]; // Sobras
+                                else presets = [1, 5, 10]; // Restos
+                            }
 
-                            // Filter valid and slice to dynamic count but max 3 to keep layout
-                            const validPresets = presets.filter(n => n < maxVal).slice(0, 3);
+                            // Filtra opções maiores que o saldo atual para não confundir
+                            const validPresets = presets.filter(n => n <= maxVal);
 
                             return validPresets.map(val => (
                                 <button
@@ -335,7 +367,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                                     onClick={() => adicionarConsumo(val)}
                                     className="py-2.5 bg-zinc-950/40 border border-zinc-800 hover:border-zinc-500 text-[10px] font-bold text-zinc-500 hover:text-zinc-100 rounded-xl transition-all active:scale-95 uppercase tracking-widest disabled:opacity-30"
                                 >
-                                    +{val}g
+                                    +{val}{unitSuffix}
                                 </button>
                             ));
                         })()}
@@ -381,10 +413,13 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                                     label="O que aconteceu?"
                                     type="select"
                                     options={[{
-                                        items: [
+                                        items: (isResin ? [
+                                            "Falha de Aderência (Plataforma)", "Falha de Cura", "Queda de Energia",
+                                            "Suporte Quebrado", "Fim de Resina", "Resina Contaminada", "Outros"
+                                        ] : [
                                             "Falha de Aderência", "Entupimento de Bico", "Queda de Energia",
                                             "Erro no Fatiamento", "Fim de Filamento", "Warping (Empenamento)", "Outros"
-                                        ].map(r => ({ value: r, label: r }))
+                                        ]).map(r => ({ value: r, label: r }))
                                     }]}
                                     value={motivoFalha}
                                     onChange={(v) => setMotivoFalha(v)}

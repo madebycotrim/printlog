@@ -259,7 +259,7 @@ h-[88px] flex items-center shrink-0 relative
                     <SidebarItem href="/clientes" icon={Users} label="Clientes" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/clientes')} onClick={isMobile ? handleCloseMobile : undefined} />
 
                     <SidebarSection title="Gestão" collapsed={renderCollapsed} />
-                    <SidebarItem href="/filamentos" icon={Package} label="Filamentos" collapsed={renderCollapsed} badge={alerts.lowStock} color="rose" onHover={() => prefetchRoute('/filamentos')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/filamentos" icon={Package} label="Materiais" collapsed={renderCollapsed} badge={alerts.lowStock} color="rose" onHover={() => prefetchRoute('/filamentos')} onClick={isMobile ? handleCloseMobile : undefined} />
                     <SidebarItem href="/insumos" icon={Layers} label="Insumos" collapsed={renderCollapsed} color="orange" onHover={() => prefetchRoute('/insumos')} onClick={isMobile ? handleCloseMobile : undefined} />
                     <SidebarItem href="/impressoras" icon={Printer} label="Impressoras" collapsed={renderCollapsed} badge={alerts.criticalPrinter} color="emerald" onHover={() => prefetchRoute('/impressoras')} onClick={isMobile ? handleCloseMobile : undefined} />
                     <SidebarItem href="/projetos" icon={FolderOpen} label="Projetos" collapsed={renderCollapsed} color="amber" onHover={() => prefetchRoute('/projetos')} onClick={isMobile ? handleCloseMobile : undefined} />
@@ -320,7 +320,7 @@ w-9 h-9 rounded-full object-cover bg-zinc-800 ring-2 ring-zinc-950 transition-al
                                         {user?.firstName || "Maker"}
                                     </span>
                                     <span className="text-[10px] text-zinc-500 truncate leading-none">
-                                        {workshopName || "Oficina Maker"}
+                                        {workshopName || "Oficina Pro"}
                                     </span>
                                 </div>
 

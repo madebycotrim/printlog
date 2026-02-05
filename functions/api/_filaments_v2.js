@@ -288,11 +288,13 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                     UPDATE filamentos SET 
                         nome=?, marca=?, material=?, cor_hex=?, diametro=?, 
                         peso_total=?, peso_atual=?, preco=?, favorito=?, tags=?,
+                        tipo=?, unidade=?, densidade=?, tempo_exposicao=?,
                         VERSAO = versao + 1
                     WHERE id = ?
                 `).bind(
                     da.nome, da.marca || null, da.material, da.cor_hex || null, da.diametro || null,
                     da.peso_total, da.peso_atual, da.preco, da.favorito ? 1 : 0, tags,
+                    da.tipo || 'FDM', da.unidade || 'g', da.densidade || 1.25, da.tempo_exposicao || null,
                     id
                 ).run();
 
@@ -303,12 +305,15 @@ export async function gerenciarFilamentos({ request, db, userId, pathArray, url 
                     INSERT INTO filamentos (
                         id, usuario_id, nome, marca, material, cor_hex, diametro, 
                         peso_total, peso_atual, preco, data_abertura, favorito, tags, 
+                        tipo, unidade, densidade, tempo_exposicao,
                         versao, criado_em, atualizado_em
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
                 `).bind(
                     id, userId, da.nome, da.marca || null, da.material, da.cor_hex || null, da.diametro || null,
                     da.peso_total, da.peso_atual, da.preco, rawData.data_abertura || null,
-                    da.favorito ? 1 : 0, tags, now, now
+                    da.favorito ? 1 : 0, tags,
+                    da.tipo || 'FDM', da.unidade || 'g', da.densidade || 1.25, da.tempo_exposicao || null,
+                    now, now
                 ).run();
 
                 return enviarJSON({ success: true, id });

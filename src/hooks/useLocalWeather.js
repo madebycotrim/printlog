@@ -30,7 +30,8 @@ export const useLocalWeather = () => {
                 }
             },
             (error) => {
-                console.warn("Permissão de localização negada/erro, usando padrão:", error);
+                // Silently handle denied permission by falling back to default
+                // console.debug("Permissão de localização negada/erro, usando padrão:", error);
 
                 // Fallback para São Paulo
                 const latitude = -23.5505;

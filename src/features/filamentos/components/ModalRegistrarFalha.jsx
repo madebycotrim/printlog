@@ -8,6 +8,7 @@ import { useFormFeedback } from '../../../hooks/useFormFeedback';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
 import api from '../../../utils/api';
 import { parseNumber } from "../../../utils/numbers";
+import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
 export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
     const [carregando, setCarregando] = useState(false);
@@ -95,6 +96,28 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
         }
     ], [filamentos]);
 
+    // Logic to Detect if Selected Item is Resin
+    const isSelectedResin = useMemo(() => {
+        if (formulario.idFilamento === 'manual') return false;
+        const fil = filamentos.find(f => String(f.id) === String(formulario.idFilamento));
+        if (!fil) return false;
+
+        const mat = (fil.material || "").trim();
+        const tipo = (fil.tipo || "").toUpperCase();
+
+        return (
+            tipo === 'SLA' ||
+            tipo === 'RESINA' ||
+            MATERIAIS_RESINA_FLAT.includes(mat) ||
+            MATERIAIS_RESINA_FLAT.some(r => mat.toLowerCase().includes(r.toLowerCase())) ||
+            mat.toLowerCase().includes('resina') ||
+            mat.toLowerCase().includes('resin')
+        );
+    }, [formulario.idFilamento, filamentos]);
+
+    const unitSuffix = isSelectedResin ? "ml" : "g";
+    const volumeLabel = isSelectedResin ? "Volume Perdido" : "Peso Perdido";
+
     // Conteúdo da Barra Lateral segue estética do ModalFilamento
     const conteudoLateral = (
         <div className="flex flex-col items-center w-full h-full relative z-10 justify-between py-6">
@@ -121,6 +144,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                             cor={filamentos.find(f => String(f.id) === String(formulario.idFilamento)).cor_hex}
                             tamanho={200}
                             porcentagem={80} // Visual fixo para modo de falha
+                            tipo={isSelectedResin ? 'SLA' : 'FDM'}
                         />
                     ) : (
                         <div className="w-48 h-48 rounded-full bg-zinc-900/50 border border-rose-500/20 flex items-center justify-center backdrop-blur-sm shadow-[0_0_30px_rgba(244,63,94,0.1)]">
@@ -203,15 +227,23 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                     <UnifiedInput
                         label="O que aconteceu?"
                         type="select"
-                        options={[{ items: motivos.map(r => ({ value: r, label: r })) }]}
+                        options={[{
+                            items: (isSelectedResin ? [
+                                "Falha de Aderência (Plataforma)", "Falha de Cura", "Queda de Energia",
+                                "Suporte Quebrado", "Fim de Resina", "Resina Contaminada", "Outros"
+                            ] : [
+                                "Falha de Aderência", "Entupimento de Bico", "Queda de Energia",
+                                "Erro no Fatiamento", "Fim de Filamento", "Warping (Empenamento)", "Outros"
+                            ]).map(r => ({ value: r, label: r }))
+                        }]}
                         value={formulario.motivo}
                         onChange={(v) => setFormulario({ ...formulario, motivo: v })}
                     />
 
                     <div className="grid grid-cols-2 gap-4">
                         <UnifiedInput
-                            label="Peso Perdido"
-                            suffix="g"
+                            label={volumeLabel}
+                            suffix={unitSuffix}
                             type="number"
                             placeholder="0"
                             value={formulario.pesoDesperdiciado}

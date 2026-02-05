@@ -42,7 +42,8 @@ export const prepararParaD1 = (dados = {}) => {
         horas_totais: limparNumero(dados.horas_totais),
         ultima_manutencao_hora: limparNumero(dados.ultima_manutencao_hora),
         intervalo_manutencao: limparNumero(dados.intervalo_manutencao || 300),
-        historico: historicoFormatado
+        historico: historicoFormatado,
+        imagem: dados.imagem || "" // New Field
     };
 };
 

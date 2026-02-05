@@ -1,49 +1,14 @@
 import React, { memo, useMemo } from "react";
-import { Edit2, Trash2, History, Link, Zap, Hammer, Layers, PackageSearch, Droplet, Paintbrush, Wrench, Cable, CircleDot, Fan, Usb, SprayCan, Thermometer, CircuitBoard, Target, Ruler, Package, ShoppingCart } from "lucide-react";
+import { Edit2, Trash2, History, ShoppingCart, Zap, QrCode } from "lucide-react";
 import { formatCurrency } from "../../../utils/numbers";
 import { Tooltip } from "../../../components/ui/Tooltip";
+import { getMaterialTheme } from "../../../logic/materialIcons";
 
-export const SupplyRow = memo(({ item, icon: PropIcon, onEdit, onDelete, onHistory, onQuickConsume }) => {
+export const SupplyRow = memo(({ item, icon: PropIcon, onEdit, onDelete, onHistory, onQuickConsume, onLabel }) => {
 
-    const categoryLower = (item?.category || item?.categoria || "Geral").toLowerCase();
-
-    // 1. Theme Configuration & Smart Icon (Copied from SupplyCard for consistency)
     const theme = useMemo(() => {
-        const nameLower = (item?.name || "").toLowerCase();
-
-        // Smart Icon Detection based on Name (Mapped to Lucide Icons)
-        let smartIcon = null;
-
-        // Liquids / Chemicals
-        if (nameLower.includes('álcool') || nameLower.includes('alcool') || nameLower.includes('limpa') || nameLower.includes('spray')) smartIcon = SprayCan;
-        else if (nameLower.includes('cola') || nameLower.includes('adesivo') || nameLower.includes('graxa') || nameLower.includes('leo') || nameLower.includes('lubrificante')) smartIcon = Droplet;
-        else if (nameLower.includes('tinta') || nameLower.includes('pincel') || nameLower.includes('primer') || nameLower.includes('resina')) smartIcon = Paintbrush;
-
-        // Hardware / Mechanical
-        else if (nameLower.includes('ventoinha') || nameLower.includes('cooler') || nameLower.includes('fan')) smartIcon = Fan;
-        else if (nameLower.includes('rolamento') || nameLower.includes('eixo') || nameLower.includes('polia')) smartIcon = CircleDot;
-        else if (nameLower.includes('bico') || nameLower.includes('nozzle')) smartIcon = Target; // Cone shape-ish
-        else if (nameLower.includes('parafuso') || nameLower.includes('porca') || nameLower.includes('arruela')) smartIcon = Wrench;
-        else if (nameLower.includes('tubo') || nameLower.includes('ptfe') || nameLower.includes('mangueira')) smartIcon = Cable;
-        else if (nameLower.includes('guia') || nameLower.includes('linear')) smartIcon = Ruler;
-
-        // Electronics
-        else if (nameLower.includes('sd') || nameLower.includes('cartão') || nameLower.includes('memória')) smartIcon = Usb;
-        else if (nameLower.includes('usb') || nameLower.includes('pendrive')) smartIcon = Usb;
-        else if (nameLower.includes('sensor') || nameLower.includes('termistor') || nameLower.includes('termopar')) smartIcon = Thermometer;
-        else if (nameLower.includes('placa') || nameLower.includes('driver') || nameLower.includes('display') || nameLower.includes('tela')) smartIcon = CircuitBoard;
-        else if (nameLower.includes('motor') || nameLower.includes('fonte')) smartIcon = Zap;
-        else if (nameLower.includes('cabo') || nameLower.includes('fio') || nameLower.includes('conector')) smartIcon = Cable;
-
-        // Visual Theme based on Category
-        if (categoryLower.includes('embalagem')) return { hex: "#fbbf24", tailwind: "amber", label: item?.category || "Embalagem", icon: smartIcon || Package };
-        if (categoryLower.includes('fixação') || categoryLower.includes('fixacao')) return { hex: "#94a3b8", tailwind: "slate", label: item?.category || "Fixação", icon: smartIcon || Link };
-        if (categoryLower.includes('eletrônica') || categoryLower.includes('eletronica')) return { hex: "#8b5cf6", tailwind: "violet", label: item?.category || "Eletrônica", icon: smartIcon || Zap };
-        if (categoryLower.includes('acabamento')) return { hex: "#ec4899", tailwind: "pink", label: item?.category || "Acabamento", icon: smartIcon || Hammer };
-        if (categoryLower.includes('químico') || categoryLower.includes('quimico')) return { hex: "#10b981", tailwind: "emerald", label: item?.category || "Químico", icon: smartIcon || Layers };
-
-        return { hex: "#f97316", tailwind: "orange", label: item?.category || "Geral", icon: smartIcon || PackageSearch };
-    }, [categoryLower, item?.category, item?.name]);
+        return getMaterialTheme(item?.name || "", item?.category || item?.categoria || "Geral");
+    }, [item?.name, item?.category, item?.categoria]);
 
     const MainIcon = PropIcon || theme.icon;
     const finalLabel = item?.brand || item?.marca || item?.supplier || item?.fornecedor || theme.label || "Item";
@@ -200,6 +165,15 @@ export const SupplyRow = memo(({ item, icon: PropIcon, onEdit, onDelete, onHisto
 
                     {/* 5. ACTIONS - Subtle Separation */}
                     <div className="flex items-center gap-1 pl-4 border-l border-zinc-800/20">
+                        <Tooltip text="Gerar Etiqueta">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onLabel && onLabel(item); }}
+                                className="w-8 h-8 flex items-center justify-center hover:bg-sky-500/10 text-zinc-500 hover:text-sky-500 rounded-lg transition-all"
+                            >
+                                <QrCode size={16} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+
                         {(item.link_compra || item.purchaseLink || item.link) && (
                             <Tooltip text="Comprar">
                                 <button

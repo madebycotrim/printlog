@@ -13,8 +13,8 @@ const Login = lazy(() => import("../pages/Publica/auth/Login"));
 const Register = lazy(() => import("../pages/Publica/auth/Register"));
 const ForgotPassword = lazy(() => import("../pages/Publica/auth/forgotPassword"));
 // const SSOCallback = lazy(() => import("../pages/Publica/auth/SSOCallback")); // REMOVED
-const Dashboard = lazy(() => import("../pages/Principal/Dashboard"));
-const Calculadora = lazy(() => import("../pages/Principal/Calculadora"));
+const Dashboard = lazy(() => import("../pages/Principal/Dashboard.jsx"));
+const Calculadora = lazy(() => import("../pages/Principal/Calculadora.jsx"));
 const Projetos = lazy(() => import("../pages/Gestao/Projetos"));
 const Filamentos = lazy(() => import("../pages/Gestao/Filamentos"));
 const Insumos = lazy(() => import('../pages/Gestao/Insumos'));

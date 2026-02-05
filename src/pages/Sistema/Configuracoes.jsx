@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { useLogicaConfiguracao } from '../../utils/configLogic';
+// Force Refresh Config
 import ManagementLayout from "../../layouts/ManagementLayout";
 import { UnifiedInput } from "../../components/UnifiedInput";
 import Modal from '../../components/ui/Modal';

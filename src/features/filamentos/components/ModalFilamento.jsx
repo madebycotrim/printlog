@@ -9,6 +9,8 @@ import SideBySideModal from "../../../components/ui/SideBySideModal";
 import { parseNumber } from "../../../utils/numbers";
 import FormularioIdentificacaoFilamento from "./FormIdentificacaoFilamento";
 import FormularioEstoqueFilamento from "./FormEstoqueFilamento";
+import FormAquisicaoManutencao from "./FormAquisicaoManutencao";
+import { MATERIAIS_RESINA_FLAT, CORES_MAIS_VENDIDAS, CORES_RESINA } from "../logic/constantes";
 
 // Limpeza avançada de valores numéricos
 const safeParse = parseNumber;
@@ -21,7 +23,10 @@ const ESTADO_INICIAL = {
     diametro: "1.75",
     preco: "",
     peso_total: "1000",
-    data_abertura: new Date().toISOString().split('T')[0]
+    data_abertura: new Date().toISOString().split('T')[0],
+    fornecedor: "",
+    url_compra: "",
+    data_secagem: ""
 };
 
 export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosIniciais = null }) {
@@ -34,11 +39,29 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
     useEffect(() => {
         if (aberto) {
             if (dadosIniciais) {
+                // Smart Detection for Edit
+                const mat = (dadosIniciais.material || "").trim();
+                const tipoRaw = (dadosIniciais.tipo || "").toUpperCase();
+
+                const isDetectedSLA =
+                    tipoRaw === 'SLA' ||
+                    tipoRaw === 'RESINA' ||
+                    MATERIAIS_RESINA_FLAT.includes(mat) ||
+                    MATERIAIS_RESINA_FLAT.some(r => mat.toLowerCase().includes(r.toLowerCase())) ||
+                    mat.toLowerCase().includes('resina') ||
+                    mat.toLowerCase().includes('resin');
+
+                const finalType = isDetectedSLA ? 'SLA' : (dadosIniciais.tipo || 'FDM');
+
+                // If it's a "New" item (no ID) but with a type hint, ensure material matches type
+                const defaultMaterial = finalType === 'SLA' ? "Standard" : "PLA";
+                const materialValue = dadosIniciais.material || defaultMaterial;
+
                 setFormulario({
                     id: dadosIniciais.id || null,
                     marca: dadosIniciais.marca || "",
                     nome: dadosIniciais.nome || "",
-                    material: dadosIniciais.material || "PLA",
+                    material: materialValue,
                     cor_hex: dadosIniciais.cor_hex || "",
                     diametro: dadosIniciais.diametro || "1.75",
                     preco: String(dadosIniciais.preco || ""),
@@ -47,10 +70,16 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                     data_abertura: dadosIniciais.data_abertura
                         ? (dadosIniciais.data_abertura.split('T')[0])
                         : (dadosIniciais.created_at ? dadosIniciais.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
-                    versao: dadosIniciais.versao // Optimistic Locking
+                    versao: dadosIniciais.versao, // Optimistic Locking
+                    tipo: finalType,
+                    fornecedor: dadosIniciais.fornecedor || "",
+                    url_compra: dadosIniciais.url_compra || "",
+                    data_secagem: dadosIniciais.data_secagem ? dadosIniciais.data_secagem.split('T')[0] : ""
                 });
             } else {
-                setFormulario(ESTADO_INICIAL);
+                // Carregar último tipo usado (FDM/SLA)
+                const lastType = localStorage.getItem('printlog_last_material_type') || 'FDM';
+                setFormulario({ ...ESTADO_INICIAL, tipo: lastType });
             }
             setModificado(false);
             setSalvando(false);
@@ -90,7 +119,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             ...formulario,
             nome: formulario.nome.trim(),
             marca: formulario.marca.trim(),
-            material: formulario.material || "PLA",
+            material: formulario.material,
             diametro: formulario.diametro,
             preco: precoNum,
             peso_total: pesoTotalNum,
@@ -111,6 +140,11 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                 shakeElement.classList.add('animate-shake');
             }
             return;
+        }
+
+        // Persist Last Used Type
+        if (payload.tipo) {
+            localStorage.setItem('printlog_last_material_type', payload.tipo);
         }
 
         try {
@@ -149,6 +183,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
     }, [formulario.peso_total, salvando, actualizarFormulario]);
 
     // Conteúdo da Barra Lateral (Prévia) segue estética do ModalCliente
+    const coresDisponiveis = formulario.tipo === 'SLA' ? CORES_RESINA : CORES_MAIS_VENDIDAS;
     const conteudoLateral = (
         <div className="flex flex-col items-center w-full h-full relative z-10 justify-between py-8 px-6">
 
@@ -163,7 +198,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                 </div>
 
                 <h2 className="text-2xl font-black text-white tracking-tight leading-none break-words line-clamp-2 drop-shadow-lg">
-                    {formulario.nome || "Novo Filamento"}
+                    {formulario.nome || (formulario.tipo === 'SLA' ? "Nova Resina" : "Novo Filamento")}
                 </h2>
             </div>
 
@@ -196,16 +231,16 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
 
                             if (e.key === "ArrowUp" || e.key === "ArrowRight") {
                                 e.preventDefault();
-                                actualizarFormulario("peso_atual", Math.min(total, current + step));
+                                atualizarFormulario("peso_atual", Math.min(total, current + step));
                             } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
                                 e.preventDefault();
-                                actualizarFormulario("peso_atual", Math.max(0, current - step));
+                                atualizarFormulario("peso_atual", Math.max(0, current - step));
                             } else if (e.key === "Home") {
                                 e.preventDefault();
-                                actualizarFormulario("peso_atual", total);
+                                atualizarFormulario("peso_atual", total);
                             } else if (e.key === "End") {
                                 e.preventDefault();
-                                actualizarFormulario("peso_atual", 0);
+                                atualizarFormulario("peso_atual", 0);
                             }
                         }}
                         onTouchStart={() => setArrastando(true)}
@@ -228,6 +263,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                             porcentagem={
                                 Math.min(100, (Number(formulario.peso_atual !== undefined ? formulario.peso_atual : formulario.peso_total) / Math.max(1, Number(formulario.peso_total))) * 100)
                             }
+                            tipo={formulario.tipo}
                         />
                     </div>
 
@@ -243,6 +279,40 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                         <div className="w-1 h-1 bg-white rounded-full" />
                         <div className="w-0.5 h-12 bg-gradient-to-b from-transparent via-white to-transparent" />
                         <div className="w-1 h-1 bg-white rounded-full" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Color Selection Palette */}
+            {/* Premium Color Dock */}
+            {/* Color Grid (Wide Layout) */}
+            <div className="w-full flex justify-center pb-6">
+                <div className="grid grid-cols-6 gap-2 p-3 bg-[#09090b] rounded-2xl border border-zinc-800/50 shadow-inner">
+                    {coresDisponiveis.map(c => (
+                        <button
+                            key={c}
+                            onClick={() => actualizarFormulario('cor_hex', c)}
+                            className={`w-6 h-6 rounded-full border border-zinc-700/50 shadow-sm transition-all duration-300 hover:scale-110 ${formulario.cor_hex && c.toLowerCase() === formulario.cor_hex.toLowerCase() ? "ring-2 ring-white scale-110 z-10" : "opacity-60 hover:opacity-100 ring-1 ring-white/5"}`}
+                            style={{ backgroundColor: c }}
+                            title={c}
+                            type="button"
+                        />
+                    ))}
+
+                    {/* Separator */}
+                    <div className="col-span-1 flex items-center justify-center">
+                        <div className="w-px h-4 bg-zinc-800" />
+                    </div>
+
+                    {/* Custom Color Picker */}
+                    <div className="relative w-6 h-6 rounded-full border border-zinc-700/50 overflow-hidden group hover:scale-110 transition-transform cursor-pointer shadow-lg opacity-80 hover:opacity-100 hover:ring-2 hover:ring-white/20">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-rose-500 via-yellow-500 to-sky-500 opacity-80 group-hover:opacity-100" />
+                        <input
+                            type="color"
+                            value={formulario.cor_hex || "#000000"}
+                            onChange={(e) => actualizarFormulario('cor_hex', e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
                     </div>
                 </div>
             </div>
@@ -278,11 +348,13 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                     className={`flex-[2] py-3 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 ${!salvando ? "bg-[#3b82f6] text-white hover:bg-[#2563eb] active:scale-95 hover:shadow-xl shadow-lg shadow-blue-900/20" : "bg-zinc-950/40 text-zinc-600 cursor-not-allowed"}`}
                 >
                     {salvando ? <Loader2 size={16} className="animate-spin" /> : <Terminal size={16} />}
-                    {salvando ? "Salvando..." : dadosIniciais?.id ? "Salvar Alterações" : "Cadastrar Filamento"}
+                    {salvando ? "Salvando..." : dadosIniciais?.id ? "Salvar Alterações" : (formulario.tipo === 'SLA' ? "Cadastrar Resina" : "Cadastrar Filamento")}
                 </button>
             </div>
         </div>
     );
+
+    const termo = formulario.tipo === 'SLA' ? 'Resina' : 'Filamento';
 
     return (
         <SideBySideModal
@@ -290,7 +362,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
             onClose={handleFechar}
             sidebar={conteudoLateral}
             header={{
-                title: dadosIniciais?.id ? "Editar Filamento" : "Novo Filamento",
+                title: dadosIniciais?.id ? `Editar ${termo}` : `Nova ${termo}`,
                 subtitle: dadosIniciais?.id ? "Atualize os dados do seu material." : "Adicione um novo item ao seu estoque."
             }}
             footer={footerContent}
@@ -303,6 +375,7 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                     formulario={formulario}
                     atualizarFormulario={actualizarFormulario}
                     mostrarErros={mostrarErros}
+                    isEditing={!!dadosIniciais?.id || !!dadosIniciais?.lockedType}
                 />
 
                 <FormularioEstoqueFilamento
@@ -311,6 +384,12 @@ export default function ModalFilamento({ aberto, aoFechar, aoSalvar, dadosInicia
                     setFormulario={setFormulario}
                     mostrarErros={mostrarErros}
                     dadosIniciais={dadosIniciais}
+                />
+
+                <FormAquisicaoManutencao
+                    formulario={formulario}
+                    atualizarFormulario={actualizarFormulario}
+                    mostrarErros={mostrarErros}
                 />
             </div>
         </SideBySideModal>

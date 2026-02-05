@@ -37,12 +37,19 @@ CREATE TABLE filamentos (
     nome TEXT NOT NULL, 
     marca TEXT, 
     material TEXT, 
+    tipo TEXT DEFAULT 'FDM', -- 'FDM' ou 'SLA'
     cor_hex TEXT, 
     diametro REAL DEFAULT 1.75,
+    densidade REAL DEFAULT 1.25, -- g/cm3 (importante p/ resina)
+    tempo_exposicao REAL, -- Segundos (SLA)
     peso_total REAL, 
     peso_atual REAL, 
+    unidade TEXT DEFAULT 'g', -- 'g' ou 'ml'
     preco REAL, 
-    data_abertura TEXT, 
+    data_abertura TEXT,
+    data_secagem DATETIME, -- Data da última secagem
+    fornecedor TEXT, -- Nome do fornecedor
+    url_compra TEXT, -- Link para recompra
     favorito INTEGER DEFAULT 0, 
     tags TEXT DEFAULT '[]',
     percentual_restante REAL,
@@ -58,7 +65,7 @@ CREATE TABLE filamentos_log (
     id TEXT PRIMARY KEY, 
     filamento_id TEXT NOT NULL, 
     data TEXT NOT NULL, 
-    tipo TEXT NOT NULL CHECK(tipo IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste')),
+    tipo TEXT NOT NULL CHECK(tipo IN ('falha', 'manual', 'abertura', 'consumo', 'ajuste', 'secagem')),
     quantidade REAL DEFAULT 0, 
     observacao TEXT,
     usuario_id TEXT NOT NULL,    
@@ -79,6 +86,7 @@ CREATE TABLE impressoras (
     nome TEXT NOT NULL, 
     marca TEXT, 
     modelo TEXT, 
+    tipo TEXT DEFAULT 'FDM', -- 'FDM' ou 'SLA'
     status TEXT DEFAULT 'idle', 
     potencia REAL DEFAULT 0, 
     preco REAL DEFAULT 0, 
@@ -87,6 +95,7 @@ CREATE TABLE impressoras (
     ultima_manutencao_hora REAL DEFAULT 0, 
     intervalo_manutencao REAL DEFAULT 300, 
     historico TEXT,
+    imagem TEXT DEFAULT '',
     versao INTEGER DEFAULT 1,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP, -- Adicionado para consistência
     atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,

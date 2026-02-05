@@ -1,4 +1,3 @@
-import React from 'react';
 import { Filter } from 'lucide-react';
 
 export default function InsumoFilters({
@@ -47,7 +46,7 @@ export default function InsumoFilters({
 
 
                     {/* Category Filters */}
-                    {categories.filter(c => c.id !== 'Todos').map(cat => (
+                    {categories.map(cat => (
                         <button
                             key={cat.id}
                             onClick={() => toggleCategory(cat.id)}
@@ -71,6 +70,21 @@ export default function InsumoFilters({
                             Limpar
                         </button>
                     )}
+                </div>
+
+                {/* --- RIGHT CONTROLS (Sort) --- */}
+                <div className="flex items-center gap-4">
+                    <select
+                        value={filters.sortOption || 'name'}
+                        onChange={(e) => setFilters(prev => ({ ...prev, sortOption: e.target.value }))}
+                        className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] uppercase font-bold tracking-wider rounded-lg px-3 py-2 h-[34px] focus:outline-none focus:border-zinc-700 cursor-pointer"
+                    >
+                        <option value="name">Nome (A-Z)</option>
+                        <option value="price_asc">Menor Preço</option>
+                        <option value="price_desc">Maior Preço</option>
+                        <option value="stock_asc">Menor Estoque</option>
+                        <option value="stock_desc">Maior Estoque</option>
+                    </select>
                 </div>
 
             </div>

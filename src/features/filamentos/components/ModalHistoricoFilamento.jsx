@@ -10,11 +10,15 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
     const historico = data?.history || [];
     const estatisticasApi = data?.stats || {};
 
+    const isResin = item?.tipo === 'SLA' || item?.isKnownResin;
+    const termoObjeto = isResin ? 'garrafa' : 'carretel';
+    const TermoObjeto = termoObjeto.charAt(0).toUpperCase() + termoObjeto.slice(1);
+
     const estatisticas = useMemo(() => {
         if (!item) return { mediaDiaria: 0, diasRestantes: 0 };
 
         const media = Number(estatisticasApi.dailyAvg || 0);
-        // Previsão: Se média > 0, calcula dias. Se não, infinito (ou texto amig ável)
+        // Previsão: Se média > 0, calcula dias. Se não, infinito (ou texto amigável)
         const dias = media > 0 ? (item.peso_atual || 0) / media : 0;
 
         return {
@@ -53,6 +57,7 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
                         cor={item?.cor_hex}
                         tamanho={180}
                         porcentagem={(item?.peso_atual / item?.peso_total) * 100}
+                        tipo={isResin ? 'SLA' : 'FDM'}
                     />
                 </div>
             </div>
@@ -63,7 +68,7 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
                     <div className="flex items-center gap-2">
                         <TrendingDown size={12} className="text-emerald-500" />
                         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Média</span>
-                        <span className="text-xs font-mono font-bold text-zinc-300">{estatisticas.mediaDiaria}g</span>
+                        <span className="text-xs font-mono font-bold text-zinc-300">{estatisticas.mediaDiaria}{isResin ? 'ml' : 'g'}</span>
                     </div>
                     <div className="w-px h-3 bg-zinc-700" />
                     <div className="flex items-center gap-2">
@@ -81,7 +86,7 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
             isOpen={aberto}
             onClose={aoFechar}
             sidebar={conteudoLateral}
-            header={{ title: "Histórico de Uso", subtitle: "Rastreabilidade completa do carretel" }}
+            header={{ title: "Histórico de Uso", subtitle: `Rastreabilidade completa d${isResin ? 'a' : 'o'} ${termoObjeto}` }}
             maxWidth="max-w-5xl"
             className="min-h-[600px]"
         >
@@ -116,11 +121,11 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
 
                                 <div className="flex justify-between items-baseline pr-4">
                                     <h4 className="text-lg font-bold text-zinc-100 leading-snug">
-                                        {registro.obs}
+                                        {registro.obs.replace(/Carretel/gi, TermoObjeto)}
                                     </h4>
                                     {registro.qtd > 0 && (
                                         <span className="text-sm font-bold text-zinc-400 font-mono tracking-tight">
-                                            -{registro.qtd}g
+                                            -{registro.qtd}{isResin ? 'ml' : 'g'}
                                         </span>
                                     )}
                                 </div>

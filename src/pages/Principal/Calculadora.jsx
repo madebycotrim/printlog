@@ -42,6 +42,7 @@ import { useTransferStore } from "../../stores/transferStore";
 import { formatCurrency } from "../../utils/numbers";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+// Force Refresh Calc
 
 /* ---------- COMPONENTE PRINCIPAL DA P�GINA ---------- */
 export default function CalculadoraPage() {

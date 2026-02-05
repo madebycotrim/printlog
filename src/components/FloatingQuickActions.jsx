@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Calculator, Package, Printer, Box, HelpCircle, Zap, X } from 'lucide-react';
+import { Calculator, Package, Printer, Box, HelpCircle, Zap, X, ScanBarcode } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 export default function QuickActionsDock({
     onNewFilament,
     onNewPrinter,
-    onNewSupply
+    onNewSupply,
+    onScan
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [location, setLocation] = useLocation();
@@ -37,6 +38,12 @@ export default function QuickActionsDock({
             icon: Box,
             onClick: () => { onNewSupply(); setIsOpen(false); },
             color: 'text-amber-400'
+        },
+        {
+            label: 'Escanear',
+            icon: ScanBarcode,
+            onClick: () => { onScan(); setIsOpen(false); },
+            color: 'text-white'
         }
     ];
 

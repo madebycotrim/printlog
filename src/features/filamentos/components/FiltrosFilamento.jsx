@@ -23,7 +23,7 @@ export default function FiltrosFilamento({
     // Limites
     const MAX_MATERIAIS_VISIVEIS = 5;
 
-    const possuiFiltrosAtivos = filtros.estoqueBaixo || filtros.materiais?.length > 0 || filtros.marcas?.length > 0;
+    const possuiFiltrosAtivos = filtros.estoqueBaixo || filtros.materials?.length > 0 || filtros.brands?.length > 0;
 
     return (
 
@@ -56,10 +56,10 @@ export default function FiltrosFilamento({
                     {materiaisDisponiveis.slice(0, MAX_MATERIAIS_VISIVEIS).map(mat => (
                         <button
                             key={mat}
-                            onClick={() => alternarFiltro('materiais', mat)}
+                            onClick={() => alternarFiltro('materials', mat)}
                             className={`
                                 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                                ${filtros.materiais?.includes(mat)
+                                ${filtros.materials?.includes(mat)
                                     ? 'bg-rose-500/10 border-rose-500 text-rose-500'
                                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
@@ -72,10 +72,10 @@ export default function FiltrosFilamento({
                     {marcasDisponiveis.slice(0, 3).map(marca => (
                         <button
                             key={marca}
-                            onClick={() => alternarFiltro('marcas', marca)}
+                            onClick={() => alternarFiltro('brands', marca)}
                             className={`
                                 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border
-                                ${filtros.marcas?.includes(marca)
+                                ${filtros.brands?.includes(marca)
                                     ? 'bg-rose-500/10 border-rose-500 text-rose-500'
                                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300'}
                             `}
@@ -87,7 +87,7 @@ export default function FiltrosFilamento({
                     {/* Botão Limpar */}
                     {possuiFiltrosAtivos && (
                         <button
-                            onClick={() => setFiltros({ estoqueBaixo: false, materiais: [], marcas: [] })}
+                            onClick={() => setFiltros({ estoqueBaixo: false, materials: [], brands: [], sortOption: 'name' })}
                             className="ml-2 text-[10px] text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider underline decoration-rose-500/30 hover:decoration-rose-500"
                         >
                             Limpar
@@ -95,24 +95,41 @@ export default function FiltrosFilamento({
                     )}
                 </div>
 
-                {/* --- ALTERNADOR DE MODO DE VISUALIZAÇÃO --- */}
-                <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-lg shrink-0">
-                    <button
-                        onClick={() => setModoVisualizacao('grid')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${modoVisualizacao === 'grid'
-                            ? 'bg-zinc-800 text-zinc-200 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-400'}`}
+                {/* --- CONTROLES DA DIREITA (Ordenação + View) --- */}
+                <div className="flex items-center gap-2">
+
+                    {/* Ordenação */}
+                    <select
+                        value={filtros.sortOption || 'name'}
+                        onChange={(e) => setFiltros(prev => ({ ...prev, sortOption: e.target.value }))}
+                        className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] uppercase font-bold tracking-wider rounded-lg px-3 py-2 h-[34px] focus:outline-none focus:border-zinc-700 cursor-pointer"
                     >
-                        <Grid size={16} />
-                    </button>
-                    <button
-                        onClick={() => setModoVisualizacao('list')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${modoVisualizacao === 'list'
-                            ? 'bg-zinc-800 text-zinc-200 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-400'}`}
-                    >
-                        <ListIcon size={16} />
-                    </button>
+                        <option value="name">Nome (A-Z)</option>
+                        <option value="quantity_asc">Menos Restante</option>
+                        <option value="quantity_desc">Mais Cheio</option>
+                        <option value="oldest">Mais Antigo</option>
+                        <option value="newest">Mais Novo</option>
+                    </select>
+
+                    {/* --- ALTERNADOR DE MODO DE VISUALIZAÇÃO --- */}
+                    <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-lg shrink-0">
+                        <button
+                            onClick={() => setModoVisualizacao('grid')}
+                            className={`p-1.5 rounded-md transition-all duration-300 ${modoVisualizacao === 'grid'
+                                ? 'bg-zinc-800 text-zinc-200 shadow-sm'
+                                : 'text-zinc-500 hover:text-zinc-400'}`}
+                        >
+                            <Grid size={16} />
+                        </button>
+                        <button
+                            onClick={() => setModoVisualizacao('list')}
+                            className={`p-1.5 rounded-md transition-all duration-300 ${modoVisualizacao === 'list'
+                                ? 'bg-zinc-800 text-zinc-200 shadow-sm'
+                                : 'text-zinc-500 hover:text-zinc-400'}`}
+                        >
+                            <ListIcon size={16} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,27 +1,35 @@
-import React, { useMemo } from "react";
-import { DollarSign, Disc, Layers, Coins } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { DollarSign, Disc, Layers, Coins, Beaker } from "lucide-react";
 import { UnifiedInput } from "../../../components/UnifiedInput";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { parseNumber } from "../../../utils/numbers";
 
 export default function FormularioEstoqueFilamento({ formulario, atualizarFormulario, mostrarErros, setFormulario, dadosIniciais }) {
+    const [usarConversao, setUsarConversao] = useState(false);
 
-    const custoPorGrama = useMemo(() => {
+    const isResin = formulario.tipo === 'SLA';
+    const unitLabel = isResin ? 'ml' : 'g';
+    const qtyLabel = isResin ? 'Volume Total' : 'Peso Total';
+
+    const custoPorUnidade = useMemo(() => {
         const preco = parseNumber(formulario.preco);
-        const peso = parseNumber(formulario.peso_total);
-        if (!preco || !peso) return null;
+        const qtd = parseNumber(formulario.peso_total);
+        if (!preco || !qtd) return null;
 
-        const valor = preco / peso;
+        const valor = preco / qtd;
         let cor = "text-emerald-500";
-        if (valor > 0.10) cor = "text-yellow-500";
-        if (valor > 0.20) cor = "text-rose-500";
+        // Ajuste de 'caro' para resina (costuma ser mais caro que filamento)
+        const threshold = isResin ? 0.50 : 0.10;
+
+        if (valor > threshold) cor = "text-yellow-500";
+        if (valor > (threshold * 2)) cor = "text-rose-500";
 
         return (
             <span className={`font-mono ${cor} font-bold text-[10px] tracking-tight flex items-center gap-1`}>
-                <Coins size={10} /> {valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 3 })} /g
+                <Coins size={10} /> {valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 3 })} /{unitLabel}
             </span>
         );
-    }, [formulario.preco, formulario.peso_total]);
+    }, [formulario.preco, formulario.peso_total, isResin, unitLabel]);
 
     return (
         <section className="space-y-5">
@@ -36,7 +44,7 @@ export default function FormularioEstoqueFilamento({ formulario, atualizarFormul
                         <label className={`text-[10px] font-bold uppercase tracking-wide ${mostrarErros && formulario.preco === "" ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
                             Preço Pago {mostrarErros && formulario.preco === "" && "*"}
                         </label>
-                        {custoPorGrama}
+                        {custoPorUnidade}
                     </div>
                     <UnifiedInput
                         icon={DollarSign}
@@ -54,43 +62,78 @@ export default function FormularioEstoqueFilamento({ formulario, atualizarFormul
                 <div className="space-y-1.5 w-full">
                     <div className="flex justify-between items-end px-1 min-h-[18px]">
                         <label className={`text-[10px] font-bold uppercase tracking-wide ${mostrarErros && !parseNumber(formulario.peso_total) ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
-                            Peso Total (g) {mostrarErros && !parseNumber(formulario.peso_total) && "*"}
+                            {usarConversao ? 'Peso (g)' : qtyLabel} {usarConversao ? '' : `(${unitLabel})`} {mostrarErros && !parseNumber(formulario.peso_total) && "*"}
                         </label>
+                        {isResin && (
+                            <button
+                                onClick={() => setUsarConversao(!usarConversao)}
+                                className="text-[9px] font-bold text-sky-500 hover:text-sky-400 uppercase tracking-wider transition-colors"
+                            >
+                                {usarConversao ? 'Usar ML' : 'Usar Gramas'}
+                            </button>
+                        )}
                     </div>
-                    <UnifiedInput
-                        icon={Disc}
-                        suffix="g"
-                        value={formulario.peso_total}
-                        onChange={(e) => {
-                            const novoValor = e.target.value;
-                            if (/^[0-9.]*$/.test(novoValor)) {
-                                setFormulario(anterior => ({
-                                    ...anterior,
-                                    peso_total: novoValor,
-                                    // Não preenche mais automaticamente peso_atual, mantém vazio para novos itens
-                                    peso_atual: !dadosIniciais ? formulario.peso_atual : anterior.peso_atual
-                                }));
-                            }
-                        }}
-                        error={mostrarErros && !parseNumber(formulario.peso_total)}
-                        align="right"
-                    />
+
+                    {usarConversao && isResin ? (
+                        <div className="relative">
+                            <UnifiedInput
+                                icon={Disc}
+                                suffix="g"
+                                placeholder="1000"
+                                onChange={(e) => {
+                                    const gramas = parseNumber(e.target.value);
+                                    if (!isNaN(gramas)) {
+                                        const densidade = parseNumber(formulario.densidade) || 1.25;
+                                        const ml = Math.round(gramas / densidade);
+                                        setFormulario(prev => ({
+                                            ...prev,
+                                            peso_total: ml,
+                                            peso_atual: !dadosIniciais ? ml : prev.peso_atual
+                                        }));
+                                    }
+                                }}
+                                align="right"
+                            />
+                            <div className="absolute right-0 top-full mt-1 text-[9px] text-zinc-500 font-mono text-right w-full">
+                                ≈ {formulario.peso_total}ml (d={formulario.densidade || 1.25})
+                            </div>
+                        </div>
+                    ) : (
+                        <UnifiedInput
+                            icon={isResin ? Beaker : Disc}
+                            suffix={unitLabel}
+                            value={formulario.peso_total}
+                            onChange={(e) => {
+                                const novoValor = e.target.value;
+                                if (/^[0-9.]*$/.test(novoValor)) {
+                                    setFormulario(anterior => ({
+                                        ...anterior,
+                                        peso_total: novoValor,
+                                        // Manter sincronizado se for criação
+                                        peso_atual: !dadosIniciais ? novoValor : anterior.peso_atual
+                                    }));
+                                }
+                            }}
+                            error={mostrarErros && !parseNumber(formulario.peso_total)}
+                            align="right"
+                        />
+                    )}
                 </div>
 
                 <div className="space-y-1.5 w-full">
                     <div className="flex justify-between items-end px-1 min-h-[18px]">
                         <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide flex items-center gap-1">
-                            Peso Restante
+                            {isResin ? 'Volume Restante' : 'Peso Restante'}
                             <div className="w-3 h-3">
                                 <Tooltip
-                                    text="Deixe em branco para indicar que o carretel está cheio (Novo)."
+                                    text={`Deixe em branco para indicar que o ${isResin ? 'frasco' : 'carretel'} está cheio.`}
                                 />
                             </div>
                         </label>
                     </div>
                     <UnifiedInput
                         icon={Layers}
-                        suffix="g"
+                        suffix={unitLabel}
                         value={formulario.peso_atual !== undefined ? formulario.peso_atual : ""}
                         onChange={(e) => {
                             const v = e.target.value;

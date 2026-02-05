@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Activity, Check, AlertTriangle, CheckCircle2, Timer } from "lucide-react";
+import { Activity, Check, AlertTriangle, CheckCircle2, Timer, Server, Layers } from "lucide-react";
 import StatsWidget from "../../../components/ui/StatsWidget";
 import { formatCompact, formatDecimal } from "../../../utils/numbers";
 
@@ -27,48 +27,44 @@ export default function StatusImpressoras({ criticalCount = 0, totalCount = 0, s
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* 1. Saúde do Farm */}
+      {/* 1. Saúde do Farm (Premium Look) */}
       <StatsWidget
-        title="Status das Máquinas"
-        value={ehSaudavel ? 'Operação Normal' : 'Atenção'}
-        icon={ehSaudavel ? Check : AlertTriangle}
+        title="Frota Ativa"
+        value={numTotal === 1 ? '1 Máquina' : `${numTotal} Máquinas`}
+        icon={Server}
+        colorTheme="violet"
+        iconColor="text-violet-400"
+        iconBg="bg-violet-500/10 border-violet-500/20"
+        secondaryLabel="Status Operacional"
+        secondaryValue={ehSaudavel ? '100% Saudável' : `${numCriticos} com Atenção`}
         isAlert={!ehSaudavel}
-        colorTheme={ehSaudavel ? 'zinc' : 'rose'} // Zinc implies "Neutral/Good" in this context contextually, but we can stick to 'emerald' for explicit Good
-        // Actually, the previous design used Emerald for good. Let's use 'emerald' for consistency if "Operação Normal" is green.
-        // Wait, "Operação Normal" was Zinc in previous, only Emerald icon. 'zinc' theme has zinc icon.
-        // Let's force 'emerald' theme if healthy? Or just 'zinc' for sleekness?
-        // Old FarmHealthCard used emerald for healthy. Let's use 'emerald' theme for Healthy.
-        // Wait, StatsWidget 'zinc' matches the "Neutral" look, but let's see.
-        // I'll use 'emerald' for healthy to match Filamentos "Saudável" logic.
-        iconColor={ehSaudavel ? "text-emerald-500" : undefined}
-        iconBg={ehSaudavel ? "border-emerald-500/20 bg-emerald-500/5" : undefined}
-        secondaryLabel="Saúde do Farm"
-        secondaryValue={ehSaudavel ? '100% Operacional' : `${numCriticos} paradas`}
         progress={{
           value: porcentagemSaude,
-          color: ehSaudavel ? 'bg-emerald-500' : 'bg-rose-500'
+          color: ehSaudavel ? 'bg-violet-500' : 'bg-rose-500'
         }}
-        valueSize="text-xl"
+        valueSize="text-2xl"
       />
 
+      {/* 2. Produção Total */}
       <StatsWidget
-        title="Produção Total"
+        title="Histórico de Produção"
         value={estatisticasFormatadas.totalImpressoes}
-        icon={CheckCircle2}
+        icon={Layers}
         colorTheme="emerald"
-        secondaryLabel="Peças Finalizadas"
-        secondaryValue="Histórico geral"
-        valueSize="text-xl"
+        secondaryLabel="Peças Impressas"
+        secondaryValue="Total acumulado"
+        valueSize="text-2xl"
       />
 
+      {/* 3. Consumo de Material */}
       <StatsWidget
-        title="Material Usado"
+        title="Material Processado"
         value={estatisticasFormatadas.massaFilamento}
-        icon={Timer}
+        icon={CheckCircle2} // Changed icon to distinguish
         colorTheme="amber"
-        secondaryLabel="Total de Filamento"
-        secondaryValue="Consumo acumulado"
-        valueSize="text-xl"
+        secondaryLabel="Filamento Consumido"
+        secondaryValue="Desde o início"
+        valueSize="text-2xl"
       />
     </div>
   );

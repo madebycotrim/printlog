@@ -54,50 +54,60 @@ export default function FinancialSummaryWidget({ projects = [], className = '' }
                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Sem dados financeiros</p>
                 </div>
             ) : (
-                <div className="flex flex-col h-full justify-between gap-4">
-                    {/* Métricas Principais */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
-                                Receita
-                            </span>
-                            <p className="text-xl xl:text-2xl font-mono font-black text-emerald-400 tracking-tight">
-                                {formatCurrency(financial.revenue)}
-                            </p>
-                        </div>
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500/50" />
-                                Custos
-                            </span>
-                            <p className="text-xl xl:text-2xl font-mono font-black text-rose-400 tracking-tight">
-                                {formatCurrency(financial.costs)}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Destaque de Lucro */}
-                    <div className={`mt-auto p-5 rounded-2xl border ${isPositive ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-rose-500/5 border-rose-500/10'} relative overflow-hidden group/profit`}>
-                        <div className="relative z-10 flex justify-between items-end">
-                            <div>
-                                <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                <div className="flex flex-col h-full justify-between gap-6">
+                    {/* Visualização de Lucro Principal (Hero) */}
+                    <div className={`relative overflow-hidden rounded-2xl p-6 border transition-all duration-500 group/hero
+                        ${isPositive
+                            ? 'bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/20 hover:border-emerald-500/30'
+                            : 'bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent border-rose-500/20 hover:border-rose-500/30'
+                        }
+                    `}>
+                        <div className="relative z-10 flex flex-col gap-1">
+                            <div className="flex items-center justify-between">
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                                     Lucro Líquido
                                 </span>
-                                <p className={`text-3xl font-mono font-black tracking-tighter ${isPositive ? 'text-white' : 'text-rose-200'}`}>
-                                    {formatCurrency(financial.profit)}
-                                </p>
+                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold border backdrop-blur-sm
+                                    ${isPositive
+                                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20'
+                                        : 'bg-rose-500/20 text-rose-300 border-rose-500/20'
+                                    }
+                                `}>
+                                    {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                    {Math.abs(financial.margin).toFixed(1)}%
+                                </div>
                             </div>
 
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
-                                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                {Math.abs(financial.margin).toFixed(1)}%
-                            </div>
+                            <p className="text-3xl xl:text-4xl font-mono font-black tracking-tighter text-white mt-2">
+                                {formatCurrency(financial.profit)}
+                            </p>
                         </div>
 
                         {/* Background Decorativo */}
-                        <div className={`absolute -right-4 -bottom-4 opacity-10 transform rotate-12 group-hover/profit:scale-110 transition-transform duration-500 ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {isPositive ? <TrendingUp size={80} /> : <TrendingDown size={80} />}
+                        <div className={`absolute -right-6 -bottom-6 opacity-[0.07] transform rotate-12 group-hover/hero:scale-110 group-hover/hero:rotate-6 transition-all duration-700 ease-out ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {isPositive ? <TrendingUp size={120} /> : <TrendingDown size={120} />}
+                        </div>
+                    </div>
+
+                    {/* Métricas Secundárias */}
+                    <div className="grid grid-cols-2 gap-4 px-2">
+                        <div className="space-y-1 group/item">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-2 group-hover/item:text-zinc-400 transition-colors">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_currentColor] opacity-60" />
+                                Receita
+                            </span>
+                            <p className="text-lg font-mono font-bold text-zinc-300 group-hover/item:text-emerald-300 transition-colors">
+                                {formatCurrency(financial.revenue)}
+                            </p>
+                        </div>
+                        <div className="space-y-1 group/item">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-2 group-hover/item:text-zinc-400 transition-colors">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_currentColor] opacity-60" />
+                                Custos
+                            </span>
+                            <p className="text-lg font-mono font-bold text-zinc-300 group-hover/item:text-rose-300 transition-colors">
+                                {formatCurrency(financial.costs)}
+                            </p>
                         </div>
                     </div>
                 </div>
