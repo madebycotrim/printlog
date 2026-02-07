@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calculator, Package, Printer, Box, HelpCircle, Zap, X, ScanBarcode } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -10,6 +10,17 @@ export default function QuickActionsDock({
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [location, setLocation] = useLocation();
+
+    // Fechar com ESC
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen]);
 
     // Renderiza apenas no Dashboard
     if (location !== '/' && location !== '/dashboard') return null;
@@ -54,18 +65,27 @@ export default function QuickActionsDock({
                 <div
                     className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9997] animate-in fade-in duration-200"
                     onClick={() => setIsOpen(false)}
+                    aria-hidden="true"
                 />
             )}
 
             {/* Menu */}
-            <div className={`fixed bottom-6 right-6 z-[9998] transition-all duration-300 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
-                }`}>
+            <div
+                id="quick-actions-menu"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Ações Rápidas"
+                inert={!isOpen ? true : undefined}
+                className={`fixed bottom-6 right-6 z-[9998] transition-all duration-300 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
+                }`}
+            >
                 <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-2xl shadow-2xl p-2 min-w-[200px]">
                     <div className="px-3 py-2 border-b border-zinc-800/50 flex items-center justify-between">
                         <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Ações Rápidas</span>
                         <button
                             onClick={() => setIsOpen(false)}
                             className="p-1 hover:bg-zinc-800 rounded-lg transition-colors"
+                            aria-label="Fechar menu"
                         >
                             <X size={14} className="text-zinc-500" />
                         </button>
@@ -88,6 +108,9 @@ export default function QuickActionsDock({
             {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-controls="quick-actions-menu"
+                aria-expanded={isOpen}
+                aria-label={isOpen ? "Fechar ações rápidas" : "Abrir ações rápidas"}
                 className={`fixed bottom-6 right-6 z-[9998] w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${isOpen
                     ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30 scale-110'
                     : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white hover:border-zinc-700'
