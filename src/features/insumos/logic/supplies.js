@@ -22,7 +22,10 @@ export const useSupplyHistory = (id) => {
                     notes: log.observacoes,
                     quantity_change: Number(log.mudanca_quantidade),
                     type: (log.tipo === 'manual' && Number(log.mudanca_quantidade) < 0) ? 'consumo' : log.tipo,
-                    user_id: log.usuario_id
+                    user_id: log.usuario_id,
+                    previousStock: Number(log.estoque_anterior || 0),
+                    newStock: Number(log.estoque_novo || 0),
+                    cost: Number(log.custo || 0)
                 }))
             };
         },
@@ -67,7 +70,9 @@ export const useSupplyStore = create((set, get) => ({
                 stockYield: item.rendimento_estoque ?? item.stock_yield ?? item.stockYield ?? 1,
                 unit: item.unidade ?? item.unit ?? 'un',
                 price: item.preco ?? item.price ?? 0,
-                name: item.nome ?? item.name ?? ''
+                name: item.nome ?? item.name ?? '',
+                consumption30d: Number(item.consumo_30d ?? 0),
+                avgDailyConsumption: Number(item.consumo_30d ?? 0) / 30
             }));
 
             set({ supplies: normalized });
@@ -130,41 +135,61 @@ export const useSupplyStore = create((set, get) => ({
         }
     },
 
-    // Atualização Rápida de Estoque (Para Calculator Sync)
+    // Atualização Otimista de Estoque (Consumo/Ajuste Rápido)
     quickUpdateStock: async (id, newStock) => {
-        try {
-            const currentItem = get().supplies.find(s => String(s.id) === String(id));
-            if (!currentItem) return;
+        const { supplies } = get();
+        const itemIndex = supplies.findIndex(s => String(s.id) === String(id));
+        if (itemIndex === -1) return false;
 
-            // Converter para PT-BR
+        const originalItem = supplies[itemIndex];
+        const previousStock = originalItem.currentStock;
+
+        // 1. Otimismo: Atualiza a UI imediatamente antes do fetch
+        set(state => ({
+            supplies: state.supplies.map((s, idx) =>
+                idx === itemIndex ? { ...s, currentStock: Number(newStock) } : s
+            )
+        }));
+
+        try {
+            // Converter para Payload PT-BR
             const payload = {
-                id: currentItem.id,
-                nome: currentItem.name,
-                preco: currentItem.price,
-                unidade: currentItem.unit,
-                estoque_minimo: currentItem.minStock,
+                id: originalItem.id,
+                nome: originalItem.name,
+                preco: originalItem.price,
+                unidade: originalItem.unit,
+                estoque_minimo: originalItem.minStock,
                 estoque_atual: Number(newStock),
-                categoria: currentItem.category,
-                marca: currentItem.brand,
-                link_compra: currentItem.purchaseLink,
-                descricao: currentItem.description,
-                unidade_uso: currentItem.usageUnit,
-                rendimento_estoque: currentItem.stockYield
+                categoria: originalItem.category,
+                marca: originalItem.brand,
+                link_compra: originalItem.purchaseLink,
+                descricao: originalItem.description,
+                unidade_uso: originalItem.usageUnit,
+                rendimento_estoque: originalItem.stockYield
             };
 
-            // Reusa o saveSupply mas sem toast explicito (ou opcional)
-            // Aqui fazemos direto update local otimista + api
             const res = await api.post('/insumos', payload);
+
             if (res.data?.success) {
-                // Update Local Otimista
-                set(state => ({
-                    supplies: state.supplies.map(s => String(s.id) === String(id) ? { ...s, currentStock: newStock } : s)
-                }));
+                // Sucesso: Mantém o estado atual (já atualizado).
+                // Opcional: Silent fetch para garantir sincronia total
+                // get().fetchSupplies(true); 
                 return true;
+            } else {
+                throw new Error("API retornou erro");
             }
         } catch (error) {
             console.error("Quick stock update failed:", error);
+
+            // Revert: Volta ao estado anterior
+            set(state => ({
+                supplies: state.supplies.map((s, idx) =>
+                    idx === itemIndex ? { ...s, currentStock: previousStock } : s
+                )
+            }));
+
+            useToastStore.getState().addToast("Erro ao atualizar estoque. Revertendo...", "error");
+            return false;
         }
-        return false;
     }
 }));

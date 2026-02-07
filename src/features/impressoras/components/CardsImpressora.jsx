@@ -41,7 +41,7 @@ const obterTemaStatus = (status) => {
     return temas[status] || defaultTheme;
 };
 
-const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory }) => {
+const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory, highlightedItemId }) => {
     const { data: printerModels } = usePrinterModels();
 
     const { tema, stats, resolvedImage } = useMemo(() => {
@@ -66,7 +66,18 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory }
             }
         }
 
+        // Fallback for hTotais if not found in stats but present in printer root
+        if (hTotais === 0 && printer.horas_totais) {
+            hTotais = Number(printer.horas_totais) || 0;
+            rendimento = hTotais * 12.50;
+        }
+
         const ehCritico = health < 90;
+
+        // Calculate Maintenance
+        const intervalo = Number(printer.intervalo_manutencao) || 300;
+        const ultimaManutencao = Number(printer.ultima_manutencao_hora) || 0;
+        const revisaoEm = (ultimaManutencao + intervalo) - hTotais;
 
         // Image Logic
         let imgUrl = printer.imagem_url || printer.imagem;
@@ -80,23 +91,25 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory }
 
         return {
             tema: temaAplicado,
-            stats: { healthPct: health, ehCritico, hTotais, rendimento },
+            stats: { healthPct: health, ehCritico, hTotais, rendimento, revisaoEm },
             resolvedImage: imgUrl
         };
     }, [printer, printerModels]);
 
-    return (
-        <div className="group relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 hover:border-white/10 transition-all duration-500 hover:shadow-2xl">
+    const isHighlighted = highlightedItemId === printer.id;
 
-            {/* 1. IMAGE LAYER (Occupies most of the card) */}
-            <div className="absolute inset-0 bottom-[25%] p-6 flex items-center justify-center">
-                <div className="relative w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-55 group-hover:-translate-y-32">
-                    {/* Glow Effect */}
+    return (
+        <div className={`group/card relative w-full h-[22rem] rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 hover:border-white/10 transition-all duration-500 hover:shadow-xl ${isHighlighted ? 'animate-pulse ring-4 ring-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.5)] z-50 scale-105' : ''}`}>
+
+            {/* --- IDLE STATE (Default View) --- */}
+            <div className="absolute inset-0 flex flex-col transition-opacity duration-300 group-hover/card:opacity-0 pointer-events-none group-hover/card:pointer-events-none">
+
+                {/* Image */}
+                <div className="flex-1 relative flex items-center justify-center p-8 pb-12">
                     <div
-                        className="absolute inset-0 blur-[80px] opacity-20 rounded-full scale-75"
+                        className="absolute inset-0 blur-[60px] opacity-20 rounded-full scale-75"
                         style={{ backgroundColor: tema.hex }}
                     />
-
                     {resolvedImage ? (
                         <img
                             src={resolvedImage}
@@ -111,103 +124,134 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory }
                     )}
                 </div>
 
-            </div>
-
-            {/* 2. GRADIENT OVERLAY (Readability for Text) */}
-            <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-[#09090b] via-[#09090b]/90 to-transparent opacity-90 transition-opacity duration-300 pointer-events-none" />
-
-            {/* 3. CONTENT CONTENT (Bottom Aligned) */}
-            <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col justify-end items-center h-full pointer-events-none">
-
-                {/* Header Info (Always Visible) */}
-                <div className="relative space-y-2 mb-3 transition-transform duration-500 group-hover:-translate-y-24 flex flex-col items-center w-full">
-
-                    {/* Brand/Model - Hover Only */}
-                    <div className="absolute -top-4 inset-x-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 delay-75 transform translate-y-2 group-hover:translate-y-0">
-                        <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
-                            <span className="text-blue-400">{printer.marca}</span>
-                            {printer.modelo && (
-                                <>
-                                    <span className="text-zinc-700">|</span>
-                                    <span className="text-zinc-200">{printer.modelo}</span>
-                                </>
-                            )}
+                {/* Bottom Gradient & Info */}
+                <div className="absolute inset-x-0 bottom-0 pt-20 pb-6 px-6 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col items-center">
+                    {/* Badge */}
+                    <div className="absolute top-4 left-6">
+                        <span className="px-2 py-0.5 rounded-md bg-zinc-900/40 backdrop-blur-md border border-white/5 text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                            {printer.tipo || "FDM"}
+                        </span>
+                    </div>
+                    {/* Status Dot */}
+                    <div className={`absolute top-4 right-6 p-1.5 rounded-full border backdrop-blur-md flex items-center justify-center ${tema.bg} ${tema.border}`}>
+                        <span className="relative flex h-1.5 w-1.5">
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-${tema.corPrincipal}-400`}></span>
+                            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 bg-${tema.corPrincipal}-500`}></span>
                         </span>
                     </div>
 
-                    <h3 className="text-2xl font-black text-white leading-none tracking-tight drop-shadow-lg text-center">
+                    {/* Name Block */}
+                    <div className="text-center space-y-1">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 block">
+                            {printer.marca} {printer.modelo && `| ${printer.modelo}`}
+                        </span>
+                        <h3 className="text-lg font-black text-white leading-tight">
+                            {printer.nome}
+                        </h3>
+                        {/* Status Bar */}
+                        <div className="flex justify-center mt-2">
+                            <div className="h-1 w-12 rounded-full bg-zinc-800 overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full ${stats.ehCritico ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                                    style={{ width: `${Math.max(0, Math.min(100, stats.healthPct))}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            {/* --- HOVER STATE (Detailed View) --- */}
+            <div className="absolute inset-0 bg-zinc-950/95 backdrop-blur-sm flex flex-col opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 pointer-events-none group-hover/card:pointer-events-auto">
+
+                {/* Header (Top) */}
+                <div className="px-6 pt-6 pb-4 border-b border-white/5 bg-zinc-900/20">
+                    <div className="flex justify-between items-start mb-1">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                            {printer.marca}
+                        </span>
+                        {/* Status Text (Mini) */}
+                        <span className={`text-[9px] font-bold uppercase tracking-widest ${tema.text}`}>
+                            {printer.status === 'offline' ? 'Offline' : 'Online'}
+                        </span>
+                    </div>
+                    <h3 className="text-lg font-black text-white leading-none tracking-tight">
                         {printer.nome}
                     </h3>
                 </div>
 
-                {/* Stats Badge (Visible) - Centered Design */}
-                <div className="transition-all duration-500 group-hover:opacity-0 group-hover:translate-y-4">
-                    <div className={`inline-flex items-center gap-3 px-4 py-1.5 rounded-full border backdrop-blur-md ${tema.bg} ${tema.border}`}>
-                        <div className="flex items-center gap-2 text-zinc-400">
-                            <Activity size={14} className={stats.ehCritico ? "text-rose-500 animate-pulse" : ""} />
-                            <span className="text-xs font-mono font-bold uppercase tracking-wide">{Math.round(stats.healthPct)}%</span>
+                {/* Stats Grid (Middle - Takes available space) */}
+                <div className="flex-1 p-5 flex flex-col justify-center gap-4">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                        {/* Rendimento */}
+                        <div className="space-y-0.5">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Rendimento</span>
+                            <span className="text-sm font-mono font-bold text-emerald-400 block">{formatCurrency(stats.rendimento)}</span>
                         </div>
-                        <div className="w-px h-3 bg-white/10" />
-                        <div className="flex items-center gap-2 text-zinc-400">
-                            <Clock size={14} />
-                            <span className="text-xs font-mono font-bold uppercase tracking-wide">{formatCompact(stats.hTotais)}h</span>
+                        {/* Próx. Manutenção */}
+                        <div className="space-y-0.5 text-right">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Revisão</span>
+                            <span className={`text-sm font-mono font-bold block ${stats.revisaoEm < 0 ? 'text-rose-400 animate-pulse' : 'text-zinc-200'}`}>
+                                {stats.revisaoEm > 0 ? `${stats.revisaoEm}h` : `! ${Math.abs(stats.revisaoEm)}h`}
+                            </span>
+                        </div>
+
+                        {/* Uso Total */}
+                        <div className="space-y-0.5">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Total</span>
+                            <span className="text-xs font-mono text-zinc-400 block">{formatCompact(stats.hTotais)}h</span>
+                        </div>
+                        {/* Potência */}
+                        <div className="space-y-0.5 text-right">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Potência</span>
+                            <span className="text-xs font-mono text-zinc-400 block">{printer.potencia ? `${printer.potencia}W` : '-'}</span>
+                        </div>
+                    </div>
+
+                    {/* ROI */}
+                    <div className="pt-3 border-t border-white/5">
+                        <div className="flex justify-between items-end mb-1.5">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">ROI Estimado</span>
+                            <span className="text-[9px] font-mono font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0 rounded-[4px]">
+                                {printer.preco > 0
+                                    ? `${((stats.rendimento / printer.preco) * 100).toFixed(0)}%`
+                                    : '-'}
+                            </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden border border-white/5 ring-1 ring-white/5">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 shadow-[0_0_12px_rgba(59,130,246,0.5)]"
+                                style={{ width: `${Math.max(0, Math.min(100, printer.preco > 0 ? ((stats.rendimento / printer.preco) * 100) : 0))}%` }}
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Actions & Expanded Stats (Fade/Slide In on Hover) */}
-                <div className="absolute bottom-6 inset-x-6 flex flex-col gap-3 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100 pointer-events-auto">
-
-                    {/* Rich Stats Line */}
-                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Rendimento</span>
-                            <span className="text-sm font-mono text-emerald-400">{formatCurrency(stats.rendimento)}</span>
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Total Horas</span>
-                            <span className="text-sm font-mono text-white">{formatCompact(stats.hTotais)}h</span>
-                        </div>
-                    </div>
-
-                    {/* Action Buttons Row */}
-                    <div className="flex items-center justify-center gap-8 pt-2">
-                        <Tooltip text="Histórico">
-                            <button
-                                onClick={() => onHistory?.(printer)}
-                                className="text-zinc-500 hover:text-blue-400 transition-colors"
-                            >
-                                <History size={18} />
-                            </button>
-                        </Tooltip>
-
-                        <Tooltip text="Editar">
-                            <button onClick={() => onEdit?.(printer)} className="text-zinc-500 hover:text-white transition-colors">
-                                <Edit2 size={18} />
-                            </button>
-                        </Tooltip>
-
-                        <Tooltip text="Manutenção">
-                            <button onClick={() => onResetMaint?.(printer)} className="text-zinc-500 hover:text-orange-400 transition-colors">
-                                <Wrench size={18} />
-                            </button>
-                        </Tooltip>
-
-                        <Tooltip text="Excluir">
-                            <button onClick={() => onDelete?.(printer.id)} className="text-zinc-500 hover:text-rose-400 transition-colors">
-                                <Trash2 size={18} />
-                            </button>
-                        </Tooltip>
-                    </div>
+                {/* Actions (Bottom) */}
+                <div className="p-4 pt-0 flex justify-between items-center bg-transparent">
+                    <Tooltip text="Histórico">
+                        <button onClick={() => onHistory?.(printer)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all border border-transparent hover:border-blue-500/20">
+                            <History size={16} />
+                        </button>
+                    </Tooltip>
+                    <Tooltip text="Editar">
+                        <button onClick={() => onEdit?.(printer)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/20">
+                            <Edit2 size={16} />
+                        </button>
+                    </Tooltip>
+                    <Tooltip text="Manutenção">
+                        <button onClick={() => onResetMaint?.(printer)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all border border-transparent hover:border-orange-500/20">
+                            <Wrench size={16} />
+                        </button>
+                    </Tooltip>
+                    <Tooltip text="Excluir">
+                        <button onClick={() => onDelete?.(printer.id)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20">
+                            <Trash2 size={16} />
+                        </button>
+                    </Tooltip>
                 </div>
 
-                {/* Status Badge (Absolute Top) */}
-                <div className={`absolute top-4 right-4 p-2 rounded-full border backdrop-blur-md flex items-center justify-center ${tema.bg} ${tema.border} z-20 transition-opacity duration-300 group-hover:opacity-0`}>
-                    <span className="relative flex h-2 w-2">
-                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-${tema.corPrincipal}-400`}></span>
-                        <span className={`relative inline-flex rounded-full h-2 w-2 bg-${tema.corPrincipal}-500`}></span>
-                    </span>
-                </div>
             </div>
         </div>
     );

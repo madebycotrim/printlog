@@ -7,7 +7,7 @@ import { formatCurrency } from "../../../utils/numbers";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
-export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta, aoSecar }) => {
+export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta, aoSecar, highlightedItemId }) => {
     // Lógica de Estatísticas
     const estatisticas = useMemo(() => {
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
@@ -36,9 +36,11 @@ export const CartaoFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoE
         };
     }, [item?.data_secagem, umidadeAtual]);
 
+    const isHighlighted = highlightedItemId === item.id;
+
     return (
         // COMPACT ASPECT RATIO (Square-ish)
-        <div className="group relative w-full aspect-[4/5] rounded-3xl transition-all duration-300">
+        <div className={`group relative w-full aspect-[4/5] rounded-3xl transition-all duration-300 ${isHighlighted ? 'animate-pulse ring-4 ring-orange-500 shadow-[0_0_50px_rgba(249,115,22,0.5)] z-50 scale-105' : ''}`}>
 
             {/* 1. CAMADA VISUAL (Base) */}
             <div className={`

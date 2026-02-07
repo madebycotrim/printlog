@@ -47,17 +47,22 @@ export default function ConfirmModal({
                 </div>
             }
         >
-            <div className="p-8 text-center space-y-6">
+            <div className="p-6 space-y-6">
                 <div className="text-zinc-300 text-sm font-medium leading-relaxed">
                     {message}
                 </div>
                 {description && (
-                    <div className={`p-4 rounded-xl border flex items-start gap-3 text-left ${isDestructive
-                        ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500"
+                    <div className={`pl-4 border-l-2 py-1 ${isDestructive
+                        ? "border-rose-500/50"
+                        : "border-zinc-700"
                         }`}>
-                        <AlertTriangle size={16} className={`shrink-0 ${isDestructive ? "text-rose-500" : "text-zinc-500"}`} />
-                        <p className="text-[10px] font-bold uppercase tracking-wider leading-relaxed opacity-90 pt-0.5">
+                        <div className="flex items-center gap-2 mb-1">
+                            <AlertTriangle size={14} className={isDestructive ? "text-rose-500" : "text-zinc-500"} />
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDestructive ? "text-rose-400" : "text-zinc-500"}`}>
+                                Atenção
+                            </span>
+                        </div>
+                        <p className="text-xs text-zinc-400 leading-relaxed">
                             {description}
                         </p>
                     </div>

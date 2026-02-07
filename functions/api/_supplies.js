@@ -51,8 +51,21 @@ export async function gerenciarInsumos({ request, db, userId, pathArray, url }) 
         // GET: LISTAR INSUMOS
         // ==========================================
         if (method === 'GET') {
-            const query = construirQueryComSoftDelete("SELECT * FROM insumos", "insumos");
-            const { results } = await db.prepare(`${query} ORDER BY nome ASC`).all();
+            // Query enriquecida com consumo dos últimos 30 dias
+            const query = `
+                SELECT 
+                    i.*,
+                    COALESCE(ABS(SUM(l.mudanca_quantidade)), 0) as consumo_30d
+                FROM insumos i
+                LEFT JOIN insumos_log l ON i.id = l.insumo_id 
+                    AND l.tipo = 'consumo' 
+                    AND l.criado_em >= date('now', '-30 days')
+                WHERE i.deletado_em IS NULL
+                GROUP BY i.id
+                ORDER BY i.nome ASC
+            `;
+
+            const { results } = await db.prepare(query).all();
             return enviarJSON(results || []);
         }
 

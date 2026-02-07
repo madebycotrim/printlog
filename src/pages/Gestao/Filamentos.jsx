@@ -12,6 +12,7 @@ import { useToastStore } from '../../stores/toastStore';
 // LÓGICA E STORE (Zustand)
 import { useFilamentos, useMutacoesFilamento } from "../../features/filamentos/logic/consultasFilamento";
 import { MATERIAIS_RESINA_FLAT, MATERIAIS_FDM_FLAT } from "../../features/filamentos/logic/constantes";
+import { useScannerStore } from '../../stores/scannerStore';
 
 // COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
 import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
@@ -23,7 +24,6 @@ import ModalHistoricoFilamento from "../../features/filamentos/components/ModalH
 import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegistrarFalha';
 import ModalExcluirFilamento from '../../features/filamentos/components/ModalExcluirFilamento';
 import ModalEtiqueta from '../../features/filamentos/components/ModalEtiqueta';
-import ModalScanner from '../../features/scanner/components/ModalScanner';
 
 // NOVOS COMPONENTES (COMPARTILHADOS)
 import { VirtualShelves } from "../../components/materials/VirtualShelves";
@@ -74,7 +74,25 @@ export default function FilamentosPage() {
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
   const [itemEtiqueta, setItemEtiqueta] = useState(null);
-  const [modalScannerAberto, setModalScannerAberto] = useState(false);
+
+  // Blink State (Global Store Integration)
+  const { highlightedItem, clearHighlight, openScanner } = useScannerStore();
+
+  // Local Blink State (driven by global effect)
+  const [highlightedItemId, setHighlightedItemId] = useState(null);
+
+  useEffect(() => {
+    if (highlightedItem && highlightedItem.type === 'filament') {
+      setHighlightedItemId(highlightedItem.id);
+      setBusca(filaments.find(f => f.id === highlightedItem.id)?.nome || ""); // Filter logic
+
+      const timer = setTimeout(() => {
+        setHighlightedItemId(null);
+        clearHighlight(); // Clear global after animation
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedItem, filaments, clearHighlight]);
 
   // Fetch Failures Stats
   const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });
@@ -85,9 +103,6 @@ export default function FilamentosPage() {
       })
       .catch(err => {
         console.error("Erro ao buscar falhas:", err);
-        if (err.response?.data) {
-          console.error("Detalhes do erro backend:", err.response.data);
-        }
       });
   }, []);
 
@@ -101,10 +116,8 @@ export default function FilamentosPage() {
 
   // 1. Pre-processamento (Memoized) - Gera string de busca indexada
   const searchableFilaments = useMemo(() => {
-    const list = Array.isArray(filaments) ? filaments : [];
-    return list.map(f => ({
+    return filaments.map(f => ({
       ...f,
-      // Cria uma "row" virtual de busca
       _searchStr: normalizeString(`${f.nome || ""} ${f.material || ""} ${f.marca || ""}`)
     }));
   }, [filaments]);
@@ -167,9 +180,8 @@ export default function FilamentosPage() {
       return true;
     });
 
-    // 2.5 Ordenação (NOVO)
+    // 2.5 Ordenação
     const itemsOrdenados = [...filtrados].sort((a, b) => {
-      // Ordenação Personalizada
       switch (filtros.sortOption) {
         case 'quantity_asc': // Menos Restante (Prioridade para acabar)
           return (Number(a.peso_atual) || 0) - (Number(b.peso_atual) || 0);
@@ -199,7 +211,7 @@ export default function FilamentosPage() {
       if ((atual / total) <= 0.2 || atual < 150) lowStock++;
     });
 
-    // 2.7 Agrupamento (Mantendo a ordem dos itens DENTRO do grupo)
+    // 2.7 Agrupamento
     const map = itemsOrdenados.reduce((acc, item) => {
       const mat = item.material || "SEM MATERIAL";
       if (!acc[mat]) acc[mat] = [];
@@ -207,7 +219,7 @@ export default function FilamentosPage() {
       return acc;
     }, {});
 
-    // Ordenar os GRUPOS (Sempre FDM primeiro, depois Alfabetico)
+    // Ordenar os GRUPOS
     const sortedMap = Object.keys(map).sort((a, b) => {
       const aIsFDM = MATERIAIS_FDM_FLAT.includes(a);
       const bIsFDM = MATERIAIS_FDM_FLAT.includes(b);
@@ -269,46 +281,20 @@ export default function FilamentosPage() {
   const aoSalvarFilamento = async (dados) => {
     try {
       return await salvarFilamento(dados);
-      fecharModais();
+      // fecharModais(); // Let components verify saving state if needed
     } catch (_e) { }
   };
 
-  const handleScan = useCallback((codigo) => {
-    // Tenta encontrar o filamento pelo ID
-    const encontrado = filaments.find(f => f.id === codigo);
-
-    if (encontrado) {
-      setModalScannerAberto(false);
-      setItemEdicao(encontrado);
-      setModalAberto(true);
-      addToast(`${encontrado.nome} localizado com sucesso.`, 'success');
-    } else {
-      addToast('Nenhum material encontrado com este código.', 'error');
-    }
-  }, [filaments, addToast]);
-
   const handleQuickDry = useCallback(async (item) => {
     try {
-      // Use PATCH to update only the drying date, avoiding full validation
       await api.patch(`/filaments/${item.id}`, {
         data_secagem: new Date().toISOString()
       });
 
-      // Update local state optimistically
       await salvarFilamento({
         ...item,
         data_secagem: new Date().toISOString()
       });
-
-      // TODO: Backend needs to support 'secagem' type in history
-      // await registrarHistorico({
-      //   id: item.id,
-      //   tipo: 'secagem',
-      //   qtd: 0,
-      //   obs: 'Secagem rápida realizada'
-      // });
-
-      // Note: salvarFilamento already shows success toast
     } catch (error) {
       console.error("Erro ao secar rápido:", error);
       addToast("Erro ao registrar secagem.", 'error');
@@ -337,12 +323,12 @@ export default function FilamentosPage() {
 
   /* TABS CONTROL */
   const extraControls = (
-    <div className="flex bg-zinc-900/50 p-1 rounded-lg border border-zinc-800/50">
+    <div className="flex bg-zinc-900/50 p-1 h-11 rounded-2xl border border-zinc-800/50 items-center">
       {['all', 'FDM', 'SLA'].map(tab => (
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
-          className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all ${activeTab === tab
+          className={`px-4 h-full text-[10px] font-bold uppercase rounded-xl transition-all flex items-center ${activeTab === tab
             ? 'bg-zinc-800 text-white shadow-sm'
             : 'text-zinc-500 hover:text-zinc-300'
             }`}
@@ -356,23 +342,21 @@ export default function FilamentosPage() {
   const novoButton = (
     <div className="flex items-center gap-2">
       <Button
-        onClick={() => setModalScannerAberto(true)}
+        onClick={openScanner}
         variant="secondary"
         size="icon"
-        className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 w-11 h-11"
+        className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 w-11 h-11 rounded-2xl"
         icon={ScanBarcode}
       />
       <Button
         onClick={() => {
-          // Context-Aware New Item:
-          // If we are in SLA tab, default to SLA. Otherwise (FDM or All) default to FDM.
           const defaultType = activeTab === 'SLA' ? 'SLA' : 'FDM';
 
           setItemEdicao({ tipo: defaultType });
           setModalAberto(true);
         }}
         variant="secondary"
-        className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
+        className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 h-11 rounded-2xl px-6"
         icon={Plus}
         data-tour="filament-add-btn"
       >
@@ -383,7 +367,6 @@ export default function FilamentosPage() {
 
   return (
     <ManagementLayout>
-
       <PageHeader
         title="Meus Materiais"
         subtitle="Gerencie seu estoque de filamentos e resinas"
@@ -434,6 +417,7 @@ export default function FilamentosPage() {
                   aoVerHistorico={acoes.aoVerHistorico}
                   aoImprimirEtiqueta={acoes.aoImprimirEtiqueta}
                   aoSecar={acoes.aoSecar}
+                  highlightedItemId={highlightedItemId}
                 />
               ) : (
                 <LinhaFilamento
@@ -446,6 +430,7 @@ export default function FilamentosPage() {
                   aoDuplicar={acoes.aoDuplicar}
                   aoVerHistorico={acoes.aoVerHistorico}
                   aoImprimirEtiqueta={acoes.aoImprimirEtiqueta}
+                  highlightedItemId={highlightedItemId}
                 />
               )}
             />
@@ -467,11 +452,6 @@ export default function FilamentosPage() {
       <ModalHistoricoFilamento aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
       <ModalRegistrarFalha aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
       <ModalEtiqueta isOpen={!!itemEtiqueta} onClose={() => setItemEtiqueta(null)} item={itemEtiqueta} />
-      <ModalScanner
-        isOpen={modalScannerAberto}
-        onClose={() => setModalScannerAberto(false)}
-        onScan={handleScan}
-      />
 
       <ModalExcluirFilamento
         aberto={confirmacaoExclusao.aberta}

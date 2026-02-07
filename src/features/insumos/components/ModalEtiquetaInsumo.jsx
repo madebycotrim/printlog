@@ -12,24 +12,32 @@ export default function ModalEtiquetaInsumo({ isOpen, onClose, item }) {
         const printWindow = window.open('', '', 'width=400,height=300');
 
         const cssRetangular = `
-            @page { size: 50mm 30mm; margin: 0; }
-            body { margin: 0; padding: 0; width: 50mm; height: 30mm; }
+            @page { size: 100mm 150mm; margin: 0; }
+            body { margin: 0; padding: 0; width: 100mm; height: 150mm; }
             .label-container {
-                width: 48mm; height: 28mm;
-                border: 1px solid #eee; border-radius: 1mm;
-                display: grid; grid-template-columns: 19mm 1fr;
-                padding: 1mm; gap: 1mm; box-sizing: border-box;
+                width: 85mm; height: 55mm;
+                position: absolute; top: 2mm; left: 2mm;
+                border: 2px dashed #ddd; border-radius: 2mm;
+                display: grid; grid-template-columns: 35mm 1fr;
+                padding: 3mm; gap: 3mm; box-sizing: border-box;
+                background: white;
             }
-            .qr-code { width: 19mm; height: 19mm; }
+            .qr-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; border-right: 2px solid #000; padding-right: 2mm; }
+            .qr-code { width: 32mm; height: 32mm; }
             .info-section { display: flex; flex-direction: column; height: 100%; justify-content: space-between; overflow: hidden; }
-            .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid black; padding-bottom: 2px; margin-bottom: 1px; }
-            .brand-tag { font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
-            .type-badge { font-size: 6px; background: black; color: white; padding: 1px 3px; border-radius: 2px; font-weight: bold; }
-            .main-name { font-size: 9px; font-weight: 900; line-height: 1.1; text-transform: uppercase; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
-            .sub-info { font-size: 7px; font-weight: 600; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .footer-row { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid black; padding-top: 2px; }
-            .id-code { font-size: 8px; font-family: monospace; font-weight: 900; letter-spacing: -0.5px; }
-            .cat-tag { font-size: 6px; font-family: monospace; border: 1px solid black; padding: 0px 2px; font-weight: bold; text-transform: uppercase; }
+            
+            .header-row { border-bottom: 2px solid #000; padding-bottom: 1mm; margin-bottom: 2mm; display: flex; justify-content: space-between; align-items: center; }
+            .brand-tag { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+            .cat-pill { font-size: 9px; font-weight: 900; background: #000; color: #fff; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
+
+            .main-name { font-size: 16px; font-weight: 900; line-height: 1; text-transform: uppercase; margin-bottom: 2mm; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+            
+            .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; margin-top: auto; border-top: 2px solid #000; padding-top: 1mm; }
+            .data-item { display: flex; flex-direction: column; }
+            .data-label { font-size: 7px; font-weight: 700; text-transform: uppercase; color: #666; }
+            .data-value { font-size: 10px; font-weight: 900; text-transform: uppercase; }
+
+            .id-code { font-size: 11px; font-family: monospace; font-weight: 900; letter-spacing: -0.5px; text-align: center; margin-top: 2mm; line-height: 1; word-break: break-all; width: 100%; }
         `;
 
         const cssRedonda = `
@@ -55,24 +63,35 @@ export default function ModalEtiquetaInsumo({ isOpen, onClose, item }) {
         const categoryLabel = (item.category || item.categoria || "GERAL").toUpperCase();
         const brandLabel = (item.brand || item.marca || "").toUpperCase();
         const nameLabel = item.name || "ITEM SEM NOME";
+        const unitLabel = (item.unit || item.unidade || "UN").toUpperCase();
+        const locLabel = (item.location || item.localizacao || "N/A").toUpperCase();
+        const minStock = item.minStock || item.estoque_minimo || "0";
 
         const htmlRetangular = `
             <div class="label-container">
                 <div class="qr-section">
-                    ${qrRef.current ? qrRef.current.innerHTML : ''}
+                    <div class="qr-code">
+                        ${qrRef.current ? qrRef.current.innerHTML : ''}
+                    </div>
+                    <span class="id-code">${item.id}</span>
                 </div>
                 <div class="info-section">
                     <div class="header-row">
-                        <span class="brand-tag">PRINTLOG</span>
-                        <span class="type-badge">INSUMO</span>
+                        <span class="brand-tag">${brandLabel || "GENÉRICO"}</span>
+                        <span class="cat-pill">${categoryLabel.slice(0, 10)}</span>
                     </div>
-                    <div class="main-info">
-                        <div class="main-name">${nameLabel}</div>
-                        <div class="sub-info">${brandLabel}</div>
-                    </div>
-                    <div class="footer-row">
-                        <span class="id-code">#${item.id.slice(0, 6)}</span>
-                        <span class="cat-tag">${categoryLabel}</span>
+                    
+                    <div class="main-name">${nameLabel}</div>
+                    
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <span class="data-label">LOCALIZAÇÃO</span>
+                            <span class="data-value">${locLabel}</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">ESTOQUE MÍN</span>
+                            <span class="data-value">${minStock} ${unitLabel}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,7 +105,7 @@ export default function ModalEtiquetaInsumo({ isOpen, onClose, item }) {
                 </div>
                 <div class="bottom-stack">
                     <div class="material-info">${categoryLabel}</div>
-                    <div class="id-code">#${item.id.slice(0, 6)}</div>
+                    <div class="id-code">#${item.id.slice(0, 8)}</div>
                 </div>
             </div>
         `;
@@ -144,31 +163,42 @@ export default function ModalEtiquetaInsumo({ isOpen, onClose, item }) {
                 </div>
 
                 {/* Preview Area */}
-                <div className="flex justify-center mb-8 h-[120px] items-center">
+                <div className="flex justify-center mb-6 min-h-[120px] h-auto items-center">
                     {formato === 'retangular' ? (
                         /* Rectangular Preview */
-                        <div className="w-[250px] aspect-[50/30] bg-white rounded-md p-2 flex items-center gap-3 shadow-2xl relative overflow-hidden border-4 border-zinc-800 ring-1 ring-white/20 select-none">
-                            <div ref={qrRef} className="shrink-0 w-[80px] h-[80px] flex items-center justify-center border border-black/10 rounded-sm bg-white">
-                                <QRCodeSVG value={item.id} size={76} />
+                        <div className="w-full max-w-[300px] aspect-[85/55] bg-white rounded-md p-2 flex items-center gap-3 shadow-2xl relative overflow-hidden border-4 border-zinc-800 ring-1 ring-white/20 select-none">
+                            <div className="shrink-0 w-[110px] flex flex-col items-center gap-2 border-r-2 border-black pr-2 h-full justify-center">
+                                <div ref={qrRef} className="w-[90px] h-[90px] flex items-center justify-center">
+                                    <QRCodeSVG value={item.id} size={86} />
+                                </div>
+                                <span className="text-[9px] font-mono font-black text-black tracking-tight w-full break-all text-center leading-none">
+                                    {item.id}
+                                </span>
                             </div>
-                            <div className="flex flex-col flex-1 min-w-0 h-full py-0.5 text-black justify-between">
+
+                            <div className="flex flex-col flex-1 min-w-0 h-full py-1 text-black justify-between pl-1">
                                 <div className="flex items-center justify-between border-b-2 border-black pb-1 mb-1">
-                                    <span className="text-[9px] font-black tracking-widest uppercase">PRINTLOG</span>
-                                    <span className="text-[7px] font-bold bg-black text-white px-1 rounded-[1px]">INSUMO</span>
-                                </div>
-                                <div className="flex flex-col justify-center flex-1">
-                                    <span className="text-[11px] font-black uppercase leading-[0.95] line-clamp-2 break-words mb-1">
-                                        {item.name}
-                                    </span>
-                                    <span className="text-[8px] font-bold text-zinc-800 truncate uppercase">
-                                        {item.brand}
-                                    </span>
-                                </div>
-                                <div className="flex items-end justify-between border-t border-black pt-1 mt-auto">
-                                    <span className="text-[10px] font-mono font-black tracking-tighter">#{item.id.slice(0, 6)}</span>
-                                    <span className="text-[7px] font-mono border border-black px-1 font-bold uppercase">
+                                    <span className="text-[10px] font-black uppercase tracking-tight">{item.brand || "GENÉRICO"}</span>
+                                    <span className="text-[8px] font-bold bg-black text-white px-1.5 py-0.5 rounded-[2px] uppercase">
                                         {(item.category || "GERAL").slice(0, 10)}
                                     </span>
+                                </div>
+
+                                <div className="flex flex-col justify-center flex-1 my-1">
+                                    <span className="text-[15px] font-black uppercase leading-[0.9] line-clamp-3 break-words">
+                                        {item.name}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 border-t-2 border-black pt-1 mt-auto">
+                                    <div className="flex flex-col">
+                                        <span className="text-[7px] font-bold text-zinc-500 uppercase">LOCALIZAÇÃO</span>
+                                        <span className="text-[9px] font-black uppercase">{item.location || item.localizacao || "N/A"}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[7px] font-bold text-zinc-500 uppercase">ESTOQUE MÍN</span>
+                                        <span className="text-[9px] font-black uppercase">{item.minStock || item.estoque_minimo || "0"} {item.unit || "UN"}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

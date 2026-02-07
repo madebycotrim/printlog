@@ -62,7 +62,7 @@ export default function PageHeader({
                             placeholder={placeholder}
                             value={searchQuery || ''}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-surface-base border border-white/5 text-zinc-200 text-xs font-bold uppercase tracking-wide rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all placeholder:text-zinc-700 hover:border-white/10 shadow-lg"
+                            className="w-full pl-11 pr-4 h-11 bg-surface-base border border-white/5 text-zinc-200 text-xs font-bold uppercase tracking-wide rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all placeholder:text-zinc-700 hover:border-white/10 shadow-lg"
                         />
                     </div>
                 )}

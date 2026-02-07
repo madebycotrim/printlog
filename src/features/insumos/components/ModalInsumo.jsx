@@ -207,17 +207,18 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
             maxWidth="max-w-2xl"
         >
             <div className="space-y-8">
-                {/* [01] IDENTIFICAÇÃO */}
-                <section className="space-y-5">
-                    <div className="flex items-center gap-4">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[01] Identificação</h4>
-                        <div className="h-px bg-zinc-800/50 flex-1" />
+
+                {/* [01] IDENTIFICAÇÃO - Minimalist Clean */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-zinc-800/50">
+                        <PackageSearch size={14} className="text-zinc-500" />
+                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Identificação</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-1">
                         {/* Nome */}
                         <div className="space-y-1.5 md:col-span-1">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && !form.name ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && !form.name ? "text-rose-500" : "text-zinc-500"}`}>
                                 Nome do Material {mostrarErros && !form.name && "*"}
                             </label>
                             <UnifiedInput
@@ -239,10 +240,10 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                             />
                         </div>
 
-                        {/* Categoria - Botões Selecionáveis (Estilo Mockup) */}
+                        {/* Categoria */}
                         <div className="space-y-2 md:col-span-2">
                             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Categoria</label>
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 custom-scrollbar">
                                 {CATEGORIES_CONFIG.map((cat) => {
                                     const isSelected = form.category === cat.id;
                                     return (
@@ -250,19 +251,18 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                                             key={cat.id}
                                             onClick={() => updateForm('category', cat.id)}
                                             className={`
-                                                group flex items-center gap-2.5 px-4 py-2.5 rounded-xl border transition-all duration-300 outline-none
-                                                text-[10px] font-bold uppercase tracking-wide
+                                                flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 outline-none whitespace-nowrap min-w-fit
                                                 ${isSelected
-                                                    ? "bg-zinc-100/5 border-zinc-100/20 text-zinc-100 shadow-[0_0_20px_-5px_rgba(255,255,255,0.1)] ring-1 ring-zinc-100/10"
-                                                    : "bg-transparent border-zinc-900 text-zinc-600 hover:border-zinc-800 hover:text-zinc-400 hover:bg-zinc-900/20"}
+                                                    ? "bg-zinc-800 border-zinc-600 text-zinc-100 shadow-sm"
+                                                    : "bg-transparent border-zinc-800/60 text-zinc-500 hover:border-zinc-700 hover:text-zinc-400 hover:bg-zinc-900/30"}
                                             `}
                                         >
                                             <cat.icon
-                                                size={14}
-                                                strokeWidth={2.5}
-                                                className={`transition-colors duration-300 ${isSelected ? "text-zinc-100" : "text-zinc-700 group-hover:text-zinc-500"}`}
+                                                size={15}
+                                                strokeWidth={2}
+                                                className={`transition-colors duration-200 ${isSelected ? "text-zinc-100" : "text-zinc-500"}`}
                                             />
-                                            <span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wide">
                                                 {cat.label}
                                             </span>
                                         </button>
@@ -270,147 +270,47 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                                 })}
                             </div>
                         </div>
-
-
                     </div>
-                </section>
+                </div>
 
-                {/* [02] ESTOQUE */}
-                <section className="space-y-5">
-                    <div className="flex items-center gap-4">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[02] Estoque & Valores</h4>
-                        <div className="h-px bg-zinc-800/50 flex-1" />
+                {/* [02] ESTOQUE & VALORES - Minimalist Clean */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-zinc-800/50">
+                        <Box size={14} className="text-zinc-500" />
+                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Estoque & Custos</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-1">
+
                         {/* Estoque Atual */}
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Qtd. Atual</label>
-                            <UnifiedInput
-                                value={form.currentStock}
-                                onChange={e => updateForm('currentStock', e.target.value)}
-                                placeholder="0"
-                                inputMode="decimal"
-                            />
-                        </div>
-
-                        {/* Unidade */}
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between items-end px-1 min-h-[15px]">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Unidade</label>
-                            </div>
-                            <UnifiedInput
-                                type="select"
-                                value={form.unit}
-                                onChange={v => updateForm('unit', v)}
-                                options={[{ items: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha', 'cx', 'pct'].map(u => ({ value: u, label: u })) }]}
-                                placeholder="Un"
-                            />
-                        </div>
-
-                        {/* Estoque Mínimo */}
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Mínimo (Alerta)</label>
-                            <UnifiedInput
-                                value={form.minStock}
-                                onChange={e => updateForm('minStock', e.target.value)}
-                                placeholder="5"
-                                icon={AlertCircle}
-                                inputMode="decimal"
-                            />
-                        </div>
-
-                        {/* --- SEÇÃO DE FRACIONAMENTO --- */}
-                        <div className="col-span-full border-t border-zinc-800/50 pt-4 mt-2">
-                            <div className="flex items-center gap-2 mb-4">
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <div className={`
-                                        w-4 h-4 rounded border transition-colors flex items-center justify-center
-                                        ${form.isFractionable ? 'bg-sky-500 border-sky-500' : 'border-zinc-700 bg-zinc-900 group-hover:border-zinc-500'}
-                                    `}>
-                                        {form.isFractionable && <CheckCircle2 size={10} className="text-zinc-950 stroke-[3]" />}
-                                    </div>
-                                    <input
-                                        type="checkbox"
-                                        className="hidden"
-                                        checked={form.isFractionable}
-                                        onChange={e => {
-                                            const isChecked = e.target.checked;
-                                            updateForm('isFractionable', isChecked);
-
-                                            // Se marcar e estiver sem rendimento definido ou padrão, sugere 30
-                                            if (isChecked && (!form.stockYield || form.stockYield === '1')) {
-                                                updateForm('stockYield', '30');
-                                                updateForm('usageUnit', 'm');
-                                            }
-
-                                            // Se desmarcar, reseta para padrão (item normal)
-                                            if (!isChecked) {
-                                                updateForm('stockYield', '1');
-                                                updateForm('usageUnit', '');
-                                            }
-                                        }}
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Estoque Atual</label>
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <UnifiedInput
+                                        value={form.currentStock}
+                                        onChange={e => updateForm('currentStock', e.target.value)}
+                                        placeholder="0"
+                                        inputMode="decimal"
+                                        className="font-mono text-zinc-300"
                                     />
-                                    <span className="text-[11px] font-bold text-zinc-400 group-hover:text-zinc-300 uppercase tracking-wide select-none">
-                                        Item Fracionável / Rolo (Ex: Fita, Spray)
-                                    </span>
-                                </label>
-                            </div>
-
-                            {form.isFractionable && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-sky-500 uppercase tracking-wide px-1">Rendimento por UN</label>
-                                        <UnifiedInput
-                                            value={form.stockYield}
-                                            onChange={e => updateForm('stockYield', e.target.value)}
-                                            placeholder="Ex: 30"
-                                            suffix={form.usageUnit || 'un'}
-                                            inputMode="decimal"
-                                        />
-                                        <p className="text-[9px] text-zinc-500 px-1">Qtd. que 1 unidade rende.</p>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-sky-500 uppercase tracking-wide px-1">Unidade de Uso</label>
-                                        <UnifiedInput
-                                            value={form.usageUnit}
-                                            onChange={e => updateForm('usageUnit', e.target.value)}
-                                            placeholder="Ex: m, cm, ml, g"
-                                        />
-                                        <p className="text-[9px] text-zinc-500 px-1">Como você consome isso?</p>
-                                    </div>
-
-                                    {/* Custo Calculado */}
-                                    <div className="bg-sky-500/5 border border-sky-500/20 rounded-xl p-3 flex flex-col justify-center">
-                                        <span className="text-[10px] text-zinc-500 uppercase font-bold">Custo Efetivo</span>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-sm font-bold text-sky-400">
-                                                {((safeParse(form.price) / (safeParse(form.stockYield) || 1))).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                            </span>
-                                            <span className="text-[10px] text-zinc-500 font-medium">/ {form.usageUnit || 'un'}</span>
-                                        </div>
-                                    </div>
                                 </div>
-                            )}
+                                <div className="w-24">
+                                    <UnifiedInput
+                                        type="select"
+                                        value={form.unit}
+                                        onChange={v => updateForm('unit', v)}
+                                        options={[{ items: ['un', 'kg', 'g', 'l', 'ml', 'm', 'cm', 'folha', 'cx', 'pct'].map(u => ({ value: u, label: u })) }]}
+                                        placeholder="Un"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Link de Compra */}
-                        <div className="space-y-1.5 md:col-span-2">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Link de Compra / Fornecedor</label>
-                            <UnifiedInput
-                                value={form.purchaseLink}
-                                onChange={e => updateForm('purchaseLink', e.target.value)}
-                                placeholder="https://..."
-                                icon={Link}
-                            />
-                        </div>
-
-                        {/* Preço Unitário */}
-                        {/* Preço Unitário */}
+                        {/* Custo Unitário */}
                         <div className="space-y-1.5 md:col-span-1">
-                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && safeParse(form.price) < 0 ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
-                                Custo Médio Unitário
+                            <label className={`text-[10px] font-bold uppercase tracking-wide px-1 ${mostrarErros && safeParse(form.price) < 0 ? "text-rose-500" : "text-zinc-500"}`}>
+                                Custo Unitário
                             </label>
                             <UnifiedInput
                                 value={form.price}
@@ -422,8 +322,103 @@ export default function ModalInsumo({ isOpen, onClose, editingItem }) {
                                 error={mostrarErros && safeParse(form.price) < 0}
                             />
                         </div>
+
+                        {/* Mínimo & Compra */}
+                        <div className="space-y-1.5 md:col-span-1">
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Estoque Mínimo</label>
+                            <UnifiedInput
+                                value={form.minStock}
+                                onChange={e => updateForm('minStock', e.target.value)}
+                                placeholder="5"
+                                icon={AlertCircle}
+                                inputMode="decimal"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 md:col-span-1">
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide px-1">Link de Compra</label>
+                            <UnifiedInput
+                                value={form.purchaseLink}
+                                onChange={e => updateForm('purchaseLink', e.target.value)}
+                                placeholder="https://..."
+                                icon={Link}
+                            />
+                        </div>
+
+                        {/* --- Toggle Fracionável Minimalist --- */}
+                        <div className="md:col-span-2 pt-2">
+                            <div
+                                onClick={() => {
+                                    const newState = !form.isFractionable;
+                                    updateForm('isFractionable', newState);
+                                    if (newState && (!form.stockYield || form.stockYield === '1')) {
+                                        updateForm('stockYield', '30');
+                                        updateForm('usageUnit', 'm');
+                                    }
+                                    if (!newState) {
+                                        updateForm('stockYield', '1');
+                                        updateForm('usageUnit', '');
+                                    }
+                                }}
+                                className={`
+                                    cursor-pointer rounded-lg border transition-all duration-200 p-3
+                                    ${form.isFractionable
+                                        ? "bg-zinc-900 border-zinc-700"
+                                        : "bg-transparent border-zinc-800 hover:bg-zinc-900/50 hover:border-zinc-700"}
+                                `}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`
+                                        w-4 h-4 rounded border flex items-center justify-center transition-all duration-200
+                                        ${form.isFractionable ? 'bg-zinc-700 border-zinc-600' : 'border-zinc-700 bg-transparent'}
+                                    `}>
+                                        {form.isFractionable && <CheckCircle2 size={10} className="text-white" />}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className={`text-[11px] font-bold uppercase tracking-wide ${form.isFractionable ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                                            Item Fracionável
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Campos Extras Minimalist */}
+                                {form.isFractionable && (
+                                    <div className="mt-3 pt-3 border-t border-zinc-800 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-bold text-zinc-500 uppercase tracking-wide">Rendimento Total</label>
+                                            <UnifiedInput
+                                                value={form.stockYield}
+                                                onChange={e => updateForm('stockYield', e.target.value)}
+                                                placeholder="30"
+                                                suffix={form.usageUnit || 'un'}
+                                                className="h-8 text-xs bg-zinc-900/20 box-border"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-bold text-zinc-500 uppercase tracking-wide">Un. de Consumo</label>
+                                            <UnifiedInput
+                                                value={form.usageUnit}
+                                                onChange={e => updateForm('usageUnit', e.target.value)}
+                                                placeholder="m, ml..."
+                                                className="h-8 text-xs bg-zinc-900/20 box-border"
+                                            />
+                                        </div>
+
+                                        <div className="col-span-2 flex items-center justify-between pt-1">
+                                            <span className="text-[9px] font-bold text-zinc-500 uppercase">Custo Efetivo:</span>
+                                            <span className="text-xs font-mono font-bold text-zinc-300">
+                                                {((safeParse(form.price) / (safeParse(form.stockYield) || 1))).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                <span className="text-zinc-600 ml-1">/ {form.usageUnit || 'un'}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                     </div>
-                </section>
+                </div>
+
             </div>
         </SideBySideModal>
     );

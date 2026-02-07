@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, ArrowRight, ChevronDown } from 'lucide-react';
-import Modal from '../../../components/ui/Modal';
+import { Loader2, ArrowDownToLine, Package, ChevronDown, TrendingDown, Box } from 'lucide-react';
+import SideBySideModal from '../../../components/ui/SideBySideModal'; // Using the new layout
 import { UnifiedInput } from '../../../components/UnifiedInput';
-import Button from '../../../components/ui/Button';
 import { useSupplyStore } from '../logic/supplies';
 import { useToastStore } from '../../../stores/toastStore';
 
@@ -19,6 +18,8 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
     const isFractional = stockYield > 1 && !!usageUnit;
 
     // Base Unit Determination
+    // Base Unit = The unit stored in DB (e.g. UN, KG).
+    // Usage Unit = The smaller unit (e.g. ML, G).
     const baseUnit = (isFractional ? usageUnit : item?.unit || '').toUpperCase();
 
     // Unit Conversion Logic
@@ -42,20 +43,17 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
 
     if (!item) return null;
 
-    // Current Stock Calculations (Always in Base Unit for visualization)
+    // Current Stock Calculations
     const currentStock = Number(item.currentStock || 0);
-    const effectiveStock = currentStock * stockYield; // Total in Base Unit (e.g., Total Meters)
-
-    // Display Logic
+    const effectiveStock = currentStock * stockYield;
     const currentDisplayVal = isFractional ? effectiveStock : currentStock;
     const conversionFactor = availableUnits.factors[selectedUnit] || 1;
 
-    // Prediction Logic:
-    // Input is in `selectedUnit`. Convert to `baseUnit` to subtract from Total.
+    // Prediction Logic
     const parsedAmount = Number(amount.replace(',', '.')) || 0;
-    const normalizedAmount = parsedAmount * conversionFactor; // e.g. 50 CM * 0.01 = 0.5 M
-
+    const normalizedAmount = parsedAmount * conversionFactor;
     const finalDisplayVal = Math.max(0, currentDisplayVal - normalizedAmount);
+    const erroSaldoNegativo = currentDisplayVal - normalizedAmount < 0;
 
     // Formatting helper
     const fmt = (n) => typeof n === 'number' ? n.toFixed(isFractional ? 1 : 0).replace('.0', '') : n;
@@ -70,13 +68,7 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
 
         setLoading(true);
         try {
-            // 1. Convert Input (Selected Unit) -> Base Unit (Usage Unit)
-            // e.g. User input 50 CM. baseUnit is M. normalized = 0.5 M.
             const amountInBaseUnit = val * conversionFactor;
-
-            // 2. Convert Base Unit -> Stock Unit (e.g. Un)
-            // If fractional (1 Un = 5 M), then deductionInStock = 0.5 / 5 = 0.1 Un.
-            // If not fractional, deductionInStock = amountInBaseUnit.
             let deductionInStockUnits = amountInBaseUnit;
             if (isFractional) {
                 deductionInStockUnits = amountInBaseUnit / stockYield;
@@ -84,7 +76,6 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
 
             const newStock = Math.max(0, currentStock - deductionInStockUnits);
 
-            // Call Store
             const success = await quickUpdateStock(item.id, newStock);
             if (success) {
                 addToast(`Consumo de ${val} ${selectedUnit} registrado!`, "success");
@@ -97,138 +88,131 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
         }
     };
 
+
+
+    // --- FOOTER CONTENT ---
+    const footerContent = ({ onClose }) => (
+        <div className="flex gap-4 w-full">
+            <button
+                disabled={loading}
+                onClick={onClose}
+                className="flex-1 py-4 px-4 rounded-xl border border-zinc-800 text-[11px] font-bold uppercase text-zinc-500 hover:text-zinc-200 transition-all tracking-widest disabled:opacity-20"
+            >
+                Cancelar
+            </button>
+            <button
+                disabled={loading}
+                onClick={handleConfirm}
+                className={`flex-[2] py-4 px-6 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-3 transition-all duration-300 tracking-widest
+                                ${loading
+                        ? 'bg-zinc-950/40 text-zinc-700 border border-zinc-800 cursor-not-allowed opacity-50'
+                        : 'bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/20 active:scale-95'}`}
+            >
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <TrendingDown size={16} />}
+                {loading ? "Processando..." : "Confirmar Uso"}
+            </button>
+        </div>
+    );
+
     return (
-        <Modal
+        <SideBySideModal
             isOpen={isOpen}
             onClose={onClose}
-            title="Registrar Uso"
-            subtitle="Lançar consumo de material do estoque"
-            isDirty={amount !== '' && amount !== '0'}
-            footer={({ onClose }) => (
-                <div className="flex gap-4 w-full">
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        disabled={loading}
-                        className="flex-1 h-14 text-[11px] font-bold tracking-widest uppercase border border-zinc-800"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={handleConfirm}
-                        disabled={loading}
-                        className="flex-[2] h-14 bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/20 text-[11px] font-bold tracking-widest uppercase"
-                    >
-                        {loading ? <Loader2 className="animate-spin" /> : "Confirmar Uso"}
-                    </Button>
-                </div>
-            )}
+            header={{ title: "Registrar Uso", subtitle: "Lançar consumo de material do estoque", icon: Box }}
+            footer={footerContent}
+            salvando={loading}
+            isDirty={amount !== "" && amount !== "0"}
+            maxWidth="max-w-2xl"
         >
-            <div className="space-y-6">
+            <div className="space-y-8 relative">
 
-                {/* Item Header & Stats */}
-                <div className="relative overflow-hidden rounded-2xl bg-[#09090b] border border-white/5 p-6 text-center group">
-                    {/* Background Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-sky-500/5 to-transparent opacity-20" />
+                {/* Stats Block (Moved from Sidebar) */}
+                <div className="w-full">
+                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 flex justify-between items-center relative overflow-hidden group">
 
-                    <div className="relative z-10">
-                        <h3 className="font-black text-white text-xl tracking-tight leading-none uppercase drop-shadow-lg mb-6">
-                            {item.name}
-                        </h3>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-800/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
 
-                        {/* Stats Prediction Bar */}
-                        <div className="flex items-center justify-between bg-zinc-900/50 rounded-xl p-4 border border-white/5 relative">
-                            {/* Current */}
-                            <div className="flex flex-col items-start relative z-10">
-                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Atual</span>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-black text-white tracking-tighter">
-                                        {fmt(currentDisplayVal)}
-                                    </span>
-                                    <span className="text-xs font-bold text-zinc-600 uppercase">{baseUnit}</span>
-                                </div>
+                        <div className="flex flex-col items-start gap-1">
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Estoque Atual</span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-3xl font-black text-zinc-200 tracking-tighter">
+                                    {fmt(currentDisplayVal)}
+                                </span>
+                                <span className="text-xs font-bold text-zinc-600 uppercase">{selectedUnit}</span>
                             </div>
+                        </div>
 
-                            {/* Arrow */}
-                            <div className="text-zinc-700">
-                                <ArrowRight size={20} />
-                            </div>
+                        <div className="flex flex-col items-center justify-center gap-2 text-zinc-700">
+                            <ArrowDownToLine size={24} strokeWidth={1.5} className={amount ? "text-sky-500 animate-bounce" : ""} />
+                        </div>
 
-                            {/* Final */}
-                            <div className="flex flex-col items-end relative z-10">
-                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Final</span>
-                                <div className="flex items-baseline gap-1">
-                                    <span className={`text-2xl font-black tracking-tighter ${finalDisplayVal === 0 ? 'text-rose-500' : 'text-sky-500'}`}>
-                                        {fmt(finalDisplayVal)}
-                                    </span>
-                                    <span className={`text-xs font-bold uppercase ${finalDisplayVal === 0 ? 'text-rose-500/50' : 'text-sky-500/50'}`}>{baseUnit}</span>
-                                </div>
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest text-right">Previsão Final</span>
+                            <div className="flex items-baseline gap-1">
+                                <span className={`text-3xl font-black tracking-tighter ${erroSaldoNegativo ? 'text-rose-500' : 'text-sky-500'}`}>
+                                    {fmt(finalDisplayVal)}
+                                </span>
+                                <span className={`text-xs font-bold uppercase ${erroSaldoNegativo ? 'text-rose-500/50' : 'text-sky-500/50'}`}>{selectedUnit}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Input with Unit Selector */}
-                <div className="space-y-4">
-                    <div className="flex gap-3 items-start">
-                        <div className="flex-1">
-                            <UnifiedInput
-                                label="Quantidade a debitar *"
-                                value={amount}
-                                onChange={(e) => {
-                                    setAmount(e.target.value);
-                                    if (showErrors && e.target.value) setShowErrors(false);
-                                }}
-                                placeholder="0"
-                                type="text"
-                                inputMode="decimal"
-                                min="0"
-                                autoFocus
-                                variant="default"
-                                error={showErrors && (!amount || Number(amount.replace(',', '.')) <= 0)}
-                            />
-                        </div>
+                {/* Input Section */}
+                <section className="space-y-4">
+                    <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        <h4>[01] Quantidade a Debitar</h4>
+                        <div className="h-px bg-zinc-800/50 flex-1" />
+                    </div>
 
-                        {/* Unit Selector */}
-                        <div className="w-28 shrink-0 relative">
-                            <label className="text-[10px] uppercase font-bold text-zinc-500 mb-1.5 block tracking-wider">Unidade</label>
+                    <div className="relative group">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500">
+                            <Package size={20} />
+                        </div>
+                        <input
+                            autoFocus
+                            disabled={loading}
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            value={amount}
+                            onChange={e => setAmount(e.target.value)}
+                            placeholder="0"
+                            className={`w-full bg-zinc-900/50 border rounded-2xl py-6 pl-14 pr-32 text-4xl font-bold text-zinc-100 outline-none transition-all shadow-inner font-mono ${erroSaldoNegativo || (showErrors && !amount) ? 'border-rose-500/40 focus:border-rose-500/60 ring-4 ring-rose-500/5' : 'border-zinc-800 focus:border-zinc-800/30 focus:bg-zinc-950/40'}`}
+                        />
+
+                        {/* Unit Selector inside Input */}
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
                             <div className="relative">
                                 <select
                                     value={selectedUnit}
                                     onChange={(e) => setSelectedUnit(e.target.value)}
-                                    className="w-full h-10 pl-3 pr-8 bg-black/20 border border-zinc-800 rounded-lg text-xs font-bold text-zinc-200 uppercase focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 appearance-none cursor-pointer hover:bg-black/40 transition-colors"
+                                    className="h-10 pl-3 pr-8 bg-black/20 border border-zinc-800 rounded-xl text-xs font-bold text-zinc-400 uppercase focus:border-sky-500/50 focus:text-sky-500 focus:ring-0 appearance-none cursor-pointer hover:bg-black/40 transition-colors"
                                 >
                                     {availableUnits.options.map(u => (
                                         <option key={u} value={u} className="bg-zinc-900 text-zinc-300">{u}</option>
                                     ))}
                                 </select>
-                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 pointer-events-none" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Quick Add Presets */}
+                    {/* Presets Grid */}
                     <div className="grid grid-cols-4 gap-2">
                         {(() => {
-                            // Calculate sensible presets based on current Unit/Stock
-                            // Since amount is in `selectedUnit`, presets should be too.
-                            // But `maxVal` (Stock) is in `baseUnit`.
-                            // So we need to show presets that make sense for the SELECTED unit.
+                            // Calculate sensible presets
+                            const maxValInSelectedUnit = currentDisplayVal / conversionFactor;
 
-                            // Heuristic: If Base=M and Selected=CM, stock might be 5M = 500CM. Presets should be 10, 50, 100 CM.
-                            // If Selected=Base, standard presets.
-
-                            const maxValInSelectedUnit = (isFractional ? effectiveStock : currentStock) / conversionFactor;
-
+                            // Heuristics derived from usual Filament/Resin usage but adapted broadly
                             let presets = [];
-                            if (maxValInSelectedUnit <= 10) presets = [1, 2, 3, 5];
-                            else if (maxValInSelectedUnit <= 50) presets = [5, 10, 20];
-                            else if (maxValInSelectedUnit <= 500) presets = [10, 50, 100];
-                            else presets = [50, 100, 200];
+                            if (maxValInSelectedUnit <= 10) presets = [1, 5, 10];
+                            else if (maxValInSelectedUnit <= 50) presets = [5, 15, 25];
+                            else if (maxValInSelectedUnit <= 200) presets = [10, 50, 100];
+                            else presets = [50, 100, 250];
 
-                            // Filter valid and slice
-                            const validPresets = presets.filter(n => n < maxValInSelectedUnit).slice(0, 3);
+                            // Always take 3, regardless if it's more than stock (user can click and it handles it)
+                            const validPresets = presets.slice(0, 3);
 
                             return validPresets.map((val) => (
                                 <button
@@ -237,38 +221,37 @@ export default function ModalConsumoRapido({ isOpen, onClose, item }) {
                                         const current = Number(Math.max(0, parseFloat((String(amount || 0)).replace(',', '.'))));
                                         setAmount((current + val).toString());
                                     }}
-                                    className="py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/40 text-[11px] font-bold text-zinc-400 uppercase hover:bg-zinc-800 hover:text-white hover:border-zinc-700 transition-all active:scale-95"
+                                    className="py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-[10px] font-bold text-zinc-500 uppercase hover:bg-zinc-800 hover:text-white hover:border-zinc-700 transition-all active:scale-95 tracking-widest"
                                 >
-                                    +{val} {selectedUnit}
+                                    +{val}
                                 </button>
                             ));
                         })()}
                         <button
                             onClick={() => {
                                 // "All" means Total Stock -> Converted to Selected Unit
-                                const allInSelected = (isFractional ? effectiveStock : currentStock) / conversionFactor;
+                                const allInSelected = currentDisplayVal / conversionFactor;
                                 setAmount(fmt(allInSelected).toString());
                             }}
-                            className="py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-[11px] font-bold text-rose-500 uppercase hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+                            className="py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-[11px] font-bold text-rose-500 uppercase hover:bg-rose-500 hover:text-white transition-all active:scale-95 tracking-widest"
                         >
                             Tudo
                         </button>
                     </div>
+                </section>
 
-                    {isFractional && (
-                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/5 border border-sky-500/10">
-                            <div className="w-1 h-8 bg-sky-500/50 rounded-full" />
-                            <div className="text-[10px] text-zinc-400 leading-tight">
-                                <strong className="text-sky-400 block uppercase mb-0.5">Item Fracionável</strong>
-                                1 {item.unit} do estoque equivale a <strong className="text-zinc-300">{stockYield} {usageUnit}</strong>.
-                                O sistema debitará proporcionalmente.
-                            </div>
+                {/* Info Block */}
+                {isFractional && (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/5 border border-sky-500/10">
+                        <div className="w-1 h-8 bg-sky-500/50 rounded-full" />
+                        <div className="text-[10px] text-zinc-400 leading-tight">
+                            <strong className="text-sky-400 block uppercase mb-0.5">Item Fracionável</strong>
+                            1 {item.unit} do estoque equivale a <strong className="text-zinc-300">{stockYield} {usageUnit}</strong>.
+                            O sistema debitará proporcionalmente.
                         </div>
-                    )}
-                </div>
-
-
+                    </div>
+                )}
             </div>
-        </Modal>
+        </SideBySideModal>
     );
 }

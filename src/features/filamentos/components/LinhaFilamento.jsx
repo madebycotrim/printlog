@@ -9,7 +9,7 @@ import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 /**
  * MODO LISTA: LinhaFilamento
  */
-export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta }) => {
+export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta, highlightedItemId }) => {
     const estatisticas = useMemo(() => {
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
         const atual = Math.max(0, Number(item?.peso_atual) || 0);
@@ -26,12 +26,14 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
     const riscoUmidade = ehHigroscopico && (umidadeAtual > 50);
     const realTipo = item?.tipo === 'SLA' || MATERIAIS_RESINA_FLAT.some(m => m.toLowerCase() === (item?.material || "").toLowerCase()) ? 'SLA' : 'FDM';
     const unidade = realTipo === 'SLA' ? 'ml' : 'g';
+    const isHighlighted = highlightedItemId === item.id;
 
     return (
         <div className={`
             group relative flex items-center gap-4 p-4 min-h-[72px]
             bg-[#09090b]/80 backdrop-blur-sm rounded-2xl overflow-hidden transition-all duration-300
             border ${ehCritico ? 'border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]' : 'border-white/5 hover:border-white/10 hover:bg-zinc-900/40'}
+            ${isHighlighted ? 'animate-pulse ring-2 ring-orange-500 bg-orange-500/10' : ''}
         `}>
             {/* 1. ÍCONE (Flutuante) */}
             <div className="relative shrink-0">

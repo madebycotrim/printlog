@@ -77,7 +77,7 @@ export default function InsumoFilters({
                     <select
                         value={filters.sortOption || 'name'}
                         onChange={(e) => setFilters(prev => ({ ...prev, sortOption: e.target.value }))}
-                        className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] uppercase font-bold tracking-wider rounded-lg px-3 py-2 h-[34px] focus:outline-none focus:border-zinc-700 cursor-pointer"
+                        className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] uppercase font-bold tracking-wider rounded-lg px-3 py-2 h-[36px] focus:outline-none focus:border-zinc-700 cursor-pointer"
                     >
                         <option value="name">Nome (A-Z)</option>
                         <option value="price_asc">Menor Preço</option>

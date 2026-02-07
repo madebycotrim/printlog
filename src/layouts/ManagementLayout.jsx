@@ -7,20 +7,25 @@ import FloatingQuickActions from '../components/FloatingQuickActions';
 import ModalFilamento from '../features/filamentos/components/ModalFilamento';
 import ModalImpressora from '../features/impressoras/components/ModalImpressora';
 import ModalInsumo from '../features/insumos/components/ModalInsumo';
-import ModalScanner from '../features/scanner/components/ModalScanner';
 
+import ModalScanner from '../features/scanner/components/ModalScanner';
 import { useLocation } from 'wouter';
 import { useState } from 'react';
-import { useMutacoesFilamento, useFilamentos } from '../features/filamentos/logic/consultasFilamento';
-import { usePrinterMutations, usePrinters } from '../features/impressoras/logic/consultasImpressora';
+import { useScannerStore } from '../stores/scannerStore';
+import { useToastStore } from '../stores/toastStore';
+import { useFilamentos, useMutacoesFilamento } from '../features/filamentos/logic/consultasFilamento';
+import { usePrinters, usePrinterMutations } from '../features/impressoras/logic/consultasImpressora';
 import { useSupplyStore } from '../features/insumos/logic/supplies';
 import { identifyItem } from '../features/scanner/logic/scannerService';
-import { useToastStore } from '../stores/toastStore';
+import { useScanDetection } from '../hooks/useScanDetection';
 
 export default function ManagementLayout({ children }) {
     const { width: larguraSidebar, isMobile, setIsMobile, setMobileOpen } = useSidebarStore();
-    const [location] = useLocation();
+    const [location, setLocation] = useLocation(); // Need setLocation for redirect
     const { addToast } = useToastStore();
+
+    // Global Scanner Store
+    const { isScannerOpen, openScanner, closeScanner, setHighlightedItem } = useScannerStore();
 
     // Data for Scanner
     const { data: filaments = [] } = useFilamentos();
@@ -28,20 +33,21 @@ export default function ManagementLayout({ children }) {
     const supplies = useSupplyStore(state => state.supplies);
     const fetchSupplies = useSupplyStore(state => state.fetchSupplies);
 
-    // Ensure supplies are loaded for scanning - REMOVED TO PREVENT LOOP
-    // Supplies will be loaded by individual pages or lazily when needed.
-    // useEffect(() => {
-    //     if (supplies.length === 0) fetchSupplies();
-    // }, []);
+    // Ensure supplies are loaded for Global Scanner
+    useEffect(() => {
+        if (supplies.length === 0) {
+            fetchSupplies();
+        }
+    }, [supplies.length, fetchSupplies]);
 
-    // Modal states
+    // Modal states (Local for Edit)
     const [isFilamentModalOpen, setFilamentModalOpen] = useState(false);
     const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
     const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
-    const [isScannerOpen, setScannerOpen] = useState(false);
-    const [scannerError, setScannerError] = useState(null);
 
-    // Edit States (to open modal with data)
+    // We remove local 'isScannerOpen' and use the store one
+
+    // Edit States
     const [editingFilament, setEditingFilament] = useState(null);
     const [editingPrinter, setEditingPrinter] = useState(null);
     const [editingSupply, setEditingSupply] = useState(null);
@@ -49,48 +55,81 @@ export default function ManagementLayout({ children }) {
     const { salvarFilamento } = useMutacoesFilamento();
     const { upsertPrinter } = usePrinterMutations();
 
+    // Global Key Listener for Hardware Scanners
+    useScanDetection((code) => {
+        // Only trigger if scanner modal is NOT already open (to avoid double handling)
+        if (!isScannerOpen) {
+            handleScan(code);
+        }
+    });
+
     const handleScan = (code) => {
-        setScannerError(null); // Clear previous errors
         const result = identifyItem(code, { filaments, printers, supplies });
 
         if (result) {
-            setScannerOpen(false);
-            if (result.type === 'filament') {
-                setEditingFilament(result.item);
-                setFilamentModalOpen(true);
-            } else if (result.type === 'printer') {
-                setEditingPrinter(result.item);
-                setPrinterModalOpen(true);
-            } else if (result.type === 'supply') {
-                setEditingSupply(result.item);
-                setSupplyModalOpen(true);
-            }
-            addToast("Item identificado com sucesso!", "success");
-        } else {
-            // Show error inside modal instead of toast for better visibility
-            setScannerError("Item não encontrado ou código inválido.");
+            // Close scanner immediately
+            closeScanner();
 
-            // Optional: Backup toast if modal is closed unexpectedly, but here we want inline feedback.
-            // addToast("Item não encontrado.", "error"); 
+            // Logic:
+            // 1. If we are on the correct page, just Blink.
+            // 2. If not, Redirect then Blink.
+
+            const targetPathMap = {
+                filament: '/filamentos',
+                printer: '/impressoras',
+                supply: '/insumos'
+            };
+
+            const targetPath = targetPathMap[result.type];
+            const currentPath = location; // wouter location string
+
+            // Set Global Blink State
+            setHighlightedItem(result.item.id, result.type);
+            addToast(`Item ${result.item.nome || result.item.name} localizado!`, 'success');
+
+            // Redirect if needed
+            if (!currentPath.includes(targetPath)) {
+                setLocation(targetPath);
+            }
+
+        } else {
+            addToast("Item não encontrado.", "error");
         }
     };
 
-    // Resize Handler
-    useEffect(() => {
-        const handleResize = () => {
-            const mobile = window.innerWidth < 1024; // lg breakpoint
-            setIsMobile(mobile);
-            if (!mobile) setMobileOpen(false); // Reset on desktop
-        };
+    // View Details Handler (from Scanner Modal "Visualizar" button)
+    const handleVisualize = (item) => {
+        // Logic is same as Scan success basically
+        // We need to type check 'item' to retrieve type
+        // But ModalScanner usually returns the item. 
+        // Assuming item has ID. We can re-identify or pass type from ModalScanner if updated.
+        // Simpler: ModalScanner's identifyItem returning the Wrapper {type, item} ?
+        // Actually current ModalScanner returns just the item object on 'onViewDetails'.
+        // Let's rely on handleScan to do the heavy lifting FIRST.
 
-        // Initial check
-        handleResize();
+        // Wait, 'ModalScanner' calls 'onScan' when code is found.
+        // Then it shows the card.
+        // Then user clicks "Visualizar".
+        // The 'onViewDetails' is called with the ITEM.
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [setIsMobile, setMobileOpen]);
+        // We need to know the TYPE again.
+        // Re-identify for safety or pass it down.
+        const result = identifyItem(item.id, { filaments, printers, supplies });
+        if (result) {
+            closeScanner();
+            const targetPathMap = { filament: '/filamentos', printer: '/impressoras', supply: '/insumos' };
+            const targetPath = targetPathMap[result.type];
 
-    // Determine Theme Color based on route (Matches Sidebar)
+            setHighlightedItem(result.item.id, result.type);
+
+            if (!location.includes(targetPath)) {
+                setLocation(targetPath);
+            }
+        }
+    };
+
+    // ... (Resize Handler and Theme Logic remain same)
+
     const getThemeColorClass = () => {
         if (location.includes('filamentos')) return 'from-rose-500/30';
         if (location.includes('insumos')) return 'from-orange-500/30';
@@ -98,7 +137,7 @@ export default function ManagementLayout({ children }) {
         if (location.includes('projetos')) return 'from-amber-500/30';
         if (location.includes('financeiro')) return 'from-emerald-500/30';
         if (location.includes('central-maker')) return 'from-purple-500/30';
-        return 'from-sky-500/30'; // Default (Dashboard, Calculadora, Clientes, Config)
+        return 'from-sky-500/30';
     };
 
     const themeGradient = getThemeColorClass();
@@ -109,16 +148,17 @@ export default function ManagementLayout({ children }) {
                 onNewFilament={() => { setEditingFilament(null); setFilamentModalOpen(true); }}
                 onNewPrinter={() => { setEditingPrinter(null); setPrinterModalOpen(true); }}
                 onNewSupply={() => { setEditingSupply(null); setSupplyModalOpen(true); }}
-                onScan={() => setScannerOpen(true)}
+                onScan={openScanner}
             />
             <InstallPwa />
 
             {/* Modals */}
             <ModalScanner
                 isOpen={isScannerOpen}
-                onClose={() => { setScannerOpen(false); setScannerError(null); }}
+                onClose={closeScanner}
                 onScan={handleScan}
-                errorMessage={scannerError}
+                onViewDetails={handleVisualize}
+                items={[...filaments, ...printers, ...supplies]} // Pass ALL items for search
             />
 
             <ModalFilamento

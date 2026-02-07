@@ -1,5 +1,5 @@
-﻿import React, { useState, useMemo, useDeferredValue } from "react";
-import { Printer, ChevronDown, X, PackageSearch, Database, Plus, Search, LayoutGrid, List, AlertTriangle, Trash2, Scan } from "lucide-react";
+﻿import React, { useState, useMemo, useDeferredValue, useCallback, useEffect } from "react";
+import { Printer, ChevronDown, X, PackageSearch, Database, Plus, Search, LayoutGrid, List, AlertTriangle, Trash2, Scan, ScanBarcode } from "lucide-react";
 import { formatDecimal } from "../../utils/numbers";
 
 
@@ -19,6 +19,7 @@ import StatusImpressoras from "../../features/impressoras/components/StatusImpre
 import { useToastStore } from "../../stores/toastStore";
 import FiltrosImpressora from "../../features/impressoras/components/FiltrosImpressora";
 import { usePrinters, usePrinterMutations } from "../../features/impressoras/logic/consultasImpressora";
+import { useScannerStore } from '../../stores/scannerStore';
 
 // ... (keep Layout/Header/Modal imports)
 
@@ -46,6 +47,27 @@ export default function ImpressorasPage() {
     const [confirmacaoExclusao, setConfirmacaoExclusao] = useState({ aberta: false, item: null });
 
     const [checklists, setChecklists] = useState({});
+
+    // Global Scanner Integration
+    const { highlightedItem, clearHighlight, openScanner } = useScannerStore();
+
+    useEffect(() => {
+        if (highlightedItem && highlightedItem.type === 'printer') {
+            setHighlightedItemId(highlightedItem.id);
+            setBusca(printers.find(p => p.id === highlightedItem.id)?.nome || "");
+
+            const timer = setTimeout(() => {
+                setHighlightedItemId(null);
+                clearHighlight();
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [highlightedItem, printers, clearHighlight]);
+
+    // Local Blink State (driven by global effect)
+    const [highlightedItemId, setHighlightedItemId] = useState(null);
+
+
 
     // Toast
     const { addToast } = useToastStore();
@@ -169,15 +191,24 @@ export default function ImpressorasPage() {
     };
 
     const novaImpressoraButton = (
-        <Button
-            onClick={() => { setItemParaEdicao(null); setModalAberto(true); }}
-            variant="secondary"
-            className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
-            icon={Plus}
-            data-tour="printer-add-btn"
-        >
-            Nova
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button
+                onClick={openScanner}
+                variant="secondary"
+                size="icon"
+                className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 w-11 h-11 rounded-2xl"
+                icon={ScanBarcode}
+            />
+            <Button
+                onClick={() => { setItemParaEdicao(null); setModalAberto(true); }}
+                variant="secondary"
+                className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 h-11 rounded-2xl px-6"
+                icon={Plus}
+                data-tour="printer-add-btn"
+            >
+                Nova
+            </Button>
+        </div>
     );
 
     return (
@@ -244,6 +275,7 @@ export default function ImpressorasPage() {
                                             onEdit={(p) => { setItemParaEdicao(p); setModalAberto(true); }}
                                             onDelete={(id) => setConfirmacaoExclusao({ aberta: true, item: printers.find(p => p.id === id) })}
                                             onResetMaint={(p) => setImpressoraEmDiagnostico(p)}
+                                            highlightedItemId={highlightedItemId}
                                         />
                                     ))}
                                 </div>

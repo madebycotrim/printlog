@@ -27,7 +27,13 @@ export const useSidebarStore = create(
         }),
         {
             name: 'sidebar-storage',
-            partialize: (state) => ({ collapsed: state.collapsed }),
+            partialize: (state) => ({ collapsed: state.collapsed, width: state.width }),
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    // Force width sync on load in case it drifted or wasn't saved
+                    state.width = state.isMobile ? 0 : (state.collapsed ? 72 : 260);
+                }
+            }
         }
     )
 );

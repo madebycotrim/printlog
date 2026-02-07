@@ -1,9 +1,9 @@
 ﻿import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
 import {
-    Plus, PackageSearch, Loader2, Layers, Box, Zap, Hammer,
-    ScanBarcode, Trash2, Link,
-    Wrench, Cpu, FlaskConical, Package, Disc,
-    Magnet, Droplets, Paintbrush, ShieldCheck, Ruler, Anchor, PenTool
+    Wrench, Cpu, FlaskConical, Package, Disc, ShoppingCart,
+    Magnet, Droplets, Paintbrush, ShieldCheck, Ruler, Anchor, PenTool,
+    ScanBarcode, Plus, Trash2, Loader2, PackageSearch, Box,
+    Zap, Hammer, Link, Layers, Monitor, Tablet
 } from "lucide-react";
 
 // LAYOUT E COMPONENTES GLOBAIS
@@ -25,8 +25,7 @@ import StatusInsumos from "../../features/insumos/components/statusInsumos";
 import InsumoFilters from "../../features/insumos/components/InsumoFilters";
 import SupplyTable from "../../features/insumos/components/SupplyTable";
 
-import ModalScanner from "../../features/scanner/components/ModalScanner";
-
+import { useScannerStore } from '../../stores/scannerStore';
 
 // LÓGICA
 import { useSupplyStore } from "../../features/insumos/logic/supplies";
@@ -37,19 +36,12 @@ export default function InsumosPage() {
     const [busca, setBusca] = useState("");
     const deferredBusca = useDeferredValue(busca);
 
-
     // Filtros
-    // const [viewMode, setViewMode] = useState('shelves'); // REMOVIDO
     const [filters, setFilters] = useState({
         categories: [],
         lowStock: false,
         sortOption: 'name' // 'name', 'price_asc', 'price_desc', 'stock_asc', 'stock_desc'
     });
-
-
-
-    // -- REMOVIDO: CATEGORIAS HARDCODED --
-    // Agora geramos dinamicamente baseados nos itens.
 
     const { supplies, fetchSupplies, loading, deleteSupply } = useSupplyStore();
 
@@ -101,7 +93,6 @@ export default function InsumosPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isShoppingListOpen, setIsShoppingListOpen] = useState(false);
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
 
     const [consumptionItem, setConsumptionItem] = useState(null);
@@ -112,6 +103,25 @@ export default function InsumosPage() {
 
     // Bulk Selection
     const [selectedItems, setSelectedItems] = useState(new Set());
+
+    // Global Scanner Integration
+    const { highlightedItem, clearHighlight, openScanner } = useScannerStore();
+
+    useEffect(() => {
+        if (highlightedItem && highlightedItem.type === 'supply') {
+            setHighlightedItemId(highlightedItem.id);
+            setBusca(supplies.find(s => s.id === highlightedItem.id)?.name || "");
+
+            const timer = setTimeout(() => {
+                setHighlightedItemId(null);
+                clearHighlight();
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [highlightedItem, supplies, clearHighlight]);
+
+    // Local Blink State (to prompt the table row highlight)
+    const [highlightedItemId, setHighlightedItemId] = useState(null);
 
     // Toast
     const { addToast } = useToastStore();
@@ -125,8 +135,6 @@ export default function InsumosPage() {
             fetchAttempted.current = true;
         }
     }, [fetchSupplies]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
 
     // LÓGICA DE ESTATÍSTICAS E FILTRAGEM
     const { stats, filteredList } = useInsumoFilter(supplies, deferredBusca, filters);
@@ -159,9 +167,9 @@ export default function InsumosPage() {
         if (!confirmacaoExclusao.item) return;
         try {
             await deleteSupply(confirmacaoExclusao.item.id);
-            addToast('Insumo removido com sucesso.', 'success');
+            // Toast managed by store
         } catch (_error) {
-            addToast('Erro ao remover insumo.', 'error');
+            // Error Toast managed by store
         } finally {
             setConfirmacaoExclusao({ aberta: false, item: null });
         }
@@ -196,25 +204,12 @@ export default function InsumosPage() {
         }
     };
 
-    const handleScan = (codigo) => {
-        const item = supplies.find(s => s.id === codigo);
-        if (item) {
-            setIsScannerOpen(false);
-            setEditingItem(item);
-            setIsModalOpen(true);
-            addToast(`${item.name} localizado com sucesso.`, 'success');
-        } else {
-            addToast('Nenhum insumo encontrado com este código.', 'error');
-        }
-    };
-
     const handleModalClose = () => {
         setIsModalOpen(false);
         setIsHistoryOpen(false);
         setIsShoppingListOpen(false);
         setConsumptionItem(null);
         setEditingItem(null);
-        setIsScannerOpen(false);
         setIsLabelModalOpen(false);
         setLabelItem(null);
     };
@@ -228,38 +223,24 @@ export default function InsumosPage() {
     // Header Controls
     const headerActions = (
         <div className="flex items-center gap-2">
-
-            {/* Bulk Delete Action */}
-            {selectedItems.size > 0 && (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300 mr-2">
-                    <button
-                        onClick={handleBulkDelete}
-                        className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-lg hover:bg-rose-500/20 transition-all font-bold uppercase text-[10px] shadow-sm hover:shadow-rose-900/10"
-                    >
-                        <Trash2 size={14} strokeWidth={2.5} />
-                        <span className="hidden sm:inline">Excluir ({selectedItems.size})</span>
-                    </button>
-                </div>
-            )}
-
             <Button
-                onClick={() => setIsScannerOpen(true)}
-                className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 w-11 h-11"
+                onClick={openScanner}
+                className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 w-11 h-11 rounded-2xl"
                 variant="secondary"
                 size="icon"
                 icon={ScanBarcode}
             />
             <Button
                 onClick={() => setIsShoppingListOpen(true)}
-                className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 shadow-lg"
+                className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 shadow-lg h-11 rounded-2xl px-6"
                 variant="secondary"
-                icon={PackageSearch}
+                icon={ShoppingCart}
             >
-                Lista
+                Compras
             </Button>
             <Button
                 onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-                className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20"
+                className="bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 shadow-lg hover:shadow-xl hover:shadow-zinc-900/50 hover:border-white/20 h-11 rounded-2xl px-6"
                 variant="secondary"
                 icon={Plus}
             >
@@ -322,6 +303,7 @@ export default function InsumosPage() {
                                     onSortChange={(sort) => setFilters(prev => ({ ...prev, sortOption: sort }))}
                                     selectedItems={selectedItems}
                                     onSelectionChange={setSelectedItems}
+                                    highlightedItemId={highlightedItemId}
                                 />
                             </div>
                         ) : (
@@ -363,17 +345,39 @@ export default function InsumosPage() {
                 item={consumptionItem}
             />
 
-            <ModalScanner
-                isOpen={isScannerOpen}
-                onClose={handleModalClose}
-                onScan={handleScan}
-            />
-
             <ModalEtiquetaInsumo
                 isOpen={isLabelModalOpen}
                 onClose={handleModalClose}
                 item={labelItem}
             />
+
+            {/* --- FLOATING BULK ACTIONS --- */}
+            <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-out ${selectedItems.size > 0 ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0 pointer-events-none'}`}>
+                <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/50 shadow-2xl rounded-2xl px-6 py-3 flex items-center gap-6 min-w-[320px]">
+                    <div className="flex items-center gap-3 pr-6 border-r border-zinc-700/50">
+                        <div className="bg-orange-500 text-white font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/20">
+                            {selectedItems.size}
+                        </div>
+                        <span className="text-zinc-300 text-xs font-medium uppercase tracking-wider">Selecionados</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setSelectedItems(new Set())}
+                            className="px-4 py-2 text-zinc-400 hover:text-zinc-200 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleBulkDelete}
+                            className="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95 text-[10px] font-bold uppercase tracking-wider"
+                        >
+                            <Trash2 size={16} strokeWidth={2.5} />
+                            Excluir Itens
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             {/* POPUP DE CONFIRMAÇÃO DE EXCLUSÃO (UNIFICADO) */}
             <ConfirmModal
@@ -383,8 +387,7 @@ export default function InsumosPage() {
                 title="Excluir Insumo?"
                 message={
                     <span>
-                        Você está prestes a remover permanentemente o insumo <br />
-                        <span className="text-zinc-100 font-bold uppercase tracking-tight">"{confirmacaoExclusao.item?.name}"</span>
+                        Você está prestes a remover permanentemente o insumo <span className="text-zinc-100 font-bold uppercase tracking-tight">"{confirmacaoExclusao.item?.name}"</span>.
                     </span>
                 }
                 description="Atenção: Esta ação não pode ser desfeita."
