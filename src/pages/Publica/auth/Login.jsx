@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from "wouter";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -54,7 +53,7 @@ const PrimaryButton = ({ children, onClick, icon: Icon, variant = "sky", classNa
 
 // --- HOOKS & COMPONENTES AUXILIARES ---
 
-// Hook para animar n�meros (Count Up)
+// Hook para animar números (Count Up)
 const useCounter = (end, duration = 2000) => {
     const [count, setCount] = useState(0);
     useEffect(() => {
@@ -80,7 +79,7 @@ const OficinaStatusWidget = () => (
     <div className="w-80 bg-zinc-950/40 backdrop-blur-xl border border-zinc-800/50 rounded-[2rem] p-6 shadow-2xl group hover:border-emerald-500/20 transition-colors duration-500">
         <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
-                <Badge label="Em opera��o" color="emerald" icon={Activity} />
+                <Badge label="Em operação" color="emerald" icon={Activity} />
                 <h4 className="text-white font-bold text-lg mt-2 group-hover:text-emerald-400 transition-colors">Status da Oficina</h4>
             </div>
             <Cpu className="text-zinc-600 group-hover:text-emerald-500 transition-colors" size={20} />
@@ -97,7 +96,7 @@ const OficinaStatusWidget = () => (
                 </div>
                 <div className="flex justify-between items-center pt-1">
                     <span className="text-[9px] text-zinc-500 font-bold uppercase">Temperatura do Bico</span>
-                    <span className="text-[10px] text-white font-mono">215�C</span>
+                    <span className="text-[10px] text-white font-mono">215°C</span>
                 </div>
             </div>
         </div>
@@ -114,8 +113,8 @@ const ProductionWidget = () => {
                     <Layers size={20} />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-[9px] font-bold text-sky-500 uppercase">Produ��o do M�s</span>
-                    <span className="text-[11px] font-bold text-white uppercase">Pe�as Prontas</span>
+                    <span className="text-[9px] font-bold text-sky-500 uppercase">Produção do Mês</span>
+                    <span className="text-[11px] font-bold text-white uppercase">Peças Prontas</span>
                 </div>
             </div>
             <div className="flex items-baseline gap-1">
@@ -158,9 +157,9 @@ export default function LoginPage() {
     const handlePasswordSignIn = async (e) => {
         e.preventDefault();
 
-        // VALIDA��O CLIENT-SIDE
+        // VALIDAÇÃO CLIENT-SIDE
         if (!isValidEmail(email)) {
-            setError("Por favor, insira um e-mail v�lido.");
+            setError("Por favor, insira um e-mail válido.");
             return;
         }
         if (!password) {
@@ -203,7 +202,7 @@ export default function LoginPage() {
 
                 <div className="absolute top-10 left-10">
                     <button onClick={() => setLocation('/')} className="flex items-center gap-3 text-xs font-bold text-zinc-500 hover:text-white transition-colors">
-                        <ArrowLeft size={16} />
+                        <ArrowLeft size={16} aria-hidden="true" />
                         Voltar ao site
                     </button>
                 </div>
@@ -233,10 +232,12 @@ export default function LoginPage() {
 
                     <form onSubmit={handlePasswordSignIn} className="space-y-6">
                         <div className="space-y-2 group">
-                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
+                            <label htmlFor="email" className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} aria-hidden="true" />
                                 <input
+                                    id="email"
+                                    autoComplete="email"
                                     type="email" required value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
@@ -247,19 +248,26 @@ export default function LoginPage() {
 
                         <div className="space-y-2 group animate-fade-in-up">
                             <div className="flex justify-between items-center px-1">
-                                <label className="text-xs font-bold text-zinc-500 transition-colors group-focus-within:text-sky-500">Sua senha</label>
+                                <label htmlFor="password" className="text-xs font-bold text-zinc-500 transition-colors group-focus-within:text-sky-500">Sua senha</label>
                                 <button type="button" onClick={() => setLocation('/forgot-password')} className="text-[10px] font-bold text-zinc-500 hover:text-sky-400 uppercase transition-colors">Esqueci a senha</button>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} aria-hidden="true" />
                                 <input
+                                    id="password"
+                                    autoComplete="current-password"
                                     type={showPassword ? "text" : "password"} required value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
-                                    placeholder="��������"
+                                    placeholder="••••••••"
                                 />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors"
+                                    aria-label={showPassword ? "Ocultar senha" : "Exibir senha"}
+                                >
+                                    {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                                 </button>
                             </div>
                         </div>
@@ -298,7 +306,7 @@ export default function LoginPage() {
                                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
                             ) : (
                                 <>
-                                    <Chrome size={20} />
+                                    <Chrome size={20} aria-hidden="true" />
                                     Entrar com Google
                                 </>
                             )}
@@ -306,7 +314,7 @@ export default function LoginPage() {
 
                         <div className="text-center pt-6">
                             <p className="text-zinc-500 text-sm">
-                                Ainda n�o tem acesso?
+                                Ainda não tem acesso?
                                 <button
                                     onClick={() => setLocation('/register')}
                                     className="text-sky-500 font-bold hover:text-sky-400 ml-2"
