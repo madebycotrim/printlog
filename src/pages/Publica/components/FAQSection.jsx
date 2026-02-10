@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
 
 const FAQItem = ({ question, answer }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const id = useId();
+    const contentId = `${id}-content`;
+    const headerId = `${id}-header`;
 
     return (
         <div className="border-b border-white/5 last:border-0">
             <button
+                id={headerId}
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={contentId}
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full py-6 flex items-center justify-between text-left group hover:text-white transition-colors"
             >
@@ -15,10 +22,14 @@ const FAQItem = ({ question, answer }) => {
                 </span>
                 <ChevronDown
                     size={20}
+                    aria-hidden="true"
                     className={`text-zinc-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-sky-500' : ''}`}
                 />
             </button>
             <div
+                id={contentId}
+                role="region"
+                aria-labelledby={headerId}
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 mb-6' : 'max-h-0 opacity-0'}`}
             >
                 <p className="text-zinc-500 text-sm leading-relaxed pr-8">
