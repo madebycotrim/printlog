@@ -225,7 +225,7 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium animate-shake">
+                        <div role="alert" className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-400 text-xs font-medium animate-shake">
                             <AlertCircle size={16} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -233,10 +233,11 @@ export default function LoginPage() {
 
                     <form onSubmit={handlePasswordSignIn} className="space-y-6">
                         <div className="space-y-2 group">
-                            <label className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
+                            <label htmlFor="email" className="text-xs font-bold text-zinc-500 ml-1 transition-colors group-focus-within:text-sky-500">E-mail de acesso</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                 <input
+                                    id="email"
                                     type="email" required value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
@@ -247,18 +248,24 @@ export default function LoginPage() {
 
                         <div className="space-y-2 group animate-fade-in-up">
                             <div className="flex justify-between items-center px-1">
-                                <label className="text-xs font-bold text-zinc-500 transition-colors group-focus-within:text-sky-500">Sua senha</label>
+                                <label htmlFor="password" className="text-xs font-bold text-zinc-500 transition-colors group-focus-within:text-sky-500">Sua senha</label>
                                 <button type="button" onClick={() => setLocation('/forgot-password')} className="text-[10px] font-bold text-zinc-500 hover:text-sky-400 uppercase transition-colors">Esqueci a senha</button>
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" size={18} />
                                 <input
+                                    id="password"
                                     type={showPassword ? "text" : "password"} required value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-2xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:bg-zinc-900/80 focus:shadow-[0_0_20px_rgba(14,165,233,0.1)] text-white placeholder:text-zinc-700 transition-all duration-300"
                                     placeholder="��������"
                                 />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors"
+                                    aria-label={showPassword ? "Ocultar senha" : "Exibir senha"}
+                                >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
