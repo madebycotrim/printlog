@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useId } from 'react';
 import { ChevronDown, Check, Search } from "lucide-react";
 import { Tooltip } from "./ui/Tooltip";
 
@@ -190,6 +190,9 @@ export const UnifiedInput = ({
   const mainInputRef = useRef(null);
   const hoursInputRef = useRef(null);
 
+  const generatedId = useId();
+  const inputId = props.id || generatedId;
+
   const isTime = type === "time";
   const isSelect = type === "select";
   const isGhost = variant === "ghost";
@@ -229,7 +232,10 @@ export const UnifiedInput = ({
       {label && !isGhost && (
         <div className="flex justify-between items-end px-1.5 h-3">
           <div className="flex items-center gap-1.5">
-            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+            <label
+              htmlFor={(!isTime && !isSelect) ? inputId : undefined}
+              className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}
+            >
               {label}
             </label>
             {tooltip && <Tooltip text={tooltip} />}
@@ -317,6 +323,7 @@ export const UnifiedInput = ({
               ) : (
                 <input
                   ref={mainInputRef}
+                  id={inputId}
                   {...props}
                   type={type}
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
