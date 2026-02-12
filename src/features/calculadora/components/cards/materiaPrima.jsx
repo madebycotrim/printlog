@@ -45,6 +45,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                 <UnifiedInput
                     variant="ghost"
                     placeholder="MATERIAL..."
+                    aria-label="Nome do material"
                     type="text"
                     value={dadosSlot.name || ""}
                     onChange={(e) => {
@@ -62,6 +63,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                 <UnifiedInput
                     variant="ghost"
                     placeholder="0"
+                    aria-label={`Peso em ${dadosSlot.unit || 'g'}`}
                     type="text"
                     align="center"
                     suffix={dadosSlot.unit || 'g'}
@@ -77,6 +79,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                 <UnifiedInput
                     variant="ghost"
                     placeholder="0.00"
+                    aria-label="Preço por Kg"
                     type="text"
                     align="right"
                     suffix="R$"
@@ -93,6 +96,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                 onClick={() => podeRemover && aoRemover(indice)}
                 className="w-8 shrink-0 h-full flex items-center justify-center text-zinc-700 hover:text-rose-500 hover:bg-rose-500/10 transition-colors rounded-r-lg"
                 title="Remover"
+                aria-label="Remover item"
             >
                 <X size={14} strokeWidth={2.5} />
             </button>
@@ -188,6 +192,7 @@ export default function MaterialModule() {
                                 type="button"
                                 onClick={() => setModalSelecaoAberto(true)}
                                 title="Importar do Estoque"
+                                aria-label="Importar do Estoque"
                                 className="w-6 h-6 flex items-center justify-center rounded-md bg-zinc-800 text-zinc-400 hover:bg-emerald-500 hover:text-white transition-all"
                             >
                                 <Layers size={14} strokeWidth={2.5} />
@@ -197,6 +202,7 @@ export default function MaterialModule() {
                                 type="button"
                                 onClick={() => setMaterialSlots([...materialSlots, { id: 'manual', weight: '', priceKg: '' }])}
                                 title="Adicionar Manualmente"
+                                aria-label="Adicionar Manualmente"
                                 className="w-6 h-6 flex items-center justify-center rounded-md bg-zinc-800 text-zinc-400 hover:bg-sky-500 hover:text-white transition-all"
                             >
                                 <Plus size={14} strokeWidth={2.5} />
