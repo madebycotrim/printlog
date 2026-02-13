@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useId } from 'react';
 import { ChevronDown, Check, Search } from "lucide-react";
 import { Tooltip } from "./ui/Tooltip";
 
@@ -180,8 +180,11 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
 /* ---------- COMPONENTE PRINCIPAL: UNIFIED INPUT ---------- */
 export const UnifiedInput = ({
   label, subtitle, icon: Icon, suffix, isLucro, type, options, variant = "default",
-  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, tooltip, error, accentColor, ...props
+  hoursValue, onHoursChange, minutesValue, onMinutesChange, onSearch, tooltip, error, accentColor, id, ...props
 }) => {
+  const generatedId = useId();
+  const inputId = id || generatedId;
+
   const [isFocused, setIsFocused] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
@@ -229,7 +232,7 @@ export const UnifiedInput = ({
       {label && !isGhost && (
         <div className="flex justify-between items-end px-1.5 h-3">
           <div className="flex items-center gap-1.5">
-            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+            <label htmlFor={inputId} className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
               {label}
             </label>
             {tooltip && <Tooltip text={tooltip} />}
@@ -316,6 +319,8 @@ export const UnifiedInput = ({
                 />
               ) : (
                 <input
+                  id={inputId}
+                  aria-label={isGhost ? label : undefined}
                   ref={mainInputRef}
                   {...props}
                   type={type}
