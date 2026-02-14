@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useId } from 'react';
 import { ChevronDown, Check, Search } from "lucide-react";
 import { Tooltip } from "./ui/Tooltip";
 
@@ -162,7 +162,19 @@ const InternalSelect = ({ value, onChange, options, placeholder, isOpen, setOpen
   return (
     <div ref={containerRef} className="w-full h-full flex items-center">
       {/* Gatilho interno */}
-      <div className="w-full h-full flex items-center select-none">
+      <div
+        className="w-full h-full flex items-center select-none outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 rounded-lg"
+        tabIndex={0}
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen(!isOpen);
+          }
+        }}
+      >
         <div className={`flex items-center gap-2 w-full text-[11px] font-mono font-bold uppercase transition-colors ${selected ? "text-zinc-100" : "text-zinc-600"
           }`}>
           {selected?.color && selected.color !== 'transparent' && (
@@ -184,6 +196,10 @@ export const UnifiedInput = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+
+  // A11y: Generate unique ID if not provided
+  const internalId = useId();
+  const inputId = props.id || internalId;
 
   // Referências para disparar o foco
   const containerRef = useRef(null);
@@ -229,7 +245,10 @@ export const UnifiedInput = ({
       {label && !isGhost && (
         <div className="flex justify-between items-end px-1.5 h-3">
           <div className="flex items-center gap-1.5">
-            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+            <label
+              htmlFor={inputId}
+              className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}
+            >
               {label}
             </label>
             {tooltip && <Tooltip text={tooltip} />}
@@ -275,6 +294,7 @@ export const UnifiedInput = ({
                 <input
                   ref={hoursInputRef}
                   type="number"
+                  aria-label={label ? `${label} - Horas` : "Horas"}
                   value={hoursValue ?? ""}
                   onChange={e => onHoursChange?.(e.target.value)}
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
@@ -290,6 +310,7 @@ export const UnifiedInput = ({
                 {/* MINUTOS */}
                 <input
                   type="number"
+                  aria-label={label ? `${label} - Minutos` : "Minutos"}
                   min={0} max={59}
                   value={minutesValue ?? ""}
                   onChange={e => {
@@ -317,6 +338,9 @@ export const UnifiedInput = ({
               ) : (
                 <input
                   ref={mainInputRef}
+                  id={inputId}
+                  aria-invalid={!!error}
+                  aria-label={isGhost ? label : undefined}
                   {...props}
                   type={type}
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
