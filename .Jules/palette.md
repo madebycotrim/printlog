@@ -1,0 +1,3 @@
+## 2025-02-18 - [UnifiedInput Accessibility]
+**Learning:** Polymorphic input components (like UnifiedInput handling text, time, and select) require careful handling of `htmlFor` and `id` associations. Specifically, when an input type splits into multiple fields (like Hours/Minutes) or custom widgets (Select), a single `label` with `htmlFor` is insufficient.
+**Action:** Use `aria-label` on sub-inputs (e.g., "Label - Hours") and ensuring custom triggers have `role="combobox"`, `tabIndex="0"`, and keyboard handlers (Enter/Space) to bridge the gap between custom UI and native accessibility expectations.
