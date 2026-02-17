@@ -4,7 +4,7 @@ import { useSidebarStore } from '../stores/sidebarStore';
 import { Menu } from 'lucide-react';
 import { InstallPwa } from '../components/InstallPwa';
 import FloatingQuickActions from '../components/FloatingQuickActions';
-import ModalFilamento from '../features/filamentos/components/ModalFilamento';
+import ModalMaterial from '../features/materiais/components/ModalMaterial';
 import ModalImpressora from '../features/impressoras/components/ModalImpressora';
 import ModalInsumo from '../features/insumos/components/ModalInsumo';
 
@@ -13,7 +13,7 @@ import { useLocation } from 'wouter';
 import { useState } from 'react';
 import { useScannerStore } from '../stores/scannerStore';
 import { useToastStore } from '../stores/toastStore';
-import { useFilamentos, useMutacoesFilamento } from '../features/filamentos/logic/consultasFilamento';
+import { useMateriais, useMutacoesMaterial } from '../features/materiais/logic/consultasMateriais';
 import { usePrinters, usePrinterMutations } from '../features/impressoras/logic/consultasImpressora';
 import { useSupplyStore } from '../features/insumos/logic/supplies';
 import { identifyItem } from '../features/scanner/logic/scannerService';
@@ -28,7 +28,7 @@ export default function ManagementLayout({ children }) {
     const { isScannerOpen, openScanner, closeScanner, setHighlightedItem } = useScannerStore();
 
     // Data for Scanner
-    const { data: filaments = [] } = useFilamentos();
+    const { data: filaments = [] } = useMateriais();
     const { data: printers = [] } = usePrinters();
     const supplies = useSupplyStore(state => state.supplies);
     const fetchSupplies = useSupplyStore(state => state.fetchSupplies);
@@ -52,7 +52,7 @@ export default function ManagementLayout({ children }) {
     const [editingPrinter, setEditingPrinter] = useState(null);
     const [editingSupply, setEditingSupply] = useState(null);
 
-    const { salvarFilamento } = useMutacoesFilamento();
+    const { salvarMaterial } = useMutacoesMaterial();
     const { upsertPrinter } = usePrinterMutations();
 
     // Global Key Listener for Hardware Scanners
@@ -161,12 +161,12 @@ export default function ManagementLayout({ children }) {
                 items={[...filaments, ...printers, ...supplies]} // Pass ALL items for search
             />
 
-            <ModalFilamento
+            <ModalMaterial
                 aberto={isFilamentModalOpen}
                 aoFechar={() => { setFilamentModalOpen(false); setEditingFilament(null); }}
                 dadosIniciais={editingFilament}
                 aoSalvar={async (data) => {
-                    await salvarFilamento(data);
+                    await salvarMaterial(data);
                     if (!data.id) setFilamentModalOpen(false);
                 }}
             />

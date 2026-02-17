@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { History, Calendar, ArrowDownCircle, TrendingDown, Clock, AlertCircle } from 'lucide-react';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
-import VisualizacaoCarretel from './VisualizacaoCarretel';
+import VisualizacaoMaterial from './VisualizacaoMaterial';
 
-import { useHistoricoFilamento } from '../logic/consultasFilamento';
+import { useHistoricoMaterial } from '../logic/consultasMateriais';
 
-export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
-    const { data } = useHistoricoFilamento(item?.id);
+export default function ModalHistoricoMaterial({ aberto, aoFechar, item }) {
+    const { data } = useHistoricoMaterial(item?.id);
     const historico = data?.history || [];
     const estatisticasApi = data?.stats || {};
 
@@ -53,7 +53,7 @@ export default function ModalHistoricoFilamento({ aberto, aoFechar, item }) {
 
                 {/* Carretel */}
                 <div className="relative z-10 pointer-events-none drop-shadow-2xl">
-                    <VisualizacaoCarretel
+                    <VisualizacaoMaterial
                         cor={item?.cor_hex}
                         tamanho={180}
                         porcentagem={(item?.peso_atual / item?.peso_total) * 100}

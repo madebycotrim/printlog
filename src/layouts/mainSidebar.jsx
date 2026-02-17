@@ -10,7 +10,7 @@ import {
 import logo from "../assets/logo-colorida.png";
 import logoBranca from "../assets/logo-branca.png";
 
-import { useFilamentos } from "../features/filamentos/logic/consultasFilamento";
+import { useMateriais } from "../features/materiais/logic/consultasMateriais";
 import { usePrinters } from "../features/impressoras/logic/consultasImpressora";
 import { analisarSaudeImpressora } from "../features/impressoras/logic/diagnostics";
 
@@ -120,7 +120,7 @@ const ROUTES_MAP = {
     '/dashboard': () => import('../pages/Principal/Dashboard'),
     '/calculadora': () => import('../pages/Principal/Calculadora'),
     '/clientes': () => import('../pages/Principal/Clientes'),
-    '/filamentos': () => import('../pages/Gestao/Filamentos'),
+    '/materiais': () => import('../pages/Gestao/Materiais'),
     '/insumos': () => import('../pages/Gestao/Insumos'),
     '/impressoras': () => import('../pages/Gestao/Impressoras'),
     '/projetos': () => import('../pages/Gestao/Projetos'),
@@ -148,20 +148,20 @@ export default function MainSidebar() {
     // Global State
     const { collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen } = useSidebarStore();
 
-    const { data: filaments = [] } = useFilamentos();
+    const { data: materiais = [] } = useMateriais();
     const { data: printers = [] } = usePrinters();
 
 
 
     const alerts = useMemo(() => {
-        const lowStock = (filaments || []).some(f => (Number(f.peso_atual) || 0) < 150);
+        const lowStock = (materiais || []).some(f => (Number(f.peso_atual) || 0) < 150);
         const criticalPrinter = (printers || []).some(p => {
             const temErroStatus = p.status === 'error' || p.status === 'offline';
             const temManutencaoCritica = analisarSaudeImpressora(p).some(m => m.severidade === 'critical');
             return temErroStatus || temManutencaoCritica;
         });
         return { lowStock, criticalPrinter };
-    }, [filaments, printers]);
+    }, [materiais, printers]);
 
     // Listen for workshop name updates
     React.useEffect(() => {
@@ -259,7 +259,7 @@ h-[88px] flex items-center shrink-0 relative
                     <SidebarItem href="/clientes" icon={Users} label="Clientes" collapsed={renderCollapsed} color="sky" onHover={() => prefetchRoute('/clientes')} onClick={isMobile ? handleCloseMobile : undefined} />
 
                     <SidebarSection title="Gestão" collapsed={renderCollapsed} />
-                    <SidebarItem href="/filamentos" icon={Package} label="Materiais" collapsed={renderCollapsed} badge={alerts.lowStock} color="rose" onHover={() => prefetchRoute('/filamentos')} onClick={isMobile ? handleCloseMobile : undefined} />
+                    <SidebarItem href="/materiais" icon={Package} label="Materiais" collapsed={renderCollapsed} badge={alerts.lowStock} color="rose" onHover={() => prefetchRoute('/materiais')} onClick={isMobile ? handleCloseMobile : undefined} />
                     <SidebarItem href="/insumos" icon={Layers} label="Insumos" collapsed={renderCollapsed} color="orange" onHover={() => prefetchRoute('/insumos')} onClick={isMobile ? handleCloseMobile : undefined} />
                     <SidebarItem href="/impressoras" icon={Printer} label="Impressoras" collapsed={renderCollapsed} badge={alerts.criticalPrinter} color="emerald" onHover={() => prefetchRoute('/impressoras')} onClick={isMobile ? handleCloseMobile : undefined} />
                     <SidebarItem href="/projetos" icon={FolderOpen} label="Projetos" collapsed={renderCollapsed} color="amber" onHover={() => prefetchRoute('/projetos')} onClick={isMobile ? handleCloseMobile : undefined} />

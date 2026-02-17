@@ -1,7 +1,10 @@
 import React, { useMemo } from "react";
 import { ArrowDownFromLine, Droplet } from "lucide-react";
 
-export const StatusFilamento = ({ item, umidadeAtual, className = "" }) => {
+import { MATERIAIS_HIGROSCOPICOS } from "../logic/constantes";
+
+export const StatusMaterial = ({ item, umidadeAtual, className = "" }) => {
+    // ... logic
     const estatisticas = useMemo(() => {
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
         const atual = Math.max(0, Number(item?.peso_atual) || 0);
@@ -9,7 +12,7 @@ export const StatusFilamento = ({ item, umidadeAtual, className = "" }) => {
         return { ehCritico: porcentagem <= 20 };
     }, [item?.peso_atual, item?.peso_total]);
 
-    const ehHigroscopico = ['PLA', 'PETG', 'TPU', 'NYLON', 'ABS', 'ASA'].includes(item?.material?.toUpperCase());
+    const ehHigroscopico = MATERIAIS_HIGROSCOPICOS.includes(item?.material?.toUpperCase());
     const riscoUmidade = ehHigroscopico && (umidadeAtual > 50);
 
     return (

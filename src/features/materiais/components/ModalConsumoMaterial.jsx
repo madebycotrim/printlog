@@ -1,31 +1,30 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AlertTriangle, Terminal, ArrowDownToLine, Loader2, TrendingDown, AlertOctagon } from "lucide-react";
 import { useQueryClient } from '@tanstack/react-query';
-import VisualizacaoCarretel from "./VisualizacaoCarretel";
+import VisualizacaoMaterial from "./VisualizacaoMaterial";
 import { parseNumber } from "../../../utils/numbers";
 import { useToastStore } from "../../../stores/toastStore";
 import SideBySideModal from "../../../components/ui/SideBySideModal";
 import api from "../../../utils/api";
 import { UnifiedInput } from "../../../components/UnifiedInput";
-import { useMutacoesFilamento } from "../logic/consultasFilamento";
+import { useMutacoesMaterial } from "../logic/consultasMateriais";
 import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
-export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
+export default function ModalConsumoMaterial({ aberto, aoFechar, item, aoSalvar }) {
     const [consumo, setConsumo] = useState("");
     const [salvando, setSalvando] = useState(false);
     const [mostrarErros, setMostrarErros] = useState(false);
 
     // Mutation Hook
-    const { registrarHistorico } = useMutacoesFilamento();
+    const { registrarHistorico } = useMutacoesMaterial();
 
     // Estados para Falha
     const [ehFalha, setEhFalha] = useState(false);
     const [motivoFalha, setMotivoFalha] = useState("Falha de Aderência");
 
     // Interaction States
+    // Interaction States
     const [emFoco, setEmFoco] = useState(false);
-    const [arrastando, setArrastando] = useState(false);
-    const spoolRef = useRef(null);
 
     // Resin Logic (moved up for init)
     const isResin = React.useMemo(() => {
@@ -54,7 +53,6 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
             setSalvando(false);
             setMostrarErros(false);
             setEmFoco(false);
-            setArrastando(false);
         }
     }, [aberto, isResin]);
 
@@ -201,23 +199,15 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 </h2>
             </div>
 
-            {/* Central Spool Visualization with Hit Box */}
+            {/* Central Spool Visualization */}
             <div className="w-full flex-1 flex items-center justify-center select-none my-4">
                 <div className="relative w-[220px] h-[220px]">
-                    {/* HIT BOX */}
+                    {/* HIT BOX (Removed Drag) */}
                     <div
-                        className="absolute inset-0 z-50 cursor-ns-resize rounded-full"
-                        ref={spoolRef}
+                        className="absolute inset-0 z-50 rounded-full"
                         onMouseEnter={() => setEmFoco(true)}
-                        onMouseDown={() => setArrastando(true)}
-                        onMouseUp={() => setArrastando(false)}
-                        onMouseLeave={() => { setArrastando(false); setEmFoco(false); }}
-                        onMouseMove={(e) => arrastando && handleSpoolInteraction(e)}
-                        onClick={handleSpoolInteraction}
-                        onTouchStart={() => setArrastando(true)}
-                        onTouchEnd={() => setArrastando(false)}
-                        onTouchMove={(e) => arrastando && handleSpoolInteraction(e)}
-                        title="Arraste para definir o consumo"
+                        onMouseLeave={() => setEmFoco(false)}
+                        title="Visualização do Material"
                     />
 
                     {/* GLOW */}
@@ -228,7 +218,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
 
                     {/* SPOOL / BOTTLE */}
                     <div className={`transform transition-transform duration-500 ${emFoco ? "scale-105" : ""} active:scale-95 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none`}>
-                        <VisualizacaoCarretel
+                        <VisualizacaoMaterial
                             cor={corFilamento}
                             tamanho={220}
                             porcentagem={pctFinal}
@@ -243,12 +233,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         </span>
                     </div>
 
-                    {/* DRAG HINT */}
-                    <div className={`absolute right-[-40px] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-opacity duration-500 pointer-events-none ${emFoco ? "opacity-40" : "opacity-0"}`}>
-                        <div className="w-1 h-1 bg-white rounded-full" />
-                        <div className="w-0.5 h-12 bg-gradient-to-b from-transparent via-white to-transparent" />
-                        <div className="w-1 h-1 bg-white rounded-full" />
-                    </div>
+
                 </div>
             </div>
 
@@ -259,7 +244,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Atual</span>
                         <p className="text-xs font-mono font-bold text-zinc-400">{Math.round(pesoAnterior)}{unitSuffix}</p>
                     </div>
-                    <ArrowDownToLine size={16} className={`text-zinc-600 ${arrastando ? "animate-bounce" : ""}`} />
+                    <ArrowDownToLine size={16} className={`text-zinc-600`} />
                     <div className="text-right">
                         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Final</span>
                         <p className={`text-xl font-mono font-bold ${erroSaldoNegativo ? 'text-rose-500' : 'text-zinc-100'}`}>
@@ -310,7 +295,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 {/* Seção 01 */}
                 <section className="space-y-4">
                     <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        <h4>[01] {isResin ? 'Volume Usado' : 'Peso Usado'}</h4>
+                        <h4>{isResin ? 'Volume Usado' : 'Peso Usado'}</h4>
                         <div className="h-px bg-zinc-800/50 flex-1" />
                     </div>
 
@@ -384,7 +369,7 @@ export default function ModalBaixaRapida({ aberto, aoFechar, item, aoSalvar }) {
                 {/* Seção 02 */}
                 <section className="space-y-4">
                     <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                        <h4>[02] Detalhes</h4>
+                        <h4>Detalhes</h4>
                         <div className="h-px bg-zinc-800/50 flex-1" />
                     </div>
 

@@ -10,41 +10,42 @@ import api from "../../utils/api";
 import { useToastStore } from '../../stores/toastStore';
 
 // LÓGICA E STORE (Zustand)
-import { useFilamentos, useMutacoesFilamento } from "../../features/filamentos/logic/consultasFilamento";
-import { MATERIAIS_RESINA_FLAT, MATERIAIS_FDM_FLAT } from "../../features/filamentos/logic/constantes";
+import { useMateriais, useMutacoesMaterial } from "../../features/materiais/logic/consultasMateriais";
+import { MATERIAIS_RESINA_FLAT, MATERIAIS_FDM_FLAT } from "../../features/materiais/logic/constantes";
 import { useScannerStore } from '../../stores/scannerStore';
 
-// COMPONENTES DA FUNCIONALIDADE (FILAMENTOS)
-import StatusFilamentos from "../../features/filamentos/components/StatusFilamentos";
-import { CartaoFilamento } from "../../features/filamentos/components/CardFilamento";
-import { LinhaFilamento } from "../../features/filamentos/components/LinhaFilamento";
-import ModalFilamento from "../../features/filamentos/components/ModalFilamento.jsx";
-import ModalBaixaRapida from "../../features/filamentos/components/ModalBaixaRapida.jsx";
-import ModalHistoricoFilamento from "../../features/filamentos/components/ModalHistoricoFilamento.jsx";
-import ModalRegistrarFalha from '../../features/filamentos/components/ModalRegistrarFalha';
-import ModalExcluirFilamento from '../../features/filamentos/components/ModalExcluirFilamento';
-import ModalEtiqueta from '../../features/filamentos/components/ModalEtiqueta';
+// COMPONENTES DA FUNCIONALIDADE (MATERIAIS)
+import StatusMateriais from "../../features/materiais/components/StatusMateriais";
+import CardMaterial from "../../features/materiais/components/CardMaterial";
+import { LinhaMaterial } from "../../features/materiais/components/LinhaMaterial";
+import ModalMaterial from "../../features/materiais/components/ModalMaterial";
+import ModalConsumoMaterial from "../../features/materiais/components/ModalConsumoMaterial";
+import ModalHistoricoMaterial from "../../features/materiais/components/ModalHistoricoMaterial";
+import ModalRegistrarFalhaMaterial from '../../features/materiais/components/ModalRegistrarFalhaMaterial';
+import ModalExcluirMaterial from '../../features/materiais/components/ModalExcluirMaterial';
+import ModalEtiquetaMaterial from '../../features/materiais/components/ModalEtiquetaMaterial';
+import { CabecalhoMateriais } from "../../features/materiais/components/HeaderMateriais";
 
 // NOVOS COMPONENTES (COMPARTILHADOS)
 import { VirtualShelves } from "../../components/materials/VirtualShelves";
 
 // FILTROS
 import { normalizeString } from "../../utils/stringUtils";
-import FiltrosFilamento from "../../features/filamentos/components/FiltrosFilamento";
+import FiltrosMateriais from "../../features/materiais/components/FiltrosMateriais";
 
 import { useLocalWeather } from "../../hooks/useLocalWeather";
 
-const VIEW_MODE_KEY = "printlog_filaments_view";
+const VIEW_MODE_KEY = "printlog_materiais_view";
 const DEFAULT_VIEW_MODE = "grid";
 
-export default function FilamentosPage() {
+export default function MateriaisPage() {
   const [busca, setBusca] = useState("");
   const deferredBusca = useDeferredValue(busca);
 
   const { temp, humidity, loading: weatherLoading } = useLocalWeather();
 
-  const { data: filaments = [], isLoading: loading } = useFilamentos();
-  const { salvarFilamento, excluirFilamento, registrarHistorico, salvando } = useMutacoesFilamento();
+  const { data: materiais = [], isLoading: loading } = useMateriais();
+  const { salvarMaterial, excluirMaterial, registrarHistorico, salvando } = useMutacoesMaterial();
 
   const [modoVisualizacao, setModoVisualizacao] = useState(() => localStorage.getItem(VIEW_MODE_KEY) || DEFAULT_VIEW_MODE);
 
@@ -58,12 +59,12 @@ export default function FilamentosPage() {
   const { addToast } = useToastStore();
 
   const [activeTab, setActiveTab] = useState(() => {
-    const saved = localStorage.getItem('printlog_filaments_active_tab');
+    const saved = localStorage.getItem('printlog_materiais_active_tab');
     return ['all', 'FDM', 'SLA'].includes(saved) ? saved : 'all';
   });
 
   useEffect(() => {
-    localStorage.setItem('printlog_filaments_active_tab', activeTab);
+    localStorage.setItem('printlog_materiais_active_tab', activeTab);
   }, [activeTab]);
 
   // Estados de Controle de Modais
@@ -82,9 +83,9 @@ export default function FilamentosPage() {
   const [highlightedItemId, setHighlightedItemId] = useState(null);
 
   useEffect(() => {
-    if (highlightedItem && highlightedItem.type === 'filament') {
+    if (highlightedItem && (highlightedItem.type === 'filament' || highlightedItem.type === 'material')) {
       setHighlightedItemId(highlightedItem.id);
-      setBusca(filaments.find(f => f.id === highlightedItem.id)?.nome || ""); // Filter logic
+      setBusca(materiais.find(f => f.id === highlightedItem.id)?.nome || ""); // Filter logic
 
       const timer = setTimeout(() => {
         setHighlightedItemId(null);
@@ -92,7 +93,7 @@ export default function FilamentosPage() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [highlightedItem, filaments, clearHighlight]);
+  }, [highlightedItem, materiais, clearHighlight]);
 
   // Fetch Failures Stats
   const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });
@@ -115,19 +116,19 @@ export default function FilamentosPage() {
   }, [modoVisualizacao]);
 
   // 1. Pre-processamento (Memoized) - Gera string de busca indexada
-  const searchableFilaments = useMemo(() => {
-    return filaments.map(f => ({
+  const searchableMateriais = useMemo(() => {
+    return materiais.map(f => ({
       ...f,
       _searchStr: normalizeString(`${f.nome || ""} ${f.material || ""} ${f.marca || ""}`)
     }));
-  }, [filaments]);
+  }, [materiais]);
 
   // 2. PROCESSAMENTO DE DADOS (Filtragem e Agrupamento)
   const { grupos, stats, lowStockCount, availableBrands, availableMaterials } = useMemo(() => {
     const termo = normalizeString(deferredBusca);
 
     // 2.1 Pré-processamento de Tipo (SLA vs FDM)
-    const itemsWithTypes = searchableFilaments.map(f => {
+    const itemsWithTypes = searchableMateriais.map(f => {
       const mat = (f.material || "").trim();
       const tipo = (f.tipo || "").toUpperCase();
       const isKnownResin =
@@ -239,7 +240,7 @@ export default function FilamentosPage() {
       availableBrands: contextBrands,
       availableMaterials: contextMaterials
     };
-  }, [searchableFilaments, deferredBusca, filtros, activeTab]);
+  }, [searchableMateriais, deferredBusca, filtros, activeTab]);
 
   /* --- HANDLERS --- */
   const handleEdit = useCallback((item) => {
@@ -265,9 +266,9 @@ export default function FilamentosPage() {
   }, []);
 
   const handleDelete = useCallback((id) => {
-    const item = filaments.find(f => f.id === id);
+    const item = materiais.find(f => f.id === id);
     if (item) setConfirmacaoExclusao({ aberta: true, item });
-  }, [filaments]);
+  }, [materiais]);
 
   const fecharModais = useCallback(() => {
     setModalAberto(false);
@@ -278,9 +279,9 @@ export default function FilamentosPage() {
     setConfirmacaoExclusao({ aberta: false, item: null });
   }, []);
 
-  const aoSalvarFilamento = async (dados) => {
+  const aoSalvarMaterial = async (dados) => {
     try {
-      return await salvarFilamento(dados);
+      return await salvarMaterial(dados);
       // fecharModais(); // Let components verify saving state if needed
     } catch (_e) { }
   };
@@ -291,7 +292,7 @@ export default function FilamentosPage() {
         data_secagem: new Date().toISOString()
       });
 
-      await salvarFilamento({
+      await salvarMaterial({
         ...item,
         data_secagem: new Date().toISOString()
       });
@@ -299,13 +300,13 @@ export default function FilamentosPage() {
       console.error("Erro ao secar rápido:", error);
       addToast("Erro ao registrar secagem.", 'error');
     }
-  }, [salvarFilamento, addToast]);
+  }, [salvarMaterial, addToast]);
 
   const aoConfirmarExclusao = async () => {
     const { item } = confirmacaoExclusao;
     if (!item) return;
     try {
-      await excluirFilamento(item.id);
+      await excluirMaterial(item.id);
     } catch (_e) { } finally {
       fecharModais();
     }
@@ -317,9 +318,8 @@ export default function FilamentosPage() {
     aoConsumir: setItemConsumo,
     aoDuplicar: handleDuplicate,
     aoVerHistorico: handleHistory,
-    aoImprimirEtiqueta: setItemEtiqueta,
-    aoSecar: handleQuickDry
-  }), [handleEdit, handleDelete, handleDuplicate, handleHistory, handleQuickDry]);
+    aoImprimirEtiqueta: setItemEtiqueta
+  }), [handleEdit, handleDelete, handleDuplicate, handleHistory]);
 
   /* TABS CONTROL */
   const extraControls = (
@@ -371,15 +371,22 @@ export default function FilamentosPage() {
         title="Meus Materiais"
         subtitle="Gerencie seu estoque de filamentos e resinas"
         accentColor="text-rose-500"
-        searchQuery={busca}
-        onSearchChange={setBusca}
-        placeholder="BUSCAR MATERIAL..."
         extraControls={extraControls}
         actionButton={novoButton}
-      />
+      >
+        <CabecalhoMateriais
+          estatisticas={{ pesoKg: stats.pesoKg, valorTotal: stats.valorTotal }}
+          contagemEstoqueBaixo={lowStockCount}
+          aoBuscar={setBusca}
+          modoVisualizacao={modoVisualizacao}
+          setModoVisualizacao={setModoVisualizacao}
+          aoAdicionar={() => setModalAberto(true)}
+        />
+      </PageHeader>
 
       <div className="space-y-6">
-        <StatusFilamentos
+
+        <StatusMateriais
           pesoTotal={stats.pesoKg}
           contagemEstoqueBaixo={lowStockCount}
           valorTotal={stats.valorTotal}
@@ -387,7 +394,7 @@ export default function FilamentosPage() {
           estatisticasFalhas={failureStats}
         />
 
-        <FiltrosFilamento
+        <FiltrosMateriais
           filtros={filtros}
           setFiltros={setFiltros}
           modoVisualizacao={modoVisualizacao}
@@ -401,12 +408,8 @@ export default function FilamentosPage() {
             <VirtualShelves
               groups={grupos}
               viewMode={modoVisualizacao}
-              onAdd={(groupMaterial) => {
-                setItemEdicao({ material: groupMaterial });
-                setModalAberto(true);
-              }}
               renderItem={(item) => modoVisualizacao === 'grid' ? (
-                <CartaoFilamento
+                <CardMaterial
                   item={item}
                   umidadeAtual={humidity}
                   temperaturaAtual={temp}
@@ -416,11 +419,10 @@ export default function FilamentosPage() {
                   aoDuplicar={acoes.aoDuplicar}
                   aoVerHistorico={acoes.aoVerHistorico}
                   aoImprimirEtiqueta={acoes.aoImprimirEtiqueta}
-                  aoSecar={acoes.aoSecar}
                   highlightedItemId={highlightedItemId}
                 />
               ) : (
-                <LinhaFilamento
+                <LinhaMaterial
                   item={item}
                   umidadeAtual={humidity}
                   temperaturaAtual={temp}
@@ -447,13 +449,13 @@ export default function FilamentosPage() {
       </div>
 
       {/* --- MODAIS DE NEGOCIO --- */}
-      <ModalFilamento aberto={modalAberto} aoFechar={fecharModais} aoSalvar={aoSalvarFilamento} dadosIniciais={itemEdicao} />
-      <ModalBaixaRapida aberto={!!itemConsumo} aoFechar={fecharModais} item={itemConsumo} aoSalvar={aoSalvarFilamento} />
-      <ModalHistoricoFilamento aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
-      <ModalRegistrarFalha aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
-      <ModalEtiqueta isOpen={!!itemEtiqueta} onClose={() => setItemEtiqueta(null)} item={itemEtiqueta} />
+      <ModalMaterial aberto={modalAberto} aoFechar={fecharModais} aoSalvar={aoSalvarMaterial} dadosIniciais={itemEdicao} />
+      <ModalConsumoMaterial aberto={!!itemConsumo} aoFechar={fecharModais} item={itemConsumo} aoSalvar={aoSalvarMaterial} />
+      <ModalHistoricoMaterial aberto={modalHistoricoAberto} aoFechar={fecharModais} item={itemEdicao} />
+      <ModalRegistrarFalhaMaterial aberto={modalFalhaAberto} aoFechar={fecharModais} aoSalvar={fetchFailures} />
+      <ModalEtiquetaMaterial isOpen={!!itemEtiqueta} onClose={() => setItemEtiqueta(null)} item={itemEtiqueta} />
 
-      <ModalExcluirFilamento
+      <ModalExcluirMaterial
         aberto={confirmacaoExclusao.aberta}
         aoFechar={fecharModais}
         aoConfirmar={aoConfirmarExclusao}

@@ -33,6 +33,7 @@ export default function FooterSection() {
                     <div>
                         <h4 className="font-bold text-white uppercase tracking-widest mb-4">Legal</h4>
                         <ul className="space-y-2 text-zinc-500">
+                            <li><a href="/security-privacy" className="hover:text-sky-500 transition-colors">Segurança e Privacidade</a></li>
                             <li><a href="/terms-of-service" className="hover:text-sky-500 transition-colors">Termos de Uso</a></li>
                             <li><a href="/privacy-policy" className="hover:text-sky-500 transition-colors">Política de Privacidade</a></li>
                         </ul>

@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Printer, X, Square, Circle } from "lucide-react";
 import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
-export default function ModalEtiqueta({ isOpen, onClose, item }) {
+export default function ModalEtiquetaMaterial({ isOpen, onClose, item }) {
     if (!isOpen || !item) return null;
 
     const [formato, setFormato] = useState('retangular'); // 'retangular' | 'redonda'

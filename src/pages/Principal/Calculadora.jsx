@@ -15,7 +15,7 @@ import HeaderCalculadora from "../../features/calculadora/components/HeaderCalcu
 import Summary from "../../features/calculadora/components/Resumo.jsx";
 import HistoryDrawer from "../../features/calculadora/components/Historico.jsx";
 import PainelConfiguracoesCalculo from "../../features/calculadora/components/ConfigCalculo.jsx";
-import ModalRegistrarFalha from "../../features/filamentos/components/ModalRegistrarFalha.jsx";
+import ModalRegistrarFalhaMaterial from "../../features/materiais/components/ModalRegistrarFalhaMaterial.jsx";
 import OverlayArrastarSoltar from "../../features/calculadora/components/OverlayArrastarSoltar.jsx";
 import ModalTaxas from "../../features/calculadora/components/ModalTaxas.jsx"; // Importado
 
@@ -427,7 +427,7 @@ export default function CalculadoraPage() {
                         }}
                     />
 
-                    <ModalRegistrarFalha
+                    <ModalRegistrarFalhaMaterial
                         aberto={modalFalhaAberto}
                         aoFechar={() => setModalFalhaAberto(false)}
                         aoSalvar={(falha) => {

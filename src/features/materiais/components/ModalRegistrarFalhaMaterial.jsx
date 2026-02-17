@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { AlertOctagon, Layers, Loader2, Save, Ban } from 'lucide-react';
-import VisualizacaoCarretel from './VisualizacaoCarretel';
+import VisualizacaoMaterial from './VisualizacaoMaterial';
 import { UnifiedInput } from '../../../components/UnifiedInput';
-import { useFilamentos } from '../logic/consultasFilamento';
+import { useMateriais } from '../logic/consultasMateriais';
 import FormFeedback from '../../../components/FormFeedback';
 import { useFormFeedback } from '../../../hooks/useFormFeedback';
 import SideBySideModal from '../../../components/ui/SideBySideModal';
@@ -10,7 +10,7 @@ import api from '../../../utils/api';
 import { parseNumber } from "../../../utils/numbers";
 import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
-export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
+export default function ModalRegistrarFalhaMaterial({ aberto, aoFechar, aoSalvar }) {
     const [carregando, setCarregando] = useState(false);
     const [mostrarErros, setMostrarErros] = useState(false);
     const { feedback, showSuccess, showError, hide: esconderFeedback } = useFormFeedback();
@@ -23,7 +23,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
         idFilamento: 'manual',
     });
 
-    const { data: filamentos = [] } = useFilamentos();
+    const { data: filamentos = [] } = useMateriais();
 
     const motivos = [
         "Falha de Aderência", "Entupimento de Bico", "Queda de Energia",
@@ -140,7 +140,7 @@ export default function ModalRegistrarFalha({ aberto, aoFechar, aoSalvar }) {
                 {/* Container de Ícone ou Visualização do Carretel */}
                 <div className="relative z-10 transform transition-transform duration-500 group-hover:scale-105 pointer-events-none drop-shadow-2xl">
                     {formulario.idFilamento !== 'manual' && filamentos.find(f => String(f.id) === String(formulario.idFilamento)) ? (
-                        <VisualizacaoCarretel
+                        <VisualizacaoMaterial
                             cor={filamentos.find(f => String(f.id) === String(formulario.idFilamento)).cor_hex}
                             tamanho={200}
                             porcentagem={80} // Visual fixo para modo de falha

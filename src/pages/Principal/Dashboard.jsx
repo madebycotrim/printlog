@@ -28,12 +28,12 @@ import EstadoVazio from '../../components/ui/EstadoVazio';
 import LimiteErro from '../../components/LimiteErro';
 
 // Importar modais para aes rpidas
-import { useFilamentos, useMutacoesFilamento } from '../../features/filamentos/logic/consultasFilamento';
+import { useMateriais, useMutacoesMaterial } from '../../features/materiais/logic/consultasMateriais';
 import { usePrinters, usePrinterMutations } from '../../features/impressoras/logic/consultasImpressora';
 import { useProjectsStore } from '../../features/projetos/logic/projetos';
 import { useLocation } from 'wouter';
 import { useDashboardLayoutStore } from '../../features/dashboard/logic/layout';
-import ModalFilamento from '../../features/filamentos/components/ModalFilamento';
+import ModalMaterial from '../../features/materiais/components/ModalMaterial';
 import ModalImpressora from '../../features/impressoras/components/ModalImpressora';
 
 import ModalInsumo from '../../features/insumos/components/ModalInsumo';
@@ -138,7 +138,7 @@ export default function Dashboard() {
         criticalAlertsCount
     } = useDashboardData();
 
-    const { data: filamentos = [] } = useFilamentos();
+    const { data: materiais = [] } = useMateriais();
     const { data: printers = [] } = usePrinters();
     const { projects, fetchHistory, updateProjectStatus } = useProjectsStore();
 
@@ -154,7 +154,7 @@ export default function Dashboard() {
         };
 
         if (format === 'pdf') {
-            exportDashboardToPDF({ projects: filteredProjects, printers, filamentos, stats });
+            exportDashboardToPDF({ projects: filteredProjects, printers, filamentos: materiais, stats });
             addToast('Exportando Dashboard em PDF...', 'success');
         } else if (format === 'excel') {
             exportToExcel({ projects: filteredProjects });
@@ -216,7 +216,7 @@ export default function Dashboard() {
                 content = <FleetSummaryWidget printers={printers} />;
                 break;
             case 'alerts':
-                content = <AlertsWidget filamentos={filamentos} printers={printers} projects={filteredProjects} />;
+                content = <AlertsWidget filamentos={materiais} printers={printers} projects={filteredProjects} />;
                 break;
             case 'recent_projects':
                 content = <RecentProjectsWidget projects={filteredProjects?.filter(p => p.data?.status !== 'finalizado') || []} onDuplicate={handleDuplicateProject} onConclude={handleConcludeProject} />;
@@ -234,7 +234,7 @@ export default function Dashboard() {
                 content = <PerformanceMetricsWidget projects={filteredProjects} />;
                 break;
             case 'material_stats':
-                content = <MaterialStatsWidget filamentos={filamentos} />;
+                content = <MaterialStatsWidget filamentos={materiais} />;
                 break;
             case 'live_printers':
                 content = <LivePrinterStatusWidget printers={printers} />;
@@ -246,7 +246,7 @@ export default function Dashboard() {
                 content = <CostDistributionWidget projects={filteredProjects} />;
                 break;
             case 'smart_suggestions':
-                content = <SmartSuggestionsWidget filamentos={filamentos} printers={printers} projects={filteredProjects} />;
+                content = <SmartSuggestionsWidget filamentos={materiais} printers={printers} projects={filteredProjects} />;
                 break;
             default:
                 content = null;
@@ -262,19 +262,19 @@ export default function Dashboard() {
         );
     };
 
-    const [isFilamentModalOpen, setFilamentModalOpen] = useState(false);
+    const [isMaterialModalOpen, setMaterialModalOpen] = useState(false);
     const [isPrinterModalOpen, setPrinterModalOpen] = useState(false);
     const [isSupplyModalOpen, setSupplyModalOpen] = useState(false);
 
-    const { salvarFilamento } = useMutacoesFilamento();
+    const { salvarMaterial } = useMutacoesMaterial();
     const { upsertPrinter } = usePrinterMutations();
 
     // Handlers para salvar
-    const handlesalvarFilamento = async (data) => {
-        return await salvarFilamento(data);
+    const handleSalvarMaterial = async (data) => {
+        return await salvarMaterial(data);
         // Modal fecha automaticamente pelo sucesso ou manualmente
         // mas aqui vamos garantir o estado
-        if (!data.id) setFilamentModalOpen(false);
+        if (!data.id) setMaterialModalOpen(false);
     };
 
     const handleSavePrinter = async (data) => {
@@ -403,7 +403,7 @@ export default function Dashboard() {
                 </header>
 
                 {/* MODAIS A��ES R�PIDAS */}
-                <ModalFilamento aberto={isFilamentModalOpen} aoFechar={() => setFilamentModalOpen(false)} aoSalvar={handlesalvarFilamento} />
+                <ModalMaterial aberto={isMaterialModalOpen} aoFechar={() => setMaterialModalOpen(false)} aoSalvar={handleSalvarMaterial} />
                 <ModalImpressora aberto={isPrinterModalOpen} aoFechar={() => setPrinterModalOpen(false)} aoSalvar={handleSavePrinter} />
                 <ModalInsumo isOpen={isSupplyModalOpen} onClose={() => setSupplyModalOpen(false)} />
 

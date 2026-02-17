@@ -4,7 +4,7 @@ import { UnifiedInput } from "../../../components/UnifiedInput";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { parseNumber } from "../../../utils/numbers";
 
-export default function FormularioEstoqueFilamento({ formulario, atualizarFormulario, mostrarErros, setFormulario, dadosIniciais }) {
+export default function FormularioEstoqueMaterial({ formulario, atualizarFormulario, mostrarErros, setFormulario, dadosIniciais }) {
     const [usarConversao, setUsarConversao] = useState(false);
 
     const isResin = formulario.tipo === 'SLA';
@@ -32,10 +32,10 @@ export default function FormularioEstoqueFilamento({ formulario, atualizarFormul
     }, [formulario.preco, formulario.peso_total, isResin, unitLabel]);
 
     return (
-        <section className="space-y-5">
-            <div className="flex items-center gap-4">
-                <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">[02] Estoque & Valores</h4>
-                <div className="h-px bg-zinc-800/50 flex-1" />
+        <section className="space-y-6">
+            <div className="flex items-center gap-4 pt-2">
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Estoque & Valores</h4>
+                <div className="h-px bg-gradient-to-r from-zinc-800 to-transparent flex-1" />
             </div>
 
             <div className="grid grid-cols-3 gap-x-4 gap-y-5">

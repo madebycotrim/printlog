@@ -33,8 +33,7 @@ export default function ImpressorasPage() {
     const [busca, setBusca] = useState("");
     const buscaDiferida = useDeferredValue(busca);
 
-    // FILTROS E VIEW MODE
-    const [viewMode, setViewMode] = useState("grid");
+    // FILTROS
     const [filters, setFilters] = useState({
         status: [],
         brands: []
@@ -239,8 +238,6 @@ export default function ImpressorasPage() {
                     <FiltrosImpressora
                         filters={filters}
                         setFilters={setFilters}
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
                         availableBrands={availableBrands}
                     />
                 </div>
@@ -264,10 +261,7 @@ export default function ImpressorasPage() {
                                 </div>
 
                                 {/* Lista de Cards */}
-                                <div className={`grid gap-4 ${viewMode === 'list'
-                                    ? 'grid-cols-1'
-                                    : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
-                                    }`}>
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                                     {lista.map((imp) => (
                                         <PrinterCard
                                             key={imp.id}

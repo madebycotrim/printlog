@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import api from '../../../utils/api';
-import { useFilamentos } from '../../filamentos/logic/consultasFilamento';
+import { useMateriais } from '../../materiais/logic/consultasMateriais';
 import { usePrinters } from '../../impressoras/logic/consultasImpressora';
 import { useSupplyStore } from '../../insumos/logic/supplies';
 import { useReports } from './useReports';
@@ -10,7 +10,7 @@ import { useReports } from './useReports';
  * Combina informações de impressoras, filamentos, orçamentos e relatórios do servidor
  */
 export function useDashboardData() {
-    const { data: filaments = [], isLoading: filamentsLoading } = useFilamentos();
+    const { data: filaments = [], isLoading: filamentsLoading } = useMateriais();
     const { data: printers = [], isLoading: printersLoading } = usePrinters();
     const { fetchSupplies, loading: suppliesLoading } = useSupplyStore();
     const [failureStats, setFailureStats] = useState({ totalWeight: 0, totalCost: 0 });

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Layers, X } from "lucide-react";
-import { useFilamentos } from "../../../filamentos/logic/consultasFilamento";
+import { useMateriais } from "../../../materiais/logic/consultasMateriais";
 import { UnifiedInput } from "../../../../components/UnifiedInput";
-import ModalSelecaoFilamento from "../../../filamentos/components/ModalSelecaoFilamento";
+import ModalSelecaoMaterial from "../../../materiais/components/ModalSelecaoMaterial";
 import { formatDecimal, parseNumber } from "../../../../utils/numbers";
 import { useCalculatorStore } from "../../../../stores/calculatorStore";
 
@@ -97,7 +97,7 @@ const LinhaFilamento = ({ indice, total, dadosSlot, aoAtualizar, aoRemover, pode
                 <X size={14} strokeWidth={2.5} />
             </button>
 
-            <ModalSelecaoFilamento
+            <ModalSelecaoMaterial
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onConfirm={aoConfirmarSelecao}
@@ -115,7 +115,7 @@ export default function MaterialModule() {
     const setMaterialSlots = (v) => atualizarCampo('material', 'slots', v);
 
     const [modalSelecaoAberto, setModalSelecaoAberto] = useState(false);
-    const { data: filamentos = [], isLoading: carregando } = useFilamentos();
+    const { data: filamentos = [], isLoading: carregando } = useMateriais();
 
     // Agrupa filamentos por tipo para o select
     const opcoesSelecao = useMemo(() => {
@@ -228,7 +228,7 @@ export default function MaterialModule() {
                     )}
                 </div>
             </div>
-            <ModalSelecaoFilamento
+            <ModalSelecaoMaterial
                 isOpen={modalSelecaoAberto}
                 onClose={() => setModalSelecaoAberto(false)}
                 onConfirm={(selectedItems) => {

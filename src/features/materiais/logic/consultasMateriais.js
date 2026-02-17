@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 // ==================== UTILITÁRIOS ====================
 
-export const normalizarFilamento = (f) => {
+export const normalizarMaterial = (f) => {
     if (!f) return null;
 
     const pesoTotal = Math.max(0, Number(f.peso_total) || 1000);
@@ -31,14 +31,14 @@ export const normalizarFilamento = (f) => {
 
 // ==================== FUNÇÕES DE API ====================
 
-const buscarFilamentosApi = async () => {
+const buscarMateriaisApi = async () => {
     const { data } = await api.get('/filaments');
     const listaRaw = Array.isArray(data) ? data : (data?.data || []);
-    return listaRaw.map(normalizarFilamento);
+    return listaRaw.map(normalizarMaterial);
 };
 
-const salvarFilamentoApi = async (dadosFilamento) => {
-    const tratado = normalizarFilamento(dadosFilamento);
+const salvarMaterialApi = async (dadosMaterial) => {
+    const tratado = normalizarMaterial(dadosMaterial);
 
     // Garantir que ID seja undefined se vazio para prevenir erros 500 na criação
     if (!tratado.id) delete tratado.id;
@@ -51,70 +51,70 @@ const salvarFilamentoApi = async (dadosFilamento) => {
         resposta = await api.post('/filaments', tratado);
     }
 
-    return normalizarFilamento(resposta.data?.data || resposta.data);
+    return normalizarMaterial(resposta.data?.data || resposta.data);
 };
 
-const atualizarPesoApi = async ({ id, peso_atual }) => {
+const atualizarEstoqueApi = async ({ id, peso_atual }) => {
     await api.patch(`/filaments/${id}`, { peso_atual });
     return { id, peso_atual };
 };
 
-const excluirFilamentoApi = async (id) => {
+const excluirMaterialApi = async (id) => {
     await api.delete(`/filaments/${id}`);
     return id;
 };
 
-const buscarHistoricoFilamentoApi = async (id) => {
+const buscarHistoricoMaterialApi = async (id) => {
     const { data } = await api.get(`/filaments/${id}/history`);
     return data;
 };
 
-export const registrarHistoricoFilamentoApi = async ({ id, tipo, qtd, obs }) => {
+export const registrarHistoricoMaterialApi = async ({ id, tipo, qtd, obs }) => {
     const { data } = await api.post(`/filaments/${id}/history`, { type: tipo, qtd, obs });
     return data;
 };
 
 // ==================== HOOKS ====================
 
-export const useHistoricoFilamento = (id) => {
+export const useHistoricoMaterial = (id) => {
     return useQuery({
-        queryKey: ['historico-filamento', id],
-        queryFn: () => buscarHistoricoFilamentoApi(id),
+        queryKey: ['historico-material', id],
+        queryFn: () => buscarHistoricoMaterialApi(id),
         enabled: !!id,
     });
 };
 
-export const useFilamentos = () => {
+export const useMateriais = () => {
     const consulta = useQuery({
-        queryKey: ['filamentos'],
-        queryFn: buscarFilamentosApi,
+        queryKey: ['materiais'],
+        queryFn: buscarMateriaisApi,
     });
 
     // Cálculo de estatísticas derivado dos dados da consulta
     const estatisticas = useMemo(() => {
-        const filamentos = consulta.data || [];
+        const materiais = consulta.data || [];
         return {
-            pesoTotal: filamentos.reduce((acc, f) => acc + (f.peso_atual / 1000), 0), // Em KG
-            valorTotal: filamentos.reduce((acc, f) => {
+            pesoTotal: materiais.reduce((acc, f) => acc + (f.peso_atual / 1000), 0), // Em KG
+            valorTotal: materiais.reduce((acc, f) => {
                 const custoGrama = f.preco / f.peso_total;
                 return acc + (custoGrama * f.peso_atual);
             }, 0),
-            contagemEstoqueBaixo: filamentos.filter(f => (f.peso_atual / f.peso_total) <= 0.2).length,
-            quantidade: filamentos.length
+            contagemEstoqueBaixo: materiais.filter(f => (f.peso_atual / f.peso_total) <= 0.2).length,
+            quantidade: materiais.length
         };
     }, [consulta.data]);
 
     return { ...consulta, estatisticas };
 };
 
-export const useMutacoesFilamento = () => {
+export const useMutacoesMaterial = () => {
     const queryClient = useQueryClient();
     const { addToast } = useToastStore();
 
     const mutacaoSalvar = useMutation({
-        mutationFn: salvarFilamentoApi,
+        mutationFn: salvarMaterialApi,
         onSuccess: (itemSalvo) => {
-            queryClient.setQueryData(['filamentos'], (antigo) => {
+            queryClient.setQueryData(['materiais'], (antigo) => {
                 if (!antigo) return [itemSalvo];
                 const existe = antigo.find(f => f.id === itemSalvo.id);
                 if (existe) {
@@ -124,63 +124,61 @@ export const useMutacoesFilamento = () => {
                 }
             });
             // Invalidar a query para forçar refetch e garantir UI atualizada
-            queryClient.invalidateQueries(['filamentos']);
-            addToast("Filamento salvo com sucesso!", "success");
+            queryClient.invalidateQueries(['materiais']);
+            addToast("Material salvo com sucesso!", "success");
         },
         onError: (err) => {
-            console.error("❌ Erro detalhado ao salvar filamento:", err);
-            console.error("❌ Response data:", err.response?.data);
-            console.error("❌ Error message:", err.message);
+            console.error("❌ Erro detalhado ao salvar material:", err);
             const detailedMessage = err.response?.data?.details || err.response?.data?.error || err.message || "Erro desconhecido";
             addToast(`Falha ao salvar: ${detailedMessage}`, "error");
         }
     });
 
-    const mutacaoAtualizarPeso = useMutation({
-        mutationFn: atualizarPesoApi,
+    const mutacaoAtualizarEstoque = useMutation({
+        mutationFn: atualizarEstoqueApi,
         onMutate: async ({ id, peso_atual }) => {
-            await queryClient.cancelQueries(['filamentos']);
-            const filamentosAnteriores = queryClient.getQueryData(['filamentos']);
+            await queryClient.cancelQueries(['materiais']);
+            const materiaisAnteriores = queryClient.getQueryData(['materiais']);
 
-            queryClient.setQueryData(['filamentos'], (antigo) =>
+            queryClient.setQueryData(['materiais'], (antigo) =>
                 antigo?.map(f => f.id === id ? { ...f, peso_atual } : f)
             );
 
-            return { filamentosAnteriores };
+            return { materiaisAnteriores };
         },
         onSuccess: () => {
-            addToast("Peso atualizado!", "success");
+            addToast("Estoque atualizado!", "success");
         },
         onError: (_err, _vars, contexto) => {
-            queryClient.setQueryData(['filamentos'], contexto.filamentosAnteriores);
-            addToast("Erro ao sincronizar peso.", "error");
+            queryClient.setQueryData(['materiais'], contexto.materiaisAnteriores);
+            addToast("Erro ao sincronizar estoque.", "error");
         },
         onSettled: () => {
-            queryClient.invalidateQueries(['filamentos']);
+            queryClient.invalidateQueries(['materiais']);
         }
     });
 
     const mutacaoRegistrarHistorico = useMutation({
-        mutationFn: registrarHistoricoFilamentoApi,
+        mutationFn: registrarHistoricoMaterialApi,
         onSuccess: () => {
-            queryClient.invalidateQueries(['historico-filamento']);
+            queryClient.invalidateQueries(['historico-material']);
         }
     });
 
     const mutacaoExcluir = useMutation({
-        mutationFn: excluirFilamentoApi,
+        mutationFn: excluirMaterialApi,
         onSuccess: (idRemovido) => {
-            queryClient.setQueryData(['filamentos'], (antigo) => antigo?.filter(f => f.id !== idRemovido));
-            addToast("Filamento removido com sucesso!", "success");
+            queryClient.setQueryData(['materiais'], (antigo) => antigo?.filter(f => f.id !== idRemovido));
+            addToast("Material removido com sucesso!", "success");
         },
         onError: () => addToast("Erro: O servidor impediu a exclusão.", "error")
     });
 
     return {
-        salvarFilamento: mutacaoSalvar.mutateAsync,
-        atualizarPeso: mutacaoAtualizarPeso.mutateAsync,
-        excluirFilamento: mutacaoExcluir.mutateAsync,
+        salvarMaterial: mutacaoSalvar.mutateAsync,
+        atualizarEstoque: mutacaoAtualizarEstoque.mutateAsync,
+        excluirMaterial: mutacaoExcluir.mutateAsync,
         registrarHistorico: mutacaoRegistrarHistorico.mutateAsync,
-        salvando: mutacaoSalvar.isPending || mutacaoAtualizarPeso.isPending || mutacaoExcluir.isPending || mutacaoRegistrarHistorico.isPending
+        salvando: mutacaoSalvar.isPending || mutacaoAtualizarEstoque.isPending || mutacaoExcluir.isPending || mutacaoRegistrarHistorico.isPending
     };
 };

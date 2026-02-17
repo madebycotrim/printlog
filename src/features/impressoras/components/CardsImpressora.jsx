@@ -99,15 +99,15 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory, 
     const isHighlighted = highlightedItemId === printer.id;
 
     return (
-        <div className={`group/card relative w-full h-[22rem] rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 hover:border-white/10 transition-all duration-500 hover:shadow-xl ${isHighlighted ? 'animate-pulse ring-4 ring-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.5)] z-50 scale-105' : ''}`}>
+        <div className={`group relative w-full h-[22rem] rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 hover:border-white/10 transition-all duration-500 hover:shadow-2xl ${isHighlighted ? 'animate-pulse ring-4 ring-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.5)] z-50 scale-105' : ''}`}>
 
-            {/* --- IDLE STATE (Default View) --- */}
-            <div className="absolute inset-0 flex flex-col transition-opacity duration-300 group-hover/card:opacity-0 pointer-events-none group-hover/card:pointer-events-none">
-
-                {/* Image */}
-                <div className="flex-1 relative flex items-center justify-center p-8 pb-12">
+            {/* --- IMAGE BACKGROUND --- */}
+            {/* Moves UP and Fades Slightly on Hover */}
+            <div className="absolute inset-0 pb-20 flex items-center justify-center transition-all duration-500 ease-out group-hover:-translate-y-12 group-hover:scale-90 group-hover:opacity-40">
+                <div className="relative w-full h-full flex items-center justify-center p-8">
+                    {/* Glow */}
                     <div
-                        className="absolute inset-0 blur-[60px] opacity-20 rounded-full scale-75"
+                        className="absolute inset-0 blur-[80px] opacity-20 rounded-full scale-75"
                         style={{ backgroundColor: tema.hex }}
                     />
                     {resolvedImage ? (
@@ -123,93 +123,85 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory, 
                         </div>
                     )}
                 </div>
+            </div>
 
-                {/* Bottom Gradient & Info */}
-                <div className="absolute inset-x-0 bottom-0 pt-20 pb-6 px-6 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col items-center">
-                    {/* Badge */}
-                    <div className="absolute top-4 left-6">
-                        <span className="px-2 py-0.5 rounded-md bg-zinc-900/40 backdrop-blur-md border border-white/5 text-[9px] font-bold uppercase tracking-widest text-zinc-500">
-                            {printer.tipo || "FDM"}
-                        </span>
-                    </div>
-                    {/* Status Dot */}
-                    <div className={`absolute top-4 right-6 p-1.5 rounded-full border backdrop-blur-md flex items-center justify-center ${tema.bg} ${tema.border}`}>
-                        <span className="relative flex h-1.5 w-1.5">
-                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-${tema.corPrincipal}-400`}></span>
-                            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 bg-${tema.corPrincipal}-500`}></span>
-                        </span>
-                    </div>
-
-                    {/* Name Block */}
-                    <div className="text-center space-y-1">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 block">
-                            {printer.marca} {printer.modelo && `| ${printer.modelo}`}
-                        </span>
-                        <h3 className="text-lg font-black text-white leading-tight">
-                            {printer.nome}
-                        </h3>
-                        {/* Status Bar */}
-                        <div className="flex justify-center mt-2">
-                            <div className="h-1 w-12 rounded-full bg-zinc-800 overflow-hidden">
-                                <div
-                                    className={`h-full rounded-full ${stats.ehCritico ? 'bg-rose-500' : 'bg-emerald-500'}`}
-                                    style={{ width: `${Math.max(0, Math.min(100, stats.healthPct))}%` }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* --- BADGES (FLOATING) --- */}
+            <div className="absolute top-4 left-4 z-10">
+                <span className="px-2 py-0.5 rounded-md bg-zinc-900/40 backdrop-blur-md border border-white/5 text-[9px] font-bold uppercase tracking-widest text-zinc-500 transition-opacity duration-300 group-hover:opacity-0">
+                    {printer.tipo || "FDM"}
+                </span>
+            </div>
+            <div className={`absolute top-4 right-4 z-10 p-1.5 rounded-full border backdrop-blur-md flex items-center justify-center ${tema.bg} ${tema.border} transition-opacity duration-300 group-hover:opacity-0`}>
+                <span className="relative flex h-1.5 w-1.5">
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-${tema.corPrincipal}-400`}></span>
+                    <span className={`relative inline-flex rounded-full h-1.5 w-1.5 bg-${tema.corPrincipal}-500`}></span>
+                </span>
             </div>
 
 
-            {/* --- HOVER STATE (Detailed View) --- */}
-            <div className="absolute inset-0 bg-zinc-950/95 backdrop-blur-sm flex flex-col opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 pointer-events-none group-hover/card:pointer-events-auto">
+            {/* --- INFO PANEL (SLIDE UP) --- */}
+            <div className="absolute inset-x-0 bottom-0 bg-zinc-950/80 backdrop-blur-xl border-t border-white/10 transition-all duration-500 ease-out translate-y-[calc(100%-80px)] group-hover:translate-y-0 text-left">
 
-                {/* Header (Top) */}
-                <div className="px-6 pt-6 pb-4 border-b border-white/5 bg-zinc-900/20">
-                    <div className="flex justify-between items-start mb-1">
+                {/* 1. Header (Always Visible portion) */}
+                <div className="h-[80px] px-6 flex flex-col justify-center relative z-20">
+                    {/* Decorative top line handle */}
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    <div className="flex justify-between items-end mb-1">
                         <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">
-                            {printer.marca}
+                            {printer.marca} {printer.modelo && `| ${printer.modelo}`}
                         </span>
-                        {/* Status Text (Mini) */}
-                        <span className={`text-[9px] font-bold uppercase tracking-widest ${tema.text}`}>
+                        {/* Mini Status Text for Hover */}
+                        <span className={`text-[9px] font-bold uppercase tracking-widest ${tema.text} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
                             {printer.status === 'offline' ? 'Offline' : 'Online'}
                         </span>
                     </div>
-                    <h3 className="text-lg font-black text-white leading-none tracking-tight">
+
+                    <h3 className="text-xl font-black text-white leading-none tracking-tight truncate">
                         {printer.nome}
                     </h3>
+
+                    {/* Simple Health Bar (Only visible when NOT hovering? Or maybe keep small?) */}
+                    {/* Let's hide it on hover since grid has details, show on idle */}
+                    <div className="mt-2 h-1 w-full bg-zinc-800/50 rounded-full overflow-hidden flex transition-all duration-300 group-hover:h-0 group-hover:mt-0 group-hover:opacity-0">
+                        <div
+                            className={`h-full rounded-full ${stats.ehCritico ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                            style={{ width: `${Math.max(0, Math.min(100, stats.healthPct))}%` }}
+                        />
+                    </div>
                 </div>
 
-                {/* Stats Grid (Middle - Takes available space) */}
-                <div className="flex-1 p-5 flex flex-col justify-center gap-4">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                {/* 2. Expanded Content (Revealed on Hover) */}
+                <div className="px-6 pb-6 space-y-5 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75">
+
+                    {/* Grid Stats */}
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         {/* Rendimento */}
-                        <div className="space-y-0.5">
-                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Rendimento</span>
-                            <span className="text-sm font-mono font-bold text-emerald-400 block">{formatCurrency(stats.rendimento)}</span>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Rendimento</span>
+                            <span className="text-sm font-mono font-bold text-emerald-400">{formatCurrency(stats.rendimento)}</span>
                         </div>
                         {/* Próx. Manutenção */}
-                        <div className="space-y-0.5 text-right">
-                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Revisão</span>
-                            <span className={`text-sm font-mono font-bold block ${stats.revisaoEm < 0 ? 'text-rose-400 animate-pulse' : 'text-zinc-200'}`}>
+                        <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5 text-right">Revisão</span>
+                            <span className={`text-sm font-mono font-bold ${stats.revisaoEm < 0 ? 'text-rose-400 animate-pulse' : 'text-zinc-200'}`}>
                                 {stats.revisaoEm > 0 ? `${stats.revisaoEm}h` : `! ${Math.abs(stats.revisaoEm)}h`}
                             </span>
                         </div>
 
                         {/* Uso Total */}
-                        <div className="space-y-0.5">
-                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Total</span>
-                            <span className="text-xs font-mono text-zinc-400 block">{formatCompact(stats.hTotais)}h</span>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Total</span>
+                            <span className="text-xs font-mono text-zinc-400">{formatCompact(stats.hTotais)}h</span>
                         </div>
                         {/* Potência */}
-                        <div className="space-y-0.5 text-right">
-                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Potência</span>
-                            <span className="text-xs font-mono text-zinc-400 block">{printer.potencia ? `${printer.potencia}W` : '-'}</span>
+                        <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5 text-right">Potência</span>
+                            <span className="text-xs font-mono text-zinc-400">{printer.potencia ? `${printer.potencia}W` : '-'}</span>
                         </div>
                     </div>
 
-                    {/* ROI */}
+                    {/* ROI Section */}
                     <div className="pt-3 border-t border-white/5">
                         <div className="flex justify-between items-end mb-1.5">
                             <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">ROI Estimado</span>
@@ -226,32 +218,32 @@ const PrinterCard = memo(({ printer, onEdit, onDelete, onResetMaint, onHistory, 
                             />
                         </div>
                     </div>
-                </div>
 
-                {/* Actions (Bottom) */}
-                <div className="p-4 pt-0 flex justify-between items-center bg-transparent">
-                    <Tooltip text="Histórico">
-                        <button onClick={() => onHistory?.(printer)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all border border-transparent hover:border-blue-500/20">
-                            <History size={16} />
-                        </button>
-                    </Tooltip>
-                    <Tooltip text="Editar">
-                        <button onClick={() => onEdit?.(printer)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/20">
-                            <Edit2 size={16} />
-                        </button>
-                    </Tooltip>
-                    <Tooltip text="Manutenção">
-                        <button onClick={() => onResetMaint?.(printer)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all border border-transparent hover:border-orange-500/20">
-                            <Wrench size={16} />
-                        </button>
-                    </Tooltip>
-                    <Tooltip text="Excluir">
-                        <button onClick={() => onDelete?.(printer.id)} className="w-9 h-9 flex items-center justify-center rounded-full text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20">
-                            <Trash2 size={16} />
-                        </button>
-                    </Tooltip>
-                </div>
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-between pt-1">
+                        <Tooltip text="Histórico">
+                            <button onClick={() => onHistory?.(printer)} className="group/btn relative flex items-center justify-center p-2 rounded-full text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all">
+                                <History size={18} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip text="Editar">
+                            <button onClick={() => onEdit?.(printer)} className="group/btn relative flex items-center justify-center p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+                                <Edit2 size={18} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip text="Manutenção">
+                            <button onClick={() => onResetMaint?.(printer)} className="group/btn relative flex items-center justify-center p-2 rounded-full text-zinc-400 hover:text-orange-400 hover:bg-orange-500/10 transition-all">
+                                <Wrench size={18} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip text="Excluir">
+                            <button onClick={() => onDelete?.(printer.id)} className="group/btn relative flex items-center justify-center p-2 rounded-full text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+                                <Trash2 size={18} strokeWidth={1.5} />
+                            </button>
+                        </Tooltip>
+                    </div>
 
+                </div>
             </div>
         </div>
     );

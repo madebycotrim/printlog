@@ -1,7 +1,7 @@
 import React from 'react';
 import { Filter, Grid, List as ListIcon, X } from 'lucide-react';
 
-export default function FiltrosFilamento({
+export default function FiltrosMateriais({
     filtros,
     setFiltros,
     modoVisualizacao,

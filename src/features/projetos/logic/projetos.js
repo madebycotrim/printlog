@@ -7,7 +7,7 @@ import { useToastStore } from '../../../stores/toastStore';
  * useProjectsStore - Gestão de Orçamentos e Produção
  * Controla o ciclo de vida do projeto: Rascunho -> Orçamento -> Produção -> Finalizado.
  */
-import { registrarHistoricoFilamentoApi } from '../../filamentos/logic/consultasFilamento';
+import { registrarHistoricoMaterialApi } from '../../materiais/logic/consultasMateriais';
 
 /**
  * useProjectsStore - Gestão de Orçamentos e Produção
@@ -123,7 +123,7 @@ export const useProjectsStore = create((set, get) => ({
             // --- NOVO: Registrar histórico de consumo para cada filamento ---
             await Promise.all(filamentosParaBaixa.map(async (fil) => {
                 try {
-                    await registrarHistoricoFilamentoApi({
+                    await registrarHistoricoMaterialApi({
                         id: fil.id,
                         tipo: 'consumo',
                         qtd: fil.peso,

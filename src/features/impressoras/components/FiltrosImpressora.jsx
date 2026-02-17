@@ -1,11 +1,9 @@
 import React from 'react';
-import { Filter, Grid, List as ListIcon } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 export default function FiltrosImpressora({
     filters,
     setFilters,
-    viewMode,
-    setViewMode,
     availableBrands = []
 }) {
     // Helper to toggle array filters
@@ -85,26 +83,6 @@ export default function FiltrosImpressora({
                             Limpar
                         </button>
                     )}
-                </div>
-
-                {/* --- VIEW MODE SWITCHER --- */}
-                <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-lg shrink-0">
-                    <button
-                        onClick={() => setViewMode('grid')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${viewMode === 'grid'
-                            ? 'bg-zinc-800 text-zinc-200 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-400'}`}
-                    >
-                        <Grid size={16} />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-1.5 rounded-md transition-all duration-300 ${viewMode === 'list'
-                            ? 'bg-zinc-800 text-zinc-200 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-400'}`}
-                    >
-                        <ListIcon size={16} />
-                    </button>
                 </div>
             </div>
         </div>

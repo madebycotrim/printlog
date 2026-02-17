@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 import { Edit2, Trash2, ArrowDownFromLine, Copy, History, Droplet, QrCode } from "lucide-react";
-import VisualizacaoCarretel from "./VisualizacaoCarretel";
-import { StatusFilamento } from "./StatusFilamento";
+import VisualizacaoMaterial from "./VisualizacaoMaterial";
+import { StatusMaterial } from "./StatusMaterial";
 import { Tooltip } from "../../../components/ui/Tooltip";
 import { formatCurrency } from "../../../utils/numbers";
 import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
@@ -9,7 +9,7 @@ import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 /**
  * MODO LISTA: LinhaFilamento
  */
-export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta, highlightedItemId }) => {
+export const LinhaMaterial = memo(({ item, umidadeAtual, temperaturaAtual, aoEditar, aoExcluir, aoConsumir, aoDuplicar, aoVerHistorico, aoImprimirEtiqueta, highlightedItemId }) => {
     const estatisticas = useMemo(() => {
         const capacidade = Math.max(1, Number(item?.peso_total) || 1000);
         const atual = Math.max(0, Number(item?.peso_atual) || 0);
@@ -38,7 +38,7 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
             {/* 1. ÍCONE (Flutuante) */}
             <div className="relative shrink-0">
                 <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl`} style={{ backgroundColor: corHex }} />
-                <VisualizacaoCarretel cor={corHex} porcentagem={estatisticas.porcentagem} tamanho={42} tipo={realTipo} />
+                <VisualizacaoMaterial cor={corHex} porcentagem={estatisticas.porcentagem} tamanho={42} tipo={realTipo} />
             </div>
 
             {/* 2. INFORMAÇÕES PRINCIPAIS */}
@@ -56,7 +56,7 @@ export const LinhaFilamento = memo(({ item, umidadeAtual, temperaturaAtual, aoEd
                 </div>
 
                 {/* Indicadores de Status (Compacto) */}
-                <StatusFilamento item={item} umidadeAtual={umidadeAtual} />
+                <StatusMaterial item={item} umidadeAtual={umidadeAtual} />
             </div>
 
             {/* 3. ESTATÍSTICAS TÉCNICAS (Condensado) */}

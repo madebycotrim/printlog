@@ -16,7 +16,7 @@ const ForgotPassword = lazy(() => import("../pages/Publica/auth/forgotPassword")
 const Dashboard = lazy(() => import("../pages/Principal/Dashboard.jsx"));
 const Calculadora = lazy(() => import("../pages/Principal/Calculadora.jsx"));
 const Projetos = lazy(() => import("../pages/Gestao/Projetos"));
-const Filamentos = lazy(() => import("../pages/Gestao/Filamentos"));
+const Materiais = lazy(() => import("../pages/Gestao/Materiais"));
 const Insumos = lazy(() => import('../pages/Gestao/Insumos'));
 const Impressoras = lazy(() => import("../pages/Gestao/Impressoras"));
 const Configuracoes = lazy(() => import("../pages/Sistema/Configuracoes.jsx"));
@@ -26,6 +26,7 @@ const Ajuda = lazy(() => import("../pages/Sistema/CentralMaker"));
 const NotFound = lazy(() => import("../pages/Publica/NotFound"));
 const PrivacyPolicy = lazy(() => import("../pages/Publica/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("../pages/Publica/TermsOfService"));
+const SecurityPrivacy = lazy(() => import("../pages/Publica/SecurityPrivacy"));
 
 // Componente auxiliar para rotas que só podem ser vistas por quem NÃO está logado
 function GuestRoute({ component: Component, ...props }) {
@@ -63,17 +64,17 @@ export default function AppRoutes() {
                 </Route>
 
                 <Route path="/forgot-password" component={ForgotPassword} />
-                <Route path="/forgot-password" component={ForgotPassword} />
                 {/* <Route path="/sso-callback" component={SSOCallback} /> */}
                 <Route path="/privacy-policy" component={PrivacyPolicy} />
                 <Route path="/terms-of-service" component={TermsOfService} />
+                <Route path="/security-privacy" component={SecurityPrivacy} />
 
                 {/* ---------- PROTECTED ROUTES ---------- */}
                 {/* O ProtectedRoute já possui seu próprio Suspense interno conforme a correção anterior */}
                 <ProtectedRoute path="/dashboard" component={Dashboard} />
                 <ProtectedRoute path="/calculadora" component={Calculadora} />
                 <ProtectedRoute path="/projetos" component={Projetos} />
-                <ProtectedRoute path="/filamentos" component={Filamentos} />
+                <ProtectedRoute path="/materiais" component={Materiais} />
                 <ProtectedRoute path="/insumos" component={Insumos} />
                 <ProtectedRoute path="/impressoras" component={Impressoras} />
                 <ProtectedRoute path="/configuracoes" component={Configuracoes} />

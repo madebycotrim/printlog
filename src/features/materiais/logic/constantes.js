@@ -11,6 +11,8 @@ export const CORES_MAIS_VENDIDAS = [
     "#ffd700", // Dourado
 ];
 
+export const MATERIAIS_HIGROSCOPICOS = ['PLA', 'PETG', 'TPU', 'NYLON', 'ABS', 'ASA', 'PVA', 'BVOH', 'PA6', 'PA12'];
+
 export const CORES_RESINA = [
     "#6b7280", // Cinza (Standard)
     "#000000", // Preto

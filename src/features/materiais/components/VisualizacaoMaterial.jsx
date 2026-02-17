@@ -25,7 +25,7 @@ const gerarCores = (hex) => {
     };
 };
 
-export default function Carretel({ cor = "#3b82f6", porcentagem = 100, tamanho = 128, className = "", tipo = 'FDM' }) {
+export default function VisualizacaoMaterial({ cor = "#3b82f6", porcentagem = 100, tamanho = 128, className = "", tipo = 'FDM' }) {
     const idUnico = useId().replace(/:/g, "");
     const { base, claro, escuro } = useMemo(() => gerarCores(cor), [cor]);
     // Força pelo menos 1% visual para parecer "1g" (não vazio/invisível)

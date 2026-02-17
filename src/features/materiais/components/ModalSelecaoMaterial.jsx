@@ -1,25 +1,25 @@
 import React, { useState, useMemo } from "react";
 import { Search, Check, Layers, Package, CheckCircle2 } from "lucide-react";
-import { useFilamentos } from "../logic/consultasFilamento";
-import VisualizacaoCarretel from "./VisualizacaoCarretel";
+import { useMateriais } from "../logic/consultasMateriais";
+import VisualizacaoMaterial from "./VisualizacaoMaterial";
 import Modal from "../../../components/ui/Modal";
 import { normalizeString } from "../../../utils/stringUtils";
 
-export default function ModalSelecaoFilamento({ aberto, aoFechar, aoConfirmar }) {
-    const { data: filamentos = [] } = useFilamentos();
+export default function ModalSelecaoMaterial({ aberto, aoFechar, aoConfirmar }) {
+    const { data: materiais = [] } = useMateriais();
     const [termoBusca, setTermoBusca] = useState("");
     const [idsSelecionados, setIdsSelecionados] = useState([]);
     const [filtroMaterial, setFiltroMaterial] = useState("Todos");
 
     // Extrair materiais únicos
-    const materiais = useMemo(() => {
-        const unicos = new Set(filamentos.map(f => f.material).filter(Boolean));
+    const listaMateriais = useMemo(() => {
+        const unicos = new Set(materiais.map(f => f.material).filter(Boolean));
         return ["Todos", ...Array.from(unicos).sort()];
-    }, [filamentos]);
+    }, [materiais]);
 
-    // Filtrar filamentos
-    const filamentosFiltrados = useMemo(() => {
-        return filamentos.filter(f => {
+    // Filtrar materiais
+    const materiaisFiltrados = useMemo(() => {
+        return materiais.filter(f => {
             const termo = normalizeString(termoBusca);
             const correspondeBusca = !termo || (
                 normalizeString(f.nome).includes(termo) ||
@@ -30,7 +30,7 @@ export default function ModalSelecaoFilamento({ aberto, aoFechar, aoConfirmar })
 
             return correspondeBusca && correspondeMaterial;
         });
-    }, [filamentos, termoBusca, filtroMaterial]);
+    }, [materiais, termoBusca, filtroMaterial]);
 
     // Alternar seleção
     const alternarSelecao = (id) => {
@@ -42,7 +42,7 @@ export default function ModalSelecaoFilamento({ aberto, aoFechar, aoConfirmar })
     };
 
     const manipularConfirmar = () => {
-        const itensSelecionados = filamentos.filter(f => idsSelecionados.includes(f.id));
+        const itensSelecionados = materiais.filter(f => idsSelecionados.includes(f.id));
         aoConfirmar(itensSelecionados);
         aoFechar();
         setIdsSelecionados([]); // Limpa após confirmar
@@ -137,7 +137,7 @@ export default function ModalSelecaoFilamento({ aberto, aoFechar, aoConfirmar })
                 {/* GRADE DE CONTEÚDO */}
                 <div className="p-8 pb-4">
                     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {filamentosFiltrados.map(item => {
+                        {materiaisFiltrados.map(item => {
                             const estaSelecionado = idsSelecionados.includes(item.id);
                             const capacidade = Math.max(1, Number(item.peso_total) || 1000);
                             const atual = Math.max(0, Number(item.peso_atual) || 0);
@@ -155,7 +155,7 @@ export default function ModalSelecaoFilamento({ aberto, aoFechar, aoConfirmar })
 
                                     {/* CARRETEL CENTRAL */}
                                     <div className="py-2 transition-transform duration-300 group-hover:scale-110">
-                                        <VisualizacaoCarretel cor={item.cor_hex || "#333"} porcentagem={porcentagem} tamanho={110} />
+                                        <VisualizacaoMaterial cor={item.cor_hex || "#333"} porcentagem={porcentagem} tamanho={110} />
                                     </div>
 
                                     {/* INFO - INFERIOR */}
@@ -185,7 +185,7 @@ export default function ModalSelecaoFilamento({ aberto, aoFechar, aoConfirmar })
                         })}
                     </div>
 
-                    {filamentosFiltrados.length === 0 && (
+                    {materiaisFiltrados.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-10 text-zinc-500 gap-4 opacity-50">
                             <Package size={48} strokeWidth={1} />
                             <p className="text-xs font-bold uppercase tracking-widest">Nenhum material encontrado</p>

@@ -3,7 +3,7 @@ import { AlertTriangle, BadgeDollarSign, Trash2, TrendingUp, TrendingDown, Dropl
 import StatsWidget from "../../../components/ui/StatsWidget";
 import { formatCurrency } from "../../../utils/numbers";
 
-function StatusFilamentos({
+function StatusMateriais({
   pesoTotal = 0,
   contagemEstoqueBaixo = 0,
   valorTotal = 0,
@@ -83,4 +83,4 @@ function StatusFilamentos({
   );
 }
 
-export default React.memo(StatusFilamentos);
+export default React.memo(StatusMateriais);

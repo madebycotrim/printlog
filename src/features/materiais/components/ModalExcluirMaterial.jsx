@@ -1,11 +1,11 @@
 import React from 'react';
 import { Trash2, AlertTriangle, AlertCircle, PackageOpen, X } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
-import VisualizacaoCarretel from './VisualizacaoCarretel';
+import VisualizacaoMaterial from './VisualizacaoMaterial';
 import { useMemo } from 'react';
 import { MATERIAIS_RESINA_FLAT } from "../logic/constantes";
 
-export default function ModalExcluirFilamento({ aberto, aoFechar, aoConfirmar, item, carregando = false }) {
+export default function ModalExcluirMaterial({ aberto, aoFechar, aoConfirmar, item, carregando = false }) {
 
     const isResin = useMemo(() => {
         if (!item) return false;
@@ -105,7 +105,7 @@ export default function ModalExcluirFilamento({ aberto, aoFechar, aoConfirmar, i
                     <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full opacity-20 blur-2xl transition-all duration-700 pointer-events-none
                         ${retorno.cor === 'rose' ? 'bg-rose-600' : 'bg-amber-500'}`}
                     />
-                    <VisualizacaoCarretel
+                    <VisualizacaoMaterial
                         cor={item.cor_hex}
                         tamanho={140}
                         porcentagem={(item.peso_atual / item.peso_total) * 100}

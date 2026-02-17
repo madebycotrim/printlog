@@ -1,8 +1,8 @@
 import React from "react";
 import { Gauge, Coins, AlertTriangle, Search, Filter, LayoutGrid, List, Plus } from "lucide-react";
-import Button from "../../../../components/ui/Button";
+import Button from "../../../components/ui/Button";
 
-export const CabecalhoFilamentos = ({
+export const CabecalhoMateriais = ({
     estatisticas,
     contagemEstoqueBaixo,
     aoBuscar,
@@ -11,7 +11,7 @@ export const CabecalhoFilamentos = ({
     aoAdicionar
 }) => {
     return (
-        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-700 w-full mt-4">
             {/* 1. HUD SUPERIOR (Estatísticas) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Estatística: Peso Total */}
@@ -123,7 +123,7 @@ export const CabecalhoFilamentos = ({
                         className="h-12 px-6 rounded-2xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-sky-500/20"
                         icon={Plus}
                     >
-                        Novo Carretel
+                        Novo Material
                     </Button>
                 </div>
             </div>
