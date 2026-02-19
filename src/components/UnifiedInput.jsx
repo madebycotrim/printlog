@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useId } from 'react';
 import { ChevronDown, Check, Search } from "lucide-react";
 import { Tooltip } from "./ui/Tooltip";
 
@@ -185,6 +185,10 @@ export const UnifiedInput = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
+  // Generate ID if not provided
+  const generatedId = useId();
+  const inputId = props.id || generatedId;
+
   // Referências para disparar o foco
   const containerRef = useRef(null);
   const mainInputRef = useRef(null);
@@ -229,7 +233,7 @@ export const UnifiedInput = ({
       {label && !isGhost && (
         <div className="flex justify-between items-end px-1.5 h-3">
           <div className="flex items-center gap-1.5">
-            <label className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+            <label htmlFor={inputId} className={`text-[9px] font-black uppercase tracking-[0.15em] select-none uppercase ${error ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
               {label}
             </label>
             {tooltip && <Tooltip text={tooltip} />}
@@ -275,6 +279,8 @@ export const UnifiedInput = ({
                 <input
                   ref={hoursInputRef}
                   type="number"
+                  aria-label={`${label ? label + ' ' : ''}Horas`}
+                  aria-invalid={!!error}
                   value={hoursValue ?? ""}
                   onChange={e => onHoursChange?.(e.target.value)}
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
@@ -291,6 +297,8 @@ export const UnifiedInput = ({
                 <input
                   type="number"
                   min={0} max={59}
+                  aria-label={`${label ? label + ' ' : ''}Minutos`}
+                  aria-invalid={!!error}
                   value={minutesValue ?? ""}
                   onChange={e => {
                     const val = Math.min(59, Math.max(0, parseInt(e.target.value || 0)));
@@ -317,6 +325,8 @@ export const UnifiedInput = ({
               ) : (
                 <input
                   ref={mainInputRef}
+                  id={inputId}
+                  aria-invalid={!!error}
                   {...props}
                   type={type}
                   onFocus={(e) => { e.target.select(); setIsFocused(true); }}
