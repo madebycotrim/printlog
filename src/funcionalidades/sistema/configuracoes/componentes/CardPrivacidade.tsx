@@ -2,14 +2,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, AlertTriangle, Trash2, Download } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
+/**
+ * Propriedades do componente CardPrivacidade.
+ */
 interface PropsCardPrivacidade {
+  /** Indica se o card deve ter um destaque visual (animação de alerta) */
   destaque?: boolean;
 }
 
+/**
+ * Componente voltado para conformidade com a LGPD.
+ * Permite ao usuário exportar seus dados (Portabilidade) ou excluir sua conta (Direito ao Esquecimento).
+ */
 export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
   const navegar = useNavigate();
   const { excluirConta, exportarDadosPessoais } = usarAutenticacao();
@@ -18,15 +27,23 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
   const [modalAberto, definirModalAberto] = useState(false);
   const [passo, definirPasso] = useState(1);
 
+  /**
+   * Executa o processo final de exclusão da conta do usuário.
+   */
   const lidarComEliminacao = async () => {
     try {
       navegar("/", { replace: true });
       await excluirConta();
-    } catch (erro: any) {
-      alert(erro.message || "Erro ao excluir conta. Faça login novamente e tente de novo.");
+      toast.success("Sua conta foi excluída com sucesso.");
+    } catch (erro: unknown) {
+      const mensagem = erro instanceof Error ? erro.message : "Erro inesperado ao excluir conta.";
+      toast.error(mensagem + " Faça login novamente e tente de novo.");
     }
   };
 
+  /**
+   * Abre o modal de confirmação de exclusão em passos.
+   */
   const abrirModal = () => {
     definirModalAberto(true);
     definirPasso(1);

@@ -1,15 +1,28 @@
 import { User, Mail, Lock } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
+import { Usuario } from "@/compartilhado/tipos/modelos";
 
+/**
+ * Propriedades para o componente CardPerfil.
+ */
 interface PropsCardPerfil {
-    usuario: any;
+    /** Objeto do usuário autenticado */
+    usuario: Usuario | null;
+    /** Nome atual para edição no campo */
     nome: string;
+    /** Função para atualizar o nome no estado pai */
     definirNome: (n: string) => void;
+    /** Indica se o email de redefinição foi enviado com sucesso */
     sucessoEmail: boolean;
+    /** Função para disparar o processo de troca de senha */
     lidarComTrocaSenha: () => void;
+    /** Indica se há uma operação pendente (carregando) */
     pendente?: boolean;
 }
 
+/**
+ * Componente para exibição e edição do perfil do usuário.
+ */
 export function CardPerfil({ usuario, nome, definirNome, sucessoEmail, lidarComTrocaSenha, pendente }: PropsCardPerfil) {
     return (
         <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141417] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group">

@@ -55,6 +55,17 @@ export enum BaseLegalLGPD {
 }
 
 /**
+ * Interface de Usuário Autenticado.
+ */
+export interface Usuario {
+  uid: string;
+  email: string | null;
+  nome: string | null;
+  fotoUrl: string | null;
+  provedorGoogle: boolean;
+}
+
+/**
  * Interface de Estúdio (Tenant) para arquitetura multi-sessão.
  * @fase 3 - Roadmap
  */

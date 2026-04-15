@@ -9,8 +9,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest",
-    "prepare": "husky"
+    "test": "vitest"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -31,9 +30,9 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.2",
-    "@commitlint/config-conventional": "^20.4.2",
+    "@eslint/config-array": "^0.23.5",
     "@eslint/js": "^9.39.1",
+    "@eslint/object-schema": "^3.0.5",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.2.3",
     "@types/react": "^19.2.5",
@@ -44,15 +43,11 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.2",
     "vite": "^7.2.4",
     "vitest": "^4.0.18"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,css,md}": "prettier --write"
   }
 }

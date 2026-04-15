@@ -42,48 +42,67 @@ export const servicoBaseApi = {
       });
 
       if (resposta.status === 401) {
-        // Opcional: Redirecionar para login ou disparar evento de logout
-        throw { status: 401, mensagem: "Sessão expirada. Por favor, logue novamente." };
+        const erro: ErroApi = { status: 401, mensagem: "Sessão expirada. Por favor, logue novamente." };
+        throw erro;
       }
 
       if (!resposta.ok) {
-        const erroJson = await resposta.json().catch(() => ({}));
-        throw {
+        const erroJson = (await resposta.json().catch(() => ({}))) as Record<string, string>;
+        const erro: ErroApi = {
           status: resposta.status,
           mensagem: erroJson.mensagem || "Erro inesperado no servidor.",
           codigo: erroJson.codigo
         };
+        throw erro;
       }
 
       // Se for 204 No Content
       if (resposta.status === 204) return {} as T;
 
       return await resposta.json();
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       console.error(`[API ERROR] ${caminho}:`, erro);
       throw erro;
     }
   },
 
-  get<T>(caminho: string) {
+  /**
+   * Realiza uma requisição GET.
+   * @param caminho - Endpoint da API
+   */
+  get<T>(caminho: string): Promise<T> {
     return this.requisicao<T>(caminho, { method: "GET" });
   },
 
-  post<T>(caminho: string, dados: any) {
+  /**
+   * Realiza uma requisição POST.
+   * @param caminho - Endpoint da API
+   * @param dados - Corpo da requisição
+   */
+  post<T>(caminho: string, dados: unknown): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "POST",
       body: JSON.stringify(dados),
     });
   },
 
-  put<T>(caminho: string, dados: any) {
+  /**
+   * Realiza uma requisição PUT.
+   * @param caminho - Endpoint da API
+   * @param dados - Corpo da requisição
+   */
+  put<T>(caminho: string, dados: unknown): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "PUT",
       body: JSON.stringify(dados),
     });
   },
 
-  delete<T>(caminho: string) {
+  /**
+   * Realiza uma requisição DELETE.
+   * @param caminho - Endpoint da API
+   */
+  delete<T>(caminho: string): Promise<T> {
     return this.requisicao<T>(caminho, { method: "DELETE" });
   },
 };

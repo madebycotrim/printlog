@@ -14,14 +14,9 @@ import {
   deleteUser,
 } from "firebase/auth";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
+import { registrar } from "@/compartilhado/utilitarios/registrador";
 
-interface Usuario {
-  uid: string;
-  email: string | null;
-  nome: string | null;
-  fotoUrl: string | null;
-  provedorGoogle: boolean;
-}
+import { Usuario } from "@/compartilhado/tipos/modelos";
 
 interface ContextoAutenticacaoProps {
   usuario: Usuario | null;
@@ -39,6 +34,9 @@ interface ContextoAutenticacaoProps {
 
 const ContextoAutenticacao = createContext<ContextoAutenticacaoProps>({} as ContextoAutenticacaoProps);
 
+/**
+ * Hook para acessar o contexto de autenticação.
+ */
 export function usarAutenticacao() {
   return useContext(ContextoAutenticacao);
 }
@@ -47,10 +45,14 @@ interface ProvedorAutenticacaoProps {
   children: ReactNode;
 }
 
+/**
+ * Obtém o endereço IP do usuário para fins de auditoria de segurança (LGPD).
+ * @returns IP em string
+ */
 const obterIpUsuario = async (): Promise<string> => {
   try {
     const resposta = await fetch("https://api.ipify.org?format=json");
-    const dados = await resposta.json();
+    const dados = (await resposta.json()) as { ip: string };
     return dados.ip;
   } catch (erro) {
     registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Erro ao obter IP", erro);
@@ -58,8 +60,10 @@ const obterIpUsuario = async (): Promise<string> => {
   }
 };
 
-import { registrar } from "@/compartilhado/utilitarios/registrador";
-
+/**
+ * Registra o aceite dos termos e política de privacidade no banco de dados.
+ * @param uid - ID do usuário
+ */
 const registrarAceiteTermos = async (uid: string) => {
   try {
     const ip = await obterIpUsuario();
@@ -78,6 +82,10 @@ const registrarAceiteTermos = async (uid: string) => {
   }
 };
 
+/**
+ * Provedor de Contexto de Autenticação.
+ * Gerencia o estado global do usuário e integração com Firebase Auth.
+ */
 export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const [usuario, definirUsuario] = useState<Usuario | null>(null);
   const [carregando, definirCarregando] = useState(true);
@@ -112,9 +120,14 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     return () => cancelarInscricao();
   }, []);
 
-  const traduzirErroFirebase = (erro: AuthError) => {
-    registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, `Erro Firebase: ${erro.code}`, erro);
-    switch (erro.code) {
+  /**
+   * Traduz códigos de erro do Firebase para mensagens amigáveis em PT-BR.
+   * @param erro - Erro original do Firebase
+   */
+  const traduzirErroFirebase = (erro: unknown) => {
+    const authError = erro as AuthError;
+    registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, `Erro Firebase: ${authError.code}`, authError);
+    switch (authError.code) {
       case "auth/email-already-in-use":
         throw new Error("Este email já está em uso.");
       case "auth/invalid-email":
@@ -135,14 +148,20 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     }
   };
 
+  /**
+   * Realiza login com email e senha.
+   */
   const login = async (email: string, senha: string) => {
     try {
       await signInWithEmailAndPassword(autenticacao, email, senha);
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };
 
+  /**
+   * Realiza o cadastro de um novo usuário.
+   */
   const cadastro = async (email: string, senha: string, nome: string) => {
     try {
       const credencial = await createUserWithEmailAndPassword(autenticacao, email, senha);
@@ -158,37 +177,44 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         fotoUrl: credencial.user.photoURL,
         provedorGoogle: false,
       });
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };
 
+  /**
+   * Encerra a sessão do usuário.
+   */
   const sair = async () => {
     try {
       await signOut(autenticacao);
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Erro ao sair", erro);
     }
   };
 
+  /**
+   * Envia email de recuperação de senha.
+   */
   const recuperarSenha = async (email: string) => {
     try {
       await sendPasswordResetEmail(autenticacao, email);
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };
 
+  /**
+   * Realiza login utilizando o Google.
+   */
   const loginGoogle = async () => {
     try {
       const provedor = new GoogleAuthProvider();
       await signInWithPopup(autenticacao, provedor);
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };
-
-
 
   /**
    * Recupera o token JWT atualizado do Firebase.
@@ -206,6 +232,9 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     }
   };
 
+  /**
+   * Atualiza o perfil básico do usuário (nome e foto).
+   */
   const atualizarPerfil = async (dados: { nome?: string; fotoUrl?: string }) => {
     try {
       if (!autenticacao.currentUser) throw new Error("Usuário não autenticado.");
@@ -225,20 +254,26 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
             }
           : null,
       );
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };
 
+  /**
+   * Exclui permanentemente a conta do usuário (Direito ao Esquecimento - LGPD).
+   */
   const excluirConta = async () => {
     try {
       if (!autenticacao.currentUser) throw new Error("Usuário não autenticado.");
       await deleteUser(autenticacao.currentUser);
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };
 
+  /**
+   * Exporta os dados pessoais em formato JSON para portabilidade (Art. 18, V - LGPD).
+   */
   const exportarDadosPessoais = async () => {
     try {
       if (!usuario) throw new Error("Usuário não autenticado.");
@@ -277,7 +312,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       traduzirErroFirebase(erro);
     }
   };

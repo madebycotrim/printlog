@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 
 const esquemaLancamento = z.object({
   tipo: z.nativeEnum(TipoLancamentoFinanceiro),
-  valorCentavos: z.number().int().positive("O valor deve ser maior que zero"), // Regra v9.0: valor ≤ 0 é proibido
+  valor: z.number().positive("O valor deve ser maior que zero"),
   descricao: z.string().min(3, "Descrição muito curta"),
   categoria: z.string().min(1, "Selecione uma categoria"),
   idCliente: z.string().optional(),
@@ -24,12 +24,22 @@ const esquemaLancamento = z.object({
 
 type LancamentoFormData = z.infer<typeof esquemaLancamento>;
 
+/**
+ * Propriedades para o componente FormularioLancamento.
+ */
 interface FormularioLancamentoProps {
+  /** Indica se o modal está visível */
   aberto: boolean;
-  aoSalvar: (dados: CriarLancamentoInput) => Promise<any>;
+  /** Função de callback para salvar o lançamento (recebe centavos) */
+  aoSalvar: (dados: CriarLancamentoInput) => Promise<unknown>;
+  /** Função de callback para cancelar/fechar o modal */
   aoCancelar: () => void;
 }
 
+/**
+ * Formulário modal para registro de novas transações financeiras (Entradas/Saídas).
+ * Segue a Regra v9.0 de validação rigorosa de valores positivos.
+ */
 export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: FormularioLancamentoProps) {
   const { estado: estadoClientes, acoes: acoesClientes } = usarGerenciadorClientes();
   const [confirmarDescarte, setConfirmarDescarte] = useState(false);
@@ -42,15 +52,15 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
     setValue,
     formState: { errors, isDirty },
   } = useForm<LancamentoFormData>({
-    resolver: zodResolver(esquemaLancamento) as any,
+    resolver: zodResolver(esquemaLancamento),
     mode: "onChange",
     defaultValues: {
       tipo: TipoLancamentoFinanceiro.ENTRADA,
       descricao: "",
-      valorCentavos: 0,
+      valor: 0,
       categoria: "",
       idCliente: "",
-      data: new Date(), // Changed to Date object
+      data: new Date(),
     },
   });
 
@@ -64,15 +74,19 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
     }
   }, [aberto, reset]);
 
+  /**
+   * Processa a submissão do formulário, convertendo o valor para centavos.
+   * @param dados - Dados validados do formulário
+   */
   const aoSubmeter = async (dados: LancamentoFormData) => {
     try {
       await aoSalvar({
         tipo: dados.tipo,
         descricao: dados.descricao,
-        valorCentavos: Math.round(dados.valorCentavos * 100),
+        valorCentavos: Math.round(dados.valor * 100),
         categoria: dados.categoria,
         idCliente: dados.idCliente,
-        data: dados.data, // Now directly a Date object
+        data: dados.data,
       });
       aoCancelar();
     } catch (erro) {
@@ -87,6 +101,11 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
     }
   };
 
+  /**
+   * Atalho para criar um cliente rapidamente a partir do financeiro.
+   * @param nome - Nome do novo cliente
+   * @returns O ID do cliente criado
+   */
   const lidarComCriarCliente = async (nome: string) => {
     try {
       const novoCliente = await acoesClientes.salvarCliente({
@@ -101,11 +120,17 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
     }
   };
 
+  /**
+   * Fecha o modal limpando estados de confirmação.
+   */
   const fecharModalRealmente = () => {
     setConfirmarDescarte(false);
     aoCancelar();
   };
 
+  /**
+   * Intercepta a tentativa de fechamento para alertar sobre dados não salvos.
+   */
   const lidarComTentativaFechamento = () => {
     if (isDirty && !confirmarDescarte) {
       setConfirmarDescarte(true);
@@ -116,7 +141,7 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
 
   return (
     <Dialogo aberto={aberto} aoFechar={lidarComTentativaFechamento} titulo="Nova Transação" larguraMax="max-w-xl">
-      <form onSubmit={handleSubmit(aoSubmeter as any)} className="flex flex-col h-full bg-transparent">
+      <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col h-full bg-transparent">
         {/* ÁREA DE CONTEÚDO SCROLLÁVEL */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 min-h-[400px]">
           {/* SEÇÃO 1: CLASSIFICAÇÃO & VALOR */}
@@ -171,10 +196,10 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
 
               <CampoMonetario
                 rotulo="Valor da Transação"
-                erro={errors.valorCentavos?.message}
+                erro={errors.valor?.message}
                 placeholder="0,00"
                 icone={tipoSelecionado === TipoLancamentoFinanceiro.ENTRADA ? ArrowUpRight : ArrowDownLeft}
-                {...register("valorCentavos")}
+                {...register("valor", { valueAsNumber: true })}
               />
             </div>
           </div>
@@ -222,7 +247,7 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
                   icone={Calendar}
                   type="date"
                   erro={errors.data?.message}
-                  {...register("data")}
+                  {...register("data", { valueAsDate: true })}
                 />
               </div>
             </div>
