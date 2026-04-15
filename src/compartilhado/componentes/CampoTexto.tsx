@@ -15,28 +15,28 @@ export const CampoTexto = forwardRef<HTMLInputElement, CampoTextoProps>(
             {rotulo}
           </label>
         )}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center group">
           {Icone && (
             <Icone
               size={16}
-              strokeWidth={2}
+              strokeWidth={2.5}
               className={`absolute left-0 transition-colors duration-300 
                                 ${
                                   erro
                                     ? "text-red-500"
-                                    : "text-gray-400 dark:text-zinc-600 group-focus-within:text-zinc-900 dark:group-focus-within:text-white"
+                                    : "text-gray-400 dark:text-[var(--text-muted)] group-focus-within:text-gray-900 dark:group-focus-within:text-white"
                                 }`}
             />
           )}
           <input
             ref={ref}
             {...props}
-            className={`w-full h-10 bg-transparent border-0 border-b-[3px] outline-none transition-all duration-300 placeholder:text-gray-400/50 dark:placeholder:text-zinc-700 font-normal text-sm text-gray-900 dark:text-white 
-                            ${Icone ? "pl-8" : "pl-0"} 
+            className={`w-full h-10 bg-transparent border-0 border-b-2 border-gray-100 dark:border-[var(--border-subtle)] outline-none transition-all duration-300 placeholder:text-gray-400/50 dark:placeholder:text-zinc-700 font-normal text-sm text-gray-900 dark:text-white 
+                            ${Icone ? "pl-8" : "pl-1"} 
                             ${
                               erro
                                 ? "border-red-500 focus:border-red-600"
-                                : "border-gray-100 dark:border-white/10 focus:border-gray-300 dark:focus:border-white/20"
+                                : "focus:border-gray-400 dark:focus:border-white"
                             }`}
           />
         </div>

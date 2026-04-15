@@ -61,11 +61,11 @@ export function ModalListagemPremium({
   const corHex = mapasCores[corDestaque] || "sky-500";
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} titulo={titulo} larguraMax="max-w-7xl">
-      <div className="flex flex-col h-[85vh] bg-white dark:bg-[#18181b]">
+    <Dialogo aberto={aberto} aoFechar={aoFechar} titulo={titulo} larguraMax="max-w-7xl" telaCheia={false} semScroll={true}>
+      <div className="flex flex-col bg-white dark:bg-[var(--bg-card)] h-[80vh]">
         {/* 🔍 Barra de Busca Superior */}
         <div
-          className={`px-8 py-6 border-b border-gray-100 dark:border-white/5 bg-${corDestaque}-50/30 dark:bg-${corDestaque}-500/[0.02] backdrop-blur-sm sticky top-0 z-20`}
+          className={`px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-${corDestaque}-50/30 dark:bg-${corDestaque}-500/[0.02] backdrop-blur-sm sticky top-0 z-20`}
         >
           <div className="relative group">
             <Search
@@ -91,7 +91,7 @@ export function ModalListagemPremium({
         </div>
 
         {/* 📦 Área de Conteúdo */}
-        <div className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/5">
+        <div className={`flex-1 ${!temResultados ? "overflow-hidden" : "overflow-y-auto"} p-6 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/5`}>
           {!temResultados && !loading ? (
             <EstadoVazio titulo="Sem resultados" descricao={mensagemVazio} icone={iconeVazio || Search} />
           ) : (
@@ -101,7 +101,7 @@ export function ModalListagemPremium({
 
         {/* 📑 Rodapé Informativo */}
         <div
-          className={`px-8 py-4 border-t border-gray-100 dark:border-white/5 bg-${corDestaque}-50/20 dark:bg-${corDestaque}-500/[0.01] flex items-center justify-between`}
+          className={`px-6 py-4 border-t border-gray-100 dark:border-white/5 bg-${corDestaque}-50/20 dark:bg-${corDestaque}-500/[0.01] flex items-center justify-between`}
         >
           <div className="flex items-center gap-2">
             {IconeTitulo && <IconeTitulo size={14} className={`text-${corHex}`} />}

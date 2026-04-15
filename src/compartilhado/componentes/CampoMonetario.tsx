@@ -17,15 +17,15 @@ export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
             {rotulo}
           </label>
         )}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center group">
           <Icone
             size={16}
-            strokeWidth={2}
+            strokeWidth={2.5}
             className={`absolute left-0 transition-colors duration-300 
                             ${
                               erro
                                 ? "text-red-500"
-                                : "text-gray-400 dark:text-zinc-600 group-focus-within:text-zinc-900 dark:group-focus-within:text-white"
+                                : "text-gray-400 dark:text-[var(--text-muted)] group-focus-within:text-gray-900 dark:group-focus-within:text-white"
                             }`}
           />
           <input
@@ -33,11 +33,11 @@ export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
             type="number"
             step="0.01"
             {...props}
-            className={`w-full h-10 bg-transparent border-0 border-b-[3px] outline-none transition-all duration-300 placeholder:text-gray-400/50 dark:placeholder:text-zinc-700 font-normal text-sm text-gray-900 dark:text-white pl-8 pr-12
+            className={`w-full h-10 bg-transparent border-0 border-b-2 outline-none transition-all duration-300 placeholder:text-gray-400/50 dark:placeholder:text-zinc-700 font-normal text-sm text-gray-900 dark:text-white pl-8 pr-12
                             ${
                               erro
                                 ? "border-red-500 focus:border-red-600"
-                                : "border-gray-100 dark:border-white/10 focus:border-gray-300 dark:focus:border-white/20"
+                                : "border-gray-100 dark:border-[var(--border-subtle)] focus:border-gray-400 dark:focus:border-white"
                             }`}
           />
           <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 dark:text-zinc-600 pointer-events-none uppercase">

@@ -71,7 +71,7 @@ export function CardResumo({
     <Container
       onClick={aoClicar}
       className={`
-                bg-white/50 dark:bg-zinc-950/40 backdrop-blur-sm border border-gray-200 dark:border-white/5 
+                bg-white/50 dark:bg-[var(--bg-card)] backdrop-blur-sm border border-gray-100 dark:border-[var(--border-subtle)] 
                 p-6 rounded-2xl shadow-sm flex items-center gap-5 relative overflow-hidden group transition-all text-left
                 ${aoClicar ? `${estilo.hover} cursor-pointer active:scale-[0.98]` : ""}
             `}
@@ -95,17 +95,17 @@ export function CardResumo({
 
       {/* Conteúdo */}
       <div className="relative z-10">
-        <h4 className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-0.5">
+        <h4 className="text-[10px] font-black text-gray-400 dark:text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-0.5">
           {titulo}
         </h4>
         <div className="flex items-baseline gap-1.5 mt-0.5">
           <span
-            className={`text-2xl font-black tracking-tight ${carregando ? "animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded h-8 w-12" : "text-gray-900 dark:text-white"}`}
+            className={`text-2xl font-black tracking-tight ${carregando ? "skeleton h-8 w-12 rounded-lg" : "text-gray-900 dark:text-[var(--text-primary)]"}`}
           >
             {!carregando && valor}
           </span>
           {unidade && !carregando && (
-            <span className="text-[10px] font-black text-gray-400 dark:text-zinc-600 uppercase tracking-widest">
+            <span className="text-[10px] font-black text-gray-400 dark:text-[var(--text-muted)] uppercase tracking-widest">
               {unidade}
             </span>
           )}
@@ -114,7 +114,7 @@ export function CardResumo({
 
       {/* Ícone de Fundo Decorativo */}
       <Icone
-        className="absolute -right-6 -bottom-6 text-gray-100 dark:text-white/5 transition-transform group-hover:scale-110 group-hover:-rotate-12 duration-500 pointer-events-none"
+        className="absolute -right-6 -bottom-6 text-gray-100 dark:text-white/[0.02] transition-transform group-hover:scale-110 group-hover:-rotate-12 duration-500 pointer-events-none"
         size={100}
         strokeWidth={1}
       />

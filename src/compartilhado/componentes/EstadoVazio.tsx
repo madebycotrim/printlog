@@ -19,7 +19,7 @@ export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoCli
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex flex-col items-center justify-center py-24 px-4 text-center mt-4 h-[60vh] relative overflow-hidden"
+      className="flex flex-col items-center justify-center py-6 px-4 text-center h-full min-h-[400px] relative overflow-hidden"
     >
       {/* Ícone de fundo (Marca d'água) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] dark:opacity-[0.03] pointer-events-none">

@@ -1,6 +1,7 @@
-﻿import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { ReactNode, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface PropriedadesDialogo {
   aberto: boolean;
@@ -9,8 +10,14 @@ interface PropriedadesDialogo {
   children: ReactNode;
   larguraMax?: string;
   esconderCabecalho?: boolean;
+  telaCheia?: boolean;
+  semScroll?: boolean;
 }
 
+/**
+ * Componente de DiÃ¡logo (Modal) com suporte a Portals.
+ * Renderiza fora da hierarquia do DOM atual para evitar problemas de 'transform' no CSS.
+ */
 export function Dialogo({
   aberto,
   aoFechar,
@@ -18,6 +25,8 @@ export function Dialogo({
   children,
   larguraMax = "max-w-2xl",
   esconderCabecalho = false,
+  telaCheia = false,
+  semScroll = false,
 }: PropriedadesDialogo) {
   // Fecha com ESC
   useEffect(() => {
@@ -28,32 +37,45 @@ export function Dialogo({
     return () => window.removeEventListener("keydown", lidarComTecla);
   }, [aberto, aoFechar]);
 
-  return (
+  // Bloqueia scroll do body quando aberto
+  useEffect(() => {
+    if (aberto) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; };
+  }, [aberto]);
+
+  const modalConteudo = (
     <AnimatePresence>
       {aberto && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop (Fundo Borrado) - Agora garante tela inteira via Portal */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-md"
             onClick={aoFechar}
           />
 
           {/* Container Centralizado */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className={`fixed inset-0 z-[1000] flex items-center justify-center ${telaCheia ? "p-0" : "p-4 md:p-8"} pointer-events-none`}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={telaCheia ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-              className={`w-full ${larguraMax} bg-card border border-subtle rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[90vh]`}
+              exit={telaCheia ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
+              className={`
+                                w-full pointer-events-auto flex flex-col overflow-hidden bg-[var(--bg-card)] border-[var(--border-subtle)] shadow-2xl
+                                ${telaCheia ? "h-full w-full border-none rounded-none" : `${larguraMax} rounded-2xl border max-h-[90vh]`}
+                            `}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Cabeçalho */}
+              {/* CabeÃ§alho */}
               {!esconderCabecalho && (
-                <div className="flex items-center justify-between px-6 py-4 border-b border-subtle bg-transparent backdrop-blur-md rounded-t-2xl z-20">
+                <div className={`flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-transparent backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-2xl"}`}>
                   <h3 className="text-sm font-bold text-gray-500 dark:text-zinc-400 tracking-widest uppercase">
                     {titulo}
                   </h3>
@@ -67,8 +89,8 @@ export function Dialogo({
                 </div>
               )}
 
-              {/* ConteÃºdo com Scroll */}
-              <div className="flex-1 overflow-y-auto p-0 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600">
+              {/* ConteÃºdo com Scroll (Opcional) */}
+              <div className={`flex-1 p-0 ${semScroll ? "overflow-hidden" : "overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600"}`}>
                 {children}
               </div>
             </motion.div>
@@ -77,4 +99,6 @@ export function Dialogo({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalConteudo, document.body);
 }

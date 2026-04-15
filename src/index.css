@@ -7,6 +7,8 @@
 @theme {
   --font-sans: var(--familia-fonte);
   --font-inter: "Inter", sans-serif;
+  --color-primaria: var(--cor-primaria);
+  --color-primaria-base: var(--cor-primaria-rgb);
   --color-card: var(--bg-card);
   --color-card-fundo: var(--bg-card);
   --color-borda-sutil: var(--border-subtle);
@@ -51,62 +53,130 @@
 }
 
 .dark {
-  --bg-page: #09090b;
-  --bg-sidebar: #020202;
-  --bg-card: #18181b;
-  --border-subtle: rgba(255, 255, 255, 0.1);
+  /* Paleta Zinc Profundo Unificada */
+  --bg-page: #09090b; /* Zinc 950 - Padrão de apps profissionais */
+  --bg-sidebar: #09090b; /* Unificado com o fundo para maior coesão */
+  --bg-card: #121215; /* Elevação sutil do Zinc 900+ */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  
+  /* Sistema de Cores de Texto */
+  --text-primary: #f8fafc; /* Slate 50 */
+  --text-secondary: #94a3b8; /* Slate 400 */
+  --text-muted: #475569; /* Slate 600 */
+  
+  /* Interações e Estados */
+  --hover-card: rgba(255, 255, 255, 0.015);
+  --focus-ring: rgba(14, 165, 233, 0.3);
+  --bg-input: #0a0a0c;
+  --bg-skeleton: #1a1a1e;
+  
+  /* Sombras e Iluminação (Aesthetic: Floating Elevation) */
+  --sombra-suave: 0 1px 2px 0 rgba(0, 0, 0, 0.82);
+  --sombra-media: 0 4px 12px -2px rgba(0, 0, 0, 0.9);
+  --sombra-forte: 0 25px 50px -12px rgba(0, 0, 0, 0.98);
+  --sombra-primaria: 0 8px 30px -4px rgba(14, 165, 233, 0.12);
 
-  /* Sombras no Dark Mode (Reduzidas ou Invertidas) */
-  --sombra-suave: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --sombra-media: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --sombra-forte: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-  --sombra-primaria: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
 }
 
 body {
   background-color: var(--bg-page);
+  color: #1a1a1a;
   font-family: var(--familia-fonte);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Forçamos a fonte em componentes que o Tailwind reseta explicitamente */
-button,
-input,
-optgroup,
-select,
-textarea {
-  font-family: inherit;
+.dark body {
+  color: var(--text-primary);
 }
 
-/* Títulos com gradiente */
-.text-gradient-title {
-  background: linear-gradient(to right, #fff 0%, #cbd5e1 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Glassmorphism Dinâmico */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Números Mono */
-.font-mono-numbers {
-  font-family: var(--font-mono) !important;
-  font-variant-numeric: tabular-nums;
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
-/* Scrollbar */
+/* Scrollbar Hyper-Minimal */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-page);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Títulos com Gradiente de Alta Fidelidade */
+.text-gradient-title {
+  background: linear-gradient(135deg, #f8fafc 0%, #64748b 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.dark .text-gradient-title {
+  background: linear-gradient(135deg, #ffffff 60%, #e2e8f0 100%);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+}
+
+/* Micro-Animações e Glows */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(14, 165, 233, 0.1); }
+  50% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.2); }
+}
+
+.glow-subtle {
+  animation: glow-pulse 4s infinite ease-in-out;
+}
+
+/* Skeleton Loader Reativo ao Tema */
+.skeleton {
+  background-color: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .skeleton {
+  background-color: var(--bg-skeleton);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
 }
 
 /* Grid Patterns */

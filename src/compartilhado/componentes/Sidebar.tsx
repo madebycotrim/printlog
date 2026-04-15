@@ -45,8 +45,6 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const lidarComSair = async () => {
     try {
       await sair();
-      // Força um recarregamento total na Home para evitar que a RotaProtegida
-      // intercepte a navegação enquanto o estado do Firebase ainda está sendo limpo.
       window.location.href = "/";
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "BarraLateral" }, "Erro ao realizar logout", erro);
@@ -57,12 +55,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     {
       titulo: "Geral",
       itens: [
-        {
-          nome: "Dashboard",
-          icone: LayoutDashboard,
-          caminho: "/dashboard",
-          exato: true,
-        },
+        { nome: "Dashboard", icone: LayoutDashboard, caminho: "/dashboard", exato: true },
         { nome: "Calculadora", icone: Calculator, caminho: "/calculadora" },
       ],
     },
@@ -97,8 +90,8 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
 
   const classesContainer = `
         fixed inset-y-0 left-0 z-50 w-64 flex flex-col
-        bg-white dark:bg-[#020202]
-        border-r border-gray-200 dark:border-white/[0.06]
+        bg-white dark:bg-[var(--bg-sidebar)]
+        border-r border-gray-100 dark:border-[var(--border-subtle)]
         transition-transform duration-300 ease-in-out md:translate-x-0
         ${abertaMobile ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
         md:static md:shadow-none
@@ -109,50 +102,60 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
       {abertaMobile && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={aoFechar} />}
 
       <aside className={classesContainer}>
-        {/* Grade Discreta Maior (Estilo Blueprint Dinâmico + Máscara de Desvanecimento) */}
+        {/* Grade de Design (Background) */}
         <div
-          className="absolute inset-0 pointer-events-none z-[1] bg-[linear-gradient(to_right,rgba(0,0,0,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.08)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)]"
+          className="absolute inset-0 pointer-events-none z-[1] opacity-[0.03] dark:opacity-[0.1]"
           style={{
-            backgroundSize: "32px 32px",
-            maskImage: "linear-gradient(to bottom, black 5%, transparent 95%)",
-            WebkitMaskImage: "linear-gradient(to bottom, black 5%, transparent 95%)",
+            backgroundImage: "radial-gradient(circle at 2px 2px, var(--text-muted) 1px, transparent 0)",
+            backgroundSize: "24px 24px",
+            maskImage: "linear-gradient(to bottom, black 10%, transparent 90%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 10%, transparent 90%)",
           }}
         />
 
         <div className="relative z-10 flex flex-col h-full">
-          <div className="h-24 flex items-center justify-center gap-3">
-            <img src="/logo-colorida.png" alt="PrintLog" className="relative w-8 h-8 object-contain" />
+          {/* Logo Section */}
+          <div className="h-24 flex items-center px-6 gap-3">
+            <div className="relative group">
+              <div className="absolute -inset-1.5 bg-primaria/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-500" />
+              <img src="/logo-colorida.png" alt="PrintLog" className="relative w-9 h-9 object-contain" />
+            </div>
 
-            <div className="flex flex-col justify-center gap-0.5">
-              {/* Texto PRINTLOG com Gradiente Metálico (Dark) / Sólido (Light) */}
-              <span className="text-xl font-black tracking-wider text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-b dark:from-white dark:to-gray-500 drop-shadow-sm">
+            <div className="flex flex-col justify-center">
+              <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-gradient-title leading-none">
                 PRINTLOG
               </span>
+              <span className="text-[10px] font-bold text-primaria tracking-[0.3em] uppercase">Studio</span>
             </div>
 
             {aoFechar && (
-              <button onClick={aoFechar} className="md:hidden ml-auto text-gray-400 hover:text-gray-600">
+              <button onClick={aoFechar} className="md:hidden ml-auto p-2 text-gray-400 hover:text-red-500 transition-colors">
                 <X size={20} />
               </button>
             )}
           </div>
 
-          {betaMultiEstudio && <SeletorEstudio />}
+          {betaMultiEstudio && (
+            <div className="px-4 mb-4">
+              <SeletorEstudio />
+            </div>
+          )}
 
-          {/* Navegação */}
-          <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-6 scrollbar-hide">
+          {/* Navegação Principal */}
+          <nav className="flex-1 overflow-y-auto py-2 px-3 space-y-7 custom-scrollbar">
             {grupos.map((grupo) => (
-              <div key={grupo.titulo}>
-                <div className="flex items-center gap-3 px-3 mb-3 mt-5 first:mt-0">
-                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap">
+              <div key={grupo.titulo} className="space-y-1.5">
+                <div className="flex items-center gap-3 px-4 mb-3 mt-4 first:mt-0">
+                  <h3 className="text-[10px] font-black text-gray-400 dark:text-[var(--text-muted)] uppercase tracking-[0.2em]">
                     {grupo.titulo}
-                  </span>
-                  {/* Linha Divisória de Categoria mais detalhada e visível */}
-                  <div className="flex-1 flex items-center h-[1px] bg-gradient-to-r from-gray-200 via-gray-200/50 to-transparent dark:from-white/[0.15] dark:via-white/[0.08] dark:to-transparent">
-                    <div className="w-[3px] h-[3px] rounded-full bg-gray-300 dark:bg-zinc-500 -ml-[1px]" />
+                  </h3>
+                  {/* Linha Divisória de Categoria com Bolinha (Estilo Blueprint) */}
+                  <div className="flex-1 flex items-center h-[1px] bg-gradient-to-r from-gray-200 via-gray-200/50 to-transparent dark:from-white/[0.12] dark:via-white/[0.05] dark:to-transparent">
+                    <div className="w-[3px] h-[3px] rounded-full bg-gray-300 dark:bg-zinc-600 -ml-[1px]" />
                   </div>
                 </div>
-                <div className="space-y-0.5">
+                
+                <div className="space-y-1">
                   {grupo.itens.map((item) => {
                     const ativo = itemAtivo(item.caminho, item.exato);
                     return (
@@ -160,46 +163,31 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                         key={item.caminho}
                         to={item.caminho}
                         onClick={() => aoFechar?.()}
-                        style={
-                          ativo
-                            ? {
-                                backgroundColor: "rgb(var(--cor-primaria-rgb) / 0.12)",
-                                color: "var(--cor-primaria)",
-                              }
-                            : undefined
-                        }
                         className={`
-                                                    group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden
-                                                    ${
-                                                      ativo
-                                                        ? ""
-                                                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-gray-200"
-                                                    }
-                                                `}
+                          group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden
+                          ${ativo 
+                            ? "text-primaria bg-gradient-to-r from-primaria/10 to-transparent dark:from-primaria/5 dark:to-transparent backdrop-blur-md shadow-[inset_1px_1px_1px_rgba(255,255,255,0.05)]" 
+                            : "text-gray-500 dark:text-[var(--text-secondary)] hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-white/[0.02]"}
+                        `}
                       >
-                        {/* Indicador Lateral Ativo (Barra sky igual botões principais) */}
+                        {/* Indicador de Profundidade 3D (Borda Brilhante) */}
                         {ativo && (
-                          <div
-                            className="absolute left-0 top-0 bottom-0 w-[3px]"
-                            style={{ backgroundColor: "var(--cor-primaria)" }}
-                          />
+                          <div className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-primaria rounded-full shadow-[0_0_8px_rgba(var(--cor-primaria-rgb),0.5)]" />
                         )}
 
-                        {/* O padding extra no icone qdo ativo afasta ele da barra */}
-                        <div className={`flex items-center justify-center transition-all ${ativo ? "pl-2" : ""}`}>
+                        <div className={`flex items-center justify-center transition-transform duration-300 ${ativo ? "" : "group-hover:scale-110 group-hover:-translate-y-0.5"}`}>
                           <item.icone
                             size={18}
                             strokeWidth={ativo ? 2.5 : 2}
-                            style={ativo ? { color: "var(--cor-primaria)" } : undefined}
-                            className={`transition-colors ${ativo ? "" : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"}`}
+                            className={`transition-colors ${ativo ? "text-primaria" : "text-gray-400 dark:text-zinc-600 group-hover:text-primaria"}`}
                           />
                         </div>
-                        <span className={ativo ? "font-bold tracking-tight flex-1" : "flex-1"}>{item.nome}</span>
+
+                        <span className="flex-1 leading-none">{item.nome}</span>
 
                         {item.beta && (
-                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shrink-0">
-                            <Beaker size={8} className="animate-pulse" />
-                            <span className="text-[7px] font-black uppercase tracking-tighter">Lab</span>
+                          <div className="px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-[8px] font-black text-indigo-500 uppercase tracking-tighter animate-pulse">
+                            Lab
                           </div>
                         )}
                       </Link>
@@ -208,63 +196,49 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                 </div>
               </div>
             ))}
-
             {participarPrototipos && (
-              <div className="pt-6 border-t border-indigo-500/10 dark:border-indigo-500/5 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="flex items-center gap-2 px-3 mb-3">
-                  <Beaker size={14} className="text-indigo-500 animate-pulse" />
-                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
-                    Centro de Inovação
-                  </span>
+              <div className="pt-4 border-t border-dashed border-gray-100 dark:border-white/5 space-y-3">
+                <div className="flex items-center gap-2 px-4">
+                  <Beaker size={14} className="text-indigo-500" />
+                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Labs Center</span>
                 </div>
-
-                <div className="space-y-1">
-                  <button
-                    onClick={() => window.open("https://forms.gle/exemplo", "_blank")}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/10 transition-all group"
-                  >
-                    <span>Reportar Bug Lab</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 group-hover:scale-125 transition-transform" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (confirm("Deseja desativar todos os recursos experimentais e voltar ao modo estável?")) {
-                        resetarTudo();
-                        window.location.reload();
-                      }
-                    }}
-                    className="w-full text-left px-3 py-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 uppercase tracking-widest transition-colors"
-                  >
-                    Encerrar Participação
-                  </button>
-                </div>
+                <button
+                  onClick={() => resetarTudo()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-red-500 bg-gray-50 dark:bg-white/[0.02] border border-transparent hover:border-red-500/20 transition-all"
+                >
+                  Desativar Experimentos
+                </button>
               </div>
             )}
           </nav>
 
-          {/* Rodapé */}
-          <div className="border-t border-gray-100 dark:border-white/[0.06] p-3 space-y-1">
-            <div className="flex items-center gap-3 px-3 py-2 mt-1">
-              <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300 shrink-0 overflow-hidden">
+          {/* User Profile - Rodapé Premium */}
+          <div className="relative mt-auto p-4">
+            {/* Elegant Faded Separator */}
+            <div className="absolute top-0 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-gray-100 dark:via-white/10 to-transparent" />
+            
+            <div className="flex items-center gap-3 p-2 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-all group overflow-hidden">
+              <div className="h-9 w-9 rounded-xl bg-primaria/10 border border-primaria/20 flex items-center justify-center text-xs font-black text-primaria dark:text-primaria/80 shrink-0 relative overflow-hidden">
                 {usuario?.fotoUrl ? (
                   <img src={usuario.fotoUrl} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
                   usuario?.nome?.charAt(0).toUpperCase()
                 )}
+                <div className="absolute inset-0 bg-gradient-to-tr from-primaria/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
+              
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">
+                <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
                   {usuario?.nome?.split(" ")[0] || "Usuário"}
                 </p>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
-                  {usuario?.email}
+                <p className="text-[10px] text-gray-400 dark:text-[var(--text-muted)] truncate font-medium">
+                  Perfil Pro
                 </p>
               </div>
+
               <button
                 onClick={lidarComSair}
-                title="Sair"
-                className="shrink-0 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                className="shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
               >
                 <LogOut size={16} />
               </button>
