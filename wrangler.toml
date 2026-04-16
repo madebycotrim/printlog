@@ -1,5 +1,8 @@
 name = "printlog"
-pages_build_output_dir = "dist"
+compatibility_date = "2025-04-16"
+
+[assets]
+directory = "dist"
 
 [[d1_databases]]
 binding = "DB"
