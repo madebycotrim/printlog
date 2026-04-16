@@ -1,0 +1,186 @@
+[
+  {
+    "brand": "Creality",
+    "model": "Ender-3",
+    "name": "Creality Ender-3 Classic",
+    "consumoKw": 0.09,
+    "type": "FDM",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Ender_3_Pro_3D_Printer.png"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 SE",
+    "name": "Creality Ender-3 V3 SE",
+    "consumoKw": 0.11,
+    "type": "FDM",
+    "img": "https://i.imgur.com/G4hXN38.png"
+  },
+  {
+    "brand": "Creality",
+    "model": "K1C",
+    "name": "Creality K1C High Speed",
+    "consumoKw": 0.15,
+    "type": "CoreXY",
+    "img": "https://i.imgur.com/8QXZC9A.png"
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot Mage 8K",
+    "name": "Creality Halot Mage 8K",
+    "consumoKw": 0.08,
+    "type": "Resina",
+    "img": "https://i.imgur.com/6Xm7XIn.png"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "A1",
+    "name": "Bambu Lab A1",
+    "consumoKw": 0.1,
+    "type": "Bedslinger",
+    "img": "https://cdn.simplyprint.io/i/printer_types/bambu_lab/a1/product_photo_md.png"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "A1 Mini",
+    "name": "Bambu Lab A1 Mini",
+    "consumoKw": 0.08,
+    "type": "Bedslinger",
+    "img": "https://cdn.simplyprint.io/i/printer_types/bambu_lab/a1_mini/product_photo_md.png"
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "P1S",
+    "name": "Bambu Lab P1S Enclosed",
+    "consumoKw": 0.13,
+    "type": "CoreXY",
+    "img": "https://cdn.simplyprint.io/i/printer_types/bambu_lab/p1s/product_photo_md.png"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4 Pro",
+    "name": "Elegoo Neptune 4 Pro",
+    "consumoKw": 0.12,
+    "type": "FDM",
+    "img": "https://cdn.simplyprint.io/i/printer_types/elegoo/neptune_4_pro/product_photo_md.png"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Saturn 4 Ultra",
+    "name": "Elegoo Saturn 4 Ultra 12K",
+    "consumoKw": 0.1,
+    "type": "Resina",
+    "img": "https://i.imgur.com/pYVjJ0i.png"
+  },
+  {
+    "brand": "Sethi3D",
+    "model": "S3",
+    "name": "Sethi3D S3 (Nacional)",
+    "consumoKw": 0.15,
+    "type": "FDM Profissional",
+    "img": "https://i.imgur.com/O6S376T.png"
+  },
+  {
+    "brand": "Boa Impressão",
+    "model": "Stella 2",
+    "name": "Stella 2 (Nacional Clássica)",
+    "consumoKw": 0.04,
+    "type": "FDM",
+    "img": "https://i.imgur.com/8Q8y9H2.png"
+  },
+  {
+    "brand": "Boa Impressão",
+    "model": "Stella 3 Lite",
+    "name": "Stella 3 Lite (Nacional)",
+    "consumoKw": 0.034,
+    "type": "FDM",
+    "img": "https://i.imgur.com/G4hXN38.png"
+  },
+  {
+    "brand": "GTMax3D",
+    "model": "Stratos S2",
+    "name": "GTMax3D Stratos S2 (Industrial)",
+    "consumoKw": 0.16,
+    "type": "CoreXY Profissional",
+    "img": "https://i.imgur.com/7YlXWId.png"
+  },
+  {
+    "brand": "3D Cloner",
+    "model": "ST G4",
+    "name": "3D Cloner ST G4 (Nacional)",
+    "consumoKw": 0.18,
+    "type": "FDM Profissional",
+    "img": "https://i.imgur.com/T0u7yO4.png"
+  },
+  {
+    "brand": "Anet",
+    "model": "A8",
+    "name": "Anet A8 (O Primeiro Kit DIY)",
+    "consumoKw": 0.08,
+    "type": "FDM (Kit)",
+    "img": "https://i.imgur.com/n4X9gUv.png"
+  },
+  {
+    "brand": "Tevo",
+    "model": "Tarantula",
+    "name": "Tevo Tarantula (Clássica DIY)",
+    "consumoKw": 0.2,
+    "type": "FDM (Kit)",
+    "img": "https://i.imgur.com/kmEFvi7.png"
+  },
+  {
+    "brand": "Wanhao",
+    "model": "Duplicator i3",
+    "name": "Wanhao Duplicator i3 Plus",
+    "consumoKw": 0.15,
+    "type": "FDM",
+    "img": "https://i.imgur.com/8Q8y9H2.png"
+  },
+  {
+    "brand": "Voolt3D",
+    "model": "Gi3",
+    "name": "Voolt3D Gi3 (Baseada em Graber)",
+    "consumoKw": 0.1,
+    "type": "FDM Nacional",
+    "img": "https://i.imgur.com/8QXZC9A.png"
+  },
+  {
+    "brand": "Tiertime",
+    "model": "UP Plus 2",
+    "name": "UP Plus 2 (Clássica Kalunga)",
+    "consumoKw": 0.15,
+    "type": "FDM",
+    "img": "https://i.imgur.com/O6S376T.png"
+  },
+  {
+    "brand": "Wilcos/W3D",
+    "model": "Print 2.0",
+    "name": "W3D Print 2.0 (Odontológica)",
+    "consumoKw": 0.045,
+    "type": "Resina",
+    "img": "https://i.imgur.com/6Xm7XIn.png"
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Photon Mono M5s",
+    "name": "Anycubic Photon Mono M5s",
+    "consumoKw": 0.07,
+    "type": "Resina",
+    "img": "https://cdn.simplyprint.io/i/printer_types/anycubic/photon_mono_m5s/product_photo_md.png"
+  },
+  {
+    "brand": "Kingroon",
+    "model": "KP3S Pro V2",
+    "name": "Kingroon KP3S Pro V2",
+    "consumoKw": 0.09,
+    "type": "FDM Compacta",
+    "img": "https://cdn.simplyprint.io/i/printer_types/kingroon/kp3s_pro_v2/product_photo_md.png"
+  },
+  {
+    "brand": "Prusa",
+    "model": "MK4",
+    "name": "Prusa MK4 Original",
+    "consumoKw": 0.14,
+    "type": "FDM Premium",
+    "img": "https://cdn.simplyprint.io/i/printer_types/prusa/mk4/product_photo_md.png"
+  }
+]
