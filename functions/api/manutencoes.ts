@@ -42,14 +42,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
             // Sequência de Fallback de Tabelas
             try {
-                const results = await tentarBusca("registros_manutencao");
+                const results = await tentarBusca("registro_manutencao");
                 return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
             } catch (e1) {
                 try {
                     const results = await tentarBusca("manutencoes");
                     return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
                 } catch (e2) {
-                    throw new Error(`Tabela de manutenções não encontrada (tentado: registros_manutencao, manutencoes). Original: ${(e1 as any).message}`);
+                    throw new Error(`Tabela de manutenções não encontrada (tentado: registro_manutencao, manutencoes). Original: ${(e1 as any).message}`);
                 }
             }
         }
@@ -61,7 +61,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             
             // Garantimos que todos os campos do tipo RegistroManutencao sejam persistidos
             await env.DB.prepare(`
-                INSERT INTO registros_manutencao (
+                INSERT INTO registro_manutencao (
                     id, id_usuario, id_impressora, data, tipo, descricao, 
                     custo_centavos, observacoes, tempo_parada_minutos, 
                     pecas_trocadas, responsavel, horas_maquina_atualmente, arquivado
@@ -101,7 +101,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         if (metodo === "DELETE") {
             if (!id) return new Response("ID não informado", { status: 400 });
             await env.DB.prepare(
-                "UPDATE registros_manutencao SET arquivado = 1 WHERE id = ? AND id_usuario = ?"
+                "UPDATE registro_manutencao SET arquivado = 1 WHERE id = ? AND id_usuario = ?"
             ).bind(id, usuarioId).run();
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
