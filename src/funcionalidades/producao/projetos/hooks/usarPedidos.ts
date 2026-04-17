@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { usarArmazemPedidos } from "../estado/armazemPedidos";
 import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
+import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 export function usarPedidos() {
   const {
@@ -20,10 +21,14 @@ export function usarPedidos() {
     removerPedido,
   } = usarArmazemPedidos();
 
+  const { usuario } = usarAutenticacao();
+  const usuarioId = usuario?.uid;
+
   const carregarPedidos = useCallback(async () => {
+    if (!usuarioId) return;
     try {
       definirCarregando(true);
-      const dados = await servicoPedidos.buscarPedidos();
+      const dados = await servicoPedidos.buscarPedidos(usuarioId);
       definirPedidos(dados);
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "Projetos" }, "Erro ao carregar pedidos", erro);
@@ -31,11 +36,12 @@ export function usarPedidos() {
     } finally {
       definirCarregando(false);
     }
-  }, [definirPedidos, definirCarregando]);
+  }, [definirPedidos, definirCarregando, usuarioId]);
 
   const criarPedido = async (dados: CriarPedidoInput) => {
+    if (!usuarioId) return;
     try {
-      const novo = await servicoPedidos.criarPedido(dados);
+      const novo = await servicoPedidos.criarPedido(dados, usuarioId);
       adicionarPedido(novo);
       toast.success("Pedido criado com sucesso! 🚀");
       return novo;
@@ -47,8 +53,9 @@ export function usarPedidos() {
   };
 
   const atualizarPedido = async (dados: AtualizarPedidoInput) => {
+    if (!usuarioId) return;
     try {
-      const atualizado = await servicoPedidos.atualizarPedido(dados);
+      const atualizado = await servicoPedidos.atualizarPedido(dados, usuarioId);
       atualizarPedidoNoEstado(dados.id, atualizado);
       toast.success("Pedido atualizado!");
       return atualizado;
@@ -60,6 +67,7 @@ export function usarPedidos() {
   };
 
   const moverPedido = async (id: string, novoStatus: StatusPedido) => {
+    if (!usuarioId) return;
     const todosPedidos = usarArmazemPedidos.getState().pedidos;
     const pedidoEncontrado = todosPedidos.find((p) => p.id === id);
 
@@ -71,7 +79,7 @@ export function usarPedidos() {
     atualizarPedidoNoEstado(id, { status: novoStatus });
 
     try {
-      await servicoPedidos.atualizarStatus(id, novoStatus);
+      await servicoPedidos.atualizarStatus(id, novoStatus, usuarioId);
 
       // Regra Manutenção v9.0: Ao concluir um job, abater tempo no horímetro da máquina
       if (novoStatus === StatusPedido.CONCLUIDO && pedidoEncontrado.idImpressora && pedidoEncontrado.tempoMinutos) {
@@ -85,8 +93,9 @@ export function usarPedidos() {
   };
 
   const excluirPedido = async (id: string) => {
+    if (!usuarioId) return;
     try {
-      await servicoPedidos.excluirPedido(id);
+      await servicoPedidos.excluirPedido(id, usuarioId);
       removerPedido(id);
       toast.success("Pedido excluído.");
     } catch (erro) {
@@ -115,10 +124,10 @@ export function usarPedidos() {
   }, [pedidos, termoBusca]);
 
   useEffect(() => {
-    if (pedidos.length === 0) {
+    if (usuarioId) {
       carregarPedidos();
     }
-  }, [carregarPedidos, pedidos.length]);
+  }, [carregarPedidos, usuarioId]);
 
   return {
     pedidos,

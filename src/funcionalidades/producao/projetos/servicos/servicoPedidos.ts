@@ -1,124 +1,102 @@
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { Pedido, CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
-import { ErroNaoEncontrado, CodigoErro } from "@/compartilhado/utilitarios/excecoes";
+import { apiPedidos } from "./apiPedidos";
 
-const CHAVE_STORAGE = "printlog:pedidos" as const;
-
+/**
+ * Serviço de Negócio para Pedidos e Fluxo de Produção.
+ * Faz a ponte entre a UI e a API real, aplicando regras de negócio.
+ */
 class ServicoPedidos {
-  private _obterTodos(): Pedido[] {
-    const salvo = localStorage.getItem(CHAVE_STORAGE);
-    if (!salvo) return [];
-    try {
-      const parsed = JSON.parse(salvo);
-      let mudou = false;
-      const agora = new Date();
-      const SETE_DIAS_EM_MS = 7 * 24 * 60 * 60 * 1000;
+  /**
+   * Busca e processa pedidos, aplicando regras de arquivamento automático.
+   */
+  async buscarPedidos(usuarioId: string): Promise<Pedido[]> {
+    const pedidos = await apiPedidos.buscarTodos(usuarioId);
+    
+    // Convertemos datas de string para objetos Date
+    const processados = pedidos.map((p: any) => ({
+      ...p,
+      dataCriacao: new Date(p.data_criacao || p.dataCriacao),
+      dataConclusao: p.data_conclusao ? new Date(p.data_conclusao) : undefined,
+      prazoEntrega: p.prazoEntrega ? new Date(p.prazoEntrega) : undefined,
+      valorCentavos: (p.valor_centavos !== undefined) ? p.valor_centavos : p.valorCentavos,
+      idCliente: p.id_cliente || p.idCliente
+    }));
 
-      const pedidos = parsed.map((p: any) => {
-        const dataCriacao = new Date(p.dataCriacao);
-        const dataConclusao = p.dataConclusao ? new Date(p.dataConclusao) : undefined;
-        const prazoEntrega = p.prazoEntrega ? new Date(p.prazoEntrega) : undefined;
-        let status = p.status;
+    const agora = new Date();
+    const SETE_DIAS_EM_MS = 7 * 24 * 60 * 60 * 1000;
 
-        // Arquivamento Automático: +7 dias no Concluído
-        if (status === StatusPedido.CONCLUIDO && dataConclusao) {
-          if (agora.getTime() - dataConclusao.getTime() > SETE_DIAS_EM_MS) {
-            status = StatusPedido.ARQUIVADO;
-            mudou = true;
-          }
+    // Regra de Arquivamento Automático: +7 dias no Concluído
+    const finalizados = await Promise.all(processados.map(async (p) => {
+      let status = p.status;
+      if (status === StatusPedido.CONCLUIDO && p.dataConclusao) {
+        if (agora.getTime() - p.dataConclusao.getTime() > SETE_DIAS_EM_MS) {
+          status = StatusPedido.ARQUIVADO;
+          // Sincroniza o novo status no banco em Background (sem travar a UI)
+          apiPedidos.atualizar({ id: p.id, status: StatusPedido.ARQUIVADO }, usuarioId);
         }
-
-        return {
-          ...p,
-          dataCriacao,
-          dataConclusao,
-          prazoEntrega,
-          status,
-        };
-      });
-
-      if (mudou) {
-        this._salvarTodos(pedidos);
       }
+      return { ...p, status };
+    }));
 
-      return pedidos;
-    } catch {
-      return [];
-    }
+    // Retorna apenas os não arquivados para o Kanban padrão
+    return finalizados.filter((p) => p.status !== StatusPedido.ARQUIVADO);
   }
 
-  private _salvarTodos(pedidos: Pedido[]): void {
-    localStorage.setItem(CHAVE_STORAGE, JSON.stringify(pedidos));
-  }
-
-  async buscarPedidos(): Promise<Pedido[]> {
-    const todos = this._obterTodos();
-    // Não exibe arquivados no quadro principal
-    return todos.filter((p) => p.status !== StatusPedido.ARQUIVADO);
-  }
-
-  async criarPedido(dados: CriarPedidoInput): Promise<Pedido> {
-    const pedidos = this._obterTodos();
-
+  async criarPedido(dados: CriarPedidoInput, usuarioId: string): Promise<Pedido> {
+    const id = crypto.randomUUID();
+    const dataCriacao = new Date();
+    
     const novoPedido: Pedido = {
-      id: crypto.randomUUID(),
-      idUsuario: "usuario-logado",
-      idCliente: dados.idCliente,
-      descricao: dados.descricao,
+      ...dados,
+      id,
+      idUsuario: usuarioId,
       status: StatusPedido.A_FAZER,
-      valorCentavos: dados.valorCentavos,
-      dataCriacao: new Date(),
-      prazoEntrega: dados.prazoEntrega,
-      observacoes: dados.observacoes,
-      material: dados.material,
-      pesoGramas: dados.pesoGramas,
-      tempoMinutos: dados.tempoMinutos,
+      dataCriacao
     };
 
-    pedidos.push(novoPedido);
-    this._salvarTodos(pedidos);
+    await apiPedidos.criar(novoPedido, usuarioId);
     return novoPedido;
   }
 
-  async atualizarPedido(dados: AtualizarPedidoInput): Promise<Pedido> {
-    const pedidos = this._obterTodos();
-    const indice = pedidos.findIndex((p) => p.id === dados.id);
+  async atualizarPedido(dados: AtualizarPedidoInput, usuarioId: string): Promise<Pedido> {
+    // Buscar o original para checar mudança de status para Concluído
+    const pedidos = await apiPedidos.buscarTodos(usuarioId);
+    const original = pedidos.find(p => p.id === dados.id) as any;
 
-    if (indice === -1) {
-      throw new ErroNaoEncontrado(`Pedido ${dados.id} não encontrado.`, CodigoErro.PEDIDO_NAO_ENCONTRADO);
-    }
+    if (!original) throw new Error("Pedido não encontrado");
 
-    const pedidoOriginal = pedidos[indice];
-    const novoStatus = dados.status || pedidoOriginal.status;
+    let dataConclusao = original.data_conclusao;
+    const novoStatus = dados.status || original.status;
 
-    // Gerenciamento de Data de Conclusão para arquivamento futuro
-    let novaDataConclusao = pedidoOriginal.dataConclusao;
-    if (novoStatus === StatusPedido.CONCLUIDO && pedidoOriginal.status !== StatusPedido.CONCLUIDO) {
-      novaDataConclusao = new Date();
+    // Gerenciamento de Data de Conclusão
+    if (novoStatus === StatusPedido.CONCLUIDO && original.status !== StatusPedido.CONCLUIDO) {
+      dataConclusao = new Date().toISOString();
     } else if (novoStatus !== StatusPedido.CONCLUIDO) {
-      novaDataConclusao = undefined;
+      dataConclusao = undefined;
     }
 
-    const pedidoAtualizado: Pedido = {
-      ...pedidoOriginal,
+    const payload = {
       ...dados,
-      status: novoStatus,
-      dataConclusao: novaDataConclusao,
+      dataConclusao
     };
 
-    pedidos[indice] = pedidoAtualizado;
-    this._salvarTodos(pedidos);
-    return pedidoAtualizado;
+    await apiPedidos.atualizar(payload, usuarioId);
+    
+    return {
+      ...original,
+      ...dados,
+      status: novoStatus,
+      dataConclusao: dataConclusao ? new Date(dataConclusao) : undefined
+    } as any;
   }
 
-  async atualizarStatus(id: string, novoStatus: StatusPedido): Promise<Pedido> {
-    return this.atualizarPedido({ id, status: novoStatus });
+  async atualizarStatus(id: string, novoStatus: StatusPedido, usuarioId: string): Promise<Pedido> {
+    return this.atualizarPedido({ id, status: novoStatus }, usuarioId);
   }
 
-  async excluirPedido(id: string): Promise<void> {
-    const pedidos = this._obterTodos();
-    const novosPedidos = pedidos.filter((p) => p.id !== id);
-    this._salvarTodos(novosPedidos);
+  async excluirPedido(id: string, usuarioId: string): Promise<void> {
+    await apiPedidos.excluir(id, usuarioId);
   }
 }
 
