@@ -1,0 +1,32 @@
+:root[data-tema="claro"] {
+  --cor-fundo: #f4f4f5;
+  --cor-fundo-card: #ffffff;
+  /* Zinc 100 (Matching index.css page bg) */
+  --cor-texto: #18181b;
+  /* Zinc 900 */
+  --cor-borda: #e4e4e7;
+  /* Zinc 200 */
+  --cor-primaria: #0ea5e9;
+  --cor-primaria-rgb: 14 165 233;
+}
+
+:root[data-tema="escuro"] {
+  --cor-fundo: #09090b;
+  --cor-fundo-card: #18181b;
+  /* Zinc 950 (Matching index.css) */
+  --cor-texto: #f4f4f5;
+  /* Zinc 100 */
+  --cor-borda: #27272a;
+  /* Zinc 800 */
+  --cor-primaria: #0ea5e9;
+  --cor-primaria-rgb: 14 165 233;
+}
+
+/* Aplicação das variáveis para garantir consistência se não usar classes Tailwind */
+body {
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}

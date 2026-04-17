@@ -1,0 +1,74 @@
+/**
+ * Estilos de impressão ABNT para documentos jurídicos (Termos, Política de Privacidade).
+ * Substitui o dangerouslySetInnerHTML por import seguro de CSS.
+ */
+
+@media print {
+  @page {
+    margin: 1cm 2cm 2cm 3cm;
+    size: A4;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-family: Arial, sans-serif !important;
+    width: 210mm !important;
+  }
+
+  .print-abnt-text {
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    color: black !important;
+    text-align: justify !important;
+  }
+
+  .print-abnt-title {
+    font-size: 12pt !important;
+    font-weight: bold !important;
+    color: black !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    break-after: avoid !important;
+  }
+
+  .print-abnt-subtitle {
+    font-size: 12pt !important;
+    font-weight: bold !important;
+    color: black !important;
+    margin-top: 15pt !important;
+    text-transform: uppercase !important;
+    break-after: avoid !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-no-shadow {
+    box-shadow: none !important;
+    border: none !important;
+    ring: none !important;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  p {
+    margin-bottom: 10pt !important;
+  }
+
+  .indent-8 {
+    text-indent: 1.25cm !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
