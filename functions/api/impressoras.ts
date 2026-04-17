@@ -32,12 +32,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
                     observacoes, data_criacao
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
-                novoId, usuarioId, dados.nome, dados.tecnologia || 'FDM', 
-                dados.status || 'livre', dados.taxaHoraCentavos || 0,
-                dados.horimetroTotalMinutos || 0, 
-                dados.intervaloRevisaoMinutos || 30000,
-                dados.valorCompraCentavos || 0,
-                dados.observacoes || '',
+                novoId, 
+                usuarioId, 
+                dados.nome ?? null, 
+                dados.tecnologia ?? 'FDM', 
+                dados.status ?? 'livre', 
+                dados.taxaHoraCentavos ?? dados.taxa_hora_centavos ?? 0,
+                dados.horimetroTotalMinutos ?? dados.horimetro_total_minutos ?? 0, 
+                dados.intervaloRevisaoMinutos ?? dados.intervalo_revisao_minutos ?? 30000,
+                dados.valorCompraCentavos ?? dados.valor_compra_centavos ?? 0,
+                dados.observacoes ?? null,
                 new Date().toISOString()
             ).run();
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { status: 201 });
@@ -53,11 +57,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
                     observacoes = ?, data_aposentadoria = ?
                 WHERE id = ? AND id_usuario = ?
             `).bind(
-                dados.nome, dados.tecnologia, dados.status,
-                dados.taxaHoraCentavos, dados.horimetroTotalMinutos,
-                dados.intervaloRevisaoMinutos, dados.valorCompraCentavos,
-                dados.observacoes, dados.dataAposentadoria,
-                dados.id, usuarioId
+                dados.nome ?? null, 
+                dados.tecnologia ?? null, 
+                dados.status ?? 'livre',
+                dados.taxaHoraCentavos ?? dados.taxa_hora_centavos ?? 0, 
+                dados.horimetroTotalMinutos ?? dados.horimetro_total_minutos ?? 0,
+                dados.intervaloRevisaoMinutos ?? dados.intervalo_revisao_minutos ?? 30000, 
+                dados.valorCompraCentavos ?? dados.valor_compra_centavos ?? 0,
+                dados.observacoes ?? null, 
+                dados.dataAposentadoria ?? dados.data_aposentadoria ?? null,
+                dados.id, 
+                usuarioId
             ).run();
             return new Response(JSON.stringify({ sucesso: true }));
         }
