@@ -1,6 +1,7 @@
 import { User, Mail, Lock } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { Usuario } from "@/compartilhado/tipos/modelos";
+import { Avatar } from "@/compartilhado/componentes/Avatar";
 
 /**
  * Propriedades para o componente CardPerfil.
@@ -25,19 +26,19 @@ interface PropsCardPerfil {
  */
 export function CardPerfil({ usuario, nome, definirNome, sucessoEmail, lidarComTrocaSenha, pendente }: PropsCardPerfil) {
     return (
-        <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141417] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group">
+        <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141417] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
             <CabecalhoCard titulo="Perfil Maker" descricao="Sua conta de acesso e segurança" icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-2xl p-4 bg-gray-50/70 dark:bg-white/[0.02]">
-                    <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-white/5 flex items-center justify-center overflow-hidden shrink-0">
-                        {usuario?.fotoUrl ? (
-                            <img src={usuario.fotoUrl} alt="Avatar" className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-3xl font-black text-gray-400 dark:text-zinc-700">{usuario?.nome?.charAt(0) || "C"}</span>
-                        )}
-                    </div>
+                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-gray-50/70 dark:bg-white/[0.02]">
+                    <Avatar 
+                        nome={nome} 
+                        // Se o nome mudou, ocultamos a foto para mostrar o "novo avatar" (preview de cor/iniciais)
+                        fotoUrl={nome !== usuario?.nome ? null : usuario?.fotoUrl} 
+                        tamanho="w-20 h-20" 
+                        className="text-3xl"
+                    />
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">

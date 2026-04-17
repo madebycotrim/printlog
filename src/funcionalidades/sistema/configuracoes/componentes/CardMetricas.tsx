@@ -6,12 +6,21 @@ import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/Conte
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { usarArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
+import { usarArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 import { toast } from "react-hot-toast";
 
 export function CardMetricas() {
   const { usuario } = usarAutenticacao();
   const [exportando, definirExportando] = useState(false);
   const [mensagemSucesso, definirMensagemSucesso] = useState("");
+
+  // Acessando dados reais dos armazéns (Estado Global)
+  const totalClientes = usarArmazemClientes((estado) => estado.clientes.length);
+  const totalMateriais = usarArmazemMateriais((estado) => estado.materiais.length);
+  const totalInsumos = usarArmazemInsumos((estado) => estado.insumos.length);
+  const totalMaquinas = usarArmazemImpressoras((estado) => estado.impressoras.length);
+  const totalProjetos = usarArmazemPedidos((estado) => estado.pedidos.length);
 
   const gerarLogBackend = (formato: string) => {
     // [Art. 37 - ROA] Simulando log em um sistema de auditoria (D1/Logs).
@@ -55,8 +64,8 @@ export function CardMetricas() {
             isolamento: "Dados restritos ao UID logado (Art. 6º, I).",
           },
           dados_pessoais: {
-            clientes: [], // Em Desenvolvimento — Fase 2 (Art. 6º, I).
-            projetos: [], // Em Desenvolvimento — Fase 2 (Art. 6º, I).
+            clientes: usarArmazemClientes.getState().clientes,
+            projetos: usarArmazemPedidos.getState().pedidos,
             filamentos: usarArmazemMateriais.getState().materiais,
             insumos: usarArmazemInsumos.getState().insumos,
             maquinas: usarArmazemImpressoras.getState().impressoras,
@@ -79,11 +88,11 @@ export function CardMetricas() {
         csvContent += `Referencia Legal:,Direito de Portabilidade - Art. 18 V LGPD\n`;
         csvContent += `Politica de Privacidade:,https://printlog.com.br/politica-de-privacidade\n\n`;
         csvContent += `Tipo de Dado,Quantidade,Nota de Isolamento\n`;
-        csvContent += `Filamentos,${usarArmazemMateriais.getState().materiais.length},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Insumos,${usarArmazemInsumos.getState().insumos.length},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Máquinas,${usarArmazemImpressoras.getState().impressoras.length},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Clientes,0,Em Desenvolvimento (Fase 2)\n`;
-        csvContent += `Projetos,0,Em Desenvolvimento (Fase 2)\n`;
+        csvContent += `Filamentos,${totalMateriais},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
+        csvContent += `Insumos,${totalInsumos},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
+        csvContent += `Máquinas,${totalMaquinas},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
+        csvContent += `Clientes,${totalClientes},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
+        csvContent += `Projetos,${totalProjetos},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
 
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
@@ -112,7 +121,7 @@ export function CardMetricas() {
     }
   };
   return (
-    <div className="h-full rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141417] p-4 md:p-5 flex flex-col gap-4 relative overflow-hidden group">
+    <div className="h-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141417] p-4 md:p-5 flex flex-col gap-4 relative overflow-hidden group">
       <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
       <CabecalhoCard
         titulo="Painel do Estúdio"
@@ -122,11 +131,11 @@ export function CardMetricas() {
       />
       <div className="grid grid-cols-5 gap-1.5">
         {[
-          { val: "12", lab: "Clientes", icone: User, cor: "text-sky-500", fundo: "bg-sky-500/10" },
-          { val: "24", lab: "Filamentos", icone: Database, cor: "text-violet-500", fundo: "bg-violet-500/10" },
-          { val: "8", lab: "Insumos", icone: PackageSearch, cor: "text-amber-500", fundo: "bg-amber-500/10" },
-          { val: "5", lab: "Máquinas", icone: Activity, cor: "text-emerald-500", fundo: "bg-emerald-500/10" },
-          { val: "42", lab: "Projetos", icone: FolderKanban, cor: "text-rose-500", fundo: "bg-rose-500/10" },
+          { val: totalClientes, lab: "Clientes", icone: User, cor: "text-sky-500", fundo: "bg-sky-500/10" },
+          { val: totalMateriais, lab: "Filamentos", icone: Database, cor: "text-violet-500", fundo: "bg-violet-500/10" },
+          { val: totalInsumos, lab: "Insumos", icone: PackageSearch, cor: "text-amber-500", fundo: "bg-amber-500/10" },
+          { val: totalMaquinas, lab: "Máquinas", icone: Activity, cor: "text-emerald-500", fundo: "bg-emerald-500/10" },
+          { val: totalProjetos, lab: "Projetos", icone: FolderKanban, cor: "text-rose-500", fundo: "bg-rose-500/10" },
         ].map((item) => (
           <div
             key={item.lab}

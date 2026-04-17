@@ -8,39 +8,43 @@ interface ResumoFinanceiroProps {
   lucratividadePercentual: number;
 }
 
+/**
+ * Componente de resumo financeiro com métricas de elite.
+ * Exibe o capital disponível, entradas, custos operacionais e performance de lucro.
+ */
 export function ResumoFinanceiroComponente({ resumo, lucratividadePercentual }: ResumoFinanceiroProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
       <CardResumo
-        titulo="Saldo Consolidado"
+        titulo="Capital Disponível"
         valor={centavosParaReais(resumo.saldoTotalCentavos)}
-        unidade="em conta"
+        unidade="saldo em conta"
         icone={Wallet}
-        cor={resumo.saldoTotalCentavos >= 0 ? "indigo" : "rose"}
+        cor={resumo.saldoTotalCentavos >= 0 ? "sky" : "rose"}
       />
 
       <CardResumo
-        titulo="Receita (Mês)"
+        titulo="Entradas do Mês"
         valor={centavosParaReais(resumo.entradasMesCentavos)}
-        unidade="entradas brutas"
+        unidade="recebimentos brutos"
         icone={TrendingUp}
         cor="emerald"
       />
 
       <CardResumo
-        titulo="Despesas (Mês)"
+        titulo="Custo Operacional"
         valor={centavosParaReais(resumo.saidasMesCentavos)}
-        unidade="saídas totais"
+        unidade="pagas este mês"
         icone={TrendingDown}
         cor="rose"
       />
 
       <CardResumo
-        titulo="Margem Est. (DRE)"
+        titulo="Performance de Lucro"
         valor={`${lucratividadePercentual}%`}
-        unidade="lucratividade"
+        unidade="previsto por DRE"
         icone={Target}
-        cor={lucratividadePercentual >= 30 ? "emerald" : lucratividadePercentual >= 0 ? "sky" : "rose"}
+        cor={lucratividadePercentual >= 30 ? "emerald" : lucratividadePercentual >= 0 ? "indigo" : "rose"}
       />
     </div>
   );

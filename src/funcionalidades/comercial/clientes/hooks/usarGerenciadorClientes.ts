@@ -15,11 +15,14 @@ export function usarGerenciadorClientes() {
   const clientesFiltrados = useMemo(() => {
     let resultado = [...estado.clientes];
 
-    // Busca
+    // Busca (Nome, Email ou Telefone)
     if (estado.filtroBusca) {
       const termo = estado.filtroBusca.toLowerCase();
       resultado = resultado.filter(
-        (c) => c.nome.toLowerCase().includes(termo) || c.email.toLowerCase().includes(termo),
+        (c) => 
+          c.nome.toLowerCase().includes(termo) || 
+          c.email.toLowerCase().includes(termo) ||
+          c.telefone.includes(termo)
       );
     }
 

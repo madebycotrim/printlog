@@ -9,6 +9,7 @@ import {
   Clock,
   LayoutDashboard,
   Wrench,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +55,6 @@ export function PaginaInicial() {
   // 🧮 CÁLCULOS DE KPI
   const totaisPecas = insumos.reduce((acc, i) => acc + i.quantidadeAtual, 0);
   const maquinasAtivas = impressoras.filter((i) => !i.dataAposentadoria).length;
-  // Regra v9.0: Threshold fixo de 200g importado de constantesNegocio.ts
   const alertaMateriais = materiais.filter((m) => m.pesoRestanteGramas < ALERTA_ESTOQUE_FILAMENTO_GRAMAS).length;
   const pedidosAtivos = pedidos.filter(
     (p) => p.status !== StatusPedido.CONCLUIDO && p.status !== StatusPedido.ARQUIVADO,
@@ -79,7 +79,7 @@ export function PaginaInicial() {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 pb-10">
       {/* 🚀 ATALHOS RÁPIDOS E AÇÕES PRIORITÁRIAS */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export function PaginaInicial() {
             cor="emerald"
           />
           <CardResumo
-            titulo="Insumos em Alerta"
+            titulo="Filamentos em Alerta"
             valor={alertaMateriais}
             unidade="crítico"
             icone={Box}
@@ -183,7 +183,7 @@ export function PaginaInicial() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-h-[400px]">
             <GraficoConsumo />
           </div>
           <div>
@@ -215,7 +215,7 @@ export function PaginaInicial() {
       </section>
 
       {/* 🧾 RELATÓRIOS AUTOMÁTICOS (FASE 2) */}
-      <section className="space-y-6 pb-20">
+      <section className="space-y-6 pb-12">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FileText size={18} className="text-sky-500" />
@@ -234,7 +234,7 @@ export function PaginaInicial() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div
               onClick={() => navegar("/producao/historico")}
-              className="p-8 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center cursor-pointer hover:border-sky-500/30 transition-all group"
+              className="p-8 rounded-3xl bg-white dark:bg-[#121215] border border-gray-100 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center cursor-pointer hover:border-sky-500/30 transition-all group"
             >
               <div className="flex items-center justify-between text-gray-400">
                 <div className="flex items-center gap-3">
@@ -245,7 +245,7 @@ export function PaginaInicial() {
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-end">
-                  <span className="text-4xl font-black">{metricas.eficienciaPercentual}%</span>
+                  <span className="text-4xl font-black text-gray-900 dark:text-white">{metricas.eficienciaPercentual}%</span>
                   <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">
                     Score Saudável
                   </span>
@@ -261,13 +261,13 @@ export function PaginaInicial() {
               </div>
             </div>
 
-            <div className="p-8 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center">
+            <div className="p-8 rounded-3xl bg-white dark:bg-[#121215] border border-gray-100 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center">
               <div className="flex items-center gap-3 text-gray-400">
                 <PieChart size={16} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Volume de Insumos</span>
               </div>
               <div className="space-y-1">
-                <span className="text-4xl font-black">{metricas.mediaGramasPorPedido}g</span>
+                <span className="text-4xl font-black text-gray-900 dark:text-white">{metricas.mediaGramasPorPedido}g</span>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Média prevista por projeto
                 </p>
@@ -275,17 +275,17 @@ export function PaginaInicial() {
             </div>
 
             <div className="md:col-span-2 p-8 rounded-[2rem] bg-zinc-900 border border-white/5 shadow-xl flex items-center justify-between group overflow-hidden relative">
-              <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none">
+              <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none text-white">
                 <FileText size={160} strokeWidth={4} />
               </div>
               <div className="space-y-4 relative z-10 max-w-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-sky-500" />
+                  <div className="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
                   <h4 className="text-[11px] font-black uppercase tracking-widest text-sky-400">
                     Exportação LGPD (Art. 18)
                   </h4>
                 </div>
-                <p className="text-[12px] font-medium text-gray-400 leading-relaxed">
+                <p className="text-[12px] font-medium text-gray-300 leading-relaxed">
                   Relatório consolidado de dados pessoais e portabilidade para o titular da conta.
                 </p>
               </div>
@@ -296,9 +296,10 @@ export function PaginaInicial() {
                     pedidos,
                   )
                 }
-                className="relative z-10 px-8 py-4 bg-white hover:bg-sky-400 text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all active:scale-95 shadow-lg"
+                className="relative z-10 px-8 py-4 bg-white hover:bg-sky-400 text-black hover:text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-3"
               >
                 Gerar Portabilidade
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>

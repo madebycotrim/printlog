@@ -39,8 +39,8 @@ export function PaginaFinanceiro() {
   );
 
   usarDefinirCabecalho({
-    titulo: "Ecossistema Financeiro",
-    subtitulo: "Acompanhamento detalhado de DRE e Fluxo de Caixa",
+    titulo: "Fluxo de Caixa",
+    subtitulo: "Acompanhamento detalhado de rentabilidade e saúde financeira",
     placeholderBusca: "Buscar transações, categorias ou referências...",
     aoBuscar: pesquisar,
     acao: {
@@ -72,25 +72,36 @@ export function PaginaFinanceiro() {
           <>
             <ResumoFinanceiroComponente resumo={resumo} lucratividadePercentual={dre.lucratividadePercentual} />
 
-            {/* Banner de Status DRE */}
-            <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-[2rem] p-8 flex items-center justify-between group overflow-hidden relative shadow-sm">
-              <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                <FileBarChart size={120} />
+            {/* Banner de Status DRE Premium */}
+            <div className={`
+              relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-700 shadow-lg group
+              ${dre.lucroLiquidoCentavos >= 0 
+                ? "bg-gradient-to-br from-zinc-900 to-emerald-900/40 border-emerald-500/20 shadow-emerald-500/5" 
+                : "bg-gradient-to-br from-zinc-900 to-rose-900/40 border-rose-500/20 shadow-rose-500/5"}
+            `}>
+              <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">
+                <FileBarChart size={200} className={dre.lucroLiquidoCentavos >= 0 ? "text-emerald-500" : "text-rose-500"} />
               </div>
-              <div className="space-y-3 relative z-10">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${dre.lucroLiquidoCentavos >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
-                  />
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                    Status de Rentabilidade
+
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full animate-pulse ${dre.lucroLiquidoCentavos >= 0 ? "bg-emerald-500 shadow-lg shadow-emerald-500/50" : "bg-rose-500 shadow-lg shadow-rose-500/50"}`} />
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                    Performance de Lucratividade
                   </h4>
                 </div>
-                <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 max-w-lg">
-                  Baseado no Mix de Produção atual, seu estúdio está operando com uma margem de{" "}
-                  <strong className="text-zinc-900 dark:text-white">{dre.lucratividadePercentual}%</strong>. Este
-                  cálculo considera o preço de venda vs. consumo estimado de filamento.
-                </p>
+                
+                <div className="max-w-2xl">
+                  <p className="text-sm font-medium text-zinc-300 leading-relaxed">
+                    Com base no Mix de Produção atual, seu estúdio está operando com uma margem de segurança de{" "}
+                    <strong className={`text-xl font-black tabular-nums mx-1 ${dre.lucroLiquidoCentavos >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                      {dre.lucratividadePercentual}%
+                    </strong>. 
+                    <span className="block mt-2 opacity-60 text-xs italic font-normal">
+                      Este cálculo considera o preço médio de venda versus o consumo granular de filamento e custos operacionais ativos em configurações.
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
 

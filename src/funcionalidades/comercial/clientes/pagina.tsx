@@ -1,4 +1,4 @@
-import { Plus, Users, Search, Globe, Zap } from "lucide-react";
+import { Plus, Users, Search } from "lucide-react";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { usarGerenciadorClientes } from "./hooks/usarGerenciadorClientes";
 import { CardCliente } from "./componentes/CardCliente";
@@ -10,45 +10,14 @@ import { ModalHistoricoCliente } from "./componentes/ModalHistoricoCliente";
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
-import { servicoIntegracaoLanding } from "./servicos/servicoIntegracaoLanding";
-import toast from "react-hot-toast";
 
 export function PaginaClientes() {
   const { estado, acoes } = usarGerenciadorClientes();
 
-  const simularPedidoLanding = async () => {
-    const nomes = ["Ricardo Oliveira", "Mariana Santos", "TechCorp Soluções", "Estúdio Criativo", "Felipe Almeida"];
-    const projetos = [
-      "Prototipagem de Engrenagem",
-      "Case Personalizado iPhone",
-      "Miniatura de RPG Dragon",
-      "Peça Reposição Drone",
-      "Arquitetura Maquete",
-    ];
-
-    const randomNome = nomes[Math.floor(Math.random() * nomes.length)];
-    const randomProjeto = projetos[Math.floor(Math.random() * projetos.length)];
-
-    toast.promise(
-      servicoIntegracaoLanding.receberNovoPedido({
-        nomeCliente: randomNome,
-        emailCliente: `${randomNome.toLowerCase().replace(" ", ".")}@exemplo.com`,
-        telefoneCliente: "(11) 98888-7777",
-        descricaoProjeto: randomProjeto,
-        arquivoNome: "modelo_3d_v1.stl",
-      }),
-      {
-        loading: "Simulando recebimento de pedido via Landing Page...",
-        success: "Novo Pedido & Cliente Prospect integrados!",
-        error: "Falha na simulação.",
-      },
-    );
-  };
-
   usarDefinirCabecalho({
     titulo: "Ecossistema de Clientes",
-    subtitulo: "Gestão comercial, CRM e conformidade LGPD",
-    placeholderBusca: "Pesquisar por nome, e-mail ou tag de status...",
+    subtitulo: "Gestão comercial, CRM e acompanhamento de parceiros",
+    placeholderBusca: "Pesquisar por nome, e-mail ou status...",
     acao: {
       texto: "Novo Cadastro",
       icone: Plus,
@@ -67,37 +36,10 @@ export function PaginaClientes() {
       >
         {estado.carregando && <Carregamento texto="Sincronizando base de clientes..." />}
 
-        {/* Banner de Integração (Dica Visual) */}
-        <div className="bg-sky-500/5 border border-sky-500/10 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative group">
-          <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
-            <Globe size={200} />
-          </div>
-          <div className="space-y-2 relative z-10 text-center md:text-left">
-            <div className="flex items-center gap-2 justify-center md:justify-start">
-              <Globe size={16} className="text-sky-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-sky-500">
-                Conexão Landing Page
-              </span>
-            </div>
-            <h3 className="text-lg font-black uppercase tracking-tight">Captação Automática Ativa</h3>
-            <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 max-w-md">
-              Seus formulários públicos estão conectados. Novos orçamentos geram prospects automaticamente aqui e ordens
-              de serviço no quadro de produção.
-            </p>
-          </div>
-          <button
-            onClick={simularPedidoLanding}
-            className="relative z-10 px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:shadow-xl hover:translate-y-[-2px] active:scale-95 transition-all flex items-center gap-3"
-          >
-            <Zap size={16} className="fill-amber-500 text-amber-500" />
-            Simular Lead Landing Page
-          </button>
-        </div>
-
         {estado.clientes.length === 0 ? (
           <EstadoVazio
             titulo="Nenhum cliente no radar"
-            descricao="Sua base de clientes está vazia. Comece cadastrando um cliente VIP ou aguarde entradas via Landing Page."
+            descricao="Sua base de clientes está vazia. Comece cadastrando um cliente VIP para iniciar seu ecossistema."
             icone={Users}
             textoBotao="Novo Cadastro Manual"
             aoClicarBotao={() => acoes.abrirEditar()}

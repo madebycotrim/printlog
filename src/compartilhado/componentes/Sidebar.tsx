@@ -18,6 +18,7 @@ import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/Conte
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { Avatar } from "./Avatar";
 
 type PropriedadesBarraLateral = {
   abertaMobile?: boolean;
@@ -122,7 +123,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
             </div>
 
             <div className="flex flex-col justify-center">
-              <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-gradient-title leading-none">
+              <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-white leading-none">
                 PRINTLOG
               </span>
               <span className="text-[10px] font-bold text-primaria tracking-[0.3em] uppercase">Studio</span>
@@ -217,23 +218,22 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
             {/* Elegant Faded Separator */}
             <div className="absolute top-0 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-gray-100 dark:via-white/10 to-transparent" />
             
-            <div className="flex items-center gap-3 p-2 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-all group overflow-hidden">
-              <div className="h-9 w-9 rounded-xl bg-primaria/10 border border-primaria/20 flex items-center justify-center text-xs font-black text-primaria dark:text-primaria/80 shrink-0 relative overflow-hidden">
-                {usuario?.fotoUrl ? (
-                  <img src={usuario.fotoUrl} alt="Avatar" className="h-full w-full object-cover" />
-                ) : (
-                  usuario?.nome?.charAt(0).toUpperCase()
-                )}
-                <div className="absolute inset-0 bg-gradient-to-tr from-primaria/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+            <div className="flex items-center gap-3 p-2 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-all group overflow-hidden">
+              <Avatar 
+                nome={usuario?.nome} 
+                fotoUrl={usuario?.fotoUrl} 
+                tamanho="h-9 w-9" 
+              />
               
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <p className="text-xs font-black text-gray-900 dark:text-white truncate leading-tight mb-0.5">
                   {usuario?.nome?.split(" ")[0] || "Usuário"}
                 </p>
-                <p className="text-[10px] text-gray-400 dark:text-[var(--text-muted)] truncate font-medium">
-                  Perfil Pro
-                </p>
+                <div className="flex items-center">
+                  <span className="px-1.5 py-0.5 rounded-md bg-primaria/10 dark:bg-primaria/20 text-[8px] font-black text-primaria uppercase tracking-widest leading-none border border-primaria/20">
+                    Maker
+                  </span>
+                </div>
               </div>
 
               <button

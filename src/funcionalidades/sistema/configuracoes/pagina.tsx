@@ -16,43 +16,34 @@ import { CardEstudio } from "./componentes/CardEstudio";
 
 import { usarContextoTema } from "@/configuracoes/tema/tema_provider";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { usarArmazemConfiguracoes } from "./estado/armazemConfiguracoes";
 
 export function PaginaConfiguracoes() {
   const { usuario, atualizarPerfil, recuperarSenha } = usarAutenticacao();
   const contextoTema = usarContextoTema();
   const beta = usarBeta();
+  const config = usarArmazemConfiguracoes();
   const { search } = useLocation();
 
   const [destaqueLgpd, definirDestaqueLgpd] = useState(false);
 
-  // Redirecionamento de seção via URL
-  useEffect(() => {
-    const params = new URLSearchParams(search);
-    const secao = params.get("secao");
-
-    if (secao === "privacidade") {
-      const elemento = document.getElementById("secao-privacidade");
-      if (elemento) {
-        elemento.scrollIntoView({ behavior: "smooth", block: "start" });
-        definirDestaqueLgpd(true);
-        // O card pisca por 5 ciclos de 1.2s = 6s
-        setTimeout(() => definirDestaqueLgpd(false), 6000);
-      }
-    }
-  }, [search]);
-
+  /**
+   * ESTADO LOCAL (DRAFTS)
+   * Usamos estado local para que o usuário possa editar e "Descartar" se quiser.
+   * Os valores iniciais vêm do nosso novo Armazém de Configurações (Zustand + Persist).
+   */
   const [nome, definirNome] = useState(usuario?.nome || "");
+  const [custoEnergia, definirCustoEnergia] = useState(config.custoEnergia);
+  const [horaMaquina, definirHoraMaquina] = useState(config.horaMaquina);
+  const [horaOperador, definirHoraOperador] = useState(config.horaOperador);
+  const [margemLucro, definirMargemLucro] = useState(config.margemLucro);
+
+  // Estados de UI
   const [salvando, definirSalvando] = useState(false);
   const [sucesso, definirSucesso] = useState(false);
   const [enviandoEmail, definirEnviandoEmail] = useState(false);
   const [sucessoLink, definirSucessoLink] = useState(false);
   const [toastVisivel, definirToastVisivel] = useState(false);
-
-  // Estados Operacionais Adicionados
-  const [custoEnergia, definirCustoEnergia] = useState("R$ 0,95");
-  const [horaMaquina, definirHoraMaquina] = useState("R$ 5,00");
-  const [horaOperador, definirHoraOperador] = useState("R$ 20,00");
-  const [margemLucro, definirMargemLucro] = useState("150,00%");
 
   // Estado Estudio
   const [participarPrototipos, definirParticiparPrototipos] = useState(beta.participarPrototipos);
@@ -66,17 +57,46 @@ export function PaginaConfiguracoes() {
     fonte: contextoTema.fonte,
   });
 
+  // Sincroniza o estado local quando os dados persistidos são carregados no armazém
+  useEffect(() => {
+    definirCustoEnergia(config.custoEnergia);
+    definirHoraMaquina(config.horaMaquina);
+    definirHoraOperador(config.horaOperador);
+    definirMargemLucro(config.margemLucro);
+  }, [config.custoEnergia, config.horaMaquina, config.horaOperador, config.margemLucro]);
+
+  // Redirecionamento de seção via URL
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const secao = params.get("secao");
+
+    if (secao === "privacidade") {
+      const elemento = document.getElementById("secao-privacidade");
+      if (elemento) {
+        elemento.scrollIntoView({ behavior: "smooth", block: "start" });
+        definirDestaqueLgpd(true);
+        setTimeout(() => definirDestaqueLgpd(false), 6000);
+      }
+    }
+  }, [search]);
+
   // Detecção de Alterações Pendentes
   const perfilPendente = nome !== (usuario?.nome || "");
   const operacionalPendente =
-    custoEnergia !== "R$ 0,95" || horaMaquina !== "R$ 5,00" || horaOperador !== "R$ 20,00" || margemLucro !== "150,00%";
+    custoEnergia !== config.custoEnergia || 
+    horaMaquina !== config.horaMaquina || 
+    horaOperador !== config.horaOperador || 
+    margemLucro !== config.margemLucro;
 
   const aparenciaPendente =
     contextoTema.modoTema !== inicialAparencia.modo ||
     contextoTema.corPrimaria !== inicialAparencia.cor ||
     contextoTema.fonte !== inicialAparencia.fonte;
 
-  const estudioPendente = participarPrototipos !== false || betaMultiEstudio !== false || betaRelatorios !== false;
+  const estudioPendente = 
+    participarPrototipos !== beta.participarPrototipos || 
+    betaMultiEstudio !== beta.betaMultiEstudio || 
+    betaRelatorios !== beta.betaRelatorios;
 
   const totalAlteracoes = [perfilPendente, operacionalPendente, aparenciaPendente, estudioPendente].filter(
     Boolean,
@@ -90,7 +110,6 @@ export function PaginaConfiguracoes() {
     try {
       await recuperarSenha(usuario.email);
       definirSucessoLink(true);
-      // O link de sucesso sumira apos 8 segundos para voltar o botao
       setTimeout(() => definirSucessoLink(false), 8000);
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "Configuracoes" }, "Erro ao enviar e-mail", erro);
@@ -104,16 +123,16 @@ export function PaginaConfiguracoes() {
     // Reset Perfil
     definirNome(usuario?.nome || "");
 
-    // Reset Operacional (Voltando para os defaults do sistema)
-    definirCustoEnergia("R$ 0,95");
-    definirHoraMaquina("R$ 5,00");
-    definirHoraOperador("R$ 20,00");
-    definirMargemLucro("150,00%");
+    // Reset Operacional (Voltando para os valores salvos no armazém)
+    definirCustoEnergia(config.custoEnergia);
+    definirHoraMaquina(config.horaMaquina);
+    definirHoraOperador(config.horaOperador);
+    definirMargemLucro(config.margemLucro);
 
     // Reset Estudio
-    definirParticiparPrototipos(false);
-    definirBetaMultiEstudio(false);
-    definirBetaRelatorios(false);
+    definirParticiparPrototipos(beta.participarPrototipos);
+    definirBetaMultiEstudio(beta.betaMultiEstudio);
+    definirBetaRelatorios(beta.betaRelatorios);
 
     // Reset Aparencia (Usando os valores capturados no mount)
     contextoTema.definirModoTema(inicialAparencia.modo);
@@ -125,16 +144,26 @@ export function PaginaConfiguracoes() {
     definirSalvando(true);
     definirSucesso(false);
     try {
-      await atualizarPerfil({ nome });
+      // 1. Salvar Perfil no Firebase
+      await atualizarPerfil({ 
+        nome, 
+        fotoUrl: nome !== usuario?.nome ? "" : undefined 
+      });
 
-      // Atualiza o estado "Original" para as novas configuracoes salvas
+      // 2. Salvar Configurações Operacionais no Armazém Persistente (LocalStorage)
+      config.definirCustoEnergia(custoEnergia);
+      config.definirHoraMaquina(horaMaquina);
+      config.definirHoraOperador(horaOperador);
+      config.definirMargemLucro(margemLucro);
+
+      // 3. Atualizar Estado Inicial de Aparência
       definirInicialAparencia({
         modo: contextoTema.modoTema,
         cor: contextoTema.corPrimaria,
         fonte: contextoTema.fonte,
       });
 
-      // Atualiza o Beta Program
+      // 4. Salvar Programas Beta
       beta.definirParticiparPrototipos(participarPrototipos);
       beta.definirBetaMultiEstudio(betaMultiEstudio);
       beta.definirBetaRelatorios(betaRelatorios);
@@ -148,8 +177,8 @@ export function PaginaConfiguracoes() {
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "Configuracoes" }, "Erro ao salvar configurações", erro);
       toast.error("Falha ao salvar configurações.");
-      definirToastVisivel(true); // Keep the custom toast visible for error
-      setTimeout(() => definirToastVisivel(false), 4000); // Hide the custom toast after 4 seconds
+      definirToastVisivel(true);
+      setTimeout(() => definirToastVisivel(false), 4000);
     } finally {
       definirSalvando(false);
     }

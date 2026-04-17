@@ -240,8 +240,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       if (!autenticacao.currentUser) throw new Error("Usuário não autenticado.");
 
       await updateProfile(autenticacao.currentUser, {
-        displayName: dados.nome || autenticacao.currentUser.displayName,
-        photoURL: dados.fotoUrl || autenticacao.currentUser.photoURL,
+        displayName: dados.nome !== undefined ? dados.nome : autenticacao.currentUser.displayName,
+        photoURL: dados.fotoUrl !== undefined ? dados.fotoUrl : autenticacao.currentUser.photoURL,
       });
 
       // Atualiza estado local
@@ -249,8 +249,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         prev
           ? {
               ...prev,
-              nome: dados.nome || prev.nome,
-              fotoUrl: dados.fotoUrl || prev.fotoUrl,
+              nome: dados.nome !== undefined ? dados.nome : prev.nome,
+              fotoUrl: dados.fotoUrl !== undefined ? dados.fotoUrl : prev.fotoUrl,
             }
           : null,
       );

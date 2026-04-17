@@ -27,18 +27,18 @@ export function ResumoClientes({ clientes }: PropriedadesResumoClientes) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       <CardResumo
-        titulo="Ticket Histórico"
+        titulo="Faturamento Acumulado"
         valor={centavosParaReais(ltvTotalCentavos)}
-        unidade="faturamento total"
+        unidade="receita total LTV"
         icone={TrendingUp}
         cor="indigo"
       />
 
-      <CardResumo titulo="Base Ativa" valor={total} unidade="clientes cadastrados" icone={Users} cor="sky" />
+      <CardResumo titulo="Base de Parceiros" valor={total} unidade="clientes cadastrados" icone={Users} cor="sky" />
 
-      <CardResumo titulo="Retention VIP" valor={vips} unidade="clientes destaque" icone={Star} cor="amber" />
+      <CardResumo titulo="Comunidade VIP" valor={vips} unidade="elite maker" icone={Star} cor="amber" />
 
-      <CardResumo titulo="Expansão" valor={novosEsteMes} unidade="novos este mês" icone={UserPlus} cor="emerald" />
+      <CardResumo titulo="Novos Leads" valor={novosEsteMes} unidade="entradas este mês" icone={UserPlus} cor="emerald" />
     </div>
   );
 }

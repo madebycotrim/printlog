@@ -4,12 +4,15 @@ import {
   MessageCircle,
   Mail,
   Phone,
-  PlusCircle,
   History,
   MoreVertical,
   Pencil,
   Star,
   ShieldCheck,
+  Award,
+  Clock,
+  Ban,
+  User
 } from "lucide-react";
 import { Dica } from "@/compartilhado/componentes/Dica";
 import { useState, useRef, useEffect } from "react";
@@ -60,18 +63,22 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
     return cores[index];
   };
 
-  const obterBadgeStatus = (status: StatusComercial) => {
+  const obterInfoStatus = (status: StatusComercial) => {
     switch (status) {
       case StatusComercial.VIP:
-        return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+        return { label: "MAKER VIP", classe: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20", icone: Award };
       case StatusComercial.ATIVO:
-        return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+        return { label: "ATIVO", classe: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20", icone: Star };
       case StatusComercial.INATIVO:
-        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+        return { label: "INATIVO", classe: "bg-rose-500/10 text-rose-500 border-rose-500/20", icone: Ban };
+      case StatusComercial.PROSPECT:
+        return { label: "PROSPECT", classe: "bg-amber-500/10 text-amber-500 border-amber-500/20", icone: Clock };
       default:
-        return "bg-sky-500/10 text-sky-500 border-sky-500/20";
+        return { label: status, classe: "bg-sky-500/10 text-sky-500 border-sky-500/20", icone: User };
     }
   };
+
+  const infoStatus = obterInfoStatus(cliente.statusComercial);
 
   const abrirWhatsapp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -90,18 +97,18 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200 dark:border-white/10 rounded-2xl p-5 transition-all shadow-sm group/card hover:shadow-xl hover:translate-y-[-2px]"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/60 dark:border-white/5 rounded-[2rem] p-6 transition-all shadow-sm group/card hover:shadow-2xl hover:shadow-sky-500/5 hover:translate-y-[-4px]"
     >
-      {/* Ações Técnicas (WhatsApp e Menu) */}
-      <div className="absolute top-4 right-4 z-30 flex items-center gap-1" ref={menuRef}>
+      {/* Ações Técnicas */}
+      <div className="absolute top-5 right-5 z-30 flex items-center gap-1" ref={menuRef}>
         <Dica texto="WhatsApp" posicao="esquerda">
           <button
             onClick={abrirWhatsapp}
-            className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
+            className="p-2.5 text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
           >
-            <MessageCircle size={18} />
+            <MessageCircle size={20} />
           </button>
         </Dica>
 
@@ -111,9 +118,9 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
               e.stopPropagation();
               definirMenuAberto(!menuAberto);
             }}
-            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-400 hover:bg-gray-50 dark:hover:bg-white/5"}`}
+            className={`p-2.5 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-400 hover:bg-gray-50 dark:hover:bg-white/5"}`}
           >
-            <MoreVertical size={18} />
+            <MoreVertical size={20} />
           </button>
 
           <AnimatePresence>
@@ -122,68 +129,33 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-white/5 rounded-2xl shadow-xl z-50 overflow-hidden"
+                className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#121214] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-3xl"
               >
-                <div className="p-1.5 space-y-0.5">
-                  {[
-                    {
-                      icone: PlusCircle,
-                      texto: "NOVO PEDIDO",
-                      cor: "hover:text-sky-600 dark:hover:text-sky-400",
-                      bgHover: "hover:bg-sky-500/10",
-                      iconeCor: "group-hover/item:text-sky-500",
-                      acao: () => {},
-                    },
-                    {
-                      icone: History,
-                      texto: "VER HISTÓRICO",
-                      cor: "hover:text-indigo-600 dark:hover:text-indigo-400",
-                      bgHover: "hover:bg-indigo-500/10",
-                      iconeCor: "group-hover/item:text-indigo-500",
-                      acao: () => aoVerHistorico(cliente),
-                    },
-                  ].map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        item.acao();
-                        definirMenuAberto(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-[11px] font-bold text-gray-600 dark:text-zinc-300 ${item.bgHover} ${item.cor} rounded-xl transition-colors group/item uppercase tracking-widest`}
-                    >
-                      <item.icone size={14} className={`text-gray-400 ${item.iconeCor} transition-colors`} />
-                      {item.texto}
-                    </button>
-                  ))}
-
-                  <div className="h-px bg-gray-100 dark:bg-white/5 my-1" />
-
+                <div className="p-2 space-y-1">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      aoEditar(cliente);
-                      definirMenuAberto(false);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] font-bold text-gray-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white rounded-xl transition-colors group/item uppercase tracking-widest"
+                    onClick={(e) => { e.stopPropagation(); aoVerHistorico(cliente); definirMenuAberto(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] font-black text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-indigo-500 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
-                    <Pencil
-                      size={14}
-                      className="text-gray-400 group-hover/item:text-gray-900 dark:group-hover/item:text-white transition-colors"
-                    />
-                    EDITAR
+                    <History size={16} />
+                    Histórico
                   </button>
 
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      aoRemover(cliente);
-                      definirMenuAberto(false);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] font-bold text-rose-600 hover:bg-rose-500/10 rounded-xl transition-colors group/item uppercase tracking-widest"
+                    onClick={(e) => { e.stopPropagation(); aoEditar(cliente); definirMenuAberto(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] font-black text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-sky-500 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
-                    <Trash2 size={14} className="text-rose-400 group-hover/item:text-rose-600 transition-colors" />
-                    REMOVER
+                    <Pencil size={16} />
+                    Editar Perfil
+                  </button>
+
+                  <div className="h-px bg-zinc-100 dark:bg-white/5 mx-2 my-1" />
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); aoRemover(cliente); definirMenuAberto(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] font-black text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-[0.15em]"
+                  >
+                    <Trash2 size={16} />
+                    Remover
                   </button>
                 </div>
               </motion.div>
@@ -192,103 +164,94 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
         </div>
       </div>
 
-      <div className="relative flex flex-col gap-4">
-        {/* Cabeçalho */}
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <div className="relative shrink-0 mt-0.5">
+      <div className="relative flex flex-col gap-6">
+        {/* Cabeçalho do Card */}
+        <div className="flex items-start gap-4">
+          <div className="relative shrink-0">
             <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-xs font-black border shadow-inner ${obterCorAvatar(cliente.nome)}`}
+              className={`w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-sm font-black border-2 shadow-xl ${obterCorAvatar(cliente.nome)}`}
             >
               {obterIniciais(cliente.nome)}
             </div>
             {cliente.statusComercial === StatusComercial.VIP && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900 shadow-lg shadow-amber-500/40">
-                <Star size={8} fill="white" className="text-white" />
+              <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center border-4 border-white dark:border-zinc-900 shadow-xl shadow-amber-500/20">
+                <Star size={10} fill="white" className="text-white" />
               </div>
             )}
           </div>
 
-          <div className="flex-1 min-w-0 flex flex-col pr-20">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-[14px] font-black text-zinc-900 dark:text-zinc-100 tracking-tight truncate">
+          <div className="flex-1 min-w-0 pr-12">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-base font-black text-zinc-900 dark:text-zinc-100 tracking-tight truncate leading-none">
                 {cliente.nome}
               </h3>
-              <span
-                className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${obterBadgeStatus(cliente.statusComercial)}`}
-              >
-                {cliente.statusComercial}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
-              <ShieldCheck size={10} className="text-emerald-500" />
-              <span className="opacity-60">LGPD: Ativo</span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-[8px] font-black uppercase tracking-[0.2em] px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${infoStatus.classe}`}
+                >
+                  <infoStatus.icone size={10} strokeWidth={3} />
+                  {infoStatus.label}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Métricas de Performance CRM */}
-        <div className="grid grid-cols-2 gap-4 py-2 bg-zinc-50 dark:bg-white/[0.02] rounded-xl border border-transparent group-hover/card:border-zinc-100 dark:group-hover/card:border-white/5 transition-all">
-          <div className="flex flex-col items-center border-r border-zinc-100 dark:border-white/5">
-            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">
-              LTV (Total Gerado)
+        {/* Métricas de Performance */}
+        <div className="grid grid-cols-2 gap-3 p-3 bg-zinc-50/50 dark:bg-white/[0.03] rounded-2xl border border-zinc-100 dark:border-white/5">
+          <div className="flex flex-col px-1">
+            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1.5 opacity-60">
+              VALOR LTV
             </span>
-            <span className="text-[14px] font-black text-zinc-900 dark:text-white tabular-nums">
+            <span className="text-sm font-black text-zinc-900 dark:text-zinc-100 tabular-nums">
               {centavosParaReais(cliente.ltvCentavos)}
             </span>
           </div>
 
-          <div className="flex flex-col items-center">
-            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">Volume Projetos</span>
-            <span className="text-[14px] font-black text-zinc-900 dark:text-white tabular-nums">
-              {cliente.totalProdutos} {pluralizar(cliente.totalProdutos, "Job", "Jobs")}
+          <div className="flex flex-col px-1 border-l border-zinc-200/50 dark:border-white/5 pl-4">
+            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1.5 opacity-60">
+              PRODUÇÕES
+            </span>
+            <span className="text-sm font-black text-zinc-900 dark:text-zinc-100 tabular-nums">
+              {cliente.totalProdutos} {pluralizar(cliente.totalProdutos, "Projeto", "Projetos")}
             </span>
           </div>
         </div>
 
-        {/* Rodapé - Contatos */}
-        <div className="pt-2 flex items-center border-t border-zinc-100 dark:border-white/5 divide-x divide-zinc-100 dark:divide-white/5">
+        {/* Informações LGPD Sutil */}
+        <div className="flex items-center gap-2 px-1">
+           <ShieldCheck size={12} className="text-emerald-500" />
+           <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest opacity-60">
+             Proteção Ativa (Regra 9.0)
+           </span>
+        </div>
+
+        {/* Rodapé - Contatos Rápidos */}
+        <div className="pt-2 flex flex-col gap-2 border-t border-zinc-100 dark:border-white/5">
           <button
             onClick={() => copiarParaAreaTransferencia(cliente.email, "E-mail")}
-            className="relative flex-1 flex items-center gap-2 px-2 text-[10px] text-zinc-400 hover:text-sky-500 transition-colors group/contato min-w-0 pr-4"
-            title="Clique para copiar e-mail"
+            className="relative flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-sky-500 transition-all font-bold group/email"
           >
+            <Mail size={14} className="opacity-50 group-hover/email:opacity-100" />
+            <span className="truncate">{cliente.email}</span>
             <AnimatePresence>
-              {copiado === "E-mail" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5, x: "-50%" }}
-                  animate={{ opacity: 1, y: 0, x: "-50%" }}
-                  exit={{ opacity: 0, y: 5, x: "-50%" }}
-                  className="absolute -top-7 left-1/2 px-2 py-0.5 bg-zinc-800 text-white text-[9px] font-bold rounded shadow-lg z-[60] whitespace-nowrap"
-                >
-                  Copiado!
-                </motion.div>
-              )}
+               {copiado === "E-mail" && (
+                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[8px] bg-sky-500 text-white px-1.5 rounded uppercase">Copiado!</motion.span>
+               )}
             </AnimatePresence>
-            <Mail size={12} className="shrink-0" />
-            <span className="truncate w-full text-left font-bold">{cliente.email}</span>
           </button>
 
           <button
             onClick={() => copiarParaAreaTransferencia(cliente.telefone, "Telefone")}
-            className="relative shrink-0 flex items-center justify-end gap-2 px-3 text-[10px] text-zinc-500 dark:text-zinc-400 font-black hover:text-emerald-500 transition-colors group/contato"
-            title="Clique para copiar telefone"
+            className="relative flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-emerald-500 transition-all font-bold group/tel"
           >
+            <Phone size={14} className="opacity-50 group-hover/tel:opacity-100" />
+            <span>{cliente.telefone}</span>
             <AnimatePresence>
-              {copiado === "Telefone" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5, x: "-50%" }}
-                  animate={{ opacity: 1, y: 0, x: "-50%" }}
-                  exit={{ opacity: 0, y: 5, x: "-50%" }}
-                  className="absolute -top-7 left-1/2 px-2 py-0.5 bg-zinc-800 text-white text-[9px] font-bold rounded shadow-lg z-[60] whitespace-nowrap"
-                >
-                  Copiado!
-                </motion.div>
-              )}
+               {copiado === "Telefone" && (
+                 <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[8px] bg-emerald-500 text-white px-1.5 rounded uppercase">Copiado!</motion.span>
+               )}
             </AnimatePresence>
-            <Phone size={11} className="text-emerald-500/70 shrink-0" />
-            <span className="whitespace-nowrap tracking-tighter">{cliente.telefone}</span>
           </button>
         </div>
       </div>
