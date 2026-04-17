@@ -58,13 +58,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             INSERT INTO insumos (
                 id, id_usuario, nome, descricao, categoria, unidade_medida, 
                 quantidade_atual, quantidade_minima, custo_medio_unidade,
-                link_compra, marca, item_fracionavel, rendimento_total, unidade_consumo
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                link_compra, marca, item_fracionavel, rendimento_total, unidade_consumo,
+                data_criacao
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
-            id, usuarioId, dados.nome, dados.descricao, dados.categoria, dados.unidadeMedida,
-            dados.quantidadeAtual, dados.quantidadeMinima, dados.custoMedioUnidade,
-            dados.linkCompra, dados.marca, dados.itemFracionavel ? 1 : 0, 
-            dados.rendimentoTotal, dados.unidadeConsumo
+            id, 
+            usuarioId, 
+            dados.nome || 'Sem Nome', 
+            dados.descricao || '', 
+            dados.categoria || 'Geral', 
+            dados.unidadeMedida || 'un',
+            dados.quantidadeAtual || 0, 
+            dados.quantidadeMinima || 0, 
+            dados.custoMedioUnidade || 0,
+            dados.linkCompra || '', 
+            dados.marca || '', 
+            dados.itemFracionavel ? 1 : 0, 
+            dados.rendimentoTotal || null, 
+            dados.unidadeConsumo || null,
+            new Date().toISOString()
         ).run();
 
         return new Response(JSON.stringify({ id, sucesso: true }), { status: 201 });
