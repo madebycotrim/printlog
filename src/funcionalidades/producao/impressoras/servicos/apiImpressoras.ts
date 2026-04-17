@@ -15,7 +15,10 @@ export const apiImpressoras = {
             ...i,
             taxaHoraCentavos: i.taxa_hora_centavos,
             horimetroTotalMinutos: i.horimetro_total_minutos,
-            dataCriacao: new Date(i.data_criacao),
+            intervaloRevisaoMinutos: i.intervalo_revisao_minutos,
+            valorCompraCentavos: i.valor_compra_centavos,
+            dataAposentadoria: i.data_aposentadoria,
+            dataCriacao: i.data_criacao ? new Date(i.data_criacao) : new Date(),
             dataAtualizacao: new Date()
         }));
     },

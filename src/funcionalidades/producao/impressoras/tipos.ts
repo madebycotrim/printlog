@@ -15,6 +15,7 @@ export interface PerfilImpressoraCatalogo {
 
 export interface RegistroManutencao {
   id: string;
+  idImpressora: string;
   data: string;
   tipo: "Preventiva" | "Corretiva" | "Melhoria";
   descricao: string;
@@ -27,10 +28,11 @@ export interface RegistroManutencao {
 
 export interface PecaDesgaste {
   id: string;
+  idImpressora: string;
   nome: string;
-  minutosTrocado: number;
-  vidaUtilEstimadaMinutos: number;
-  dataInclusao: string;
+  horasUsoAtualMinutos: number;
+  vidaUtilMinutos: number;
+  dataUltimaTroca: string;
 }
 
 export interface RegistroProducao {

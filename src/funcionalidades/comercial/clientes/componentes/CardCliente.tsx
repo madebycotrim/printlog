@@ -126,10 +126,10 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
           <AnimatePresence>
             {menuAberto && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#121214] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-3xl"
+                initial={{ opacity: 0, scale: 0.95, x: 20 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.95, x: 20 }}
+                className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#121214] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-50 overflow-hidden backdrop-blur-3xl p-1.5"
               >
                 <div className="p-2 space-y-1">
                   <button

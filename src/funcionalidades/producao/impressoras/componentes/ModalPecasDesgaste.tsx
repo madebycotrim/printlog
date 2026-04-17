@@ -45,10 +45,11 @@ export function ModalPecasDesgaste({ aberto, aoFechar, impressora, aoSalvar }: M
 
     const novaPeca: PecaDesgaste = {
       id: crypto.randomUUID(),
+      idImpressora: impressora.id,
       nome: novaPecaNome,
-      vidaUtilEstimadaMinutos: Math.round(Number(novaPecaVida) * 60),
-      minutosTrocado: horimetroAtualMinutos,
-      dataInclusao: new Date().toISOString(),
+      vidaUtilMinutos: Math.round(Number(novaPecaVida) * 60),
+      horasUsoAtualMinutos: horimetroAtualMinutos,
+      dataUltimaTroca: new Date().toISOString(),
     };
 
     const novasPecas = [...pecas, novaPeca];
@@ -65,8 +66,8 @@ export function ModalPecasDesgaste({ aberto, aoFechar, impressora, aoSalvar }: M
       if (p.id === idPeca) {
         return {
           ...p,
-          minutosTrocado: horimetroAtualMinutos,
-          dataInclusao: new Date().toISOString(),
+          horasUsoAtualMinutos: horimetroAtualMinutos,
+          dataUltimaTroca: new Date().toISOString(),
         };
       }
       return p;
@@ -186,12 +187,12 @@ export function ModalPecasDesgaste({ aberto, aoFechar, impressora, aoSalvar }: M
             </div>
           ) : (
             pecasFiltradas.map((peca) => {
-              const minutosTrabalhadasNaPeca = Math.max(0, horimetroAtualMinutos - peca.minutosTrocado);
-              const porcentagemDesgaste = Math.min(
-                100,
-                (minutosTrabalhadasNaPeca / peca.vidaUtilEstimadaMinutos) * 100,
-              );
-              const estourouVida = porcentagemDesgaste >= 100;
+            const minutosTrabalhadasNaPeca = Math.max(0, horimetroAtualMinutos - peca.horasUsoAtualMinutos);
+            const porcentagemDesgaste = Math.min(
+              100,
+              (minutosTrabalhadasNaPeca / peca.vidaUtilMinutos) * 100,
+            );
+            const estourouVida = porcentagemDesgaste >= 100;
 
               const corBarra = estourouVida ? "bg-rose-500" : porcentagemDesgaste > 80 ? "bg-amber-500" : "bg-sky-500";
 
@@ -255,7 +256,7 @@ export function ModalPecasDesgaste({ aberto, aoFechar, impressora, aoSalvar }: M
                         <div className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">
                           {(minutosTrabalhadasNaPeca / 60).toFixed(1)}H{" "}
                           <small className="text-[10px] opacity-40 mx-1">/</small>{" "}
-                          {(peca.vidaUtilEstimadaMinutos / 60).toFixed(0)}H
+                          {(peca.vidaUtilMinutos / 60).toFixed(0)}H
                         </div>
                       </div>
                       <div

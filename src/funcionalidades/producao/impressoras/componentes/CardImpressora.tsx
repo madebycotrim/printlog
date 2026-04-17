@@ -48,18 +48,18 @@ export function CardImpressora({
   const statusImpressora = impressora.status as StatusImpressora;
   const estaImprimindo = statusImpressora === StatusImpressora.IMPRIMINDO;
 
-  // Lógica de Manutenção Preventiva
-  const percentualVidaUtil = calcularPercentualVidaUtil(
+  // Lógica de Saúde do Sistema (Reversa da Vida Útil)
+  const saudeSistema = 100 - calcularPercentualVidaUtil(
     impressora.horimetroTotalMinutos || 0,
     impressora.intervaloRevisaoMinutos || 0,
   );
+  
   const statusManutencaoUI = obterStatusManutencao(
     impressora.horimetroTotalMinutos || 0,
     impressora.intervaloRevisaoMinutos || 0,
   );
   const coresManutencao = obterCorStatusManutencao(statusManutencaoUI);
 
-  // Configuração Visual baseada no Status
   const configStatus = useMemo(() => {
     switch (statusImpressora) {
       case StatusImpressora.IMPRIMINDO:
@@ -67,178 +67,150 @@ export function CardImpressora({
           cor: "#10b981",
           icone: PlayCircle,
           label: "Imprimindo",
-          bg: "bg-emerald-500/10",
+          sub: "Job em progresso...",
+          bg: "bg-emerald-500",
           texto: "text-emerald-500",
         };
       case StatusImpressora.MANUTENCAO:
-        return { cor: "#f59e0b", icone: Wrench, label: "Manutenção", bg: "bg-amber-500/10", texto: "text-amber-500" };
+        return { 
+          cor: "#f59e0b", 
+          icone: Wrench, 
+          label: "Manutenção", 
+          sub: "Indisponível",
+          bg: "bg-amber-500",
+          texto: "text-amber-500",
+        };
       case StatusImpressora.LIVRE:
       default:
-        return { cor: "#3b82f6", icone: CheckCircle2, label: "Livre", bg: "bg-sky-500/10", texto: "text-sky-500" };
+        return { 
+          cor: "#3b82f6", 
+          icone: CheckCircle2, 
+          label: "Disponível", 
+          sub: "Pronta",
+          bg: "bg-sky-500",
+          texto: "text-sky-500",
+        };
     }
   }, [statusImpressora]);
 
-  // Cor base do card respeita o status operacional OU o alerta de manutenção crítico
   const corDestaque = statusManutencaoUI === "critico" ? "#f43f5e" : configStatus.cor;
-
-  const subtitulo = [impressora.marca].filter(Boolean).join(" | ") || impressora.tecnologia;
   const horasUsadas = Math.floor((impressora.horimetroTotalMinutos || 0) / 60);
 
   return (
     <motion.div
       layout
       onClick={() => aoDetalhes?.(impressora)}
-      whileHover={{ y: -8, transition: { duration: 0.3 } }}
-      className="group relative flex flex-col h-full rounded-[2.5rem] overflow-hidden transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] cursor-pointer bg-white dark:bg-card border border-gray-100 dark:border-white/5"
+      whileHover={{ y: -6, transition: { duration: 0.2 } }}
+      className="group relative flex flex-col h-full rounded-[2.5rem] bg-white dark:bg-[#0c0c0e] border border-zinc-100 dark:border-white/5 overflow-hidden transition-all duration-300 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] cursor-pointer"
     >
-      {/* Glossy Reflection Effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none z-10" />
-
-      {/* Badges Superiores */}
-      <div className="absolute top-6 left-6 z-20 flex items-center gap-3">
-        <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/10 ${configStatus.bg} ${configStatus.texto} shadow-sm backdrop-blur-md`}
-        >
-          <configStatus.icone size={14} strokeWidth={3} className={estaImprimindo ? "animate-spin-slow" : ""} />
-          <span className="text-[9px] font-black uppercase tracking-widest">{configStatus.label}</span>
+      {/* ═══════ CABEÇALHO DE IDENTIDADE ═══════ */}
+      <div className="p-8 pb-4 flex justify-between items-start relative z-20">
+        <div className="flex flex-col gap-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600">
+            {impressora.marca || "Industrial"} // {impressora.tecnologia}
+          </span>
+          <h4 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none uppercase">
+            {impressora.nome}
+          </h4>
+        </div>
+        
+        <div className="flex items-center gap-3" ref={referenciaMenu}>
+          <div className={`w-2.5 h-2.5 rounded-full ${statusManutencaoUI === "critico" ? 'bg-rose-500 animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-emerald-500 opacity-20'}`} />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              definirMenuAberto(!menuAberto);
+            }}
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 text-zinc-400 hover:text-indigo-500 transition-colors"
+          >
+            <MoreVertical size={18} />
+          </button>
+          
+          <AnimatePresence>
+            {menuAberto && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="absolute right-8 top-20 w-56 bg-white dark:bg-[#161618] border border-zinc-100 dark:border-white/10 rounded-2xl shadow-2xl z-50 p-1.5 backdrop-blur-xl"
+              >
+                <button onClick={(e) => { e.stopPropagation(); aoManutencoes?.(impressora); fecharMenu(); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black hover:bg-zinc-50 dark:hover:bg-white/5 rounded-xl transition-all uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
+                  <Wrench size={14} /> Manutenções
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); aoEditar(impressora); fecharMenu(); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black hover:bg-zinc-50 dark:hover:bg-white/5 rounded-xl transition-all uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
+                  <Edit2 size={14} /> Editar Setup
+                </button>
+                <div className="h-px bg-zinc-100 dark:bg-white/5 my-1 mx-2" />
+                <button onClick={(e) => { e.stopPropagation(); aoAposentar(impressora); fecharMenu(); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black text-rose-500 hover:bg-rose-500/5 rounded-xl transition-all uppercase tracking-widest">
+                  <Archive size={14} /> Desativar
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Menu Contextual Premium */}
-      <div className="absolute top-5 right-5 z-30" ref={referenciaMenu}>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            definirMenuAberto(!menuAberto);
-          }}
-          className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white" : "opacity-0 group-hover:opacity-100 focus:opacity-100 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-white/5"}`}
-        >
-          <MoreVertical size={18} />
-        </button>
-
-        <AnimatePresence>
-          {menuAberto && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 10, rotate: -2 }}
-              animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              className="absolute right-0 mt-2 w-56 bg-white/95 dark:bg-[#18181b]/95 border border-gray-100 dark:border-white/10 rounded-[1.5rem] shadow-2xl z-40 overflow-hidden origin-top-right backdrop-blur-xl"
-            >
-              <div className="p-2 space-y-1">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (aoManutencoes) aoManutencoes(impressora);
-                    fecharMenu();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black text-gray-600 dark:text-zinc-300 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 rounded-2xl transition-all group/item uppercase tracking-widest"
-                >
-                  <Wrench size={16} className="text-gray-400 group-hover/item:text-amber-500 transition-colors" />
-                  Manutenções
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    aoEditar(impressora);
-                    fecharMenu();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black text-gray-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white rounded-2xl transition-all group/item uppercase tracking-widest"
-                >
-                  <Edit2
-                    size={16}
-                    className="text-gray-400 group-hover/item:text-gray-900 dark:group-hover/item:text-white transition-colors"
-                  />
-                  Editar Setup
-                </button>
-
-                <div className="h-px bg-gray-100 dark:bg-white/5 my-1 mx-2" />
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    aoAposentar(impressora);
-                    fecharMenu();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black text-rose-600 hover:bg-rose-500/10 rounded-2xl transition-all group/item uppercase tracking-widest"
-                >
-                  <Archive size={16} className="text-rose-400 group-hover/item:text-rose-600 transition-colors" />
-                  Aposentar
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Imagem Central e Glow Dinâmico */}
-      <div className="flex flex-col flex-1 items-center justify-center p-8 pt-20 pb-10 relative min-h-[200px]">
-        <div
-          className="absolute inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[50px] dark:blur-[80px] z-0 pointer-events-none opacity-[0.25] dark:opacity-20 transition-all duration-1000 group-hover:scale-125"
+      {/* ═══════ VISUALIZAÇÃO CENTRAL ═══════ */}
+      <div className="flex-1 relative flex items-center justify-center p-6 min-h-[220px]">
+        {/* Glow de Status Distribuído */}
+        <div 
+          className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-32 blur-[80px] opacity-20 pointer-events-none transition-all duration-1000 group-hover:opacity-30"
           style={{ backgroundColor: corDestaque }}
         />
 
-        <div className="relative z-10 transition-all duration-700 group-hover:scale-110 group-hover:-rotate-2 h-full flex items-center justify-center">
+        <div className="relative z-10 transition-transform duration-700 group-hover:scale-110">
           {impressora.imagemUrl ? (
-            <img
-              src={impressora.imagemUrl}
-              alt={impressora.nome}
-              className="max-h-[180px] max-w-full object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]"
-            />
+            <img src={impressora.imagemUrl} alt={impressora.nome} className="max-h-[180px] object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]" />
           ) : (
-            <div className="w-24 h-24 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center bg-gray-50 dark:bg-white/5">
-              <Activity size={32} className="text-gray-300 dark:text-white/10 animate-pulse" />
+            <div className="w-40 h-40 rounded-full border border-zinc-100 dark:border-white/5 flex items-center justify-center bg-zinc-50/50 dark:bg-white/[0.02] relative">
+               <div className="absolute inset-2 border border-dashed border-zinc-200 dark:border-white/10 rounded-full animate-spin-slow opacity-20" />
+               <Activity size={40} className="text-zinc-200 dark:text-zinc-800" />
             </div>
           )}
         </div>
       </div>
 
-      {/* Rodapé e Métricas */}
-      <div className="p-8 bg-gray-50/30 dark:bg-black/20 backdrop-blur-sm border-t border-gray-100 dark:border-white/5 relative z-20">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex flex-col min-w-0 pr-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500 mb-1.5 truncate">
-              {subtitulo}
-            </span>
-            <div className="flex items-center gap-2">
-              <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter truncate leading-none uppercase">
-                {impressora.nome}
-              </h4>
-              {statusManutencaoUI === "critico" && (
-                <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" title="Atenção Crítica" />
-              )}
+      {/* ═══════ MÓDULOS DE INFORMAÇÃO ═══════ */}
+      <div className="px-8 pb-8 space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-5 rounded-3xl bg-zinc-50/50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/[0.05]">
+            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600 block mb-2">Operacional</span>
+            <div className={`flex items-center gap-2 text-sm font-black uppercase tracking-tight ${configStatus.texto}`}>
+              <configStatus.icone size={14} strokeWidth={3} className={estaImprimindo ? "animate-spin-slow" : ""} />
+              {configStatus.sub}
             </div>
           </div>
 
-          <div className="text-right">
-            <div className="text-3xl font-black tracking-tighter text-gray-900 dark:text-white flex items-baseline justify-end gap-1">
-              {horasUsadas}
-              <span className="text-xs font-bold text-gray-400 dark:text-zinc-600 uppercase">hrs</span>
+          <div className="p-5 rounded-3xl bg-zinc-50/50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/[0.05] text-right">
+            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600 block mb-1">Horímetro</span>
+            <div className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter tabular-nums">
+              {horasUsadas}<small className="text-[10px] ml-1 uppercase opacity-30">hrs</small>
             </div>
-            <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-zinc-600">
-              Total Operacional
-            </span>
           </div>
         </div>
 
-        {/* Progress Bar de Manutenção */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between px-0.5">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500 flex items-center gap-2">
-              <Activity size={10} /> Vida Útil Sistema
-            </span>
-            <span className={`text-[9px] font-black uppercase tracking-widest ${coresManutencao.text}`}>
-              {Math.round(percentualVidaUtil)}%
+        {/* ═══════ BARRA DE SAÚDE INTEGRADA ═══════ */}
+        <div className="relative pt-4">
+          <div className="flex justify-between items-center mb-3">
+            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-500 flex items-center gap-2">
+              SAÚDE DO SISTEMA
+            </label>
+            <span className={`text-xs font-black tracking-tighter ${coresManutencao.text}`}>
+              {Math.max(0, Math.round(saudeSistema))}%
             </span>
           </div>
-          <div className="h-2 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5 border border-gray-200 dark:border-white/5 shadow-inner">
+          
+          <div className="h-1.5 w-full bg-zinc-100 dark:bg-white/5 rounded-full overflow-hidden relative">
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${percentualVidaUtil}%` }}
-              transition={{ duration: 1.5, ease: "circOut" }}
-              className={`h-full rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] ${coresManutencao.bg}`}
-            />
+              initial={{ width: 0 }} animate={{ width: `${Math.max(0, saudeSistema)}%` }} transition={{ duration: 1 }}
+              className={`h-full rounded-full ${coresManutencao.bg} relative shadow-[0_0_10px_rgba(0,0,0,0.2)]`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+            </motion.div>
           </div>
+          <p className="text-[7px] font-bold text-zinc-400 dark:text-zinc-700 text-center uppercase tracking-[0.2em] mt-3">
+             PRÓXIMA REVISÃO EM {Math.max(0, (impressora.intervaloRevisaoMinutos || 0) - (impressora.horimetroTotalMinutos || 0))} MIN
+          </p>
         </div>
       </div>
     </motion.div>

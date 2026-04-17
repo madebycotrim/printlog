@@ -102,14 +102,14 @@ export function CardResumo({
         <h4 className="text-[9px] font-black text-gray-400 dark:text-zinc-600 uppercase tracking-[0.2em] mb-0.5 leading-none">
           {titulo}
         </h4>
-        <div className="flex items-baseline gap-1.5 mt-0.5">
+        <div className="flex flex-col mt-0.5">
           <span
-            className={`text-2xl font-black tracking-tighter tabular-nums ${carregando ? "skeleton h-8 w-12 rounded-lg" : "text-gray-900 dark:text-white"}`}
+            className={`text-2xl font-black tracking-tighter tabular-nums whitespace-nowrap leading-none ${carregando ? "skeleton h-8 w-12 rounded-lg" : "text-gray-900 dark:text-white"}`}
           >
             {!carregando && valor}
           </span>
           {unidade && !carregando && (
-            <span className="text-[9px] font-black text-gray-400 dark:text-zinc-700 uppercase tracking-[0.2em] italic ml-0.5">
+            <span className="text-[8px] font-black text-gray-400 dark:text-zinc-700 uppercase tracking-[0.2em] italic mt-1.5 leading-none">
               {unidade}
             </span>
           )}

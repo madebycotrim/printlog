@@ -1,5 +1,5 @@
 import { usarArmazemClientes } from "../estado/armazemClientes";
-import { Cliente, BaseLegalLGPD, StatusComercial } from "../tipos";
+import { Cliente } from "../tipos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { ErroValidacao, CodigoErro } from "@/compartilhado/utilitarios/excecoes";
 import { useMemo, useEffect, useCallback } from "react";

@@ -43,7 +43,7 @@ export function ComponenteTurnstile({ aoValidar, aoExpirar }: ComponenteTurnstil
         // Cleanup: Remove o widget ao desmontar o componente
         return () => {
             if (widgetIdRef.current && (window as any).turnstile) {
-                // (window as any).turnstile.remove(widgetIdRef.current);
+                (window as any).turnstile.remove(widgetIdRef.current);
             }
         };
     }, [aoValidar, aoExpirar]);

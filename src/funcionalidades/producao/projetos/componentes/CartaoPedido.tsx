@@ -99,10 +99,10 @@ export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
             <AnimatePresence>
               {menuAberto && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1e] border border-white/10 rounded-xl shadow-2xl p-1.5 z-50 backdrop-blur-xl"
+                  initial={{ opacity: 0, scale: 0.95, x: 20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, x: 20 }}
+                  className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1e] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-1.5 z-50 backdrop-blur-xl"
                 >
                   <button
                     onClick={(e) => {
@@ -110,9 +110,9 @@ export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
                       aoEditar?.(pedido.id);
                       setMenuAberto(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-colors"
                   >
-                    <Edit3 size={12} className="text-indigo-400" /> Editar
+                    <Edit3 size={12} className="text-indigo-400" /> Editar Registro
                   </button>
                   <button
                     onClick={(e) => {

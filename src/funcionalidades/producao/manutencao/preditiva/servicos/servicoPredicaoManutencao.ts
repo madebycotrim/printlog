@@ -52,8 +52,8 @@ export const servicoPredicaoManutencao = {
 
         // 2. Verificação de Peças de Desgaste
         imp.pecasDesgaste?.forEach((peca) => {
-          const usoPeca = peca.minutosTrocado; // Minutos desde a última troca
-          const vidaUtil = peca.vidaUtilEstimadaMinutos;
+          const usoPeca = Math.max(0, horimetro - peca.horasUsoAtualMinutos); // Minutos desde a última troca
+          const vidaUtil = peca.vidaUtilMinutos;
           const statusPeca = obterStatusManutencao(usoPeca, vidaUtil);
           const percentualPeca = Math.min((usoPeca / vidaUtil) * 100, 100);
           const minutosRestantesPeca = Math.max(vidaUtil - usoPeca, 0);
