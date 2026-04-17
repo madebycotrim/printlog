@@ -10,27 +10,57 @@ interface ContextoLog extends Record<string, unknown> {
 }
 
 /**
+ * Níveis de log suportados pelo sistema.
+ */
+const NIVEIS_LOG = {
+    info: 0,
+    warn: 1,
+    error: 2,
+    fatal: 3
+} as const;
+
+type NivelLog = keyof typeof NIVEIS_LOG;
+
+/**
+ * Define o nível mínimo de log baseado no ambiente.
+ * Padrão: 'warn' no desenvolvimento para evitar ruído, 'error' em produção.
+ */
+const NIVEL_MINIMO: NivelLog = (import.meta.env.VITE_LOG_LEVEL as NivelLog) || (import.meta.env.DEV ? 'warn' : 'error');
+
+const deveRegistrar = (nivel: NivelLog): boolean => {
+    return NIVEIS_LOG[nivel] >= NIVEIS_LOG[NIVEL_MINIMO];
+};
+
+/**
  * Registrador centralizado do sistema.
  * Proibido o uso de console.log/error diretamente nos arquivos de domínio.
  */
 export const registrar = {
     info: (contexto: ContextoLog, mensagem: string) => {
-        console.info(JSON.stringify({ nivel: 'info', ...contexto, mensagem, data: new Date().toISOString() }));
+        if (deveRegistrar('info')) {
+            console.info(JSON.stringify({ nivel: 'info', ...contexto, mensagem, data: new Date().toISOString() }));
+        }
     },
     warn: (contexto: ContextoLog, mensagem: string) => {
-        console.warn(JSON.stringify({ nivel: 'warn', ...contexto, mensagem, data: new Date().toISOString() }));
+        if (deveRegistrar('warn')) {
+            console.warn(JSON.stringify({ nivel: 'warn', ...contexto, mensagem, data: new Date().toISOString() }));
+        }
     },
     error: (contexto: ContextoLog, mensagem: string, causaOriginal?: unknown) => {
-        console.error(JSON.stringify({
-            nivel: 'error',
-            ...contexto,
-            mensagem,
-            causa: causaOriginal instanceof Error ? causaOriginal.message : causaOriginal,
-            data: new Date().toISOString()
-        }));
+        if (deveRegistrar('error')) {
+            console.error(JSON.stringify({
+                nivel: 'error',
+                ...contexto,
+                mensagem,
+                causa: causaOriginal instanceof Error ? causaOriginal.message : causaOriginal,
+                data: new Date().toISOString()
+            }));
+        }
     },
     fatal: (contexto: ContextoLog, mensagem: string, causaOriginal?: unknown) => {
-        console.error(JSON.stringify({ nivel: 'fatal', ...contexto, mensagem, causa: causaOriginal, data: new Date().toISOString() }));
+        if (deveRegistrar('fatal')) {
+            console.error(JSON.stringify({ nivel: 'fatal', ...contexto, mensagem, causa: causaOriginal, data: new Date().toISOString() }));
+        }
     }
 };
 
