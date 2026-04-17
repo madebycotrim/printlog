@@ -8,7 +8,10 @@ export const apiManutencoes = {
         const resposta = await fetch(`/api/manutencoes?idImpressora=${idImpressora}`, {
             headers: { "x-usuario-id": usuarioId }
         });
-        if (!resposta.ok) throw new Error("Erro ao carregar manutenções do banco.");
+        if (!resposta.ok) {
+            const erroJson = await resposta.json().catch(() => ({}));
+            throw new Error(`Erro ao carregar manutenções: ${erroJson.erro || resposta.statusText}`);
+        }
         const dados = await resposta.json();
         
         return dados.map((m: any) => ({

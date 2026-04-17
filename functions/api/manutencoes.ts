@@ -19,25 +19,38 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const metodo = request.method;
 
     try {
-        // GET - Listar (Com Fallback para Esquemas Antigos)
+        // GET - Listar (Com Fallback para Esquemas Antigos e Nomes Diferentes de Tabela)
         if (metodo === "GET") {
-            let query = "SELECT * FROM registros_manutencao WHERE id_usuario = ?";
-            let params = [usuarioId];
+            const tentarBusca = async (tabela: string) => {
+                let queryBase = `SELECT * FROM ${tabela} WHERE id_usuario = ?`;
+                let params = [usuarioId];
+                if (idImpressora) {
+                    queryBase += " AND id_impressora = ?";
+                    params.push(idImpressora);
+                }
 
-            if (idImpressora) {
-                query += " AND id_impressora = ?";
-                params.push(idImpressora);
-            }
+                // Tenta com filtro de arquivamento
+                try {
+                    const { results } = await env.DB.prepare(queryBase + " AND arquivado = 0").bind(...params).all();
+                    return results;
+                } catch (e) {
+                    // Tenta sem filtro de arquivamento
+                    const { results } = await env.DB.prepare(queryBase).bind(...params).all();
+                    return results;
+                }
+            };
 
-            // Tentamos filtrar por arquivados, mas envolvemos em um try interno 
-            // para não quebrar caso a coluna ainda não tenha sido criada via migração
+            // Sequência de Fallback de Tabelas
             try {
-                const { results } = await env.DB.prepare(query + " AND arquivado = 0").bind(...params).all();
+                const results = await tentarBusca("registros_manutencao");
                 return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
-            } catch (e) {
-                // Se falhar (ex: no such column: arquivado), retorna sem o filtro
-                const { results } = await env.DB.prepare(query).bind(...params).all();
-                return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+            } catch (e1) {
+                try {
+                    const results = await tentarBusca("manutencoes");
+                    return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+                } catch (e2) {
+                    throw new Error(`Tabela de manutenções não encontrada (tentado: registros_manutencao, manutencoes). Original: ${(e1 as any).message}`);
+                }
             }
         }
 
