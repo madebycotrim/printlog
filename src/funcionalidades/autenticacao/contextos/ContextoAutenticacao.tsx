@@ -94,27 +94,38 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const carregarConfiguracoes = usarArmazemConfiguracoes((s) => s.carregarDoD1);
 
   useEffect(() => {
-    // Configura persistência local (mantém logado mesmo fechando o navegador)
-    const configurarPersistencia = async () => {
+    let inicializado = false;
+
+    const inicializarApp = async () => {
       try {
+        registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando verificação de persistência...");
         await setPersistence(autenticacao, browserLocalPersistence);
         
-        // Captura o resultado do redirecionamento (Google Login)
+        // Processa o redirecionamento
+        registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Verificando resultado de redirecionamento do Google...");
         const resultado = await getRedirectResult(autenticacao);
+        
         if (resultado) {
           registrar.info(
             { rastreioId: resultado.user.uid, servico: "Autenticacao", evento: "LOGIN_REDIRECT_SUCESSO" },
-            "Retorno de redirecionamento do Google processado com sucesso"
+            `Google Redirect detectado para: ${resultado.user.email}`
           );
+        } else {
+          registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Nenhum resultado de redirecionamento pendente.");
         }
       } catch (erro) {
-        registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Erro ao configurar persistência ou capturar redirect", erro);
-        // Opcional: tratar erros específicos de redirect aqui se necessário
+        registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha na inicialização do Firebase Auth", erro);
       }
     };
-    configurarPersistencia();
+
+    inicializarApp();
 
     const cancelarInscricao = onAuthStateChanged(autenticacao, (user) => {
+      registrar.info(
+        { rastreioId: user?.uid || "anônimo", servico: "Autenticacao", evento: "AUTH_STATE_CHANGED" },
+        user ? `Usuário identificado: ${user.email}` : "Nenhum usuário logado."
+      );
+
       if (user) {
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
         definirUsuario({
@@ -124,12 +135,17 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           fotoUrl: user.photoURL,
           provedorGoogle: ehGoogle,
         });
-        // Carrega as configurações operacionais do D1 assim que o usuário é identificado
         carregarConfiguracoes(user.uid);
       } else {
         definirUsuario(null);
       }
-      definirCarregando(false);
+
+      // Finaliza o estado de carregamento global após a primeira resposta
+      if (!inicializado) {
+        inicializado = true;
+        // Damos um pequeno respiro para o estado do usuário se propagar
+        setTimeout(() => definirCarregando(false), 500);
+      }
     });
 
     return () => cancelarInscricao();

@@ -31,16 +31,22 @@ export function ComponenteTurnstile({ aoValidar, aoExpirar }: ComponenteTurnstil
             return;
         }
 
+        // Verifica se o script já foi injetado no DOM por outra instância
+        const scriptExistente = document.getElementById("cloudflare-turnstile-script");
+        if (scriptExistente) {
+            scriptExistente.addEventListener("load", () => setScriptCarregado(true));
+            // Se já carregou antes de chegarmos aqui
+            if ((window as any).turnstile) setScriptCarregado(true);
+            return;
+        }
+
         const script = document.createElement("script");
+        script.id = "cloudflare-turnstile-script";
         script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
         script.async = true;
         script.defer = true;
         script.onload = () => setScriptCarregado(true);
         document.head.appendChild(script);
-
-        return () => {
-            // Não removemos o script do head para não quebrar outras instâncias
-        };
     }, []);
 
     useEffect(() => {
