@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -91,11 +91,10 @@ const registrarAceiteTermos = async (uid: string) => {
 export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const [usuario, definirUsuario] = useState<Usuario | null>(null);
   const [carregando, definirCarregando] = useState(true);
+  const inicializadoRef = useRef(false);
   const carregarConfiguracoes = usarArmazemConfiguracoes((s) => s.carregarDoD1);
 
   useEffect(() => {
-    let inicializado = false;
-
     const inicializarApp = async () => {
       try {
         registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando verificação de persistência...");
@@ -140,11 +139,10 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         definirUsuario(null);
       }
 
-      // Finaliza o estado de carregamento global após a primeira resposta
-      if (!inicializado) {
-        inicializado = true;
-        // Damos um pequeno respiro para o estado do usuário se propagar
-        setTimeout(() => definirCarregando(false), 500);
+      // Finaliza o estado de carregamento global após a primeira resposta real
+      if (!inicializadoRef.current) {
+        inicializadoRef.current = true;
+        definirCarregando(false);
       }
     });
 
@@ -259,16 +257,20 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
   /**
    * Realiza login utilizando o Google.
+   * Em localhost, prioriza Popup para melhor experiência.
+   * Em produção ou se o popup falhar, usa Redirect.
    */
   const loginGoogle = async () => {
+    const provedor = new GoogleAuthProvider();
+
     try {
-      const provedor = new GoogleAuthProvider();
-      // Usamos Redirect em vez de Popup para evitar erros de COOP/CORS em navegadores modernos
+      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando login via Google Redirect (Contornando COOP)");
       await signInWithRedirect(autenticacao, provedor);
-    } catch (erro: unknown) {
-      registrar.warn(
-        { rastreioId: "desconhecido", servico: "Autenticacao", evento: "LOGIN_GOOGLE_FALHA" },
-        "Tentativa de login via Google falhou"
+    } catch (erro: any) {
+      registrar.error(
+        { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
+        "Falha ao iniciar redirecionamento do Google",
+        erro
       );
       traduzirErroFirebase(erro);
     }
