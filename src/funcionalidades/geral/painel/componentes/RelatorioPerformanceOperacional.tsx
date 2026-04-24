@@ -1,6 +1,7 @@
 import { Activity, TrendingUp, ShieldCheck, Gauge, AlertCircle } from "lucide-react";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { servicoPerformance } from "../servicos/servicoPerformance";
@@ -11,6 +12,7 @@ interface RelatorioPerformanceOperacionalProps {
 }
 
 export function RelatorioPerformanceOperacional({ impressoras, pedidos }: RelatorioPerformanceOperacionalProps) {
+  const navegar = useNavigate();
   const metricas = useMemo(
     () => servicoPerformance.calcularMetricasGlobais(impressoras, pedidos),
     [impressoras, pedidos],
@@ -138,7 +140,10 @@ export function RelatorioPerformanceOperacional({ impressoras, pedidos }: Relato
             O OEE é um score composto que reflete a produtividade real do parque de máquinas. Sua meta atual está
             definida em <strong className="text-zinc-300">85% (Status Otimizado)</strong>.
           </p>
-          <button className="px-6 py-3 bg-white hover:bg-sky-400 text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2">
+          <button 
+            onClick={() => navegar("/impressoras")}
+            className="px-6 py-3 bg-white hover:bg-sky-400 text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2"
+          >
             Relatório Industrial →
           </button>
         </div>

@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import { TrendingDown, Activity, TrendingUp, Minus, Box } from "lucide-react";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export function GraficoConsumoMateriais({
@@ -17,7 +17,13 @@ export function GraficoConsumoMateriais({
 }: {
   materiais: Material[];
 }) {
+  const [isMounted, setIsMounted] = useState(false);
   const DIAS_ANALISE = 30;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const metricas = useMemo(() => {
     const hoje = new Date();
@@ -234,9 +240,9 @@ export function GraficoConsumoMateriais({
            </div>
         </div>
 
-        <div className="w-full h-[320px]">
-          {metricas.dadosGrafico.length > 0 && metricas.totalGasto30d > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full h-[320px] min-h-[320px] relative">
+          {isMounted && metricas.dadosGrafico.length > 0 && metricas.totalGasto30d > 0 ? (
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
               <AreaChart data={metricas.dadosGrafico} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="corConsumo" x1="0" y1="0" x2="0" y2="1">

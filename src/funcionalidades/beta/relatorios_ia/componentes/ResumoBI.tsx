@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   PieChart,
   Pie,
@@ -28,6 +29,7 @@ interface ResumoBIProps {
 
 export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const navegar = useNavigate();
 
   useEffect(() => {
     // Aguarda a engine do navegador renderizar as dimensões do Flexbox/Grid
@@ -75,10 +77,10 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
                 </p>
               </div>
             </div>
-            <div className="bg-emerald-500/5 border border-emerald-500/10 px-4 py-2 rounded-2xl flex items-center gap-3">
-              <Activity size={14} className="text-emerald-500" />
-              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-                Saldo Mensal Positivo
+            <div className={`border px-4 py-2 rounded-2xl flex items-center gap-3 ${dre.lucroLiquidoCentavos >= 0 ? "bg-emerald-500/5 border-emerald-500/10" : "bg-rose-500/5 border-rose-500/10"}`}>
+              <Activity size={14} className={dre.lucroLiquidoCentavos >= 0 ? "text-emerald-500" : "text-rose-500"} />
+              <span className={`text-[10px] font-black uppercase tracking-widest ${dre.lucroLiquidoCentavos >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                {dre.lucroLiquidoCentavos >= 0 ? "Saldo Mensal Positivo" : "Saldo Mensal Negativo"}
               </span>
             </div>
           </div>
@@ -167,7 +169,10 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
                 Dados baseados em {pedidos.length} jobs concluídos
               </span>
             </div>
-            <button className="text-[10px] font-black uppercase tracking-widest text-sky-500 hover:text-sky-400 transition-colors flex items-center gap-2">
+            <button 
+              onClick={() => navegar("/financeiro")}
+              className="text-[10px] font-black uppercase tracking-widest text-sky-500 hover:text-sky-400 transition-colors flex items-center gap-2"
+            >
               Relatório Comercial Completo →
             </button>
           </div>

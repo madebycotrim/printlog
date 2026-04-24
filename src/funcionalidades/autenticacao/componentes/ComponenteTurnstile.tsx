@@ -52,48 +52,45 @@ export function ComponenteTurnstile({ aoValidar, aoExpirar }: ComponenteTurnstil
     useEffect(() => {
         if (!scriptCarregado || !containerRef.current) return;
 
-        let montado = true;
+        let ocupado = false;
 
         const renderizarWidget = () => {
-            if (!containerRef.current || widgetIdRef.current || !montado) return;
-
+            if (!containerRef.current || widgetIdRef.current || ocupado) return;
+            
+            ocupado = true;
             try {
                 widgetIdRef.current = (window as any).turnstile.render(containerRef.current, {
                     sitekey: CHAVE_TURNSTILE,
                     theme: "dark",
-                    callback: (token: string) => {
-                        if (montado) aoValidar(token);
-                    },
+                    callback: (token: string) => aoValidar(token),
                     "expired-callback": () => {
-                        if (montado) {
-                            aoExpirar?.();
-                            // Reset apenas em expiração, pois o token ficou velho
-                            if (widgetIdRef.current) (window as any).turnstile.reset(widgetIdRef.current);
-                        }
+                        aoExpirar?.();
+                        if (widgetIdRef.current) (window as any).turnstile.reset(widgetIdRef.current);
                     },
                     "error-callback": (errorCode: string) => {
-                        // Não resetamos em caso de erro crítico (110200 etc) para evitar loops infinitos
-                        console.warn(`[Turnstile] Erro ${errorCode}: Verifique se o domínio está autorizado para esta SiteKey.`);
+                        console.warn(`[Turnstile] Erro ${errorCode}: Verifique a configuração do domínio.`);
                     }
                 });
             } catch (erro) {
-                console.warn("[Turnstile] Falha ao renderizar widget:", erro);
+                console.warn("[Turnstile] Falha ao renderizar:", erro);
+            } finally {
+                ocupado = false;
             }
         };
 
-        // Pequeno delay para garantir que o containerRef está estável no DOM
-        const timer = setTimeout(renderizarWidget, 100);
+        // Renderiza imediatamente se o objeto global estiver disponível
+        if ((window as any).turnstile) {
+            renderizarWidget();
+        }
 
         return () => {
-            montado = false;
-            clearTimeout(timer);
             if (widgetIdRef.current && (window as any).turnstile) {
                 try {
                     const id = widgetIdRef.current;
                     widgetIdRef.current = null;
                     (window as any).turnstile.remove(id);
                 } catch {
-                    // Silencia erros de remoção tardia
+                    // Ignora erros na desmontagem
                 }
             }
         };

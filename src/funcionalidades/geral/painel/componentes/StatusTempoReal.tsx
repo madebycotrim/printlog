@@ -1,11 +1,13 @@
 import { ChevronRight, Printer } from "lucide-react";
 import { StatusItem } from "./StatusItem";
 import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
-import { StatusImpressora } from "@/compartilhado/tipos/modelos";
+import { StatusImpressora, StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useNavigate } from "react-router-dom";
+import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 
 export function StatusTempoReal() {
     const { impressoras } = usarArmazemImpressoras();
+    const { pedidos } = usarPedidos();
     const navegar = useNavigate();
 
     // Filtramos apenas máquinas que não estão aposentadas
@@ -14,10 +16,15 @@ export function StatusTempoReal() {
     // Pegamos as 3 primeiras para o resumo do dashboard
     const resumoMaquinas = maquinasAtivas.slice(0, 3);
 
+    // Encontra o trabalho (pedido) ativo em uma máquina específica
+    const buscarTrabalhoAtivo = (idImpressora: string) => {
+        return pedidos.find(p => p.idImpressora === idImpressora && p.status === StatusPedido.EM_PRODUCAO);
+    };
+
     const obterCorStatus = (status: string) => {
         switch (status) {
-            case StatusImpressora.DISPONIVEL: return "bg-emerald-500";
-            case StatusImpressora.OCUPADA: return "bg-amber-500";
+            case StatusImpressora.LIVRE: return "bg-emerald-500";
+            case StatusImpressora.IMPRIMINDO: return "bg-amber-500";
             case StatusImpressora.MANUTENCAO: return "bg-rose-500";
             default: return "bg-zinc-500";
         }
@@ -25,8 +32,8 @@ export function StatusTempoReal() {
 
     const obterLabelStatus = (status: string) => {
         switch (status) {
-            case StatusImpressora.DISPONIVEL: return "PRONTA";
-            case StatusImpressora.OCUPADA: return "EM CURSO";
+            case StatusImpressora.LIVRE: return "PRONTA";
+            case StatusImpressora.IMPRIMINDO: return "EM CURSO";
             case StatusImpressora.MANUTENCAO: return "EM REVISÃO";
             default: return status;
         }
@@ -38,17 +45,20 @@ export function StatusTempoReal() {
 
             {resumoMaquinas.length > 0 ? (
                 <div className="space-y-6 flex-1">
-                    {resumoMaquinas.map((imp) => (
-                        <StatusItem
-                            key={imp.id}
-                            titulo={imp.status === StatusImpressora.OCUPADA ? "Trabalho Ativo" : "Monitoramento de Saúde"}
-                            maquina={imp.nome}
-                            // Simulamos um progresso visual baseado no status para o Dashboard não ficar parado
-                            progresso={imp.status === StatusImpressora.OCUPADA ? 65 : imp.status === StatusImpressora.DISPONIVEL ? 100 : 0}
-                            status={obterLabelStatus(imp.status)}
-                            cor={obterCorStatus(imp.status)}
-                        />
-                    ))}
+                    {resumoMaquinas.map((imp) => {
+                        const trabalho = buscarTrabalhoAtivo(imp.id);
+                        return (
+                            <StatusItem
+                                key={imp.id}
+                                titulo={trabalho ? trabalho.descricao : imp.status === StatusImpressora.IMPRIMINDO ? "Trabalho Não Identificado" : "Monitoramento de Saúde"}
+                                maquina={imp.nome}
+                                // Sem telemetria, progresso é 100% se pronto, ou 0% se ocupada (dados reais disponíveis)
+                                progresso={imp.status === StatusImpressora.LIVRE ? 100 : 0}
+                                status={obterLabelStatus(imp.status)}
+                                cor={obterCorStatus(imp.status)}
+                            />
+                        );
+                    })}
                 </div>
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-gray-100 dark:border-white/5 rounded-2xl">

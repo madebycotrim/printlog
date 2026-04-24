@@ -8,6 +8,7 @@ import {
   updateProfile,
   GoogleAuthProvider,
   signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   AuthError,
   setPersistence,
@@ -264,12 +265,26 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     const provedor = new GoogleAuthProvider();
 
     try {
-      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando login via Google Redirect (Contornando COOP)");
-      await signInWithRedirect(autenticacao, provedor);
+      // Em desenvolvimento ou ambientes que permitem popups, tentamos o Popup primeiro
+      // Isso evita o iframe de redirect que costuma disparar o erro 404 do init.json
+      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando tentativa de login via Google Popup...");
+      
+      try {
+        await signInWithPopup(autenticacao, provedor);
+        registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Login via Popup concluído com sucesso.");
+      } catch (erroPopup: any) {
+        // Se o popup for bloqueado ou cancelado, tentamos o Redirect como fallback
+        if (erroPopup.code === "auth/popup-blocked" || erroPopup.code === "auth/cancelled-popup-request") {
+          registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "Popup bloqueado ou fechado, tentando Redirect...");
+          await signInWithRedirect(autenticacao, provedor);
+        } else {
+          throw erroPopup;
+        }
+      }
     } catch (erro: any) {
       registrar.error(
         { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
-        "Falha ao iniciar redirecionamento do Google",
+        "Falha ao realizar login com Google",
         erro
       );
       traduzirErroFirebase(erro);

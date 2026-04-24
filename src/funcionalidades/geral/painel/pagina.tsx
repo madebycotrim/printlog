@@ -136,13 +136,23 @@ export function PaginaInicial() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <CardResumo titulo="Produção Ativa" valor={pedidosAtivos} unidade="pedidos" icone={Clock} cor="sky" />
+          <CardResumo 
+            titulo="Produção Ativa" 
+            valor={pedidosAtivos} 
+            unidade="pedidos" 
+            icone={Clock} 
+            cor="sky" 
+            aoClicar={() => navegar("/projetos")}
+            textoAcao="Ver Fila"
+          />
           <CardResumo
             titulo="Capacidade Operacional"
             valor={maquinasAtivas}
             unidade="máquinas"
             icone={Printer}
             cor="emerald"
+            aoClicar={() => navegar("/impressoras")}
+            textoAcao="Gerenciar"
           />
           <CardResumo
             titulo="Filamentos em Alerta"
@@ -153,7 +163,15 @@ export function PaginaInicial() {
             aoClicar={() => navegar("/materiais")}
             textoAcao="Verificar"
           />
-          <CardResumo titulo="Total de Insumos" valor={totaisPecas} unidade="unidades" icone={Package} cor="indigo" />
+          <CardResumo 
+            titulo="Total de Insumos" 
+            valor={totaisPecas} 
+            unidade="unidades" 
+            icone={Package} 
+            cor="indigo" 
+            aoClicar={() => navegar("/materiais")}
+            textoAcao="Estoque"
+          />
         </div>
       </section>
 
