@@ -4,11 +4,11 @@
  * Previne upload de arquivos maliciosos, validando extensão, tamanho e conteúdo.
  */
 
-/** Extensões permitidas para upload no PrintLog */
-const EXTENSOES_PERMITIDAS = [".gcode", ".3mf"] as const;
+/** Extensões permitidas para upload no PrintLog (Foco em Imagens agora) */
+const EXTENSOES_PERMITIDAS = [".jpg", ".jpeg", ".png", ".webp"] as const;
 
-/** Tamanho máximo de arquivo: 50MB (G-Code pode ser grande) */
-const TAMANHO_MAXIMO_BYTES = 50 * 1024 * 1024;
+/** Tamanho máximo de arquivo: 5MB para imagens */
+const TAMANHO_MAXIMO_BYTES = 5 * 1024 * 1024;
 
 /**
  * Resultado da validação de um arquivo para upload.

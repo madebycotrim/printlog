@@ -12,8 +12,6 @@ import { CampoAreaTexto } from "@/compartilhado/componentes/CampoAreaTexto";
 import { CriarPedidoInput, Pedido } from "../tipos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
 import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
-import { usarAnalisadorGCode } from "@/compartilhado/hooks/usarAnalisadorGCode";
-import { Upload, Loader2, Sparkles } from "lucide-react";
 import { SeletorInsumosSecundarios } from "./SeletorInsumosSecundarios";
 
 const esquemaPedido = z.object({
@@ -55,7 +53,6 @@ interface PropriedadesFormularioPedido {
 export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }: PropriedadesFormularioPedido) {
   const { estado, acoes } = usarGerenciadorClientes();
   const [confirmarDescarte, setConfirmarDescarte] = useState(false);
-  const { analisando, resultado, analisarArquivo, limparAnalise, erro: erroAnalise } = usarAnalisadorGCode();
 
   const {
     register,
@@ -112,26 +109,9 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
         });
       }
       setConfirmarDescarte(false);
-      limparAnalise();
     }
-  }, [aberto, reset, pedidoEdicao, limparAnalise]);
+  }, [aberto, reset, pedidoEdicao]);
 
-  useEffect(() => {
-    if (resultado) {
-      if (resultado.pesoEstimadoGramas > 0) {
-        setValue("pesoGramas", resultado.pesoEstimadoGramas, { shouldDirty: true });
-      }
-      if (resultado.tempoEstimadoMinutos > 0) {
-        setValue("tempoMinutos", resultado.tempoEstimadoMinutos, { shouldDirty: true });
-      }
-      if (resultado.fatiadorDetectado !== "Desconhecido") {
-        const obsAtual = watch("observacoes") || "";
-        setValue("observacoes", `${obsAtual}\n[Auto] Fatiador: ${resultado.fatiadorDetectado}`.trim(), {
-          shouldDirty: true,
-        });
-      }
-    }
-  }, [resultado, setValue, watch]);
 
   const fecharModalRealmente = () => {
     setConfirmarDescarte(false);
@@ -209,86 +189,6 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
               icone={User}
               erro={errors.idCliente?.message}
             />
-          </SecaoFormulario>
-
-          {/* SEÇÃO OPCIONAL: ANÁLISE AUTOMÁTICA */}
-          <SecaoFormulario titulo="Automação Maker (Opcional)">
-            <div
-              className={`relative p-8 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center gap-4 text-center ${
-                analisando
-                  ? "border-[var(--cor-primaria)] bg-[var(--cor-primaria)]/5"
-                  : resultado
-                    ? "border-emerald-500/30 bg-emerald-500/5"
-                    : "border-gray-100 dark:border-white/5 hover:border-[var(--cor-primaria)]/30 hover:bg-gray-50/50 dark:hover:bg-white/[0.02]"
-              }`}
-            >
-              {analisando ? (
-                <>
-                  <div className="relative">
-                    <Loader2 size={32} className="text-[var(--cor-primaria)] animate-spin" />
-                    <div className="absolute inset-0 bg-[var(--cor-primaria)] blur-xl opacity-20 animate-pulse" />
-                  </div>
-                  <div>
-                    <h5 className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">
-                      Analisando Coordenadas...
-                    </h5>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                      Extraindo metadados em thread paralela
-                    </p>
-                  </div>
-                </>
-              ) : resultado ? (
-                <>
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
-                    <Sparkles size={18} />
-                  </div>
-                  <div className="space-y-1">
-                    <h5 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                      Análise Concluída!
-                    </h5>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                      {resultado.fatiadorDetectado} • {resultado.quantidadeLinhas.toLocaleString()} linhas processadas
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={limparAnalise}
-                    className="text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-rose-500 transition-colors"
-                  >
-                    Limpar Arquivo
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-center text-gray-300 dark:text-zinc-700 group-hover:text-[var(--cor-primaria)] transition-all">
-                    <Upload size={24} strokeWidth={1.5} />
-                  </div>
-                  <div className="space-y-1">
-                    <h5 className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">
-                      Importar G-Code para Auto-Preenchimento
-                    </h5>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed px-10">
-                      Arraste seu arquivo .gcode aqui para extrair peso e tempo automaticamente.
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    accept=".gcode"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={(e) => {
-                      const arquivo = e.target.files?.[0];
-                      if (arquivo) analisarArquivo(arquivo);
-                    }}
-                  />
-                </>
-              )}
-
-              {erroAnalise && (
-                <span className="absolute bottom-4 text-[8px] font-black text-rose-500 uppercase tracking-widest">
-                  {erroAnalise}
-                </span>
-              )}
-            </div>
           </SecaoFormulario>
 
           {/* SEÇÃO 2: DETALHES DO PROJETO */}

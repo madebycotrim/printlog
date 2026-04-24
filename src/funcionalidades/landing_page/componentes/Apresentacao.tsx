@@ -581,10 +581,10 @@ export function Apresentacao() {
               >
                 <div>
                   <div className="text-white font-bold text-base tracking-tight">
-                    Peça Final GCODE
+                    Peça Final
                   </div>
                   <div className="text-zinc-500 text-xs mt-0.5">
-                    Vaso Decorativo v3.gcode
+                    Vaso Decorativo (PLA)
                   </div>
                 </div>
                 <div className="text-right">

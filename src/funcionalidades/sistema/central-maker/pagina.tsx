@@ -27,7 +27,6 @@ interface InterfaceTopico {
   conteudo: string;
   nivel: string;
   atualizado: string;
-  gcode?: string;
   categoria?: string;
   cor?: string;
 }
@@ -65,7 +64,6 @@ const WIKI_EXTENDIDA: InterfaceCategoria[] = [
           "O segredo está na resistência do papel. O bico deve 'beliscar' o papel sem travar. Para sensores como BLTouch/CRTouch, calibre o Z-Offset com precisão de 0.01mm. Mesa mal nivelada é a causa de 90% das falhas de adesão.",
         nivel: "Essencial",
         atualizado: "REV 2026.04",
-        gcode: "G28 ; Home All\nG29 ; Auto Bed Leveling\nM500 ; Salvar na EEPROM",
       },
       {
         id: "set2",
@@ -82,7 +80,6 @@ const WIKI_EXTENDIDA: InterfaceCategoria[] = [
           "Não confie no rótulo do filamento. Imprima uma torre de temperatura para cada marca nova. Sintonize o PID (M303) para evitar oscilações na mesa e no bico que causam texturas indesejadas.",
         nivel: "Avançado",
         atualizado: "REV 2026.04",
-        gcode: "M303 E0 S210 C10 ; Autotune PID",
       },
     ],
   },
@@ -137,7 +134,6 @@ const WIKI_EXTENDIDA: InterfaceCategoria[] = [
           "Se a extrusora estala ou não sai plástico, seu bico está sujo. Use o 'Cold Pull' (Puxada a Frio) a 90°C para remover carbonização interna. Nunca use agulhas com o bico frio!",
         nivel: "Crítico",
         atualizado: "REV 2026.04",
-        gcode: "M104 S220 ; Aquecer\nM109 S90 ; Aguardar resfriamento",
       },
       {
         id: "e2",
@@ -305,7 +301,6 @@ const WIKI_EXTENDIDA: InterfaceCategoria[] = [
           "Verifique conectores de alta corrente (Mesa/Placa). Instale sensores de fumaça acima das máquinas. Segurança operacional vem antes do lucro imediato.",
         nivel: "Crítico",
         atualizado: "REV 2026.04",
-        gcode: "M81 ; Shut down Power",
       },
     ],
   },
@@ -321,11 +316,6 @@ const FAQS: InterfaceFAQ[] = [
     pergunta: "Como garantir que a precificação cobre todos os custos invisíveis?",
     resposta:
       "O PrintLog calcula automaticamente material, depreciação de componentes (bicos, correias, rodas dentadas), consumo elétrico por hora e custo de mão de obra. Ative a 'Taxa de Risco' nas configurações para adicionar uma margem percentual que cobre refugos, reimpressões e falhas inesperadas.",
-  },
-  {
-    pergunta: "O sistema faz o abatimento de estoque automaticamente pelo fatiador?",
-    resposta:
-      "O fatiador fornece a estimativa de peso, mas para máxima fidelidade, o PrintLog exige a inserção manual do peso final (incluindo suportes). Isso garante que seu estoque de filamento seja real e fidedigno, evitando interrupções por falta de material no meio da produção.",
   },
   {
     pergunta: "O sistema gera relatórios de lucratividade por pedido e período?",

@@ -1,3 +1,4 @@
+// v1.0.1 - Limpeza G-Code
 import {
   Zap,
   Timer,
@@ -18,14 +19,15 @@ import {
   Package,
   Activity,
   Download,
-  UploadCloud,
   X,
+  FolderKanban,
+  Truck,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { toast } from "react-hot-toast";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useState, useMemo, useEffect } from "react";
-import { usarAnalisadorGCode } from "@/compartilhado/hooks/usarAnalisadorGCode";
 import { motion, AnimatePresence } from "framer-motion";
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { useShallow } from "zustand/react/shallow";
@@ -40,6 +42,7 @@ import { centavosParaReais, extrairApenasDigitos, formatarPorcentagem } from "@/
 import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { FormularioInsumo } from "@/funcionalidades/producao/insumos/componentes/FormularioInsumo";
 import { usarGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/usarGerenciadorInsumos";
+import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 
 interface MaterialSelecionado {
   id: string;
@@ -53,6 +56,9 @@ interface MaterialSelecionado {
 export function PaginaCalculadora() {
   const { usuario } = usarAutenticacao();
   const config = usarArmazemConfiguracoes();
+  const navigate = useNavigate();
+  const { criarPedido } = usarPedidos();
+  const { estado: { impressoras = [] } = {} } = usarGerenciadorImpressoras();
 
   // Helper para converter strings do banco ("R$ 0,95") para números (0.95)
   const limparParaNumero = (valor: string) => Number(extrairApenasDigitos(valor)) / 100;
@@ -78,10 +84,14 @@ export function PaginaCalculadora() {
   const [impostos, setImpostos] = useState<number>(0);
   const [perfilAtivo, setPerfilAtivo] = useState("Direto");
   
-  // 💾 MEMÓRIA DO EQUIPAMENTO
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";
   });
+
+  const impressoraSelecionada = useMemo(() => 
+    impressoras.find(i => i.id === impressoraSelecionadaId),
+    [impressoras, impressoraSelecionadaId]
+  );
   
   const [abertoSeletor, setAbertoSeletor] = useState(false);
   const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
@@ -103,8 +113,6 @@ export function PaginaCalculadora() {
   const [modalComparativoAberto, setModalComparativoAberto] = useState(false);
   const [gerandoPdf, setGerandoPdf] = useState(false);
 
-  // HOOKS ADICIONAIS
-  const { analisarArquivo, analisando, resultado: resultadoGCode } = usarAnalisadorGCode();
 
   // PREVENIR COMPORTAMENTO PADRÃO DO NAVEGADOR (ABRIR ARQUIVO EM NOVA GUIA)
   useEffect(() => {
@@ -138,20 +146,28 @@ export function PaginaCalculadora() {
     insumoEditando: s.insumoEditando,
     adicionarOuAtualizarInsumo: s.adicionarOuAtualizarInsumo
   })));
-  const { estado: { impressoras = [] } = {} } = usarGerenciadorImpressoras();
   usarGerenciadorInsumos();
   const { estado: estadoMateriais, acoes: acoesMateriais } = usarGerenciadorMateriais(); 
+
+  const [custoEnergiaCalculado, setCustoEnergiaCalculado] = useState(0);
 
   // Sincroniza potência da impressora selecionada (ARTEMIS, etc)
   useEffect(() => {
     if (impressoraSelecionadaId && impressoras.length > 0) {
       const imp = impressoras.find(i => i.id === impressoraSelecionadaId);
       if (imp) {
-        // Se encontrar a impressora, injeta a potência (ou 0 se não tiver)
         setPotencia(imp.potenciaWatts || 0);
       }
     }
   }, [impressoraSelecionadaId, impressoras]);
+
+  // Calcula o custo de energia em tempo real
+  useEffect(() => {
+    const tempoTotalHoras = (tempo || 0) / 60;
+    const kwhUsado = (potencia / 1000) * tempoTotalHoras;
+    const custo = kwhUsado * precoKwh;
+    setCustoEnergiaCalculado(custo);
+  }, [tempo, potencia, precoKwh]);
 
   const alternarMaterial = (id: string) => {
     const jaSelecionado = materiaisSelecionados.find(m => m.id === id);
@@ -209,38 +225,37 @@ export function PaginaCalculadora() {
   const elementoAcaoCalculadora = useMemo(() => (
     <div className="flex items-center gap-1 bg-gray-50 dark:bg-white/5 p-1 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
       <div className="relative">
-        <button
+        <button 
           onClick={() => setAbertoSeletor(!abertoSeletor)}
           className={`flex items-center gap-3 px-4 h-11 rounded-xl transition-all duration-300 group
             ${abertoSeletor ? "bg-white dark:bg-white/10 shadow-md" : "hover:bg-white/40 dark:hover:bg-white/5"}
           `}
         >
-          <div className={`p-1.5 rounded-lg transition-colors ${abertoSeletor ? "bg-sky-500 text-white" : "bg-sky-500/10 text-sky-500"}`}>
-            <Cpu size={14} />
-          </div>
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
           <div className="flex flex-col items-start leading-tight">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-sky-500 transition-colors">Equipamento</span>
-            <span className="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]">
-              {impressoras.find(i => i.id === impressoraSelecionadaId)?.nome || "Selecionar..."}
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
+              {impressoraSelecionada?.nome || "Selecionar..."}
             </span>
+            {impressoraSelecionada && (
+              <span className="text-[7px] font-bold text-zinc-400 uppercase opacity-60">
+                {impressoraSelecionada.marca} {impressoraSelecionada.modeloBase}
+              </span>
+            )}
           </div>
-          <ChevronDown size={14} className={`text-gray-400 transition-transform duration-300 ${abertoSeletor ? "rotate-180" : ""}`} />
+          <ChevronDown size={14} className={`text-zinc-400 group-hover:text-sky-500 transition-transform ${abertoSeletor ? "rotate-180" : ""}`} />
         </button>
 
         <AnimatePresence>
           {abertoSeletor && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 15, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden z-[100]"
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute top-full left-0 right-0 mt-2 p-2 rounded-2xl bg-white dark:bg-[#0c0c0e] border border-gray-100 dark:border-white/10 shadow-2xl z-[100] min-w-[200px]"
             >
-              <div className="p-2 space-y-1">
-                <div className="px-3 py-2">
-                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Suas Impressoras</span>
-                </div>
-                {impressoras.map(imp => (
-                  <button
+              <div className="space-y-1">
+                {impressoras.map((imp) => (
+                  <button 
                     key={imp.id}
                     onClick={() => {
                       setImpressoraSelecionadaId(imp.id);
@@ -254,7 +269,10 @@ export function PaginaCalculadora() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${imp.status === 'manutencao' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{imp.nome}</span>
+                      <div className="flex flex-col items-start leading-tight text-left">
+                        <span className="text-[10px] font-black uppercase tracking-widest">{imp.nome}</span>
+                        <span className="text-[7px] font-bold uppercase opacity-50">{imp.marca} {imp.modeloBase}</span>
+                      </div>
                     </div>
                     {impressoraSelecionadaId === imp.id && <Check size={14} />}
                   </button>
@@ -265,63 +283,14 @@ export function PaginaCalculadora() {
         </AnimatePresence>
       </div>
 
-      <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
-
-      <div className="flex items-center gap-1">
-        <label className="flex items-center justify-center w-11 h-11 rounded-xl hover:bg-white/40 dark:hover:bg-white/5 text-zinc-400 hover:text-sky-500 transition-all cursor-pointer group">
-          <Layers size={18} />
-          <input type="file" accept=".gcode,.3mf" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) analisarArquivo(file); }} />
-        </label>
-        <button onClick={() => setModalConfigAberto(true)} className="flex items-center justify-center w-11 h-11 rounded-xl hover:bg-white/40 dark:hover:bg-white/5 text-zinc-400 hover:text-amber-500 transition-all group">
-          <Settings size={18} />
-        </button>
-      </div>
+      <button onClick={() => setModalConfigAberto(true)} className="flex items-center justify-center w-11 h-11 rounded-xl hover:bg-white dark:hover:bg-white/10 text-zinc-400 hover:text-amber-500 transition-all active:scale-95">
+        <Settings size={18} />
+      </button>
     </div>
-  ), [abertoSeletor, impressoraSelecionadaId, impressoras, analisarArquivo]);
+  ), [abertoSeletor, impressoraSelecionadaId, impressoras, impressoraSelecionada]);
 
   usarDefinirCabecalho({ titulo: "Precificação Inteligente", subtitulo: "Engenharia de custos e rentabilidade", ocultarBusca: true, elementoAcao: elementoAcaoCalculadora });
 
-  useEffect(() => {
-    if (resultadoGCode) {
-      const { tempoEstimadoMinutos, pesoEstimadoGramas, fatiadorDetectado } = resultadoGCode;
-      
-      setTempo(tempoEstimadoMinutos);
-      
-      if (materiaisSelecionados.length > 0) {
-        setMateriaisSelecionados(prev => prev.map((m, idx) => idx === 0 ? { ...m, quantidade: pesoEstimadoGramas } : m));
-      } else if (pesoEstimadoGramas > 0) {
-        if (materiais.length > 0) {
-          // Seleciona o primeiro do armazém
-          const m = materiais[0];
-          setMateriaisSelecionados([{
-            id: m.id,
-            nome: m.nome,
-            cor: m.cor,
-            tipo: m.tipo as any,
-            quantidade: pesoEstimadoGramas,
-            precoKgCentavos: Math.round((m.precoCentavos / m.pesoGramas) * 1000)
-          }]);
-        } else {
-          // Se armazém vazio, cria um genérico para não travar o fluxo
-          setMateriaisSelecionados([{
-            id: 'generico-pla',
-            nome: 'Material Genérico (PLA)',
-            cor: '#ffffff',
-            tipo: 'FDM',
-            quantidade: pesoEstimadoGramas,
-            precoKgCentavos: 12000 // R$ 120/kg padrão
-          }]);
-        }
-      }
-      
-      if (tempoEstimadoMinutos > 0 || pesoEstimadoGramas > 0) {
-        const infoMulti = resultadoGCode.isMultifilamento ? " | Multifilamento" : "";
-        toast.success(`Análise concluída: ${fatiadorDetectado} (${Math.floor(tempoEstimadoMinutos/60)}h ${tempoEstimadoMinutos%60}m | ${pesoEstimadoGramas}g${infoMulti})`);
-      } else {
-        toast.error("Arquivo processado, mas nenhum metadado de tempo/peso foi encontrado.");
-      }
-    }
-  }, [resultadoGCode, materiais]);
 
   const calculo = useMemo(() => {
     const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => acc + (m.quantidade / 1000) * m.precoKgCentavos, 0);
@@ -351,11 +320,26 @@ export function PaginaCalculadora() {
     const impostoPercentual = (impostos + icms + iss + ipi) / 100;
     const taxaFixaVendaCentavos = Math.round((perfisMarketplace.find((p: any) => p.nome === perfilAtivo)?.fixa || 0) * 100);
 
-    // PV = (Custo + TaxaFixa + Frete) / (1 - %Margem - %Taxa - %Imposto)
+    const custoTotalVariavelCentavos = 
+      custoMaterialTotalCentavos + 
+      custoEnergiaCentavos + 
+      custoDepreciacaoCentavos + 
+      custoPosProcessoCentavos + 
+      custoInsumosDinamicosCentavos + 
+      custoInsumosFixosCentavos;
+
     const denominador = 1 - margemPercentual - taxaMktPercentual - impostoPercentual;
+
     const precoSugeridoCentavos = denominador > 0.05 
       ? Math.round((custoProducaoTotalCentavos + taxaFixaVendaCentavos + custoFreteCentavos) / denominador)
-      : Math.round(custoProducaoTotalCentavos * (1 + margemPercentual) * 2); // Fallback se a margem for impossível
+      : Math.round(custoProducaoTotalCentavos * (1 + margemPercentual) * 2);
+
+    const taxaMktTotalCentavos = Math.round(precoSugeridoCentavos * taxaMktPercentual + taxaFixaVendaCentavos);
+    const impostoTotalCentavos = Math.round(precoSugeridoCentavos * impostoPercentual);
+    
+    // Lucro Líquido = PV - Taxas - Impostos - Frete - Custos (exceto Mão de Obra, que é seu 'salário')
+    // Se quiser considerar Mão de Obra como custo rígido, subtraímos também.
+    const lucroLiquidoCentavos = precoSugeridoCentavos - taxaMktTotalCentavos - impostoTotalCentavos - custoFreteCentavos - custoTotalVariavelCentavos - custoMaoDeObraCentavos;
 
     return {
       custoMaterial: Math.round(custoMaterialTotalCentavos),
@@ -364,13 +348,41 @@ export function PaginaCalculadora() {
       custoDepreciacao: custoDepreciacaoCentavos,
       custoPosProcesso: custoPosProcessoCentavos,
       custoInsumos: custoInsumosDinamicosCentavos + custoInsumosFixosCentavos,
-      taxaMarketplace: Math.round(precoSugeridoCentavos * taxaMktPercentual + taxaFixaVendaCentavos),
-      impostoVenda: Math.round(precoSugeridoCentavos * impostoPercentual),
-      precoSugerido: precoSugeridoCentavos
+      taxaMarketplace: taxaMktTotalCentavos,
+      impostoVenda: impostoTotalCentavos,
+      precoSugerido: precoSugeridoCentavos,
+      lucroLiquido: lucroLiquidoCentavos,
+      margemReal: precoSugeridoCentavos > 0 ? (lucroLiquidoCentavos / precoSugeridoCentavos) * 100 : 0
     };
   }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, itensPosProcesso, insumos, frete, perfilAtivo, perfisMarketplace, impostos, icms, iss, ipi]);
 
   const materiaisFiltrados = useMemo(() => materiais.filter(m => m.nome.toLowerCase().includes(buscaMaterial.toLowerCase())), [materiais, buscaMaterial]);
+  
+  const salvarComoProjeto = async () => {
+    try {
+      const descricaoPadrao = materiaisSelecionados.length > 0 
+        ? `Impressão: ${materiaisSelecionados.map(m => m.nome).join(", ")}`
+        : "Novo Projeto (via Calculadora)";
+
+      const novoPedido = await criarPedido({
+        idCliente: "ORCAMENTO_DIRETO",
+        descricao: descricaoPadrao,
+        valorCentavos: calculo.precoSugerido,
+        material: materiaisSelecionados.map(m => m.nome).join(", "),
+        pesoGramas: materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0),
+        tempoMinutos: tempo,
+        idImpressora: impressoraSelecionadaId || undefined,
+        observacoes: `Gerado via calculadora em ${new Date().toLocaleDateString('pt-BR')}.`
+      });
+
+      if (novoPedido) {
+        toast.success("Orçamento salvo como projeto!");
+        navigate("/producao/projetos");
+      }
+    } catch (erro) {
+      console.error("Erro ao salvar projeto:", erro);
+    }
+  };
   
   const insumosFiltrados = useMemo(() => {
     return insumosEstoque.filter(i => 
@@ -544,49 +556,11 @@ export function PaginaCalculadora() {
 
         {/* 2. PRODUÇÃO E G-CODE */}
         <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-          <div className="flex items-center justify-between gap-4 pb-4 border-b border-gray-50 dark:border-white/5">
-            <div className="flex items-center gap-3">
-              <Zap size={18} className="text-amber-500" />
-              <h3 className="text-xs font-black uppercase tracking-widest">Produção e G-Code</h3>
-            </div>
-            {analisando && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black animate-pulse">
-                <Activity size={12} />
-                ANALISANDO ARQUIVO...
-              </div>
-            )}
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
+            <Zap size={18} className="text-amber-500" />
+            <h3 className="text-xs font-black uppercase tracking-widest">Produção</h3>
           </div>
 
-          {/* DROPZONE G-CODE */}
-          <label 
-            className={`relative group border-2 border-dashed rounded-2xl p-8 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer ${analisando ? "border-amber-500/50 bg-amber-500/5" : "border-gray-100 dark:border-white/5 hover:border-amber-500/30 hover:bg-amber-500/5"}`}
-            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onDrop={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const arquivo = e.dataTransfer.files[0];
-              if (arquivo) analisarArquivo(arquivo);
-            }}
-          >
-            <input 
-              type="file" 
-              accept=".gcode,.3mf" 
-              className="hidden" 
-              onChange={(e) => {
-                const arquivo = e.target.files?.[0];
-                if (arquivo) analisarArquivo(arquivo);
-              }}
-            />
-            <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-              <UploadCloud size={24} />
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] font-black uppercase tracking-wider mb-1">
-                {analisando ? "Analisando..." : "Arraste seu arquivo aqui"}
-              </p>
-              <p className="text-[9px] text-gray-500 font-bold uppercase">G-Code ou 3MF (Bambu/Prusa)</p>
-            </div>
-          </label>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
@@ -601,9 +575,21 @@ export function PaginaCalculadora() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-gray-400 mb-1.5">Consumo (W)</label>
-                  <input type="number" placeholder="0" value={potencia || ""} onChange={(e) => setPotencia(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+                {/* CUSTO ENERGIA CALCULADO */}
+                <div className="space-y-1.5 group">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[10px] font-black uppercase text-gray-400">Energia (R$)</label>
+                    <div className="px-2 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/20 text-[9px] font-black text-orange-500 uppercase">
+                      {potencia}W Ativos
+                    </div>
+                  </div>
+                  <div className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center border border-transparent group-hover:border-orange-500/30 transition-all">
+                    <span className="text-gray-400 font-black text-xs mr-2">R$</span>
+                    <span className="font-black text-sm text-gray-900 dark:text-white">
+                      {custoEnergiaCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <p className="text-[8px] text-gray-500 font-medium uppercase tracking-tighter">Custo total para o tempo informado</p>
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase text-gray-400 mb-1.5">kWh (R$)</label>
@@ -646,35 +632,41 @@ export function PaginaCalculadora() {
           </div>
         </div>
 
-        {/* 3. VALORIZAÇÃO E DEPRECIAÇÃO */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-6">
+        {/* MOTORES OPERACIONAIS (LADO A LADO) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* 3. MÃO DE OBRA */}
+          <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
               <DollarSign size={18} className="text-emerald-500" />
               <h3 className="text-xs font-black uppercase tracking-widest">Mão de Obra</h3>
             </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase text-gray-400 mb-2">Valor da Hora (R$/h)</label>
-              <input type="number" value={maoDeObra} onChange={(e) => setMaoDeObra(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-[10px] font-black uppercase text-gray-400">Margem de Lucro</label>
-                <span className="text-xs font-black text-sky-500">{margem}%</span>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2">Valor da Hora (R$/h)</label>
+                <input type="number" value={maoDeObra} onChange={(e) => setMaoDeObra(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-emerald-500/30 outline-none font-black text-sm transition-all" />
               </div>
-              <input type="range" min="0" max="500" step="10" value={margem} onChange={(e) => setMargem(Number(e.target.value))} className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-lg appearance-none cursor-pointer accent-sky-500" />
+              <div className="pb-2">
+                <div className="flex justify-between mb-3">
+                  <label className="text-[10px] font-black uppercase text-gray-400">Margem de Lucro</label>
+                  <span className="text-xs font-black text-sky-500">{margem}%</span>
+                </div>
+                <input type="range" min="0" max="500" step="10" value={margem} onChange={(e) => setMargem(Number(e.target.value))} className="w-full h-2 bg-gray-100 dark:bg-white/5 rounded-lg appearance-none cursor-pointer accent-sky-500" />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-6">
+          {/* 4. CUSTOS INVISÍVEIS */}
+          <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
               <Activity size={18} className="text-rose-500" />
               <h3 className="text-xs font-black uppercase tracking-widest">Custos Invisíveis</h3>
             </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase text-gray-400 mb-2" title="Custo de desgaste da máquina por hora">Depreciação de Máquina (R$/h)</label>
-              <input type="number" placeholder="0" value={depreciacaoHora || ""} onChange={(e) => setDepreciacaoHora(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
-              <p className="text-[8px] text-gray-500 uppercase mt-2 font-bold tracking-wider">Considera manutenção e vida útil do equipamento</p>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2" title="Custo de desgaste da máquina por hora">Depreciação de Máquina (R$/h)</label>
+                <input type="number" placeholder="0" value={depreciacaoHora || ""} onChange={(e) => setDepreciacaoHora(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-rose-500/30 outline-none font-black text-sm transition-all" />
+                <p className="text-[8px] text-gray-500 uppercase mt-2 font-bold tracking-wider">Considera manutenção e vida útil do equipamento</p>
+              </div>
             </div>
           </div>
         </div>
@@ -907,62 +899,91 @@ export function PaginaCalculadora() {
               </div>
             </div>
             
-            <div className="space-y-3 w-full pt-8 border-t border-white/5 text-left relative">
-
+            <div className="space-y-4 w-full pt-8 border-t border-white/5 text-left relative">
               <AnimatePresence>
                 {[
                   { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400' },
-                  { label: 'Energia', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
-                  { label: 'Mão de Obra', valor: calculo.custoMaoDeObra, icone: Timer, cor: 'text-indigo-400' },
-                  { label: 'Desgaste/Depr', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-rose-400' },
-                  { label: 'Insumos/Emb', valor: calculo.custoInsumos, icone: Package, cor: 'text-indigo-500' },
-                  { label: 'Taxas/Market', valor: calculo.taxaMarketplace + (Math.round(frete * 100)), icone: DollarSign, cor: 'text-rose-500' },
+                  { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
+                  { label: 'Mão de Obra', valor: calculo.custoMaoDeObra, icone: Timer, cor: 'text-emerald-400' },
+                  { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-rose-400' },
+                  { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-violet-400' },
+                  { label: 'Taxas & Impostos', valor: calculo.taxaMarketplace + calculo.impostoVenda, icone: DollarSign, cor: 'text-zinc-400' },
+                  { label: 'Frete/Logística', valor: Math.round(frete * 100), icone: Truck, cor: 'text-orange-400' },
                 ].filter(i => i.valor > 0).map((item) => (
                   <motion.div 
                     key={item.label}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    className="flex justify-between items-center group py-1"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="flex justify-between items-center group"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 group-hover:bg-white/10 transition-colors"><item.icone size={12} className={item.cor} /></div>
-                      <span className="text-[9px] font-black uppercase text-gray-500">{item.label}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:bg-white/10 transition-colors shadow-inner">
+                        <item.icone size={14} className={item.cor} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">{item.label}</span>
                     </div>
                     <span className="text-xs font-black text-white">{centavosParaReais(item.valor)}</span>
                   </motion.div>
                 ))}
               </AnimatePresence>
-              
-              <div className="pt-6 mt-6 border-t border-white/5 flex justify-between items-center bg-emerald-500/5 -mx-8 px-8 py-5">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck size={12} className="text-emerald-500" />
-                    <span className="text-[8px] font-black uppercase text-emerald-500/60">Lucro Líquido</span>
+            </div>
+
+            <div className="h-px bg-zinc-800/50 my-8 w-full" />
+
+            <div className="flex items-center justify-between p-6 bg-emerald-500/5 rounded-[2rem] border border-emerald-500/10 w-full">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 text-emerald-500 mb-1.5">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                    <ShieldCheck size={16} />
                   </div>
-                  <span className="text-[7px] text-zinc-500 uppercase mt-0.5">Estimado após taxas</span>
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em]">Lucro Líquido</span>
                 </div>
-                <span className="text-xl font-black text-emerald-400">
-                  {centavosParaReais(calculo.precoSugerido - (calculo.taxaMarketplace + (Math.round(frete * 100)) + calculo.custoDepreciacao + calculo.custoPosProcesso + calculo.custoInsumos + calculo.custoMaterial + calculo.custoEnergia + calculo.custoMaoDeObra))}
+                <div className="flex items-center gap-2 ml-1">
+                  <span className="text-[8px] text-zinc-500 uppercase font-bold tracking-widest">Margem Real:</span>
+                  <span className="text-[9px] font-black text-emerald-500/80">{calculo.margemReal.toFixed(1)}%</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-3xl font-black text-emerald-500 block tracking-tighter leading-none">
+                  {centavosParaReais(calculo.lucroLiquido)}
                 </span>
+                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mt-1 block">Saldo Livre</span>
               </div>
             </div>
 
-            <button 
-              onClick={() => { 
-                setGerandoPdf(true);
-                setTimeout(() => {
-                  window.print();
-                  setGerandoPdf(false);
-                  toast.success("Orçamento gerado para impressão!");
-                }, 500);
-              }} 
-              className="mt-6 w-full h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-3 bg-white hover:bg-sky-400 text-black transition-all active:scale-95 shadow-xl disabled:opacity-20" 
-              disabled={!impressoraSelecionadaId || gerandoPdf}
-            >
-              {gerandoPdf ? <Activity className="animate-spin" size={14} /> : <Download size={14} strokeWidth={3} />}
-              {gerandoPdf ? "Processando..." : "Gerar Orçamento PDF"}
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 w-full">
+              <button 
+                onClick={salvarComoProjeto}
+                className="h-14 font-black uppercase tracking-[0.1em] text-[11px] rounded-2xl flex flex-col items-center justify-center gap-1 bg-sky-500 text-white hover:bg-sky-600 transition-all active:scale-95 shadow-[0_10px_20px_-5px_rgba(14,165,233,0.3)] disabled:opacity-20 disabled:shadow-none"
+                disabled={calculo.precoSugerido <= 0}
+              >
+                <div className="flex items-center gap-2">
+                  <FolderKanban size={14} />
+                  <span>Salvar Projeto</span>
+                </div>
+                <span className="text-[7px] opacity-60">Enviar para o Kanban</span>
+              </button>
+
+              <button 
+                onClick={() => { 
+                  setGerandoPdf(true);
+                  setTimeout(() => {
+                    window.print();
+                    setGerandoPdf(false);
+                    toast.success("Orçamento gerado para impressão!");
+                  }, 500);
+                }} 
+                className="h-14 font-black uppercase tracking-[0.1em] text-[11px] rounded-2xl flex flex-col items-center justify-center gap-1 bg-white dark:bg-zinc-800 text-black dark:text-white border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-sm disabled:opacity-20" 
+                disabled={!impressoraSelecionadaId || gerandoPdf}
+              >
+                <div className="flex items-center gap-2">
+                  {gerandoPdf ? <Activity className="animate-spin" size={14} /> : <Download size={14} strokeWidth={3} />}
+                  <span>{gerandoPdf ? "Processando..." : "Gerar PDF"}</span>
+                </div>
+                <span className="text-[7px] opacity-50 lowercase italic">Imprimir orçamento</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

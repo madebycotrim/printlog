@@ -7,7 +7,6 @@ interface InterfaceTopico {
     conteudo: string;
     nivel: string;
     atualizado: string;
-    gcode?: string;
     categoria?: string;
     cor?: string;
     level?: string;
