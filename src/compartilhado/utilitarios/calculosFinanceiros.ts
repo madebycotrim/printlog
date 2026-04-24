@@ -19,6 +19,7 @@ interface ParametrosCusto {
   custoFreteCentavos?: Centavos;
   taxaEcommercePercentual?: number; // Ex: 0.18 para 18%
   taxaFixaVendaCentavos?: Centavos;
+  taxaImpostoPercentual?: number; // Ex: 0.06 para 6%
 }
 
 interface DetalhamentoCusto {
@@ -27,8 +28,9 @@ interface DetalhamentoCusto {
   custoMaoDeObra: Centavos;
   custoInsumos: Centavos;
   custoOperacional: Centavos; // Soma da produção
-  custoTotalReal: Centavos;     // Produção + Insumos + Frete + Taxas Fixas
+  custoTotalReal: Centavos;     // Produção + Insumos + Frete + Taxas Fixas + Impostos
   taxaMarketplace: Centavos;  // Impacto da taxa % no preço final
+  valorImposto: Centavos;      // Valor nominal do imposto
   precoSugerido: Centavos;
 }
 
@@ -49,6 +51,7 @@ export function calcularCustoImpressao(params: ParametrosCusto): DetalhamentoCus
     custoFreteCentavos = 0,
     taxaEcommercePercentual = 0,
     taxaFixaVendaCentavos = 0,
+    taxaImpostoPercentual = 0,
   } = params;
 
   // 1. Custo de Material: (g / 1000) * preco_kg
@@ -66,14 +69,16 @@ export function calcularCustoImpressao(params: ParametrosCusto): DetalhamentoCus
   // Aplicamos a margem sobre o que o maker efetivamente "fabrica"
   const baseLucro = (custoOperacional + custoInsumosCentavos) * (1 + taxaLucro);
 
-  // 5. Cálculo do Preço Final Revendo Taxas (Pell-formula para E-commerce)
-  // Preço Final = (BaseLucro + Frete + TaxaFixa) / (1 - Taxa%)
+  // 5. Cálculo do Preço Final Revendo Taxas (Pell-formula para E-commerce + Impostos)
+  // Preço Final = (BaseLucro + Frete + TaxaFixa) / (1 - Taxa% - Imposto%)
+  const divisor = 1 - taxaEcommercePercentual - taxaImpostoPercentual;
   const precoSugerido = Math.round(
-    (baseLucro + custoFreteCentavos + taxaFixaVendaCentavos) / (1 - taxaEcommercePercentual)
+    (baseLucro + custoFreteCentavos + taxaFixaVendaCentavos) / (divisor > 0 ? divisor : 0.01)
   );
 
   const taxaMarketplace = Math.round(precoSugerido * taxaEcommercePercentual) + taxaFixaVendaCentavos;
-  const custoTotalReal = custoOperacional + custoInsumosCentavos + custoFreteCentavos + taxaMarketplace;
+  const valorImposto = Math.round(precoSugerido * taxaImpostoPercentual);
+  const custoTotalReal = custoOperacional + custoInsumosCentavos + custoFreteCentavos + taxaMarketplace + valorImposto;
 
   return {
     custoMaterial,

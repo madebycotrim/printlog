@@ -32,6 +32,9 @@ import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { FormularioInsumo } from "@/funcionalidades/producao/insumos/componentes/FormularioInsumo";
+import { usarGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/usarGerenciadorInsumos";
 
 interface MaterialSelecionado {
   id: string;
@@ -56,6 +59,14 @@ export function PaginaCalculadora() {
   const [taxaFixa, setTaxaFixa] = useState<number>(3); // R$ 3,00 padrão
   const [frete, setFrete] = useState<number>(0);
   const [insumos, setInsumos] = useState<number>(5.50); // Caixa + Plástico bolha
+  const [tipoOperacao, setTipoOperacao] = useState<'produto' | 'servico' | 'industrializacao' | 'mei'>('produto');
+  const [icms, setIcms] = useState(0);
+  const [iss, setIss] = useState(0);
+  const [ipi, setIpi] = useState(0);
+  const [impostos, setImpostos] = useState<number>(() => {
+    const salvo = localStorage.getItem("printlog_config_impostos");
+    return salvo ? Number(salvo) : 6; // 6% padrão Simples Nacional
+  });
   
   // 💾 MEMÓRIA DO EQUIPAMENTO
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
@@ -65,10 +76,34 @@ export function PaginaCalculadora() {
   const [abertoSeletor, setAbertoSeletor] = useState(false);
   const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
+  const [modalPerfisAberto, setModalPerfisAberto] = useState(false);
+  const [insumosSelecionados, setInsumosSelecionados] = useState<any[]>([]);
   const [buscaModalArmazem, setBuscaModalArmazem] = useState("");
+  const [buscaMaterial, setBuscaMaterial] = useState("");
+
+  // 🏪 PERFIS DE MARKETPLACE DINÂMICOS
+  const [perfisMarketplace, setPerfisMarketplace] = useState(() => {
+    const salvo = localStorage.getItem("printlog_perfis_marketplace");
+    if (salvo) return JSON.parse(salvo);
+    return [
+      { nome: "Direto", taxa: 0, fixa: 0, ins: 0, imp: 6 },
+      { nome: "M. Livre", taxa: 18, fixa: 6, ins: 2, imp: 6 },
+      { nome: "Shopee", taxa: 20, fixa: 3, ins: 1.5, imp: 6 },
+      { nome: "Site", taxa: 5, fixa: 0, ins: 5, imp: 6 },
+    ];
+  });
 
   const { materiais } = usarArmazemMateriais(useShallow(s => ({ materiais: s.materiais })));
+  const { insumos: insumosEstoque, abrirEditar: abrirCriarInsumo, modalCricaoAberto: modalInsumoAberto, fecharEditar: fecharInsumoAberto, insumoEditando, adicionarOuAtualizarInsumo } = usarArmazemInsumos(useShallow(s => ({ 
+    insumos: s.insumos, 
+    abrirEditar: s.abrirEditar,
+    modalCricaoAberto: s.modalCricaoAberto,
+    fecharEditar: s.fecharEditar,
+    insumoEditando: s.insumoEditando,
+    adicionarOuAtualizarInsumo: s.adicionarOuAtualizarInsumo
+  })));
   const { estado: { impressoras = [] } = {} } = usarGerenciadorImpressoras();
+  usarGerenciadorInsumos(); // Garante carga inicial
   
   // 🔥 SINCRONIZAÇÃO AUTOMÁTICA E MODAIS
   const { estado: estadoMateriais, acoes: acoesMateriais } = usarGerenciadorMateriais(); 
@@ -116,6 +151,19 @@ export function PaginaCalculadora() {
     setMateriaisSelecionados(prev => prev.filter(m => m.id !== id));
   };
 
+  const alternarInsumo = (insumo: any) => {
+    const existe = insumosSelecionados.find(i => i.id === insumo.id);
+    if (existe) {
+      setInsumosSelecionados(prev => prev.filter(i => i.id !== insumo.id));
+    } else {
+      setInsumosSelecionados(prev => [...prev, {
+        id: insumo.id,
+        nome: insumo.nome,
+        custoCentavos: insumo.custoMedioUnidade // Já em centavos (padrão do sistema)
+      }]);
+    }
+  };
+
   const elementoAcaoCalculadora = useMemo(() => (
     <div className="flex items-center gap-1 bg-gray-50 dark:bg-white/5 p-1 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
       <div className="relative">
@@ -145,7 +193,7 @@ export function PaginaCalculadora() {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 15, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-[#121214]/95 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden z-[100]"
+              className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden z-[100]"
             >
               <div className="p-2 space-y-1">
                 <div className="px-3 py-2">
@@ -164,7 +212,6 @@ export function PaginaCalculadora() {
                         localStorage.setItem("printlog_ultima_impressora", imp.id);
                         setAbertoSeletor(false);
                         
-                        // Atualizar parâmetros técnicos da máquina se existirem
                         if (imp.potenciaWatts) setPotencia(imp.potenciaWatts);
                       }}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all group
@@ -217,17 +264,15 @@ export function PaginaCalculadora() {
   ), [abertoSeletor, impressoraSelecionadaId, impressoras, analisarArquivo]);
 
   usarDefinirCabecalho({
-    titulo: "Calculadora Pro",
-    subtitulo: "Engenharia de custos para estúdios 3D",
+    titulo: "Precificação Inteligente",
+    subtitulo: "Engenharia de custos e rentabilidade para estúdios 3D",
     ocultarBusca: true,
     ocultarNotificacoes: true,
     elementoAcao: elementoAcaoCalculadora
   });
 
-  // Feedback visual e auto-preenchimento do G-Code
   useEffect(() => {
     if (resultado) {
-      // Se tiver G-Code, adiciona um material genérico ou preenche o primeiro selecionado
       if (materiaisSelecionados.length === 0) {
         setMateriaisSelecionados([{
           id: "gcode-auto",
@@ -248,17 +293,16 @@ export function PaginaCalculadora() {
     }
   }, [resultado]);
 
-  // Bloqueia o scroll do layout principal apenas em Desktop para usar o scroll interno
   useEffect(() => {
     const tratarLayout = () => {
       const elementoMain = document.querySelector('main');
       const containerInterno = document.querySelector('main > div');
       
       if (elementoMain && containerInterno) {
-        if (window.innerWidth >= 1280) { // breakpoint xl do tailwind
+        if (window.innerWidth >= 1280) {
           elementoMain.style.overflow = 'hidden';
-          elementoMain.style.height = 'calc(100vh - 96px)'; // h-24 do header
-          elementoMain.style.marginTop = '0px'; // Garante que comece APÓS o header
+          elementoMain.style.height = 'calc(100vh - 96px)';
+          elementoMain.style.marginTop = '0px';
           (containerInterno as HTMLElement).style.height = '100%';
           (containerInterno as HTMLElement).style.padding = '0';
         } else {
@@ -293,8 +337,8 @@ export function PaginaCalculadora() {
   const calculo = useMemo(() => {
     const pesoTotal = materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0);
     const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => acc + (m.quantidade / 1000) * m.precoKgCentavos, 0);
+    const custoInsumosDinamicosCentavos = insumosSelecionados.reduce((acc, i) => acc + i.custoCentavos, 0);
     
-    // Virtualizamos o preço KG para bater com o total
     const precoKgVirtualCentavos = pesoTotal > 0 ? (custoMaterialTotalCentavos / (pesoTotal / 1000)) : 0;
 
     return calcularCustoImpressao({
@@ -305,12 +349,13 @@ export function PaginaCalculadora() {
       precoKwhCentavos: Math.round(precoKwh * 100),
       taxaLucro: margem / 100,
       maoDeObraHoraCentavos: Math.round(maoDeObra * 100),
-      custoInsumosCentavos: Math.round(insumos * 100),
+      custoInsumosCentavos: Math.round(insumos * 100) + custoInsumosDinamicosCentavos,
       custoFreteCentavos: Math.round(frete * 100),
       taxaEcommercePercentual: taxaEcommerce / 100,
       taxaFixaVendaCentavos: Math.round(taxaFixa * 100),
+      taxaImpostoPercentual: (impostos + icms + iss + ipi) / 100,
     });
-  }, [materiaisSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, insumos, frete, taxaEcommerce, taxaFixa]);
+  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, insumos, frete, taxaEcommerce, taxaFixa, impostos, icms, iss, ipi]);
 
   useEffect(() => {
     if (impressoraSelecionadaId) {
@@ -318,8 +363,6 @@ export function PaginaCalculadora() {
       if (imp) setPotencia((imp.consumoKw ?? 0.1) * 1000);
     }
   }, [impressoraSelecionadaId, impressoras]);
-
-  const [buscaMaterial, setBuscaMaterial] = useState("");
 
   const materiaisFiltrados = useMemo(() => {
     return materiais.filter(m => 
@@ -339,18 +382,16 @@ export function PaginaCalculadora() {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 h-full xl:overflow-hidden relative px-6 md:px-12">
-      {/* COLUNA DE INPUTS */}
       <div className="xl:col-span-8 space-y-6 xl:h-full xl:overflow-y-auto pt-6 xl:pt-8 pb-32 scrollbar-hide animate-in fade-in slide-in-from-bottom-4 duration-700">
         
-        {/* ══════ SEÇÃO INTELIGENTE DE MATERIAIS ══════ */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+        {/* 1. MATERIAIS */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-50 dark:border-white/5">
             <div className="flex items-center gap-3">
               <Layers size={18} className="text-sky-500" />
               <h3 className="text-xs font-black uppercase tracking-widest">Materiais e Consumo</h3>
             </div>
             
-            {/* Busca de Materiais para lidar com grandes listas */}
             <div className="relative group">
               <input 
                 type="text"
@@ -363,7 +404,6 @@ export function PaginaCalculadora() {
             </div>
           </div>
 
-          {/* CARROSSEL DE SELEÇÃO */}
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
@@ -417,7 +457,6 @@ export function PaginaCalculadora() {
                     );
                   })}
                   
-                  {/* BOTÃO NOVO NO FINAL */}
                   <button 
                     onClick={() => acoesMateriais.abrirEditar(null as unknown as Material)}
                     className="flex-shrink-0 w-20 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-sky-500/50 hover:bg-sky-500/5 transition-all flex flex-col items-center justify-center gap-2 group"
@@ -429,7 +468,6 @@ export function PaginaCalculadora() {
                   </button>
                 </>
               ) : (
-                /* EXEMPLOS DE DEMONSTRAÇÃO SE ESTIVER VAZIO */
                 [
                   { id: 'ex1', nome: 'PLA Silk', tipo: 'FDM', cor: '#3b82f6', preco: 12000 },
                   { id: 'ex2', nome: 'Resina 4K', tipo: 'SLA', cor: '#a855f7', preco: 28000 },
@@ -450,7 +488,6 @@ export function PaginaCalculadora() {
             </div>
           </div>
 
-          {/* Lista de Consumo Detalhada */}
           <div className="space-y-4">
             <AnimatePresence mode="popLayout">
               {materiaisSelecionados.length === 0 ? (
@@ -521,9 +558,9 @@ export function PaginaCalculadora() {
           </div>
         </div>
 
-        {/* OUTROS PARÂMETROS */}
+        {/* 2. PRODUÇÃO */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-8 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+          <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
               <Timer size={18} className="text-sky-500" />
               <h3 className="text-xs font-black uppercase tracking-widest">Produção</h3>
@@ -576,10 +613,10 @@ export function PaginaCalculadora() {
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+          <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
               <DollarSign size={18} className="text-amber-500" />
-              <h3 className="text-xs font-black uppercase tracking-widest">Mão de Obra e Lucro</h3>
+              <h3 className="text-xs font-black uppercase tracking-widest">Valorização e Lucro</h3>
             </div>
             <div className="space-y-6">
               <div>
@@ -600,34 +637,101 @@ export function PaginaCalculadora() {
           </div>
         </div>
 
-        {/* LOGÍSTICA */}
-        <div className="p-8 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
-            <TrendingUp size={18} className="text-emerald-500" />
-            <h3 className="text-xs font-black uppercase tracking-widest">E-commerce & Logística</h3>
+        {/* 3. INSUMOS */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-white/5">
+            <div className="flex items-center gap-3">
+              <Box size={18} className="text-indigo-500" />
+              <h3 className="text-xs font-black uppercase tracking-widest">Insumos e Embalagens</h3>
+            </div>
+            {insumosSelecionados.length > 0 && (
+              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-lg">
+                {insumosSelecionados.length} selecionados
+              </span>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {[
-              { nome: "Direto", taxa: 0, fixa: 0, ins: 0 },
-              { nome: "M. Livre", taxa: 18, fixa: 6, ins: 2 },
-              { nome: "Shopee", taxa: 20, fixa: 3, ins: 1.5 },
-              { nome: "Site", taxa: 5, fixa: 0, ins: 5 },
-            ].map((p) => (
+
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            {insumosEstoque.filter(i => i.categoria === "Embalagem" || i.categoria === "Geral").map((insumo) => {
+              const selecionado = insumosSelecionados.find(i => i.id === insumo.id);
+              return (
+                <button
+                  key={insumo.id}
+                  onClick={() => alternarInsumo(insumo)}
+                  className={`flex-shrink-0 w-32 p-4 rounded-2xl border transition-all relative overflow-hidden group
+                    ${selecionado 
+                      ? "bg-indigo-500/10 border-indigo-500 shadow-lg shadow-indigo-500/10" 
+                      : "bg-gray-50 dark:bg-white/[0.02] border-transparent hover:border-gray-200 dark:hover:border-white/10"}
+                  `}
+                >
+                  <div className={`p-2 rounded-lg mb-3 inline-block transition-colors ${selecionado ? "bg-indigo-500 text-white" : "bg-white dark:bg-white/5 text-zinc-400"}`}>
+                    <Box size={16} />
+                  </div>
+                  <div className="text-left">
+                    <p className={`text-[10px] font-black uppercase truncate mb-1 ${selecionado ? "text-indigo-500" : "text-zinc-500"}`}>{insumo.nome}</p>
+                    <p className="text-[11px] font-black">{centavosParaReais(insumo.custoMedioUnidade)}</p>
+                  </div>
+                  {selecionado && (
+                    <div className="absolute top-2 right-2 w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center">
+                      <Check size={10} className="text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+            
+            <button 
+              onClick={() => abrirCriarInsumo()}
+              className="flex-shrink-0 w-32 p-4 rounded-2xl border-2 border-dashed border-gray-100 dark:border-white/5 flex flex-col items-center justify-center gap-2 hover:border-indigo-500/30 hover:bg-indigo-500/5 transition-all group"
+            >
+              <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-indigo-500 transition-colors">
+                <Plus size={20} />
+              </div>
+              <span className="text-[9px] font-black uppercase text-zinc-400 group-hover:text-indigo-500 transition-colors">Novo</span>
+            </button>
+          </div>
+
+          <div className="pt-4 border-t border-gray-50 dark:border-white/5">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Outros Custos Fixos (R$)</label>
+            <input 
+              type="number" 
+              value={insumos} 
+              onChange={(e) => setInsumos(Number(e.target.value))} 
+              className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" 
+            />
+          </div>
+        </div>
+
+        {/* 4. LOGÍSTICA */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
+            <Warehouse size={18} className="text-sky-500" />
+            <h3 className="text-xs font-black uppercase tracking-widest">Canal e Logística</h3>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {perfisMarketplace.map((p: any) => (
               <button
                 key={p.nome}
                 onClick={() => {
                   setTaxaEcommerce(p.taxa);
                   setTaxaFixa(p.fixa);
-                  setInsumos(p.ins);
+                  if (p.imp !== undefined) setImpostos(p.imp);
                 }}
                 className="px-3 py-1.5 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-sky-500/50 hover:bg-sky-500/5 transition-all text-[9px] font-black uppercase tracking-widest text-gray-500 hover:text-sky-500"
               >
                 {p.nome}
               </button>
             ))}
+            <button 
+              onClick={() => setModalPerfisAberto(true)}
+              className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-amber-500 transition-all group"
+            >
+              <Settings size={14} />
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Marketplace (%)</label>
               <input type="number" value={taxaEcommerce} onChange={(e) => setTaxaEcommerce(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
@@ -637,18 +741,76 @@ export function PaginaCalculadora() {
               <input type="number" value={taxaFixa} onChange={(e) => setTaxaFixa(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Insumos (R$)</label>
-              <input type="number" value={insumos} onChange={(e) => setInsumos(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
-            </div>
-            <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Frete (R$)</label>
               <input type="number" value={frete} onChange={(e) => setFrete(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
             </div>
           </div>
         </div>
+
+        {/* 5. FISCAL */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-white/5">
+            <div className="flex items-center gap-3">
+              <TrendingUp size={18} className="text-rose-500" />
+              <h3 className="text-xs font-black uppercase tracking-widest">Estrutura Fiscal</h3>
+            </div>
+            
+            <select 
+              value={tipoOperacao} 
+              onChange={(e) => {
+                const tipo = e.target.value as any;
+                setTipoOperacao(tipo);
+                if (tipo === 'mei') { setIcms(0); setIss(0); setIpi(0); setImpostos(0); }
+                else if (tipo === 'servico') { setIcms(0); setIpi(0); setIss(5); }
+                else if (tipo === 'produto') { setIss(0); setIpi(0); setIcms(18); }
+                else if (tipo === 'industrializacao') { setIss(0); setIcms(18); setIpi(5); }
+              }}
+              className="bg-gray-50 dark:bg-white/5 border-none outline-none text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg text-rose-500 cursor-pointer"
+            >
+              <option value="produto">Produto (ICMS)</option>
+              <option value="servico">Serviço (ISS)</option>
+              <option value="industrializacao">Indústria (IPI+ICMS)</option>
+              <option value="mei">MEI (DAS)</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {tipoOperacao !== 'mei' && (
+              <>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Simples/Base (%)</label>
+                  <input type="number" value={impostos} onChange={(e) => setImpostos(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+                </div>
+                {(tipoOperacao === 'produto' || tipoOperacao === 'industrializacao') && (
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">ICMS (%)</label>
+                    <input type="number" value={icms} onChange={(e) => setIcms(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+                  </div>
+                )}
+                {tipoOperacao === 'servico' && (
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">ISS (%)</label>
+                    <input type="number" value={iss} onChange={(e) => setIss(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+                  </div>
+                )}
+                {tipoOperacao === 'industrializacao' && (
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">IPI (%)</label>
+                    <input type="number" value={ipi} onChange={(e) => setIpi(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+                  </div>
+                )}
+              </>
+            )}
+            {tipoOperacao === 'mei' && (
+              <div className="col-span-4 p-4 rounded-xl bg-rose-500/5 border border-rose-500/10">
+                <p className="text-[10px] font-bold text-rose-500 uppercase leading-relaxed">MEI: DAS fixo mensal. Imposto por venda = 0.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* COLUNA DE RESULTADOS */}
+      {/* COLUNA RESULTADOS */}
       <div className="xl:col-span-4 h-full flex items-center justify-center pt-8 pb-8 scrollbar-hide animate-in fade-in duration-1000 overflow-y-auto">
         <div className="p-10 rounded-[2.5rem] bg-zinc-900 border border-white/5 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto">
           <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-sky-500/20 to-transparent blur-3xl" />
@@ -660,6 +822,7 @@ export function PaginaCalculadora() {
                 <span className="text-[9px] font-black text-sky-400 uppercase tracking-widest">Margem de {margem}%</span>
               </div>
             </div>
+            
             <div className="space-y-4 w-full pt-10 border-t border-white/5">
               <div className="flex justify-between items-center group">
                 <div className="flex items-center gap-3">
@@ -689,6 +852,7 @@ export function PaginaCalculadora() {
                 </div>
                 <span className="text-sm font-black text-rose-400">{centavosParaReais(calculo.taxaMarketplace + (Math.round(frete * 100)))}</span>
               </div>
+              
               <div className="pt-6 mt-6 border-t border-white/5 flex justify-between items-center bg-emerald-500/5 -mx-10 px-10 py-4">
                 <div className="flex flex-col text-left">
                   <span className="text-[9px] font-black uppercase text-emerald-500/60">Lucro Líquido</span>
@@ -699,22 +863,14 @@ export function PaginaCalculadora() {
                 </span>
               </div>
             </div>
+
             <button 
               onClick={() => {
-                if (!impressoraSelecionadaId) {
-                  toast.error("Selecione um equipamento antes de salvar!", {
-                    icon: "⚠️",
-                    style: { borderRadius: '12px', background: '#333', color: '#fff', fontSize: '12px', fontWeight: 'bold' }
-                  });
-                  setAbertoSeletor(true);
-                  return;
-                }
-                toast.success("Orçamento salvo com sucesso!");
+                if (!impressoraSelecionadaId) { toast.error("Selecione um equipamento!"); setAbertoSeletor(true); return; }
+                toast.success("Orçamento salvo!");
               }}
               className={`mt-8 w-full h-14 font-black uppercase tracking-widest text-xs rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl
-                ${!impressoraSelecionadaId 
-                  ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5" 
-                  : "bg-white hover:bg-sky-400 text-black"}
+                ${!impressoraSelecionadaId ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5" : "bg-white hover:bg-sky-400 text-black"}
               `}
             >
               <RefreshCcw size={16} strokeWidth={3} className={!impressoraSelecionadaId ? "opacity-20" : ""} />
@@ -723,7 +879,7 @@ export function PaginaCalculadora() {
           </div>
         </div>
       </div>
-      {/* 🏛️ MODAL DE GERENCIAMENTO DE ARMAZÉM */}
+
       <ModalListagemPremium
         aberto={modalArmazemAberto}
         aoFechar={() => setModalArmazemAberto(false)}
@@ -735,7 +891,7 @@ export function PaginaCalculadora() {
         placeholderBusca="BUSCAR NO ESTOQUE..."
         temResultados={materiaisModalFiltrados.length > 0}
         totalResultados={materiaisModalFiltrados.length}
-        mensagemVazio="Nenhum material encontrado no seu armazém."
+        mensagemVazio="Nenhum material encontrado."
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {materiaisModalFiltrados.map((m) => {
@@ -745,29 +901,19 @@ export function PaginaCalculadora() {
                 key={m.id}
                 onClick={() => alternarMaterial(m.id)}
                 className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left relative group
-                  ${selecionado 
-                    ? "border-sky-500 bg-sky-500/5 shadow-[0_4px_12px_rgba(14,165,233,0.1)]" 
-                    : "border-gray-50 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] hover:border-sky-500/30"}
+                  ${selecionado ? "border-sky-500 bg-sky-500/5" : "border-gray-50 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] hover:border-sky-500/30"}
                 `}
               >
-                {m.tipo === "FDM" ? (
-                  <Carretel cor={m.cor} tamanho={48} />
-                ) : (
-                  <GarrafaResina cor={m.cor} tamanho={48} />
-                )}
-                
+                {m.tipo === "FDM" ? <Carretel cor={m.cor} tamanho={48} /> : <GarrafaResina cor={m.cor} tamanho={48} />}
                 <div className="flex-1 overflow-hidden">
-                  <h4 className="text-[11px] font-black uppercase truncate leading-tight">{m.nome}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[8px] font-bold text-gray-400 uppercase">{m.tipoMaterial}</span>
-                    <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-white/10" />
-                    <span className="text-[8px] font-black text-sky-500">
-                      {centavosParaReais(Math.round((m.precoCentavos / m.pesoGramas) * 1000))}/kg
-                    </span>
+                  <h4 className="text-[11px] font-black uppercase truncate">{m.nome}</h4>
+                  <div className="flex items-center gap-2 mt-1 text-[8px] font-bold text-gray-400 uppercase">
+                    <span>{m.tipoMaterial}</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-300" />
+                    <span className="text-sky-500">{centavosParaReais(Math.round((m.precoCentavos / m.pesoGramas) * 1000))}/kg</span>
                   </div>
                 </div>
-
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selecionado ? "bg-sky-500 text-white" : "bg-gray-100 dark:bg-white/5 text-transparent"}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${selecionado ? "bg-sky-500 text-white" : "bg-gray-100 dark:bg-white/5 text-transparent"}`}>
                   <Check className="w-3.5 h-3.5" />
                 </div>
               </button>
@@ -776,100 +922,73 @@ export function PaginaCalculadora() {
         </div>
       </ModalListagemPremium>
 
-      {/* 📝 FORMULÁRIO DE NOVO MATERIAL */}
       <FormularioMaterial
         aberto={estadoMateriais.modalAberto}
         aoSalvar={acoesMateriais.salvarMaterial}
         aoCancelar={acoesMateriais.fecharEditar}
         materialEditando={estadoMateriais.materialSendoEditado}
       />
-      {/* ⚙️ MODAL DE CONFIGURAÇÕES GLOBAIS */}
-      <Dialogo
-        aberto={modalConfigAberto}
-        aoFechar={() => setModalConfigAberto(false)}
-        titulo="Configurações da Calculadora"
-        larguraMax="max-w-md"
-      >
+
+      <Dialogo aberto={modalConfigAberto} aoFechar={() => setModalConfigAberto(false)} titulo="Configurações" larguraMax="max-w-md">
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500"><DollarSign size={16} /></div>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Financeiro Padrão</h4>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Mão de Obra (R$/h)</label>
-                  <input 
-                    type="number" 
-                    value={maoDeObra} 
-                    onChange={(e) => setMaoDeObra(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-amber-500/30 outline-none font-black text-xs" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Energia (R$/kWh)</label>
-                  <input 
-                    type="number" 
-                    value={precoKwh} 
-                    onChange={(e) => setPrecoKwh(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-amber-500/30 outline-none font-black text-xs" 
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[9px] font-black uppercase text-zinc-500 mb-1.5">Mão de Obra (R$/h)</label>
+              <input type="number" value={maoDeObra} onChange={(e) => setMaoDeObra(Number(e.target.value))} className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-white/5 border-transparent focus:border-amber-500/30 outline-none font-black text-xs" />
             </div>
-
-            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500"><TrendingUp size={16} /></div>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Comercial & Vendas</h4>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Margem Padrão (%)</label>
-                  <input 
-                    type="number" 
-                    value={margem} 
-                    onChange={(e) => setMargem(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-emerald-500/30 outline-none font-black text-xs" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Insumos Fixos (R$)</label>
-                  <input 
-                    type="number" 
-                    value={insumos} 
-                    onChange={(e) => setInsumos(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-emerald-500/30 outline-none font-black text-xs" 
-                  />
-                </div>
-              </div>
+            <div>
+              <label className="block text-[9px] font-black uppercase text-zinc-500 mb-1.5">Energia (R$/kWh)</label>
+              <input type="number" value={precoKwh} onChange={(e) => setPrecoKwh(Number(e.target.value))} className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-white/5 border-transparent focus:border-amber-500/30 outline-none font-black text-xs" />
             </div>
           </div>
-
-          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-            <p className="text-[9px] font-medium text-amber-500/80 leading-relaxed italic">
-              * Valores salvos localmente e aplicados em tempo real.
-            </p>
-          </div>
-
-          <button 
-            onClick={() => {
-              localStorage.setItem("printlog_config_maodeobra", String(maoDeObra));
-              localStorage.setItem("printlog_config_kwh", String(precoKwh));
-              localStorage.setItem("printlog_config_margem", String(margem));
-              localStorage.setItem("printlog_config_insumos", String(insumos));
-              setModalConfigAberto(false);
-              toast.success("Configurações salvas!");
-            }}
-            className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-xl transition-all shadow-lg active:scale-95"
-          >
-            Salvar Preferências
-          </button>
+          <button onClick={() => {
+            localStorage.setItem("printlog_config_maodeobra", String(maoDeObra));
+            localStorage.setItem("printlog_config_kwh", String(precoKwh));
+            setModalConfigAberto(false);
+            toast.success("Salvo!");
+          }} className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase text-[10px] rounded-xl shadow-lg">Salvar</button>
         </div>
       </Dialogo>
+
+      <Dialogo aberto={modalPerfisAberto} aoFechar={() => setModalPerfisAberto(false)} titulo="Perfis de Venda" larguraMax="max-w-xl">
+        <div className="p-6 space-y-6">
+          <div className="space-y-3">
+            {perfisMarketplace.map((p: any, idx: number) => (
+              <div key={idx} className="grid grid-cols-[1fr_70px_70px_70px_70px_40px] gap-2 items-center">
+                <input type="text" value={p.nome} onChange={(e) => { const n = [...perfisMarketplace]; n[idx].nome = e.target.value; setPerfisMarketplace(n); }} className="w-full h-9 px-3 rounded-xl bg-white dark:bg-white/5 border-transparent focus:border-sky-500/30 outline-none font-black text-[10px] uppercase" />
+                <input type="number" value={p.taxa} onChange={(e) => { const n = [...perfisMarketplace]; n[idx].taxa = Number(e.target.value); setPerfisMarketplace(n); }} className="w-full h-9 rounded-xl bg-white dark:bg-white/5 border-transparent focus:border-sky-500/30 outline-none font-bold text-center text-xs" />
+                <input type="number" value={p.fixa} onChange={(e) => { const n = [...perfisMarketplace]; n[idx].fixa = Number(e.target.value); setPerfisMarketplace(n); }} className="w-full h-9 rounded-xl bg-white dark:bg-white/5 border-transparent focus:border-sky-500/30 outline-none font-bold text-center text-xs" />
+                <input type="number" value={p.ins} onChange={(e) => { const n = [...perfisMarketplace]; n[idx].ins = Number(e.target.value); setPerfisMarketplace(n); }} className="w-full h-9 rounded-xl bg-white dark:bg-white/5 border-transparent focus:border-sky-500/30 outline-none font-bold text-center text-xs" />
+                <input type="number" value={p.imp || 0} onChange={(e) => { const n = [...perfisMarketplace]; n[idx].imp = Number(e.target.value); setPerfisMarketplace(n); }} className="w-full h-9 rounded-xl bg-white dark:bg-white/5 border-transparent focus:border-sky-500/30 outline-none font-bold text-center text-xs" />
+                <button onClick={() => setPerfisMarketplace(perfisMarketplace.filter((_:any, i:number) => i !== idx))} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-rose-500/10 text-zinc-500 hover:text-rose-500"><Trash2 size={14} /></button>
+              </div>
+            ))}
+            <button onClick={() => setPerfisMarketplace([...perfisMarketplace, { nome: "NOVO", taxa: 0, fixa: 0, ins: 0, imp: 6 }])} className="w-full py-3 border-2 border-dashed border-gray-100 dark:border-white/5 rounded-xl text-[9px] font-black uppercase text-zinc-500 hover:text-sky-500 transition-all flex items-center justify-center gap-2">
+              <Plus size={14} /> Novo Perfil
+            </button>
+          </div>
+          <button onClick={() => {
+            localStorage.setItem("printlog_perfis_marketplace", JSON.stringify(perfisMarketplace));
+            setModalPerfisAberto(false);
+            toast.success("Salvo!");
+          }} className="w-full h-12 bg-sky-500 hover:bg-sky-400 text-black font-black uppercase text-[10px] rounded-xl shadow-lg">Salvar Perfis</button>
+        </div>
+      </Dialogo>
+
+      <FormularioInsumo 
+        aberto={modalInsumoAberto}
+        aoCancelar={fecharInsumoAberto}
+        insumoEditando={insumoEditando}
+        aoSalvar={(dados) => {
+          adicionarOuAtualizarInsumo({
+            ...dados,
+            id: dados.id || crypto.randomUUID(),
+            dataCriacao: dados.dataCriacao || new Date(),
+            dataAtualizacao: new Date(),
+            historico: dados.historico || [],
+          } as any);
+        }}
+      />
     </div>
   );
 }
