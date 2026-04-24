@@ -69,7 +69,7 @@ export function usarGerenciadorImpressoras() {
   useEffect(() => {
     carregarImpressoras();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [usuarioId]);
 
   const carregarImpressoras = async () => {
     if (!usuarioId) return;
