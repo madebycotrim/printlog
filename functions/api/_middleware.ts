@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 /**
  * Middleware de Segurança Global - Cloudflare Pages Functions
  * Responsável por validar o Firebase ID Token (JWT) em todas as rotas de API.
@@ -85,11 +87,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email: string }> 
         const emailUsuario = (context.data.email || "").trim().toLowerCase();
         const emailDono = (env.EMAIL_DONO || "").trim().toLowerCase();
 
-        if (!emailUsuario || !emailDono || emailUsuario !== emailDono) {
-            console.error(`[Seguranca] Bloqueio Admin: Usuario(${emailUsuario}) vs Dono(${emailDono})`);
+        // Lista de e-mails que SEMPRE têm acesso de admin (Fallback de segurança)
+        const emailsAdminPermitidos = [
+            "printlog.app@gmail.com",
+            emailDono
+        ].filter(Boolean);
+
+        if (!emailUsuario || !emailsAdminPermitidos.includes(emailUsuario)) {
+            const mensagemErro = `Acesso negado. O e-mail '${emailUsuario}' não está na lista de administradores autorizados.`;
+            console.error(`[Seguranca] Bloqueio Admin: ${mensagemErro}`);
+            
             return new Response(JSON.stringify({ 
-                erro: "Acesso negado.",
-                motivo: `Comparação falhou. Logado: '${emailUsuario}' vs Esperado: '${emailDono}'`,
+                mensagem: mensagemErro,
                 codigo: "ADMIN_REQUIRED"
             }), { 
                 status: 403,
