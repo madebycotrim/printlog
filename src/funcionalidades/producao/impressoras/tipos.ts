@@ -1,6 +1,12 @@
 import { Centavos, StatusImpressora } from "../../../compartilhado/tipos/modelos";
 export { StatusImpressora };
 
+export enum TipoManutencao {
+  PREVENTIVA = "Preventiva",
+  CORRETIVA = "Corretiva",
+  MELHORIA = "Melhoria",
+}
+
 export type TecnologiaImpressora = "FDM" | "SLA" | "DLP" | "LCD";
 
 /** Perfil de impressora proveniente do catálogo público `impressoras.json` (Mapeado) */
@@ -17,13 +23,22 @@ export interface RegistroManutencao {
   id: string;
   idImpressora: string;
   data: string;
-  tipo: "Preventiva" | "Corretiva" | "Melhoria";
+  tipo: TipoManutencao;
   descricao: string;
   pecasTrocadas?: string;
   custoCentavos: Centavos;
   responsavel: string;
   tempoParadaMinutos: number;
   horasMaquinaNoMomentoMinutos: number;
+}
+
+export interface RegistrarManutencaoInput {
+  idImpressora: string;
+  tipo: TipoManutencao;
+  descricao: string;
+  custoCentavos: Centavos;
+  tempoParadaMinutos: number;
+  pecasTrocadas?: string[];
 }
 
 export interface PecaDesgaste {

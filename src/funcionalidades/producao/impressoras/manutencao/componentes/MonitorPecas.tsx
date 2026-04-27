@@ -1,4 +1,4 @@
-import { PecaDesgaste } from "../tipos";
+import { PecaDesgaste } from "../../tipos";
 import { AlertTriangle } from "lucide-react";
 
 interface MonitorPecasProps {
@@ -19,7 +19,7 @@ export function MonitorPecas({ pecas }: MonitorPecasProps) {
 
             <div className="grid grid-cols-1 gap-4">
                 {pecas.map((peca) => {
-                    const porcentagemUso = Math.min((peca.minutosUsoAtual / peca.vidaUtilEstimadaMinutos) * 100, 100);
+                    const porcentagemUso = Math.min((peca.horasUsoAtualMinutos / peca.vidaUtilMinutos) * 100, 100);
                     const ehCritico = porcentagemUso > 90;
                     const ehAlerta = porcentagemUso > 75;
 
@@ -35,7 +35,7 @@ export function MonitorPecas({ pecas }: MonitorPecasProps) {
                                     {ehCritico && <AlertTriangle size={14} className="text-rose-500 animate-pulse" />}
                                 </div>
                                 <span className="text-[10px] font-black text-muted-foreground">
-                                    {Math.round(porcentagemUso)}% ({Math.floor(peca.minutosUsoAtual / 60)}h / {Math.floor(peca.vidaUtilEstimadaMinutos / 60)}h)
+                                    {Math.round(porcentagemUso)}% ({Math.floor(peca.horasUsoAtualMinutos / 60)}h / {Math.floor(peca.vidaUtilMinutos / 60)}h)
                                 </span>
                             </div>
 

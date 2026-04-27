@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, Wrench, Clock, CheckSquare } from "lucide-react";
-import { TipoManutencao, RegistrarManutencaoInput, PecaDesgaste } from "../tipos";
+import { TipoManutencao, RegistrarManutencaoInput, PecaDesgaste } from "../../tipos";
 import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
 import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
 import { CampoAreaTexto } from "@/compartilhado/componentes/CampoAreaTexto";

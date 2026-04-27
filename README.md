@@ -89,8 +89,12 @@ npm install
 cp .env.exemplo .env
 # Preencher com suas credenciais Firebase
 
-# 4. Iniciar em desenvolvimento
+# 4. Iniciar em desenvolvimento (Frontend apenas com mocks ou API externa)
 npm run dev
+
+# 5. Iniciar em desenvolvimento COMPLETO (Frontend + Backend Local + D1)
+# Use este para evitar o bloqueio de segurança do Cloudflare
+npm run dev:full
 ```
 
 ---

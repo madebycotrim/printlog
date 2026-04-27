@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { Manutencao, PecaDesgaste, RegistrarManutencaoInput } from "../tipos";
-import { servicoManutencao } from "../servicos/servicoManutencao";
+import { RegistroManutencao, PecaDesgaste, RegistrarManutencaoInput } from "../../tipos";
+import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
 import { toast } from "react-hot-toast";
 
 export function usarManutencao(idImpressora?: string) {
-  const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
+  const [manutencoes, setManutencoes] = useState<RegistroManutencao[]>([]);
   const [pecas, setPecas] = useState<PecaDesgaste[]>([]);
   const [carregando, setCarregando] = useState(false);
 

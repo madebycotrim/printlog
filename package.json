@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:live": "cross-env VITE_PROXY_TARGET=https://www.printlog.com.br npm run dev",
+    "dev:full": "wrangler pages dev --compatibility-date=2025-04-16 --d1 DB --proxy 5173 --command \"npm run dev\"",
     "prebuild": "npm audit --audit-level=high",
     "build": "vite build",
     "lint": "eslint .",

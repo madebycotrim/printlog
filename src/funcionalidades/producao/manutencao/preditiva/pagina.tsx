@@ -19,7 +19,7 @@ import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalh
 
 export function PaginaManutencaoPreditiva() {
   const navigate = useNavigate();
-  const impressoras = usarArmazemImpressoras((s) => s.impressoras);
+  const { impressoras, abrirManutencao } = usarArmazemImpressoras();
 
   const agenda = useMemo(() => servicoPredicaoManutencao.gerarAgendaPreditiva(impressoras), [impressoras]);
 
@@ -175,7 +175,13 @@ export function PaginaManutencaoPreditiva() {
                   {/* Ações */}
                   <div className="md:col-span-1 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => navigate(`/impressoras`)}
+                      onClick={() => {
+                        const impressora = impressoras.find((i) => i.id === item.idImpressora);
+                        if (impressora) {
+                          abrirManutencao(impressora);
+                          navigate("/impressoras");
+                        }
+                      }}
                       className="px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-black rounded-lg text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg"
                     >
                       Registrar Troca
