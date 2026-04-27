@@ -33,6 +33,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     horaMaquina: "R$ 5,00",
                     horaOperador: "R$ 20,00",
                     margemLucro: "150,00%",
+                    nomeEstudio: "",
+                    sloganEstudio: "",
+                    plano: "PRO",
                 }), { headers: { "Content-Type": "application/json" } });
             }
 
@@ -41,6 +44,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 horaMaquina: resultado.hora_maquina,
                 horaOperador: resultado.hora_operador,
                 margemLucro: resultado.margem_lucro,
+                nomeEstudio: resultado.nome_estudio || "",
+                sloganEstudio: resultado.slogan_estudio || "",
+                plano: resultado.plano || "PRO",
             }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -49,13 +55,16 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const dados = await request.json() as any;
 
             await env.DB.prepare(`
-                INSERT INTO configuracoes_usuario (id_usuario, custo_energia, hora_maquina, hora_operador, margem_lucro, atualizado_em)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO configuracoes_usuario (id_usuario, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, plano, atualizado_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id_usuario) DO UPDATE SET
                     custo_energia  = excluded.custo_energia,
                     hora_maquina   = excluded.hora_maquina,
                     hora_operador  = excluded.hora_operador,
                     margem_lucro   = excluded.margem_lucro,
+                    nome_estudio   = excluded.nome_estudio,
+                    slogan_estudio = excluded.slogan_estudio,
+                    plano          = excluded.plano,
                     atualizado_em  = excluded.atualizado_em
             `).bind(
                 usuarioId,
@@ -63,6 +72,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 dados.horaMaquina,
                 dados.horaOperador,
                 dados.margemLucro,
+                dados.nomeEstudio || "",
+                dados.sloganEstudio || "",
+                dados.plano || "FREE",
                 new Date().toISOString()
             ).run();
 

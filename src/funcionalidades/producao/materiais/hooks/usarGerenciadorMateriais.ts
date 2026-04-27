@@ -12,6 +12,7 @@ import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/cons
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
 import { toast } from "react-hot-toast";
+import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
 
 export function usarGerenciadorMateriais() {
   // 🎯 SELETORES OTIMIZADOS
@@ -50,6 +51,7 @@ export function usarGerenciadorMateriais() {
   const [termoBusca, definirTermoBusca] = useState("");
 
   const { usuario } = usarAutenticacao();
+  const { limiteAlertaEstoque } = usarBeta();
 
   // 🔄 SINCRONIZAÇÃO INICIAL COM D1
   useEffect(() => {
@@ -204,7 +206,7 @@ export function usarGerenciadorMateriais() {
     }, 0);
 
     const alertasBaixoEstoque = materiaisAtivos.filter(
-      (mat) => mat.pesoRestanteGramas < ALERTA_ESTOQUE_FILAMENTO_GRAMAS && mat.estoque === 0,
+      (mat) => mat.pesoRestanteGramas < limiteAlertaEstoque && mat.estoque === 0,
     ).length;
 
     return { totalEmbalagens, valorInvestido, alertasBaixoEstoque };

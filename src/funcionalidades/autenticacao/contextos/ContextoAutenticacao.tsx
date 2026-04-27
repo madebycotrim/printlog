@@ -128,12 +128,15 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
       if (user) {
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
+        const plano = usarArmazemConfiguracoes.getState().plano;
+        
         definirUsuario({
           uid: user.uid,
           email: user.email,
           nome: user.displayName,
           fotoUrl: user.photoURL,
           provedorGoogle: ehGoogle,
+          plano: plano,
         });
         carregarConfiguracoes(user.uid);
       } else {
@@ -149,6 +152,17 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
     return () => cancelarInscricao();
   }, [carregarConfiguracoes]);
+
+  // Sincroniza o plano do ArmazemConfiguracoes com o objeto de usuário de forma reativa
+  useEffect(() => {
+    const cancelarInscricaoPlano = usarArmazemConfiguracoes.subscribe(
+      (estado) => estado.plano,
+      (plano) => {
+        definirUsuario((prev) => (prev ? { ...prev, plano } : null));
+      }
+    );
+    return () => cancelarInscricaoPlano();
+  }, []);
 
   /**
    * Traduz códigos de erro do Firebase para mensagens amigáveis em PT-BR.
@@ -219,6 +233,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         nome: nome,
         fotoUrl: credencial.user.photoURL,
         provedorGoogle: false,
+        plano: "PRO",
       });
     } catch (erro: unknown) {
       registrar.warn(

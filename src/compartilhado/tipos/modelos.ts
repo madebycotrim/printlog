@@ -63,6 +63,7 @@ export interface Usuario {
   nome: string | null;
   fotoUrl: string | null;
   provedorGoogle: boolean;
+  plano?: "FREE" | "PRO";
 }
 
 /**

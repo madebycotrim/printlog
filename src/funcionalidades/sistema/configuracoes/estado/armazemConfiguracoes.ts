@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
 import { apiConfiguracoes } from "../servicos/apiConfiguracoes";
 
 /**
@@ -12,6 +13,9 @@ interface ArmazemConfiguracoes {
   horaMaquina: string;
   horaOperador: string;
   margemLucro: string;
+  nomeEstudio: string;
+  sloganEstudio: string;
+  plano: "FREE" | "PRO";
   carregando: boolean;
 
   // Ações
@@ -20,6 +24,8 @@ interface ArmazemConfiguracoes {
   definirHoraMaquina: (valor: string) => void;
   definirHoraOperador: (valor: string) => void;
   definirMargemLucro: (valor: string) => void;
+  definirIdentidadeEstudio: (nome: string, slogan: string) => void;
+  definirPlano: (plano: "FREE" | "PRO") => void;
   salvarNoD1: (usuarioId: string) => Promise<void>;
 
   /** Reseta as configurações para os padrões de fábrica */
@@ -31,6 +37,9 @@ export const VALORES_PADRAO = {
   horaMaquina: "R$ 5,00",
   horaOperador: "R$ 20,00",
   margemLucro: "150,00%",
+  nomeEstudio: "",
+  sloganEstudio: "",
+  plano: "PRO" as const,
 };
 
 /**
@@ -38,7 +47,8 @@ export const VALORES_PADRAO = {
  * Os dados são persistidos no Cloudflare D1 e carregados na inicialização.
  * Não usa mais localStorage — funciona entre dispositivos e browsers.
  */
-export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>((set, get) => ({
+export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
+  subscribeWithSelector((set, get) => ({
   ...VALORES_PADRAO,
   carregando: false,
 
@@ -55,6 +65,9 @@ export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>((set, get) 
         horaMaquina: dados.horaMaquina,
         horaOperador: dados.horaOperador,
         margemLucro: dados.margemLucro,
+        nomeEstudio: dados.nomeEstudio || "",
+        sloganEstudio: dados.sloganEstudio || "",
+        plano: dados.plano || "PRO",
       });
     } catch (erro) {
       // Se falhar, mantém os valores padrão silenciosamente
@@ -68,15 +81,17 @@ export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>((set, get) 
   definirHoraMaquina: (valor) => set({ horaMaquina: valor }),
   definirHoraOperador: (valor) => set({ horaOperador: valor }),
   definirMargemLucro: (valor) => set({ margemLucro: valor }),
+  definirIdentidadeEstudio: (nome, slogan) => set({ nomeEstudio: nome, sloganEstudio: slogan }),
+  definirPlano: (plano) => set({ plano }),
 
   /**
    * Persiste o estado atual das configurações no D1.
    * Chamado quando o usuário clica em "Salvar" na página de Configurações.
    */
   salvarNoD1: async (usuarioId: string) => {
-    const { custoEnergia, horaMaquina, horaOperador, margemLucro } = get();
-    await apiConfiguracoes.salvar({ custoEnergia, horaMaquina, horaOperador, margemLucro }, usuarioId);
+    const { custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, plano } = get();
+    await apiConfiguracoes.salvar({ custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, plano }, usuarioId);
   },
 
   resetarParaPadrao: () => set(VALORES_PADRAO),
-}));
+})));

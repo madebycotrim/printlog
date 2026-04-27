@@ -1,4 +1,4 @@
-import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, BrainCircuit } from "lucide-react";
+import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, BrainCircuit, Crown, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -6,6 +6,9 @@ import { CalculoResultado } from "../tipos";
 import { servicoIA, SugestaoPrecoIA } from "../servicos/servicoIA";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { usarEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 
 interface PainelResultadosProps {
   calculo: CalculoResultado;
@@ -21,10 +24,36 @@ interface PainelResultadosProps {
 export function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, carregandoPdf, temImpressora
 }: PainelResultadosProps) {
+  const { usuario } = usarAutenticacao();
+  const { betaOrcamentosMagicos, templateOrcamento } = usarBeta();
+  const { estudioAtivo } = usarEstudio();
   const [sugestaoIA, setSugestaoIA] = useState<SugestaoPrecoIA | null>(null);
   const [carregandoIA, setCarregandoIA] = useState(false);
 
+  const compartilharWhatsApp = () => {
+    const nomeEstudio = estudioAtivo?.nome || "Meu Estúdio 3D";
+    const valorFormatado = centavosParaReais(calculo.precoSugerido);
+    
+    const baseTemplate = templateOrcamento || "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀";
+    
+    const mensagem = baseTemplate
+      .replace(/{estudio}/g, nomeEstudio)
+      .replace(/{valor}/g, valorFormatado);
+
+    const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  };
+
   const obterSugestaoIA = async () => {
+    // Bloqueio de Plano PRO
+    if (usuario?.plano !== 'PRO') {
+      toast.error("Recurso exclusivo do Plano PRO 👑", {
+        icon: '🔒',
+        duration: 4000
+      });
+      return;
+    }
+
     try {
       setCarregandoIA(true);
       const resultado = await servicoIA.obterSugestaoPreco({
@@ -50,9 +79,60 @@ export function PainelResultados({
     <div className="p-8 rounded-[2.5rem] bg-zinc-900 border border-white/5 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto animate-in fade-in duration-1000">
       <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-sky-500/20 to-transparent blur-3xl" />
       <div className="relative z-10 w-full">
-        <span className="text-[11px] font-black uppercase tracking-[0.4em] text-sky-400 opacity-60">Preço Sugerido</span>
-        <div className="mt-5 mb-8">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-sky-400 opacity-60">Preço Sugerido</span>
+          <button 
+            onClick={obterSugestaoIA}
+            disabled={carregandoIA || calculo.precoSugerido <= 0}
+            title={usuario?.plano === 'PRO' ? "Sugerir com IA" : "Exclusivo PRO"}
+            className={`p-1.5 rounded-lg transition-all relative ${
+              carregandoIA ? "text-violet-400 animate-pulse" : "text-zinc-600 hover:text-violet-400 hover:bg-violet-500/10"
+            }`}
+          >
+            <Sparkles size={14} />
+            {usuario?.plano !== 'PRO' && (
+                <div className="absolute -top-1 -right-1">
+                    <Crown size={8} className="text-sky-400 fill-sky-400" />
+                </div>
+            )}
+          </button>
+        </div>
+
+        <div className="mt-4 mb-6">
           <h2 className="text-5xl font-black text-white tracking-tighter leading-none mb-2">{centavosParaReais(calculo.precoSugerido)}</h2>
+          
+          {/* Resultados da IA compactos - Só aparecem se houver sugestão */}
+          <AnimatePresence>
+            {sugestaoIA && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-4 p-4 rounded-2xl bg-violet-500/5 border border-violet-500/10 text-left relative group/ia"
+              >
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-violet-400/60">
+                        <BrainCircuit size={12} />
+                        <span className="text-[9px] font-black uppercase tracking-widest">IA Insight</span>
+                    </div>
+                    <button onClick={() => setSugestaoIA(null)} className="text-[8px] font-black text-zinc-700 hover:text-zinc-500 uppercase">Ocultar</button>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2">
+                    {[
+                        { label: 'Piso', valor: sugestaoIA.piso.valor, cor: 'rose' },
+                        { label: 'Ideal', valor: sugestaoIA.recomendado.valor, cor: 'sky' },
+                        { label: 'Premium', valor: sugestaoIA.premium.valor, cor: 'emerald' }
+                    ].map(f => (
+                        <div key={f.label} className="flex flex-col">
+                            <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600 mb-0.5">{f.label}</span>
+                            <span className="text-[10px] font-black text-zinc-300">{centavosParaReais(f.valor * 100)}</span>
+                        </div>
+                    ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="flex flex-col gap-2 items-center">
             <div className="flex gap-2 justify-center">
               <div className={`
@@ -153,62 +233,6 @@ export function PainelResultados({
           </div>
         )}
 
-        {/* Sugestão de IA - Botão e Resultados */}
-        <div className="mt-8 pt-8 border-t border-zinc-800/50 w-full">
-            {!sugestaoIA ? (
-                <button 
-                  onClick={obterSugestaoIA}
-                  disabled={carregandoIA || calculo.precoSugerido <= 0}
-                  className="w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-sky-600 p-[1px] group transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100"
-                >
-                    <div className="flex items-center justify-center gap-2 w-full h-full bg-zinc-900 rounded-2xl transition-colors group-hover:bg-transparent">
-                      {carregandoIA ? (
-                          <Activity className="animate-spin text-sky-400" size={16} />
-                      ) : (
-                          <Sparkles className="text-violet-400 group-hover:text-white transition-colors" size={16} />
-                      )}
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">
-                        {carregandoIA ? "Consultando Neurons..." : "Sugerir Preço com IA"}
-                      </span>
-                    </div>
-                </button>
-            ) : (
-                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-2 text-violet-400">
-                            <BrainCircuit size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Inteligência de Mercado</span>
-                        </div>
-                        <button onClick={() => setSugestaoIA(null)} className="text-[9px] font-bold text-zinc-600 hover:text-zinc-400 uppercase">Limpar</button>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2">
-                        {[
-                            { label: 'Piso', dados: sugestaoIA.piso, cor: 'rose' },
-                            { label: 'Ideal', dados: sugestaoIA.recomendado, cor: 'sky' },
-                            { label: 'Premium', dados: sugestaoIA.premium, cor: 'emerald' }
-                        ].map(faixa => {
-                            const corTexto = faixa.cor === 'rose' ? 'text-rose-400' : faixa.cor === 'sky' ? 'text-sky-400' : 'text-emerald-400';
-                            const corBorda = faixa.cor === 'rose' ? 'border-rose-500/10' : faixa.cor === 'sky' ? 'border-sky-500/10' : 'border-emerald-500/10';
-                            
-                            return (
-                                <div key={faixa.label} className={`p-2.5 rounded-2xl bg-zinc-800/10 border ${corBorda} flex flex-col items-center text-center`}>
-                                    <span className={`text-[8px] font-black uppercase tracking-widest ${corTexto} mb-1`}>{faixa.label}</span>
-                                    <span className="text-[11px] font-black text-white">{centavosParaReais(faixa.dados.valor * 100)}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    
-                    <div className="p-3.5 rounded-2xl bg-violet-500/5 border border-violet-500/10 text-left">
-                        <p className="text-[10px] text-zinc-400 leading-relaxed italic">
-                            "{sugestaoIA.dica}"
-                        </p>
-                    </div>
-                </div>
-            )}
-        </div>
-
         <div className="h-px bg-zinc-800/50 my-8 w-full" />
 
         <div className="flex items-center justify-between p-6 bg-emerald-500/5 rounded-[2rem] border border-emerald-500/10 w-full">
@@ -264,6 +288,19 @@ export function PainelResultados({
             <span className="text-[10px] opacity-50 lowercase italic">PDF Profissional</span>
           </button>
         </div>
+
+        {betaOrcamentosMagicos && (
+          <div className="mt-4 w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
+             <button 
+               onClick={compartilharWhatsApp}
+               disabled={calculo.precoSugerido <= 0}
+               className="w-full h-12 font-black uppercase tracking-[0.1em] text-[11px] rounded-2xl flex items-center justify-center gap-2 bg-[#25D366] text-white hover:bg-[#20BE5A] transition-all active:scale-95 shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] disabled:opacity-50 disabled:shadow-none"
+             >
+               <MessageCircle size={16} />
+               Enviar Orçamento no WhatsApp (Beta)
+             </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -9,18 +9,18 @@ import {
   Clock,
   LayoutDashboard,
   Wrench,
-  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { Crown, Sparkles } from "lucide-react";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
-import { usarArmazemFinanceiro } from "@/funcionalidades/comercial/financeiro/estado/armazemFinanceiro";
 import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/constantesNegocio";
 
@@ -30,27 +30,19 @@ import { GraficoConsumo } from "./componentes/GraficoConsumo";
 import { StatusTempoReal } from "./componentes/StatusTempoReal";
 import { AgendaManutencao } from "./componentes/AgendaManutencao";
 import { RelatorioInventario } from "./componentes/RelatorioInventario";
-import { RelatorioDesperdicio } from "./componentes/RelatorioDesperdicio";
-import { ResumoBI } from "@/funcionalidades/beta/relatorios_ia/componentes/ResumoBI";
 import { RelatorioPerformanceOperacional } from "./componentes/RelatorioPerformanceOperacional";
-import { FronteiraErroBeta } from "@/compartilhado/componentes/FronteiraErroBeta";
 import { CardResumo } from "@/compartilhado/componentes/CardResumo";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { servicoRelatorios } from "@/compartilhado/servicos/servicoRelatorios";
-import { BarChart, PieChart, FileText, History as HistoryIcon } from "lucide-react";
-import { servicoExportacao } from "@/compartilhado/servicos/servicoExportacao";
 
 export function PaginaInicial() {
   const { usuario } = usarAutenticacao();
   const { pedidos } = usarPedidos();
-  const { betaRelatorios } = usarBeta();
   const navegar = useNavigate();
 
   // 🏪 ACESSO AO ESTADO
   const materiais = usarArmazemMateriais((s) => s.materiais);
   const impressoras = usarArmazemImpressoras((s) => s.impressoras);
   const insumos = usarArmazemInsumos((s) => s.insumos);
-  const lancamentos = usarArmazemFinanceiro((s) => s.lancamentos);
 
   // 🧮 CÁLCULOS DE KPI
   const totaisPecas = insumos.reduce((acc, i) => acc + i.quantidadeAtual, 0);
@@ -60,7 +52,25 @@ export function PaginaInicial() {
     (p) => p.status !== StatusPedido.CONCLUIDO && p.status !== StatusPedido.ARQUIVADO,
   ).length;
 
-  const metricas = useMemo(() => servicoRelatorios.gerarMetricasProducao(pedidos), [pedidos]);
+  // 👑 LÓGICA DE UPGRADE PRO GRATUITO
+  const plano = usarArmazemConfiguracoes((s) => s.plano);
+  const definirPlano = usarArmazemConfiguracoes((s) => s.definirPlano);
+  const salvarConfiguracoes = usarArmazemConfiguracoes((s) => s.salvarNoD1);
+  const [carregandoUpgrade, definirCarregandoUpgrade] = useState(false);
+
+  const realizarUpgradeGratis = async () => {
+    if (!usuario?.uid) return;
+    definirCarregandoUpgrade(true);
+    try {
+      definirPlano("PRO");
+      await salvarConfiguracoes(usuario.uid);
+      toast.success("Parabéns! Agora você é um MAKER FUNDADOR PRO ✨");
+    } catch (erro) {
+      toast.error("Não foi possível ativar seu plano PRO agora.");
+    } finally {
+      definirCarregandoUpgrade(false);
+    }
+  };
 
   usarDefinirCabecalho({
     titulo: `Olá, ${usuario?.nome?.split(" ")[0] || "Maker"}! 👋`,
@@ -80,6 +90,49 @@ export function PaginaInicial() {
 
   return (
     <div className="space-y-12 pb-10">
+      {/* 👑 BANNER DE OFERTA PRO (Apenas para FREE) */}
+      {plano === "FREE" && (
+        <motion.div
+           initial={{ opacity: 0, y: -20 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="relative p-8 rounded-[2rem] bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 overflow-hidden shadow-2xl shadow-sky-500/20 group"
+        >
+          {/* Elementos Decorativos */}
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Crown size={180} strokeWidth={1} />
+          </div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 blur-[60px] rounded-full" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="space-y-4 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border border-white/20">
+                  Oferta de Lançamento
+                </span>
+                <Sparkles size={14} className="text-sky-200 animate-pulse" />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase leading-tight">
+                Seja um Maker Fundador <br />
+                <span className="text-sky-200">100% Grátis para Sempre.</span>
+              </h3>
+              <p className="text-sky-50/70 text-sm font-medium max-w-xl">
+                Libere a Inteligência Artificial, Branding de Estúdio e suporte prioritário. 
+                Sem cartões, sem pegadinhas. Uma vaga de fundador é sua!
+              </p>
+            </div>
+
+            <button
+               onClick={realizarUpgradeGratis}
+               disabled={carregandoUpgrade}
+               className="px-10 py-5 bg-white text-zinc-950 font-black uppercase text-xs tracking-[0.2em] rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center gap-3 shrink-0"
+            >
+              {carregandoUpgrade ? "Ativando..." : "Garantir minha vaga PRO"}
+              <Crown size={16} className="text-sky-500" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* 🚀 ATALHOS RÁPIDOS E AÇÕES PRIORITÁRIAS */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
@@ -175,21 +228,7 @@ export function PaginaInicial() {
         </div>
       </section>
 
-      {/* 🧠 INTELIGÊNCIA COMERCIAL & RENTABILIDADE (DRE & BI) */}
-      {betaRelatorios && (
-        <section className="space-y-6">
-          <div className="flex items-center gap-3">
-            <Activity size={18} className="text-indigo-500" />
-            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-zinc-500">
-              Inteligência Comercial & BI
-            </h2>
-          </div>
 
-          <FronteiraErroBeta nomeFuncionalidade="Inteligência Comercial & BI">
-            <ResumoBI pedidos={pedidos} materiais={materiais} lancamentos={lancamentos} />
-          </FronteiraErroBeta>
-        </section>
-      )}
 
       {/* 📈 VISTA OPERACIONAL (GRÁFICOS E STATUS) */}
       <section className="space-y-6">
@@ -228,98 +267,6 @@ export function PaginaInicial() {
 
           <div className="lg:col-span-1">
             <RelatorioInventario materiais={materiais} insumos={insumos} />
-          </div>
-        </div>
-      </section>
-
-      {/* 🧾 RELATÓRIOS AUTOMÁTICOS (FASE 2) */}
-      <section className="space-y-6 pb-12">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText size={18} className="text-sky-500" />
-            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-zinc-500">
-              Relatórios Automáticos
-            </h2>
-          </div>
-          <span className="text-[10px] font-black bg-sky-500/10 text-sky-500 px-3 py-1 rounded-full uppercase tracking-widest">
-            Fase 2: Inteligência Operacional
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <RelatorioDesperdicio materiais={materiais} insumos={insumos} />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div
-              onClick={() => navegar("/producao/historico")}
-              className="p-8 rounded-3xl bg-white dark:bg-[#121215] border border-gray-100 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center cursor-pointer hover:border-sky-500/30 transition-all group"
-            >
-              <div className="flex items-center justify-between text-gray-400">
-                <div className="flex items-center gap-3">
-                  <BarChart size={16} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Eficiência de Entrega</span>
-                </div>
-                <HistoryIcon size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-sky-500" />
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <span className="text-4xl font-black text-gray-900 dark:text-white">{metricas.eficienciaPercentual}%</span>
-                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">
-                    Score Saudável
-                  </span>
-                </div>
-                <div className="h-2 w-full bg-gray-50 dark:bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${metricas.eficienciaPercentual}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full bg-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.5)]"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 rounded-3xl bg-white dark:bg-[#121215] border border-gray-100 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center">
-              <div className="flex items-center gap-3 text-gray-400">
-                <PieChart size={16} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Volume de Insumos</span>
-              </div>
-              <div className="space-y-1">
-                <span className="text-4xl font-black text-gray-900 dark:text-white">{metricas.mediaGramasPorPedido}g</span>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Média prevista por projeto
-                </p>
-              </div>
-            </div>
-
-            <div className="md:col-span-2 p-8 rounded-[2rem] bg-zinc-900 border border-white/5 shadow-xl flex items-center justify-between group overflow-hidden relative">
-              <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none text-white">
-                <FileText size={160} strokeWidth={4} />
-              </div>
-              <div className="space-y-4 relative z-10 max-w-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-sky-400">
-                    Exportação LGPD (Art. 18)
-                  </h4>
-                </div>
-                <p className="text-[12px] font-medium text-gray-300 leading-relaxed">
-                  Relatório consolidado de dados pessoais e portabilidade para o titular da conta.
-                </p>
-              </div>
-              <button
-                onClick={() =>
-                  servicoExportacao.gerarRelatorioPortabilidade(
-                    usuario || { nome: "Maker", email: "contato@printlog.com.br", id: "anon" },
-                    pedidos,
-                  )
-                }
-                className="relative z-10 px-8 py-4 bg-white hover:bg-sky-400 text-black hover:text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-3"
-              >
-                Gerar Portabilidade
-                <ChevronRight size={14} />
-              </button>
-            </div>
           </div>
         </div>
       </section>

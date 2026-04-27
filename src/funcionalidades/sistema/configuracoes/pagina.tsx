@@ -48,7 +48,11 @@ export function PaginaConfiguracoes() {
   // Estado Estudio
   const [participarPrototipos, definirParticiparPrototipos] = useState(beta.participarPrototipos);
   const [betaMultiEstudio, definirBetaMultiEstudio] = useState(beta.betaMultiEstudio);
-  const [betaRelatorios, definirBetaRelatorios] = useState(beta.betaRelatorios);
+  const [betaOrcamentosMagicos, definirBetaOrcamentosMagicos] = useState(beta.betaOrcamentosMagicos);
+  const [betaEstoqueInteligente, definirBetaEstoqueInteligente] = useState(beta.betaEstoqueInteligente);
+  const [betaSimuladorMargem, definirBetaSimuladorMargem] = useState(beta.betaSimuladorMargem);
+  const [templateOrcamento, definirTemplateOrcamento] = useState(beta.templateOrcamento);
+  const [limiteAlertaEstoque, definirLimiteAlertaEstoque] = useState(beta.limiteAlertaEstoque);
 
   // Estado Inicial da Aparencia para detectar mudancas
   const [inicialAparencia, definirInicialAparencia] = useState({
@@ -96,7 +100,11 @@ export function PaginaConfiguracoes() {
   const estudioPendente = 
     participarPrototipos !== beta.participarPrototipos || 
     betaMultiEstudio !== beta.betaMultiEstudio || 
-    betaRelatorios !== beta.betaRelatorios;
+    betaOrcamentosMagicos !== beta.betaOrcamentosMagicos ||
+    betaEstoqueInteligente !== beta.betaEstoqueInteligente ||
+    betaSimuladorMargem !== beta.betaSimuladorMargem ||
+    templateOrcamento !== beta.templateOrcamento ||
+    limiteAlertaEstoque !== beta.limiteAlertaEstoque;
 
   const totalAlteracoes = [perfilPendente, operacionalPendente, aparenciaPendente, estudioPendente].filter(
     Boolean,
@@ -133,7 +141,11 @@ export function PaginaConfiguracoes() {
     // Reset Estudio
     definirParticiparPrototipos(beta.participarPrototipos);
     definirBetaMultiEstudio(beta.betaMultiEstudio);
-    definirBetaRelatorios(beta.betaRelatorios);
+    definirBetaOrcamentosMagicos(beta.betaOrcamentosMagicos);
+    definirBetaEstoqueInteligente(beta.betaEstoqueInteligente);
+    definirBetaSimuladorMargem(beta.betaSimuladorMargem);
+    definirTemplateOrcamento(beta.templateOrcamento);
+    definirLimiteAlertaEstoque(beta.limiteAlertaEstoque);
 
     // Reset Aparencia (Usando os valores capturados no mount)
     contextoTema.definirModoTema(inicialAparencia.modo);
@@ -168,7 +180,11 @@ export function PaginaConfiguracoes() {
       // 4. Salvar Programas Beta
       beta.definirParticiparPrototipos(participarPrototipos);
       beta.definirBetaMultiEstudio(betaMultiEstudio);
-      beta.definirBetaRelatorios(betaRelatorios);
+      beta.definirBetaOrcamentosMagicos(betaOrcamentosMagicos);
+      beta.definirBetaEstoqueInteligente(betaEstoqueInteligente);
+      beta.definirBetaSimuladorMargem(betaSimuladorMargem);
+      beta.definirTemplateOrcamento(templateOrcamento);
+      beta.definirLimiteAlertaEstoque(limiteAlertaEstoque);
 
       definirSucesso(true);
       toast.success("Suas preferências foram atualizadas com sucesso.");
@@ -249,8 +265,16 @@ export function PaginaConfiguracoes() {
             definirParticiparPrototipos={definirParticiparPrototipos}
             betaMultiEstudio={betaMultiEstudio}
             definirBetaMultiEstudio={definirBetaMultiEstudio}
-            betaRelatorios={betaRelatorios}
-            definirBetaRelatorios={definirBetaRelatorios}
+            betaOrcamentosMagicos={betaOrcamentosMagicos}
+            definirBetaOrcamentosMagicos={definirBetaOrcamentosMagicos}
+            betaEstoqueInteligente={betaEstoqueInteligente}
+            definirBetaEstoqueInteligente={definirBetaEstoqueInteligente}
+            betaSimuladorMargem={betaSimuladorMargem}
+            definirBetaSimuladorMargem={definirBetaSimuladorMargem}
+            templateOrcamento={templateOrcamento}
+            definirTemplateOrcamento={definirTemplateOrcamento}
+            limiteAlertaEstoque={limiteAlertaEstoque}
+            definirLimiteAlertaEstoque={definirLimiteAlertaEstoque}
             pendente={estudioPendente}
           />
         </motion.div>

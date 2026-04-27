@@ -1,9 +1,10 @@
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, Beaker, Crown } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { usarCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";
 import { usarProcessadorNotificacoes } from "../hooks/usarProcessadorNotificacoes";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { Beaker } from "lucide-react";
+import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 type PropriedadesCabecalho = {
   aoAbrirBarraLateral: () => void;
@@ -12,6 +13,12 @@ type PropriedadesCabecalho = {
 export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const { dados } = usarCabecalho();
   const { participarPrototipos } = usarBeta();
+  const { usuario } = usarAutenticacao();
+  const localizacao = useLocation();
+
+  // Rotas onde o selo de elite deve aparecer
+  const rotasElite = ["/dashboard", "/configuracoes", "/central-maker"];
+  const exibirSeloElite = rotasElite.some(rota => localizacao.pathname.startsWith(rota));
 
   // Inicializa o processador de notificações globais (pedidos atrasados, manutenção, etc.)
   usarProcessadorNotificacoes();
@@ -38,6 +45,13 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 animate-in fade-in zoom-in duration-500 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
                 <Beaker size={10} className="animate-pulse" />
                 <span className="text-[9px] font-black uppercase tracking-widest">Lab</span>
+              </div>
+            )}
+
+            {usuario?.plano === "PRO" && exibirSeloElite && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.15)] transform hover:scale-105 transition-transform cursor-default">
+                <Crown size={10} className="fill-sky-500 animate-pulse" />
+                <span className="text-[9px] font-black uppercase tracking-widest">Maker Fundador</span>
               </div>
             )}
 

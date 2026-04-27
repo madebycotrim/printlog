@@ -6,6 +6,9 @@ export interface ConfiguracoesSalvas {
   horaMaquina: string;
   horaOperador: string;
   margemLucro: string;
+  nomeEstudio?: string;
+  sloganEstudio?: string;
+  plano?: "FREE" | "PRO";
 }
 
 /**

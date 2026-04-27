@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import { 
   Settings, Check, X, Plus, 
-  ChevronDown, Box, Package, History
+  ChevronDown, Box, Package, History, Crown
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -437,21 +437,87 @@ export function PaginaCalculadora() {
         <div className="p-10 space-y-10 bg-white dark:bg-zinc-900 rounded-[2.5rem] relative">
           <button onClick={() => setModalConfigAberto(false)} className="absolute top-8 right-8 p-2 rounded-xl text-gray-400 hover:text-zinc-900 dark:hover:text-white"><X size={20} /></button>
           <div className="flex flex-col items-center text-center gap-2">
-            <h3 className="text-xl font-black uppercase tracking-[0.2em]">OPERACIONAL</h3>
+            <h3 className="text-xl font-black uppercase tracking-[0.2em]">CONFIGURAÇÕES</h3>
           </div>
+
+          <div className="space-y-6">
+            {/* Seção Operacional (Aberta para todos) */}
+            <div className="space-y-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">OPERACIONAL</span>
+              <button 
+                onClick={async () => { 
+                    config.definirCustoEnergia(formatarMoedaFinancas(hook.precoKwh, 2));
+                    config.definirHoraOperador(formatarMoedaFinancas(hook.maoDeObra, 2));
+                    config.definirHoraMaquina(formatarMoedaFinancas(hook.depreciacaoHora, 3));
+                    config.definirMargemLucro(formatarPorcentagem(String(hook.margem * 100)));
+                  if (usuario?.uid) await config.salvarNoD1(usuario.uid);
+                  setModalConfigAberto(false); 
+                  toast.success("Sincronizado!"); 
+                }} 
+                className="w-full h-16 bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-200 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-3 border border-zinc-200 dark:border-white/10"
+              >
+                Sincronizar Indices Atuais
+              </button>
+            </div>
+
+            {/* Seção Branding (Exclusiva PRO) */}
+            <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-white/5 relative">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">IDENTIDADE DO ESTÚDIO</span>
+                  {usuario?.plano !== 'PRO' && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-500 text-[8px] font-black uppercase tracking-widest border border-sky-500/20">
+                      PRO
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className={`space-y-3 transition-all ${usuario?.plano !== 'PRO' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Nome do Estúdio</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: PrintPro Lab"
+                    value={config.nomeEstudio}
+                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
+                    className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 rounded-xl px-4 text-xs font-bold focus:ring-1 focus:ring-sky-500 outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Slogan / Frase do PDF</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: Impressão 3D de alta precisão"
+                    value={config.sloganEstudio}
+                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value)}
+                    className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 rounded-xl px-4 text-xs font-bold focus:ring-1 focus:ring-sky-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              {usuario?.plano !== 'PRO' && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center pt-8">
+                  <div className="bg-white dark:bg-zinc-900 border border-sky-500/20 px-4 py-2 rounded-xl shadow-xl shadow-sky-500/10 flex items-center gap-3">
+                    <Crown size={14} className="text-sky-500" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-500">Libere seu Branding no PRO</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <button 
             onClick={async () => { 
-                config.definirCustoEnergia(formatarMoedaFinancas(hook.precoKwh, 2));
-                config.definirHoraOperador(formatarMoedaFinancas(hook.maoDeObra, 2));
-                config.definirHoraMaquina(formatarMoedaFinancas(hook.depreciacaoHora, 3));
-                config.definirMargemLucro(formatarPorcentagem(String(hook.margem * 100)));
-              if (usuario?.uid) await config.salvarNoD1(usuario.uid);
-              setModalConfigAberto(false); 
-              toast.success("Sincronizado!"); 
+              if (usuario?.uid) {
+                await config.salvarNoD1(usuario.uid);
+                setModalConfigAberto(false); 
+                toast.success("Configurações salvas!");
+              }
             }} 
-            className="w-full h-20 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase text-[11px] tracking-[0.3em] rounded-[1.5rem] hover:scale-[1.02] transition-all"
+            className="w-full h-16 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase text-[11px] tracking-[0.3em] rounded-[1.5rem] hover:scale-[1.02] transition-all"
           >
-            Sincronizar Indices
+            Salvar Alterações
           </button>
         </div>
       </Dialogo>

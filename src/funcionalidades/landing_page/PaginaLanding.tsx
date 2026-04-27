@@ -2,7 +2,7 @@ import { Cabecalho } from "./componentes/Cabecalho";
 import { Apresentacao } from "./componentes/Apresentacao";
 import { Demonstracao } from "./componentes/Demonstracao";
 import { Beneficios } from "./componentes/Beneficios";
-
+import { Precificacao } from "./componentes/Precificacao";
 import { ChamadaAcao } from "./componentes/CTA";
 import { Rodape } from "./componentes/Rodape";
 
@@ -13,6 +13,7 @@ export function PaginaLanding() {
       <Apresentacao />
       <Demonstracao />
       <Beneficios />
+      <Precificacao />
       <ChamadaAcao />
       <Rodape />
     </div>

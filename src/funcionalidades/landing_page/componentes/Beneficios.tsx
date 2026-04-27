@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { AlertTriangle, Zap, OctagonAlert, Hourglass } from "lucide-react";
+import { AlertTriangle, Zap, OctagonAlert, Hourglass, Sparkles, Crown } from "lucide-react";
 
 type Beneficio = {
   Icone: React.ElementType;
@@ -20,7 +20,7 @@ const beneficios: Beneficio[] = [
     Icone: Zap,
     titulo: "Energia Ignorada",
     descricao:
-      "A conta de luz pode representar uma parcela significativa do custo. Ignorar isso é fatal para o seu negócio.",
+      "A conta de luz pode representar uma parcela significativa do custo. Ignorar isso é fatal.",
     atraso: "100ms",
   },
   {
@@ -36,6 +36,20 @@ const beneficios: Beneficio[] = [
     descricao:
       "Filamento velho absorve umidade e estraga suas peças. Controle seu giro.",
     atraso: "300ms",
+  },
+  {
+    Icone: Sparkles,
+    titulo: "Inteligência Artificial",
+    descricao:
+      "Sugestões de preço baseadas em dados reais com o modelo Llama 3 da Meta.",
+    atraso: "400ms",
+  },
+  {
+    Icone: Crown,
+    titulo: "Branding de Estúdio",
+    descricao:
+      "Transforme cálculos em propostas profissionais com a identidade do seu estúdio.",
+    atraso: "500ms",
   },
 ];
 

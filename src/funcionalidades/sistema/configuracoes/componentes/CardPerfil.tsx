@@ -1,4 +1,4 @@
-import { User, Mail, Lock } from "lucide-react";
+import { User, Mail, Lock, Crown } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { Usuario } from "@/compartilhado/tipos/modelos";
 import { Avatar } from "@/compartilhado/componentes/Avatar";
@@ -32,13 +32,22 @@ export function CardPerfil({ usuario, nome, definirNome, sucessoEmail, lidarComT
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                 <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-gray-50/70 dark:bg-white/[0.02]">
-                    <Avatar 
-                        nome={nome} 
-                        // Se o nome mudou, ocultamos a foto para mostrar o "novo avatar" (preview de cor/iniciais)
-                        fotoUrl={nome !== usuario?.nome ? null : usuario?.fotoUrl} 
-                        tamanho="w-20 h-20" 
-                        className="text-3xl"
-                    />
+                    <div className="relative group/avatar">
+                        <Avatar 
+                            pro={usuario?.plano === "PRO"}
+                            nome={nome} 
+                            // Se o nome mudou, ocultamos a foto para mostrar o "novo avatar" (preview de cor/iniciais)
+                            fotoUrl={nome !== usuario?.nome ? null : usuario?.fotoUrl} 
+                            tamanho="w-20 h-20" 
+                            className="text-3xl transition-transform duration-500 group-hover/avatar:rotate-3 group-hover/avatar:scale-105"
+                        />
+                        
+                        {usuario?.plano === "PRO" && (
+                            <div className="absolute -top-5 -right-4 rotate-[15deg] z-10 drop-shadow-[0_0_15px_rgba(14,165,233,0.8)] transition-transform duration-700 group-hover/avatar:rotate-[25deg] group-hover/avatar:scale-110">
+                                <Crown size={32} className="text-sky-500 fill-sky-500/20 stroke-[1.5px]" />
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">

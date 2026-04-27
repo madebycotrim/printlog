@@ -8,6 +8,7 @@ import { ProvedorAutenticacao } from "@/funcionalidades/autenticacao/contextos/C
 import { ProvedorEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 import { ProvedorBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { ToasterPremium } from "@/compartilhado/componentes/ToasterPremium";
+import { WidgetFeedbackBeta } from "@/funcionalidades/beta/componentes/WidgetFeedbackBeta";
 
 // Landing Page Publica
 const PaginaLanding = lazy(() =>
@@ -126,6 +127,7 @@ export function RoteadorPrincipal() {
         <ProvedorEstudio>
           <BrowserRouter>
             <ToasterPremium />
+            <WidgetFeedbackBeta />
             <ScrollParaTopo />
             <Suspense fallback={<Carregamento />}>
               <Routes>

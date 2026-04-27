@@ -41,6 +41,28 @@ export function Cabecalho() {
             </span>
           </div>
 
+          {/* Navegação Central (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-8">
+            <button 
+              onClick={() => document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
+            >
+              Benefícios
+            </button>
+            <button 
+              onClick={() => document.getElementById('centro-comando')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
+            >
+              Demonstração
+            </button>
+            <button 
+              onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
+            >
+              Preços
+            </button>
+          </nav>
+
           {/* Ações Desktop */}
           <div className="hidden lg:flex items-center gap-4">
             {!carregando && usuario ? (
@@ -54,17 +76,16 @@ export function Cabecalho() {
             ) : (
               <>
                 <Link
-                  to="/cadastro"
-                  className="text-sm font-bold text-zinc-400 hover:text-white transition-all duration-300 uppercase tracking-wide relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-sky-500 after:to-blue-500 hover:after:w-full after:transition-all after:duration-300"
+                  to="/login"
+                  className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-white transition-colors mr-4"
                 >
-                  Criar Conta
+                  Entrar
                 </Link>
                 <Link
-                  to="/login"
-                  className="relative px-6 py-2.5 bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] hover:from-[#0284c7] hover:to-[#0369a1] text-white font-bold rounded-lg text-sm transition-all duration-300 shadow-[0_0_20px_-5px_rgba(14,165,233,0.6)] hover:shadow-[0_0_30px_-3px_rgba(14,165,233,0.9)] uppercase tracking-wide transform hover:-translate-y-0.5 hover:scale-105 overflow-hidden group"
+                  to="/cadastro"
+                  className="relative px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-black rounded-lg text-xs transition-all duration-300 shadow-lg shadow-sky-500/20 uppercase tracking-[0.15em] transform hover:-translate-y-0.5"
                 >
-                  <span className="relative z-10">Entrar</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  Criar Conta
                 </Link>
               </>
             )}
@@ -96,19 +117,42 @@ export function Cabecalho() {
         <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => definirMenuMobileAberto(false)} />
 
         <div className="relative h-full flex flex-col items-center justify-center gap-8 p-6">
+          <nav className="flex flex-col items-center gap-6 mb-8">
+            <button 
+              onClick={() => { document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
+              className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
+            >
+              Benefícios
+            </button>
+            <button 
+              onClick={() => { document.getElementById('centro-comando')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
+              className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
+            >
+              Demonstração
+            </button>
+            <button 
+              onClick={() => { document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
+              className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
+            >
+              Preços
+            </button>
+          </nav>
+
           <div
             className={`flex flex-col items-center gap-4 w-full max-w-xs transition-all duration-500 ${menuMobileAberto ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
             style={{ transitionDelay: "200ms" }}
           >
             <Link
               to="/cadastro"
-              className="w-full text-center px-8 py-4 border-2 border-sky-500 text-sky-400 font-bold rounded-lg text-sm uppercase tracking-wide transition-all duration-300 hover:bg-sky-500/10"
+              onClick={() => definirMenuMobileAberto(false)}
+              className="w-full text-center px-8 py-4 bg-sky-500 text-white font-black rounded-lg text-xs uppercase tracking-widest shadow-lg shadow-sky-500/20"
             >
               Criar Conta
             </Link>
             <Link
               to="/login"
-              className="w-full text-center px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold rounded-lg text-sm uppercase tracking-wide shadow-[0_0_30px_rgba(14,165,233,0.4)]"
+              onClick={() => definirMenuMobileAberto(false)}
+              className="w-full text-center px-8 py-4 border border-white/10 text-white font-black rounded-lg text-xs uppercase tracking-widest"
             >
               Entrar
             </Link>

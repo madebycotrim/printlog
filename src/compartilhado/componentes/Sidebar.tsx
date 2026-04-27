@@ -15,6 +15,7 @@ import {
   Beaker,
   ChevronLeft,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import { useState } from "react";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -250,7 +251,8 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                  <Avatar 
                    nome={usuario?.nome} 
                    fotoUrl={usuario?.fotoUrl} 
-                   tamanho={colapsada ? "h-10 w-10" : "h-9 w-9"} 
+                   tamanho={colapsada ? "h-10 w-10" : "h-9 w-9"}
+                   pro={usuario?.plano === "PRO"}
                  />
               </div>
               
@@ -260,10 +262,17 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                     <p className="text-xs font-black text-gray-900 dark:text-white truncate leading-tight mb-0.5">
                       {usuario?.nome?.split(" ")[0] || "Usuário"}
                     </p>
-                    <div className="flex items-center">
-                      <span className="px-1.5 py-0.5 rounded-md bg-primaria/10 dark:bg-primaria/20 text-[8px] font-black text-primaria uppercase tracking-widest leading-none border border-primaria/20">
-                        Maker
-                      </span>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {usuario?.plano === "PRO" ? (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/20 text-[8px] font-black text-sky-400 uppercase tracking-widest leading-none shadow-[0_0_10px_rgba(14,165,233,0.15)] group-hover:scale-105 transition-transform">
+                          <Crown size={8} className="fill-sky-400" />
+                          Maker Fundador
+                        </div>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded-md bg-primaria/10 dark:bg-primaria/20 text-[8px] font-black text-primaria uppercase tracking-widest leading-none border border-primaria/20">
+                          Maker
+                        </span>
+                      )}
                     </div>
                   </div>
 

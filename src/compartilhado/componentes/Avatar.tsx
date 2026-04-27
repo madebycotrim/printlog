@@ -10,6 +10,8 @@ interface PropriedadesAvatar extends HTMLAttributes<HTMLDivElement> {
   tamanho?: string;
   /** Se deve ser arredondado ou levemente arredondado */
   variante?: "circular" | "quadrado";
+  /** Se o usuário é PRO para ativar efeitos de elite */
+  pro?: boolean;
 }
 
 /**
@@ -21,6 +23,7 @@ export function Avatar({
   fotoUrl,
   tamanho = "h-9 w-9",
   variante = "quadrado",
+  pro = false,
   className = "",
   style,
   ...outrasPropriedades
@@ -42,7 +45,7 @@ export function Avatar({
 
   return (
     <div
-      className={`${tamanho} ${arredondamento} flex items-center justify-center text-base font-black shrink-0 relative overflow-hidden border border-black/5 dark:border-white/5 ${className}`}
+      className={`${tamanho} ${arredondamento} flex items-center justify-center text-base font-black shrink-0 relative overflow-hidden border border-black/5 dark:border-white/5 ${pro ? "ring-2 ring-sky-500/50 shadow-[0_0_15px_rgba(14,165,233,0.4)]" : ""} ${className}`}
       style={{
         backgroundColor: mostrarIniciais ? corFundo : "transparent",
         color: "white",

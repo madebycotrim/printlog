@@ -1,4 +1,4 @@
-import { Beaker, Building2, BrainCircuit, Settings2, ChevronDown, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
+import { Beaker, Building2, Settings2, ChevronDown, AlertTriangle, ShieldCheck, Zap, Share2, PackageSearch, TrendingUp, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { CabecalhoCard } from "./Compartilhados";
 import { usarEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
@@ -9,8 +9,16 @@ interface PropsCardEstudio {
   definirParticiparPrototipos: (v: boolean) => void;
   betaMultiEstudio: boolean;
   definirBetaMultiEstudio: (v: boolean) => void;
-  betaRelatorios: boolean;
-  definirBetaRelatorios: (v: boolean) => void;
+  betaOrcamentosMagicos: boolean;
+  definirBetaOrcamentosMagicos: (v: boolean) => void;
+  betaEstoqueInteligente: boolean;
+  definirBetaEstoqueInteligente: (v: boolean) => void;
+  betaSimuladorMargem: boolean;
+  definirBetaSimuladorMargem: (v: boolean) => void;
+  templateOrcamento: string;
+  definirTemplateOrcamento: (v: string) => void;
+  limiteAlertaEstoque: number;
+  definirLimiteAlertaEstoque: (v: number) => void;
   pendente?: boolean;
 }
 
@@ -19,12 +27,22 @@ export function CardEstudio({
   definirParticiparPrototipos,
   betaMultiEstudio,
   definirBetaMultiEstudio,
-  betaRelatorios,
-  definirBetaRelatorios,
+  betaOrcamentosMagicos,
+  definirBetaOrcamentosMagicos,
+  betaEstoqueInteligente,
+  definirBetaEstoqueInteligente,
+  betaSimuladorMargem,
+  definirBetaSimuladorMargem,
+  templateOrcamento,
+  definirTemplateOrcamento,
+  limiteAlertaEstoque,
+  definirLimiteAlertaEstoque,
   pendente,
 }: PropsCardEstudio) {
   const { estudioAtivo, estudios, definirEstudioAtivo } = usarEstudio();
   const [mostrarConfigEstudio, setMostrarConfigEstudio] = useState(false);
+  const [mostrarConfigOrcamento, setMostrarConfigOrcamento] = useState(false);
+  const [mostrarConfigEstoque, setMostrarConfigEstoque] = useState(false);
   const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false);
 
   const lidarComMudancaBeta = (ativo: boolean) => {
@@ -33,7 +51,9 @@ export function CardEstudio({
     } else {
       definirParticiparPrototipos(false);
       definirBetaMultiEstudio(false);
-      definirBetaRelatorios(false);
+      definirBetaOrcamentosMagicos(false);
+      definirBetaEstoqueInteligente(false);
+      definirBetaSimuladorMargem(false);
       setMostrarConfigEstudio(false);
     }
   };
@@ -71,19 +91,17 @@ export function CardEstudio({
       <div className="space-y-6">
         <div>
           <label className="flex items-start gap-4 cursor-pointer group">
-            <div className="relative flex items-start mt-1 shrink-0">
+            <div className="relative flex items-center mt-0.5 shrink-0">
               <input
                 type="checkbox"
-                className="sr-only peer"
+                className="sr-only"
                 checked={participarPrototipos}
                 onChange={(e) => lidarComMudancaBeta(e.target.checked)}
               />
-              <div className="w-5 h-5 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 peer-checked:bg-indigo-500 peer-checked:border-indigo-500 transition-all flex items-center justify-center">
-                <Beaker
-                  size={12}
-                  className={`text-white transition-transform ${participarPrototipos ? "scale-100" : "scale-0"}`}
-                  strokeWidth={3}
-                />
+              <div className={`w-10 h-5.5 rounded-full flex items-center p-0.5 transition-all duration-300 ${participarPrototipos ? "bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.5)]" : "bg-gray-300 dark:bg-zinc-700"}`}>
+                 <div className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm flex items-center justify-center transform transition-transform duration-300 ease-in-out ${participarPrototipos ? "translate-x-4.5" : "translate-x-0"}`}>
+                    <Beaker size={10} className={`transition-opacity duration-300 ${participarPrototipos ? "text-indigo-500 opacity-100" : "opacity-0 hidden"}`} strokeWidth={3} />
+                 </div>
               </div>
             </div>
             <div className="flex-1">
@@ -112,18 +130,18 @@ export function CardEstudio({
                   className={`flex items-center justify-between p-4 rounded-xl border transition-all ${betaMultiEstudio ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/30"}`}
                 >
                   <label className="flex items-start gap-4 cursor-pointer flex-1">
-                    <div className="relative flex items-start mt-0.5 shrink-0">
+                    <div className="relative flex items-center mt-0.5 shrink-0">
                       <input
                         type="checkbox"
-                        className="sr-only peer"
+                        className="sr-only"
                         checked={betaMultiEstudio}
                         onChange={(e) => {
                           definirBetaMultiEstudio(e.target.checked);
                           if (!e.target.checked) setMostrarConfigEstudio(false);
                         }}
                       />
-                      <div className="w-4 h-4 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 flex items-center justify-center transition-all peer-checked:bg-indigo-500 peer-checked:border-indigo-500">
-                        {betaMultiEstudio && <div className="w-1.5 h-1.5 rounded-sm bg-white" />}
+                      <div className={`w-8 h-4.5 rounded-full flex items-center p-0.5 transition-all duration-300 ${betaMultiEstudio ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" : "bg-gray-300 dark:bg-zinc-700/60"}`}>
+                          <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transform transition-transform duration-300 ${betaMultiEstudio ? "translate-x-3.5" : "translate-x-0"}`} />
                       </div>
                     </div>
                     <div className="flex-1">
@@ -191,50 +209,194 @@ export function CardEstudio({
                   </div>
                 )}
 
+                {/* ORÇAMENTOS MÁGICOS */}
                 <div
-                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${betaRelatorios ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/30"}`}
+                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${betaOrcamentosMagicos ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/30"}`}
                 >
                   <label className="flex items-start gap-4 cursor-pointer flex-1">
-                    <div className="relative flex items-start mt-0.5 shrink-0">
+                    <div className="relative flex items-center mt-0.5 shrink-0">
                       <input
                         type="checkbox"
-                        className="sr-only peer"
-                        checked={betaRelatorios}
-                        onChange={(e) => definirBetaRelatorios(e.target.checked)}
+                        className="sr-only"
+                        checked={betaOrcamentosMagicos}
+                        onChange={(e) => {
+                          definirBetaOrcamentosMagicos(e.target.checked);
+                          if (!e.target.checked) setMostrarConfigOrcamento(false);
+                        }}
                       />
-                      <div className="w-4 h-4 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 flex items-center justify-center transition-all peer-checked:bg-indigo-500 peer-checked:border-indigo-500">
-                        {betaRelatorios && <div className="w-1.5 h-1.5 rounded-sm bg-white" />}
+                      <div className={`w-8 h-4.5 rounded-full flex items-center p-0.5 transition-all duration-300 ${betaOrcamentosMagicos ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" : "bg-gray-300 dark:bg-zinc-700/60"}`}>
+                          <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transform transition-transform duration-300 ${betaOrcamentosMagicos ? "translate-x-3.5" : "translate-x-0"}`} />
                       </div>
                     </div>
                     <div className="flex-1">
                       <h4
-                        className={`text-sm font-bold flex items-center gap-2 ${betaRelatorios ? "text-indigo-900 dark:text-indigo-100" : "text-gray-900 dark:text-white"}`}
+                        className={`text-sm font-bold flex items-center gap-2 ${betaOrcamentosMagicos ? "text-indigo-900 dark:text-indigo-100" : "text-gray-900 dark:text-white"}`}
                       >
-                        <BrainCircuit
+                        <Share2
                           size={16}
-                          className={betaRelatorios ? "text-indigo-500" : "text-gray-400 dark:text-zinc-500"}
+                          className={betaOrcamentosMagicos ? "text-indigo-500" : "text-gray-400 dark:text-zinc-500"}
                         />{" "}
-                        Relatórios com IA
+                        Orçamentos Mágicos
                       </h4>
                       <p
-                        className={`text-[11px] mt-0.5 leading-relaxed ${betaRelatorios ? "text-indigo-700 dark:text-indigo-300/80" : "text-gray-500 dark:text-zinc-500"}`}
+                        className={`text-[11px] mt-0.5 leading-relaxed ${betaOrcamentosMagicos ? "text-indigo-700 dark:text-indigo-300/80" : "text-gray-500 dark:text-zinc-500"}`}
                       >
-                        Dashboard e métricas preditivas geradas pelo motor de IA.
+                        Links dinâmicos para WhatsApp otimizando a venda direta ao cliente (em breve).
                       </p>
                     </div>
                   </label>
-
-                  {betaRelatorios && (
-                    <button
-                      className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 opacity-50 cursor-not-allowed"
-                      title="Configurações em breve"
-                      disabled
+                  {betaOrcamentosMagicos && (
+                    <button 
+                      onClick={() => setMostrarConfigOrcamento(!mostrarConfigOrcamento)}
+                      className={`p-2 rounded-lg transition-all ${mostrarConfigOrcamento ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-500/30"}`}
+                      title="Configurar Mensagem"
                     >
                       <Settings2 size={16} />
                     </button>
                   )}
                 </div>
+
+                {/* CONFIG ORÇAMENTO */}
+                {betaOrcamentosMagicos && mostrarConfigOrcamento && (
+                  <div className="mx-2 p-4 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/5 animate-in zoom-in-95 duration-200 space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-zinc-500">
+                      Personalizar Mensagem WhatsApp
+                    </label>
+                    <textarea 
+                      value={templateOrcamento}
+                      onChange={(e) => definirTemplateOrcamento(e.target.value)}
+                      rows={5}
+                      className="w-full p-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 text-xs text-gray-700 dark:text-gray-300 focus:border-indigo-500 transition-all resize-none"
+                      placeholder="Use {estudio} e {valor} como variáveis..."
+                    />
+                    <div className="flex gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase tracking-wider">{`{estudio}`}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase tracking-wider">{`{valor}`}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* ESTOQUE INTELIGENTE */}
+                <div
+                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${betaEstoqueInteligente ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/30"}`}
+                >
+                  <label className="flex items-start gap-4 cursor-pointer flex-1">
+                    <div className="relative flex items-center mt-0.5 shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={betaEstoqueInteligente}
+                        onChange={(e) => {
+                          definirBetaEstoqueInteligente(e.target.checked);
+                          if (!e.target.checked) setMostrarConfigEstoque(false);
+                        }}
+                      />
+                      <div className={`w-8 h-4.5 rounded-full flex items-center p-0.5 transition-all duration-300 ${betaEstoqueInteligente ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" : "bg-gray-300 dark:bg-zinc-700/60"}`}>
+                          <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transform transition-transform duration-300 ${betaEstoqueInteligente ? "translate-x-3.5" : "translate-x-0"}`} />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4
+                        className={`text-sm font-bold flex items-center gap-2 ${betaEstoqueInteligente ? "text-indigo-900 dark:text-indigo-100" : "text-gray-900 dark:text-white"}`}
+                      >
+                        <PackageSearch
+                          size={16}
+                          className={betaEstoqueInteligente ? "text-indigo-500" : "text-gray-400 dark:text-zinc-500"}
+                        />{" "}
+                        Estoque Inteligente
+                      </h4>
+                      <p
+                        className={`text-[11px] mt-0.5 leading-relaxed ${betaEstoqueInteligente ? "text-indigo-700 dark:text-indigo-300/80" : "text-gray-500 dark:text-zinc-500"}`}
+                      >
+                        Alertas preditivos de reposição cruzando seu histórico de consumo e fornecedores.
+                      </p>
+                    </div>
+                  </label>
+                  {betaEstoqueInteligente && (
+                    <button 
+                      onClick={() => setMostrarConfigEstoque(!mostrarConfigEstoque)}
+                      className={`p-2 rounded-lg transition-all ${mostrarConfigEstoque ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-500/30"}`}
+                      title="Configurar Alertas"
+                    >
+                      <Settings2 size={16} />
+                    </button>
+                  )}
+                </div>
+
+                {/* CONFIG ESTOQUE */}
+                {betaEstoqueInteligente && mostrarConfigEstoque && (
+                  <div className="mx-2 p-4 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/5 animate-in zoom-in-95 duration-200 space-y-4">
+                    <div className="flex items-center justify-between">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-zinc-500">
+                        Limite Mínimo para Alerta
+                      </label>
+                      <span className="text-xs font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-md">{limiteAlertaEstoque}g</span>
+                    </div>
+                    <input 
+                      type="range"
+                      min={50}
+                      max={2000}
+                      step={50}
+                      value={limiteAlertaEstoque}
+                      onChange={(e) => definirLimiteAlertaEstoque(Number(e.target.value))}
+                      className="w-full h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                    <div className="flex justify-between text-[10px] text-gray-400 font-medium">
+                      <span>Mín: 50g</span>
+                      <span>Máx: 2kg</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* SIMULADOR MARGEM */}
+                <div
+                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${betaSimuladorMargem ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/30"}`}
+                >
+                  <label className="flex items-start gap-4 cursor-pointer flex-1">
+                    <div className="relative flex items-center mt-0.5 shrink-0">
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={betaSimuladorMargem}
+                        onChange={(e) => definirBetaSimuladorMargem(e.target.checked)}
+                      />
+                      <div className={`w-8 h-4.5 rounded-full flex items-center p-0.5 transition-all duration-300 ${betaSimuladorMargem ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" : "bg-gray-300 dark:bg-zinc-700/60"}`}>
+                          <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transform transition-transform duration-300 ${betaSimuladorMargem ? "translate-x-3.5" : "translate-x-0"}`} />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4
+                        className={`text-sm font-bold flex items-center gap-2 ${betaSimuladorMargem ? "text-indigo-900 dark:text-indigo-100" : "text-gray-900 dark:text-white"}`}
+                      >
+                        <TrendingUp
+                          size={16}
+                          className={betaSimuladorMargem ? "text-indigo-500" : "text-gray-400 dark:text-zinc-500"}
+                        />{" "}
+                        Simulador de Margem DRE
+                      </h4>
+                      <p
+                        className={`text-[11px] mt-0.5 leading-relaxed ${betaSimuladorMargem ? "text-indigo-700 dark:text-indigo-300/80" : "text-gray-500 dark:text-zinc-500"}`}
+                      >
+                        Estresse seus preços e veja simulações do impacto de custos na sua lucratividade.
+                      </p>
+                    </div>
+                  </label>
+                </div>
               </div>
+            </div>
+
+            {/* FEEDBACK BETA */}
+            <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
+               <div className="flex flex-col text-left">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-1"><MessageCircle size={12}/> Seu Feedback é Ouro</span>
+                  <p className="text-xs text-gray-400 mt-0.5">Encontrou um erro ou tem uma ideia para o LAB? Fale direto com o desenvolvedor.</p>
+               </div>
+               <a 
+                 href="mailto:suporte@printlog.com.br?subject=[BETA]%20Feedback%20do%20Laborat%C3%B3rio"
+                 className="px-6 py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-500/20 bg-indigo-50/50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shrink-0"
+               >
+                 Enviar Feedback
+               </a>
             </div>
           </div>
         )}
@@ -284,7 +446,7 @@ export function CardEstudio({
               <ShieldCheck className="text-emerald-600 dark:text-emerald-500 shrink-0" size={20} />
               <div>
                 <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">Isolamento Garantido</h4>
-                <p className="text-xs text-emerald-800 dark:text-emerald-300/80 mt-1">
+                <p className="text-xs text-emerald-800 dark:text-amber-300/80 mt-1">
                   Seus dados reais continuam protegidos, mas recomendamos backup de projetos importantes.
                 </p>
               </div>

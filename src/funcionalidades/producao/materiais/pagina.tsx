@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, PackageSearch } from "lucide-react";
+import { Plus, PackageSearch, Sparkles, AlertTriangle } from "lucide-react";
+import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
@@ -15,6 +16,7 @@ import { ModalReposicaoEstoque } from "./componentes/ModalReposicaoEstoque";
 
 export function PaginaMateriais() {
   const { estado, acoes } = usarGerenciadorMateriais();
+  const { betaEstoqueInteligente } = usarBeta();
 
   usarDefinirCabecalho({
     titulo: "Estoque de Insumos",
@@ -70,6 +72,32 @@ export function PaginaMateriais() {
               valorInvestido={estado.metricas.valorInvestido}
               alertasBaixoEstoque={estado.metricas.alertasBaixoEstoque}
             />
+
+            {betaEstoqueInteligente && estado.metricas.alertasBaixoEstoque > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                  <PackageSearch size={100} />
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400 mt-1">
+                    <Sparkles size={24} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                       <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest">Alerta Preditivo (Em Breve)</h3>
+                       <span className="bg-indigo-500/20 text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">IA Lab</span>
+                    </div>
+                    <p className="text-xs text-indigo-300/80 mt-1 leading-relaxed max-w-xl">
+                      Historicamente, você consome rolos similares muito rápido. Seu estoque atual tem <strong className="text-indigo-200">{estado.metricas.alertasBaixoEstoque} material(is)</strong> abaixo do seu limite de <strong className="text-indigo-200">{limiteAlertaEstoque}g</strong>. Sugerimos preparar uma ordem de compra nos próximos <strong>5 dias</strong> para não travar a linha de produção.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             <div className="mt-8">
               <FiltrosMaterial

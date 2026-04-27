@@ -58,7 +58,7 @@ export const servicoManutencao = {
         id: resposta.id,
         data: new Date().toISOString(),
         pecasTrocadas: dados.pecasTrocadas?.join(", "),
-        responsavel: "Usuário", // TODO: Buscar nome real do contexto de auth
+        responsavel: "Usuário", 
         horasMaquinaNoMomentoMinutos: 0, // O backend deve preencher ou calculamos aqui
       };
 

@@ -384,7 +384,7 @@ export function Apresentacao() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-400" />
               </span>
               <span className="text-sky-400 text-[11px] font-bold tracking-[.2em] uppercase font-mono">
-                Beta Público Liberado
+                Oferta Lançamento: PRO 100% OFF
               </span>
             </div>
 
@@ -418,8 +418,8 @@ export function Apresentacao() {
             >
               Pare de precificar no{" "}
               <span className="text-white font-semibold">"chutômetro"</span>.
-              Gestão profissional para makers e farms de impressão 3D — calcule
-              custos reais, gerencie materiais e garanta lucro em cada peça.
+              Gestão profissional para makers com **IA Llama 3** — 
+              calcule custos reais, defina o branding do seu estúdio e garanta seu lucro.
             </p>
 
             {/* Chamadas para Ação (CTAs) */}

@@ -49,7 +49,7 @@ export function ChamadaAcao() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>
             <span className="text-blue-400 text-xs font-bold uppercase tracking-widest">
-              Comece Hoje — É Grátis
+              Oportunidade Limitada — Plano PRO Liberado
             </span>
           </motion.div>
 
@@ -61,9 +61,9 @@ export function ChamadaAcao() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight"
           >
-            PRONTO PARA <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-              LUCRAR DE VERDADE?
+            TRANSFORME SEU <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
+              HOBBY EM NEGÓCIO
             </span>
           </motion.h2>
 
@@ -75,8 +75,8 @@ export function ChamadaAcao() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Feito para makers e farms que querem otimizar sua
-            precificação e aumentar seus lucros.
+            Junte-se a centenas de makers que já profissionalizaram seus estúdios com 
+            inteligência artificial e orçamentos personalizados.
           </motion.p>
 
           {/* Botão de Ação */}
@@ -89,16 +89,16 @@ export function ChamadaAcao() {
           >
             <button
               onClick={() => navegar("/cadastro")}
-              className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl font-bold text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
+              className="group relative px-10 py-5 bg-sky-600 text-white rounded-xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-sky-500/20 hover:bg-sky-500 hover:-translate-y-1 transition-all duration-300"
             >
               <span className="flex items-center gap-2">
-                Criar Conta Grátis
+                Garantir Vaga Fundador PRO
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </button>
 
-            <p className="text-sm text-zinc-500 font-medium">
-              Sem cartão de crédito. Sem compromisso.
+            <p className="text-sm text-sky-500 font-black uppercase tracking-[0.1em]">
+              Plano PRO 100% OFF por tempo limitado
             </p>
           </motion.div>
         </div>
