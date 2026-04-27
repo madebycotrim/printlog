@@ -46,6 +46,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     nomeEstudio: "",
                     sloganEstudio: "",
                     plano: "FREE",
+                    cicloPagamento: "MENSAL",
                 }), { headers: { "Content-Type": "application/json" } });
             }
 
@@ -57,16 +58,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 nomeEstudio: resultado.nome_estudio || "",
                 sloganEstudio: resultado.slogan_estudio || "",
                 plano: resultado.plano || "FREE",
+                cicloPagamento: resultado.ciclo_pagamento || "MENSAL",
             }), { headers: { "Content-Type": "application/json" } });
         }
 
         // PUT — Upsert das configurações (cria ou atualiza)
+        // OBSERVAÇÃO DE SEGURANÇA: plano e ciclo_pagamento nunca são atualizados aqui, apenas inseridos no registro inicial!
         if (metodo === "PUT") {
             const dados = await request.json() as any;
 
             await env.DB.prepare(`
-                INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, plano, atualizado_em)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, plano, ciclo_pagamento, atualizado_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id_usuario) DO UPDATE SET
                     email          = excluded.email,
                     custo_energia  = excluded.custo_energia,
@@ -75,7 +78,6 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     margem_lucro   = excluded.margem_lucro,
                     nome_estudio   = excluded.nome_estudio,
                     slogan_estudio = excluded.slogan_estudio,
-                    plano          = excluded.plano,
                     atualizado_em  = excluded.atualizado_em
             `).bind(
                 usuarioId,
@@ -86,7 +88,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 dados.margemLucro,
                 dados.nomeEstudio || "",
                 dados.sloganEstudio || "",
-                dados.plano || "FREE",
+                "FREE",
+                "MENSAL",
                 new Date().toISOString()
             ).run();
 

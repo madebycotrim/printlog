@@ -14,6 +14,8 @@ interface UsuarioAdmin {
   email?: string;
   nome_estudio: string;
   plano: PlanoUsuario;
+  ciclo_pagamento?: "MENSAL" | "TRIMESTRAL" | "SEMESTRAL" | "ANUAL" | "VITALICIO";
+  vencimento_plano?: string;
   atualizado_em: string;
 }
 
@@ -23,6 +25,19 @@ const mascararEmail = (email?: string) => {
   if (!dominio) return email;
   const mascara = nome.length > 2 ? `${nome[0]}***${nome[nome.length - 1]}` : `${nome[0]}***`;
   return `${mascara}@${dominio}`;
+};
+
+const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
+  if (ciclo === "VITALICIO") return { texto: "Nunca expira", cor: "text-blue-500", bg: "bg-blue-500/10" };
+  if (!dataStr) return { texto: "Sem data", cor: "text-gray-400", bg: "bg-gray-500/10" };
+  
+  const hoje = new Date();
+  const venc = new Date(dataStr);
+  const diffDias = Math.ceil((venc.getTime() - hoje.getTime()) / (1000 * 3600 * 24));
+
+  if (diffDias < 0) return { texto: `Expirado há ${Math.abs(diffDias)} dias`, cor: "text-red-500", bg: "bg-red-500/10" };
+  if (diffDias <= 7) return { texto: `Expira em ${diffDias} dias`, cor: "text-amber-500", bg: "bg-amber-500/10" };
+  return { texto: `Expira: ${venc.toLocaleDateString('pt-BR')}`, cor: "text-emerald-500", bg: "bg-emerald-500/10" };
 };
 
 /**
@@ -60,11 +75,39 @@ export function PaginaAdmin() {
   const mudarPlano = async (idUsuario: string, novoPlano: PlanoUsuario) => {
     definirSalvando(idUsuario);
     try {
-      await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, novoPlano });
+      // Se for Fundador, sugerimos ciclo Vitalício automaticamente
+      const novoCiclo = novoPlano === "FUNDADOR" ? "VITALICIO" : undefined;
+      await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, novoPlano, novoCiclo });
       toast.success("Plano atualizado!");
       buscarUsuarios(); // Recarrega a lista
     } catch (erro) {
       toast.error("Falha ao atualizar plano.");
+    } finally {
+      definirSalvando(null);
+    }
+  };
+
+  const mudarCiclo = async (idUsuario: string, novoCiclo: string) => {
+    definirSalvando(idUsuario);
+    try {
+      await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, novoCiclo });
+      toast.success("Ciclo atualizado!");
+      buscarUsuarios(); // Recarrega a lista
+    } catch (erro) {
+      toast.error("Falha ao atualizar ciclo.");
+    } finally {
+      definirSalvando(null);
+    }
+  };
+
+  const renovarPlano = async (idUsuario: string) => {
+    definirSalvando(idUsuario);
+    try {
+      await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, acao: "RENOVAR" });
+      toast.success("Plano renovado!");
+      buscarUsuarios(); // Recarrega a lista
+    } catch (erro) {
+      toast.error("Falha ao renovar plano.");
     } finally {
       definirSalvando(null);
     }
@@ -167,7 +210,7 @@ export function PaginaAdmin() {
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">E-mail / ID</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Estúdio</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Status Atual</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Ações de Cargo</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Ações de Plano & Ciclo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -185,29 +228,73 @@ export function PaginaAdmin() {
                     <span className="text-xs font-semibold text-gray-500 dark:text-zinc-400">{u.nome_estudio || "---"}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className={`
-                      inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest
-                      ${u.plano === 'FUNDADOR' ? 'bg-sky-500/10 text-sky-500' : u.plano === 'PRO' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-gray-500/10 text-gray-400'}
-                    `}>
-                       {u.plano === 'FUNDADOR' ? <Crown size={10} /> : u.plano === 'PRO' ? <Zap size={10} /> : <Users size={10} />}
-                       {u.plano}
+                    <div className="flex flex-col items-start gap-1.5">
+                      <div className="flex gap-1.5 items-center">
+                        <div className={`
+                          inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest
+                          ${u.plano === 'FUNDADOR' ? 'bg-sky-500/10 text-sky-500' : u.plano === 'PRO' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-gray-500/10 text-gray-400'}
+                        `}>
+                          {u.plano === 'FUNDADOR' ? <Crown size={10} /> : u.plano === 'PRO' ? <Zap size={10} /> : <Users size={10} />}
+                          {u.plano}
+                        </div>
+                        <span className="text-[9px] font-bold text-gray-400 px-1 uppercase tracking-widest">
+                          {u.ciclo_pagamento || "MENSAL"}
+                        </span>
+                      </div>
+                      
+                      {u.plano !== "FREE" && (
+                        <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest ${obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento).cor} ${obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento).bg}`}>
+                          {obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento).texto}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {(['FREE', 'PRO', 'FUNDADOR'] as PlanoUsuario[]).map(p => (
-                        <button
-                          key={p}
-                          disabled={salvando === u.id_usuario || u.plano === p}
-                          onClick={() => mudarPlano(u.id_usuario, p)}
-                          className={`
-                            px-3 py-1.5 rounded-lg text-[8px] font-black tracking-tighter uppercase transition-all
-                            ${u.plano === p ? 'bg-gray-100 dark:bg-white/10 text-gray-400 cursor-default' : 'bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-gray-600 dark:text-zinc-400 hover:border-sky-500 hover:text-sky-500'}
-                          `}
+                    <div className="flex justify-end items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      
+                      {/* Botão de Renovar */}
+                      {u.plano === "PRO" && (
+                         <button
+                           disabled={salvando === u.id_usuario}
+                           onClick={() => renovarPlano(u.id_usuario)}
+                           className="px-2 py-1.5 rounded-lg text-[8px] font-black tracking-tighter uppercase transition-all bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white"
+                         >
+                           {salvando === u.id_usuario ? '...' : 'RENOVAR'}
+                         </button>
+                      )}
+
+                      {/* Seletor de Ciclo */}
+                      {u.plano !== "FREE" && (
+                        <select
+                          disabled={salvando === u.id_usuario}
+                          value={u.ciclo_pagamento || "MENSAL"}
+                          onChange={(e) => mudarCiclo(u.id_usuario, e.target.value)}
+                          className="bg-transparent text-[9px] font-black tracking-widest uppercase text-gray-500 dark:text-zinc-400 outline-none cursor-pointer border border-gray-100 dark:border-white/5 rounded-lg px-2 py-1.5 hover:border-sky-500 transition-colors"
                         >
-                          {salvando === u.id_usuario && u.plano !== p ? '...' : p}
-                        </button>
-                      ))}
+                          <option value="MENSAL">Mensal</option>
+                          <option value="TRIMESTRAL">Trimestral</option>
+                          <option value="SEMESTRAL">Semestral</option>
+                          <option value="ANUAL">Anual</option>
+                          <option value="VITALICIO">Vitalício</option>
+                        </select>
+                      )}
+
+                      {/* Botões de Plano */}
+                      <div className="flex gap-1">
+                        {(['FREE', 'PRO', 'FUNDADOR'] as PlanoUsuario[]).map(p => (
+                          <button
+                            key={p}
+                            disabled={salvando === u.id_usuario || u.plano === p}
+                            onClick={() => mudarPlano(u.id_usuario, p)}
+                            className={`
+                              px-3 py-1.5 rounded-lg text-[8px] font-black tracking-tighter uppercase transition-all
+                              ${u.plano === p ? 'bg-gray-100 dark:bg-white/10 text-gray-400 cursor-default' : 'bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-gray-600 dark:text-zinc-400 hover:border-sky-500 hover:text-sky-500'}
+                            `}
+                          >
+                            {salvando === u.id_usuario && u.plano !== p ? '...' : p}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </td>
                 </tr>
