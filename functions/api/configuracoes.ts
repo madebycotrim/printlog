@@ -47,6 +47,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     sloganEstudio: "",
                     plano: "FREE",
                     cicloPagamento: "MENSAL",
+                    vencimentoPlano: null,
                 }), { headers: { "Content-Type": "application/json" } });
             }
 
@@ -59,6 +60,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 sloganEstudio: resultado.slogan_estudio || "",
                 plano: resultado.plano || "FREE",
                 cicloPagamento: resultado.ciclo_pagamento || "MENSAL",
+                vencimentoPlano: resultado.vencimento_plano || null,
             }), { headers: { "Content-Type": "application/json" } });
         }
 

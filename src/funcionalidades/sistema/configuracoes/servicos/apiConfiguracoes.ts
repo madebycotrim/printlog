@@ -1,6 +1,8 @@
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { configuracoesSchema } from "../esquemas";
 
+export type PlanoUsuario = "FREE" | "PRO" | "FUNDADOR";
+
 export interface ConfiguracoesSalvas {
   custoEnergia: string;
   horaMaquina: string;
@@ -8,7 +10,9 @@ export interface ConfiguracoesSalvas {
   margemLucro: string;
   nomeEstudio?: string;
   sloganEstudio?: string;
-  plano?: "FREE" | "PRO" | "FUNDADOR";
+  plano?: PlanoUsuario;
+  cicloPagamento?: string;
+  vencimentoPlano?: string | null;
 }
 
 /**

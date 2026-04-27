@@ -17,6 +17,8 @@ interface ArmazemConfiguracoes {
   nomeEstudio: string;
   sloganEstudio: string;
   plano: PlanoUsuario;
+  cicloPagamento?: string;
+  vencimentoPlano?: string | null;
   carregando: boolean;
 
   // Ações
@@ -41,6 +43,8 @@ export const VALORES_PADRAO = {
   nomeEstudio: "",
   sloganEstudio: "",
   plano: "PRO" as PlanoUsuario,
+  cicloPagamento: "MENSAL",
+  vencimentoPlano: null,
 };
 
 /**
@@ -69,6 +73,8 @@ export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
         nomeEstudio: dados.nomeEstudio || "",
         sloganEstudio: dados.sloganEstudio || "",
         plano: dados.plano || "PRO",
+        cicloPagamento: dados.cicloPagamento || "MENSAL",
+        vencimentoPlano: dados.vencimentoPlano || null,
       });
     } catch (erro) {
       // Se falhar, mantém os valores padrão silenciosamente
