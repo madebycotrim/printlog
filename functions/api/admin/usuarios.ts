@@ -39,7 +39,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             // TODO: Adicionar checagem de e-mail aqui se o middleware não prover.
             // Por enquanto, vamos listar.
             const { results } = await env.DB.prepare(
-                "SELECT id_usuario, nome_estudio, plano, atualizado_em FROM configuracoes_usuario ORDER BY atualizado_em DESC"
+                "SELECT id_usuario, email, nome_estudio, plano, atualizado_em FROM configuracoes_usuario ORDER BY atualizado_em DESC"
             ).all();
 
             return new Response(JSON.stringify(results), {
@@ -66,7 +66,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
-        return new Response(JSON.stringify({ erro: erro.message }), {
+        return new Response(JSON.stringify({ mensagem: erro.message }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });

@@ -11,10 +11,19 @@ import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
 
 interface UsuarioAdmin {
   id_usuario: string;
+  email?: string;
   nome_estudio: string;
   plano: PlanoUsuario;
   atualizado_em: string;
 }
+
+const mascararEmail = (email?: string) => {
+  if (!email) return "";
+  const [nome, dominio] = email.split('@');
+  if (!dominio) return email;
+  const mascara = nome.length > 2 ? `${nome[0]}***${nome[nome.length - 1]}` : `${nome[0]}***`;
+  return `${mascara}@${dominio}`;
+};
 
 /**
  * Página de Administração - Gestão do Clube dos 51 (Fundadores).
@@ -83,7 +92,8 @@ export function PaginaAdmin() {
 
   const usuariosFiltrados = usuarios.filter(u => 
     u.id_usuario.toLowerCase().includes(busca.toLowerCase()) || 
-    u.nome_estudio?.toLowerCase().includes(busca.toLowerCase())
+    u.nome_estudio?.toLowerCase().includes(busca.toLowerCase()) ||
+    u.email?.toLowerCase().includes(busca.toLowerCase())
   );
 
   return (
@@ -131,7 +141,7 @@ export function PaginaAdmin() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
         <input 
           type="text" 
-          placeholder="Buscar por ID ou Nome do Estúdio..."
+          placeholder="Buscar por Email, ID ou Nome do Estúdio..."
           value={busca}
           onChange={(e) => definirBusca(e.target.value)}
           className="w-full h-14 pl-12 pr-6 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 outline-none focus:border-sky-500/50 transition-all font-medium text-sm"
@@ -154,7 +164,7 @@ export function PaginaAdmin() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-black/20">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Usuário / ID</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">E-mail / ID</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Estúdio</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Status Atual</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Ações de Cargo</th>
@@ -165,8 +175,10 @@ export function PaginaAdmin() {
                 <tr key={u.id_usuario} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-gray-900 dark:text-white truncate max-w-[200px]">{u.id_usuario}</span>
-                      <span className="text-[9px] text-gray-400 font-medium">Última atividade: {new Date(u.atualizado_em).toLocaleDateString('pt-BR')}</span>
+                      <span className="text-xs font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
+                        {u.email ? mascararEmail(u.email) : (u.id_usuario.length > 20 ? u.id_usuario.slice(0, 15) + '...' : u.id_usuario)}
+                      </span>
+                      <span className="text-[9px] text-gray-400 font-medium">ID: {u.id_usuario.slice(0, 6)}... | Ativ: {new Date(u.atualizado_em).toLocaleDateString('pt-BR')}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">

@@ -10,7 +10,7 @@ interface Env {
     DB: D1Database;
 }
 
-export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
     const { env, data, request } = context;
 
     // Obtido com segurança via Middleware JWT
@@ -20,11 +20,21 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const metodo = request.method;
 
     try {
+        const emailUsuario = context.data.email || "";
+
         // GET — Busca as configurações do usuário (ou retorna os padrões)
         if (metodo === "GET") {
             const resultado = await env.DB.prepare(
                 "SELECT * FROM configuracoes_usuario WHERE id_usuario = ? LIMIT 1"
             ).bind(usuarioId).first();
+
+            // Se o usuário existe mas não tem e-mail salvo, atualiza em background
+            if (resultado && !resultado.email && emailUsuario) {
+                context.waitUntil(
+                    env.DB.prepare("UPDATE configuracoes_usuario SET email = ? WHERE id_usuario = ?")
+                    .bind(emailUsuario, usuarioId).run()
+                );
+            }
 
             if (!resultado) {
                 // Retorna valores padrão sem criar o registro ainda
@@ -35,7 +45,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     margemLucro: "150,00%",
                     nomeEstudio: "",
                     sloganEstudio: "",
-                    plano: "PRO",
+                    plano: "FREE",
                 }), { headers: { "Content-Type": "application/json" } });
             }
 
@@ -46,7 +56,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 margemLucro: resultado.margem_lucro,
                 nomeEstudio: resultado.nome_estudio || "",
                 sloganEstudio: resultado.slogan_estudio || "",
-                plano: resultado.plano || "PRO",
+                plano: resultado.plano || "FREE",
             }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -55,9 +65,10 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const dados = await request.json() as any;
 
             await env.DB.prepare(`
-                INSERT INTO configuracoes_usuario (id_usuario, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, plano, atualizado_em)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, plano, atualizado_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id_usuario) DO UPDATE SET
+                    email          = excluded.email,
                     custo_energia  = excluded.custo_energia,
                     hora_maquina   = excluded.hora_maquina,
                     hora_operador  = excluded.hora_operador,
@@ -68,6 +79,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     atualizado_em  = excluded.atualizado_em
             `).bind(
                 usuarioId,
+                emailUsuario,
                 dados.custoEnergia,
                 dados.horaMaquina,
                 dados.horaOperador,
