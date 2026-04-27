@@ -87,9 +87,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email: string }> 
         const emailUsuario = (context.data.email || "").trim().toLowerCase();
         const emailDono = (env.EMAIL_DONO || "").trim().toLowerCase();
 
-        // Lista de e-mails que SEMPRE têm acesso de admin (Fallback de segurança)
         const emailsAdminPermitidos = [
-            "printlog.app@gmail.com",
             emailDono
         ].filter(Boolean);
 

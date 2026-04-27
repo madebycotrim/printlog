@@ -235,6 +235,16 @@ export function PaginaConfiguracoes() {
         <Carregamento texto={salvando ? "Salvando Alterações..." : "Enviando E-mail de Segurança..."} />
       )}
       <div className="relative mx-auto w-full max-w-6xl space-y-6">
+        {config.plano !== "FREE" && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }}>
+            <CardPlanoPremium
+              plano={config.plano}
+              cicloPagamento={config.cicloPagamento}
+              vencimentoPlano={config.vencimentoPlano}
+            />
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }}>
             <CardPerfil
@@ -269,16 +279,6 @@ export function PaginaConfiguracoes() {
             <CardMetricas />
           </motion.div>
         </div>
-
-        {config.plano !== "FREE" && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.28 }}>
-            <CardPlanoPremium
-              plano={config.plano}
-              cicloPagamento={config.cicloPagamento}
-              vencimentoPlano={config.vencimentoPlano}
-            />
-          </motion.div>
-        )}
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.32 }}>
           <CardEstudio
