@@ -86,7 +86,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email: string }> 
         const emailDono = env.EMAIL_DONO;
 
         if (!emailUsuario || !emailDono || emailUsuario.toLowerCase() !== emailDono.toLowerCase()) {
-            registrar.error({ rastreioId: uid, servico: "Seguranca" }, `Tentativa de acesso não autorizado à rota admin por: ${emailUsuario}`);
+            console.error(`[Seguranca] Tentativa de acesso não autorizado à rota admin por: ${emailUsuario} (UID: ${uid})`);
             return new Response(JSON.stringify({ 
                 erro: "Acesso negado. Esta área é restrita ao administrador.",
                 codigo: "ADMIN_REQUIRED"

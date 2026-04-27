@@ -1,4 +1,4 @@
-import { Menu, Search, Beaker, Crown } from "lucide-react";
+import { Menu, Search, Beaker } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { usarCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShieldCheck, Users, Crown, Zap, Save, Search, Mail } from "lucide-react";
+import { ShieldCheck, Users, Crown, Zap, Search } from "lucide-react";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
@@ -145,7 +145,11 @@ export function PaginaAdmin() {
              <Carregamento texto="Carregando base de usuários..." />
           </div>
         ) : usuariosFiltrados.length === 0 ? (
-          <EstadoVazio mensagem="Nenhum usuário encontrado." />
+          <EstadoVazio 
+            titulo="Nenhum usuário" 
+            descricao="Nenhum registro encontrado para esta busca." 
+            icone={Users} 
+          />
         ) : (
           <table className="w-full text-left">
             <thead>

@@ -125,6 +125,13 @@ export const servicoBaseApi = {
     });
   },
 
+  patch<T>(caminho: string, dados: unknown): Promise<T> {
+    return this.requisicao<T>(caminho, {
+      method: "PATCH",
+      body: JSON.stringify(dados),
+    });
+  },
+
   delete<T>(caminho: string): Promise<T> {
     return this.requisicao<T>(caminho, { method: "DELETE" });
   },

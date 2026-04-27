@@ -2,7 +2,6 @@ import { User, Mail, Lock, Crown } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { Usuario } from "@/compartilhado/tipos/modelos";
 import { Avatar } from "@/compartilhado/componentes/Avatar";
-import { SeloPlano } from "@/compartilhado/componentes/SeloPlano";
 import { Zap } from "lucide-react";
 
 /**

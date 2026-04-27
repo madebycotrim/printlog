@@ -15,7 +15,6 @@ import {
   Beaker,
   ChevronLeft,
   ChevronRight,
-  Crown,
   ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
