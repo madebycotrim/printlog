@@ -22,25 +22,37 @@ export function CardInsumos({
   insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, insumosFixos, setInsumosFixos, abrirGerenciar, abrirNovo
 }: CardInsumosProps) {
   return (
-    <div className="p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-50 dark:border-white/5">
+    <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <Box size={18} className="text-violet-500" />
-          <h3 className="text-xs font-black uppercase tracking-widest text-violet-500">Insumos e Adicionais</h3>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 flex items-center justify-center text-yellow-400 border border-yellow-500/30 shadow-[inset_0px_1px_12px_rgba(234,179,8,0.2)]">
+            <Box size={18} className="animate-pulse" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-black uppercase tracking-wider text-white">Insumos e Adicionais</span>
+            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Complementos do projeto</span>
+          </div>
         </div>
+        
         <div className="relative group">
-          <input type="text" placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="w-full md:w-64 h-9 pl-9 pr-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:border-violet-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all" />
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-500 transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Buscar..." 
+            value={busca} 
+            onChange={(e) => setBusca(e.target.value)} 
+            className="w-full md:w-64 h-10 pl-9 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-yellow-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700" 
+          />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-yellow-500 transition-colors" />
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <Package className="w-3 h-3 text-violet-500" />
+            <Package className="w-3 h-3 text-yellow-500" />
             <span className="text-xs font-black uppercase tracking-widest text-gray-400">Estoque de Insumos</span>
           </div>
-          <button onClick={abrirGerenciar} className="text-[10px] font-black uppercase text-violet-500 hover:text-violet-400 transition-colors flex items-center gap-1 group">
+          <button onClick={abrirGerenciar} className="text-[10px] font-black uppercase text-yellow-500 hover:text-yellow-400 transition-colors flex items-center gap-1 group">
             Gerenciar Estoque <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
           </button>
         </div>
@@ -54,12 +66,12 @@ export function CardInsumos({
                 onClick={() => alternar(i)} 
                 className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3
                   ${sel 
-                    ? "bg-violet-500/10 border-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.15)]" 
-                    : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-violet-500/30"}
+                    ? "bg-yellow-500/10 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.15)]" 
+                    : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-yellow-500/30"}
                 `}
               >
                 <div className="shrink-0">
-                  <div className={`p-2.5 rounded-xl transition-all duration-300 ${sel ? "bg-violet-500 text-white shadow-lg shadow-violet-500/30" : "bg-white dark:bg-white/5 text-zinc-400 group-hover:text-violet-500"}`}>
+                  <div className={`p-2.5 rounded-xl transition-all duration-300 ${sel ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/30" : "bg-white dark:bg-white/5 text-zinc-400 group-hover:text-yellow-500"}`}>
                     <Box size={18} />
                   </div>
                 </div>
@@ -70,14 +82,14 @@ export function CardInsumos({
                     <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
                       {i.categoria || 'Geral'} • {formatarMoedaFinancas(i.custoMedioUnidade)}
                     </p>
-                    <span className={`text-[8px] font-black uppercase mt-0.5 ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500' : 'text-violet-500'}`}>
+                    <span className={`text-[8px] font-black uppercase mt-0.5 ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500' : 'text-yellow-500'}`}>
                       {i.quantidadeAtual} {i.unidadeMedida} em estoque
                     </span>
                   </div>
                 </div>
 
                 {sel && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg">
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
@@ -88,7 +100,7 @@ export function CardInsumos({
           {insumos.length === 0 && (
             <div className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
+                <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
                   <Package size={14} />
                 </div>
                 <div className="flex flex-col">
@@ -98,7 +110,7 @@ export function CardInsumos({
               </div>
               <button 
                 onClick={abrirNovo}
-                className="px-4 h-9 bg-violet-500 hover:bg-violet-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-500/20 flex items-center gap-2"
+                className="px-4 h-9 bg-yellow-500 hover:bg-yellow-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-yellow-500/20 flex items-center gap-2"
               >
                 <Plus size={12} /> Cadastrar
               </button>
@@ -115,7 +127,7 @@ export function CardInsumos({
               className="py-12 border-2 border-dashed border-gray-100 dark:border-white/5 bg-gray-50/30 dark:bg-transparent rounded-2xl flex flex-col items-center justify-center gap-3"
             >
               <Box size={24} className="text-gray-400 dark:text-zinc-600 opacity-40" />
-              <p className="text-xs font-black uppercase tracking-widest text-violet-500/80 dark:text-violet-400/80">Selecione os insumos acima para calcular</p>
+              <p className="text-xs font-black uppercase tracking-widest text-yellow-500/80 dark:text-yellow-400/80">Selecione os insumos acima para calcular</p>
             </motion.div>
           ) : (
             <div className={`grid gap-4 ${
@@ -141,7 +153,7 @@ export function CardInsumos({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500 shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-yellow-500/10 flex items-center justify-center text-yellow-500 shrink-0">
                           <Package size={16} />
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -163,11 +175,11 @@ export function CardInsumos({
                         <label className="text-[9px] font-black uppercase text-gray-400 tracking-widest">
                           Qtd ({original?.unidadeMedida || 'un'})
                         </label>
-                        <div className="flex items-center h-9 rounded-lg bg-white dark:bg-black/40 overflow-hidden border border-gray-100 dark:border-white/5 focus-within:border-violet-500/30 transition-all">
+                        <div className="flex items-center h-9 rounded-lg bg-white dark:bg-black/40 overflow-hidden border border-gray-100 dark:border-white/5 focus-within:border-yellow-500/30 transition-all">
                           <button 
                             type="button"
                             onClick={() => atualizarQtd(item.id, Math.max(0, (item.quantidade || 0) - 1))}
-                            className="h-full px-2 text-gray-400 hover:text-violet-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-r border-gray-100 dark:border-white/5"
+                            className="h-full px-2 text-gray-400 hover:text-yellow-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-r border-gray-100 dark:border-white/5"
                           >
                             <Minus size={10} strokeWidth={3} />
                           </button>
@@ -181,7 +193,7 @@ export function CardInsumos({
                           <button 
                             type="button"
                             onClick={() => atualizarQtd(item.id, (item.quantidade || 0) + 1)}
-                            className="h-full px-2 text-gray-400 hover:text-violet-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-l border-gray-100 dark:border-white/5"
+                            className="h-full px-2 text-gray-400 hover:text-yellow-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-l border-gray-100 dark:border-white/5"
                           >
                             <Plus size={10} strokeWidth={3} />
                           </button>

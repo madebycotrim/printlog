@@ -428,7 +428,7 @@ export function usarCalculadora() {
   ].filter(d => d.value > 0), [calculo]);
 
   // --- FEATURE 1: EXPORTAÇÃO PDF ---
-  const gerarPdf = useCallback((nomeEstudioCustom?: string, sloganCustom?: string) => {
+  const gerarPdf = useCallback((nomeEstudioCustom?: string, sloganCustom?: string, nomeCliente?: string) => {
     const dataRef = new Date();
     const validade = new Date();
     validade.setDate(dataRef.getDate() + 7);
@@ -614,7 +614,7 @@ export function usarCalculadora() {
             <div style="display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 12px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px;">
               <div>
                 <strong style="color: #111827; text-transform: uppercase; font-size: 11px; display: block; margin-bottom: 4px;">Identificação do Cliente:</strong>
-                <span style="font-size: 15px; font-weight: 700; color: #111827;">Consumidor Final</span>
+                <span style="font-size: 15px; font-weight: 700; color: #111827;">${nomeCliente || "Consumidor Final"}</span>
               </div>
               <div style="text-align: right;">
                 <div><strong>Orçamento:</strong> #${Math.floor(1000 + Math.random() * 9000)}</div>
@@ -649,6 +649,36 @@ export function usarCalculadora() {
                 </tr>
               </tbody>
             </table>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 30px; border-top: 1px solid #111827; padding-top: 20px; margin-bottom: 20px;">
+              <div>
+                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 12px; letter-spacing: 0.5px;">3. Breakdown de Custos Transparente</div>
+                <div style="font-size: 11px; color: #4b5563; line-height: 1.6;">
+                  • Insumos & Materiais: <strong style="color: #111827">R$ ${((calculo.custoMaterial + calculo.custoInsumos) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong><br>
+                  • Engenharia & Processamento: <strong style="color: #111827">R$ ${((calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong><br>
+                  • Logística & Taxas Operacionais: <strong style="color: #111827">R$ ${((calculo.taxaMarketplace + calculo.impostoVenda) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 12px; letter-spacing: 0.5px;">5. Prazo de Produção</div>
+                <div style="font-size: 11px; color: #4b5563; line-height: 1.6;">
+                  • Tempo de impressão estimado: <strong style="color: #111827">${tempo} hora(s)</strong><br>
+                  • Tempo de pós-processamento: <strong style="color: #111827">${itensPosProcesso.length > 0 ? `${itensPosProcesso.length * 0.5} hora(s)` : '0.5 hora(s)'}</strong><br>
+                  • Prazo total de entrega: <strong style="color: #111827">${estimativaPrazo.diasUteis || 1} dias úteis</strong>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-top: 1px solid #111827; padding-top: 20px; margin-bottom: 30px;">
+              <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 12px; letter-spacing: 0.5px;">6. Opções Configuráveis</div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; font-size: 11px; color: #4b5563;">
+                <div>• <strong>Urgência:</strong> Prazo reduzido (+20% sobre o total)</div>
+                <div>• <strong>Cor alternativa:</strong> Variação de insumos sob consulta</div>
+                <div>• <strong>Acabamento premium:</strong> Lixamento/verniz extra</div>
+                <div>• <strong>Quantidade:</strong> Descontos progressivos escaláveis</div>
+              </div>
+            </div>
 
             <div style="display: flex; justify-content: flex-end; margin-top: 20px; margin-bottom: 40px;">
               <div style="width: 300px; border-top: 2px solid #111827; padding-top: 15px;">

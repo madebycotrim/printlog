@@ -53,11 +53,16 @@ export function CardOperacional({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`p-8 rounded-2xl border shadow-sm space-y-6 transition-all duration-300 ${cobrarMaoDeObra ? "bg-white dark:bg-zinc-900 border-gray-100 dark:border-white/5" : "bg-gray-50/50 dark:bg-zinc-900/50 border-gray-100 dark:border-white/5 opacity-70 grayscale"}`}>
-          <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-white/5">
+        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
-              <DollarSign size={18} className="text-emerald-500" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-emerald-500">Mão de Obra</h3>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 flex items-center justify-center text-emerald-400 border border-emerald-500/30 shadow-[inset_0px_1px_12px_rgba(16,185,129,0.2)]">
+                <DollarSign size={18} className="animate-pulse" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-wider text-white">Mão de Obra</span>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
+              </div>
             </div>
             <button
               type="button"
@@ -129,11 +134,16 @@ export function CardOperacional({
           </div>
         </div>
 
-        <div className={`p-8 rounded-2xl border shadow-sm space-y-6 transition-all duration-300 ${cobrarDesgaste ? "bg-white dark:bg-zinc-900 border-gray-100 dark:border-white/5" : "bg-gray-50/50 dark:bg-zinc-900/50 border-gray-100 dark:border-white/5 opacity-70 grayscale"}`}>
-          <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-white/5">
+        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
-              <Activity size={18} className="text-rose-500" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-rose-500">Desgaste de Máquina</h3>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/20 to-rose-500/5 flex items-center justify-center text-rose-400 border border-rose-500/30 shadow-[inset_0px_1px_12px_rgba(244,63,94,0.2)]">
+                <Activity size={18} className="animate-pulse" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-wider text-white">Desgaste e Depreciação</span>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Vida útil do equipamento</span>
+              </div>
             </div>
             
             <button
@@ -197,8 +207,8 @@ export function CardOperacional({
         </div>
       </div>
 
-      <div className="py-6 px-8 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm w-full">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+      <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: O Display do Valor e Status */}
           <div className="md:col-span-4 flex flex-col items-center md:items-start border-b md:border-b-0 md:border-r border-zinc-100 dark:border-white/5 pb-4 md:pb-0 md:pr-6">
