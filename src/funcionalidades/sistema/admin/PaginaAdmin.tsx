@@ -144,7 +144,7 @@ export function PaginaAdmin() {
       
       {/* HEADER DA PÁGINA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 flex items-center gap-4">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-500">
             <Crown size={24} />
           </div>
@@ -156,7 +156,7 @@ export function PaginaAdmin() {
           </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 flex items-center gap-4">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
             <Zap size={24} />
           </div>
@@ -168,7 +168,7 @@ export function PaginaAdmin() {
           </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 flex items-center gap-4">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gray-500/10 flex items-center justify-center text-gray-500">
             <Users size={24} />
           </div>
@@ -192,7 +192,7 @@ export function PaginaAdmin() {
       </div>
 
       {/* LISTAGEM */}
-      <div className="rounded-3xl border border-gray-100 dark:border-white/5 overflow-hidden bg-white dark:bg-[#121214]">
+      <div className="rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden bg-white dark:bg-[#121214]">
         {carregando ? (
           <div className="p-20 flex justify-center">
              <Carregamento texto="Carregando base de usuários..." />
@@ -304,7 +304,7 @@ export function PaginaAdmin() {
         )}
       </div>
 
-      <div className="p-8 rounded-3xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-4">
+      <div className="p-8 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-4">
          <ShieldCheck className="text-amber-500 shrink-0" size={20} />
          <div className="space-y-1">
             <h4 className="text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500">Aviso de Segurança Master</h4>

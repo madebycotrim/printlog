@@ -133,7 +133,7 @@ export function PaginaFinanceiro() {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="mt-6 p-6 rounded-3xl bg-zinc-900 border border-indigo-500/30 shadow-lg shadow-indigo-500/10 overflow-hidden relative"
+                className="mt-6 p-6 rounded-2xl bg-zinc-900 border border-indigo-500/30 shadow-lg shadow-indigo-500/10 overflow-hidden relative"
               >
                 <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none text-indigo-500">
                    <Sliders size={180} />

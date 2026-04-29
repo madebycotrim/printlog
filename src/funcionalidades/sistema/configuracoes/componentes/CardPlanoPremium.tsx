@@ -43,7 +43,7 @@ export function CardPlanoPremium({
 
             {/* Coluna Esquerda: Badge e Destaque do Plano */}
             <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4 z-10 w-full md:w-1/3 shrink-0">
-                <div className={`p-4 rounded-3xl ${ehFundador ? 'bg-gradient-to-tr from-sky-500/20 to-blue-500/10 text-sky-500 shadow-[0_12px_24px_rgba(14,165,233,0.15)]' : 'bg-gradient-to-tr from-indigo-500/20 to-purple-500/10 text-indigo-500 shadow-[0_12px_24px_rgba(99,102,241,0.15)]'} border border-white/10`}>
+                <div className={`p-4 rounded-2xl ${ehFundador ? 'bg-gradient-to-tr from-sky-500/20 to-blue-500/10 text-sky-500 shadow-[0_12px_24px_rgba(14,165,233,0.15)]' : 'bg-gradient-to-tr from-indigo-500/20 to-purple-500/10 text-indigo-500 shadow-[0_12px_24px_rgba(99,102,241,0.15)]'} border border-white/10`}>
                     {ehFundador ? <Crown size={32} className="animate-bounce fill-sky-500" /> : <Zap size={32} className="animate-pulse fill-indigo-500" />}
                 </div>
                 <div>

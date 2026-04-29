@@ -16,7 +16,7 @@ export function ModalAposentarImpressora({ aberto, aoFechar, aoConfirmar, impres
       <div className="flex flex-col bg-white dark:bg-[#18181b]">
         <div className="p-8 md:p-10 space-y-8">
           <div className="flex flex-col items-center text-center space-y-5">
-            <div className="w-20 h-20 rounded-3xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 dark:border-rose-500/20 animate-pulse">
+            <div className="w-20 h-20 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 dark:border-rose-500/20 animate-pulse">
               <AlertTriangle size={40} strokeWidth={2.5} />
             </div>
 

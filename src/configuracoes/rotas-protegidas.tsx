@@ -1,4 +1,4 @@
-﻿import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 

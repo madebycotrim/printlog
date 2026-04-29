@@ -96,7 +96,7 @@ export function ModalDetalhesImpressora({
         <div className="relative h-48 bg-zinc-50 dark:bg-white/[0.02] border-b border-zinc-100 dark:border-white/5 p-10 flex items-center gap-10">
           <div className="relative group">
             <div className="absolute -inset-4 bg-indigo-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition duration-500" />
-            <div className="relative w-32 h-32 rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shadow-2xl flex items-center justify-center p-4 overflow-hidden">
+            <div className="relative w-32 h-32 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shadow-2xl flex items-center justify-center p-4 overflow-hidden">
                {impressora.imagemUrl ? (
                  <img src={impressora.imagemUrl} alt={impressora.nome} className="w-full h-full object-contain" />
                ) : (
@@ -128,7 +128,7 @@ export function ModalDetalhesImpressora({
           {/* COLUNA ESQUERDA: DASHBOARD FINANCEIRO E OPERACIONAL */}
           <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* ROI REAL */}
-            <div className="col-span-1 md:col-span-2 p-8 rounded-[2.5rem] bg-zinc-900 dark:bg-white/[0.03] border border-zinc-100 dark:border-white/5 relative overflow-hidden group">
+            <div className="col-span-1 md:col-span-2 p-8 rounded-2xl bg-zinc-900 dark:bg-white/[0.03] border border-zinc-100 dark:border-white/5 relative overflow-hidden group">
                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700">
                   <TrendingUp size={120} />
                </div>
@@ -174,7 +174,7 @@ export function ModalDetalhesImpressora({
             </div>
 
             {/* SAÚDE E REVISÃO */}
-            <div className="p-8 rounded-[2.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5 flex flex-col justify-between group">
+            <div className="p-8 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5 flex flex-col justify-between group">
                <div>
                   <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500 mb-6">
                     <Wrench size={16} />
@@ -228,7 +228,7 @@ export function ModalDetalhesImpressora({
                     <textarea 
                       value={obsTexto} 
                       onChange={(e) => setObsTexto(e.target.value)}
-                      className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/10 rounded-3xl p-6 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:ring-2 ring-indigo-500/20 min-h-[150px]"
+                      className="w-full bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/10 rounded-2xl p-6 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:ring-2 ring-indigo-500/20 min-h-[150px]"
                       placeholder="Anote detalhes técnicos como calibração, bicos favoritos, etc..."
                     />
                     <div className="flex justify-end gap-3">
@@ -237,7 +237,7 @@ export function ModalDetalhesImpressora({
                     </div>
                  </div>
                ) : (
-                 <div className="p-8 rounded-[2.5rem] bg-zinc-50/50 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/[0.05] min-h-[120px] text-sm text-zinc-600 dark:text-zinc-400 italic">
+                 <div className="p-8 rounded-2xl bg-zinc-50/50 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/[0.05] min-h-[120px] text-sm text-zinc-600 dark:text-zinc-400 italic">
                     {obsTexto || "Nenhuma observação técnica registrada para este ativo."}
                  </div>
                )}
@@ -254,7 +254,7 @@ export function ModalDetalhesImpressora({
              <div className="space-y-4">
                 {impressora.historicoProducao && impressora.historicoProducao.length > 0 ? (
                   impressora.historicoProducao.slice(0, 5).map((p, idx) => (
-                    <div key={idx} className="p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
+                    <div key={idx} className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
                        <div className="min-w-0">
                           <p className="text-[10px] font-black text-zinc-900 dark:text-white truncate uppercase tracking-tight mb-1">{p.nomeProjeto || "Projeto Sem Nome"}</p>
                           <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
@@ -269,7 +269,7 @@ export function ModalDetalhesImpressora({
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center border-2 border-dashed border-zinc-100 dark:border-white/5 rounded-[2.5rem]">
+                  <div className="p-10 text-center border-2 border-dashed border-zinc-100 dark:border-white/5 rounded-2xl">
                      <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nenhum Job Registrado</p>
                   </div>
                 )}
@@ -283,7 +283,7 @@ export function ModalDetalhesImpressora({
 
 function MiniMetrica({ icone: Icone, rotulo, valor, cor = "text-zinc-900 dark:text-white" }: { icone: any, rotulo: string, valor: string, cor?: string }) {
   return (
-    <div className="p-5 rounded-3xl bg-zinc-50/50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
+    <div className="p-5 rounded-2xl bg-zinc-50/50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
        <div className="flex items-center gap-2 mb-3 text-zinc-400">
           <Icone size={14} />
           <span className="text-[8px] font-black uppercase tracking-widest">{rotulo}</span>

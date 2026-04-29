@@ -34,7 +34,7 @@ export function BannerExclusividade() {
 
       <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 w-full">
         {/* Ícone com Glow de Coroa */}
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 backdrop-blur-2xl border border-sky-500/30 shadow-[0_0_30px_rgba(14,165,233,0.2)]">
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 backdrop-blur-2xl border border-sky-500/30 shadow-[0_0_30px_rgba(14,165,233,0.2)]">
           <Crown size={48} className="text-sky-400 fill-sky-500/30 animate-bounce duration-[3s]" />
         </div>
 

@@ -227,7 +227,7 @@ export function GraficoConsumoMateriais({
       </div>
 
       {/* 📈 GRÁFICO DE ÁREA PREMIUM */}
-      <div className="bg-zinc-50 dark:bg-black/20 border border-zinc-200/50 dark:border-white/5 rounded-[2.5rem] p-8 relative">
+      <div className="bg-zinc-50 dark:bg-black/20 border border-zinc-200/50 dark:border-white/5 rounded-2xl p-8 relative">
         <div className="mb-6">
            <h4 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">
              Curva de Consumo Acumulado

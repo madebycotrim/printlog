@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, ElementType } from "react";
+import { useState, useRef, useEffect, ElementType } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Check } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -15,9 +15,9 @@ interface PropriedadesCombobox {
   placeholder?: string;
   titulo?: string; // Label do campo
   className?: string;
-  permitirNovo?: boolean; // Se true, funciona como um input com sugestões
-  icone?: ElementType; // Novo prop para ícone
-  aoCriarNovo?: (termo: string) => Promise<string | void>; // Callback de criação
+  permitirNovo?: boolean; // Se true, funciona como um input com sugest�es
+  icone?: ElementType; // Novo prop para �cone
+  aoCriarNovo?: (termo: string) => Promise<string | void>; // Callback de cria��o
   erro?: string; // Mensagem de erro para paridade com CampoTexto
 }
 
@@ -78,7 +78,7 @@ export function Combobox({
     }
   }, [aberto]);
 
-  // Filtra opÃ§Ãµes
+  // Filtra opções
   const opcoesFiltradas = opcoes.filter((op) => op.rotulo.toLowerCase().includes(termoBusca.toLowerCase()));
 
   const selecionarOpcao = async (valorOpcao: string) => {
@@ -111,7 +111,7 @@ export function Combobox({
       )}
 
       <div className="relative group">
-        {/* ÍCONE À ESQUERDA (Posicionamento absoluto para paridade com CampoTexto) */}
+        {/* �CONE � ESQUERDA (Posicionamento absoluto para paridade com CampoTexto) */}
         {Icone && (
           <Icone
             size={16}
@@ -220,7 +220,7 @@ export function Combobox({
                 </div>
               )}
 
-              {/* Se permitir novo e o termo nÃ£o estiver na lista, mostra opÃ§Ã£o explÃ­cita de criar se nÃ£o vazio */}
+              {/* Se permitir novo e o termo não estiver na lista, mostra opção explícita de criar se não vazio */}
               {permitirNovo && termoBusca && !opcoesFiltradas.find((op) => op.valor === termoBusca) && (
                 <button
                   type="button"

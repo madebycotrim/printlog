@@ -103,7 +103,7 @@ export function PaginaImpressoras() {
             </div>
 
              {estado.impressorasFiltradas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center bg-zinc-50/50 dark:bg-white/[0.02] rounded-[2.5rem] border border-dashed border-zinc-200 dark:border-white/5">
+              <div className="flex flex-col items-center justify-center py-20 text-center bg-zinc-50/50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-zinc-200 dark:border-white/5">
                 <Search size={40} strokeWidth={1} className="text-gray-300 dark:text-zinc-700 mb-4" />
                 <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Nenhum resultado</h3>
                 <p className="text-sm text-gray-500 dark:text-zinc-400 mb-8 max-w-xs">

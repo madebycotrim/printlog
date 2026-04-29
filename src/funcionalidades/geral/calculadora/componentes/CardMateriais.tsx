@@ -22,11 +22,11 @@ export function CardMateriais({
   materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, remover, abrirArmazem, abrirCriar
 }: CardMateriaisProps) {
   return (
-    <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+    <div className="p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-50 dark:border-white/5">
         <div className="flex items-center gap-3">
           <Layers size={18} className="text-sky-500" />
-          <h3 className="text-xs font-black uppercase tracking-widest">Materiais e Consumo</h3>
+          <h3 className="text-xs font-black uppercase tracking-widest text-sky-500">Materiais e Consumo</h3>
         </div>
         
         <div className="relative group">
@@ -169,7 +169,7 @@ export function CardMateriais({
                           </span>
                         )}
                       </div>
-                      <input type="number" value={item.quantidade || ""} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
+                      <input type="number" placeholder="0" value={item.quantidade || ""} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
                       
                       {/* Barra de Consumo */}
                       {(() => {
@@ -190,7 +190,7 @@ export function CardMateriais({
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Preço/Kg</label>
-                      <input type="number" value={item.precoKgCentavos / 100} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 border-transparent focus:border-sky-500/30 outline-none font-black text-xs" />
+                      <input type="number" placeholder="0" value={(item.precoKgCentavos / 100) || ""} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 border-transparent focus:border-sky-500/30 outline-none font-black text-xs" />
                     </div>
                   </div>
                   <button onClick={() => remover(item.id)} className="p-2 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">

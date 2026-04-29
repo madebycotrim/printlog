@@ -102,7 +102,7 @@ export function PaginaDesperdicio() {
       {/* 📊 GRÁFICOS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Evolução Histórica */}
-        <div className="p-10 rounded-[2.5rem] bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
+        <div className="p-10 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-3">
               <BarChart3 size={20} className="text-rose-500" />
@@ -152,7 +152,7 @@ export function PaginaDesperdicio() {
         </div>
 
         {/* Motivos de Perda */}
-        <div className="p-10 rounded-[2.5rem] bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
+        <div className="p-10 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-3">
               <PieChart size={20} className="text-amber-500" />
@@ -185,7 +185,7 @@ export function PaginaDesperdicio() {
       </div>
 
       {/* 📋 LISTA DE ITENS RECENTES (PLACEHOLDER PARA FASE 2) */}
-      <div className="p-10 rounded-[2.5rem] bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
+      <div className="p-10 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
         <div className="flex items-center justify-between mb-10">
           <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-zinc-500 underline decoration-rose-500/30">
             Registros de Sucata Recomendados para Auditoria

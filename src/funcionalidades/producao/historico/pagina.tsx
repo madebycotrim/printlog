@@ -106,7 +106,7 @@ export function PaginaHistoricoProducao() {
 
       {/* 📊 GRÁFICO DE ESFORÇO */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 p-10 rounded-[2.5rem] bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
+        <div className="lg:col-span-2 p-10 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-3">
               <HistoryIcon size={20} className="text-sky-500" />
@@ -161,7 +161,7 @@ export function PaginaHistoricoProducao() {
           </div>
         </div>
 
-        <div className="p-10 rounded-[2.5rem] bg-zinc-900 text-white flex flex-col justify-between">
+        <div className="p-10 rounded-2xl bg-zinc-900 text-white flex flex-col justify-between">
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6">Média por Projeto</h4>
             <div className="space-y-8">
@@ -208,7 +208,7 @@ export function PaginaHistoricoProducao() {
       </div>
 
       {/* 📋 LISTA RESUMIDA DE CONCLUSÕES */}
-      <div className="p-10 rounded-[2.5rem] bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
+      <div className="p-10 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm">
         <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-10">
           Projetos Recentemente Concluídos
         </h4>

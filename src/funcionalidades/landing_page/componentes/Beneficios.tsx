@@ -106,7 +106,7 @@ export function Beneficios() {
           {beneficios.map((beneficio) => (
             <div
               key={beneficio.titulo}
-              className={`bg-gradient-to-br from-[#09090b] via-[#0a0a0a] to-[#09090b] p-8 rounded-3xl border border-zinc-800 hover:border-rose-500/40 transition-all duration-700 group hover:-translate-y-3 hover:scale-[1.02] shadow-2xl hover:shadow-rose-500/20 ${visivel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
+              className={`bg-gradient-to-br from-[#09090b] via-[#0a0a0a] to-[#09090b] p-8 rounded-2xl border border-zinc-800 hover:border-rose-500/40 transition-all duration-700 group hover:-translate-y-3 hover:scale-[1.02] shadow-2xl hover:shadow-rose-500/20 ${visivel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
               style={{ transitionDelay: beneficio.atraso }}
             >
               <div className="w-14 h-14 bg-gradient-to-br from-rose-500/20 to-rose-500/5 rounded-2xl flex items-center justify-center text-rose-500 mb-6 group-hover:bg-gradient-to-br group-hover:from-rose-500 group-hover:to-rose-600 group-hover:text-white transition-all duration-500 shadow-lg shadow-rose-500/10 group-hover:shadow-rose-500/40 group-hover:scale-110 group-hover:rotate-6">

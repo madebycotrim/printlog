@@ -117,7 +117,7 @@ export function SegurancaPrivacidade() {
             initial="oculto"
             whileInView="visivel"
             viewport={{ once: true, amount: 0.2 }}
-            className="bg-zinc-900/30 border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm relative overflow-hidden group hover:border-sky-500/20 transition-colors"
+            className="bg-zinc-900/30 border border-white/5 rounded-2xl p-8 md:p-10 backdrop-blur-sm relative overflow-hidden group hover:border-sky-500/20 transition-colors"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-sky-500/10 transition-colors" />
             <div className="flex items-start gap-4 mb-6">
@@ -151,7 +151,7 @@ export function SegurancaPrivacidade() {
             initial="oculto"
             whileInView="visivel"
             viewport={{ once: true, amount: 0.2 }}
-            className="bg-zinc-900/30 border border-white/5 rounded-3xl p-8 md:p-10 backdrop-blur-sm hover:border-emerald-500/20 transition-colors"
+            className="bg-zinc-900/30 border border-white/5 rounded-2xl p-8 md:p-10 backdrop-blur-sm hover:border-emerald-500/20 transition-colors"
           >
             <div className="flex items-start gap-4 mb-6">
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">

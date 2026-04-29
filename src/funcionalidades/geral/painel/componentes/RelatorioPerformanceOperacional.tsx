@@ -30,7 +30,7 @@ export function RelatorioPerformanceOperacional({ impressoras, pedidos }: Relato
   };
 
   return (
-    <div className="lg:col-span-2 p-10 rounded-[2.5rem] bg-zinc-900 border border-white/5 shadow-2xl relative overflow-hidden group">
+    <div className="lg:col-span-2 p-10 rounded-2xl bg-zinc-900 border border-white/5 shadow-2xl relative overflow-hidden group">
       {/* Background Aesthetic */}
       <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none">
         <Gauge size={160} strokeWidth={4} />

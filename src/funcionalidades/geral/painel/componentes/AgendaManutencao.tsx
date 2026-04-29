@@ -26,7 +26,7 @@ export function AgendaManutencao({ impressoras }: AgendaManutencaoProps) {
     .slice(0, 3);
 
   return (
-    <div className="bg-white dark:bg-[#121214] rounded-3xl p-8 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col h-full">
+    <div className="bg-white dark:bg-[#121214] rounded-2xl p-8 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col h-full">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 text-rose-500">
           <Wrench size={20} className="animate-pulse" />

@@ -48,10 +48,12 @@ export function CardLogisticaFiscal({
   return (
     <div className="space-y-6">
       {/* Logística */}
-      <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-white/5">
-          <Warehouse size={18} className="text-indigo-500" />
-          <h3 className="text-xs font-black uppercase tracking-widest">Canais de Venda e Logística</h3>
+      <div className="p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-white/5">
+          <div className="flex items-center gap-3">
+            <Warehouse size={18} className="text-indigo-500" />
+            <h3 className="text-xs font-black uppercase tracking-widest text-indigo-500">Canais de Venda e Logística</h3>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {perfis.map((p) => (
@@ -72,43 +74,43 @@ export function CardLogisticaFiscal({
                 }
               }}
               className={`px-4 h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex flex-col items-center justify-center text-center leading-tight shrink-0
-                ${perfilAtivo === p.nome ? "bg-sky-500/10 border-sky-500 text-sky-500 shadow-sm" : "bg-gray-50 dark:bg-white/5 border-transparent text-gray-500 hover:border-sky-500/30"}
+                ${perfilAtivo === p.nome ? "bg-indigo-500/10 border-indigo-500 text-indigo-500 shadow-sm" : "bg-gray-50 dark:bg-white/5 border-transparent text-gray-500 hover:border-indigo-500/30"}
               `}
             >
               <span>{p.nome}</span>
-              <span className={`text-[8px] font-bold opacity-80 ${perfilAtivo === p.nome ? "text-sky-500/80" : "text-gray-400"}`}>({p.taxa}% + R$ {p.fixa} + R$ {p.frete || 0})</span>
+              <span className={`text-[8px] font-bold opacity-80 ${perfilAtivo === p.nome ? "text-indigo-500/80" : "text-gray-400"}`}>({p.taxa}% + R$ {p.fixa} + R$ {p.frete || 0})</span>
             </button>
           ))}
-          <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-white/5 text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all shrink-0"><Settings size={16} /></button>
+          <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-white/5 text-zinc-400 hover:text-indigo-500 hover:bg-indigo-500/10 transition-all shrink-0"><Settings size={16} /></button>
         </div>
         <div className="grid grid-cols-3 gap-6 pt-4 border-t border-gray-50 dark:border-white/5">
           <div>
             <label className="block text-xs font-black uppercase text-gray-400 mb-1.5">Comissão (%)</label>
-            <input type="number" value={taxaEcommerce} onChange={(e) => setTaxaEcommerce(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+            <input type="number" placeholder="0" value={taxaEcommerce || ""} onChange={(e) => setTaxaEcommerce(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
           </div>
           <div>
             <label className="block text-xs font-black uppercase text-gray-400 mb-1.5">Taxa Fixa (R$)</label>
-            <input type="number" value={taxaFixa} onChange={(e) => setTaxaFixa(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+            <input type="number" placeholder="0" value={taxaFixa || ""} onChange={(e) => setTaxaFixa(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
           </div>
           <div>
             <label className="block text-xs font-black uppercase text-gray-400 mb-1.5">Frete (R$)</label>
-            <input type="number" value={frete} onChange={(e) => setFrete(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
+            <input type="number" placeholder="0" value={frete || ""} onChange={(e) => setFrete(Number(e.target.value))} className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm" />
           </div>
         </div>
       </div>
 
       {/* Fiscal */}
-      <div className={`p-8 rounded-3xl border shadow-sm space-y-6 transition-all duration-300 ${cobrarImpostos ? "bg-white dark:bg-zinc-900 border-gray-100 dark:border-white/5" : "bg-gray-50/50 dark:bg-zinc-900/50 border-gray-100 dark:border-white/5 opacity-70 grayscale"}`}>
+      <div className={`p-8 rounded-2xl border shadow-sm space-y-6 transition-all duration-300 ${cobrarImpostos ? "bg-white dark:bg-zinc-900 border-gray-100 dark:border-white/5" : "bg-gray-50/50 dark:bg-zinc-900/50 border-gray-100 dark:border-white/5 opacity-70 grayscale"}`}>
         <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-white/5">
           <div className="flex items-center gap-3">
-            <TrendingUp size={18} className="text-rose-500" />
-            <h3 className="text-xs font-black uppercase tracking-widest">Estrutura Fiscal</h3>
+            <TrendingUp size={18} className="text-orange-500" />
+            <h3 className="text-xs font-black uppercase tracking-widest text-orange-500">Estrutura Fiscal</h3>
           </div>
           <button
             type="button"
             onClick={() => setCobrarImpostos(!cobrarImpostos)}
             className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-              cobrarImpostos ? 'bg-rose-500' : 'bg-gray-200 dark:bg-zinc-700'
+              cobrarImpostos ? 'bg-orange-500' : 'bg-gray-200 dark:bg-zinc-700'
             }`}
           >
             <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
@@ -142,11 +144,11 @@ export function CardLogisticaFiscal({
                     }
                   }}
                   className={`px-4 h-11 flex flex-col items-center justify-center text-center rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider shrink-0 leading-tight
-                    ${tipoOperacao === id ? "bg-rose-500/10 border-rose-500 text-rose-500 shadow-sm" : "bg-gray-50 dark:bg-white/5 border-transparent text-gray-500 hover:border-rose-500/30"}
+                    ${tipoOperacao === id ? "bg-orange-500/10 border-orange-500 text-orange-500 shadow-sm" : "bg-gray-50 dark:bg-white/5 border-transparent text-gray-500 hover:border-orange-500/30"}
                   `}
                 >
                   <span>{p.nome.toUpperCase()}</span>
-                  <span className={`text-[8px] font-bold opacity-80 ${tipoOperacao === id ? "text-rose-500/80" : "text-gray-400"} ${!cobrarImpostos ? "line-through text-zinc-500" : ""}`}>
+                  <span className={`text-[8px] font-bold opacity-80 ${tipoOperacao === id ? "text-orange-500/80" : "text-gray-400"} ${!cobrarImpostos ? "line-through text-zinc-500" : ""}`}>
                     ({id === 'mei' || !cobrarImpostos ? 0 : id === 'servico' ? (p.base + p.iss) : (p.base + p.icms)}%)
                   </span>
                 </button>
@@ -155,7 +157,7 @@ export function CardLogisticaFiscal({
             {abrirConfigFiscal && (
               <button 
                 onClick={abrirConfigFiscal} 
-                className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-white/5 text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all shrink-0"
+                className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-white/5 text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all shrink-0"
               >
                 <Settings size={16} />
               </button>
@@ -170,18 +172,18 @@ export function CardLogisticaFiscal({
             <div className="grid grid-cols-3 gap-6 pt-4 border-t border-gray-50 dark:border-white/5">
               <div>
                 <label className="block text-xs font-black uppercase text-gray-400 mb-1.5">Base (%)</label>
-                <input type="number" disabled={!cobrarImpostos} value={!cobrarImpostos ? 0 : impostos} onChange={(e) => setImpostos(Number(e.target.value))} className={`w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} />
+                <input type="number" placeholder="0" disabled={!cobrarImpostos} value={!cobrarImpostos ? 0 : (impostos || "")} onChange={(e) => setImpostos(Number(e.target.value))} className={`w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} />
               </div>
               {tipoOperacao !== 'servico' && (
                 <div>
                   <label className="block text-xs font-black uppercase text-gray-400 mb-1.5">ICMS (%)</label>
-                  <input type="number" disabled={!cobrarImpostos} value={!cobrarImpostos ? 0 : icms} onChange={(e) => setIcms(Number(e.target.value))} className={`w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} />
+                  <input type="number" placeholder="0" disabled={!cobrarImpostos} value={!cobrarImpostos ? 0 : (icms || "")} onChange={(e) => setIcms(Number(e.target.value))} className={`w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} />
                 </div>
               )}
               {tipoOperacao === 'servico' && (
                 <div>
                   <label className="block text-xs font-black uppercase text-gray-400 mb-1.5">ISS (%)</label>
-                  <input type="number" disabled={!cobrarImpostos} value={!cobrarImpostos ? 0 : iss} onChange={(e) => setIss(Number(e.target.value))} className={`w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} />
+                  <input type="number" placeholder="0" disabled={!cobrarImpostos} value={!cobrarImpostos ? 0 : (iss || "")} onChange={(e) => setIss(Number(e.target.value))} className={`w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-white/5 outline-none font-black text-sm ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} />
                 </div>
               )}
             </div>

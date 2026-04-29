@@ -95,7 +95,7 @@ export function ModalHistoricoProducao({ aberto, aoFechar, impressora }: ModalHi
     >
       <div className="space-y-10">
         {/* Cabeçalho da Impressora & Dashboard */}
-        <div className="bg-gray-50/50 dark:bg-white/[0.02] p-8 rounded-3xl border border-gray-100 dark:border-white/5 space-y-8 relative overflow-hidden">
+        <div className="bg-gray-50/50 dark:bg-white/[0.02] p-8 rounded-2xl border border-gray-100 dark:border-white/5 space-y-8 relative overflow-hidden">
           <div className="flex items-center gap-6 mb-2">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white dark:bg-card border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden flex-shrink-0 group">
               {impressora.imagemUrl ? (
@@ -156,7 +156,7 @@ export function ModalHistoricoProducao({ aberto, aoFechar, impressora }: ModalHi
         </div>
 
         {/* Tabela de Registros */}
-        <div className="bg-white dark:bg-[#0c0c0e]/50 border border-gray-100 dark:border-white/5 rounded-3xl overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#0c0c0e]/50 border border-gray-100 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

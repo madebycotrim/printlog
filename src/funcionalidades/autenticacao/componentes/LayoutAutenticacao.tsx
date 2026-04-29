@@ -96,7 +96,7 @@ export function LayoutAutenticacao({
 
       {/* Card Principal */}
       <div
-        className={`w-full ${larguraMaxima} min-h-[450px] bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl flex overflow-hidden relative z-10 animate-fade-in-up`}
+        className={`w-full ${larguraMaxima} min-h-[450px] bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex overflow-hidden relative z-10 animate-fade-in-up`}
       >
         {children}
       </div>

@@ -82,7 +82,7 @@ export function Precificacao() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className={`p-10 rounded-[2.5rem] border transition-all duration-500 relative flex flex-col h-full bg-zinc-900/50 backdrop-blur-sm ${
+              className={`p-10 rounded-2xl border transition-all duration-500 relative flex flex-col h-full bg-zinc-900/50 backdrop-blur-sm ${
                 plano.destaque
                   ? "border-sky-500/30 shadow-[0_20px_50px_rgba(14,165,233,0.15)] bg-gradient-to-br from-zinc-900 to-blue-950/30"
                   : "border-white/5 hover:border-sky-500/20"

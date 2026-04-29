@@ -37,7 +37,7 @@ export function WidgetFeedbackBeta() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-80 p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-indigo-500/30 shadow-2xl shadow-indigo-500/20 pointer-events-auto"
+            className="w-80 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-indigo-500/30 shadow-2xl shadow-indigo-500/20 pointer-events-auto"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">

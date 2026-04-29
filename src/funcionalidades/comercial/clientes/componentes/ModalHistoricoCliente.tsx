@@ -62,7 +62,7 @@ export function ModalHistoricoCliente({ aberto, aoFechar, cliente }: ModalHistor
     >
       <div className="space-y-10">
         {/* ═══════ CABEÇALHO DO CLIENTE & DASHBOARD ═══════ */}
-        <div className="bg-gray-50/50 dark:bg-white/[0.02] p-8 rounded-3xl border border-gray-100 dark:border-white/5 space-y-8 relative overflow-hidden">
+        <div className="bg-gray-50/50 dark:bg-white/[0.02] p-8 rounded-2xl border border-gray-100 dark:border-white/5 space-y-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-[0.03] dark:opacity-[0.07] pointer-events-none">
             <User size={140} strokeWidth={1} />
           </div>

@@ -548,7 +548,7 @@ export function Apresentacao() {
             {/* ── Cartão Principal ── */}
             <div
               ref={refCartao}
-              className="relative brilho-cartao-apresentacao rounded-3xl"
+              className="relative brilho-cartao-apresentacao rounded-2xl"
               style={{
                 background: "linear-gradient(145deg, #0e0e12, #0a0a0d)",
                 border: "1px solid rgba(255,255,255,.07)",
@@ -558,7 +558,7 @@ export function Apresentacao() {
             >
               {/* Linha de varredura */}
               <div
-                className="absolute left-0 right-0 h-px pointer-events-none overflow-hidden rounded-3xl"
+                className="absolute left-0 right-0 h-px pointer-events-none overflow-hidden rounded-2xl"
                 style={{ top: 0, bottom: 0 }}
               >
                 <div

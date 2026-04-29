@@ -64,7 +64,7 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
     <div className="flex flex-col gap-8 mb-12">
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* CARD 1: DRE & TENDÊNCIA FINANCEIRA */}
-        <div className="xl:col-span-2 p-10 rounded-[2.5rem] bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden group">
+        <div className="xl:col-span-2 p-10 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden group">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
@@ -179,7 +179,7 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
         </div>
 
         {/* CARD 2: DISTRIBUIÇÃO POR MATERIAL (Mix de Produção) */}
-        <div className="p-10 rounded-[2.5rem] bg-zinc-900 border border-white/5 shadow-sm flex flex-col group relative overflow-hidden">
+        <div className="p-10 rounded-2xl bg-zinc-900 border border-white/5 shadow-sm flex flex-col group relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none">
             <PieChartIcon size={120} strokeWidth={4} />
           </div>
@@ -247,7 +247,7 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
       </div>
 
       {/* INTELIGÊNCIA DE PRECIFICAÇÃO (v9.0) */}
-      <div className="p-10 rounded-[2.5rem] bg-zinc-900 border border-white/5 shadow-2xl overflow-hidden relative group">
+      <div className="p-10 rounded-2xl bg-zinc-900 border border-white/5 shadow-2xl overflow-hidden relative group">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
 
@@ -282,7 +282,7 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all group/item"
+                  className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all group/item"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-white transition-colors">

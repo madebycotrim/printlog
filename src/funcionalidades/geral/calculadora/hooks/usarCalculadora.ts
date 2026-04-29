@@ -31,6 +31,13 @@ export function usarCalculadora() {
   const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => extrairValorNumerico(config.horaMaquina));
   const [margem, setMargem] = useState<number>(() => extrairValorNumerico(config.margemLucro));
   
+  // Novas variáveis de Lote e Setup
+  const [quantidade, setQuantidade] = useState<number>(1);
+  const [tempoSetup, setTempoSetup] = useState<number>(15); // Em minutos
+  const [taxaFalha, setTaxaFalha] = useState<number>(10); // Em porcentagem
+  const [materialPerdido, setMaterialPerdido] = useState<number>(0); // Gramas
+  const [tempoPerdido, setTempoPerdido] = useState<number>(0); // Minutos
+  
   const [frete, setFrete] = useState<number>(0);
   const [insumosFixos, setInsumosFixos] = useState<number>(0);
   const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>([]);
@@ -145,14 +152,26 @@ export function usarCalculadora() {
 
   // --- LÓGICA DE CÁLCULO (Sólida) ---
   const calculo = useMemo((): CalculoResultado => {
-    const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => acc + (m.quantidade / 1000) * m.precoKgCentavos, 0);
-    const custoInsumosDinamicosCentavos = insumosSelecionados.reduce((acc, i) => acc + (i.quantidade * i.custoCentavos), 0);
+    const multiplicadorMaterialEMaquina = quantidade;
+
+    const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => acc + (m.quantidade / 1000) * m.precoKgCentavos, 0) * multiplicadorMaterialEMaquina;
+    const custoInsumosDinamicosCentavos = insumosSelecionados.reduce((acc, i) => acc + (i.quantidade * i.custoCentavos), 0) * quantidade;
     
-    const horasDecimais = tempo / 60;
-    const custoEnergiaCentavos = cobrarEnergia ? Math.round((potencia / 1000) * horasDecimais * precoKwh * 100) : 0;
-    const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round(horasDecimais * maoDeObra * 100) : 0;
-    const custoDepreciacaoCentavos = cobrarDesgaste ? Math.round(horasDecimais * depreciacaoHora * 100) : 0;
-    const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor * 100), 0);
+    // Tempo de Máquina
+    const horasDecimaisMaquina = (tempo / 60) * multiplicadorMaterialEMaquina;
+    const custoEnergiaCentavos = cobrarEnergia ? Math.round((potencia / 1000) * horasDecimaisMaquina * precoKwh * 100) : 0;
+    const custoDepreciacaoCentavos = cobrarDesgaste ? Math.round(horasDecimaisMaquina * depreciacaoHora * 100) : 0;
+
+    // Cálculo das Perdas Reais (Registro Real Pós-Impressão)
+    const custoFilamentoPerdidoCentavos = materiaisSelecionados.reduce((acc, m) => acc + (materialPerdido / 1000) * m.precoKgCentavos, 0);
+    const custoTempoPerdidoCentavos = ((tempoPerdido / 60) * depreciacaoHora * 100) + (cobrarEnergia ? Math.round((potencia / 1000) * (tempoPerdido / 60) * precoKwh * 100) : 0);
+    const custoFalhaRealCentavos = Math.round(custoFilamentoPerdidoCentavos + custoTempoPerdidoCentavos);
+
+    // Tempo de Operador (Tempo Fixo de Setup por lote)
+    const horasDecimaisSetup = tempoSetup / 60;
+    const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round(horasDecimaisSetup * maoDeObra * 100) : 0;
+
+    const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor * 100), 0) * quantidade;
     const custoInsumosFixosCentavos = Math.round(insumosFixos * 100);
     const custoFreteCentavos = Math.round(frete * 100);
 
@@ -163,7 +182,8 @@ export function usarCalculadora() {
       custoDepreciacaoCentavos + 
       custoPosProcessoCentavos + 
       custoInsumosDinamicosCentavos + 
-      custoInsumosFixosCentavos;
+      custoInsumosFixosCentavos +
+      custoFalhaRealCentavos;
 
     const margemPercentual = margem / 100;
     const perfil = perfisMarketplace.find(p => p.nome === perfilAtivo);
@@ -199,9 +219,10 @@ export function usarCalculadora() {
       precoSugerido: precoSugeridoCentavos,
       lucroLiquido: lucroLiquidoCentavos,
       custoTotalOperacional: custoProducaoTotalCentavos,
-      margemReal: margemRealSobreVenda
+      margemReal: margemRealSobreVenda,
+      custoFalha: custoFalhaRealCentavos
     };
-  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarImpostos, itensPosProcesso, insumosFixos, frete, perfilAtivo, perfisMarketplace, impostos, icms, iss]);
+  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarImpostos, itensPosProcesso, insumosFixos, frete, perfilAtivo, perfisMarketplace, impostos, icms, iss, quantidade, tempoSetup, taxaFalha, materialPerdido, tempoPerdido]);
 
   // --- FEATURE 3: ALERTA DE ESTOQUE ---
   const alertasEstoque = useMemo(() => {
@@ -368,6 +389,11 @@ export function usarCalculadora() {
   return {
     // Estados
     materiaisSelecionados, setMateriaisSelecionados,
+    quantidade, setQuantidade,
+    tempoSetup, setTempoSetup,
+    taxaFalha, setTaxaFalha,
+    materialPerdido, setMaterialPerdido,
+    tempoPerdido, setTempoPerdido,
     tempo, setTempo,
     potencia, setPotencia,
     precoKwh, setPrecoKwh,

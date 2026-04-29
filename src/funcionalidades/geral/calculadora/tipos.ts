@@ -57,4 +57,5 @@ export interface CalculoResultado {
   lucroLiquido: number;
   custoTotalOperacional: number;
   margemReal: number;
+  custoFalha: number;
 }

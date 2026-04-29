@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import { 
   Settings, Check, X, Plus, 
-  ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp
+  ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp, AlertTriangle
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,6 @@ import { CardFiscal } from "./componentes/CardFiscal";
 import { PainelResultados } from "./componentes/PainelResultados";
 import { ModalHistorico } from "./componentes/ModalHistorico";
 import { Zap, Clock, Wrench, Percent } from "lucide-react";
-import { CabecalhoCard, CampoDashboard } from "@/funcionalidades/sistema/configuracoes/componentes/Compartilhados";
 
 export function PaginaCalculadora() {
   const navigate = useNavigate();
@@ -72,6 +71,7 @@ export function PaginaCalculadora() {
   const [nomeFiscalTemporario, setNomeFiscalTemporario] = useState('');
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
+  const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
   const [buscaMaterial, setBuscaMaterial] = useState("");
   const [buscaMaterialArmazem, setBuscaMaterialArmazem] = useState("");
@@ -270,7 +270,92 @@ export function PaginaCalculadora() {
           abrirCriar={() => acoesMateriais.abrirEditar(null as any)}
         />
 
+        {/* Pergunta e Mini Card de Perdas Reais (Design Premium Rose) */}
+        <div className="p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent border border-rose-500/20 flex items-center justify-between my-6 shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all">
+           <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20 shadow-inner">
+                 <AlertTriangle size={16} className={`${hook.materialPerdido > 0 || hook.tempoPerdido > 0 ? "animate-pulse" : ""}`} />
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-[11px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">Ocorreu alguma perda ou falha nessa impressão?</span>
+                 <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">O prejuízo será calculado e embutido no custo operacional</span>
+              </div>
+           </div>
+           <button 
+              type="button"
+              onClick={() => setMostrarPerdas(!mostrarPerdas)} 
+              className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${
+                 mostrarPerdas 
+                    ? "bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/30 hover:bg-rose-600" 
+                    : "bg-white dark:bg-white/5 text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 border-zinc-200 dark:border-white/10"
+              }`}
+           >
+              {mostrarPerdas ? "Ocultar" : "Reportar"}
+           </button>
+        </div>
+
+        {mostrarPerdas && (
+           <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-rose-500/10 shadow-sm space-y-4 mb-6">
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+                 <AlertTriangle size={16} className="text-rose-400" />
+                 <h3 className="text-[10px] font-black uppercase tracking-wider text-rose-500">Registro de Desperdício</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider ml-1">Filamento Perdido</label>
+                    <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-rose-500/40 shadow-inner">
+                       <input 
+                          type="number" 
+                          min="0"
+                          placeholder="0"
+                          value={hook.materialPerdido || ""} 
+                          onChange={(e) => hook.setMaterialPerdido(Number(e.target.value))} 
+                          className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                       />
+                       <span className="absolute right-4 text-[10px] font-black text-zinc-400">gramas</span>
+                    </div>
+                 </div>
+                 <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider ml-1">Tempo Perdido</label>
+                    <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-rose-500/40 shadow-inner">
+                       <input 
+                          type="number" 
+                          min="0"
+                          placeholder="0"
+                          value={hook.tempoPerdido / 60 || ""} 
+                          onChange={(e) => hook.setTempoPerdido(Number(e.target.value) * 60)} 
+                          className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                       />
+                       <span className="absolute right-4 text-[10px] font-black text-zinc-400">horas</span>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        )}
+
+        <CardInsumos 
+          insumos={insumosEstoque.filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))}
+          selecionados={hook.insumosSelecionados}
+          alertas={hook.alertasInsumos}
+          busca={buscaInsumo} setBusca={setBuscaInsumo}
+          alternar={(insumo) => {
+            const existe = hook.insumosSelecionados.find(i => i.id === insumo.id);
+            if (existe) hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== insumo.id));
+            else hook.setInsumosSelecionados(prev => [...prev, { id: insumo.id, nome: insumo.nome, quantidade: 1, custoCentavos: insumo.custoMedioUnidade }]);
+          }}
+          atualizarQtd={(id, qtd) => {
+            hook.setInsumosSelecionados(prev => prev.map(i => i.id === id ? { ...i, quantidade: qtd } : i));
+          }}
+          remover={(id) => {
+            hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== id));
+          }}
+          insumosFixos={hook.insumosFixos} setInsumosFixos={hook.setInsumosFixos}
+          abrirGerenciar={() => setModalArmazemInsumosAberto(true)}
+          abrirNovo={() => abrirCriarInsumo()}
+        />
+
         <CardProducao 
+          quantidade={hook.quantidade} setQuantidade={hook.setQuantidade}
           tempo={hook.tempo} setTempo={hook.setTempo}
           potencia={hook.potencia} setPotencia={hook.setPotencia}
           precoKwh={hook.precoKwh} setPrecoKwh={(v) => { hook.setPrecoKwh(v); config.definirCustoEnergia(formatarMoedaFinancas(v, 2)); }}
@@ -292,34 +377,14 @@ export function PaginaCalculadora() {
         />
 
         <CardOperacional 
-          maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(formatarMoedaFinancas(v, 2)); }}
+          maoDeObra={hook.maoDeObra}
           margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(formatarPorcentagem(String(v))); }}
           depreciacao={hook.depreciacaoHora}
           cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
           cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
           anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
-          tempo={hook.tempo}
-        />
-
-        <CardInsumos 
-          insumos={insumosEstoque.filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))}
-          selecionados={hook.insumosSelecionados}
-          alertas={hook.alertasInsumos}
-          busca={buscaInsumo} setBusca={setBuscaInsumo}
-          alternar={(insumo) => {
-            const existe = hook.insumosSelecionados.find(i => i.id === insumo.id);
-            if (existe) hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== insumo.id));
-            else hook.setInsumosSelecionados(prev => [...prev, { id: insumo.id, nome: insumo.nome, quantidade: 1, custoCentavos: insumo.custoMedioUnidade }]);
-          }}
-          atualizarQtd={(id, qtd) => {
-            hook.setInsumosSelecionados(prev => prev.map(i => i.id === id ? { ...i, quantidade: qtd } : i));
-          }}
-          remover={(id) => {
-            hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== id));
-          }}
-          insumosFixos={hook.insumosFixos} setInsumosFixos={hook.setInsumosFixos}
-          abrirGerenciar={() => setModalArmazemInsumosAberto(true)}
-          abrirNovo={() => abrirCriarInsumo()}
+          tempo={hook.tempo} // Mantendo pra depreciação
+          tempoSetup={hook.tempoSetup} setTempoSetup={hook.setTempoSetup}
         />
 
         <CardLogistica 
@@ -478,138 +543,201 @@ export function PaginaCalculadora() {
 
       <ModalHistorico aberto={modalHistoricoAberto} aoFechar={() => setModalHistoricoAberto(false)} historico={hook.historico} aoSalvar={hook.salvarSnapshot} aoCarregar={(v) => { hook.carregarSnapshot(v); setModalHistoricoAberto(false); }} aoRemover={hook.removerSnapshot} />
 
-      <Dialogo aberto={modalConfigAberto} aoFechar={() => setModalConfigAberto(false)} larguraMax="max-w-xl" esconderCabecalho={true}>
-        <div className="p-10 space-y-10 bg-white dark:bg-zinc-900 rounded-[2.5rem] relative">
-          <button onClick={() => setModalConfigAberto(false)} className="absolute top-8 right-8 p-2 rounded-xl text-gray-400 hover:text-zinc-900 dark:hover:text-white"><X size={20} /></button>
-          <div className="flex flex-col items-center text-center gap-2">
-            <h3 className="text-xl font-black uppercase tracking-[0.2em]">CONFIGURAÇÕES</h3>
-          </div>
+      <Dialogo aberto={modalConfigAberto} aoFechar={() => setModalConfigAberto(false)} larguraMax="max-w-4xl" esconderCabecalho={true}>
+        <div className="flex flex-col md:flex-row bg-white dark:bg-[#0c0c0e] rounded-2xl overflow-hidden shadow-2xl relative w-full border border-gray-200 dark:border-white/10">
+          
+          {/* PAINEL ESQUERDO: IDENTIDADE */}
+          <div className="w-full md:w-2/5 p-8 md:p-12 bg-gradient-to-br from-[#0b0c10] via-[#111319] to-[#0a0c0f] relative flex flex-col border-b md:border-b-0 md:border-r border-white/5 overflow-hidden">
+            {/* Efeitos de Luz */}
+            <div className="absolute -top-32 -left-32 w-96 h-96 bg-sky-500/10 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-violet-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-          <div className="space-y-6">
-            {/* Seção Operacional (Design Compartilhado) */}
-            <div className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden">
-              <CabecalhoCard titulo="Operacional" descricao="Motores base de custeio" icone={Settings} corIcone="text-amber-500" />
-              <div className="grid grid-cols-2 gap-4">
-                <CampoDashboard
-                    label="Energia (R$/kWh)"
-                    valor={config.custoEnergia}
-                    aoMudar={(v) => {
-                      config.definirCustoEnergia(v);
-                      hook.setPrecoKwh(extrairValorNumerico(v));
-                    }}
-                    icone={Zap}
-                />
-                <CampoDashboard
-                    label="Margem (%)"
-                    valor={config.margemLucro}
-                    aoMudar={(v) => {
-                      config.definirMargemLucro(v);
-                      hook.setMargem(extrairValorNumerico(v));
-                    }}
-                    icone={Percent}
-                />
-                <CampoDashboard
-                    label="Operador (R$/h)"
-                    valor={config.horaOperador}
-                    aoMudar={(v) => {
-                      config.definirHoraOperador(v);
-                      hook.setMaoDeObra(extrairValorNumerico(v));
-                    }}
-                    icone={Wrench}
-                />
-                <CampoDashboard
-                    label="Máquina (R$/h)"
-                    valor={config.horaMaquina}
-                    aoMudar={(v) => {
-                      config.definirHoraMaquina(v);
-                      hook.setDepreciacaoHora(extrairValorNumerico(v));
-                    }}
-                    icone={Clock}
-                />
-              </div>
+            {/* Formulário de Identidade */}
+            <div className="relative z-10 mt-4 flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <Crown size={14} className="text-sky-400 animate-bounce duration-[3000ms]" />
+                  <h3 className="text-xs font-black uppercase tracking-[0.1em] text-zinc-400">Personalizar Orçamento PDF</h3>
+                </div>
+                
+                <div className={`space-y-5 transition-all ${!eProOuSuperior ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+                  <div className="space-y-1.5 group">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-sky-400 ml-1 group-focus-within:text-sky-300 transition-colors">Nome do Estúdio</label>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Ex: PrintPro Lab"
+                        value={config.nomeEstudio}
+                        onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
+                        className="w-full h-12 bg-zinc-950/40 border border-white/5 rounded-xl px-4 text-xs font-bold text-white focus:border-sky-500/50 focus:bg-zinc-950/80 outline-none transition-all placeholder:text-zinc-700 backdrop-blur-md"
+                      />
+                    </div>
+                  </div>
 
-              <div className="bg-amber-50/80 dark:bg-amber-500/[0.05] p-4 rounded-2xl border border-amber-200 dark:border-amber-500/20 flex gap-3 items-start">
-                  <Settings size={18} className="text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-300/90 text-justify">
-                      Estes índices são aplicados de forma global no estúdio, servindo como base matriz de cálculo financeiro e execução contratual (Art. 7º, V).
-                  </p>
-              </div>
-            </div>
-
-              <button 
-                onClick={async () => { 
-                    config.definirCustoEnergia(formatarMoedaFinancas(hook.precoKwh, 2));
-                    config.definirHoraOperador(formatarMoedaFinancas(hook.maoDeObra, 2));
-                    config.definirHoraMaquina(formatarMoedaFinancas(hook.depreciacaoHora, 3));
-                    config.definirMargemLucro(formatarPorcentagem(String(hook.margem * 100)));
-                  if (usuario?.uid) await config.salvarNoD1(usuario.uid);
-                  toast.success("Sincronizado!"); 
-                }} 
-                className="w-full h-12 bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-zinc-200 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-3 border border-zinc-200 dark:border-white/10"
-              >
-                Sincronizar Indices Atuais
-              </button>
-            </div>
-
-            {/* Seção Branding (Exclusiva PRO) */}
-            <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-white/5 relative">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">IDENTIDADE DO ESTÚDIO</span>
-                  {!eProOuSuperior && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-500 text-[8px] font-black uppercase tracking-widest border border-sky-500/20">
-                      PRO
-                    </span>
-                  )}
+                  <div className="space-y-1.5 group">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-sky-400 ml-1 group-focus-within:text-sky-300 transition-colors">Slogan / Frase de Rodapé</label>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Ex: Impressão 3D de alta precisão"
+                        value={config.sloganEstudio}
+                        onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value)}
+                        className="w-full h-12 bg-zinc-950/40 border border-white/5 rounded-xl px-4 text-xs font-bold text-white focus:border-sky-500/50 focus:bg-zinc-950/80 outline-none transition-all placeholder:text-zinc-700 backdrop-blur-md"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className={`space-y-3 transition-all ${!eProOuSuperior ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Nome do Estúdio</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ex: PrintPro Lab"
-                    value={config.nomeEstudio}
-                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
-                    className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 rounded-xl px-4 text-xs font-bold focus:ring-1 focus:ring-sky-500 outline-none"
-                  />
+              {/* Preview Dinâmico do Rodapé PRO */}
+              {eProOuSuperior && (
+                <div className="p-4 rounded-xl bg-sky-500/5 border border-sky-500/10 space-y-2 mt-6">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-sky-400">Pré-visualização do documento</span>
+                  <div className="border-t border-dashed border-sky-500/20 pt-2 flex flex-col gap-1">
+                    <p className="text-[10px] font-black text-white truncate">{config.nomeEstudio || "Seu Estúdio"}</p>
+                    <p className="text-[8px] font-bold text-zinc-500 truncate italic">{config.sloganEstudio || "Seu slogan aqui"}</p>
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Slogan / Frase do PDF</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ex: Impressão 3D de alta precisão"
-                    value={config.sloganEstudio}
-                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value)}
-                    className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 rounded-xl px-4 text-xs font-bold focus:ring-1 focus:ring-sky-500 outline-none"
-                  />
-                </div>
-              </div>
+              )}
 
               {!eProOuSuperior && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center pt-8">
-                  <div className="bg-white dark:bg-zinc-900 border border-sky-500/20 px-4 py-2 rounded-xl shadow-xl shadow-sky-500/10 flex items-center gap-3">
-                    <Crown size={14} className="text-sky-500" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-500">Libere seu Branding no PRO</span>
+                <div className="absolute inset-x-0 bottom-12 z-10 flex items-center justify-center pt-8 backdrop-blur-[2px]">
+                  <div className="bg-zinc-900/90 border border-sky-500/30 px-5 py-4 rounded-2xl shadow-2xl shadow-sky-500/20 flex flex-col items-center gap-2 max-w-[200px]">
+                    <Crown size={20} className="text-sky-500" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white">Exclusivo PRO</span>
+                    <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest text-center leading-relaxed">Personalize seus orçamentos<br/>com a sua marca</span>
                   </div>
                 </div>
               )}
             </div>
+
+            <div className="relative z-10 mt-6 flex justify-between items-center text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
+              <span>PrintLog OS v2.0</span>
+              <span className="text-zinc-700">© 2026</span>
+            </div>
           </div>
 
-          <button 
-            onClick={async () => { 
-              if (usuario?.uid) {
-                await config.salvarNoD1(usuario.uid);
-                setModalConfigAberto(false); 
-                toast.success("Configurações salvas!");
-              }
-            }} 
-            className="w-full h-16 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase text-[11px] tracking-[0.3em] rounded-[1.5rem] hover:scale-[1.02] transition-all"
-          >
-            Salvar Alterações
-          </button>
+          {/* PAINEL DIREITO: MOTORES OPERACIONAIS */}
+          <div className="w-full md:w-3/5 p-8 md:p-12 bg-zinc-50 dark:bg-[#121214] relative flex flex-col">
+            <button onClick={() => setModalConfigAberto(false)} className="absolute top-8 right-8 p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/5"><X size={16} /></button>
+            
+            <div className="flex items-center gap-4 mb-10">
+               <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+                  <Settings size={24} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white leading-none">Operacional</h3>
+                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mt-2">Motores base de custeio</p>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 items-center">
+               {/* Energia */}
+               <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200/60 dark:border-white/[0.04] flex flex-col relative group transition-colors hover:border-zinc-300 dark:hover:border-white/10">
+                  <div className="flex items-center gap-2 mb-3">
+                     <Zap size={14} className="text-zinc-400 group-hover:text-amber-500 transition-colors" />
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Energia</span>
+                        <span className="text-[7px] font-bold text-zinc-400/80">Custo por kWh</span>
+                     </div>
+                  </div>
+                  <input 
+                     type="text" 
+                     placeholder="R$ 0,00"
+                     value={extrairValorNumerico(config.custoEnergia) === 0 ? "" : config.custoEnergia} 
+                     onChange={(e) => {
+                        config.definirCustoEnergia(e.target.value);
+                        hook.setPrecoKwh(extrairValorNumerico(e.target.value));
+                     }} 
+                     className="w-full h-10 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 font-bold text-xs text-zinc-900 dark:text-white focus:border-sky-500/50 outline-none transition-all text-center" 
+                  />
+               </div>
+
+               {/* Margem */}
+               <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200/60 dark:border-white/[0.04] flex flex-col relative group transition-colors hover:border-zinc-300 dark:hover:border-white/10">
+                  <div className="flex items-center gap-2 mb-3">
+                     <Percent size={14} className="text-zinc-400 group-hover:text-emerald-500 transition-colors" />
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Margem Lucro</span>
+                        <span className="text-[7px] font-bold text-zinc-400/80">Padrão do estúdio</span>
+                     </div>
+                  </div>
+                  <input 
+                     type="text" 
+                     placeholder="0,00%"
+                     value={extrairValorNumerico(config.margemLucro) === 0 ? "" : config.margemLucro} 
+                     onChange={(e) => {
+                        config.definirMargemLucro(e.target.value);
+                        hook.setMargem(extrairValorNumerico(e.target.value));
+                     }} 
+                     className="w-full h-10 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 font-bold text-xs text-zinc-900 dark:text-white focus:border-sky-500/50 outline-none transition-all text-center" 
+                  />
+               </div>
+
+               {/* Operador */}
+               <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200/60 dark:border-white/[0.04] flex flex-col relative group transition-colors hover:border-zinc-300 dark:hover:border-white/10">
+                  <div className="flex items-center gap-2 mb-3">
+                     <Wrench size={14} className="text-zinc-400 group-hover:text-amber-500 transition-colors" />
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Operador</span>
+                        <span className="text-[7px] font-bold text-zinc-400/80">Mão de obra / h</span>
+                     </div>
+                  </div>
+                  <input 
+                     type="text" 
+                     placeholder="R$ 0,00"
+                     value={extrairValorNumerico(config.horaOperador) === 0 ? "" : config.horaOperador} 
+                     onChange={(e) => {
+                        config.definirHoraOperador(e.target.value);
+                        hook.setMaoDeObra(extrairValorNumerico(e.target.value));
+                     }} 
+                     className="w-full h-10 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 font-bold text-xs text-zinc-900 dark:text-white focus:border-sky-500/50 outline-none transition-all text-center" 
+                  />
+               </div>
+
+               {/* Máquina */}
+               <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200/60 dark:border-white/[0.04] flex flex-col relative group transition-colors hover:border-zinc-300 dark:hover:border-white/10">
+                  <div className="flex items-center gap-2 mb-3">
+                     <Clock size={14} className="text-zinc-400 group-hover:text-amber-500 transition-colors" />
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Máquina</span>
+                        <span className="text-[7px] font-bold text-zinc-400/80">Uso do equipamento / h</span>
+                     </div>
+                  </div>
+                  <input 
+                     type="text" 
+                     placeholder="R$ 0,00"
+                     value={extrairValorNumerico(config.horaMaquina) === 0 ? "" : config.horaMaquina} 
+                     onChange={(e) => {
+                        config.definirHoraMaquina(e.target.value);
+                        hook.setDepreciacaoHora(extrairValorNumerico(e.target.value));
+                     }} 
+                     className="w-full h-10 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-lg px-3 font-bold text-xs text-zinc-900 dark:text-white focus:border-sky-500/50 outline-none transition-all text-center" 
+                  />
+               </div>
+            </div>
+
+            <div className="mt-8">
+               <button 
+                  onClick={async () => { 
+                     config.definirCustoEnergia(config.custoEnergia && config.custoEnergia.trim() !== "" ? formatarMoedaFinancas(hook.precoKwh, 2) : "R$ 0,00");
+                     config.definirHoraOperador(config.horaOperador && config.horaOperador.trim() !== "" ? formatarMoedaFinancas(hook.maoDeObra, 2) : "R$ 0,00");
+                     config.definirHoraMaquina(config.horaMaquina && config.horaMaquina.trim() !== "" ? formatarMoedaFinancas(hook.depreciacaoHora, 3) : "R$ 0,000");
+                     config.definirMargemLucro(config.margemLucro && config.margemLucro.trim() !== "" ? formatarPorcentagem(String(hook.margem)) : "0,00%");
+                     if (usuario?.uid) {
+                        await config.salvarNoD1(usuario.uid);
+                        setModalConfigAberto(false); 
+                        toast.success("Motores de custeio sincronizados!");
+                     }
+                  }} 
+                  className="w-full h-14 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black uppercase text-[11px] tracking-[0.2em] rounded-xl hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all flex items-center justify-center gap-3 shadow-xl border-none"
+               >
+                  <Settings size={16} /> Salvar & Sincronizar
+               </button>
+            </div>
+
+          </div>
+        </div>
       </Dialogo>
 
       <FormularioMaterial aberto={estadoMateriais.modalAberto} aoSalvar={acoesMateriais.salvarMaterial} aoCancelar={acoesMateriais.fecharEditar} materialEditando={estadoMateriais.materialSendoEditado} />
