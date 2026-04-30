@@ -191,11 +191,11 @@ export function PainelResultados({
           const itens = [
             { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400' },
             { label: 'Perdas & Falhas', valor: calculo.custoFalha || 0, icone: AlertTriangle, cor: 'text-rose-500' },
-            { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-violet-400' },
+            { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-indigo-400' },
             { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
             { label: 'Mão de Obra', valor: calculo.custoMaoDeObra, icone: Timer, cor: 'text-emerald-400' },
-            { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-rose-400' },
-            { label: 'Taxas & Impostos', valor: calculo.taxaMarketplace + calculo.impostoVenda, icone: DollarSign, cor: 'text-orange-400' },
+            { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400' },
+            { label: 'Taxas & Impostos', valor: calculo.taxaMarketplace + calculo.impostoVenda, icone: DollarSign, cor: 'text-violet-400' },
           ].filter(i => i.valor > 0);
 
           const estaVazio = itens.length === 0;
@@ -205,8 +205,8 @@ export function PainelResultados({
               {estaVazio ? (
                 <div className="flex flex-col items-center justify-center text-zinc-600 dark:text-zinc-500 w-full">
                   <Sparkles size={24} className="opacity-40 text-sky-400 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-center">Aguardando dados...</span>
-                  <span className="text-[9px] font-bold text-zinc-600 text-center uppercase tracking-wider">Insira pesos e tempos nos cards ao lado</span>
+                  <span className="text-[10px] font-medium text-zinc-500/60 dark:text-zinc-500/40 tracking-wider text-center">Aguardando dados para o orçamento</span>
+                  <span className="text-[9px] font-medium text-zinc-500/40 text-center tracking-tight">Insira pesos e tempos nos cards ao lado</span>
                 </div>
               ) : (
                 <AnimatePresence>

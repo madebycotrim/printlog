@@ -137,7 +137,7 @@ export function CardOperacional({
         <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-rose-400 border border-rose-500/30">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-zinc-400 border border-zinc-500/30">
                 <Activity size={18} />
               </div>
               <div className="flex flex-col">
@@ -150,7 +150,7 @@ export function CardOperacional({
               type="button"
               onClick={() => setCobrarDesgaste(!cobrarDesgaste)}
               className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-                cobrarDesgaste ? 'bg-rose-500' : 'bg-gray-200 dark:bg-zinc-700'
+                cobrarDesgaste ? 'bg-zinc-500' : 'bg-gray-200 dark:bg-zinc-700'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
@@ -188,7 +188,7 @@ export function CardOperacional({
                   R$ {(cobrarDesgaste ? depreciacao || 0 : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / h
                 </span>
                 {cobrarDesgaste && (
-                  <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-rose-500/30 to-transparent animate-pulse" />
+                  <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-zinc-500/30 to-transparent animate-pulse" />
                 )}
               </div>
               {cobrarDesgaste && (
@@ -197,9 +197,9 @@ export function CardOperacional({
                 </p>
               )}
             </div>
-            <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/10 flex justify-between items-center relative overflow-hidden">
-              <span className="text-[11px] font-black uppercase text-rose-500">Custo Total Desgaste:</span>
-              <span className={`text-sm font-black ${cobrarDesgaste ? 'text-rose-500' : 'text-zinc-500 line-through'}`}>
+            <div className="p-4 rounded-xl bg-zinc-500/5 border border-zinc-500/10 flex justify-between items-center relative overflow-hidden">
+              <span className="text-[11px] font-black uppercase text-zinc-500">Custo Total Desgaste:</span>
+              <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-500' : 'text-zinc-500 line-through'}`}>
                 R$ {((cobrarDesgaste ? (tempo / 60) * depreciacao : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </div>

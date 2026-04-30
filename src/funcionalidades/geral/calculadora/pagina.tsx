@@ -4,7 +4,7 @@ import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import {
   Settings, Check, X, Plus,
   ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp, AlertTriangle, AlertCircle, Download, RotateCcw,
-  FolderKanban, User
+  FolderKanban
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -287,7 +287,7 @@ export function PaginaCalculadora() {
           <div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
 
             {/* Card Unificado de Metadados do Projeto — DESIGN PREMIUM */}
-            <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative overflow-hidden flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+            <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
               {/* Efeito Glow Azul de Fundo */}
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-700" />
 

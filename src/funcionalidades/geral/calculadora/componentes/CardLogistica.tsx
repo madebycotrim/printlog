@@ -21,7 +21,7 @@ export function CardLogistica({
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/30">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-orange-400 border border-orange-500/30">
             <Warehouse size={18} />
           </div>
           <div className="flex flex-col">
@@ -50,15 +50,15 @@ export function CardLogistica({
             }}
             className={`px-4 h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex flex-col items-center justify-center text-center leading-tight shrink-0
               ${perfilAtivo === p.nome 
-                ? "bg-indigo-500/10 border-indigo-500 text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
-                : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30 text-zinc-400"}
+                ? "bg-orange-500/10 border-orange-500 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.15)]" 
+                : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-orange-500/30 text-zinc-400"}
             `}
           >
             <span>{p.nome}</span>
-            <span className={`text-[8px] font-bold opacity-80 ${perfilAtivo === p.nome ? "text-indigo-400/80" : "text-gray-400"}`}>({p.taxa}% + R$ {p.fixa} + R$ {p.frete || 0})</span>
+            <span className={`text-[8px] font-bold opacity-80 ${perfilAtivo === p.nome ? "text-orange-400/80" : "text-gray-400"}`}>({p.taxa}% + R$ {p.fixa} + R$ {p.frete || 0})</span>
           </button>
         ))}
-        <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-all shrink-0">
+        <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-orange-400 hover:border-orange-500/30 transition-all shrink-0">
           <Settings size={16} />
         </button>
       </div>
@@ -71,7 +71,7 @@ export function CardLogistica({
             placeholder="0" 
             value={taxaEcommerce || ""} 
             onChange={(e) => setTaxaEcommerce(Number(e.target.value))} 
-            className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
+            className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
           />
         </div>
         <div>
@@ -81,7 +81,7 @@ export function CardLogistica({
             placeholder="0" 
             value={taxaFixa || ""} 
             onChange={(e) => setTaxaFixa(Number(e.target.value))} 
-            className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
+            className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
           />
         </div>
         <div>
@@ -91,7 +91,7 @@ export function CardLogistica({
             placeholder="0" 
             value={frete || ""} 
             onChange={(e) => setFrete(Number(e.target.value))} 
-            className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
+            className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
           />
         </div>
       </div>

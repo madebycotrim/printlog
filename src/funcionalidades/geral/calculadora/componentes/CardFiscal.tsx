@@ -39,7 +39,7 @@ export function CardFiscal({
     <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarImpostos ? "opacity-40 grayscale" : ""}`}>
       <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-orange-400 border border-orange-500/30">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-400 border border-violet-500/30">
             <TrendingUp size={18} />
           </div>
           <div className="flex flex-col">
@@ -51,7 +51,7 @@ export function CardFiscal({
           type="button"
           onClick={() => setCobrarImpostos(!cobrarImpostos)}
           className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-            cobrarImpostos ? 'bg-orange-500' : 'bg-gray-200 dark:bg-zinc-700'
+            cobrarImpostos ? 'bg-violet-500' : 'bg-gray-200 dark:bg-zinc-700'
           }`}
         >
           <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
@@ -82,17 +82,17 @@ export function CardFiscal({
                     setTipoOperacao(id);
                     setImpostos(p.base);
                     setIcms(p.icms);
-                    setIss(p.iss);
+                    setIss(p.iss ?? 0);
                   }
                 }}
                 className={`px-4 h-11 flex flex-col items-center justify-center text-center rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider shrink-0 leading-tight
                   ${tipoOperacao === id 
-                    ? "bg-orange-500/10 border-orange-500 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.15)]" 
-                    : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-orange-500/30 text-zinc-400"}
+                    ? "bg-violet-500/10 border-violet-500 text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.15)]" 
+                    : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-violet-500/30 text-zinc-400"}
                 `}
               >
                 <span>{p.nome.toUpperCase()}</span>
-                <span className={`text-[8px] font-bold opacity-80 ${tipoOperacao === id ? "text-orange-400/80" : "text-gray-400"} ${!cobrarImpostos ? "line-through text-zinc-500" : ""}`}>
+                <span className={`text-[8px] font-bold opacity-80 ${tipoOperacao === id ? "text-violet-400/80" : "text-gray-400"} ${!cobrarImpostos ? "line-through text-zinc-500" : ""}`}>
                   {id === 'mei' ? "" : id === 'servico' ? `(${p.base}% + ${p.iss}%)` : `(${p.base}% + ${p.icms}%)`}
                 </span>
               </button>
@@ -101,7 +101,7 @@ export function CardFiscal({
           {abrirConfigFiscal && (
             <button 
               onClick={abrirConfigFiscal} 
-              className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-orange-400 hover:border-orange-500/30 transition-all shrink-0"
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-violet-400 hover:border-violet-500/30 transition-all shrink-0"
             >
               <Settings size={16} />
             </button>
@@ -122,7 +122,7 @@ export function CardFiscal({
                 disabled={!cobrarImpostos} 
                 value={!cobrarImpostos ? 0 : (impostos || "")} 
                 onChange={(e) => setImpostos(Number(e.target.value))} 
-                className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
+                className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
               />
             </div>
             {tipoOperacao !== 'servico' && (
@@ -134,7 +134,7 @@ export function CardFiscal({
                   disabled={!cobrarImpostos} 
                   value={!cobrarImpostos ? 0 : (icms || "")} 
                   onChange={(e) => setIcms(Number(e.target.value))} 
-                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
+                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                 />
               </div>
             )}
@@ -147,7 +147,7 @@ export function CardFiscal({
                   disabled={!cobrarImpostos} 
                   value={!cobrarImpostos ? 0 : (iss || "")} 
                   onChange={(e) => setIss(Number(e.target.value))} 
-                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
+                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                 />
               </div>
             )}

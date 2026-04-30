@@ -25,7 +25,7 @@ export function CardMateriais({
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-400 border border-violet-500/30">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sky-400 border border-sky-500/30">
             <Layers size={18} />
           </div>
           <div className="flex flex-col">
@@ -40,21 +40,21 @@ export function CardMateriais({
             placeholder="Buscar material..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="w-full md:w-64 h-10 pl-9 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-violet-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700"
+            className="w-full md:w-64 h-10 pl-9 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700"
           />
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-500 transition-colors" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-sky-500 transition-colors" />
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <Box className="w-3 h-3 text-violet-500" />
+            <Box className="w-3 h-3 text-sky-500" />
             <span className="text-xs font-black uppercase tracking-widest text-gray-400">Seu Inventário</span>
           </div>
           <button 
             onClick={abrirArmazem}
-            className="text-[10px] font-black uppercase text-violet-500 hover:text-violet-400 transition-colors flex items-center gap-1 group"
+            className="text-[10px] font-black uppercase text-sky-500 hover:text-sky-400 transition-colors flex items-center gap-1 group"
           >
             Gerenciar Armazém <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
           </button>
@@ -69,8 +69,8 @@ export function CardMateriais({
                 onClick={() => alternar(m.id)}
                 className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3
                   ${selecionado 
-                    ? "border-violet-500 bg-violet-500/10 shadow-[0_0_20px_rgba(139,92,246,0.15)]" 
-                    : "border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-violet-500/30"}
+                    ? "border-sky-500 bg-sky-500/10 shadow-[0_0_20px_rgba(14,165,233,0.15)]" 
+                    : "border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-sky-500/30"}
                 `}
               >
                 <div className="shrink-0">
@@ -87,14 +87,14 @@ export function CardMateriais({
                     <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
                       {m.tipo} • {centavosParaReais(Math.round((m.precoCentavos / m.pesoGramas) * 1000))}/kg
                     </p>
-                    <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-violet-500'}`}>
+                    <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-sky-500'}`}>
                       {((m.estoque * m.pesoGramas) + m.pesoRestanteGramas)}g disponíveis
                     </span>
                   </div>
                 </div>
 
                 {selecionado && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg">
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
@@ -105,7 +105,7 @@ export function CardMateriais({
           {materiais.length === 0 && (
             <div className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
+                <div className="w-8 h-8 rounded-full bg-sky-500/10 flex items-center justify-center text-sky-500">
                   <Box size={14} />
                 </div>
                 <div className="flex flex-col">
@@ -115,7 +115,7 @@ export function CardMateriais({
               </div>
               <button 
                 onClick={abrirCriar}
-                className="px-4 h-9 bg-violet-500 hover:bg-violet-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-500/20 flex items-center gap-2"
+                className="px-4 h-9 bg-sky-500 hover:bg-sky-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-sky-500/20 flex items-center gap-2"
               >
                 <Plus size={12} /> Cadastrar
               </button>
@@ -132,7 +132,7 @@ export function CardMateriais({
               className="py-12 border-2 border-dashed border-gray-100 dark:border-white/5 bg-gray-50/30 dark:bg-transparent rounded-2xl flex flex-col items-center justify-center gap-3"
             >
               <Box size={24} className="text-gray-400 dark:text-zinc-600 opacity-40" />
-              <p className="text-xs font-black uppercase tracking-widest text-violet-500/80 dark:text-violet-400/80">Selecione os materiais acima para calcular</p>
+              <p className="text-[10px] font-medium text-zinc-500/60 dark:text-zinc-500/40 tracking-wider">Selecione os materiais acima para calcular</p>
             </motion.div>
           ) : (
             selecionados.map((item) => {
@@ -178,7 +178,7 @@ export function CardMateriais({
                           </span>
                         )}
                       </div>
-                      <input type="number" placeholder="0" value={item.quantidade || ""} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-violet-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
+                      <input type="number" placeholder="0" value={item.quantidade || ""} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
                       
                       {/* Barra de Consumo */}
                       {(() => {
@@ -191,7 +191,7 @@ export function CardMateriais({
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${porcentagem}%` }}
-                              className={`h-full ${alerta ? 'bg-rose-500' : 'bg-violet-500'}`}
+                              className={`h-full ${alerta ? 'bg-rose-500' : 'bg-sky-500'}`}
                             />
                           </div>
                         );
@@ -199,7 +199,7 @@ export function CardMateriais({
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Preço/Kg</label>
-                      <input type="number" placeholder="0" value={(item.precoKgCentavos / 100) || ""} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 border-transparent focus:border-violet-500/30 outline-none font-black text-xs" />
+                      <input type="number" placeholder="0" value={(item.precoKgCentavos / 100) || ""} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 border-transparent focus:border-sky-500/30 outline-none font-black text-xs" />
                     </div>
                   </div>
                   <button onClick={() => remover(item.id)} className="p-2 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">

@@ -37,8 +37,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     id, id_usuario, nome, email, telefone, status_comercial, observacoes_crm, arquivado, data_criacao
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
             `).bind(
-                novoId, usuarioId, dados.nome, dados.email, dados.telefone,
-                dados.statusComercial || 'Prospect', dados.observacoesCRM || '',
+                novoId, 
+                usuarioId, 
+                dados.nome || 'Sem Nome', 
+                dados.email || null, 
+                dados.telefone || null,
+                dados.statusComercial || 'Prospect', 
+                dados.observacoesCRM || '',
                 new Date().toISOString()
             ).run();
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { 
@@ -78,7 +83,11 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
-        return new Response(JSON.stringify({ erro: erro.message }), { 
+        console.error("[Clientes API Error]:", erro);
+        return new Response(JSON.stringify({ 
+            sucesso: false,
+            mensagem: erro.message || "Erro inesperado no servidor." 
+        }), { 
             status: 500,
             headers: { "Content-Type": "application/json" }
         });

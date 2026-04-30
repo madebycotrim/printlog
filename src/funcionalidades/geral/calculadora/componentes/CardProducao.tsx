@@ -35,7 +35,7 @@ export function CardProducao({
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-orange-400 border border-orange-500/30">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400 border border-amber-500/30">
             <Zap size={18} />
           </div>
           <div className="flex flex-col">
@@ -54,7 +54,7 @@ export function CardProducao({
                 : "bg-zinc-100 dark:bg-white/5 border-transparent text-zinc-400"
               }`}
           >
-            <div className={`w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.4)] ${impressoraAtiva ? 'bg-orange-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
+            <div className={`w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.4)] ${impressoraAtiva ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
 
             <div className="flex flex-col items-start leading-tight">
               <div className="flex items-baseline gap-1.5">
@@ -64,13 +64,13 @@ export function CardProducao({
                 {impressoraAtiva && (
                   <div className="flex items-center gap-1.5 translate-y-[-0.5px]">
                     <span className="text-[10px] text-zinc-300 dark:text-zinc-600 font-black leading-none">•</span>
-                    <span className="text-[11px] font-black text-orange-500 tracking-tighter leading-none">{impressoraAtiva.potenciaWatts}W</span>
+                    <span className="text-[11px] font-black text-amber-500 tracking-tighter leading-none">{impressoraAtiva.potenciaWatts}W</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <ChevronDown size={14} className={`text-zinc-400 transition-transform ml-2 ${seletorAberto ? "rotate-180" : ""}`} />
+            <ChevronDown size={14} className="text-zinc-400 transition-transform ml-2" style={{ transform: seletorAberto ? 'rotate(180deg)' : 'none' }} />
           </button>
 
           {seletorAberto && (
@@ -88,7 +88,7 @@ export function CardProducao({
                         setSeletorAberto(false);
                       }}
                       className={`w-full px-4 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-tight transition-colors ${idImpressoraSelecionada === imp.id
-                          ? "bg-orange-500 text-white"
+                          ? "bg-amber-500 text-white"
                           : "hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-500"
                         }`}
                     >
@@ -109,7 +109,7 @@ export function CardProducao({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Quantidade</label>
-              <div className="relative flex items-center h-14 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 transition-all shadow-inner overflow-hidden">
+              <div className="relative flex items-center h-14 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 transition-all shadow-inner overflow-hidden">
                 <button 
                   type="button"
                   onClick={() => setQuantidade(Math.max(1, (quantidade || 1) - 1))}
