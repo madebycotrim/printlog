@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import {
   Settings, Check, X, Plus,
-  ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp, AlertTriangle, Download, RotateCcw,
+  ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp, AlertTriangle, AlertCircle, Download, RotateCcw,
   FolderKanban, User
 } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -66,7 +66,6 @@ export function PaginaCalculadora() {
   const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
   const [modalArmazemInsumosAberto, setModalArmazemInsumosAberto] = useState(false);
   const [modalCanaisAberto, setModalCanaisAberto] = useState(false);
-  const [modalSalvarProjetoAberto, setModalSalvarProjetoAberto] = useState(false);
   const [nomeProjeto, setNomeProjeto] = useState('');
   const [descricaoProjeto, setDescricaoProjeto] = useState('');
   const [clienteProjetoId, setClienteProjetoId] = useState('');
@@ -151,17 +150,6 @@ export function PaginaCalculadora() {
     }
   };
 
-  const abrirModalSalvarProjeto = () => {
-    if (!nomeProjeto.trim()) {
-      setNomeProjeto(hook.materiaisSelecionados.length > 0 ? `Impressão: ${hook.materiaisSelecionados.map(m => m.nome).join(", ")}` : "Orçamento via Calculadora");
-    }
-    if (!clienteProjetoId && estadoClientes.clientes && estadoClientes.clientes.length > 0) {
-      setClienteProjetoId(estadoClientes.clientes[0].id);
-      setBuscaClienteSeletor(estadoClientes.clientes[0].nome);
-    }
-    setModalSalvarProjetoAberto(true);
-  };
-
   const confirmarSalvarProjeto = async () => {
     if (!clienteProjetoId) {
       toast.error("Selecione um cliente para vincular ao projeto.");
@@ -183,13 +171,11 @@ export function PaginaCalculadora() {
 
       if (novoPedido) {
         toast.success("Orçamento salvo com sucesso!");
-        setModalSalvarProjetoAberto(false);
         navigate("/projetos");
       }
     } catch (erro) {
       console.warn("Erro ao salvar projeto:", erro);
       hook.salvarSnapshot(nomeProjeto || "Orçamento via Calculadora");
-      setModalSalvarProjetoAberto(false);
       navigate("/projetos");
     }
   };
@@ -301,15 +287,14 @@ export function PaginaCalculadora() {
           <div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
 
             {/* Card Unificado de Metadados do Projeto — DESIGN PREMIUM */}
-            <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative overflow-hidden flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 hover:border-sky-500/20">
+            <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative overflow-hidden flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
               {/* Efeito Glow Azul de Fundo */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-sky-500/20 transition-all duration-700" />
-              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00A3FF]/40 to-transparent pointer-events-none" />
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-700" />
 
               <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00A3FF]/20 to-sky-500/5 flex items-center justify-center text-[#00A3FF] border border-[#00A3FF]/30 shadow-[inset_0px_1px_12px_rgba(0,163,255,0.2)]">
-                    <FolderKanban size={18} className="animate-pulse" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#00A3FF] border border-[#00A3FF]/30">
+                    <FolderKanban size={18} />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-black uppercase tracking-wider text-white">Identificação do Orçamento</span>
@@ -322,7 +307,7 @@ export function PaginaCalculadora() {
                 
                 {/* Lado Esquerdo: Dados do Cliente */}
                 <div className="md:col-span-5 flex flex-col gap-2 relative">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-sky-400/80">Cliente do Projeto</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Cliente do Projeto</label>
                   
                   <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-sky-500/40 rounded-xl shadow-inner h-12 transition-all">
                     <input
@@ -462,7 +447,7 @@ export function PaginaCalculadora() {
             <div className="flex flex-col my-6">
               <div className="p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent border border-rose-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20 shadow-inner">
+                  <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 shadow-inner">
                     <AlertTriangle size={16} className={`${hook.materialPerdido > 0 || hook.tempoPerdido > 0 ? "animate-pulse" : ""}`} />
                   </div>
                   <div className="flex flex-col">
@@ -489,13 +474,13 @@ export function PaginaCalculadora() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,#fafafa_12px)] dark:bg-[linear-gradient(to_bottom,transparent_12px,#18181b_12px)] border-x border-b border-rose-500/20 shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
+                    className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,#fafafa_12px)] dark:bg-[linear-gradient(to_bottom,transparent_12px,#18181b_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
                   >
                     {/* Quininhas para preencher o gap dos cantos arredondados */}
                     <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
                     <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
                     <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
-                      <AlertTriangle size={16} className="text-rose-400" />
+                      <AlertCircle size={16} className="text-rose-400" />
                       <h3 className="text-[10px] font-black uppercase tracking-wider text-rose-500">Registro de Desperdício</h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -612,7 +597,7 @@ export function PaginaCalculadora() {
               calculo={hook.calculo}
               dadosPizza={hook.dadosGraficoPizza}
               aba={abaResultado} setAba={setAbaResultado}
-              salvarProjeto={abrirModalSalvarProjeto}
+              salvarProjeto={confirmarSalvarProjeto}
               gerarPdf={() => {
                 const clienteFinal = buscaClienteSeletor.trim() || "Consumidor Final";
                 if (!eProOuSuperior) {
@@ -1520,203 +1505,7 @@ export function PaginaCalculadora() {
 
           <FormularioInsumo aberto={modalInsumoAberto} aoCancelar={fecharInsumoAberto} insumoEditando={insumoEditando} aoSalvar={(dados) => adicionarOuAtualizarInsumo({ ...dados, id: dados.id || crypto.randomUUID(), dataCriacao: dados.dataCriacao || new Date(), dataAtualizacao: new Date(), historico: dados.historico || [] } as any)} />
 
-          <Dialogo
-            aberto={modalSalvarProjetoAberto}
-            aoFechar={() => setModalSalvarProjetoAberto(false)}
-            larguraMax="max-w-md"
-            esconderCabecalho={true}
-          >
-            <div className="p-8 flex flex-col gap-6 relative bg-[#121214] border border-white/5 shadow-2xl rounded-2xl overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#00A3FF]/15 to-transparent blur-2xl pointer-events-none" />
 
-              <div className="relative z-10 flex flex-col gap-6">
-                <div className="flex items-center justify-between text-zinc-300 mb-2">
-                  <div className="flex items-center gap-2.5">
-                    <FolderKanban size={18} className="text-[#00A3FF] fill-[#00A3FF]/10" />
-                    <span className="text-xs font-black uppercase tracking-[0.25em]">Salvar Projeto</span>
-                  </div>
-                  <button
-                    onClick={() => setModalSalvarProjetoAberto(false)}
-                    className="text-zinc-500 hover:text-white transition-colors"
-                    title="Fechar"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-2 relative">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Cliente</label>
-                  
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1 flex items-center bg-zinc-900/50 border border-white/5 focus-within:border-sky-500/40 rounded-xl shadow-inner h-14">
-                      <input
-                        type="text"
-                        placeholder="Digitar ou selecionar cliente..."
-                        value={buscaClienteSeletor}
-                        onChange={(e) => {
-                          setBuscaClienteSeletor(e.target.value);
-                          setAbertoSeletorCliente(true);
-                        }}
-                        onFocus={() => setAbertoSeletorCliente(true)}
-                        className="w-full h-full bg-transparent px-4 font-black text-xs text-white outline-none placeholder:text-zinc-700"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setAbertoSeletorCliente(!abertoSeletorCliente)}
-                        className="absolute right-4 text-zinc-500 hover:text-white"
-                      >
-                        <ChevronDown size={18} className={`transition-transform ${abertoSeletorCliente ? 'rotate-180' : ''}`} />
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={criandoNovoCliente || !buscaClienteSeletor.trim()}
-                      onClick={async () => {
-                        if (!buscaClienteSeletor.trim()) return;
-                        setCriandoNovoCliente(true);
-                        try {
-                          const novo = await acoesClientes.salvarCliente({ nome: buscaClienteSeletor.trim() });
-                          if (novo && novo.id) {
-                            setClienteProjetoId(novo.id);
-                            setBuscaClienteSeletor(novo.nome);
-                            toast.success(`Cliente "${novo.nome}" cadastrado!`);
-                          }
-                        } catch (e) {
-                          toast.error("Erro ao cadastrar cliente.");
-                        } finally {
-                          setCriandoNovoCliente(false);
-                          setAbertoSeletorCliente(false);
-                        }
-                      }}
-                      title="Cadastrar Cliente"
-                      className="w-14 h-14 flex items-center justify-center bg-zinc-900/50 border border-white/5 hover:border-emerald-500/40 rounded-xl text-emerald-400 transition-all shadow-inner hover:bg-emerald-500/10 disabled:opacity-40 disabled:hover:border-white/5 disabled:hover:bg-zinc-900/50 disabled:text-zinc-500"
-                    >
-                      <Plus size={20} />
-                    </button>
-                  </div>
-
-                  {abertoSeletorCliente && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-[40]" 
-                        onClick={() => setAbertoSeletorCliente(false)} 
-                      />
-                      <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 z-[50] flex flex-col gap-1 max-h-60 overflow-y-auto">
-                        {(() => {
-                          const filtrados = (estadoClientes.clientes || []).filter(c =>
-                            c.nome.toLowerCase().includes(buscaClienteSeletor.toLowerCase())
-                          );
-                          
-                          const clienteExato = filtrados.some(c => c.nome.toLowerCase() === buscaClienteSeletor.trim().toLowerCase());
-
-                          return (
-                            <>
-                              {filtrados.map((cli) => (
-                                <button
-                                  key={cli.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setClienteProjetoId(cli.id);
-                                    setBuscaClienteSeletor(cli.nome);
-                                    setAbertoSeletorCliente(false);
-                                  }}
-                                  className={`w-full text-left px-3 py-2.5 rounded-lg font-black text-xs transition-colors flex items-center justify-between ${
-                                    clienteProjetoId === cli.id
-                                      ? 'bg-sky-500/10 text-sky-400'
-                                      : 'text-zinc-300 hover:bg-white/5'
-                                  }`}
-                                >
-                                  <span>Usar "{cli.nome}"</span>
-                                  {clienteProjetoId === cli.id && <Check size={14} />}
-                                </button>
-                              ))}
-
-                              {buscaClienteSeletor.trim() !== '' && !clienteExato && (
-                                <button
-                                  type="button"
-                                  disabled={criandoNovoCliente}
-                                  onClick={async () => {
-                                    setCriandoNovoCliente(true);
-                                    try {
-                                      const novo = await acoesClientes.salvarCliente({ nome: buscaClienteSeletor.trim() });
-                                      if (novo && novo.id) {
-                                        setClienteProjetoId(novo.id);
-                                        setBuscaClienteSeletor(novo.nome);
-                                      }
-                                    } catch (e) {
-                                      toast.error("Erro ao criar contato.");
-                                    } finally {
-                                      setCriandoNovoCliente(false);
-                                      setAbertoSeletorCliente(false);
-                                    }
-                                  }}
-                                  className="w-full text-left px-3 py-2.5 rounded-lg font-black text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-2 border border-dashed border-emerald-500/20"
-                                >
-                                  <Plus size={14} />
-                                  {criandoNovoCliente ? 'Criando...' : `Criar "${buscaClienteSeletor}"`}
-                                </button>
-                              )}
-
-                              {filtrados.length === 0 && buscaClienteSeletor.trim() === '' && (
-                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider text-center py-2">
-                                  Nenhum cliente cadastrado
-                                </span>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Nome do Projeto</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Action Figure Batman"
-                    value={nomeProjeto}
-                    onChange={(e) => setNomeProjeto(e.target.value)}
-                    className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Descrição / Notas técnicas</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Ex: Altura de camada 0.12mm, 3 perímetros."
-                    value={descricaoProjeto}
-                    onChange={(e) => setDescricaoProjeto(e.target.value)}
-                    className="w-full p-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700 resize-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 mt-2">
-                  <button
-                    onClick={confirmarSalvarProjeto}
-                    className="w-full h-14 bg-[#00A3FF] hover:bg-[#00A3FF]/80 text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-[#00A3FF]/20 hover:shadow-[#00A3FF]/30"
-                  >
-                    <Check size={16} strokeWidth={3} />
-                    Confirmar e Ir para o Kanban
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      hook.salvarSnapshot(nomeProjeto || "Orçamento via Calculadora");
-                      setModalSalvarProjetoAberto(false);
-                      toast.success("Orçamento salvo no histórico!");
-                    }}
-                    className="w-full h-14 bg-transparent border border-white/10 hover:bg-white/5 text-zinc-300 text-xs font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2.5 transition-all"
-                  >
-                    <History size={16} />
-                    Apenas Salvar no Histórico
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Dialogo>
 
           <Dialogo
             aberto={modalPdfAberto}

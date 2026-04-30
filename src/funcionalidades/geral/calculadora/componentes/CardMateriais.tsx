@@ -25,8 +25,8 @@ export function CardMateriais({
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-500/5 flex items-center justify-center text-violet-400 border border-violet-500/30 shadow-[inset_0px_1px_12px_rgba(139,92,246,0.2)]">
-            <Layers size={18} className="animate-pulse" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-400 border border-violet-500/30">
+            <Layers size={18} />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-black uppercase tracking-wider text-white">Materiais e Consumo</span>

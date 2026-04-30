@@ -39,8 +39,8 @@ export function CardFiscal({
     <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarImpostos ? "opacity-40 grayscale" : ""}`}>
       <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center text-orange-400 border border-orange-500/30 shadow-[inset_0px_1px_12px_rgba(249,115,22,0.2)]">
-            <TrendingUp size={18} className="animate-pulse" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-orange-400 border border-orange-500/30">
+            <TrendingUp size={18} />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-black uppercase tracking-wider text-white">Estrutura Fiscal</span>
