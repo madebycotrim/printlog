@@ -14,7 +14,7 @@ interface PropriedadesCartaoPedido {
 }
 
 export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
-  const { excluirPedido } = usarPedidos();
+  const { excluirPedido, moverPedido } = usarPedidos();
   const [menuAberto, setMenuAberto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -48,50 +48,51 @@ export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
 
   return (
     <div
-      draggable={true}
+      draggable={!menuAberto}
       onDragStart={(e) => {
+        if (menuAberto) {
+          e.preventDefault();
+          return;
+        }
         e.dataTransfer.setData("text/plain", pedido.id);
         e.dataTransfer.effectAllowed = "move";
       }}
-      className="cursor-grab active:cursor-grabbing group/card"
+      className={`${menuAberto ? "cursor-default" : "cursor-grab active:cursor-grabbing"} group/card ${menuAberto ? "relative z-[100]" : "relative z-10"}`}
     >
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -4 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      <div
         className={`
-          relative p-4 rounded-xl border transition-all duration-500
+          relative p-3 rounded-xl border transition-all duration-300
           bg-[#121214] border-white/[0.04]
-          hover:border-white/[0.1] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]
-          ${estaAtrasado ? "border-rose-500/30 ring-1 ring-rose-500/10 shadow-[0_0_20px_rgba(244,63,94,0.05)]" : ""}
+          ${estaAtrasado ? "border-rose-500/30 ring-1 ring-rose-500/10" : ""}
+          ${menuAberto ? "z-[100]" : "z-10"}
         `}
       >
         {/* Glow de Status Lateral */}
-        <div className={`absolute left-0 top-4 bottom-4 w-[2px] rounded-r-full bg-${configStatus.cor}-500/40`} />
+        <div className={`absolute left-0 top-3 bottom-3 w-[2px] rounded-r-full bg-${configStatus.cor}-500/40`} />
 
         {/* Cabeçalho do Card */}
-        <div className="flex items-start justify-between mb-3 relative z-10 pl-2">
-          <div className="flex-1 min-w-0 mr-4">
-            <div className="flex items-center gap-1.5 mb-1.5 opacity-60">
-              <User size={10} className="text-zinc-500" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 truncate">
+        <div className="flex items-start justify-between mb-2 relative pl-2">
+          <div className="flex-1 min-w-0 mr-2">
+            <div className="flex items-center gap-1 mb-1 opacity-60">
+              <User size={8} className="text-zinc-500" />
+              <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 truncate">
                 {pedido.nomeCliente || "Padrão"}
               </span>
             </div>
-            <h4 className="text-[13px] font-bold text-white leading-tight tracking-tight line-clamp-2 uppercase group-hover/card:text-indigo-400 transition-colors">
+            <h4 className="text-[12px] font-bold text-white leading-tight tracking-tight line-clamp-1 uppercase">
               {pedido.descricao}
             </h4>
           </div>
 
           <div className="relative" ref={menuRef}>
             <button
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 setMenuAberto(!menuAberto);
               }}
-              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${menuAberto ? "bg-white/10 text-white" : "text-zinc-700 hover:text-white opacity-0 group-hover/card:opacity-100"}`}
+              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${menuAberto ? "bg-white/10 text-white" : "text-zinc-700 hover:text-white group-hover/card:opacity-100"}`}
             >
               <MoreVertical size={14} />
             </button>
@@ -99,27 +100,33 @@ export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
             <AnimatePresence>
               {menuAberto && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95, x: 20 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, x: 20 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1e] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-1.5 z-50 backdrop-blur-xl"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-full mt-1 w-44 bg-[#1a1a1e] border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] p-1 z-[110]"
                 >
                   <button
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       aoEditar?.(pedido.id);
                       setMenuAberto(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-colors"
                   >
-                    <Edit3 size={12} className="text-indigo-400" /> Editar Registro
+                    <Edit3 size={12} className="text-indigo-400" /> Editar
                   </button>
                   <button
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
-                      if (confirm("Deseja realmente excluir este pedido?")) excluirPedido(pedido.id);
+                      if (confirm("Excluir pedido?")) excluirPedido(pedido.id);
+                      setMenuAberto(false);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:bg-rose-500/10 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:bg-rose-500/10 transition-colors"
                   >
                     <Trash2 size={12} /> Excluir
                   </button>
@@ -130,46 +137,75 @@ export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
         </div>
 
         {/* Métricas e Status */}
-        <div className="space-y-4 relative z-10 pl-2">
+        <div className="space-y-3 relative pl-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <DollarSign size={10} className="text-indigo-400" />
-              <span className="text-[12px] font-bold text-zinc-100">
+              <span className="text-[11px] font-black text-zinc-100">
                 {centavosParaReais(pedido.valorCentavos)}
               </span>
             </div>
 
             {pedido.prazoEntrega && (
               <div
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest transition-all duration-500 ${
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[8px] font-black uppercase tracking-tighter ${
                   estaAtrasado
-                    ? "bg-rose-500 text-white border-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.3)]"
-                    : "bg-white/[0.02] border-white/5 text-zinc-500 group-hover/card:border-white/10 group-hover/card:text-zinc-400"
+                    ? "bg-rose-500 text-white border-rose-400"
+                    : "bg-white/[0.02] border-white/5 text-zinc-500"
                 }`}
               >
-                <Clock size={10} />
+                <Clock size={8} />
                 {formatarDataCurta(pedido.prazoEntrega)}
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-white/[0.03]">
-            <div className="flex items-center gap-1.5 opacity-60">
-              <Package size={10} className="text-zinc-600" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 truncate max-w-[80px]">
-                {pedido.material || "Filamento"}
-              </span>
-            </div>
+          <div className="flex items-center justify-between pt-2 border-t border-white/[0.03]">
+            {pedido.status === StatusPedido.A_FAZER ? (
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    moverPedido(pedido.id, StatusPedido.EM_PRODUCAO);
+                  }}
+                  className="flex-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-emerald-500/20"
+                >
+                  Aprovar
+                </button>
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (confirm("Cancelar este orçamento?")) excluirPedido(pedido.id);
+                  }}
+                  className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all border border-rose-500/20"
+                >
+                  X
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 opacity-60">
+                  <Package size={10} className="text-zinc-600" />
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500 truncate max-w-[70px]">
+                    {pedido.material || "Filamento"}
+                  </span>
+                </div>
 
-            <div className="flex items-center gap-1.5">
-              <div className={`w-1.5 h-1.5 rounded-full bg-${configStatus.cor}-500 shadow-[0_0_8px_rgba(var(--color-${configStatus.cor}-500),0.4)]`} />
-              <span className={`text-[9px] font-bold uppercase tracking-widest text-${configStatus.cor}-500/80`}>
-                {configStatus.label}
-              </span>
-            </div>
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-1 h-1 rounded-full bg-${configStatus.cor}-500`} />
+                  <span className={`text-[8px] font-black uppercase tracking-tighter text-${configStatus.cor}-500/80`}>
+                    {configStatus.label}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

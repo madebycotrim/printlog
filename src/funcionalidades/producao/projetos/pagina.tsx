@@ -1,16 +1,14 @@
-import { FolderKanban, Plus, Archive } from "lucide-react";
-import { useState } from "react";
+import { FolderKanban, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { FormularioPedido } from "./componentes/FormularioPedido";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
 import { ModalProjetosAtrasados } from "./componentes/ModalProjetosAtrasados";
 import { usarPedidos } from "./hooks/usarPedidos";
+import { usarArmazemPedidos } from "./estado/armazemPedidos";
 import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
 import { CriarPedidoInput, Pedido } from "./tipos";
-import { filtrarPedidosAtrasados } from "@/compartilhado/utilitarios/gestaoAtrasos";
-import { AlertTriangle } from "lucide-react";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
 import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
@@ -21,6 +19,7 @@ export function PaginaProjetos() {
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
   const { pedidos, pedidosFiltrados, criarPedido, atualizarPedido, moverPedido, pesquisar, carregando } = usarPedidos();
+  const definirTermoBusca = usarArmazemPedidos((s) => s.definirTermoBusca);
 
   usarDefinirCabecalho({
     titulo: "Fluxo de Produção",

@@ -5,10 +5,12 @@ interface EstadoPedidos {
     pedidos: Pedido[];
     carregando: boolean;
     termoBusca: string;
+    jaCarregou: boolean;
 
     definirPedidos: (pedidos: Pedido[]) => void;
     definirCarregando: (status: boolean) => void;
     definirTermoBusca: (termo: string) => void;
+    definirJaCarregou: (status: boolean) => void;
     adicionarPedido: (novo: Pedido) => void;
     atualizarPedidoNoEstado: (id: string, dados: Partial<Pedido>) => void;
     removerPedido: (id: string) => void;
@@ -18,10 +20,12 @@ export const usarArmazemPedidos = create<EstadoPedidos>((set) => ({
     pedidos: [],
     carregando: true,
     termoBusca: "",
+    jaCarregou: false,
 
     definirPedidos: (pedidos) => set({ pedidos }),
     definirCarregando: (status) => set({ carregando: status }),
     definirTermoBusca: (termo) => set({ termoBusca: termo }),
+    definirJaCarregou: (status) => set({ jaCarregou: status }),
 
     adicionarPedido: (novo) => set((state) => ({
         pedidos: [...state.pedidos, novo]

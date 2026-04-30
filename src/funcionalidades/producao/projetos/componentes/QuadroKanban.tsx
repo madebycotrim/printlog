@@ -48,9 +48,17 @@ export function QuadroKanban({ pedidosInjetados, aoEditar, aoMover }: Propriedad
 
   return (
     <div className="flex gap-6 overflow-x-auto pb-6 px-1 h-full scrollbar-thin scrollbar-thumb-white/5 scrollbar-track-transparent">
-      {colunas.map((coluna) => {
+      {colunas.map((coluna, index) => {
         const pedidosDaColuna = pedidos
-          .filter((p) => p.status === coluna.status)
+          .filter((p) => {
+            if (index === 0) {
+              // A primeira coluna ("A Fazer") captura tudo que não está nas outras
+              // e que não é Concluído/Arquivado, garantindo que nada suma.
+              return p.status === coluna.status || 
+                     (![StatusPedido.EM_PRODUCAO, StatusPedido.ACABAMENTO, StatusPedido.CONCLUIDO, StatusPedido.ARQUIVADO].includes(p.status as StatusPedido));
+            }
+            return p.status === coluna.status;
+          })
           .sort((a, b) => {
             const aAtrasado = verificarSeEstaAtrasado(a);
             const bAtrasado = verificarSeEstaAtrasado(b);

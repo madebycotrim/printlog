@@ -457,16 +457,6 @@ export function usarCalculadora() {
     const diasEntrega = estimativaPrazo.diasUteis || 1;
     const dataEntrega = new Date();
     dataEntrega.setDate(dataEntrega.getDate() + diasEntrega);
-    const entregaTexto = diasEntrega <= 0
-      ? 'Hoje'
-      : diasEntrega === 1
-        ? 'Amanha'
-        : dataEntrega.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-
-    // Pills de material
-    const pillsMaterial = materiaisComTipo.length > 0
-      ? materiaisComTipo.map(m => m.tipoMaterial + ' ' + m.nome + ' ' + m.quantidade + (m.tipo === 'FDM' ? 'g' : 'ml')).join(' / ')
-      : 'Material padrao';
 
     const layout = `
       <!DOCTYPE html>

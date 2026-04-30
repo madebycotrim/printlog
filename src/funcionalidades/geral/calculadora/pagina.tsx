@@ -7,7 +7,6 @@ import {
   FolderKanban
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
@@ -38,7 +37,6 @@ import { ModalHistorico } from "./componentes/ModalHistorico";
 import { Zap, Clock, Wrench, Percent } from "lucide-react";
 
 export function PaginaCalculadora() {
-  const navigate = useNavigate();
   const { usuario } = usarAutenticacao();
   const eProOuSuperior = useMemo(() => {
     const plano = ((usuario as any)?.plano || '').toUpperCase();
@@ -180,12 +178,25 @@ export function PaginaCalculadora() {
 
       if (novoPedido) {
         toast.success("Orçamento salvo com sucesso!");
-        navigate("/projetos");
+        // Resetar Formulário
+        hook.limpar();
+        setNomeProjeto("");
+        setDescricaoProjeto("");
+        setClienteProjetoId("");
+        setBuscaClienteSeletor("");
+        // O navigate opcional pode ser mantido ou removido conforme preferência, 
+        // mas o reset garante que se ele voltar, estará limpo.
+        // Removendo navigate para fluxo contínuo de trabalho.
       }
     } catch (erro) {
       console.warn("Erro ao salvar projeto:", erro);
       hook.salvarSnapshot(nomeProjeto || "Orçamento via Calculadora");
-      navigate("/projetos");
+      // Mesmo com erro de rede, o snapshot salvou no offline, então resetamos
+      hook.limpar();
+      setNomeProjeto("");
+      setDescricaoProjeto("");
+      setClienteProjetoId("");
+      setBuscaClienteSeletor("");
     }
   };
 

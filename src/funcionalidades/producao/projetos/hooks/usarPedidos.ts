@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useRef } from "react";
 import { CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
 import { servicoPedidos } from "../servicos/servicoPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
@@ -9,34 +9,38 @@ import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 export function usarPedidos() {
-  const {
-    pedidos,
-    carregando,
-    termoBusca,
-    definirPedidos,
-    definirCarregando,
-    definirTermoBusca,
-    adicionarPedido,
-    atualizarPedidoNoEstado,
-    removerPedido,
-  } = usarArmazemPedidos();
+  const pedidos = usarArmazemPedidos((s) => s.pedidos);
+  const carregando = usarArmazemPedidos((s) => s.carregando);
+  const termoBusca = usarArmazemPedidos((s) => s.termoBusca);
+  const definirPedidos = usarArmazemPedidos((s) => s.definirPedidos);
+  const definirCarregando = usarArmazemPedidos((s) => s.definirCarregando);
+  const definirTermoBusca = usarArmazemPedidos((s) => s.definirTermoBusca);
+  const adicionarPedido = usarArmazemPedidos((s) => s.adicionarPedido);
+  const atualizarPedidoNoEstado = usarArmazemPedidos((s) => s.atualizarPedidoNoEstado);
+  const removerPedido = usarArmazemPedidos((s) => s.removerPedido);
+
+  const jaCarregou = usarArmazemPedidos((s) => s.jaCarregou);
+  const definirJaCarregou = usarArmazemPedidos((s) => s.definirJaCarregou);
 
   const { usuario } = usarAutenticacao();
   const usuarioId = usuario?.uid;
 
   const carregarPedidos = useCallback(async () => {
-    if (!usuarioId) return;
+    if (!usuarioId || jaCarregou) return;
     try {
+      definirJaCarregou(true);
       definirCarregando(true);
       const dados = await servicoPedidos.buscarPedidos(usuarioId);
       definirPedidos(dados);
     } catch (erro) {
+      // Se der erro, permitimos tentar de novo no futuro se for recarregado manualmente
+      // mas não resetamos jaCarregou aqui para evitar o loop imediato
       registrar.error({ rastreioId: "sistema", servico: "Projetos" }, "Erro ao carregar pedidos", erro);
       toast.error("Erro ao carregar pedidos.");
     } finally {
       definirCarregando(false);
     }
-  }, [definirPedidos, definirCarregando, usuarioId]);
+  }, [definirPedidos, definirCarregando, definirJaCarregou, usuarioId, jaCarregou]);
 
   const criarPedido = async (dados: CriarPedidoInput) => {
     if (!usuarioId) return;
@@ -112,22 +116,24 @@ export function usarPedidos() {
   );
 
   const pedidosFiltrados = useMemo(() => {
-    if (!termoBusca) return pedidos;
-    const termo = termoBusca.toLowerCase();
+    const busca = termoBusca?.trim().toLowerCase();
+    if (!busca) return pedidos;
+    
     return pedidos.filter(
       (p) =>
-        p.descricao.toLowerCase().includes(termo) ||
-        p.nomeCliente?.toLowerCase().includes(termo) ||
-        p.idCliente.toLowerCase().includes(termo) ||
-        p.id.toLowerCase().includes(termo),
+        p.descricao.toLowerCase().includes(busca) ||
+        p.nomeCliente?.toLowerCase().includes(busca) ||
+        p.idCliente.toLowerCase().includes(busca) ||
+        p.id.toLowerCase().includes(busca),
     );
   }, [pedidos, termoBusca]);
 
   useEffect(() => {
-    if (usuarioId) {
+    if (usuarioId && !jaCarregou) {
       carregarPedidos();
     }
-  }, [carregarPedidos, usuarioId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuarioId, jaCarregou]);
 
   return {
     pedidos,

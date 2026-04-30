@@ -13,9 +13,14 @@ class ServicoPedidos {
   async buscarPedidos(usuarioId: string): Promise<Pedido[]> {
     const pedidos = await apiPedidos.buscarTodos(usuarioId);
     
-    // Convertemos datas de string para objetos Date
+    // Convertemos datas de string para objetos Date e normalizamos status
     const processados = pedidos.map((p: any) => ({
       ...p,
+      status: (p.status || p.id_status || '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace('pendente', StatusPedido.A_FAZER) || StatusPedido.A_FAZER,
       dataCriacao: new Date(p.data_criacao || p.dataCriacao),
       dataConclusao: p.data_conclusao ? new Date(p.data_conclusao) : undefined,
       prazoEntrega: p.prazoEntrega ? new Date(p.prazoEntrega) : undefined,

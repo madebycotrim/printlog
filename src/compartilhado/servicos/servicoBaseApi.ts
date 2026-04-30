@@ -84,11 +84,28 @@ export const servicoBaseApi = {
       }
 
       if (!resposta.ok) {
-        const erroJson = (await resposta.json().catch(() => ({}))) as Record<string, string>;
+        let mensagem = "Erro inesperado no servidor.";
+        let codigo = undefined;
+
+        const contentType = resposta.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const erroJson = (await resposta.json().catch(() => ({}))) as Record<string, string>;
+          mensagem = erroJson.mensagem || mensagem;
+          codigo = erroJson.codigo;
+        }
+
         throw {
           status: resposta.status,
-          mensagem: erroJson.mensagem || "Erro inesperado no servidor.",
-          codigo: erroJson.codigo
+          mensagem,
+          codigo
+        } as ErroApi;
+      }
+
+      const contentType = resposta.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw {
+          status: resposta.status,
+          mensagem: `Resposta inválida do servidor (esperado JSON, recebido ${contentType || 'nada'}). Verifique se a VITE_URL_API está correta.`
         } as ErroApi;
       }
 
