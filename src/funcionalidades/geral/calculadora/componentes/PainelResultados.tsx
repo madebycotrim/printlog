@@ -4,7 +4,7 @@ import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { servicoIA, SugestaoPrecoIA } from "../servicos/servicoIA";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -25,7 +25,7 @@ interface PainelResultadosProps {
   insumosFixos?: number;
 }
 
-export function PainelResultados({
+export const PainelResultados = memo(function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0
 }: PainelResultadosProps) {
@@ -391,4 +391,4 @@ export function PainelResultados({
       </div>
     </div>
   );
-}
+});

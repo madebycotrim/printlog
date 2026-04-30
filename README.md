@@ -1,4 +1,4 @@
-# 🖨️ PrintLog V2
+# 🖨️ PrintLog
 
 > Plataforma de gestão de impressão 3D para estúdios profissionais.
 

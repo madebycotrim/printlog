@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Layers, Search, Box, RefreshCcw, Check, Plus, Trash2 } from "lucide-react";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +19,7 @@ interface CardMateriaisProps {
   abrirCriar: () => void;
 }
 
-export function CardMateriais({
+export const CardMateriais = memo(function CardMateriais({
   materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, remover, abrirArmazem, abrirCriar
 }: CardMateriaisProps) {
   return (
@@ -85,7 +86,7 @@ export function CardMateriais({
                   <h4 className="text-xs font-black uppercase truncate leading-tight">{m.nome}</h4>
                   <div className="flex flex-col mt-0.5">
                     <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
-                      {m.tipo} • {centavosParaReais(Math.round((m.precoCentavos / m.pesoGramas) * 1000))}/kg
+                      {m.tipoMaterial || m.tipo} • {centavosParaReais(Math.round((m.precoCentavos / m.pesoGramas) * 1000))}/kg
                     </p>
                     <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-sky-500'}`}>
                       {((m.estoque * m.pesoGramas) + m.pesoRestanteGramas)}g disponíveis
@@ -160,7 +161,7 @@ export function CardMateriais({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-black uppercase tracking-tight">{item.nome}</span>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">{item.tipo}</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">{item.tipoMaterial || item.tipo}</span>
                       {alerta && (
                         <span className="text-[9px] font-black text-rose-500 uppercase mt-1 flex items-center gap-1">
                           <RefreshCcw size={8} /> ESTOQUE CRÍTICO
@@ -178,7 +179,7 @@ export function CardMateriais({
                           </span>
                         )}
                       </div>
-                      <input type="number" placeholder="0" value={item.quantidade || ""} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
+                      <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : item.quantidade} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
                       
                       {/* Barra de Consumo */}
                       {(() => {
@@ -199,7 +200,7 @@ export function CardMateriais({
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Preço/Kg</label>
-                      <input type="number" placeholder="0" value={(item.precoKgCentavos / 100) || ""} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 border-transparent focus:border-sky-500/30 outline-none font-black text-xs" />
+                      <input type="number" placeholder="0" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 border-transparent focus:border-sky-500/30 outline-none font-black text-xs" />
                     </div>
                   </div>
                   <button onClick={() => remover(item.id)} className="p-2 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">
@@ -213,4 +214,4 @@ export function CardMateriais({
       </div>
     </div>
   );
-}
+});

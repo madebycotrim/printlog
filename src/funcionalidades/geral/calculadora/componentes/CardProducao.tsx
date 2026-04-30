@@ -1,6 +1,6 @@
 import { Zap, Plus, Trash2, ChevronDown, Minus } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
-import { useState } from "react";
+import { useState, memo } from "react";
 
 interface CardProducaoProps {
   tempo: number;
@@ -21,7 +21,7 @@ interface CardProducaoProps {
   setQuantidade: (v: number) => void;
 }
 
-export function CardProducao({
+export const CardProducao = memo(function CardProducao({
   tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
   impressoras = [], idImpressoraSelecionada, aoSelecionarImpressora, quantidade, setQuantidade
 }: CardProducaoProps) {
@@ -121,7 +121,7 @@ export function CardProducao({
                   type="number" 
                   placeholder="1" 
                   min="1" 
-                  value={quantidade || ""} 
+                  value={quantidade ?? ""} 
                   onChange={(e) => setQuantidade(Number(e.target.value))} 
                   className="w-full h-full bg-transparent outline-none font-black text-sm text-center text-zinc-900 dark:text-white" 
                 />
@@ -142,7 +142,7 @@ export function CardProducao({
                   <input 
                     type="number" 
                     placeholder="0" 
-                    value={Math.floor(tempo / 60) || ""} 
+                    value={Math.floor(tempo / 60) === 0 ? "" : Math.floor(tempo / 60)} 
                     onChange={(e) => setTempo(Number(e.target.value) * 60 + (tempo % 60))} 
                     className="w-full h-14 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white" 
                   />
@@ -153,7 +153,7 @@ export function CardProducao({
                   <input 
                     type="number" 
                     placeholder="0" 
-                    value={tempo % 60 || ""} 
+                    value={tempo % 60 === 0 ? "" : tempo % 60} 
                     onChange={(e) => setTempo(Math.floor(tempo / 60) * 60 + Number(e.target.value))} 
                     className="w-full h-14 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white" 
                   />
@@ -179,7 +179,7 @@ export function CardProducao({
                 >
                   <input
                     type="number"
-                    value={potencia || ""}
+                    value={potencia === 0 ? "" : potencia}
                     onChange={(e) => setPotencia(Number(e.target.value))}
                     onClick={(e) => e.stopPropagation()}
                     className="bg-transparent outline-none text-right placeholder:current-color leading-none"
@@ -208,7 +208,7 @@ export function CardProducao({
                 type="number" 
                 step="0.01" 
                 placeholder="0" 
-                value={precoKwh || ""} 
+                value={precoKwh === 0 ? "" : precoKwh} 
                 onChange={(e) => setPrecoKwh(Number(e.target.value))} 
                 className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
               />
@@ -247,7 +247,7 @@ export function CardProducao({
 
           <div className="flex gap-2 shrink-0 mt-auto">
             <input type="text" placeholder="Item..." value={novoItemNome} onChange={(e) => setNovoItemNome(e.target.value)} className="flex-1 h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 outline-none font-black text-xs uppercase text-zinc-900 dark:text-white transition-all shadow-inner" />
-            <input type="number" placeholder="R$" value={novoItemValor || ""} onChange={(e) => setNovoItemValor(Number(e.target.value))} className="w-20 h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 outline-none font-black text-xs text-zinc-900 dark:text-white transition-all shadow-inner" />
+            <input type="number" placeholder="R$" value={novoItemValor === 0 ? "" : novoItemValor} onChange={(e) => setNovoItemValor(Number(e.target.value))} className="w-20 h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 outline-none font-black text-xs text-zinc-900 dark:text-white transition-all shadow-inner" />
             <button onClick={() => { if (novoItemNome && novoItemValor > 0) { setPosProcesso([...posProcesso, { id: crypto.randomUUID(), nome: novoItemNome, valor: novoItemValor }]); setNovoItemNome(""); setNovoItemValor(0); } }} className="w-14 h-14 rounded-xl bg-amber-500 text-white flex items-center justify-center hover:bg-amber-600 transition-colors">
               <Plus size={16} />
             </button>
@@ -256,4 +256,4 @@ export function CardProducao({
       </div>
     </div>
   );
-}
+});

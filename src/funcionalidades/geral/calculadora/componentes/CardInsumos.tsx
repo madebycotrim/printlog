@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2 } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
 import { centavosParaReais, formatarMoedaFinancas } from "@/compartilhado/utilitarios/formatadores";
@@ -18,7 +19,7 @@ interface CardInsumosProps {
   abrirNovo: () => void;
 }
 
-export function CardInsumos({
+export const CardInsumos = memo(function CardInsumos({
   insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, insumosFixos, setInsumosFixos, abrirGerenciar, abrirNovo
 }: CardInsumosProps) {
   return (
@@ -186,7 +187,7 @@ export function CardInsumos({
                           <input 
                             type="number" 
                             placeholder="0"
-                            value={item.quantidade || ""} 
+                            value={item.quantidade === 0 ? "" : item.quantidade} 
                             onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} 
                             className={`w-full h-full bg-transparent outline-none font-black text-xs text-center tabular-nums ${alerta ? "text-rose-500" : "text-gray-900 dark:text-white"}`} 
                           />
@@ -231,7 +232,7 @@ export function CardInsumos({
             <input 
               type="number" 
               placeholder="0,00" 
-              value={insumosFixos || ""} 
+              value={insumosFixos === 0 ? "" : insumosFixos} 
               onChange={(e) => setInsumosFixos(Number(e.target.value))} 
               className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white" 
             />
@@ -243,4 +244,4 @@ export function CardInsumos({
       </div>
     </div>
   );
-}
+});

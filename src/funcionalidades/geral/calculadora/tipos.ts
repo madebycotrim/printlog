@@ -3,6 +3,7 @@ export interface MaterialSelecionado {
   nome: string;
   cor: string;
   tipo: "FDM" | "SLA";
+  tipoMaterial: string;
   quantidade: number;
   precoKgCentavos: number;
 }

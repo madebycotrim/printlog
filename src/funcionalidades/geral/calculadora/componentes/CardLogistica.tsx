@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Warehouse, Settings } from "lucide-react";
 import { PerfilMarketplace } from "../tipos";
 
@@ -14,7 +15,7 @@ interface CardLogisticaProps {
   abrirPerfis: () => void;
 }
 
-export function CardLogistica({
+export const CardLogistica = memo(function CardLogistica({
   perfis, perfilAtivo, setPerfilAtivo, taxaEcommerce, setTaxaEcommerce, taxaFixa, setTaxaFixa, frete, setFrete, abrirPerfis
 }: CardLogisticaProps) {
   return (
@@ -69,7 +70,7 @@ export function CardLogistica({
           <input 
             type="number" 
             placeholder="0" 
-            value={taxaEcommerce || ""} 
+            value={taxaEcommerce === 0 ? "" : taxaEcommerce} 
             onChange={(e) => setTaxaEcommerce(Number(e.target.value))} 
             className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
           />
@@ -79,7 +80,7 @@ export function CardLogistica({
           <input 
             type="number" 
             placeholder="0" 
-            value={taxaFixa || ""} 
+            value={taxaFixa === 0 ? "" : taxaFixa} 
             onChange={(e) => setTaxaFixa(Number(e.target.value))} 
             className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
           />
@@ -89,7 +90,7 @@ export function CardLogistica({
           <input 
             type="number" 
             placeholder="0" 
-            value={frete || ""} 
+            value={frete === 0 ? "" : frete} 
             onChange={(e) => setFrete(Number(e.target.value))} 
             className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
           />
@@ -97,4 +98,4 @@ export function CardLogistica({
       </div>
     </div>
   );
-}
+});

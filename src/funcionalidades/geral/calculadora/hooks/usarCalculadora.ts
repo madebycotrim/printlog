@@ -117,8 +117,8 @@ export function usarCalculadora() {
     let listaPadrao = [
       { nome: "MEI", base: 0, icms: 0, iss: 0 },
       { nome: "CPF", base: 10, icms: 0, iss: 0 },
-      { nome: "Produto", base: 0, icms: 4, iss: 0 },
-      { nome: "Servico", base: 0, icms: 0, iss: 5 },
+      { nome: "Produto", base: 4, icms: 0, iss: 0 },
+      { nome: "Servico", base: 6, icms: 0, iss: 0 },
     ];
 
     if (salvo) {
@@ -428,289 +428,393 @@ export function usarCalculadora() {
   ].filter(d => d.value > 0), [calculo]);
 
   // --- FEATURE 1: EXPORTAÇÃO PDF ---
-  const gerarPdf = useCallback((nomeEstudioCustom?: string, sloganCustom?: string, nomeCliente?: string) => {
+  const gerarPdf = useCallback((nomeEstudioCustom?: string, sloganCustom?: string, nomeCliente?: string, nomeProjeto?: string) => {
     const dataRef = new Date();
     const validade = new Date();
     validade.setDate(dataRef.getDate() + 7);
+
+    // Enriquece com tipoMaterial real do armazem
+    const materiaisComTipo = materiaisSelecionados.map(m => ({
+      ...m,
+      tipoMaterial: m.tipoMaterial || materiais.find(orig => orig.id === m.id)?.tipoMaterial || m.tipo
+    }));
+
+    // Calcula percentuais para barras proporcionais
+    const totalCustos = calculo.custoTotalOperacional + calculo.taxaMarketplace + calculo.impostoVenda;
+    const pctMaterial  = totalCustos > 0 ? Math.round(((calculo.custoMaterial + calculo.custoInsumos) / totalCustos) * 100) : 0;
+    const pctMaquina   = totalCustos > 0 ? Math.round(((calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso) / totalCustos) * 100) : 0;
+    const pctTaxas     = totalCustos > 0 ? Math.round(((calculo.taxaMarketplace + calculo.impostoVenda) / totalCustos) * 100) : 0;
+
+    // Número único do documento (usado no header e nos termos)
+    const numDocumento = '#' + Math.floor(1000 + Math.random() * 9000);
+
+    // Tempo formatado
+    const tempoFormatado = tempo < 60
+      ? tempo + ' min'
+      : Math.floor(tempo / 60) + 'h' + (tempo % 60 > 0 ? ' ' + (tempo % 60) + 'min' : '');
+
+    // Data de entrega
+    const diasEntrega = estimativaPrazo.diasUteis || 1;
+    const dataEntrega = new Date();
+    dataEntrega.setDate(dataEntrega.getDate() + diasEntrega);
+    const entregaTexto = diasEntrega <= 0
+      ? 'Hoje'
+      : diasEntrega === 1
+        ? 'Amanha'
+        : dataEntrega.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+    // Pills de material
+    const pillsMaterial = materiaisComTipo.length > 0
+      ? materiaisComTipo.map(m => m.tipoMaterial + ' ' + m.nome + ' ' + m.quantidade + (m.tipo === 'FDM' ? 'g' : 'ml')).join(' / ')
+      : 'Material padrao';
 
     const layout = `
       <!DOCTYPE html>
       <html lang="pt-BR">
         <head>
           <meta charset="UTF-8">
-          <title>Orçamento Formal - ${dataRef.toLocaleDateString('pt-BR')}</title>
+          <title>Orcamento - ${(nomeEstudioCustom || "Seu Estudio")}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-            @page {
-              size: A4;
-              margin: 30mm 20mm 30mm 30mm;
-            }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+            @page { size: A4; margin: 0; }
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: 'Inter', sans-serif; 
-              color: #111827; 
-              background-color: #ffffff;
-              line-height: 1.6;
-              padding: 20px;
+
+            body {
+              font-family: 'Inter', sans-serif;
+              color: #111827;
+              background: #ffffff;
+              min-height: 297mm;
+              position: relative;
             }
 
-            .container {
-              max-width: 800px;
+            body::before {
+              content: '';
+              position: fixed;
+              inset: 0;
+              background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+              background-size: 22px 22px;
+              opacity: 0.35;
+              pointer-events: none;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+              z-index: 0;
+            }
+
+            .pagina {
+              position: relative;
+              z-index: 1;
+              max-width: 720px;
               margin: 0 auto;
+              padding: 36px 44px 44px;
             }
 
-            .header { 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: flex-start; 
-              border-bottom: 2px solid #111827; 
-              padding-bottom: 24px;
-              margin-bottom: 40px;
-            }
-            
-            .logo { 
-              font-size: 24px; 
-              font-weight: 900; 
-              color: #111827; 
-              text-transform: uppercase;
-              letter-spacing: -1px;
-            }
-            
-            .slogan {
-              font-size: 12px;
-              color: #4b5563;
-              font-weight: 500;
-              margin-top: 4px;
-            }
-
-            .meta-dados { 
-              text-align: right; 
-              font-size: 12px;
-              color: #374151;
-            }
-            .meta-dados strong { color: #111827; }
-
-            .secao-titulo { 
-              font-size: 12px; 
-              font-weight: 900; 
-              text-transform: uppercase; 
-              color: #111827; 
-              letter-spacing: 1px; 
-              margin-top: 30px;
-              margin-bottom: 15px;
-              border-bottom: 1px solid #111827;
-              padding-bottom: 5px;
-            }
-
-            /* TABELAS NORMAS ABNT */
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin-bottom: 30px; 
-              border-top: 2px solid #111827;
-              border-bottom: 2px solid #111827;
-            }
-            th { 
-              text-align: left; 
-              padding: 10px 8px; 
-              border-bottom: 1px solid #111827; 
-              font-size: 11px; 
-              text-transform: uppercase; 
-              color: #111827; 
-              font-weight: 700;
-            }
-            td { 
-              padding: 10px 8px; 
-              font-size: 12px; 
-              color: #1f2937;
-            }
-
-            .preco-card {
-              border: 2px solid #111827;
-              padding: 20px;
-              margin-bottom: 40px;
+            /* ── HEADER ─────────────────────────────── */
+            .header {
               display: flex;
               justify-content: space-between;
-              align-items: center;
-              background-color: #f9fafb;
+              align-items: flex-start;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #111827;
+              margin-bottom: 24px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: 900;
+              color: #111827;
+              text-transform: uppercase;
+              letter-spacing: -1px;
+              line-height: 1;
+            }
+            .slogan { font-size: 11px; color: #9ca3af; margin-top: 4px; font-weight: 400; }
+            .header-meta { text-align: right; }
+            .doc-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; color: #9ca3af; margin-bottom: 2px; }
+            .doc-num { font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.5px; }
+            .doc-datas { font-size: 10px; color: #9ca3af; margin-top: 4px; line-height: 1.8; font-weight: 400; }
+
+            /* ── 1. PRODUTO (hero) ───────────────────── */
+            .hero-produto {
+              background: #111827;
+              border-radius: 10px;
+              padding: 20px 24px;
+              margin-bottom: 12px;
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }
-            
-            .preco-label {
-              font-size: 12px;
-              font-weight: 800;
-              color: #111827;
-            }
-
-            .preco-valor { 
-              font-size: 32px; 
-              font-weight: 900; 
-              color: #111827; 
-            }
-
-            .detalhes {
-              display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 20px;
-              margin-bottom: 30px;
-            }
-            
-            .detalhe-item {
-              padding: 12px 0;
-            }
-            .detalhe-item strong {
-              display: block;
-              font-size: 11px;
-              color: #4b5563;
+            .hero-label {
+              font-size: 9px;
+              font-weight: 500;
               text-transform: uppercase;
-              letter-spacing: 0.5px;
+              letter-spacing: 2px;
+              color: #6b7280;
+              margin-bottom: 6px;
+            }
+            .hero-nome {
+              font-size: 20px;
+              font-weight: 800;
+              color: #ffffff;
+              letter-spacing: -0.5px;
+              margin-bottom: 10px;
+            }
+            .hero-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+            .pill {
+              background: rgba(255,255,255,0.08);
+              border: 1px solid rgba(255,255,255,0.12);
+              border-radius: 20px;
+              padding: 3px 10px;
+              font-size: 10px;
+              font-weight: 600;
+              color: #d1d5db;
+            }
+            .hero-campos { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 4px; }
+            .hero-campo-label { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #6b7280; margin-bottom: 2px; }
+            .hero-campo-valor { font-size: 13px; font-weight: 700; color: #f9fafb; }
+            .hero-cliente {
+              margin-top: 12px;
+              padding-top: 10px;
+              border-top: 1px solid rgba(255,255,255,0.08);
+              font-size: 10px;
+              color: #6b7280;
+              font-weight: 400;
+            }
+            .hero-cliente strong { color: #e5e7eb; font-weight: 600; }
+
+            /* ── 2 + 3. PRECO + TEMPO (lado a lado) ─── */
+            .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+            .card-preco {
+              background: #ffffff;
+              border: 2px solid #111827;
+              border-radius: 10px;
+              padding: 18px 20px;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+            .card-label-sm {
+              font-size: 9px;
+              font-weight: 500;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              color: #9ca3af;
               margin-bottom: 4px;
             }
-            .detalhe-item span {
-              font-size: 14px;
-              font-weight: 700;
+            .preco-valor {
+              font-size: 36px;
+              font-weight: 900;
               color: #111827;
+              letter-spacing: -2px;
+              line-height: 1;
+            }
+            .preco-contexto {
+              font-size: 11px;
+              color: #6b7280;
+              font-weight: 400;
+              margin-top: 4px;
+            }
+            .preco-unitario {
+              margin-top: 8px;
+              padding-top: 8px;
+              border-top: 1px solid #f3f4f6;
+              font-size: 11px;
+              color: #374151;
+              font-weight: 600;
             }
 
-            .footer { 
-              margin-top: 50px;
-              padding-top: 20px; 
-              border-top: 1px solid #e5e7eb; 
-              font-size: 10px; 
-              color: #6b7280; 
-              text-align: center; 
-              line-height: 1.6;
+            /* ── 2+3. STATS ─────────────────────────── */
+            .stats-row {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 12px;
+              margin-bottom: 12px;
+            }
+            .stat-card {
+              border: 1.5px solid #e5e7eb;
+              border-radius: 10px;
+              padding: 16px 18px;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+            .stat-card.destaque { border: 2px solid #111827; background: #fff; }
+            .stat-card.secundario { background: #f9fafb; }
+            .stat-valor-grande { font-size: 28px; font-weight: 900; color: #111827; letter-spacing: -1.5px; line-height: 1; }
+            .stat-valor-medio { font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.5px; line-height: 1; }
+            .stat-sub { font-size: 10px; color: #9ca3af; font-weight: 400; margin-top: 4px; }
+
+            /* ── 4. BREAKDOWN (barras) ───────────────── */
+            .card-breakdown {
+              background: #f9fafb;
+              border: 1.5px solid #e5e7eb;
+              border-radius: 10px;
+              padding: 16px 20px;
+              margin-bottom: 20px;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+            .breakdown-titulo {
+              font-size: 9px;
+              font-weight: 500;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              color: #9ca3af;
+              margin-bottom: 14px;
+            }
+            .barra-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+            .barra-label { font-size: 11px; font-weight: 500; color: #374151; width: 110px; flex-shrink: 0; }
+            .barra-track { flex: 1; height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+            .barra-fill { height: 100%; border-radius: 99px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .barra-pct { font-size: 10px; font-weight: 600; color: #9ca3af; width: 32px; text-align: right; flex-shrink: 0; }
+            .barra-valor { font-size: 12px; font-weight: 700; color: #111827; width: 64px; text-align: right; flex-shrink: 0; }
+
+            /* ── FOOTER ──────────────────────────────── */
+            .footer {
+              padding-top: 14px;
+              border-top: 1px solid #e5e7eb;
+              font-size: 10px;
+              color: #9ca3af;
+              text-align: center;
+              line-height: 1.7;
+              font-weight: 400;
             }
           </style>
         </head>
         <body>
-          <div class="container">
+          <div class="pagina">
+
+            <!-- HEADER -->
             <div class="header">
               <div>
-                <div class="logo">${(nomeEstudioCustom || "Seu Estúdio").toUpperCase()}</div>
-                ${sloganCustom ? `<div class="slogan">${sloganCustom}</div>` : ''}
+                <div class="logo">${(nomeEstudioCustom || "Seu Estudio").toUpperCase()}</div>
+                ${sloganCustom ? '<div class="slogan">' + sloganCustom + '</div>' : ''}
               </div>
-              <div class="meta-dados">
-                <div><strong>ORÇAMENTO DE SERVIÇO</strong></div>
-                <div>Proposta: #${Math.floor(1000 + Math.random() * 9000)}</div>
-                <div>Emissão: ${dataRef.toLocaleDateString('pt-BR')}</div>
-                <div>Validade: ${validade.toLocaleDateString('pt-BR')}</div>
+              <div class="header-meta">
+                <div class="doc-label">Orcamento</div>
+                <div class="doc-num">${numDocumento}</div>
               </div>
             </div>
 
-          <div class="container">
-            <div class="header" style="align-items: center; border-bottom: 2px solid #111827; padding-bottom: 30px; margin-bottom: 30px;">
-              <div>
-                <div class="logo">${(nomeEstudioCustom || "Seu Estúdio").toUpperCase()}</div>
-                ${sloganCustom ? `<div class="slogan">${sloganCustom}</div>` : ''}
+            <!-- 1. PRODUTO -->
+            <div class="hero-produto">
+              <div class="hero-nome">${nomeProjeto || 'Item personalizado 3D'}</div>
+              <div class="hero-campos">
+                ${materiaisComTipo.map(m => `
+                <div style="display:flex;flex-direction:column;padding-right:20px;border-right:1px solid rgba(255,255,255,0.08);margin-right:4px;">
+                  <span class="hero-campo-label">Material</span>
+                  <span class="hero-campo-valor">${m.tipoMaterial}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;padding-right:20px;border-right:1px solid rgba(255,255,255,0.08);margin-right:4px;">
+                  <span class="hero-campo-label">Cor</span>
+                  <span class="hero-campo-valor">${m.nome}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;padding-right:20px;${itensPosProcesso.length > 0 ? 'border-right:1px solid rgba(255,255,255,0.08);margin-right:4px;' : ''}">
+                  <span class="hero-campo-label">Peso utilizado</span>
+                  <span class="hero-campo-valor">${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'}</span>
+                </div>`).join('')}
+                ${itensPosProcesso.length > 0 ? `
+                <div style="display:flex;flex-direction:column;">
+                  <span class="hero-campo-label">Acabamento</span>
+                  <span class="hero-campo-valor">${itensPosProcesso.map(i => i.nome).join(', ')}</span>
+                </div>` : ''}
               </div>
-              <div style="text-align: right;">
-                <div style="font-size: 11px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">Valor Total do Orçamento</div>
-                <div style="font-size: 40px; font-weight: 900; color: #111827; line-height: 1.1;">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div class="hero-cliente">Para: <strong>${nomeCliente || 'Consumidor Final'}</strong></div>
+            </div>
+
+            <!-- 2+3. STATS: TOTAL · POR PECA · PRODUCAO -->
+            <div class="stats-row">
+              <div class="stat-card destaque">
+                <div class="card-label-sm">Total do pedido</div>
+                <div class="stat-valor-grande">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                <div class="stat-sub">${quantidade} ${quantidade === 1 ? 'peça' : 'peças'} &middot; total do pedido</div>
+              </div>
+              <div class="stat-card secundario">
+                <div class="card-label-sm">${quantidade > 1 ? 'Por peça' : 'Custo de produçao'}</div>
+                <div class="stat-valor-medio">R$ ${quantidade > 1 ? ((calculo.precoSugerido / 100) / quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ((calculo.custoTotalOperacional) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                <div class="stat-sub">${quantidade > 1 ? 'valor unitário' : 'preco sem margem'}</div>
+              </div>
+              <div class="stat-card secundario">
+                <div class="card-label-sm">Producao</div>
+                <div class="stat-valor-medio">${tempoFormatado}</div>
+                <div class="stat-sub">por peca</div>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 12px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px;">
-              <div>
-                <strong style="color: #111827; text-transform: uppercase; font-size: 11px; display: block; margin-bottom: 4px;">Identificação do Cliente:</strong>
-                <span style="font-size: 15px; font-weight: 700; color: #111827;">${nomeCliente || "Consumidor Final"}</span>
+            <div class="card-breakdown">
+              <div class="breakdown-titulo">Como o preço foi formado</div>
+              <div class="barra-item">
+                <span class="barra-label">Material</span>
+                <div class="barra-track"><div class="barra-fill" style="width:${pctMaterial}%;background:#111827;"></div></div>
+                <span class="barra-pct">${pctMaterial}%</span>
+                <span class="barra-valor">R$ ${((calculo.custoMaterial + calculo.custoInsumos) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
-              <div style="text-align: right;">
-                <div><strong>Orçamento:</strong> #${Math.floor(1000 + Math.random() * 9000)}</div>
-                <div><strong>Emissão:</strong> ${dataRef.toLocaleDateString('pt-BR')}</div>
-                <div><strong>Validade:</strong> ${validade.toLocaleDateString('pt-BR')}</div>
+              <div class="barra-item">
+                <span class="barra-label">Máquina e energia</span>
+                <div class="barra-track"><div class="barra-fill" style="width:${pctMaquina}%;background:#374151;"></div></div>
+                <span class="barra-pct">${pctMaquina}%</span>
+                <span class="barra-valor">R$ ${((calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div class="barra-item">
+                <span class="barra-label">Frete e taxas</span>
+                <div class="barra-track"><div class="barra-fill" style="width:${pctTaxas}%;background:#6b7280;"></div></div>
+                <span class="barra-pct">${pctTaxas}%</span>
+                <span class="barra-valor">R$ ${((calculo.taxaMarketplace + calculo.impostoVenda) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
-            
-            <div class="secao-titulo" style="border: none; padding: 0; font-size: 14px; font-weight: 900; letter-spacing: 0px; margin-bottom: 10px;">Detalhamento do Pedido</div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Descrição Detalhada do Item</th>
-                  <th>Qtd</th>
-                  <th>Valor Unitário</th>
-                  <th style="text-align: right">Valor Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <strong style="font-size: 13px;">Serviço de Manufatura Aditiva sob Encomenda</strong>
-                    <div style="font-size: 11px; color: #4b5563; margin-top: 4px; line-height: 1.4;">
-                      <strong>Composição técnica da peça:</strong><br>
-                      • Material: ${materiaisSelecionados.length > 0 ? materiaisSelecionados.map(m => `${m.nome} (${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'})`).join(', ') : 'Material Padrão'}<br>
-                      • Tempo total de impressão: ${tempo} hora(s)
-                    </div>
-                  </td>
-                  <td>${quantidade}</td>
-                  <td>R$ ${((calculo.precoSugerido / 100) / quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td style="text-align: right; font-weight: 700;">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                </tr>
-              </tbody>
-            </table>
 
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 30px; border-top: 1px solid #111827; padding-top: 20px; margin-bottom: 20px;">
-              <div>
-                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 12px; letter-spacing: 0.5px;">3. Breakdown de Custos Transparente</div>
-                <div style="font-size: 11px; color: #4b5563; line-height: 1.6;">
-                  • Insumos & Materiais: <strong style="color: #111827">R$ ${((calculo.custoMaterial + calculo.custoInsumos) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong><br>
-                  • Engenharia & Processamento: <strong style="color: #111827">R$ ${((calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong><br>
-                  • Logística & Taxas Operacionais: <strong style="color: #111827">R$ ${((calculo.taxaMarketplace + calculo.impostoVenda) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            <!-- TERMOS + ACEITE -->
+            <div style="margin-top:28px;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+
+              <!-- cabeçalho dos termos -->
+              <div style="background:#f9fafb;padding:12px 18px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#6b7280;">Termos e Condições</div>
+                <div style="font-size:9px;color:#9ca3af;font-weight:500;">Ref. ${numDocumento}</div>
+              </div>
+
+              <!-- corpo dos termos -->
+              <div style="padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">
+                <div style="font-size:9px;color:#6b7280;line-height:1.6;">
+                  <strong style="color:#374151;">Validade</strong> — Este orçamento é válido por 7 dias a partir da data de emissão.
+                </div>
+                <div style="font-size:9px;color:#6b7280;line-height:1.6;">
+                  <strong style="color:#374151;">Pagamento</strong> — Condições e forma de pagamento a combinar no ato da confirmação.
+                </div>
+                <div style="font-size:9px;color:#6b7280;line-height:1.6;">
+                  <strong style="color:#374151;">Alterações</strong> — Mudanças no modelo, material ou quantidade após a aprovação podem alterar o valor.
+                </div>
+                <div style="font-size:9px;color:#6b7280;line-height:1.6;">
+                  <strong style="color:#374151;">Responsabilidade</strong> — A impressão será fiel ao arquivo fornecido pelo cliente. Erros de projeto são de responsabilidade do solicitante.
                 </div>
               </div>
 
-              <div>
-                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 12px; letter-spacing: 0.5px;">5. Prazo de Produção</div>
-                <div style="font-size: 11px; color: #4b5563; line-height: 1.6;">
-                  • Tempo de impressão estimado: <strong style="color: #111827">${tempo} hora(s)</strong><br>
-                  • Tempo de pós-processamento: <strong style="color: #111827">${itensPosProcesso.length > 0 ? `${itensPosProcesso.length * 0.5} hora(s)` : '0.5 hora(s)'}</strong><br>
-                  • Prazo total de entrega: <strong style="color: #111827">${estimativaPrazo.diasUteis || 1} dias úteis</strong>
+              <!-- assinaturas dentro do mesmo card -->
+              <div style="border-top:1px solid #e5e7eb;padding:14px 18px 16px;display:flex;gap:16px;">
+                <div style="flex:1;border:1.5px dashed #d1d5db;border-radius:8px;padding:12px 14px 10px;">
+                  <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9ca3af;margin-bottom:44px;">Assinatura do cliente</div>
+                  <div style="border-top:1.5px solid #374151;margin-bottom:5px;"></div>
+                  <div style="font-size:9px;color:#9ca3af;">${nomeCliente || 'Consumidor Final'} &nbsp;&middot;&nbsp; Data: ____/____/______</div>
+                </div>
+                <div style="flex:1;border:1.5px dashed #d1d5db;border-radius:8px;padding:12px 14px 10px;">
+                  <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9ca3af;margin-bottom:44px;">Aceite do orçamento</div>
+                  <div style="border-top:1.5px solid #374151;margin-bottom:5px;"></div>
+                  <div style="font-size:9px;color:#9ca3af;">${(nomeEstudioCustom || 'Seu Est\u00fadio').toUpperCase()} &nbsp;&middot;&nbsp; V\u00e1lido at\u00e9 ${validade.toLocaleDateString('pt-BR')}</div>
                 </div>
               </div>
+
             </div>
 
-            <div style="border-top: 1px solid #111827; padding-top: 20px; margin-bottom: 30px;">
-              <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 12px; letter-spacing: 0.5px;">6. Opções Configuráveis</div>
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; font-size: 11px; color: #4b5563;">
-                <div>• <strong>Urgência:</strong> Prazo reduzido (+20% sobre o total)</div>
-                <div>• <strong>Cor alternativa:</strong> Variação de insumos sob consulta</div>
-                <div>• <strong>Acabamento premium:</strong> Lixamento/verniz extra</div>
-                <div>• <strong>Quantidade:</strong> Descontos progressivos escaláveis</div>
-              </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; margin-top: 20px; margin-bottom: 40px;">
-              <div style="width: 300px; border-top: 2px solid #111827; padding-top: 15px;">
-                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
-                  <span style="color: #4b5563;">Subtotal:</span>
-                  <span style="font-weight: 700; color: #111827;">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; color: #111827; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-                  <span>TOTAL FINAL:</span>
-                  <span>R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="footer">
-              Este documento foi gerado eletronicamente e não requer assinatura física. <br>
-              Os preços e prazos descritos acima podem sofrer variações caso haja alteração de escopo.
+            <div class="footer" style="margin-top:20px; border-top: 1px solid #eee; padding-top: 10px;">
+              Este orçamento tem validade de 7 dias &nbsp;&middot;&nbsp; PrintLog &nbsp;&middot;&nbsp; Gerado em ${new Date().toLocaleDateString('pt-BR')}
             </div>
           </div>
 
-          <script>
-            window.onload = () => {
-              window.print();
-            }
-          </script>
+          <script>window.onload = () => { window.print(); }</script>
         </body>
       </html>
     `;
     const win = window.open("", "_blank");
     win?.document.write(layout);
     win?.document.close();
-  }, [calculo, materiaisSelecionados, estimativaPrazo]);
+  }, [calculo, materiaisSelecionados, materiais, estimativaPrazo, tempo, quantidade, itensPosProcesso]);
 
   const limpar = useCallback(() => {
     // Limpa apenas dados da peça/projeto

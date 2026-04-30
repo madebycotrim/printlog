@@ -91,7 +91,7 @@ export function LayoutAutenticacao({
 
       {/* Version Badge Bottom Right */}
       <div className="absolute bottom-4 right-6 text-zinc-800 text-[10px] uppercase tracking-widest font-mono z-0 hidden lg:block">
-        PrintLog v2.0 - Build 2024.1
+        PrintLog - Build 2026.4
       </div>
 
       {/* Card Principal */}

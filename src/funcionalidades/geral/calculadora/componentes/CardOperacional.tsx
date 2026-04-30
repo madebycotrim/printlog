@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { DollarSign, Activity } from "lucide-react";
 
 interface CardOperacionalProps {
@@ -18,7 +18,7 @@ interface CardOperacionalProps {
   setTempoSetup: (v: number) => void;
 }
 
-export function CardOperacional({
+export const CardOperacional = memo(function CardOperacional({
   maoDeObra, setMaoDeObra, margem, setMargem, depreciacao, cobrarDesgaste, setCobrarDesgaste, cobrarMaoDeObra, setCobrarMaoDeObra, 
   anosVidaUtil = 5, setAnosVidaUtil, tempo, tempoSetup, setTempoSetup
 }: CardOperacionalProps) {
@@ -85,7 +85,7 @@ export function CardOperacional({
                   <input 
                     type="number" 
                     placeholder="0"
-                    value={cobrarMaoDeObra ? (maoDeObra || "") : 0} 
+                    value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : maoDeObra) : 0} 
                     onChange={(e) => setMaoDeObra?.(Number(e.target.value))} 
                     className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
                   />
@@ -99,7 +99,7 @@ export function CardOperacional({
                     <input 
                       type="number" 
                       placeholder="0"
-                      value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) || "") : 0} 
+                      value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : Math.floor(tempoSetup / 60)) : ""} 
                       onChange={(e) => setTempoSetup(Number(e.target.value) * 60 + (tempoSetup % 60))} 
                       className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
                     />
@@ -110,7 +110,7 @@ export function CardOperacional({
                     <input 
                       type="number" 
                       placeholder="0"
-                      value={cobrarMaoDeObra ? (tempoSetup % 60 || "") : 0} 
+                      value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : tempoSetup % 60) : ""} 
                       onChange={(e) => setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Number(e.target.value))} 
                       className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
                     />
@@ -253,7 +253,7 @@ export function CardOperacional({
                 <div className="flex items-center bg-gray-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-2 w-24 h-8">
                   <input 
                     type="number" 
-                    value={margemInterna || ""} 
+                    value={margemInterna === 0 ? "" : margemInterna} 
                     onChange={(e) => {
                       const val = Number(e.target.value);
                       setMargemInterna(val);
@@ -313,4 +313,4 @@ export function CardOperacional({
       </div>
     </div>
   );
-}
+});

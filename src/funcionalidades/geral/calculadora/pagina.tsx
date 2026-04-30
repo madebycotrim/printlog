@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import {
@@ -88,11 +88,7 @@ export function PaginaCalculadora() {
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const [modalPdfAberto, setModalPdfAberto] = useState(false);
-  const [nomeEstudio, setNomeEstudio] = useState(() => localStorage.getItem("printlog_pdf_nome_estudio") || "");
-  const [sloganEstudio, setSloganEstudio] = useState(() => localStorage.getItem("printlog_pdf_slogan") || "");
 
-  useEffect(() => { localStorage.setItem("printlog_pdf_nome_estudio", nomeEstudio); }, [nomeEstudio]);
-  useEffect(() => { localStorage.setItem("printlog_pdf_slogan", sloganEstudio); }, [sloganEstudio]);
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
   const [buscaMaterial, setBuscaMaterial] = useState("");
@@ -131,7 +127,7 @@ export function PaginaCalculadora() {
     [impressoras, hook.impressoraSelecionadaId]
   );
 
-  const alternarMaterial = (id: string) => {
+  const alternarMaterial = useCallback((id: string) => {
     const jaSelecionado = hook.materiaisSelecionados.find(m => m.id === id);
     if (jaSelecionado) {
       hook.setMateriaisSelecionados(prev => prev.filter(m => m.id !== id));
@@ -143,12 +139,25 @@ export function PaginaCalculadora() {
           nome: matOriginal.nome,
           cor: matOriginal.cor,
           tipo: matOriginal.tipo,
+          tipoMaterial: matOriginal.tipoMaterial || '',
           quantidade: 0,
           precoKgCentavos: Math.round((matOriginal.precoCentavos / matOriginal.pesoGramas) * 1000)
         }]);
       }
     }
-  };
+  }, [hook.materiaisSelecionados, materiais, hook.setMateriaisSelecionados]);
+
+  const atualizarQtdMaterial = useCallback((id: string, qtd: number) => {
+    hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, quantidade: qtd } : m));
+  }, [hook.setMateriaisSelecionados]);
+
+  const atualizarPrecoMaterial = useCallback((id: string, precoKg: number) => {
+    hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, precoKgCentavos: Math.round(precoKg * 100) } : m));
+  }, [hook.setMateriaisSelecionados]);
+
+  const removerMaterial = useCallback((id: string) => {
+    hook.setMateriaisSelecionados(prev => prev.filter(m => m.id !== id));
+  }, [hook.setMateriaisSelecionados]);
 
   const confirmarSalvarProjeto = async () => {
     if (!clienteProjetoId) {
@@ -202,6 +211,37 @@ export function PaginaCalculadora() {
     }
   }, [impressoraSelecionada, config?.horaMaquina, anosVidaUtil, hook.setPotencia, hook.setDepreciacaoHora]);
 
+  const alternarInsumo = useCallback((insumo: any) => {
+    const existe = hook.insumosSelecionados.find(i => i.id === insumo.id);
+    if (existe) hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== insumo.id));
+    else hook.setInsumosSelecionados(prev => [...prev, { id: insumo.id, nome: insumo.nome, quantidade: 1, custoCentavos: Math.round(insumo.custoMedioUnidade * 100) }]);
+  }, [hook.insumosSelecionados, hook.setInsumosSelecionados]);
+
+  const atualizarQtdInsumo = useCallback((id: string, qtd: number) => {
+    hook.setInsumosSelecionados(prev => prev.map(i => i.id === id ? { ...i, quantidade: qtd } : i));
+  }, [hook.setInsumosSelecionados]);
+
+  const removerInsumo = useCallback((id: string) => {
+    hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== id));
+  }, [hook.setInsumosSelecionados]);
+
+  const aoSelecionarImpressora = useCallback((id: string) => {
+    hook.setImpressoraSelecionadaId(id);
+    const imp = impressoras.find(i => i.id === id);
+    if (imp?.potenciaWatts) hook.setPotencia(imp.potenciaWatts);
+    if (imp?.taxaHoraCentavos) {
+      const taxa = imp.taxaHoraCentavos / 100;
+      hook.setDepreciacaoHora(taxa);
+      config.definirHoraMaquina(formatarMoedaFinancas(taxa, 2));
+    }
+  }, [impressoras, hook.setImpressoraSelecionadaId, hook.setPotencia, hook.setDepreciacaoHora, config]);
+
+  const abrirModalArmazem = useCallback(() => setModalArmazemAberto(true), []);
+  const abrirCriarMaterial = useCallback(() => acoesMateriais.abrirEditar(null as any), [acoesMateriais]);
+  const abrirModalInsumos = useCallback(() => setModalArmazemInsumosAberto(true), []);
+  const abrirModalNovoInsumo = useCallback(() => abrirCriarInsumo(), [abrirCriarInsumo]);
+  const abrirModalCanais = useCallback(() => setModalCanaisAberto(true), []);
+  const abrirModalFiscal = useCallback(() => setModalConfigFiscalAberto(true), []);
   const elementoAcao = useMemo(() => (
     <div className="flex items-center gap-1 bg-gray-50 dark:bg-white/5 p-1 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
       <div className="relative">
@@ -381,7 +421,7 @@ export function PaginaCalculadora() {
                                       setAbertoSeletorCliente(false);
                                     }
                                   }}
-                                  className="w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-2 border border-dashed border-emerald-500/20"
+                                  className="w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs text-zinc-500 hover:text-zinc-400 hover:bg-zinc-500/10 transition-colors flex items-center gap-2 border border-dashed border-zinc-500/20"
                                 >
                                   <Plus size={14} />
                                   {criandoNovoCliente ? 'Criando...' : `Criar "${buscaClienteSeletor}"`}
@@ -430,17 +470,17 @@ export function PaginaCalculadora() {
             </div>
 
             <CardMateriais
-              materiais={materiais.filter(m => m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
+              materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
               selecionados={hook.materiaisSelecionados}
               alertas={hook.alertasEstoque}
               busca={buscaMaterial}
               setBusca={setBuscaMaterial}
               alternar={alternarMaterial}
-              atualizarQtd={(id, qtd) => hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, quantidade: qtd } : m))}
-              atualizarPreco={(id, p) => hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, precoKgCentavos: Math.round(p * 100) } : m))}
-              remover={(id) => hook.setMateriaisSelecionados(prev => prev.filter(m => m.id !== id))}
-              abrirArmazem={() => setModalArmazemAberto(true)}
-              abrirCriar={() => acoesMateriais.abrirEditar(null as any)}
+              atualizarQtd={atualizarQtdMaterial}
+              atualizarPreco={atualizarPrecoMaterial}
+              remover={removerMaterial}
+              abrirArmazem={abrirModalArmazem}
+              abrirCriar={abrirCriarMaterial}
             />
 
             {/* Pergunta e Mini Card de Perdas Reais (Design Premium Rose) */}
@@ -476,6 +516,7 @@ export function PaginaCalculadora() {
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,#fafafa_12px)] dark:bg-[linear-gradient(to_bottom,transparent_12px,#18181b_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
                   >
+
                     {/* Quininhas para preencher o gap dos cantos arredondados */}
                     <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
                     <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
@@ -520,24 +561,16 @@ export function PaginaCalculadora() {
             </div>
 
             <CardInsumos
-              insumos={insumosEstoque.filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))}
+              insumos={insumosFiltrados}
               selecionados={hook.insumosSelecionados}
               alertas={hook.alertasInsumos}
               busca={buscaInsumo} setBusca={setBuscaInsumo}
-              alternar={(insumo) => {
-                const existe = hook.insumosSelecionados.find(i => i.id === insumo.id);
-                if (existe) hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== insumo.id));
-                else hook.setInsumosSelecionados(prev => [...prev, { id: insumo.id, nome: insumo.nome, quantidade: 1, custoCentavos: Math.round(insumo.custoMedioUnidade * 100) }]);
-              }}
-              atualizarQtd={(id, qtd) => {
-                hook.setInsumosSelecionados(prev => prev.map(i => i.id === id ? { ...i, quantidade: qtd } : i));
-              }}
-              remover={(id) => {
-                hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== id));
-              }}
+              alternar={alternarInsumo}
+              atualizarQtd={atualizarQtdInsumo}
+              remover={removerInsumo}
               insumosFixos={hook.insumosFixos} setInsumosFixos={hook.setInsumosFixos}
-              abrirGerenciar={() => setModalArmazemInsumosAberto(true)}
-              abrirNovo={() => abrirCriarInsumo()}
+              abrirGerenciar={abrirModalInsumos}
+              abrirNovo={abrirModalNovoInsumo}
             />
 
             <CardProducao
@@ -550,16 +583,7 @@ export function PaginaCalculadora() {
               posProcesso={hook.itensPosProcesso} setPosProcesso={hook.setItensPosProcesso}
               impressoras={impressoras}
               idImpressoraSelecionada={hook.impressoraSelecionadaId}
-              aoSelecionarImpressora={(id) => {
-                hook.setImpressoraSelecionadaId(id);
-                const imp = impressoras.find(i => i.id === id);
-                if (imp?.potenciaWatts) hook.setPotencia(imp.potenciaWatts);
-                if (imp?.taxaHoraCentavos) {
-                  const taxa = imp.taxaHoraCentavos / 100;
-                  hook.setDepreciacaoHora(taxa);
-                  config.definirHoraMaquina(formatarMoedaFinancas(taxa, 2));
-                }
-              }}
+              aoSelecionarImpressora={aoSelecionarImpressora}
             />
 
             <CardOperacional
@@ -578,7 +602,7 @@ export function PaginaCalculadora() {
               taxaEcommerce={hook.taxaEcommerce} setTaxaEcommerce={hook.setTaxaEcommerce}
               taxaFixa={hook.taxaFixa} setTaxaFixa={hook.setTaxaFixa}
               frete={hook.frete} setFrete={hook.setFrete}
-              abrirPerfis={() => setModalCanaisAberto(true)}
+              abrirPerfis={abrirModalCanais}
             />
 
             <CardFiscal
@@ -588,7 +612,7 @@ export function PaginaCalculadora() {
               icms={hook.icms} setIcms={hook.setIcms}
               iss={hook.iss} setIss={hook.setIss}
               cobrarImpostos={hook.cobrarImpostos} setCobrarImpostos={hook.setCobrarImpostos}
-              abrirConfigFiscal={() => setModalConfigFiscalAberto(true)}
+              abrirConfigFiscal={abrirModalFiscal}
             />
           </div>
 
@@ -601,9 +625,9 @@ export function PaginaCalculadora() {
               gerarPdf={() => {
                 const clienteFinal = buscaClienteSeletor.trim() || "Consumidor Final";
                 if (!eProOuSuperior) {
-                  hook.gerarPdf("", "", clienteFinal);
-                } else if (nomeEstudio.trim() !== "") {
-                  hook.gerarPdf(nomeEstudio, sloganEstudio, clienteFinal);
+                  hook.gerarPdf("", "", clienteFinal, nomeProjeto);
+                } else if (config.nomeEstudio.trim() !== "") {
+                  hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, clienteFinal, nomeProjeto);
                 } else {
                   setModalPdfAberto(true);
                 }
@@ -945,9 +969,9 @@ export function PaginaCalculadora() {
           <ModalListagemPremium
             aberto={modalConfigFiscalAberto}
             aoFechar={() => setModalConfigFiscalAberto(false)}
-            titulo="Configurações Fiscais"
+            titulo="Estrutura Fiscal"
             iconeTitulo={TrendingUp}
-            corDestaque="amber"
+            corDestaque="violet"
             termoBusca=""
             aoMudarBusca={() => { }}
             temResultados={true}
@@ -963,7 +987,7 @@ export function PaginaCalculadora() {
                     return (
                       <div
                         key={p.nome}
-                        className={`p-3 rounded-xl border flex items-center justify-between gap-4 transition-all ${selecionado ? "border-amber-500 bg-amber-500/5" : "border-gray-100 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-800/10"
+                        className={`p-3 rounded-xl border flex items-center justify-between gap-4 transition-all ${selecionado ? "border-violet-500 bg-violet-500/5" : "border-gray-100 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-800/10"
                           }`}
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
@@ -974,7 +998,7 @@ export function PaginaCalculadora() {
                             hook.setIss(p.iss);
                           }}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selecionado ? "bg-amber-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-zinc-400"}`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selecionado ? "bg-violet-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-zinc-400"}`}>
                             <TrendingUp size={14} />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -984,7 +1008,7 @@ export function PaginaCalculadora() {
                                   type="text"
                                   value={nomeFiscalTemporario}
                                   onChange={(e) => setNomeFiscalTemporario(e.target.value)}
-                                  className="flex-1 min-w-0 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-amber-500 font-bold text-xs outline-none"
+                                  className="flex-1 min-w-0 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-violet-500 font-bold text-xs outline-none"
                                   autoFocus
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
@@ -1042,14 +1066,14 @@ export function PaginaCalculadora() {
                                     setIndiceFiscalSendoEditado(idx);
                                     setNomeFiscalTemporario(p.nome);
                                   }}
-                                  className="opacity-0 group-hover/nome:opacity-100 hover:scale-110 active:scale-95 transition-all text-zinc-400 hover:text-amber-500 p-1 flex items-center justify-center rounded-md"
+                                  className="opacity-0 group-hover/nome:opacity-100 hover:scale-110 active:scale-95 transition-all text-zinc-400 hover:text-violet-500 p-1 flex items-center justify-center rounded-md"
                                   title="Alterar Nome"
                                 >
                                   <Pencil size={12} />
                                 </button>
                               </div>
                             )}
-                            {selecionado && <span className="text-[10px] font-black uppercase text-amber-500">Ativo</span>}
+                            {selecionado && <span className="text-[10px] font-black uppercase text-violet-500">Ativo</span>}
                           </div>
                         </div>
 
@@ -1058,42 +1082,42 @@ export function PaginaCalculadora() {
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Base (%)</span>
                             <input
                               type="number"
-                              value={p.base}
+                              value={p.base ?? ""}
                               onChange={(e) => {
                                 const novos = [...hook.perfisFiscais];
                                 novos[idx].base = Number(e.target.value);
                                 hook.setPerfisFiscais(novos);
                                 if (selecionado) hook.setImpostos(Number(e.target.value));
                               }}
-                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-amber-500"
+                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-violet-500"
                             />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">ICMS (%)</span>
                             <input
                               type="number"
-                              value={p.icms}
+                              value={p.icms ?? ""}
                               onChange={(e) => {
                                 const novos = [...hook.perfisFiscais];
                                 novos[idx].icms = Number(e.target.value);
                                 hook.setPerfisFiscais(novos);
                                 if (selecionado) hook.setIcms(Number(e.target.value));
                               }}
-                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-amber-500"
+                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-violet-500"
                             />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">ISS (%)</span>
                             <input
                               type="number"
-                              value={p.iss}
+                              value={p.iss ?? ""}
                               onChange={(e) => {
                                 const novos = [...hook.perfisFiscais];
                                 novos[idx].iss = Number(e.target.value);
                                 hook.setPerfisFiscais(novos);
                                 if (selecionado) hook.setIss(Number(e.target.value));
                               }}
-                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-amber-500"
+                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-violet-500"
                             />
                           </div>
                           {p.nome !== "Produto" && p.nome !== "Servico" && p.nome !== "Industrializacao" && p.nome !== "MEI" ? (
@@ -1129,25 +1153,25 @@ export function PaginaCalculadora() {
                     type="text"
                     placeholder="Ex: Simples Nacional"
                     id="novoFiscalNome"
-                    className="flex-1 min-w-[120px] h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none focus:border-amber-500"
+                    className="flex-1 min-w-[120px] h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none focus:border-violet-500"
                   />
                   <input
                     type="number"
                     placeholder="Base %"
                     id="novoFiscalBase"
-                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-amber-500"
+                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-violet-500"
                   />
                   <input
                     type="number"
                     placeholder="ICMS %"
                     id="novoFiscalIcms"
-                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-amber-500"
+                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-violet-500"
                   />
                   <input
                     type="number"
                     placeholder="ISS %"
                     id="novoFiscalIss"
-                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-amber-500"
+                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-violet-500"
                   />
                   <button
                     onClick={() => {
@@ -1182,6 +1206,25 @@ export function PaginaCalculadora() {
                   </button>
                 </div>
               </div>
+
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/5 pt-6">
+                <div className="space-y-3">
+                  <h5 className="text-[10px] font-black uppercase tracking-widest text-violet-400">Guia: Venda (ICMS)</h5>
+                  <p className="text-[10px] text-zinc-400 leading-relaxed font-medium">
+                    Use para produtos de <span className="text-zinc-200">pronta entrega</span> ou fabricação em série. 
+                    Geralmente tributado pelo <span className="text-zinc-200">Anexo I do Simples Nacional (4%)</span>. 
+                    CNAE comum: 4789-0/99.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h5 className="text-[10px] font-black uppercase tracking-widest text-violet-400">Guia: Serviço (ISS)</h5>
+                  <p className="text-[10px] text-zinc-400 leading-relaxed font-medium">
+                    Use para <span className="text-zinc-200">encomendas personalizadas</span> onde o cliente fornece o arquivo. 
+                    Geralmente tributado pelo <span className="text-zinc-200">Anexo III do Simples Nacional (6%)</span>. 
+                    CNAE comum: 1813-0/99.
+                  </p>
+                </div>
+              </div>
             </div>
           </ModalListagemPremium>
 
@@ -1189,7 +1232,7 @@ export function PaginaCalculadora() {
           <ModalListagemPremium
             aberto={modalCanaisAberto}
             aoFechar={() => setModalCanaisAberto(false)}
-            titulo="Canais de Venda" corDestaque="indigo"
+            titulo="Canais de Venda" corDestaque="orange"
             termoBusca=""
             aoMudarBusca={() => { }}
             temResultados={true}
@@ -1205,11 +1248,11 @@ export function PaginaCalculadora() {
                     return (
                       <div
                         key={p.nome}
-                        className={`p-3 rounded-xl border flex items-center justify-between gap-4 transition-all ${selecionado ? "border-indigo-500 bg-indigo-500/5" : "border-gray-100 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-800/10"
+                        className={`p-3 rounded-xl border flex items-center justify-between gap-4 transition-all ${selecionado ? "border-orange-500 bg-orange-500/5" : "border-gray-100 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-800/10"
                           }`}
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => hook.setPerfilAtivo(p.nome)}>
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selecionado ? "bg-indigo-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-zinc-400"}`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selecionado ? "bg-orange-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-zinc-400"}`}>
                             <Settings size={14} />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1219,7 +1262,7 @@ export function PaginaCalculadora() {
                                   type="text"
                                   value={nomeCanalTemporario}
                                   onChange={(e) => setNomeCanalTemporario(e.target.value)}
-                                  className="flex-1 min-w-0 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-indigo-500 font-bold text-xs outline-none"
+                                  className="flex-1 min-w-0 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-orange-500 font-bold text-xs outline-none"
                                   autoFocus
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
@@ -1277,14 +1320,14 @@ export function PaginaCalculadora() {
                                     setIndiceCanalSendoEditado(idx);
                                     setNomeCanalTemporario(p.nome);
                                   }}
-                                  className="opacity-0 group-hover/nome:opacity-100 hover:scale-110 active:scale-95 transition-all text-zinc-400 hover:text-indigo-500 p-1 flex items-center justify-center rounded-md"
+                                  className="opacity-0 group-hover/nome:opacity-100 hover:scale-110 active:scale-95 transition-all text-zinc-400 hover:text-orange-500 p-1 flex items-center justify-center rounded-md"
                                   title="Alterar Nome"
                                 >
                                   <Pencil size={12} />
                                 </button>
                               </div>
                             )}
-                            {selecionado && <span className="text-[10px] font-black uppercase text-indigo-500">Ativo</span>}
+                            {selecionado && <span className="text-[10px] font-black uppercase text-orange-500">Ativo</span>}
                           </div>
                         </div>
 
@@ -1293,40 +1336,40 @@ export function PaginaCalculadora() {
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Taxa (%)</span>
                             <input
                               type="number"
-                              value={p.taxa}
+                              value={p.taxa ?? ""}
                               onChange={(e) => {
                                 const novos = [...hook.perfisMarketplace];
                                 novos[idx].taxa = Number(e.target.value);
                                 hook.setPerfisMarketplace(novos);
                               }}
-                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-indigo-500"
+                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-orange-500"
                             />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Fixa (R$)</span>
                             <input
                               type="number"
-                              value={p.fixa}
+                              value={p.fixa ?? ""}
                               onChange={(e) => {
                                 const novos = [...hook.perfisMarketplace];
                                 novos[idx].fixa = Number(e.target.value);
                                 hook.setPerfisMarketplace(novos);
                               }}
-                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-indigo-500"
+                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-orange-500"
                             />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Frete (R$)</span>
                             <input
                               type="number"
-                              value={p.frete || 0}
+                              value={p.frete ?? 0}
                               onChange={(e) => {
                                 const novos = [...hook.perfisMarketplace];
                                 novos[idx].frete = Number(e.target.value);
                                 hook.setPerfisMarketplace(novos);
                                 if (selecionado) hook.setFrete(Number(e.target.value));
                               }}
-                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-indigo-500"
+                              className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-black text-xs outline-none text-right focus:border-orange-500"
                             />
                           </div>
                           {p.nome !== "Direto" ? (
@@ -1357,25 +1400,25 @@ export function PaginaCalculadora() {
                     type="text"
                     placeholder="Ex: Mercado Livre"
                     id="novoCanalNome"
-                    className="flex-1 min-w-[120px] h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none focus:border-indigo-500"
+                    className="flex-1 min-w-[120px] h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none focus:border-orange-500"
                   />
                   <input
                     type="number"
                     placeholder="Taxa %"
                     id="novoCanalTaxa"
-                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-indigo-500"
+                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-orange-500"
                   />
                   <input
                     type="number"
                     placeholder="Fixa R$"
                     id="novoCanalFixa"
-                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-indigo-500"
+                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-orange-500"
                   />
                   <input
                     type="number"
                     placeholder="Frete R$"
                     id="novoCanalFrete"
-                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-indigo-500"
+                    className="w-20 h-9 px-3 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 font-bold text-xs outline-none text-right focus:border-orange-500"
                   />
                   <button
                     onClick={() => {
@@ -1528,8 +1571,8 @@ export function PaginaCalculadora() {
                   <input
                     type="text"
                     placeholder="Ex: PrintPro Lab"
-                    value={nomeEstudio}
-                    onChange={(e) => setNomeEstudio(e.target.value)}
+                    value={config.nomeEstudio}
+                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
                     className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
                   />
                 </div>
@@ -1539,8 +1582,8 @@ export function PaginaCalculadora() {
                   <input
                     type="text"
                     placeholder="Ex: Impressão 3D de alta precisão"
-                    value={sloganEstudio}
-                    onChange={(e) => setSloganEstudio(e.target.value)}
+                    value={config.sloganEstudio}
+                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value)}
                     className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
                   />
                 </div>
@@ -1550,17 +1593,17 @@ export function PaginaCalculadora() {
                     Pré-Visualização do Documento
                   </span>
                   <span className="text-sm font-black text-white">
-                    {nomeEstudio || "Seu Estúdio"}
+                    {config.nomeEstudio || "Seu Estúdio"}
                   </span>
                   <span className="text-[10px] font-bold text-zinc-400/80 italic">
-                    {sloganEstudio || "Seu slogan aqui"}
+                    {config.sloganEstudio || "Seu slogan aqui"}
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-2 mt-4">
                   <button
                     onClick={() => {
-                      hook.gerarPdf(nomeEstudio, sloganEstudio);
+                      hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, buscaClienteSeletor, nomeProjeto);
                       setModalPdfAberto(false);
                     }}
                     className="w-full h-14 font-black uppercase tracking-[0.15em] text-xs rounded-2xl flex items-center justify-center gap-2 bg-sky-500 text-white hover:bg-sky-600 transition-all active:scale-95 shadow-[0_10px_20px_-5px_rgba(14,165,233,0.3)]"

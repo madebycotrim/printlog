@@ -8,7 +8,7 @@ interface PropriedadesModalListagemPremium {
   aoFechar: () => void;
   titulo: string;
   iconeTitulo?: LucideIcon;
-  corDestaque?: "indigo" | "rose" | "emerald" | "sky" | "amber" | "violet" | "zinc";
+  corDestaque?: "indigo" | "rose" | "emerald" | "sky" | "amber" | "violet" | "zinc" | "orange";
 
   // Busca
   termoBusca: string;
@@ -63,6 +63,7 @@ export function ModalListagemPremium({
     sky: "sky-500",
     amber: "amber-500",
     violet: "violet-500",
+    orange: "orange-500",
     zinc: "zinc-500",
   };
 

@@ -34,7 +34,7 @@ type ContextoCabecalhoTipo = {
 };
 
 const DADOS_PADRAO: DadosCabecalho = {
-  titulo: "PrintLog V2",
+  titulo: "PrintLog",
   subtitulo: "Gestão de Impressão 3D",
 };
 

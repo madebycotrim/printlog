@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TrendingUp, Settings } from "lucide-react";
 import { PerfilFiscal } from "../tipos";
 
@@ -16,20 +17,20 @@ interface CardFiscalProps {
   abrirConfigFiscal?: () => void;
 }
 
-export function CardFiscal({
+export const CardFiscal = memo(function CardFiscal({
   perfisFiscais = [], tipoOperacao, setTipoOperacao, impostos, setImpostos, icms, setIcms, iss, setIss, cobrarImpostos, setCobrarImpostos, abrirConfigFiscal
 }: CardFiscalProps) {
 
   const obterDicaFiscal = (id: string) => {
     switch (id) {
       case 'mei':
-        return "O MEI paga um valor fixo mensal (DAS), por isso não há imposto por peça vendida.";
+        return "O MEI paga um valor fixo (DAS). Recomendado usar CNAE 2229-3/99 (Fabricação) ou 1813-0/99 (Impressão).";
       case 'cpf':
-        return "Reserva de 10% recomendada para evitar o prejuízo de uma futura cobrança de IRPF.";
+        return "Reserva de 10-20% recomendada para IRPF (Carnê-Leão). Grandes plataformas exigem nota fiscal.";
       case 'produto':
-        return "Imposto unificado padrão para Venda de Produtos Prontos (Simples Nacional - Comércio).";
+        return "CNAE 4789-0/99. Incide ICMS/IPI. Use para itens de pronta entrega ou fabricação em série.";
       case 'servico':
-        return "Imposto para Serviços sob Encomenda e Peças Personalizadas (Simples Nacional).";
+        return "CNAE 1813-0/99. Incide ISS. Use para encomendas específicas onde o cliente fornece o arquivo digital.";
       default:
         return "Configuração personalizada de regime fiscal.";
     }
@@ -65,10 +66,11 @@ export function CardFiscal({
           {(perfisFiscais.length > 0 ? perfisFiscais : [
             { nome: "MEI", base: 0, icms: 0, iss: 0 },
             { nome: "CPF", base: 10, icms: 0, iss: 0 },
-            { nome: "Produto", base: 0, icms: 4, iss: 0 },
-            { nome: "Servico", base: 0, icms: 0, iss: 5 },
-          ]).map((p) => {
+            { nome: "Produto", label: "Venda (ICMS)", base: 0, icms: 4, iss: 0 },
+            { nome: "Servico", label: "Serviço (ISS)", base: 0, icms: 0, iss: 5 },
+          ]).map((p: any) => {
             const id = p.nome.toLowerCase();
+            const label = p.label || p.nome;
             return (
               <button
                 key={id}
@@ -91,7 +93,7 @@ export function CardFiscal({
                     : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-violet-500/30 text-zinc-400"}
                 `}
               >
-                <span>{p.nome.toUpperCase()}</span>
+                <span>{label.toUpperCase()}</span>
                 <span className={`text-[8px] font-bold opacity-80 ${tipoOperacao === id ? "text-violet-400/80" : "text-gray-400"} ${!cobrarImpostos ? "line-through text-zinc-500" : ""}`}>
                   {id === 'mei' ? "" : id === 'servico' ? `(${p.base}% + ${p.iss}%)` : `(${p.base}% + ${p.icms}%)`}
                 </span>
@@ -120,7 +122,7 @@ export function CardFiscal({
                 type="number" 
                 placeholder="0" 
                 disabled={!cobrarImpostos} 
-                value={!cobrarImpostos ? 0 : (impostos || "")} 
+                value={!cobrarImpostos ? "" : (impostos === 0 ? "" : impostos)} 
                 onChange={(e) => setImpostos(Number(e.target.value))} 
                 className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
               />
@@ -132,7 +134,7 @@ export function CardFiscal({
                   type="number" 
                   placeholder="0" 
                   disabled={!cobrarImpostos} 
-                  value={!cobrarImpostos ? 0 : (icms || "")} 
+                  value={!cobrarImpostos ? "" : (icms === 0 ? "" : icms)} 
                   onChange={(e) => setIcms(Number(e.target.value))} 
                   className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                 />
@@ -145,7 +147,7 @@ export function CardFiscal({
                   type="number" 
                   placeholder="0" 
                   disabled={!cobrarImpostos} 
-                  value={!cobrarImpostos ? 0 : (iss || "")} 
+                  value={!cobrarImpostos ? "" : (iss === 0 ? "" : iss)} 
                   onChange={(e) => setIss(Number(e.target.value))} 
                   className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                 />
@@ -156,4 +158,4 @@ export function CardFiscal({
       </div>
     </div>
   );
-}
+});
