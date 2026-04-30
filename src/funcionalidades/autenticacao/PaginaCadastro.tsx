@@ -254,7 +254,10 @@ export function PaginaCadastro() {
                 type="checkbox"
                 id="termos"
                 checked={aceiteTermos}
-                onChange={(e) => definirAceiteTermos(e.target.checked)}
+                onChange={(e) => {
+                  definirAceiteTermos(e.target.checked);
+                  if (!e.target.checked) definirTokenCaptcha(null);
+                }}
                 className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-900/50 transition-all checked:border-[#0ea5e9] checked:bg-[#0ea5e9]"
               />
               <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 transition-opacity peer-checked:opacity-100">
@@ -280,7 +283,9 @@ export function PaginaCadastro() {
             </label>
           </div>
 
-          <ComponenteTurnstile aoValidar={definirTokenCaptcha} aoExpirar={() => definirTokenCaptcha(null)} />
+          {aceiteTermos && (
+            <ComponenteTurnstile aoValidar={definirTokenCaptcha} aoExpirar={() => definirTokenCaptcha(null)} />
+          )}
 
           <button
             type="submit"
