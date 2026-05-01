@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useRef } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
 import { servicoPedidos } from "../servicos/servicoPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";

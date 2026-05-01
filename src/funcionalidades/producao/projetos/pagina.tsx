@@ -1,5 +1,5 @@
 import { FolderKanban, Plus } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { FormularioPedido } from "./componentes/FormularioPedido";
@@ -19,7 +19,6 @@ export function PaginaProjetos() {
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
   const { pedidos, pedidosFiltrados, criarPedido, atualizarPedido, moverPedido, pesquisar, carregando } = usarPedidos();
-  const definirTermoBusca = usarArmazemPedidos((s) => s.definirTermoBusca);
 
   usarDefinirCabecalho({
     titulo: "Fluxo de Produção",

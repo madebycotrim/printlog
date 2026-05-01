@@ -18,26 +18,61 @@ export const apiPedidos = {
     },
 
     /**
-     * Salva um novo pedido no D1 com validação de esquema.
+     * Mapeia um objeto de pedido do frontend (camelCase) para o formato do banco (snake_case).
+     */
+    mapearParaBanco: (dados: any) => {
+        const mapeado: any = { ...dados };
+        
+        // Mapeamentos obrigatórios para o D1
+        if (dados.idCliente) mapeado.id_cliente = dados.idCliente;
+        if (dados.valorCentavos !== undefined) mapeado.valor_centavos = dados.valorCentavos;
+        if (dados.prazoEntrega) mapeado.prazo_entrega = dados.prazoEntrega instanceof Date ? dados.prazoEntrega.toISOString() : dados.prazoEntrega;
+        if (dados.dataConclusao) mapeado.data_conclusao = dados.dataConclusao instanceof Date ? dados.dataConclusao.toISOString() : dados.dataConclusao;
+        if (dados.idImpressora) mapeado.id_impressora = dados.idImpressora;
+        if (dados.pesoGramas !== undefined) mapeado.peso_gramas = dados.pesoGramas;
+        if (dados.tempoMinutos !== undefined) mapeado.tempo_minutos = dados.tempoMinutos;
+        
+        // O status no banco costuma ser id_status ou status. Enviamos ambos para garantir.
+        if (dados.status) {
+            mapeado.id_status = dados.status;
+            mapeado.status = dados.status;
+        }
+
+        if (dados.insumosSecundarios) {
+            mapeado.insumos_secundarios = JSON.stringify(dados.insumosSecundarios);
+        }
+
+        // Remove campos camelCase para evitar erro de coluna inexistente no SQLite/D1
+        const camposParaRemover = [
+            "idCliente", "valorCentavos", "prazoEntrega", "dataConclusao", 
+            "idImpressora", "pesoGramas", "tempoMinutos", "insumosSecundarios"
+        ];
+        camposParaRemover.forEach(campo => delete mapeado[campo]);
+
+        return mapeado;
+    },
+
+    /**
+     * Salva um novo pedido no D1 com validação de esquema e mapeamento de campos.
      */
     criar: async (dados: CriarPedidoInput, _usuarioId: string): Promise<string> => {
-        // Validação de segurança no cliente
         const dadosValidados = criarPedidoSchema.parse(dados);
+        const paraBanco = apiPedidos.mapearParaBanco(dadosValidados);
         
-        const resultado = await servicoBaseApi.post<{ id: string }>("/api/pedidos", dadosValidados);
+        const resultado = await servicoBaseApi.post<{ id: string }>("/api/pedidos", paraBanco);
         return resultado.id;
     },
 
     /**
-     * Atualiza um pedido existente com validação de esquema.
+     * Atualiza um pedido existente com mapeamento de campos para o D1.
      */
     atualizar: async (dados: AtualizarPedidoInput, _usuarioId: string): Promise<void> => {
-        // Validação de segurança no cliente
         const dadosValidados = atualizarPedidoSchema.parse(dados);
+        const paraBanco = apiPedidos.mapearParaBanco(dadosValidados);
         
         await servicoBaseApi.requisicao("/api/pedidos", {
             method: "PATCH",
-            body: JSON.stringify(dadosValidados)
+            body: JSON.stringify(paraBanco)
         });
     },
 

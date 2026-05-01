@@ -23,9 +23,13 @@ class ServicoPedidos {
         .replace('pendente', StatusPedido.A_FAZER) || StatusPedido.A_FAZER,
       dataCriacao: new Date(p.data_criacao || p.dataCriacao),
       dataConclusao: p.data_conclusao ? new Date(p.data_conclusao) : undefined,
-      prazoEntrega: p.prazoEntrega ? new Date(p.prazoEntrega) : undefined,
+      prazoEntrega: (p.prazo_entrega || p.prazoEntrega) ? new Date(p.prazo_entrega || p.prazoEntrega) : undefined,
       valorCentavos: (p.valor_centavos !== undefined) ? p.valor_centavos : p.valorCentavos,
-      idCliente: p.id_cliente || p.idCliente
+      idCliente: p.id_cliente || p.idCliente,
+      idImpressora: p.id_impressora || p.idImpressora,
+      pesoGramas: (p.peso_gramas !== undefined) ? p.peso_gramas : p.pesoGramas,
+      tempoMinutos: (p.tempo_minutos !== undefined) ? p.tempo_minutos : p.tempoMinutos,
+      insumosSecundarios: typeof p.insumos_secundarios === 'string' ? JSON.parse(p.insumos_secundarios) : (p.insumos_secundarios || p.insumosSecundarios || [])
     }));
 
     const agora = new Date();

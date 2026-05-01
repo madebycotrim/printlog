@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, User, FileText, Calendar, Scale, Timer } from "lucide-react";
+import { Save, User, FileText, Calendar, Scale, Timer, Settings } from "lucide-react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { Combobox } from "@/compartilhado/componentes/Combobox";
@@ -13,6 +13,7 @@ import { CriarPedidoInput, Pedido } from "../tipos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
 import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
 import { SeletorInsumosSecundarios } from "./SeletorInsumosSecundarios";
+import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 
 const esquemaPedido = z.object({
   idCliente: z.string().min(1, "Selecione um cliente"),
@@ -22,6 +23,7 @@ const esquemaPedido = z.object({
   material: z.string().optional(),
   pesoGramas: z.number().min(0).optional(),
   tempoMinutos: z.number().int().min(0).optional(),
+  idImpressora: z.string().optional(),
   observacoes: z.string().optional(),
   insumosSecundarios: z
     .array(
@@ -72,9 +74,18 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
       material: "",
       pesoGramas: 0,
       tempoMinutos: 0,
+      idImpressora: "",
       observacoes: "",
     },
   });
+
+  const { impressoras } = usarArmazemImpressoras();
+  const opcoesImpressoras = useMemo(() => {
+    return impressoras.map(i => ({
+      valor: i.id,
+      rotulo: `${i.nome} ${i.modeloBase ? `(${i.modeloBase})` : ""}`
+    }));
+  }, [impressoras]);
 
   const clienteSelecionado = watch("idCliente");
   const insumosSecundarios = watch("insumosSecundarios") || [];
@@ -92,6 +103,7 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
           material: pedidoEdicao.material || "",
           pesoGramas: pedidoEdicao.pesoGramas || 0,
           tempoMinutos: pedidoEdicao.tempoMinutos || 0,
+          idImpressora: pedidoEdicao.idImpressora || "",
           observacoes: pedidoEdicao.observacoes || "",
           insumosSecundarios: pedidoEdicao.insumosSecundarios || [],
         });
@@ -104,6 +116,7 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
           material: "",
           pesoGramas: 0,
           tempoMinutos: 0,
+          idImpressora: "",
           observacoes: "",
           insumosSecundarios: [],
         });
@@ -141,6 +154,7 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
         material: dados.material,
         pesoGramas: dados.pesoGramas,
         tempoMinutos: dados.tempoMinutos,
+        idImpressora: dados.idImpressora,
         observacoes: dados.observacoes,
         insumosSecundarios: dados.insumosSecundarios,
       });
@@ -247,6 +261,18 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
                 erro={errors.valorCentavos?.message}
                 {...register("valorCentavos", { setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0 })}
               />
+
+              <div className="col-span-1 md:col-span-2">
+                <Combobox
+                  titulo="Impressora Designada"
+                  icone={Settings}
+                  opcoes={opcoesImpressoras}
+                  valor={watch("idImpressora") || ""}
+                  aoAlterar={(val) => setValue("idImpressora", val, { shouldDirty: true })}
+                  placeholder="Selecionar impressora para este job..."
+                  erro={errors.idImpressora?.message}
+                />
+              </div>
 
               <div className="col-span-1 md:col-span-2">
                 <CampoAreaTexto
