@@ -259,7 +259,9 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
                 rotulo="Valor do Pedido"
                 placeholder="0,00"
                 erro={errors.valorCentavos?.message}
-                {...register("valorCentavos", { setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0 })}
+                {...register("valorCentavos", { 
+                  setValueAs: (v: string) => Math.round((parseFloat(String(v).replace(",", ".")) || 0) * 100) 
+                })}
               />
 
               <div className="col-span-1 md:col-span-2">

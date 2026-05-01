@@ -30,8 +30,7 @@ export const apiPedidos = {
         if (dados.idCliente) mapeado.id_cliente = dados.idCliente;
         if (dados.descricao) mapeado.descricao = dados.descricao;
         if (dados.valorCentavos !== undefined) mapeado.valor_centavos = dados.valorCentavos;
-        if (dados.status) mapeado.status = dados.status; // Alguns bancos usam status
-        if (dados.status) mapeado.id_status = dados.status; // Outros usam id_status
+        if (dados.status) mapeado.status = dados.status; 
         if (dados.observacoes !== undefined) mapeado.observacoes = dados.observacoes;
         if (dados.material !== undefined) mapeado.material = dados.material;
         if (dados.pesoGramas !== undefined) mapeado.peso_gramas = dados.pesoGramas;
