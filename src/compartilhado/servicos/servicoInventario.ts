@@ -22,6 +22,8 @@ export interface SugestaoCompra {
 
 export interface MetricasInventario {
   valorTotalEstoqueCentavos: Centavos;
+  valorTotalMateriaisCentavos: Centavos; // Valor apenas de filamentos/resinas
+  valorTotalInsumosCentavos: Centavos;   // Valor apenas de peças/suprimentos
   itensEmAlerta: number;
   consumoEstimadoMensalCentavos: Centavos;
   giroEstoqueDias: number; // Média de dias para renovar o estoque
@@ -34,7 +36,8 @@ export const servicoInventario = {
    * Consolida métricas de materiais (filamentos/resinas) e insumos gerais.
    */
   gerarRelatorioConsolidado: (materiais: Material[], insumos: Insumo[]): MetricasInventario => {
-    let valorTotal = 0;
+    let valorTotalMateriais = 0;
+    let valorTotalInsumos = 0;
     let alertas = 0;
     const distribuicao: Record<string, number> = {};
     const sugestoes: SugestaoCompra[] = [];
@@ -52,7 +55,7 @@ export const servicoInventario = {
     materiais.forEach((m) => {
       const pesoTotal = m.pesoRestanteGramas + m.estoque * (m.pesoGramas || 1000);
       const custoPorGrama = m.precoCentavos / (m.pesoGramas || 1000);
-      valorTotal += pesoTotal * custoPorGrama;
+      valorTotalMateriais += pesoTotal * custoPorGrama;
 
       // Alerta: Regra v9.0
       if (m.pesoRestanteGramas < 200 && m.estoque === 0) {
@@ -96,7 +99,7 @@ export const servicoInventario = {
 
     insumos.forEach((i) => {
       const valorItemCentavos = i.quantidadeAtual * (i.custoMedioUnidade || 0);
-      valorTotal += valorItemCentavos;
+      valorTotalInsumos += valorItemCentavos;
 
       if (i.quantidadeAtual <= i.quantidadeMinima) {
         alertas++;
@@ -136,11 +139,14 @@ export const servicoInventario = {
       }
     });
 
+    const valorTotalConsolidado = valorTotalMateriais + valorTotalInsumos;
     const consumoDiarioMedio = consumoTrintaDiasCentavos / 30;
-    const giroEstoqueDias = consumoDiarioMedio > 0 ? Math.round(valorTotal / consumoDiarioMedio) : 0;
+    const giroEstoqueDias = consumoDiarioMedio > 0 ? Math.round(valorTotalConsolidado / consumoDiarioMedio) : 0;
 
     return {
-      valorTotalEstoqueCentavos: Math.round(valorTotal),
+      valorTotalEstoqueCentavos: Math.round(valorTotalConsolidado),
+      valorTotalMateriaisCentavos: Math.round(valorTotalMateriais),
+      valorTotalInsumosCentavos: Math.round(valorTotalInsumos),
       itensEmAlerta: alertas,
       consumoEstimadoMensalCentavos: Math.round(consumoTrintaDiasCentavos),
       giroEstoqueDias,

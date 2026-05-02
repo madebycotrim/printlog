@@ -5,6 +5,7 @@ import { useState, memo } from "react";
 interface CardProducaoProps {
   tempo: number;
   setTempo: (v: number) => void;
+  modoEntrada: 'unitario' | 'lote';
   potencia: number;
   setPotencia: (v: number) => void;
   precoKwh: number;
@@ -22,7 +23,7 @@ interface CardProducaoProps {
 }
 
 export const CardProducao = memo(function CardProducao({
-  tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
+  tempo, setTempo, modoEntrada, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
   impressoras = [], idImpressoraSelecionada, aoSelecionarImpressora, quantidade, setQuantidade
 }: CardProducaoProps) {
   const [novoItemNome, setNovoItemNome] = useState("");
@@ -103,12 +104,12 @@ export const CardProducao = memo(function CardProducao({
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 md:gap-0">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-0 pt-6">
         {/* Coluna Esquerda: Tempo e Energia */}
         <div className="flex-1 space-y-8 md:pr-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Quantidade</label>
+              <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Qtd. do Lote</label>
               <div className="relative flex items-center h-14 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 transition-all shadow-inner overflow-hidden">
                 <button 
                   type="button"
@@ -136,7 +137,11 @@ export const CardProducao = memo(function CardProducao({
             </div>
 
             <div>
-              <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Tempo de Impressão</label>
+              <div className="flex items-center justify-between h-4 mb-2">
+                <label className="block text-xs font-black uppercase text-gray-400">
+                  {modoEntrada === 'unitario' ? "Tempo p/ Peça" : "Tempo Total do Lote"}
+                </label>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative flex items-center rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 transition-all shadow-inner">
                   <input 
@@ -221,7 +226,9 @@ export const CardProducao = memo(function CardProducao({
 
         {/* Coluna Direita: Pós-Processamento */}
         <div className="flex-1 flex flex-col h-full md:pl-6">
-          <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2 shrink-0">Pós-Processamento</label>
+          <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2 shrink-0">
+            {modoEntrada === 'unitario' ? "Pós-Processamento" : "Pós-Processamento Total"}
+          </label>
 
           <div className="h-[140px] overflow-y-auto space-y-2 mb-3 pr-2">
             {posProcesso.length === 0 ? (

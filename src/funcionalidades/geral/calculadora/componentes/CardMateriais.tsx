@@ -1,5 +1,5 @@
-import { memo } from "react";
-import { Layers, Search, Box, RefreshCcw, Check, Plus, Trash2 } from "lucide-react";
+import { memo, useState, useEffect, useMemo } from "react";
+import { Layers, Search, Box, RefreshCcw, Check, Plus, Trash2, Star } from "lucide-react";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
 import { motion, AnimatePresence } from "framer-motion";
 import { MaterialSelecionado } from "../tipos";
@@ -16,12 +16,52 @@ interface CardMateriaisProps {
   atualizarPreco: (id: string, preco: number) => void;
   remover: (id: string) => void;
   abrirArmazem: () => void;
+  modoEntrada: 'unitario' | 'lote';
   abrirCriar: () => void;
+  alternarFavorito: (id: string) => void;
 }
 
 export const CardMateriais = memo(function CardMateriais({
-  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, remover, abrirArmazem, abrirCriar
+  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, remover, abrirArmazem, abrirCriar, modoEntrada, alternarFavorito
 }: CardMateriaisProps) {
+  const [pagina, setPagina] = useState(0);
+  const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
+  const itensPorPagina = 4;
+
+  // Ordenação Inteligente: Favoritos ou Mais Usados
+  const materiaisOrdenados = useMemo(() => {
+    return [...materiais].sort((a, b) => {
+      if (tipoOrdenacao === 'favoritos') {
+        if (a.favorito === b.favorito) {
+           // Se empatar no favorito, usa o uso como desempate
+           return (b.historicoUso?.length || 0) - (a.historicoUso?.length || 0);
+        }
+        return a.favorito ? -1 : 1;
+      } else {
+        // Ordenação por Uso (Quantidade de registros no histórico)
+        const usoA = a.historicoUso?.length || 0;
+        const usoB = b.historicoUso?.length || 0;
+        if (usoA === usoB) {
+            // Se empatar no uso, usa o favorito como desempate
+            return a.favorito === b.favorito ? 0 : (a.favorito ? -1 : 1);
+        }
+        return usoB - usoA;
+      }
+    });
+  }, [materiais, tipoOrdenacao]);
+
+  const totalPaginas = Math.ceil(materiaisOrdenados.length / itensPorPagina);
+  
+  // Resetar página se a busca mudar e a página atual ficar vazia
+  useEffect(() => {
+    if (pagina >= totalPaginas && totalPaginas > 0) {
+      setPagina(totalPaginas - 1);
+    } else if (totalPaginas === 0) {
+      setPagina(0);
+    }
+  }, [materiaisOrdenados.length, totalPaginas, pagina]);
+
+  const materiaisExibidos = materiaisOrdenados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
   return (
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
@@ -47,28 +87,83 @@ export const CardMateriais = memo(function CardMateriais({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <Box className="w-3 h-3 text-sky-500" />
             <span className="text-xs font-black uppercase tracking-widest text-gray-400">Seu Inventário</span>
+            <div className="flex items-center gap-1 ml-3 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
+              <button 
+                onClick={() => setTipoOrdenacao('favoritos')}
+                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'favoritos' ? 'bg-amber-500/20 text-amber-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+                title="Mostrar favoritos primeiro"
+              >
+                Favoritos
+              </button>
+              <button 
+                onClick={() => setTipoOrdenacao('uso')}
+                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'uso' ? 'bg-sky-500/20 text-sky-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+                title="Mostrar os mais usados primeiro"
+              >
+                Mais Usados
+              </button>
+            </div>
+            {totalPaginas > 1 && (
+              <span className="text-[10px] font-bold text-zinc-600 uppercase ml-2">
+                {pagina + 1}/{totalPaginas}
+              </span>
+            )}
           </div>
-          <button 
-            onClick={abrirArmazem}
-            className="text-[10px] font-black uppercase text-sky-500 hover:text-sky-400 transition-colors flex items-center gap-1 group"
-          >
-            Gerenciar Armazém <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
-          </button>
+          <div className="flex items-center gap-4">
+            {totalPaginas > 1 && (
+              <div className="flex items-center gap-1 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
+                <button 
+                  onClick={() => setPagina(p => Math.max(0, p - 1))}
+                  disabled={pagina === 0}
+                  className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-sky-400 disabled:opacity-20 transition-colors"
+                >
+                  <Plus className="w-3 h-3 rotate-45" />
+                </button>
+                <div className="w-[1px] h-3 bg-white/5" />
+                <button 
+                  onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
+                  disabled={pagina === totalPaginas - 1}
+                  className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-sky-400 disabled:opacity-20 transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            <button 
+              onClick={abrirArmazem}
+              className="text-[10px] font-black uppercase text-sky-500 hover:text-sky-400 transition-colors flex items-center gap-1 group"
+            >
+              Gerenciar Armazém <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2 min-h-[110px] items-stretch">
-          {materiais.map((m) => {
+        <div className="flex gap-3 overflow-x-hidden pb-4 -mx-2 px-2 min-h-[110px] items-stretch">
+          {materiaisExibidos.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-4 border border-dashed border-white/5 rounded-2xl opacity-40">
+               <Box className="w-6 h-6 mb-2" />
+               <span className="text-[10px] font-black uppercase">Nenhum material encontrado</span>
+            </div>
+          ) : materiaisExibidos.map((m) => {
             const selecionado = selecionados.some(s => s.id === m.id);
             return (
-              <button
+              <div
                 key={m.id}
                 onClick={() => alternar(m.id)}
-                className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    alternar(m.id);
+                  }
+                }}
+                className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                   ${selecionado 
                     ? "border-sky-500 bg-sky-500/10 shadow-[0_0_20px_rgba(14,165,233,0.15)]" 
                     : "border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 hover:border-sky-500/30"}
@@ -95,11 +190,26 @@ export const CardMateriais = memo(function CardMateriais({
                 </div>
 
                 {selecionado && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
-              </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alternarFavorito(m.id);
+                  }}
+                  className={`absolute top-2 right-2 p-1 rounded-lg transition-all z-20 ${
+                    m.favorito 
+                      ? "text-amber-500 bg-amber-500/10" 
+                      : "text-zinc-700 hover:text-amber-500/50 hover:bg-white/5"
+                  }`}
+                  title={m.favorito ? "Remover dos mais usados" : "Marcar como mais usado"}
+                >
+                  <Star size={12} fill={m.favorito ? "currentColor" : "none"} />
+                </button>
+              </div>
             );
           })}
           
@@ -171,13 +281,10 @@ export const CardMateriais = memo(function CardMateriais({
                   </div>
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Quantidade ({item.tipo === "FDM" ? "g" : "ml"})</label>
-                        {alerta && (
-                          <span className="text-[9px] font-black text-rose-500 uppercase bg-rose-500/10 px-1 rounded animate-pulse">
-                            Faltam {alerta.falta}{item.tipo === "FDM" ? "g" : "ml"}
-                          </span>
-                        )}
+                      <div className="flex justify-between items-center h-4 mb-1">
+                        <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">
+                          {modoEntrada === 'unitario' ? `Peso p/ Peça (${item.tipo === "FDM" ? "g" : "ml"})` : `Peso Total Lote (${item.tipo === "FDM" ? "g" : "ml"})`}
+                        </label>
                       </div>
                       <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : item.quantidade} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-white dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all ${alerta ? "text-rose-500" : ""}`} />
                       

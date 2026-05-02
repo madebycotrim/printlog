@@ -119,7 +119,7 @@ export function ResumoEstoque({
         aoFechar={() => definirModalPatrimonioAberto(false)}
         materiais={materiais}
         insumos={insumos}
-        valorTotal={valorInvestido}
+        tipoVista="materiais"
       />
     </motion.div>
   );

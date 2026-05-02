@@ -15,6 +15,8 @@ import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/Formul
 import { SeletorInsumosSecundarios } from "./SeletorInsumosSecundarios";
 import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+
 const esquemaPedido = z.object({
   idCliente: z.string().min(1, "Selecione um cliente"),
   descricao: z.string().min(3, "A descrição deve ter pelo menos 3 caracteres"),
@@ -149,7 +151,7 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
       await aoSalvar({
         idCliente: dados.idCliente,
         descricao: dados.descricao,
-        valorCentavos: Math.round(dados.valorCentavos * 100),
+        valorCentavos: dados.valorCentavos, // Já vem em centavos do CampoMonetario
         prazoEntrega: dados.prazoEntrega ? new Date(dados.prazoEntrega) : undefined,
         material: dados.material,
         pesoGramas: dados.pesoGramas,
@@ -230,19 +232,21 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
                   <CampoTexto
                     rotulo="Quantidade (g)"
                     icone={Scale}
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0"
                     erro={errors.pesoGramas?.message}
-                    {...register("pesoGramas", { setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0 })}
+                    {...register("pesoGramas", { setValueAs: (v: any) => extrairValorNumerico(v) || 0 })}
                   />
 
                   <CampoTexto
                     rotulo="Tempo (min)"
                     icone={Timer}
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0"
                     erro={errors.tempoMinutos?.message}
-                    {...register("tempoMinutos", { setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0 })}
+                    {...register("tempoMinutos", { setValueAs: (v: any) => extrairValorNumerico(v) || 0 })}
                   />
                 </GradeCampos>
               </div>
@@ -260,7 +264,7 @@ export function FormularioPedido({ aberto, aoSalvar, aoCancelar, pedidoEdicao }:
                 placeholder="0,00"
                 erro={errors.valorCentavos?.message}
                 {...register("valorCentavos", { 
-                  setValueAs: (v: string) => Math.round((parseFloat(String(v).replace(",", ".")) || 0) * 100) 
+                  setValueAs: (v: any) => Math.round(extrairValorNumerico(v) * 100) || 0 
                 })}
               />
 

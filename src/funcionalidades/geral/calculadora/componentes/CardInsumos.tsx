@@ -1,7 +1,7 @@
-import { memo } from "react";
-import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2 } from "lucide-react";
+import { memo, useState, useEffect, useMemo } from "react";
+import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
-import { centavosParaReais, formatarMoedaFinancas } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CardInsumosProps {
@@ -13,15 +13,58 @@ interface CardInsumosProps {
   alternar: (i: any) => void;
   atualizarQtd: (id: string, qtd: number) => void;
   remover: (id: string) => void;
+  alternarPorLote: (id: string) => void;
   insumosFixos: number;
   setInsumosFixos: (v: number) => void;
+  cobrarInsumosFixos: boolean;
+  setCobrarInsumosFixos: (v: boolean) => void;
   abrirGerenciar: () => void;
   abrirNovo: () => void;
+  modoEntrada: 'unitario' | 'lote';
+  alternarFavorito: (id: string) => void;
 }
 
 export const CardInsumos = memo(function CardInsumos({
-  insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, insumosFixos, setInsumosFixos, abrirGerenciar, abrirNovo
+  insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, alternarFavorito, alternarPorLote, insumosFixos, setInsumosFixos, cobrarInsumosFixos, setCobrarInsumosFixos, abrirGerenciar, abrirNovo, modoEntrada
 }: CardInsumosProps) {
+  const [pagina, setPagina] = useState(0);
+  const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
+  const itensPorPagina = 4;
+
+  // Ordenação Inteligente: Favoritos ou Mais Usados
+  const insumosOrdenados = useMemo(() => {
+    return [...insumos].sort((a, b) => {
+      if (tipoOrdenacao === 'favoritos') {
+        if (a.favorito === b.favorito) {
+           // Se empatar no favorito, usa o uso como desempate (tamanho do histórico)
+           return (b.historico?.length || 0) - (a.historico?.length || 0);
+        }
+        return a.favorito ? -1 : 1;
+      } else {
+        // Ordenação por Uso (Quantidade de registros no histórico)
+        const usoA = a.historico?.length || 0;
+        const usoB = b.historico?.length || 0;
+        if (usoA === usoB) {
+            // Se empatar no uso, usa o favorito como desempate
+            return a.favorito === b.favorito ? 0 : (a.favorito ? -1 : 1);
+        }
+        return usoB - usoA;
+      }
+    });
+  }, [insumos, tipoOrdenacao]);
+
+  const totalPaginas = Math.ceil(insumosOrdenados.length / itensPorPagina);
+
+  // Resetar página se a busca mudar
+  useEffect(() => {
+    if (pagina >= totalPaginas && totalPaginas > 0) {
+      setPagina(totalPaginas - 1);
+    } else if (totalPaginas === 0) {
+      setPagina(0);
+    }
+  }, [insumosOrdenados.length, totalPaginas, pagina]);
+
+  const insumosExibidos = insumosOrdenados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
   return (
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
@@ -47,25 +90,80 @@ export const CardInsumos = memo(function CardInsumos({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <Package className="w-3 h-3 text-indigo-500" />
             <span className="text-xs font-black uppercase tracking-widest text-gray-400">Estoque de Insumos</span>
+            <div className="flex items-center gap-1 ml-3 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
+              <button 
+                onClick={() => setTipoOrdenacao('favoritos')}
+                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'favoritos' ? 'bg-amber-500/20 text-amber-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+                title="Mostrar favoritos primeiro"
+              >
+                Favoritos
+              </button>
+              <button 
+                onClick={() => setTipoOrdenacao('uso')}
+                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'uso' ? 'bg-indigo-500/20 text-indigo-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+                title="Mostrar os mais usados primeiro"
+              >
+                Mais Usados
+              </button>
+            </div>
+            {totalPaginas > 1 && (
+              <span className="text-[10px] font-bold text-zinc-600 uppercase ml-2">
+                {pagina + 1}/{totalPaginas}
+              </span>
+            )}
           </div>
-          <button onClick={abrirGerenciar} className="text-[10px] font-black uppercase text-indigo-500 hover:text-indigo-400 transition-colors flex items-center gap-1 group">
-            Gerenciar Estoque <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
-          </button>
+          <div className="flex items-center gap-4">
+             {totalPaginas > 1 && (
+               <div className="flex items-center gap-1 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
+                 <button 
+                   onClick={() => setPagina(p => Math.max(0, p - 1))}
+                   disabled={pagina === 0}
+                   className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-indigo-400 disabled:opacity-20 transition-colors"
+                 >
+                   <Plus className="w-3 h-3 rotate-45" />
+                 </button>
+                 <div className="w-[1px] h-3 bg-white/5" />
+                 <button 
+                   onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
+                   disabled={pagina === totalPaginas - 1}
+                   className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-indigo-400 disabled:opacity-20 transition-colors"
+                 >
+                   <Plus className="w-3 h-3" />
+                 </button>
+               </div>
+             )}
+            <button onClick={abrirGerenciar} className="text-[10px] font-black uppercase text-indigo-500 hover:text-indigo-400 transition-colors flex items-center gap-1 group">
+              Gerenciar Estoque <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2 min-h-[110px] items-stretch">
-          {insumos.map((i) => {
+        <div className="flex gap-3 overflow-x-hidden pb-4 -mx-2 px-2 min-h-[110px] items-stretch">
+          {insumosExibidos.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-4 border border-dashed border-white/5 rounded-2xl opacity-40">
+               <Package className="w-6 h-6 mb-2" />
+               <span className="text-[10px] font-black uppercase">Nenhum insumo encontrado</span>
+            </div>
+          ) : insumosExibidos.map((i) => {
             const sel = selecionados.some(s => s.id === i.id);
             return (
-              <button 
+              <div 
                 key={i.id} 
                 onClick={() => alternar(i)} 
-                className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    alternar(i);
+                  }
+                }}
+                className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                   ${sel 
                     ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
                     : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30"}
@@ -81,7 +179,7 @@ export const CardInsumos = memo(function CardInsumos({
                   <h4 className="text-xs font-black uppercase truncate leading-tight">{i.nome}</h4>
                   <div className="flex flex-col mt-0.5">
                     <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
-                      {i.categoria || 'Geral'} • {formatarMoedaFinancas(i.custoMedioUnidade)}
+                      {i.categoria || 'Geral'} • {centavosParaReais(i.custoMedioUnidade)}
                     </p>
                     <span className={`text-[8px] font-black uppercase mt-0.5 ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500' : 'text-indigo-500'}`}>
                       {i.quantidadeAtual} {i.unidadeMedida} em estoque
@@ -90,11 +188,26 @@ export const CardInsumos = memo(function CardInsumos({
                 </div>
 
                 {sel && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
-              </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alternarFavorito(i.id);
+                  }}
+                  className={`absolute top-2 right-2 p-1 rounded-lg transition-all z-20 ${
+                    i.favorito 
+                      ? "text-amber-500 bg-amber-500/10" 
+                      : "text-zinc-700 hover:text-amber-500/50 hover:bg-white/5"
+                  }`}
+                  title={i.favorito ? "Remover dos favoritos" : "Marcar como favorito"}
+                >
+                  <Star size={12} fill={i.favorito ? "currentColor" : "none"} />
+                </button>
+              </div>
             );
           })}
 
@@ -211,6 +324,27 @@ export const CardInsumos = memo(function CardInsumos({
                       </div>
                     </div>
 
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">Tipo de Custo</span>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase">{item.porLote ? 'Fixo por Lote' : 'Variável p/ Peça'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {modoEntrada === 'unitario' && (
+                          <button
+                            onClick={() => alternarPorLote(item.id)}
+                            className={`px-2 py-1 rounded-md text-[8px] font-black uppercase transition-colors ${
+                              item.porLote 
+                                ? "bg-indigo-500/10 text-indigo-500 border border-indigo-500/30" 
+                                : "bg-white/5 text-zinc-500 border border-white/5 hover:border-indigo-500/30"
+                            }`}
+                          >
+                            {item.porLote ? "P/ Peça" : "P/ Lote"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
                     {alerta && (
                       <span className="text-[8px] font-black text-rose-500 uppercase flex items-center gap-1 mt-1 animate-pulse">
                         <RefreshCcw size={10} /> ESTOQUE CRÍTICO
@@ -224,22 +358,44 @@ export const CardInsumos = memo(function CardInsumos({
         </AnimatePresence>
       </div>
 
-      <div className="pt-4 border-t border-white/5">
+      <div className="pt-3 border-t border-white/5">
         <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider ml-1">Custo de Insumos Fixos (R$)</label>
-          <div className="relative flex items-center bg-zinc-100/50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner">
-            <span className="absolute left-4 font-black text-xs text-zinc-400 select-none">R$</span>
+          <div className="flex items-center justify-between px-1">
+            <label className="text-[9px] font-bold uppercase text-zinc-600 tracking-widest">Custos Fixos</label>
+            <button 
+              type="button"
+              onClick={() => setCobrarInsumosFixos(!cobrarInsumosFixos)}
+              className={`relative w-6 h-3.5 rounded-full transition-all duration-300 outline-none
+                ${cobrarInsumosFixos ? "bg-indigo-500/50" : "bg-zinc-800"}
+              `}
+            >
+              <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all duration-300 shadow-sm
+                ${cobrarInsumosFixos ? "left-3" : "left-0.5"}
+              `} />
+            </button>
+          </div>
+
+          <div className={`relative flex items-center bg-zinc-900/30 rounded-lg border transition-all duration-300
+            ${cobrarInsumosFixos 
+              ? "border-white/5 opacity-100" 
+              : "border-transparent opacity-20 pointer-events-none grayscale"}
+          `}>
+            <span className="absolute left-3 text-[10px] font-bold text-zinc-600 select-none">R$</span>
             <input 
               type="number" 
               placeholder="0,00" 
+              disabled={!cobrarInsumosFixos}
               value={insumosFixos === 0 ? "" : insumosFixos} 
               onChange={(e) => setInsumosFixos(Number(e.target.value))} 
-              className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white" 
+              className="w-full h-9 pl-9 pr-3 bg-transparent outline-none font-bold text-xs text-zinc-300" 
             />
           </div>
-          <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-1 ml-1">
-            💡 Use para custos fixos de embalagem, limpeza ou suporte que não variam por peça.
-          </p>
+          
+          <div className="px-1">
+            <p className={`text-[8px] font-medium uppercase tracking-[0.05em] transition-all duration-300 ${cobrarInsumosFixos ? "text-zinc-600" : "text-zinc-800"}`}>
+              Embalagem, limpeza ou suporte.
+            </p>
+          </div>
         </div>
       </div>
     </div>

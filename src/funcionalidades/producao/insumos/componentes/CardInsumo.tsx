@@ -4,6 +4,7 @@ import {
   ArrowUpCircle,
   Trash2,
   History,
+  Star,
 } from "lucide-react";
 import { Insumo, CategoriaInsumo } from "@/funcionalidades/producao/insumos/tipos";
 import { Dica } from "@/compartilhado/componentes/Dica";
@@ -27,6 +28,7 @@ interface PropriedadesCardInsumo {
   aoRepor: (insumo: Insumo) => void;
   aoExcluir: (insumo: Insumo) => void;
   aoVerHistorico: (insumo: Insumo) => void;
+  aoAlternarFavorito: (id: string) => void;
 }
 
 export function CardInsumo({
@@ -36,6 +38,7 @@ export function CardInsumo({
   aoRepor,
   aoExcluir,
   aoVerHistorico,
+  aoAlternarFavorito,
 }: PropriedadesCardInsumo) {
   const estaComEstoqueBaixo = insumo.quantidadeAtual <= insumo.quantidadeMinima;
   const corDaCategoria = CORES_CATEGORIA[insumo.categoria] || "bg-gray-400 dark:bg-zinc-500";
@@ -118,6 +121,14 @@ export function CardInsumo({
 
         {/* Ferramentas Secundárias */}
         <div className="flex items-center gap-0.5 opacity-40 group-hover:opacity-100 transition-opacity ml-2 border-l border-zinc-200 dark:border-white/5 pl-2">
+          <Dica texto={insumo.favorito ? "Remover favorito" : "Marcar favorito"}>
+            <button 
+              onClick={() => aoAlternarFavorito(insumo.id)} 
+              className={`p-2 transition-colors ${insumo.favorito ? "text-amber-500" : "text-zinc-400 hover:text-amber-500"}`}
+            >
+              <Star size={16} fill={insumo.favorito ? "currentColor" : "none"} />
+            </button>
+          </Dica>
           <Dica texto="Histórico">
             <button onClick={() => aoVerHistorico(insumo)} className="p-2 text-zinc-400 hover:text-sky-500 transition-colors">
               <History size={16} />

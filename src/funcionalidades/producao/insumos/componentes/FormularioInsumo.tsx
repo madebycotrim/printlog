@@ -63,7 +63,6 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
               errors={errors}
               setValue={setValue}
               unidadeMedidaAtiva={unidadeMedidaAtiva}
-              itemFracionavelAtivo={itemFracionavelAtivo || false}
             />
 
             <SecaoRendimentoFracionado 

@@ -34,4 +34,5 @@ export interface Insumo {
 
     dataCriacao: Date;
     dataAtualizacao: Date;
+    favorito?: boolean;
 }

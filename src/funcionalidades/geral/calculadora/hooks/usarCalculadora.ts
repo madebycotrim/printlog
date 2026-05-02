@@ -27,7 +27,10 @@ export function usarCalculadora() {
     const salvo = localStorage.getItem("printlog_materiais_selecionados");
     return salvo ? JSON.parse(salvo) : [];
   });
-  const [tempo, setTempo] = useState<number>(() => Number(localStorage.getItem("printlog_tempo")) || 0);
+  const [tempo, setTempo] = useState<number>(() => {
+    const salvo = localStorage.getItem("printlog_calculadora_tempo") || localStorage.getItem("printlog_tempo");
+    return salvo ? Number(salvo) : 0;
+  });
   const [potencia, setPotencia] = useState<number>(() => Number(localStorage.getItem("printlog_potencia")) || 0);
   const [precoKwh, setPrecoKwh] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_preco_kwh");
@@ -48,6 +51,10 @@ export function usarCalculadora() {
   
   // Novas variáveis de Lote e Setup
   const [quantidade, setQuantidade] = useState<number>(() => Number(localStorage.getItem("printlog_quantidade")) || 1);
+  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => {
+    const salvo = localStorage.getItem("printlog_calculadora_modo_entrada");
+    return (salvo as 'unitario' | 'lote') || "unitario";
+  });
   const [tempoSetup, setTempoSetup] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_tempo_setup");
     return salvo !== null ? Number(salvo) : 15;
@@ -74,6 +81,8 @@ export function usarCalculadora() {
   const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_mao_de_obra") !== "false");
   const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_energia") !== "false");
   const [cobrarImpostos, setCobrarImpostos] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_impostos") !== "false");
+  const [cobrarInsumosFixos, setCobrarInsumosFixos] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_insumos_fixos") !== "false");
+  const [cobrarLogistica, setCobrarLogistica] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_logistica") !== "false");
   const [perfilAtivo, setPerfilAtivo] = useState(() => localStorage.getItem("printlog_perfil_ativo") || "Direto");
   const [taxaEcommerce, setTaxaEcommerce] = useState<number>(0);
   const [taxaFixa, setTaxaFixa] = useState<number>(0);
@@ -89,11 +98,19 @@ export function usarCalculadora() {
   useEffect(() => { localStorage.setItem("printlog_cobrar_mao_de_obra", String(cobrarMaoDeObra)); }, [cobrarMaoDeObra]);
   useEffect(() => { localStorage.setItem("printlog_cobrar_energia", String(cobrarEnergia)); }, [cobrarEnergia]);
   useEffect(() => { localStorage.setItem("printlog_cobrar_impostos", String(cobrarImpostos)); }, [cobrarImpostos]);
+  useEffect(() => { localStorage.setItem("printlog_cobrar_insumos_fixos", String(cobrarInsumosFixos)); }, [cobrarInsumosFixos]);
+  useEffect(() => { localStorage.setItem("printlog_cobrar_logistica", String(cobrarLogistica)); }, [cobrarLogistica]);
   useEffect(() => { localStorage.setItem("printlog_perfil_ativo", perfilAtivo); }, [perfilAtivo]);
   useEffect(() => { localStorage.setItem("printlog_tipo_operacao", tipoOperacao); }, [tipoOperacao]);
 
   useEffect(() => { localStorage.setItem("printlog_materiais_selecionados", JSON.stringify(materiaisSelecionados)); }, [materiaisSelecionados]);
-  useEffect(() => { localStorage.setItem("printlog_tempo", String(tempo)); }, [tempo]);
+  useEffect(() => {
+    localStorage.setItem("printlog_calculadora_tempo", String(tempo));
+  }, [tempo]);
+
+  useEffect(() => {
+    localStorage.setItem("printlog_calculadora_modo_entrada", modoEntrada);
+  }, [modoEntrada]);
   useEffect(() => { localStorage.setItem("printlog_potencia", String(potencia)); }, [potencia]);
   useEffect(() => { localStorage.setItem("printlog_preco_kwh", String(precoKwh)); }, [precoKwh]);
   useEffect(() => { localStorage.setItem("printlog_mao_de_obra", String(maoDeObra)); }, [maoDeObra]);
@@ -207,15 +224,80 @@ export function usarCalculadora() {
     }
   }, [config.custoEnergia, config.horaOperador, config.horaMaquina, config.margemLucro, config.carregando]);
 
+  // --- SINCRONIZAÇÃO AUTOMÁTICA COM ESTOQUE (Real-time Sync) ---
+  /**
+   * Garante que se o usuário mudar um preço ou nome no estoque (Materiais/Insumos),
+   * a calculadora atualize automaticamente os itens que já estavam selecionados.
+   */
+  useEffect(() => {
+    if (materiais.length > 0 && materiaisSelecionados.length > 0) {
+      setMateriaisSelecionados(prev => {
+        let mudou = false;
+        const novaLista = prev.map(sel => {
+          const atualizado = materiais.find(m => m.id === sel.id);
+          if (!atualizado) return sel;
+
+          const novoPrecoKg = Math.round((atualizado.precoCentavos / atualizado.pesoGramas) * 1000);
+          
+          if (sel.nome !== atualizado.nome || sel.cor !== atualizado.cor || sel.precoKgCentavos !== novoPrecoKg) {
+            mudou = true;
+            return {
+              ...sel,
+              nome: atualizado.nome,
+              cor: atualizado.cor,
+              precoKgCentavos: novoPrecoKg,
+              tipo: atualizado.tipo,
+              tipoMaterial: atualizado.tipoMaterial || ""
+            };
+          }
+          return sel;
+        });
+        return mudou ? novaLista : prev;
+      });
+    }
+  }, [materiais]);
+
+  useEffect(() => {
+    if (insumosEstoque.length > 0 && insumosSelecionados.length > 0) {
+      setInsumosSelecionados(prev => {
+        let mudou = false;
+        const novaLista = prev.map(sel => {
+          const atualizado = insumosEstoque.find(i => i.id === sel.id);
+          if (!atualizado) return sel;
+
+          // O valor já vem em centavos do banco/estado
+          const novoCusto = Math.round(atualizado.custoMedioUnidade || 0);
+
+          if (sel.nome !== atualizado.nome || sel.custoCentavos !== novoCusto) {
+            mudou = true;
+            return {
+              ...sel,
+              nome: atualizado.nome,
+              custoCentavos: novoCusto
+            };
+          }
+          return sel;
+        });
+        return mudou ? novaLista : prev;
+      });
+    }
+  }, [insumosEstoque]);
+
   // --- LÓGICA DE CÁLCULO (Sólida) ---
   const calculo = useMemo((): CalculoResultado => {
     const multiplicadorMaterialEMaquina = quantidade;
 
-    const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => acc + (m.quantidade / 1000) * m.precoKgCentavos, 0) * multiplicadorMaterialEMaquina;
-    const custoInsumosDinamicosCentavos = insumosSelecionados.reduce((acc, i) => acc + (i.quantidade * i.custoCentavos), 0) * quantidade;
+    const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => {
+      const pesoTotal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * multiplicadorMaterialEMaquina;
+      return acc + (pesoTotal / 1000) * m.precoKgCentavos;
+    }, 0);
+    const custoInsumosDinamicosCentavos = insumosSelecionados.reduce((acc, i) => {
+      const valorBase = i.quantidade * i.custoCentavos;
+      return acc + (i.porLote ? valorBase : valorBase * quantidade);
+    }, 0);
     
     // Tempo de Máquina
-    const horasDecimaisMaquina = (tempo / 60) * multiplicadorMaterialEMaquina;
+    const horasDecimaisMaquina = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * multiplicadorMaterialEMaquina;
     const custoEnergiaCentavos = cobrarEnergia ? Math.round((potencia / 1000) * horasDecimaisMaquina * precoKwh * 100) : 0;
     const custoDepreciacaoCentavos = cobrarDesgaste ? Math.round(horasDecimaisMaquina * depreciacaoHora * 100) : 0;
 
@@ -228,9 +310,9 @@ export function usarCalculadora() {
     const horasDecimaisSetup = tempoSetup / 60;
     const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round(horasDecimaisSetup * maoDeObra * 100) : 0;
 
-    const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor * 100), 0) * quantidade;
-    const custoInsumosFixosCentavos = Math.round(insumosFixos * 100);
-    const custoFreteCentavos = Math.round(frete * 100);
+    const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor * 100), 0) * (modoEntrada === 'lote' ? 1 : quantidade);
+    const custoInsumosFixosCentavos = cobrarInsumosFixos ? Math.round(insumosFixos * 100) : 0;
+    const custoFreteCentavos = cobrarLogistica ? Math.round(frete * 100) : 0;
 
     const custoProducaoTotalCentavos = 
       custoMaterialTotalCentavos + 
@@ -243,8 +325,8 @@ export function usarCalculadora() {
       custoFalhaRealCentavos;
 
     const margemPercentual = margem / 100;
-    const taxaMktPercentual = taxaEcommerce / 100;
-    const taxaFixaVendaCentavos = Math.round(taxaFixa * 100);
+    const taxaMktPercentual = cobrarLogistica ? taxaEcommerce / 100 : 0;
+    const taxaFixaVendaCentavos = cobrarLogistica ? Math.round(taxaFixa * 100) : 0;
     const impostoPercentual = cobrarImpostos ? (impostos + icms + iss) / 100 : 0;
 
     const lucroDesejadoCentavos = Math.round(custoProducaoTotalCentavos * margemPercentual);
@@ -278,7 +360,7 @@ export function usarCalculadora() {
       margemReal: margemRealSobreVenda,
       custoFalha: custoFalhaRealCentavos
     };
-  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarImpostos, itensPosProcesso, insumosFixos, frete, perfilAtivo, perfisMarketplace, impostos, icms, iss, quantidade, tempoSetup, taxaFalha, materialPerdido, tempoPerdido, taxaEcommerce, taxaFixa]);
+  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarImpostos, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, perfilAtivo, perfisMarketplace, impostos, icms, iss, quantidade, tempoSetup, taxaFalha, materialPerdido, tempoPerdido, taxaEcommerce, taxaFixa]);
 
   // --- FEATURE 3: ALERTA DE ESTOQUE ---
   const alertasEstoque = useMemo(() => {
@@ -366,7 +448,9 @@ export function usarCalculadora() {
         tipoOperacao,
         impostos,
         icms,
-        iss
+        iss,
+        cobrarInsumosFixos,
+        cobrarLogistica
       }
     };
     const novoHistorico = [novaVersao, ...historico];
@@ -407,6 +491,8 @@ export function usarCalculadora() {
     if (c.impostos !== undefined) setImpostos(c.impostos);
     if (c.icms !== undefined) setIcms(c.icms);
     if (c.iss !== undefined) setIss(c.iss);
+    if (c.cobrarInsumosFixos !== undefined) setCobrarInsumosFixos(c.cobrarInsumosFixos);
+    if (c.cobrarLogistica !== undefined) setCobrarLogistica(c.cobrarLogistica);
 
     toast.success(`Carregado: ${versao.nome}`);
   };
@@ -810,6 +896,7 @@ export function usarCalculadora() {
     // Limpa apenas dados da peça/projeto
     setMateriaisSelecionados([]);
     setTempo(0);
+    setModoEntrada('unitario');
     setQuantidade(1);
     setMaterialPerdido(0);
     setTempoPerdido(0);
@@ -831,6 +918,7 @@ export function usarCalculadora() {
     materialPerdido, setMaterialPerdido,
     tempoPerdido, setTempoPerdido,
     tempo, setTempo,
+    modoEntrada, setModoEntrada,
     potencia, setPotencia,
     precoKwh, setPrecoKwh,
     maoDeObra, setMaoDeObra,
@@ -839,9 +927,11 @@ export function usarCalculadora() {
     cobrarMaoDeObra, setCobrarMaoDeObra,
     cobrarEnergia, setCobrarEnergia,
     cobrarImpostos, setCobrarImpostos,
+    cobrarLogistica, setCobrarLogistica,
     margem, setMargem,
     frete, setFrete,
     insumosFixos, setInsumosFixos,
+    cobrarInsumosFixos, setCobrarInsumosFixos,
     insumosSelecionados, setInsumosSelecionados,
     itensPosProcesso, setItensPosProcesso,
     perfilAtivo, setPerfilAtivo,

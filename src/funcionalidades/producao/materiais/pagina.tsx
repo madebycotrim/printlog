@@ -88,7 +88,7 @@ export function PaginaMateriais() {
               materiais={estado.materiais}
               insumos={insumos}
               totalEmbalagens={estado.metricas.totalEmbalagens}
-              valorInvestido={metricasConsolidadas.valorTotalEstoqueCentavos}
+              valorInvestido={metricasConsolidadas.valorTotalMateriaisCentavos}
               alertasBaixoEstoque={metricasConsolidadas.itensEmAlerta}
             />
 
@@ -135,6 +135,7 @@ export function PaginaMateriais() {
               aoEditar={acoes.abrirEditar}
               aoHistorico={(m, aba) => acoes.abrirHistorico(m.id, aba)}
               aoExcluir={(m) => acoes.abrirExcluir(m.id)}
+              aoAlternarFavorito={acoes.alternarFavorito}
             />
           </motion.div>
         )}

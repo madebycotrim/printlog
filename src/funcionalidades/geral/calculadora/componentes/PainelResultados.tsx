@@ -23,11 +23,14 @@ interface PainelResultadosProps {
   posProcesso?: ItemPosProcesso[];
   quantidade?: number;
   insumosFixos?: number;
+  tempo?: number;
+  modoEntrada?: 'unitario' | 'lote';
 }
 
 export const PainelResultados = memo(function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, carregandoPdf,
-  materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0
+  materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
+  tempo = 0, modoEntrada = 'unitario'
 }: PainelResultadosProps) {
   const { usuario } = usarAutenticacao();
   const { betaOrcamentosMagicos, templateOrcamento } = usarBeta();
@@ -110,7 +113,7 @@ export const PainelResultados = memo(function PainelResultados({
         </div>
 
         <div className="mt-2 mb-4">
-          <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-2">{centavosParaReais(calculo.precoSugerido)}</h2>
+          <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-4">{centavosParaReais(calculo.precoSugerido)}</h2>
           
           {/* Resultados da IA compactos - Só aparecem se houver sugestão */}
           <AnimatePresence>
@@ -212,21 +215,29 @@ export const PainelResultados = memo(function PainelResultados({
                 <AnimatePresence>
                   {itens.map((item) => {
                     // Calcular subitens
-                    let subitens: { nome: string; valor: number }[] = [];
+                    let subitens: { nome: React.ReactNode; valor: number }[] = [];
                     
                     if (item.label === 'Materiais' && materiais.length > 0) {
-                      subitens = materiais.map(m => ({
-                        nome: `${m.nome} (${m.quantidade}g)`,
-                        valor: Math.round((m.quantidade / 1000) * m.precoKgCentavos * quantidade)
-                      }));
+                      subitens = materiais.map(m => {
+                        const unid = m.tipo === 'FDM' ? 'g' : 'ml';
+                        const pesoFinal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * quantidade;
+                        const textoPeso = modoEntrada === 'unitario' 
+                          ? `${m.quantidade}${unid} x ${quantidade} = ${pesoFinal}${unid}` 
+                          : `${pesoFinal}${unid}`;
+                        
+                        return {
+                          nome: `${m.nome} (${textoPeso})`,
+                          valor: Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : quantidade))
+                        };
+                      });
                     } else if (item.label === 'Insumos & Extras') {
                       const subInsumos = insumos.map(i => ({
-                        nome: `${i.nome} (${i.quantidade}un)`,
-                        valor: i.quantidade * i.custoCentavos * quantidade
+                        nome: <>{i.nome} ({modoEntrada === 'lote' || i.porLote ? i.quantidade : i.quantidade * quantidade}<span className="lowercase">x</span>)</>,
+                        valor: (modoEntrada === 'lote' || i.porLote) ? i.quantidade * i.custoCentavos : i.quantidade * i.custoCentavos * quantidade
                       }));
                       const subPos = posProcesso.map(p => ({
-                        nome: p.nome,
-                        valor: Math.round(p.valor * 100) * quantidade
+                        nome: modoEntrada === 'unitario' ? `${p.nome} (x${quantidade})` : p.nome,
+                        valor: Math.round(p.valor * 100) * (modoEntrada === 'lote' ? 1 : quantidade)
                       }));
                       subitens = [...subInsumos, ...subPos];
 
@@ -236,6 +247,12 @@ export const PainelResultados = memo(function PainelResultados({
                           valor: Math.round(insumosFixos * 100)
                         });
                       }
+                    } else if (item.label === 'Depreciação') {
+                      const horasTotais = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * quantidade;
+                      subitens = [{
+                        nome: `Uso da Máquina (${horasTotais < 1 ? Math.round(horasTotais * 60) + 'min' : horasTotais.toFixed(1) + 'h'})`,
+                        valor: calculo.custoDepreciacao
+                      }];
                     }
 
                     return (

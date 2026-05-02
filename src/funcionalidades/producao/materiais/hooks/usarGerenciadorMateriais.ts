@@ -8,7 +8,6 @@ import {
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 
-import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/constantesNegocio";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
 import { toast } from "react-hot-toast";
@@ -188,6 +187,29 @@ export function usarGerenciadorMateriais() {
     }
   };
 
+  const alternarFavorito = async (id: string) => {
+    if (!usuario?.uid) return;
+    const material = materiais.find(m => m.id === id);
+    if (!material) return;
+
+    const novoEstado = !material.favorito;
+    const materialAtualizado = { ...material, favorito: novoEstado };
+
+    try {
+      // Atualiza local
+      acoesArmazem.atualizarMaterial(id, { favorito: novoEstado });
+      // Persiste no banco
+      await apiMateriais.atualizar(materialAtualizado, usuario.uid);
+      
+      auditoria.evento("FAVORITAR_MATERIAL", { id, favorito: novoEstado, nome: material.nome });
+    } catch (erro) {
+      console.error("Erro ao favoritar material:", erro);
+      toast.error("Erro ao salvar preferência.");
+      // Rollback se necessário (opcional para UX fluida)
+      acoesArmazem.atualizarMaterial(id, { favorito: !novoEstado });
+    }
+  };
+
   // Encontrar Material por ID helper
   const encontrarMaterial = (id: string) => materiais.find((m) => m.id === id);
 
@@ -338,6 +360,7 @@ export function usarGerenciadorMateriais() {
       confirmarAbatimentoPeso,
       confirmarArquivamento,
       confirmarReposicaoMaterial,
+      alternarFavorito,
       // Filtros
       definirFiltro,
       definirOrdenacao,

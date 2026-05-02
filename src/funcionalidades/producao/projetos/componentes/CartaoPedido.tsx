@@ -7,6 +7,8 @@ import { usarPedidos } from "../hooks/usarPedidos";
 import { verificarSeEstaAtrasado } from "@/compartilhado/utilitarios/gestaoAtrasos";
 import { formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
+import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { Settings } from "lucide-react";
 
 interface PropriedadesCartaoPedido {
   pedido: Pedido;
@@ -15,6 +17,7 @@ interface PropriedadesCartaoPedido {
 
 export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
   const { excluirPedido, moverPedido } = usarPedidos();
+  const { impressoras } = usarArmazemImpressoras();
   const [menuAberto, setMenuAberto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -229,6 +232,14 @@ export function CartaoPedido({ pedido, aoEditar }: PropriedadesCartaoPedido) {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {pedido.idImpressora && (
+                    <div className="flex items-center gap-1 mr-1">
+                      <Settings size={8} className="text-amber-500/50" />
+                      <span className="text-[8px] font-black uppercase text-amber-500/70">
+                        {impressoras.find(i => i.id === pedido.idImpressora)?.nome || "Máquina"}
+                      </span>
+                    </div>
+                  )}
                   {pedido.pesoGramas && pedido.pesoGramas > 0 && (
                     <span className="text-[8px] font-bold text-zinc-600 uppercase">{pedido.pesoGramas}g</span>
                   )}

@@ -21,16 +21,7 @@ export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
      * Permite que o react-hook-form receba sempre o formato numérico correto.
      */
     const lidarComMudanca = (e: ChangeEvent<HTMLInputElement>) => {
-      // Substitui vírgula por ponto para o valor real
-      const valorCorrigido = e.target.value.replace(",", ".");
-      
-      // Cria um evento sintético com o valor corrigido
-      const eventoCorrigido = {
-        ...e,
-        target: { ...e.target, value: valorCorrigido },
-      } as ChangeEvent<HTMLInputElement>;
-
-      onChange?.(eventoCorrigido);
+      onChange?.(e);
     };
 
     return (

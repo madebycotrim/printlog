@@ -330,6 +330,25 @@ export function usarGerenciadorInsumos() {
     }
   };
 
+  const alternarFavorito = async (id: string) => {
+    if (!usuario?.uid) return;
+    const insumo = estadoArmazem.insumos.find(i => i.id === id);
+    if (!insumo) return;
+
+    const novoEstado = !insumo.favorito;
+    const insumoAtualizado: Insumo = { ...insumo, favorito: novoEstado };
+
+    try {
+      acoesArmazem.adicionarOuAtualizarInsumo(insumoAtualizado);
+      await apiInsumos.salvar(insumoAtualizado, usuario.uid);
+      auditoria.evento("FAVORITAR_INSUMO", { id, favorito: novoEstado, nome: insumo.nome });
+    } catch (erro) {
+      console.error("Erro ao favoritar insumo:", erro);
+      toast.error("Erro ao salvar preferência.");
+      acoesArmazem.adicionarOuAtualizarInsumo({ ...insumo, favorito: !novoEstado });
+    }
+  };
+
   return {
     estado: {
       ...estadoArmazem,
@@ -343,6 +362,7 @@ export function usarGerenciadorInsumos() {
       confirmarBaixaInsumo,
       confirmarReposicaoInsumo,
       confirmarArquivamento,
+      alternarFavorito,
     },
   };
 }

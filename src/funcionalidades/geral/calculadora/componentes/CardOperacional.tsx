@@ -14,13 +14,14 @@ interface CardOperacionalProps {
   anosVidaUtil?: 5 | 3 | 2;
   setAnosVidaUtil?: (v: 5 | 3 | 2) => void;
   tempo: number;
+  quantidade: number;
   tempoSetup: number;
   setTempoSetup: (v: number) => void;
 }
 
 export const CardOperacional = memo(function CardOperacional({
   maoDeObra, setMaoDeObra, margem, setMargem, depreciacao, cobrarDesgaste, setCobrarDesgaste, cobrarMaoDeObra, setCobrarMaoDeObra, 
-  anosVidaUtil = 5, setAnosVidaUtil, tempo, tempoSetup, setTempoSetup
+  anosVidaUtil = 5, setAnosVidaUtil, tempo, quantidade, tempoSetup, setTempoSetup
 }: CardOperacionalProps) {
   const [margemInterna, setMargemInterna] = useState(margem);
 
@@ -53,7 +54,7 @@ export const CardOperacional = memo(function CardOperacional({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/30">
@@ -76,65 +77,75 @@ export const CardOperacional = memo(function CardOperacional({
               }`} />
             </button>
           </div>
-          <div className={`transition-opacity ${!cobrarMaoDeObra ? "opacity-50 pointer-events-none" : ""}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Custo da Hora</label>
-                <div className={`relative flex items-center rounded-xl transition-all shadow-inner ${!cobrarMaoDeObra ? 'bg-gray-50/50 dark:bg-white/5 line-through' : 'bg-gray-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
-                  <span className="absolute left-4 font-black text-xs text-zinc-400 select-none">R$</span>
-                  <input 
-                    type="number" 
-                    placeholder="0"
-                    value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : maoDeObra) : 0} 
-                    onChange={(e) => setMaoDeObra?.(Number(e.target.value))} 
-                    className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
-                  />
+          <div className={`flex-1 flex flex-col justify-between pt-6 transition-opacity ${!cobrarMaoDeObra ? "opacity-50 pointer-events-none" : ""}`}>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-black uppercase text-gray-400">Custo da Hora</label>
+                    <div className="h-6" /> {/* Espaçador para alinhar com o botão do card vizinho */}
+                  </div>
+                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
+                    <span className="absolute left-4 font-black text-xs text-zinc-400 select-none">R$</span>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : maoDeObra) : 0} 
+                      onChange={(e) => setMaoDeObra?.(Number(e.target.value))} 
+                      className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-black uppercase text-gray-400">Setup (Operador)</label>
+                    <div className="h-6" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
+                      <input 
+                        type="number" 
+                        placeholder="0"
+                        value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : Math.floor(tempoSetup / 60)) : ""} 
+                        onChange={(e) => setTempoSetup(Number(e.target.value) * 60 + (tempoSetup % 60))} 
+                        className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
+                      />
+                      <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
+                    </div>
+
+                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
+                      <input 
+                        type="number" 
+                        placeholder="0"
+                        value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : tempoSetup % 60) : ""} 
+                        onChange={(e) => setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Number(e.target.value))} 
+                        className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
+                      />
+                      <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Setup (Operador)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner ${!cobrarMaoDeObra ? 'bg-gray-50/50 dark:bg-white/5 line-through' : 'bg-gray-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
-                    <input 
-                      type="number" 
-                      placeholder="0"
-                      value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : Math.floor(tempoSetup / 60)) : ""} 
-                      onChange={(e) => setTempoSetup(Number(e.target.value) * 60 + (tempoSetup % 60))} 
-                      className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
-                    />
-                    <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
-                  </div>
-
-                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner ${!cobrarMaoDeObra ? 'bg-gray-50/50 dark:bg-white/5 line-through' : 'bg-gray-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
-                    <input 
-                      type="number" 
-                      placeholder="0"
-                      value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : tempoSetup % 60) : ""} 
-                      onChange={(e) => setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Number(e.target.value))} 
-                      className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
-                    />
-                    <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
-                  </div>
-                </div>
+              {cobrarMaoDeObra && (
+                <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 mt-1 text-right uppercase tracking-wider pr-1">
+                  💡 Fórmula: (Tempo Setup / 60) * R$/h Operador
+                </p>
+              )}
+            </div>
+            
+            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex flex-col gap-2 relative overflow-hidden">
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] font-black uppercase text-emerald-500">Custo Total Setup:</span>
+                <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                  R$ {((cobrarMaoDeObra ? (tempoSetup / 60) * maoDeObra : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
               </div>
             </div>
-            {cobrarMaoDeObra && (
-              <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 mt-2 text-right uppercase tracking-wider">
-                💡 Fórmula: (Tempo Setup / 60) * R$/h Operador
-              </p>
-            )}
           </div>
+      </div>
 
-          <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex justify-between items-center relative overflow-hidden">
-            <span className="text-[11px] font-black uppercase text-emerald-500">Custo Total Setup:</span>
-            <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-500' : 'text-zinc-500 line-through'}`}>
-              R$ {((cobrarMaoDeObra ? (tempoSetup / 60) * maoDeObra : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-        </div>
-
-        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-zinc-400 border border-zinc-500/30">
@@ -159,10 +170,10 @@ export const CardOperacional = memo(function CardOperacional({
             </button>
           </div>
           
-          <div className={`space-y-6 transition-opacity ${!cobrarDesgaste ? "opacity-50 pointer-events-none" : ""}`}>
-            <div>
+          <div className={`flex-1 flex flex-col justify-between pt-6 transition-opacity ${!cobrarDesgaste ? "opacity-50 pointer-events-none" : ""}`}>
+            <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-black uppercase text-gray-400">Taxa de Desgaste</label>
+                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Taxa de Desgaste</label>
                 <button
                   type="button"
                   onClick={() => {
@@ -182,7 +193,7 @@ export const CardOperacional = memo(function CardOperacional({
                   {anosVidaUtil === 2 && "Uso Extremo (2 anos)"}
                 </button>
               </div>
-              <div className="w-full h-12 px-4 rounded-xl bg-gray-50 dark:bg-zinc-800/50 flex items-center justify-between border border-gray-100 dark:border-white/5 select-none relative group">
+              <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-white/5'} select-none relative group`}>
                 <span className="text-gray-400 font-black text-xs">Desgaste</span>
                 <span className="font-black text-sm text-gray-900 dark:text-white">
                   R$ {(cobrarDesgaste ? depreciacao || 0 : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / h
@@ -192,20 +203,31 @@ export const CardOperacional = memo(function CardOperacional({
                 )}
               </div>
               {cobrarDesgaste && (
-                <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 mt-2 text-right uppercase tracking-wider">
+                <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 mt-1 text-right uppercase tracking-wider pr-1">
                   💡 Fórmula: (Valor / {anosVidaUtil} Anos) / 12 Meses / 240h
                 </p>
               )}
             </div>
-            <div className="p-4 rounded-xl bg-zinc-500/5 border border-zinc-500/10 flex justify-between items-center relative overflow-hidden">
-              <span className="text-[11px] font-black uppercase text-zinc-500">Custo Total Desgaste:</span>
-              <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-500' : 'text-zinc-500 line-through'}`}>
-                R$ {((cobrarDesgaste ? (tempo / 60) * depreciacao : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </span>
+
+            <div className="p-4 rounded-xl bg-zinc-500/5 border border-zinc-500/10 flex flex-col gap-2 relative overflow-hidden">
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] font-black uppercase text-zinc-500">Custo por Peça:</span>
+                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  R$ {((cobrarDesgaste ? (tempo / 60) * depreciacao : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              {quantidade > 1 && (
+                <div className="flex justify-between items-center pt-2 border-t border-zinc-500/10">
+                  <span className="text-[11px] font-black uppercase text-zinc-400">Total do Lote ({quantidade}x):</span>
+                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    R$ {((cobrarDesgaste ? (tempo / 60) * depreciacao * quantidade : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
       </div>
+    </div>
 
       <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
@@ -312,5 +334,5 @@ export const CardOperacional = memo(function CardOperacional({
         </div>
       </div>
     </div>
-  );
+);
 });

@@ -1,4 +1,4 @@
-import { Pencil, Trash2, History, MoreVertical, Scale } from "lucide-react";
+import { Pencil, Trash2, History, MoreVertical, Scale, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
@@ -10,9 +10,10 @@ interface PropriedadesCardMaterial {
   aoEditar: (material: Material) => void;
   aoExcluir: (material: Material) => void;
   aoHistorico: (material: Material, abaInicial?: "extrato" | "novo") => void;
+  aoAlternarFavorito: (id: string) => void;
 }
 
-export function CardMaterial({ material, aoEditar, aoExcluir, aoHistorico }: PropriedadesCardMaterial) {
+export function CardMaterial({ material, aoEditar, aoExcluir, aoHistorico, aoAlternarFavorito }: PropriedadesCardMaterial) {
   const referenciaCard = useRef<HTMLDivElement>(null);
   const referenciaMenu = useRef<HTMLDivElement>(null);
   const [estaVisivel, definirEstaVisivel] = useState(false);
@@ -99,6 +100,21 @@ export function CardMaterial({ material, aoEditar, aoExcluir, aoHistorico }: Pro
 
       {/* Ações Rápidas (Sempre visíveis) */}
       <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5" ref={referenciaMenu}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            aoAlternarFavorito(material.id);
+          }}
+          title={material.favorito ? "Remover dos favoritos" : "Marcar como favorito"}
+          className={`p-2 rounded-xl transition-all border ${
+            material.favorito 
+              ? "text-amber-500 bg-amber-500/10 border-amber-500/20" 
+              : "text-zinc-400 hover:bg-amber-500/10 hover:text-amber-500 border-transparent hover:border-amber-500/20"
+          }`}
+        >
+          <Star size={18} fill={material.favorito ? "currentColor" : "none"} />
+        </button>
+
         <button
           onClick={(e) => {
             e.stopPropagation();

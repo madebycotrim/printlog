@@ -42,10 +42,34 @@ export function formatarMoedaFinancas(valor: number, decimais = 2): string {
  * Extrai o valor numérico de uma string formatada (R$, %, etc)
  * Suporta vírgula decimal brasileira.
  */
-export function extrairValorNumerico(valor: string): number {
-    if (!valor) return 0;
-    const apenasValores = valor.replace("R$", "").replace("%", "").trim().replace(".", "").replace(",", ".");
-    const num = Number(apenasValores);
+/**
+ * Extrai o valor numérico de uma string formatada (R$, %, etc)
+ * Suporta vírgula decimal brasileira e ponto decimal americano.
+ * Detecta automaticamente o separador decimal em casos como "1.234,56" ou "0,30".
+ */
+export function extrairValorNumerico(valor: any): number {
+    if (valor === null || valor === undefined) return 0;
+    if (typeof valor === "number") return valor;
+
+    let str = String(valor).trim().replace("R$", "").replace("%", "").replace(/\s/g, "");
+    if (!str) return 0;
+
+    // Detecta se o padrão é BR (1.234,56) ou US (1,234.56)
+    const ultimaVirgula = str.lastIndexOf(",");
+    const ultimoPonto = str.lastIndexOf(".");
+
+    if (ultimaVirgula > ultimoPonto) {
+        // Padrão Brasileiro: 1.234,56 -> remove pontos (milhar), troca vírgula por ponto (decimal)
+        str = str.replace(/\./g, "").replace(",", ".");
+    } else if (ultimoPonto > ultimaVirgula) {
+        // Padrão Americano: 1,234.56 -> remove vírgulas (milhar)
+        str = str.replace(/,/g, "");
+    } else if (ultimaVirgula !== -1) {
+        // Apenas vírgula: 0,30 -> troca por ponto
+        str = str.replace(",", ".");
+    }
+
+    const num = Number(str);
     return isNaN(num) ? 0 : num;
 }
 

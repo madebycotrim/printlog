@@ -2,6 +2,7 @@ import { Ruler } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
 import { Combobox } from "@/compartilhado/componentes/Combobox";
 import { UNIDADES_CONSUMO } from "../../constantes";
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesSecaoRendimento {
   register: any;
@@ -66,13 +67,13 @@ export function SecaoRendimentoFracionado({
             <CampoTexto
               rotulo="Rendimento Total"
               icone={Ruler}
-              type="number"
-              step="any"
+              type="text"
+              inputMode="decimal"
               placeholder="Ex: 50"
               erro={errors.rendimentoTotal?.message}
               {...register("rendimentoTotal", {
                 required: itemFracionavelAtivo ? "Obrigatório" : false,
-                setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0,
+                setValueAs: (v: any) => extrairValorNumerico(v) || 0,
               })}
             />
             <span className="absolute right-4 top-[46px] text-[10px] font-black text-gray-400 dark:text-zinc-600 pointer-events-none tracking-[0.2em] uppercase">

@@ -6,6 +6,7 @@ export interface MaterialSelecionado {
   tipoMaterial: string;
   quantidade: number;
   precoKgCentavos: number;
+  porLote?: boolean;
 }
 
 export interface ItemPosProcesso {
@@ -19,6 +20,7 @@ export interface InsumoSelecionado {
   nome: string;
   quantidade: number;
   custoCentavos: number;
+  porLote?: boolean;
 }
 
 export interface PerfilMarketplace {

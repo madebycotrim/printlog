@@ -22,4 +22,5 @@ export interface Material {
   pesoRestanteGramas: number; // O quanto resta da embalagem atual em uso
   historicoUso: RegistroUso[]; // Novo campo para o histórico real
   arquivado?: boolean; // Controle de Soft Delete para preservar relatórios passados
+  favorito?: boolean; // Marcação de material mais utilizado/preferido
 }

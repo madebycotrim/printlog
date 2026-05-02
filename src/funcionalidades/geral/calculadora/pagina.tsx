@@ -4,7 +4,7 @@ import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import {
   Settings, Check, X, Plus,
   ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp, AlertTriangle, AlertCircle, Download, RotateCcw,
-  FolderKanban
+  FolderKanban, Star
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -34,7 +34,7 @@ import { CardLogistica } from "./componentes/CardLogistica";
 import { CardFiscal } from "./componentes/CardFiscal";
 import { PainelResultados } from "./componentes/PainelResultados";
 import { ModalHistorico } from "./componentes/ModalHistorico";
-import { Zap, Clock, Wrench, Percent } from "lucide-react";
+import { Zap, Clock, Wrench, Percent, BrainCircuit } from "lucide-react";
 
 export function PaginaCalculadora() {
   const { usuario } = usarAutenticacao();
@@ -54,7 +54,7 @@ export function PaginaCalculadora() {
   const { materiais } = usarArmazemMateriais();
   const { insumos: insumosEstoque, adicionarOuAtualizarInsumo, abrirEditar: abrirCriarInsumo, modalCricaoAberto: modalInsumoAberto, fecharEditar: fecharInsumoAberto, insumoEditando } = usarArmazemInsumos();
   const { estado: estadoMateriais, acoes: acoesMateriais } = usarGerenciadorMateriais();
-  usarGerenciadorInsumos();
+  const { acoes: acoesInsumos } = usarGerenciadorInsumos();
 
   // Hook Central de Inteligência
   const hook = usarCalculadora();
@@ -171,7 +171,7 @@ export function PaginaCalculadora() {
         material: hook.materiaisSelecionados.length > 0 ? hook.materiaisSelecionados.map(m => m.nome).join(", ") : "Material Padrão",
         pesoGramas: hook.materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0),
         tempoMinutos: Math.round(hook.tempo * 60),
-        idImpressora: hook.impressoraSelecionadaId || undefined,
+        idImpressora: hook.impressoraSelecionadaId,
         prazoEntrega: hook.estimativaPrazo.data,
         observacoes: descricaoProjeto ? `${descricaoProjeto}\n\nGerado via calculadora em ${new Date().toLocaleDateString('pt-BR')}.` : `Gerado via calculadora em ${new Date().toLocaleDateString('pt-BR')}.`
       });
@@ -225,7 +225,7 @@ export function PaginaCalculadora() {
   const alternarInsumo = useCallback((insumo: any) => {
     const existe = hook.insumosSelecionados.find(i => i.id === insumo.id);
     if (existe) hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== insumo.id));
-    else hook.setInsumosSelecionados(prev => [...prev, { id: insumo.id, nome: insumo.nome, quantidade: 1, custoCentavos: Math.round(insumo.custoMedioUnidade * 100) }]);
+    else hook.setInsumosSelecionados(prev => [...prev, { id: insumo.id, nome: insumo.nome, quantidade: 1, custoCentavos: Math.round(insumo.custoMedioUnidade || 0) }]);
   }, [hook.insumosSelecionados, hook.setInsumosSelecionados]);
 
   const atualizarQtdInsumo = useCallback((id: string, qtd: number) => {
@@ -234,6 +234,10 @@ export function PaginaCalculadora() {
 
   const removerInsumo = useCallback((id: string) => {
     hook.setInsumosSelecionados(prev => prev.filter(i => i.id !== id));
+  }, [hook.setInsumosSelecionados]);
+
+  const alternarPorLoteInsumo = useCallback((id: string) => {
+    hook.setInsumosSelecionados(prev => prev.map(i => i.id === id ? { ...i, porLote: !i.porLote } : i));
   }, [hook.setInsumosSelecionados]);
 
   const aoSelecionarImpressora = useCallback((id: string) => {
@@ -338,7 +342,7 @@ export function PaginaCalculadora() {
           <div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
 
             {/* Card Unificado de Metadados do Projeto — DESIGN PREMIUM */}
-            <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
+            <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
               {/* Efeito Glow Azul de Fundo */}
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-700" />
 
@@ -354,11 +358,11 @@ export function PaginaCalculadora() {
                 </div>
               </div>
 
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
                 
                 {/* Lado Esquerdo: Dados do Cliente */}
-                <div className="md:col-span-5 flex flex-col gap-2 relative">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Cliente do Projeto</label>
+                <div className="md:col-span-4 flex flex-col gap-2 relative">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Cliente do Projeto</label>
                   
                   <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-sky-500/40 rounded-xl shadow-inner h-12 transition-all">
                     <input
@@ -370,7 +374,7 @@ export function PaginaCalculadora() {
                         setAbertoSeletorCliente(true);
                       }}
                       onFocus={() => setAbertoSeletorCliente(true)}
-                      className="w-full h-full bg-transparent px-4 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600"
+                      className="w-full h-full bg-transparent px-4 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600 text-center"
                     />
                     <button
                       type="button"
@@ -453,30 +457,76 @@ export function PaginaCalculadora() {
                 </div>
 
                 {/* Lado Direito: Nome e Descrição */}
-                <div className="md:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Nome do Projeto</label>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Nome do Projeto</label>
                     <input
                       type="text"
                       placeholder="Ex: Action Figure Batman"
                       value={nomeProjeto}
                       onChange={(e) => setNomeProjeto(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
+                      className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700 text-center"
                     />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Descrição / Notas técnicas</label>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Descrição / Notas técnicas</label>
                     <textarea
                       rows={1}
                       placeholder="Ex: Altura de camada 0.12mm"
                       value={descricaoProjeto}
                       onChange={(e) => setDescricaoProjeto(e.target.value)}
-                      className="w-full p-3 h-12 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700 resize-none"
+                      className="w-full p-3 h-12 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700 resize-none text-center"
                     />
                   </div>
                 </div>
+              </div>
 
+              {/* Seletor de Modo de Entrada Global - DESIGN MINIMALISTA PROFISSIONAL */}
+              <div className="relative z-10 pt-6 border-t border-white/5 flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                      <BrainCircuit size={14} className="text-sky-500" /> Estratégia de Preenchimento
+                    </span>
+                  </div>
+                  
+                  <div className="flex bg-zinc-900 p-1 rounded-xl border border-white/5 shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => hook.setModoEntrada('unitario')}
+                      className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                        hook.modoEntrada === 'unitario'
+                          ? 'bg-zinc-800 text-sky-400 shadow-md ring-1 ring-white/10'
+                          : 'text-zinc-500 hover:text-zinc-300'
+                      }`}
+                    >
+                      Por Peça
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => hook.setModoEntrada('lote')}
+                      className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                        hook.modoEntrada === 'lote'
+                          ? 'bg-zinc-800 text-amber-400 shadow-md ring-1 ring-white/10'
+                          : 'text-zinc-500 hover:text-zinc-300'
+                      }`}
+                    >
+                      Mesa Completa
+                    </button>
+                  </div>
+                </div>
+
+                {/* Legenda Discreta */}
+                <div className="flex items-center gap-2 px-1">
+                  <div className={`w-1 h-1 rounded-full ${hook.modoEntrada === 'unitario' ? 'bg-sky-500' : 'bg-amber-500'}`} />
+                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
+                    {hook.modoEntrada === 'unitario' 
+                      ? `Modo Unitário: O peso e tempo serão multiplicados por ${hook.quantidade}x.` 
+                      : `Modo Mesa: Os valores digitados já são o total de ${hook.quantidade} peças.`
+                    }
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -490,8 +540,10 @@ export function PaginaCalculadora() {
               atualizarQtd={atualizarQtdMaterial}
               atualizarPreco={atualizarPrecoMaterial}
               remover={removerMaterial}
+              modoEntrada={hook.modoEntrada}
               abrirArmazem={abrirModalArmazem}
               abrirCriar={abrirCriarMaterial}
+              alternarFavorito={acoesMateriais.alternarFavorito}
             />
 
             {/* Pergunta e Mini Card de Perdas Reais (Design Premium Rose) */}
@@ -579,14 +631,19 @@ export function PaginaCalculadora() {
               alternar={alternarInsumo}
               atualizarQtd={atualizarQtdInsumo}
               remover={removerInsumo}
+              alternarPorLote={alternarPorLoteInsumo}
               insumosFixos={hook.insumosFixos} setInsumosFixos={hook.setInsumosFixos}
+              cobrarInsumosFixos={hook.cobrarInsumosFixos} setCobrarInsumosFixos={hook.setCobrarInsumosFixos}
               abrirGerenciar={abrirModalInsumos}
               abrirNovo={abrirModalNovoInsumo}
+              modoEntrada={hook.modoEntrada}
+              alternarFavorito={acoesInsumos.alternarFavorito}
             />
 
             <CardProducao
               quantidade={hook.quantidade} setQuantidade={hook.setQuantidade}
               tempo={hook.tempo} setTempo={hook.setTempo}
+              modoEntrada={hook.modoEntrada}
               potencia={hook.potencia} setPotencia={hook.setPotencia}
               precoKwh={hook.precoKwh} setPrecoKwh={(v) => { hook.setPrecoKwh(v); config.definirCustoEnergia(formatarMoedaFinancas(v, 2)); }}
               custoEnergia={hook.calculo.custoEnergia / 100}
@@ -604,7 +661,8 @@ export function PaginaCalculadora() {
               cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
               cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
               anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
-              tempo={hook.tempo} // Mantendo pra depreciação
+              tempo={hook.tempo} 
+              quantidade={hook.quantidade}
               tempoSetup={hook.tempoSetup} setTempoSetup={hook.setTempoSetup}
             />
 
@@ -614,6 +672,8 @@ export function PaginaCalculadora() {
               taxaFixa={hook.taxaFixa} setTaxaFixa={hook.setTaxaFixa}
               frete={hook.frete} setFrete={hook.setFrete}
               abrirPerfis={abrirModalCanais}
+              cobrarLogistica={hook.cobrarLogistica}
+              setCobrarLogistica={hook.setCobrarLogistica}
             />
 
             <CardFiscal
@@ -649,6 +709,8 @@ export function PaginaCalculadora() {
               posProcesso={hook.itensPosProcesso}
               quantidade={hook.quantidade}
               insumosFixos={hook.insumosFixos}
+              tempo={hook.tempo}
+              modoEntrada={hook.modoEntrada}
             />
           </div>
 
@@ -711,11 +773,18 @@ export function PaginaCalculadora() {
                 const precoPorUnidade = (m.precoCentavos / 100) / totalKgOuL;
 
                 return (
-                  <button
+                  <div
                     key={m.id}
                     onClick={() => alternarMaterial(m.id)}
-                    className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-white dark:bg-zinc-900/50 ${selecionado ? "shadow-md" : "hover:shadow-lg"
-                      }`}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        alternarMaterial(m.id);
+                      }
+                    }}
+                    className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-white dark:bg-zinc-900/50 cursor-pointer ${selecionado ? "shadow-md" : "hover:shadow-lg"}`}
                     style={{
                       borderColor: selecionado ? m.cor : `${m.cor}22`,
                       backgroundColor: selecionado ? `${m.cor}11` : undefined
@@ -746,11 +815,26 @@ export function PaginaCalculadora() {
                             {m.fabricante} • {m.tipoMaterial}
                           </p>
                         </div>
-                        {selecionado && (
-                          <div className="shrink-0 w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center text-white shadow-lg z-10">
-                            <Check size={12} />
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              acoesMateriais.alternarFavorito(m.id);
+                            }}
+                            className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                              m.favorito 
+                                ? "text-amber-500 bg-amber-500/10" 
+                                : "text-zinc-400 hover:text-amber-500/50 hover:bg-white/5"
+                            }`}
+                          >
+                            <Star size={10} fill={m.favorito ? "currentColor" : "none"} />
+                          </button>
+                          {selecionado && (
+                            <div className="w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center text-white shadow-lg z-10">
+                              <Check size={12} />
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-end justify-between gap-2 border-t border-gray-100 dark:border-white/5 pt-2 mt-1">
@@ -767,7 +851,7 @@ export function PaginaCalculadora() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -1504,15 +1588,24 @@ export function PaginaCalculadora() {
               {insumosFiltrados.map(i => {
                 const selecionado = hook.insumosSelecionados.some(s => s.id === i.id);
                 return (
-                  <button
+                  <div
                     key={i.id}
                     onClick={() => {
                       const existe = hook.insumosSelecionados.find(s => s.id === i.id);
                       if (existe) hook.setInsumosSelecionados(prev => prev.filter(p => p.id !== i.id));
                       else hook.setInsumosSelecionados(prev => [...prev, { id: i.id, nome: i.nome, quantidade: 1, custoCentavos: i.custoMedioUnidade }]);
                     }}
-                    className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-white dark:bg-zinc-900/50 ${selecionado ? "border-indigo-500 shadow-md bg-indigo-500/5" : "border-gray-50 dark:border-white/5 hover:border-indigo-500/30"
-                      }`}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const existe = hook.insumosSelecionados.find(s => s.id === i.id);
+                        if (existe) hook.setInsumosSelecionados(prev => prev.filter(p => p.id !== i.id));
+                        else hook.setInsumosSelecionados(prev => [...prev, { id: i.id, nome: i.nome, quantidade: 1, custoCentavos: i.custoMedioUnidade }]);
+                      }
+                    }}
+                    className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-white dark:bg-zinc-900/50 cursor-pointer ${selecionado ? "border-indigo-500 shadow-md bg-indigo-500/5" : "border-gray-50 dark:border-white/5 hover:border-indigo-500/30"}`}
                   >
                     <div className="shrink-0 w-14 flex items-center justify-center">
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${selecionado ? "bg-indigo-500 text-white" : "bg-gray-100 dark:bg-white/5 text-zinc-400 group-hover:text-indigo-500"}`}>
@@ -1530,11 +1623,26 @@ export function PaginaCalculadora() {
                             {i.categoria || 'Geral'}
                           </p>
                         </div>
-                        {selecionado && (
-                          <div className="shrink-0 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-lg">
-                            <Check size={12} />
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              acoesInsumos.alternarFavorito(i.id);
+                            }}
+                            className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                              i.favorito 
+                                ? "text-amber-500 bg-amber-500/10" 
+                                : "text-zinc-400 hover:text-amber-500/50 hover:bg-white/5"
+                            }`}
+                          >
+                            <Star size={10} fill={i.favorito ? "currentColor" : "none"} />
+                          </button>
+                          {selecionado && (
+                            <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-lg">
+                              <Check size={12} />
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-end justify-between gap-2 border-t border-gray-100 dark:border-white/5 pt-2 mt-auto">
@@ -1551,7 +1659,7 @@ export function PaginaCalculadora() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

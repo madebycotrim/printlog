@@ -23,7 +23,6 @@ import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estad
 import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
-import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/constantesNegocio";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
@@ -63,7 +62,7 @@ export function PaginaInicial() {
           const [mats, ins, imps] = await Promise.all([
             apiMateriais.listar(usuario.uid),
             apiInsumos.listar(usuario.uid),
-            apiImpressoras.listar(usuario.uid)
+            apiImpressoras.buscarTodas(usuario.uid)
           ]);
           acoesMateriais.definirMateriais(mats);
           acoesInsumos.definirInsumos(ins);
@@ -308,7 +307,6 @@ export function PaginaInicial() {
         aoFechar={() => definirModalPatrimonioAberto(false)}
         materiais={materiais}
         insumos={insumos}
-        valorTotal={metricasInventario.valorTotalEstoqueCentavos}
       />
     </div>
   );

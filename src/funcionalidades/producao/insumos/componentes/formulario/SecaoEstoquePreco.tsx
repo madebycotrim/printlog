@@ -4,16 +4,16 @@ import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
 import { Combobox } from "@/compartilhado/componentes/Combobox";
 import { UNIDADES } from "../../constantes";
 import { UnidadeInsumo } from "../../tipos";
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesSecaoEstoque {
   register: any;
   errors: any;
   setValue: any;
   unidadeMedidaAtiva: UnidadeInsumo;
-  itemFracionavelAtivo: boolean;
 }
 
-export function SecaoEstoquePreco({ register, errors, setValue, unidadeMedidaAtiva, itemFracionavelAtivo }: PropriedadesSecaoEstoque) {
+export function SecaoEstoquePreco({ register, errors, setValue, unidadeMedidaAtiva }: PropriedadesSecaoEstoque) {
   return (
     <div className="space-y-6">
       <h4 className="text-[11px] font-black uppercase tracking-[0.2em] border-b border-gray-100 dark:border-white/5 pb-2 text-gray-400 dark:text-zinc-500">
@@ -27,18 +27,21 @@ export function SecaoEstoquePreco({ register, errors, setValue, unidadeMedidaAti
           erro={errors.custoMedioUnidade?.message}
           {...register("custoMedioUnidade", { 
             required: "Obrigatório", 
-            setValueAs: (v: string) => Math.round(parseFloat(String(v).replace(",", ".")) * 100) || 0 
+            setValueAs: (v: any) => Math.round(extrairValorNumerico(v) * 100) || 0 
           })}
         />
 
         <CampoTexto
           rotulo="Estoque Atual"
           icone={Package}
-          type="number"
-          step={itemFracionavelAtivo ? "0.01" : "1"}
+          type="text" // Mudado para text para aceitar vírgula e ser processado pelo extrairValorNumerico
+          inputMode="decimal"
           placeholder="0"
           erro={errors.quantidadeAtual?.message}
-          {...register("quantidadeAtual", { required: "Obrigatório", setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0 })}
+          {...register("quantidadeAtual", { 
+            required: "Obrigatório", 
+            setValueAs: (v: any) => extrairValorNumerico(v) || 0 
+          })}
         />
 
         <Combobox
@@ -56,10 +59,14 @@ export function SecaoEstoquePreco({ register, errors, setValue, unidadeMedidaAti
         <CampoTexto
           rotulo="Estoque Mínimo (Alerta)"
           icone={AlertCircle}
-          type="number"
+          type="text"
+          inputMode="decimal"
           placeholder="5"
           erro={errors.quantidadeMinima?.message}
-          {...register("quantidadeMinima", { required: "Obrigatório", setValueAs: (v: string) => parseFloat(String(v).replace(",", ".")) || 0 })}
+          {...register("quantidadeMinima", { 
+            required: "Obrigatório", 
+            setValueAs: (v: any) => extrairValorNumerico(v) || 0 
+          })}
         />
 
         <CampoTexto

@@ -9,9 +9,10 @@ interface ListaMateriaisProps {
   aoEditar: (m: Material) => void;
   aoHistorico: (m: Material, aba?: "extrato" | "novo") => void;
   aoExcluir: (m: Material) => void;
+  aoAlternarFavorito: (id: string) => void;
 }
 
-export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistorico, aoExcluir }: ListaMateriaisProps) {
+export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistorico, aoExcluir, aoAlternarFavorito }: ListaMateriaisProps) {
   if (materiais.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -55,6 +56,7 @@ export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistor
                   aoEditar={aoEditar}
                   aoHistorico={aoHistorico}
                   aoExcluir={aoExcluir}
+                  aoAlternarFavorito={aoAlternarFavorito}
                 />
               ))}
             </div>

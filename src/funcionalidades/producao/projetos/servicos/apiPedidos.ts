@@ -19,30 +19,40 @@ export const apiPedidos = {
 
     /**
      * Mapeia um objeto de pedido do frontend (camelCase) para o formato do banco (snake_case).
-     * Garante que apenas colunas existentes no banco sejam enviadas.
+     * Converte strings vazias em null para IDs e garante tipos corretos para o SQLite.
      */
     mapearParaBanco: (dados: any) => {
         const mapeado: any = {};
         
-        // Mapeamento explícito de colunas conhecidas no D1
+        // IDs e Chaves (Tratando string vazia como null)
         if (dados.id) mapeado.id = dados.id;
         if (dados.idUsuario) mapeado.id_usuario = dados.idUsuario;
-        if (dados.idCliente) mapeado.id_cliente = dados.idCliente;
+        if (dados.idCliente) mapeado.id_cliente = dados.idCliente === "" ? null : dados.idCliente;
+        if (dados.idImpressora !== undefined) mapeado.id_impressora = (dados.idImpressora === "" || dados.idImpressora === null) ? null : dados.idImpressora;
+        
+        // Campos de Texto e Status
         if (dados.descricao) mapeado.descricao = dados.descricao;
-        if (dados.valorCentavos !== undefined) mapeado.valor_centavos = dados.valorCentavos;
-        if (dados.status) mapeado.status = dados.status; 
         if (dados.observacoes !== undefined) mapeado.observacoes = dados.observacoes;
         if (dados.material !== undefined) mapeado.material = dados.material;
-        if (dados.pesoGramas !== undefined) mapeado.peso_gramas = dados.pesoGramas;
-        if (dados.tempoMinutos !== undefined) mapeado.tempo_minutos = dados.tempoMinutos;
-        if (dados.idImpressora !== undefined) mapeado.id_impressora = dados.idImpressora;
+        if (dados.status) mapeado.status = dados.status; 
         
-        // Tratamento de Datas
-        if (dados.dataCriacao) mapeado.data_criacao = dados.dataCriacao instanceof Date ? dados.dataCriacao.toISOString() : dados.dataCriacao;
-        if (dados.dataConclusao) mapeado.data_conclusao = dados.dataConclusao instanceof Date ? dados.dataConclusao.toISOString() : dados.dataConclusao;
-        if (dados.prazoEntrega) mapeado.prazo_entrega = dados.prazoEntrega instanceof Date ? dados.prazoEntrega.toISOString() : dados.prazoEntrega;
+        // Campos Numéricos (Garantindo que sejam números ou null)
+        if (dados.valorCentavos !== undefined) mapeado.valor_centavos = Number(dados.valorCentavos) || 0;
+        if (dados.pesoGramas !== undefined) mapeado.peso_gramas = dados.pesoGramas === "" ? null : Number(dados.pesoGramas);
+        if (dados.tempoMinutos !== undefined) mapeado.tempo_minutos = dados.tempoMinutos === "" ? null : Number(dados.tempoMinutos);
+        
+        // Datas (ISO String ou null)
+        const formatarData = (d: any) => {
+            if (!d) return null;
+            const data = d instanceof Date ? d : new Date(d);
+            return isNaN(data.getTime()) ? null : data.toISOString();
+        };
 
-        // Insumos Secundários
+        if (dados.dataCriacao) mapeado.data_criacao = formatarData(dados.dataCriacao);
+        if (dados.dataConclusao !== undefined) mapeado.data_conclusao = formatarData(dados.dataConclusao);
+        if (dados.prazoEntrega !== undefined) mapeado.prazo_entrega = formatarData(dados.prazoEntrega);
+
+        // JSON para strings
         if (dados.insumosSecundarios) {
             mapeado.insumos_secundarios = JSON.stringify(dados.insumosSecundarios);
         }

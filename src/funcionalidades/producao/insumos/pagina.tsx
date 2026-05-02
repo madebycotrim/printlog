@@ -84,7 +84,7 @@ export function PaginaInsumos() {
               materiais={materiais}
               insumos={estado.insumos}
               totalItensUnicos={estado.kpis.totalItens}
-              valorInvestido={metricasConsolidadas.valorTotalEstoqueCentavos}
+              valorInvestido={metricasConsolidadas.valorTotalInsumosCentavos}
               alertasBaixoEstoque={metricasConsolidadas.itensEmAlerta}
             />
 
@@ -140,6 +140,7 @@ export function PaginaInsumos() {
                             aoExcluir={acoes.abrirArquivamento}
                             aoRepor={acoes.abrirReposicao}
                             aoVerHistorico={acoes.abrirHistorico}
+                            aoAlternarFavorito={acoes.alternarFavorito}
                           />
                         ))}
                       </div>
