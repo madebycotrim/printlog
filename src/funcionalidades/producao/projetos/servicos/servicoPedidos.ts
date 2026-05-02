@@ -69,20 +69,12 @@ class ServicoPedidos {
   }
 
   async atualizarPedido(dados: AtualizarPedidoInput, usuarioId: string): Promise<Pedido> {
-    // Buscar o original para checar mudança de status para Concluído
-    const pedidos = await apiPedidos.buscarTodos(usuarioId);
-    const original = pedidos.find(p => p.id === dados.id) as any;
+    const novoStatus = dados.status;
+    let dataConclusao = (dados as any).dataConclusao;
 
-    if (!original) throw new Error("Pedido não encontrado");
-
-    let dataConclusao = original.data_conclusao;
-    const novoStatus = dados.status || original.status;
-
-    // Gerenciamento de Data de Conclusão
-    if (novoStatus === StatusPedido.CONCLUIDO && original.status !== StatusPedido.CONCLUIDO) {
+    // Gerenciamento simplificado de Data de Conclusão v9.0
+    if (novoStatus === StatusPedido.CONCLUIDO && !dataConclusao) {
       dataConclusao = new Date().toISOString();
-    } else if (novoStatus !== StatusPedido.CONCLUIDO) {
-      dataConclusao = undefined;
     }
 
     const payload = {
@@ -92,10 +84,9 @@ class ServicoPedidos {
 
     await apiPedidos.atualizar(payload, usuarioId);
     
+    // Retornamos um objeto parcial que será mesclado no estado pelo hook
     return {
-      ...original,
       ...dados,
-      status: novoStatus,
       dataConclusao: dataConclusao ? new Date(dataConclusao) : undefined
     } as any;
   }
