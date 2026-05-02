@@ -33,19 +33,24 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const dados = await request.json() as any;
             const novoId = dados.id || crypto.randomUUID();
             
+            // Agrupar detalhes técnicos na descrição já que o banco não tem as colunas específicas
+            const descricaoCompleta = [
+                dados.descricao,
+                dados.material ? `Material: ${dados.material}` : null,
+                dados.peso_gramas ? `Peso: ${dados.peso_gramas}g` : null,
+                dados.tempo_minutos ? `Tempo: ${dados.tempo_minutos}min` : null,
+                dados.observacoes ? `Obs: ${dados.observacoes}` : null
+            ].filter(Boolean).join(' | ');
+
             await env.DB.prepare(`
                 INSERT INTO pedidos_impressao (
-                    id, id_usuario, id_cliente, id_impressora, descricao, observacoes, 
-                    material, status, valor_centavos, peso_gramas, tempo_minutos, 
-                    prazo_entrega, insumos_secundarios, data_criacao, arquivado
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                    id, id_usuario, id_cliente, id_impressora, descricao, 
+                    status, valor_centavos, data_criacao, arquivado
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
             `).bind(
                 novoId, usuarioId, dados.id_cliente, dados.id_impressora, 
-                dados.descricao, dados.observacoes, dados.material,
-                dados.status || 'pendente', dados.valor_centavos,
-                dados.peso_gramas, dados.tempo_minutos, dados.prazo_entrega,
-                dados.insumos_secundarios,
-                dados.data_criacao || new Date().toISOString()
+                descricaoCompleta, dados.status || 'pendente', 
+                dados.valor_centavos, dados.data_criacao || new Date().toISOString()
             ).run();
 
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { 
@@ -60,15 +65,11 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             await env.DB.prepare(`
                 UPDATE pedidos_impressao SET 
                     status = ?, descricao = ?, valor_centavos = ?,
-                    data_conclusao = ?, id_cliente = ?, id_impressora = ?,
-                    observacoes = ?, material = ?, peso_gramas = ?,
-                    tempo_minutos = ?, prazo_entrega = ?, insumos_secundarios = ?
+                    data_conclusao = ?, id_cliente = ?, id_impressora = ?
                 WHERE id = ? AND id_usuario = ?
             `).bind(
                 dados.status, dados.descricao, dados.valor_centavos,
                 dados.data_conclusao, dados.id_cliente, dados.id_impressora,
-                dados.observacoes, dados.material, dados.peso_gramas,
-                dados.tempo_minutos, dados.prazo_entrega, dados.insumos_secundarios,
                 dados.id, usuarioId
             ).run();
             return new Response(JSON.stringify({ sucesso: true }), {
