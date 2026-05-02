@@ -4,7 +4,7 @@ import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import {
   Settings, Check, X, Plus,
   ChevronDown, Box, Package, History, Crown, Trash, Pencil, TrendingUp, AlertTriangle, AlertCircle, Download, RotateCcw,
-  FolderKanban, Star
+  FolderKanban, Star, Wallet
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -88,6 +88,7 @@ export function PaginaCalculadora() {
   const [modalPdfAberto, setModalPdfAberto] = useState(false);
 
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
+  const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
   const [buscaMaterial, setBuscaMaterial] = useState("");
   const [buscaMaterialArmazem, setBuscaMaterialArmazem] = useState("");
@@ -358,12 +359,12 @@ export function PaginaCalculadora() {
                 </div>
               </div>
 
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
-                
+              <div className="relative z-20 grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
+
                 {/* Lado Esquerdo: Dados do Cliente */}
                 <div className="md:col-span-4 flex flex-col gap-2 relative">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Cliente do Projeto</label>
-                  
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Cliente do Projeto</label>
+
                   <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-sky-500/40 rounded-xl shadow-inner h-12 transition-all">
                     <input
                       type="text"
@@ -374,7 +375,7 @@ export function PaginaCalculadora() {
                         setAbertoSeletorCliente(true);
                       }}
                       onFocus={() => setAbertoSeletorCliente(true)}
-                      className="w-full h-full bg-transparent px-4 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600 text-center"
+                      className="w-full h-full bg-transparent px-4 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600"
                     />
                     <button
                       type="button"
@@ -388,7 +389,7 @@ export function PaginaCalculadora() {
                   {abertoSeletorCliente && (
                     <>
                       <div className="fixed inset-0 z-[40]" onClick={() => setAbertoSeletorCliente(false)} />
-                      <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 z-[50] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
+                      <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
                         {(() => {
                           const filtrados = (estadoClientes.clientes || []).filter(c =>
                             c.nome.toLowerCase().includes(buscaClienteSeletor.toLowerCase())
@@ -406,11 +407,10 @@ export function PaginaCalculadora() {
                                     setBuscaClienteSeletor(cli.nome);
                                     setAbertoSeletorCliente(false);
                                   }}
-                                  className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${
-                                    clienteProjetoId === cli.id
-                                      ? 'bg-sky-500/10 text-sky-400'
-                                      : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-                                  }`}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${clienteProjetoId === cli.id
+                                    ? 'bg-sky-500/10 text-sky-400'
+                                    : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                                    }`}
                                 >
                                   <span>{cli.nome}</span>
                                   {clienteProjetoId === cli.id && <Check size={14} />}
@@ -459,24 +459,24 @@ export function PaginaCalculadora() {
                 {/* Lado Direito: Nome e Descrição */}
                 <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Nome do Projeto</label>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Nome do Projeto</label>
                     <input
                       type="text"
                       placeholder="Ex: Action Figure Batman"
                       value={nomeProjeto}
                       onChange={(e) => setNomeProjeto(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700 text-center"
+                      className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
                     />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 text-center">Descrição / Notas técnicas</label>
-                    <textarea
-                      rows={1}
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Nome do Projeto</label>
+                    <input
+                      type="text"
                       placeholder="Ex: Altura de camada 0.12mm"
                       value={descricaoProjeto}
                       onChange={(e) => setDescricaoProjeto(e.target.value)}
-                      className="w-full p-3 h-12 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700 resize-none text-center"
+                      className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
                     />
                   </div>
                 </div>
@@ -484,33 +484,31 @@ export function PaginaCalculadora() {
 
               {/* Seletor de Modo de Entrada Global - DESIGN MINIMALISTA PROFISSIONAL */}
               <div className="relative z-10 pt-6 border-t border-white/5 flex flex-col gap-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex flex-col">
+                <div className="flex flex-col items-center sm:flex-row sm:justify-between gap-4">
+                  <div className="flex flex-col items-center sm:items-start">
                     <span className="text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-2">
                       <BrainCircuit size={14} className="text-sky-500" /> Estratégia de Preenchimento
                     </span>
                   </div>
-                  
+
                   <div className="flex bg-zinc-900 p-1 rounded-xl border border-white/5 shadow-inner">
                     <button
                       type="button"
                       onClick={() => hook.setModoEntrada('unitario')}
-                      className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                        hook.modoEntrada === 'unitario'
-                          ? 'bg-zinc-800 text-sky-400 shadow-md ring-1 ring-white/10'
-                          : 'text-zinc-500 hover:text-zinc-300'
-                      }`}
+                      className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${hook.modoEntrada === 'unitario'
+                        ? 'bg-zinc-800 text-sky-400 shadow-md ring-1 ring-white/10'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
                     >
                       Por Peça
                     </button>
                     <button
                       type="button"
                       onClick={() => hook.setModoEntrada('lote')}
-                      className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                        hook.modoEntrada === 'lote'
-                          ? 'bg-zinc-800 text-amber-400 shadow-md ring-1 ring-white/10'
-                          : 'text-zinc-500 hover:text-zinc-300'
-                      }`}
+                      className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${hook.modoEntrada === 'lote'
+                        ? 'bg-zinc-800 text-amber-400 shadow-md ring-1 ring-white/10'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
                     >
                       Mesa Completa
                     </button>
@@ -518,11 +516,11 @@ export function PaginaCalculadora() {
                 </div>
 
                 {/* Legenda Discreta */}
-                <div className="flex items-center gap-2 px-1">
+                <div className="flex items-center justify-start gap-2 px-1">
                   <div className={`w-1 h-1 rounded-full ${hook.modoEntrada === 'unitario' ? 'bg-sky-500' : 'bg-amber-500'}`} />
                   <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
-                    {hook.modoEntrada === 'unitario' 
-                      ? `Modo Unitário: O peso e tempo serão multiplicados por ${hook.quantidade}x.` 
+                    {hook.modoEntrada === 'unitario'
+                      ? `Modo Unitário: O peso e tempo serão multiplicados por ${hook.quantidade}x.`
                       : `Modo Mesa: Os valores digitados já são o total de ${hook.quantidade} peças.`
                     }
                   </span>
@@ -562,8 +560,8 @@ export function PaginaCalculadora() {
                   type="button"
                   onClick={() => setMostrarPerdas(!mostrarPerdas)}
                   className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrarPerdas
-                      ? "bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/30 hover:bg-rose-600"
-                      : "bg-white dark:bg-white/5 text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 border-zinc-200 dark:border-white/10"
+                    ? "bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/30 hover:bg-rose-600"
+                    : "bg-white dark:bg-white/5 text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 border-zinc-200 dark:border-white/10"
                     }`}
                 >
                   {mostrarPerdas ? "Ocultar" : "Reportar"}
@@ -632,13 +630,84 @@ export function PaginaCalculadora() {
               atualizarQtd={atualizarQtdInsumo}
               remover={removerInsumo}
               alternarPorLote={alternarPorLoteInsumo}
-              insumosFixos={hook.insumosFixos} setInsumosFixos={hook.setInsumosFixos}
-              cobrarInsumosFixos={hook.cobrarInsumosFixos} setCobrarInsumosFixos={hook.setCobrarInsumosFixos}
               abrirGerenciar={abrirModalInsumos}
               abrirNovo={abrirModalNovoInsumo}
               modoEntrada={hook.modoEntrada}
               alternarFavorito={acoesInsumos.alternarFavorito}
             />
+
+            {/* Mini Card de Custos Fixos (Design Premium Indigo) */}
+            <div className="flex flex-col my-6">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 via-indigo-500/5 to-transparent border border-indigo-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(99,102,241,0.15)] transition-all z-10 relative">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-inner">
+                    <Wallet size={16} className={`${hook.insumosFixos > 0 && hook.cobrarInsumosFixos ? "animate-pulse" : ""}`} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Deseja adicionar custos fixos extras?</span>
+                    <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Brindes, mimos, marketing ou custos de gestão e embalagem</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const novoEstado = !mostrarCustosFixos;
+                    setMostrarCustosFixos(novoEstado);
+                    // Se ele clicou em adicionar, ele quer cobrar. Se ocultar, para de cobrar.
+                    hook.setCobrarInsumosFixos(novoEstado);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrarCustosFixos
+                    ? "bg-indigo-500 text-white border-indigo-600 shadow-sm shadow-indigo-500/30 hover:bg-indigo-600"
+                    : "bg-white dark:bg-white/5 text-zinc-400 hover:text-indigo-400 hover:border-indigo-500/40 border-zinc-200 dark:border-white/10"
+                    }`}
+                >
+                  {mostrarCustosFixos ? "Ocultar" : "Adicionar"}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {mostrarCustosFixos && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,#fafafa_12px)] dark:bg-[linear-gradient(to_bottom,transparent_12px,#18181b_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
+                  >
+                    {/* Quininhas para preencher o gap dos cantos arredondados */}
+                    <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
+                    <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
+
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
+                      <div className="flex items-center gap-3">
+                        <Box size={16} className="text-indigo-400" />
+                        <h3 className="text-[10px] font-black uppercase tracking-wider text-indigo-500">Gestão de Custos Adicionais</h3>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider ml-1">Valor do Custo Fixo (R$)</label>
+                        <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-indigo-500/40 shadow-inner">
+                          <span className="absolute left-4 text-[10px] font-black text-zinc-500">R$</span>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0,00"
+                            value={hook.insumosFixos || ""}
+                            onChange={(e) => hook.setInsumosFixos(Number(e.target.value))}
+                            className="w-full h-11 bg-transparent pl-10 pr-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                          />
+                        </div>
+                        <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-1 ml-1">
+                          Este valor será somado diretamente ao custo final do projeto.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <CardProducao
               quantidade={hook.quantidade} setQuantidade={hook.setQuantidade}
@@ -661,7 +730,7 @@ export function PaginaCalculadora() {
               cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
               cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
               anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
-              tempo={hook.tempo} 
+              tempo={hook.tempo}
               quantidade={hook.quantidade}
               tempoSetup={hook.tempoSetup} setTempoSetup={hook.setTempoSetup}
             />
@@ -736,8 +805,8 @@ export function PaginaCalculadora() {
                     key={f.id}
                     onClick={() => setFiltroTipoMaterial(f.id as any)}
                     className={`px-6 h-full min-w-[100px] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filtroTipoMaterial === f.id
-                        ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
-                        : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                      : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                       }`}
                   >
                     {f.label}
@@ -821,11 +890,10 @@ export function PaginaCalculadora() {
                               e.stopPropagation();
                               acoesMateriais.alternarFavorito(m.id);
                             }}
-                            className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
-                              m.favorito 
-                                ? "text-amber-500 bg-amber-500/10" 
-                                : "text-zinc-400 hover:text-amber-500/50 hover:bg-white/5"
-                            }`}
+                            className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${m.favorito
+                              ? "text-amber-500 bg-amber-500/10"
+                              : "text-zinc-400 hover:text-amber-500/50 hover:bg-white/5"
+                              }`}
                           >
                             <Star size={10} fill={m.favorito ? "currentColor" : "none"} />
                           </button>
@@ -1306,16 +1374,16 @@ export function PaginaCalculadora() {
                 <div className="space-y-3">
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-violet-400">Guia: Venda (ICMS)</h5>
                   <p className="text-[10px] text-zinc-400 leading-relaxed font-medium">
-                    Use para produtos de <span className="text-zinc-200">pronta entrega</span> ou fabricação em série. 
-                    Geralmente tributado pelo <span className="text-zinc-200">Anexo I do Simples Nacional (4%)</span>. 
+                    Use para produtos de <span className="text-zinc-200">pronta entrega</span> ou fabricação em série.
+                    Geralmente tributado pelo <span className="text-zinc-200">Anexo I do Simples Nacional (4%)</span>.
                     CNAE comum: 4789-0/99.
                   </p>
                 </div>
                 <div className="space-y-3">
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-violet-400">Guia: Serviço (ISS)</h5>
                   <p className="text-[10px] text-zinc-400 leading-relaxed font-medium">
-                    Use para <span className="text-zinc-200">encomendas personalizadas</span> onde o cliente fornece o arquivo. 
-                    Geralmente tributado pelo <span className="text-zinc-200">Anexo III do Simples Nacional (6%)</span>. 
+                    Use para <span className="text-zinc-200">encomendas personalizadas</span> onde o cliente fornece o arquivo.
+                    Geralmente tributado pelo <span className="text-zinc-200">Anexo III do Simples Nacional (6%)</span>.
                     CNAE comum: 1813-0/99.
                   </p>
                 </div>
@@ -1629,11 +1697,10 @@ export function PaginaCalculadora() {
                               e.stopPropagation();
                               acoesInsumos.alternarFavorito(i.id);
                             }}
-                            className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
-                              i.favorito 
-                                ? "text-amber-500 bg-amber-500/10" 
-                                : "text-zinc-400 hover:text-amber-500/50 hover:bg-white/5"
-                            }`}
+                            className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${i.favorito
+                              ? "text-amber-500 bg-amber-500/10"
+                              : "text-zinc-400 hover:text-amber-500/50 hover:bg-white/5"
+                              }`}
                           >
                             <Star size={10} fill={i.favorito ? "currentColor" : "none"} />
                           </button>

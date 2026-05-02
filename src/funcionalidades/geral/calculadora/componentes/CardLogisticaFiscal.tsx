@@ -81,7 +81,7 @@ export function CardLogisticaFiscal({
               className={`px-4 h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex flex-col items-center justify-center text-center leading-tight shrink-0
                 ${perfilAtivo === p.nome 
                   ? "bg-indigo-500/10 border-indigo-500 text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
-                  : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30 text-zinc-400"}
+                  : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30 text-zinc-400 line-through"}
               `}
             >
               <span>{p.nome}</span>

@@ -5,6 +5,7 @@ import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { servicoIA, SugestaoPrecoIA } from "../servicos/servicoIA";
 import { useState, memo } from "react";
+import { ContadorAnimado } from "@/componentes/ui";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -90,7 +91,7 @@ export const PainelResultados = memo(function PainelResultados({
   const temPermissaoIA = usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR';
 
   return (
-    <div className="pt-4 pb-6 px-6 rounded-2xl bg-zinc-900 border border-white/5 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto animate-in fade-in duration-1000">
+    <div className="pt-4 pb-6 px-6 rounded-2xl bg-zinc-900/70 border border-white/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl">
       <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-sky-500/20 to-transparent blur-3xl" />
       <div className="relative z-10 w-full">
         <div className="flex items-center justify-center gap-2 mb-1">
@@ -113,7 +114,9 @@ export const PainelResultados = memo(function PainelResultados({
         </div>
 
         <div className="mt-2 mb-4">
-          <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-4">{centavosParaReais(calculo.precoSugerido)}</h2>
+          <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-4 text-center">
+            <ContadorAnimado valor={calculo.precoSugerido / 100} />
+          </h2>
           
           {/* Resultados da IA compactos - Só aparecem se houver sugestão */}
           <AnimatePresence>
@@ -154,7 +157,9 @@ export const PainelResultados = memo(function PainelResultados({
                       ].map(f => (
                           <div key={f.label} className="flex flex-col">
                               <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600 mb-0.5">{f.label}</span>
-                              <span className="text-[10px] font-black text-zinc-300">{centavosParaReais(Math.round(f.valor * 100))}</span>
+                              <span className="text-[10px] font-black text-zinc-300">
+                                <ContadorAnimado valor={f.valor} />
+                              </span>
                           </div>
                       ))}
                   </div>
@@ -177,7 +182,7 @@ export const PainelResultados = memo(function PainelResultados({
                   calculo.margemReal >= 50 ? 'bg-emerald-400' : calculo.margemReal >= 20 ? 'bg-sky-400' : 'bg-rose-400'
                 }`} />
                 <span className="text-[9px] font-black uppercase tracking-wider leading-none">
-                  Margem Real: {calculo.margemReal.toFixed(1)}%
+                  Margem Real: <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
                 </span>
               </div>
             </div>
@@ -206,27 +211,28 @@ export const PainelResultados = memo(function PainelResultados({
           return (
             <div className={`space-y-4 w-full text-left relative animate-in fade-in slide-in-from-right-4 duration-500 min-h-[160px] flex flex-col ${estaVazio ? 'justify-center' : 'justify-start'}`}>
               {estaVazio ? (
-                <div className="flex flex-col items-center justify-center text-zinc-600 dark:text-zinc-500 w-full">
-                  <Sparkles size={24} className="opacity-40 text-sky-400 animate-pulse" />
-                  <span className="text-[10px] font-medium text-zinc-500/60 dark:text-zinc-500/40 tracking-wider text-center">Aguardando dados para o orçamento</span>
-                  <span className="text-[9px] font-medium text-zinc-500/40 text-center tracking-tight">Insira pesos e tempos nos cards ao lado</span>
+                <div className="flex flex-col items-center justify-center text-zinc-600 dark:text-zinc-500 w-full py-8">
+                  <Sparkles size={24} className="opacity-40 text-sky-400 animate-pulse mb-2" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500/60 dark:text-zinc-500/40 text-center">Aguardando dados</span>
+                  <span className="text-[9px] font-bold text-zinc-500/40 text-center tracking-tight uppercase">Insira pesos e tempos nos cards ao lado</span>
                 </div>
               ) : (
-                <AnimatePresence>
+                <div className="max-h-[380px] overflow-y-auto pr-1 scrollbar-fino space-y-4">
+                  <AnimatePresence>
                   {itens.map((item) => {
                     // Calcular subitens
                     let subitens: { nome: React.ReactNode; valor: number }[] = [];
                     
                     if (item.label === 'Materiais' && materiais.length > 0) {
                       subitens = materiais.map(m => {
-                        const unid = m.tipo === 'FDM' ? 'g' : 'ml';
+                        const unid = <span className="lowercase">{m.tipo === 'FDM' ? 'g' : 'ml'}</span>;
                         const pesoFinal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * quantidade;
-                        const textoPeso = modoEntrada === 'unitario' 
-                          ? `${m.quantidade}${unid} x ${quantidade} = ${pesoFinal}${unid}` 
-                          : `${pesoFinal}${unid}`;
                         
                         return {
-                          nome: `${m.nome} (${textoPeso})`,
+                          nome: <>{m.nome} ({modoEntrada === 'unitario' 
+                            ? <>{m.quantidade}{unid} x {quantidade} = {pesoFinal}{unid}</>
+                            : <>{pesoFinal}{unid}</>
+                          })</>,
                           valor: Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : quantidade))
                         };
                       });
@@ -236,7 +242,7 @@ export const PainelResultados = memo(function PainelResultados({
                         valor: (modoEntrada === 'lote' || i.porLote) ? i.quantidade * i.custoCentavos : i.quantidade * i.custoCentavos * quantidade
                       }));
                       const subPos = posProcesso.map(p => ({
-                        nome: modoEntrada === 'unitario' ? `${p.nome} (x${quantidade})` : p.nome,
+                        nome: modoEntrada === 'unitario' ? <>{p.nome} (<span className="lowercase">x</span>{quantidade})</> : p.nome,
                         valor: Math.round(p.valor * 100) * (modoEntrada === 'lote' ? 1 : quantidade)
                       }));
                       subitens = [...subInsumos, ...subPos];
@@ -250,7 +256,10 @@ export const PainelResultados = memo(function PainelResultados({
                     } else if (item.label === 'Depreciação') {
                       const horasTotais = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * quantidade;
                       subitens = [{
-                        nome: `Uso da Máquina (${horasTotais < 1 ? Math.round(horasTotais * 60) + 'min' : horasTotais.toFixed(1) + 'h'})`,
+                        nome: <>Uso da Máquina ({horasTotais < 1 
+                          ? <>{Math.round(horasTotais * 60)}<span className="lowercase">min</span></> 
+                          : <>{horasTotais.toFixed(1)}<span className="lowercase">h</span></>
+                        })</>,
                         valor: calculo.custoDepreciacao
                       }];
                     }
@@ -263,23 +272,27 @@ export const PainelResultados = memo(function PainelResultados({
                         exit={{ opacity: 0, y: -5 }}
                         className="flex flex-col group border-b border-white/[0.02] pb-2 last:border-0"
                       >
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:bg-white/10 transition-colors shadow-inner">
                               <item.icone size={14} className={item.cor} />
                             </div>
                             <span className="text-xs font-black uppercase text-zinc-400 tracking-wider">{item.label}</span>
                           </div>
-                          <span className="text-xs font-black text-white">{centavosParaReais(item.valor)}</span>
+                          <span className="text-sm font-black text-white">
+                            <ContadorAnimado valor={item.valor / 100} />
+                          </span>
                         </div>
 
                         {/* Detalhamento dos subitens */}
                         {subitens.length > 0 && (
-                          <div className="pl-11 pr-1 mt-1 space-y-1">
+                          <div className="pl-11 mt-2 space-y-1">
                             {subitens.map((sub, idx) => (
-                              <div key={idx} className="flex justify-between items-center text-[10px] text-zinc-500 font-bold uppercase">
-                                <span className="truncate max-w-[160px] opacity-80">• {sub.nome}</span>
-                                <span className="opacity-80 tabular-nums">{centavosParaReais(sub.valor)}</span>
+                              <div key={idx} className="flex items-center justify-between text-[9px] text-zinc-500 font-black uppercase">
+                                <span className="opacity-80">• {sub.nome}</span>
+                                <span className="opacity-80 tabular-nums">
+                                  <ContadorAnimado valor={sub.valor / 100} />
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -288,6 +301,7 @@ export const PainelResultados = memo(function PainelResultados({
                     );
                   })}
                 </AnimatePresence>
+                </div>
               )}
             </div>
           );
@@ -335,7 +349,9 @@ export const PainelResultados = memo(function PainelResultados({
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.fill }}></div>
                         <span className="text-[10px] font-black uppercase text-zinc-400">{d.name}</span>
                       </div>
-                      <span className="text-[11px] font-black text-zinc-300">{(d.value / calculo.precoSugerido * 100).toFixed(0)}%</span>
+                      <span className="text-[11px] font-black text-zinc-300">
+                        <ContadorAnimado valor={(d.value / calculo.precoSugerido * 100)} prefixo="" sufixo="%" casasDecimais={0} />
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -347,29 +363,33 @@ export const PainelResultados = memo(function PainelResultados({
         <div className="h-px bg-zinc-800/50 my-4 w-full" />
 
         <div className="flex items-center justify-between p-4 bg-emerald-950/20 dark:bg-emerald-500/5 rounded-2xl border border-emerald-500/15 w-full shadow-[0_8px_30px_-10px_rgba(16,185,129,0.15)]">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-emerald-500 mb-1.5">
+          <div className="flex flex-col items-start flex-1">
+            <div className="flex items-center gap-2 text-emerald-500 mb-2">
               <div className="p-1.5 rounded-lg bg-emerald-500/10">
                 <ShieldCheck size={16} />
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Lucro Líquido Final</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Lucro Líquido</span>
             </div>
-            <div className="flex flex-col ml-1">
+            <div className="flex flex-col items-start">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Rentabilidade:</span>
-                <span className="text-[11px] font-black text-emerald-500/80">{calculo.margemReal.toFixed(1)}%</span>
+                <span className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest">Rentabilidade:</span>
+                <span className="text-[10px] font-black text-emerald-500/80">
+                  <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Custo de Fabr.:</span>
-                <span className="text-[11px] font-black text-zinc-400">{centavosParaReais(calculo.custoTotalOperacional)}</span>
+                <span className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest">Custo de Fabricação:</span>
+                <span className="text-[10px] font-black text-zinc-400">
+                  <ContadorAnimado valor={calculo.custoTotalOperacional / 100} />
+                </span>
               </div>
             </div>
           </div>
-          <div className="text-right">
+          <div className="flex flex-col items-center flex-1 border-l border-white/5">
             <span className="text-3xl font-black text-emerald-500 block tracking-tighter leading-none">
-              {centavosParaReais(calculo.lucroLiquido)}
+              <ContadorAnimado valor={calculo.lucroLiquido / 100} />
             </span>
-            <span className="text-[11px] font-black text-zinc-600 uppercase tracking-widest mt-1 block">Saldo Livre</span>
+            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mt-1 block">Saldo Livre</span>
           </div>
         </div>
 

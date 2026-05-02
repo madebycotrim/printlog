@@ -796,44 +796,57 @@ export function usarCalculadora() {
               <div class="hero-cliente">Para: <strong>${nomeCliente || 'Consumidor Final'}</strong></div>
             </div>
 
-            <!-- 2+3. STATS: TOTAL · POR PECA · PRODUCAO -->
+            <!-- 2+3. STATS: TEMPO · UNITARIO · TOTAL -->
             <div class="stats-row">
-              <div class="stat-card destaque">
-                <div class="card-label-sm">Total do pedido</div>
-                <div class="stat-valor-grande">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                <div class="stat-sub">${quantidade} ${quantidade === 1 ? 'peça' : 'peças'} &middot; total do pedido</div>
-              </div>
               <div class="stat-card secundario">
-                <div class="card-label-sm">${quantidade > 1 ? 'Por peça' : 'Custo de produçao'}</div>
-                <div class="stat-valor-medio">R$ ${quantidade > 1 ? ((calculo.precoSugerido / 100) / quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ((calculo.custoTotalOperacional) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                <div class="stat-sub">${quantidade > 1 ? 'valor unitário' : 'preco sem margem'}</div>
-              </div>
-              <div class="stat-card secundario">
-                <div class="card-label-sm">Producao</div>
+                <div class="card-label-sm">Tempo de Produção</div>
                 <div class="stat-valor-medio">${tempoFormatado}</div>
-                <div class="stat-sub">por peca</div>
+                <div class="stat-sub">estimativa por peça</div>
+              </div>
+              <div class="stat-card secundario">
+                <div class="card-label-sm">Valor Unitário</div>
+                <div class="stat-valor-medio">R$ ${((calculo.precoSugerido / 100) / quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                <div class="stat-sub">por unidade</div>
+              </div>
+              <div class="stat-card destaque">
+                <div class="card-label-sm">Total do Pedido</div>
+                <div class="stat-valor-grande">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                <div class="stat-sub">${quantidade} peça${quantidade > 1 ? 's' : ''} · total do pedido</div>
               </div>
             </div>
 
+            <!-- 4. BREAKDOWN (DADOS REAIS E DIRETOS) -->
             <div class="card-breakdown">
-              <div class="breakdown-titulo">Como o preço foi formado</div>
+              <div class="breakdown-titulo">Detalhamento do Valor</div>
+              
               <div class="barra-item">
-                <span class="barra-label">Material</span>
-                <div class="barra-track"><div class="barra-fill" style="width:${pctMaterial}%;background:#111827;"></div></div>
-                <span class="barra-pct">${pctMaterial}%</span>
-                <span class="barra-valor">R$ ${((calculo.custoMaterial + calculo.custoInsumos) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <div class="barra-label">Materiais e Insumos</div>
+                <div class="barra-track"><div class="barra-fill" style="width: ${Math.round((calculo.custoMaterial + calculo.custoInsumos + calculo.custoPosProcesso + calculo.custoFalha) / calculo.precoSugerido * 100)}%; background: #111827;"></div></div>
+                <div class="barra-pct">${Math.round((calculo.custoMaterial + calculo.custoInsumos + calculo.custoPosProcesso + calculo.custoFalha) / calculo.precoSugerido * 100)}%</div>
               </div>
+
               <div class="barra-item">
-                <span class="barra-label">Máquina e energia</span>
-                <div class="barra-track"><div class="barra-fill" style="width:${pctMaquina}%;background:#374151;"></div></div>
-                <span class="barra-pct">${pctMaquina}%</span>
-                <span class="barra-valor">R$ ${((calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <div class="barra-label">Mão de Obra</div>
+                <div class="barra-track"><div class="barra-fill" style="width: ${Math.round(calculo.custoMaoDeObra / calculo.precoSugerido * 100)}%; background: #111827;"></div></div>
+                <div class="barra-pct">${Math.round(calculo.custoMaoDeObra / calculo.precoSugerido * 100)}%</div>
               </div>
+
               <div class="barra-item">
-                <span class="barra-label">Frete e taxas</span>
-                <div class="barra-track"><div class="barra-fill" style="width:${pctTaxas}%;background:#6b7280;"></div></div>
-                <span class="barra-pct">${pctTaxas}%</span>
-                <span class="barra-valor">R$ ${((calculo.taxaMarketplace + calculo.impostoVenda) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <div class="barra-label">Energia e Máquina</div>
+                <div class="barra-track"><div class="barra-fill" style="width: ${Math.round((calculo.custoEnergia + calculo.custoDepreciacao) / calculo.precoSugerido * 100)}%; background: #111827;"></div></div>
+                <div class="barra-pct">${Math.round((calculo.custoEnergia + calculo.custoDepreciacao) / calculo.precoSugerido * 100)}%</div>
+              </div>
+
+              <div class="barra-item">
+                <div class="barra-label">Impostos e Taxas</div>
+                <div class="barra-track"><div class="barra-fill" style="width: ${Math.round((calculo.taxaMarketplace + calculo.impostoVenda) / calculo.precoSugerido * 100)}%; background: #111827;"></div></div>
+                <div class="barra-pct">${Math.round((calculo.taxaMarketplace + calculo.impostoVenda) / calculo.precoSugerido * 100)}%</div>
+              </div>
+
+              <div class="barra-item">
+                <div class="barra-label">Serviço de Impressão</div>
+                <div class="barra-track"><div class="barra-fill" style="width: ${100 - Math.round((calculo.custoMaterial + calculo.custoInsumos + calculo.custoPosProcesso + calculo.custoFalha) / calculo.precoSugerido * 100) - Math.round(calculo.custoMaoDeObra / calculo.precoSugerido * 100) - Math.round((calculo.custoEnergia + calculo.custoDepreciacao) / calculo.precoSugerido * 100) - Math.round((calculo.taxaMarketplace + calculo.impostoVenda) / calculo.precoSugerido * 100)}%; background: #111827;"></div></div>
+                <div class="barra-pct">${100 - Math.round((calculo.custoMaterial + calculo.custoInsumos + calculo.custoPosProcesso + calculo.custoFalha) / calculo.precoSugerido * 100) - Math.round(calculo.custoMaoDeObra / calculo.precoSugerido * 100) - Math.round((calculo.custoEnergia + calculo.custoDepreciacao) / calculo.precoSugerido * 100) - Math.round((calculo.taxaMarketplace + calculo.impostoVenda) / calculo.precoSugerido * 100)}%</div>
               </div>
             </div>
 

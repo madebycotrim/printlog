@@ -1,5 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { DollarSign, Activity } from "lucide-react";
+import { ContadorAnimado } from "@/componentes/ui";
 
 interface CardOperacionalProps {
   maoDeObra: number;
@@ -81,9 +82,8 @@ export const CardOperacional = memo(function CardOperacional({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center mb-2">
                     <label className="block text-xs font-black uppercase text-gray-400">Custo da Hora</label>
-                    <div className="h-6" /> {/* Espaçador para alinhar com o botão do card vizinho */}
                   </div>
                   <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
                     <span className="absolute left-4 font-black text-xs text-zinc-400 select-none">R$</span>
@@ -92,15 +92,14 @@ export const CardOperacional = memo(function CardOperacional({
                       placeholder="0"
                       value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : maoDeObra) : 0} 
                       onChange={(e) => setMaoDeObra?.(Number(e.target.value))} 
-                      className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
+                      className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-xs font-black uppercase text-gray-400">Setup (Operador)</label>
-                    <div className="h-6" />
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-black uppercase text-gray-400">Setup p/ Projeto</label>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
@@ -109,7 +108,7 @@ export const CardOperacional = memo(function CardOperacional({
                         placeholder="0"
                         value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : Math.floor(tempoSetup / 60)) : ""} 
                         onChange={(e) => setTempoSetup(Number(e.target.value) * 60 + (tempoSetup % 60))} 
-                        className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
+                        className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white"
                       />
                       <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                     </div>
@@ -120,7 +119,7 @@ export const CardOperacional = memo(function CardOperacional({
                         placeholder="0"
                         value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : tempoSetup % 60) : ""} 
                         onChange={(e) => setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Number(e.target.value))} 
-                        className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white"
+                        className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white"
                       />
                       <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
                     </div>
@@ -138,7 +137,7 @@ export const CardOperacional = memo(function CardOperacional({
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-black uppercase text-emerald-500">Custo Total Setup:</span>
                 <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-500' : 'text-zinc-500'}`}>
-                  R$ {((cobrarMaoDeObra ? (tempoSetup / 60) * maoDeObra : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  <ContadorAnimado valor={cobrarMaoDeObra ? (tempoSetup / 60) * maoDeObra : 0} />
                 </span>
               </div>
             </div>
@@ -173,7 +172,7 @@ export const CardOperacional = memo(function CardOperacional({
           <div className={`flex-1 flex flex-col justify-between pt-6 transition-opacity ${!cobrarDesgaste ? "opacity-50 pointer-events-none" : ""}`}>
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-black uppercase text-gray-400 mb-2">Taxa de Desgaste</label>
+                <label className="block text-xs font-black uppercase text-gray-400">Custo do Desgaste</label>
                 <button
                   type="button"
                   onClick={() => {
@@ -194,9 +193,9 @@ export const CardOperacional = memo(function CardOperacional({
                 </button>
               </div>
               <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-white/5'} select-none relative group`}>
-                <span className="text-gray-400 font-black text-xs">Desgaste</span>
-                <span className="font-black text-sm text-gray-900 dark:text-white">
-                  R$ {(cobrarDesgaste ? depreciacao || 0 : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / h
+                <span className="text-gray-400 font-black text-xs mr-2 select-none">R$</span>
+                <span className="font-black text-sm text-emerald-500 w-full text-center">
+                  <ContadorAnimado valor={cobrarDesgaste ? depreciacao || 0 : 0} />
                 </span>
                 {cobrarDesgaste && (
                   <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-zinc-500/30 to-transparent animate-pulse" />
@@ -213,14 +212,14 @@ export const CardOperacional = memo(function CardOperacional({
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-black uppercase text-zinc-500">Custo por Peça:</span>
                 <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  R$ {((cobrarDesgaste ? (tempo / 60) * depreciacao : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao : 0} />
                 </span>
               </div>
               {quantidade > 1 && (
                 <div className="flex justify-between items-center pt-2 border-t border-zinc-500/10">
                   <span className="text-[11px] font-black uppercase text-zinc-400">Total do Lote ({quantidade}x):</span>
                   <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    R$ {((cobrarDesgaste ? (tempo / 60) * depreciacao * quantidade : 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao * quantidade : 0} />
                   </span>
                 </div>
               )}
@@ -233,17 +232,23 @@ export const CardOperacional = memo(function CardOperacional({
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: O Display do Valor e Status */}
-          <div className="md:col-span-4 flex flex-col items-center md:items-start border-b md:border-b-0 md:border-r border-zinc-100 dark:border-white/5 pb-4 md:pb-0 md:pr-6">
-            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Margem de Lucro</label>
+          <div className="md:col-span-4 flex flex-col items-center md:items-center border-b md:border-b-0 md:border-r border-zinc-100 dark:border-white/5 pb-4 md:pb-0 md:pr-6">
+            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider text-center">Margem de Lucro</label>
             
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-4xl font-black text-zinc-900 dark:text-white">{margemInterna}</span>
+              <ContadorAnimado 
+                valor={margemInterna} 
+                prefixo="" 
+                sufixo="" 
+                casasDecimais={0} 
+                className="text-4xl font-black text-zinc-900 dark:text-white" 
+              />
               <span className="text-sm font-black text-zinc-400">%</span>
             </div>
 
-            <span className={`text-[9px] uppercase font-black tracking-wider mt-2 transition-all duration-300 ${msgMargem.cor}`}>
+            <p className={`text-[10px] font-black uppercase tracking-widest mt-3 transition-colors text-center w-full ${msgMargem.cor}`}>
               {msgMargem.texto}
-            </span>
+            </p>
           </div>
 
           {/* Coluna Direita: Controles */}

@@ -1,8 +1,8 @@
 import { memo, useState, useEffect, useMemo } from "react";
-import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star } from "lucide-react";
+import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, LayoutGrid } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";
+import { ContadorAnimado } from "@/componentes/ui";
 
 interface CardInsumosProps {
   insumos: any[];
@@ -14,10 +14,6 @@ interface CardInsumosProps {
   atualizarQtd: (id: string, qtd: number) => void;
   remover: (id: string) => void;
   alternarPorLote: (id: string) => void;
-  insumosFixos: number;
-  setInsumosFixos: (v: number) => void;
-  cobrarInsumosFixos: boolean;
-  setCobrarInsumosFixos: (v: boolean) => void;
   abrirGerenciar: () => void;
   abrirNovo: () => void;
   modoEntrada: 'unitario' | 'lote';
@@ -25,7 +21,7 @@ interface CardInsumosProps {
 }
 
 export const CardInsumos = memo(function CardInsumos({
-  insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, alternarFavorito, alternarPorLote, insumosFixos, setInsumosFixos, cobrarInsumosFixos, setCobrarInsumosFixos, abrirGerenciar, abrirNovo, modoEntrada
+  insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, alternarFavorito, alternarPorLote, abrirGerenciar, abrirNovo, modoEntrada
 }: CardInsumosProps) {
   const [pagina, setPagina] = useState(0);
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
@@ -65,6 +61,7 @@ export const CardInsumos = memo(function CardInsumos({
   }, [insumosOrdenados.length, totalPaginas, pagina]);
 
   const insumosExibidos = insumosOrdenados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
+
   return (
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
@@ -79,19 +76,19 @@ export const CardInsumos = memo(function CardInsumos({
         </div>
         
         <div className="relative group">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-700 group-focus-within:text-indigo-500 transition-colors" />
           <input 
             type="text" 
             placeholder="Buscar..." 
             value={busca} 
             onChange={(e) => setBusca(e.target.value)} 
-            className="w-full md:w-64 h-10 pl-9 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-indigo-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700" 
+            className="w-full md:w-64 h-10 pl-10 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-indigo-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700" 
           />
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-indigo-500 transition-colors" />
         </div>
       </div>
 
       <div className="space-y-4 pt-2">
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Package className="w-3 h-3 text-indigo-500" />
             <span className="text-xs font-black uppercase tracking-widest text-gray-400">Estoque de Insumos</span>
@@ -111,129 +108,129 @@ export const CardInsumos = memo(function CardInsumos({
                 Mais Usados
               </button>
             </div>
-            {totalPaginas > 1 && (
-              <span className="text-[10px] font-bold text-zinc-600 uppercase ml-2">
-                {pagina + 1}/{totalPaginas}
-              </span>
-            )}
           </div>
+
+          <button onClick={abrirGerenciar} className="text-[10px] font-black uppercase text-indigo-500 hover:text-indigo-400 transition-colors flex items-center gap-1 group">
+            Gerenciar Estoque <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
+          </button>
+        </div>
+
+        {totalPaginas > 1 && (
           <div className="flex items-center gap-4">
-             {totalPaginas > 1 && (
-               <div className="flex items-center gap-1 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
-                 <button 
-                   onClick={() => setPagina(p => Math.max(0, p - 1))}
-                   disabled={pagina === 0}
-                   className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-indigo-400 disabled:opacity-20 transition-colors"
-                 >
-                   <Plus className="w-3 h-3 rotate-45" />
-                 </button>
-                 <div className="w-[1px] h-3 bg-white/5" />
-                 <button 
-                   onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
-                   disabled={pagina === totalPaginas - 1}
-                   className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-indigo-400 disabled:opacity-20 transition-colors"
-                 >
-                   <Plus className="w-3 h-3" />
-                 </button>
-               </div>
-             )}
-            <button onClick={abrirGerenciar} className="text-[10px] font-black uppercase text-indigo-500 hover:text-indigo-400 transition-colors flex items-center gap-1 group">
-              Gerenciar Estoque <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
-            </button>
+             <div className="flex items-center gap-1 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
+               <button 
+                 onClick={() => setPagina(p => Math.max(0, p - 1))}
+                 disabled={pagina === 0}
+                 className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-indigo-400 disabled:opacity-20 transition-colors"
+               >
+                 <Plus className="w-3 h-3 rotate-45" />
+               </button>
+               <div className="w-[1px] h-3 bg-white/5" />
+               <button 
+                 onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
+                 disabled={pagina === totalPaginas - 1}
+                 className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-indigo-400 disabled:opacity-20 transition-colors"
+               >
+                 <Plus className="w-3 h-3" />
+               </button>
+             </div>
+             <span className="text-[10px] font-bold text-zinc-600 uppercase">
+              {pagina + 1}/{totalPaginas}
+            </span>
           </div>
-        </div>
-
-        <div className="flex gap-3 overflow-x-hidden pb-4 -mx-2 px-2 min-h-[110px] items-stretch">
-          {insumosExibidos.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-4 border border-dashed border-white/5 rounded-2xl opacity-40">
-               <Package className="w-6 h-6 mb-2" />
-               <span className="text-[10px] font-black uppercase">Nenhum insumo encontrado</span>
-            </div>
-          ) : insumosExibidos.map((i) => {
-            const sel = selecionados.some(s => s.id === i.id);
-            return (
-              <div 
-                key={i.id} 
-                onClick={() => alternar(i)} 
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    alternar(i);
-                  }
-                }}
-                className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
-                  ${sel 
-                    ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
-                    : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30"}
-                `}
-              >
-                <div className="shrink-0">
-                  <div className={`p-2.5 rounded-xl transition-all duration-300 ${sel ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30" : "bg-white dark:bg-white/5 text-zinc-400 group-hover:text-indigo-500"}`}>
-                    <Box size={18} />
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-hidden">
-                  <h4 className="text-xs font-black uppercase truncate leading-tight">{i.nome}</h4>
-                  <div className="flex flex-col mt-0.5">
-                    <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
-                      {i.categoria || 'Geral'} • {centavosParaReais(i.custoMedioUnidade)}
-                    </p>
-                    <span className={`text-[8px] font-black uppercase mt-0.5 ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500' : 'text-indigo-500'}`}>
-                      {i.quantidadeAtual} {i.unidadeMedida} em estoque
-                    </span>
-                  </div>
-                </div>
-
-                {sel && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
-                    <Check className="w-2.5 h-2.5" />
-                  </div>
-                )}
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    alternarFavorito(i.id);
-                  }}
-                  className={`absolute top-2 right-2 p-1 rounded-lg transition-all z-20 ${
-                    i.favorito 
-                      ? "text-amber-500 bg-amber-500/10" 
-                      : "text-zinc-700 hover:text-amber-500/50 hover:bg-white/5"
-                  }`}
-                  title={i.favorito ? "Remover dos favoritos" : "Marcar como favorito"}
-                >
-                  <Star size={12} fill={i.favorito ? "currentColor" : "none"} />
-                </button>
-              </div>
-            );
-          })}
-
-          {insumos.length === 0 && (
-            <div className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                  <Package size={14} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Sem Insumos</span>
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase">Seu estoque está vazio no momento</span>
-                </div>
-              </div>
-              <button 
-                onClick={abrirNovo}
-                className="px-4 h-9 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
-              >
-                <Plus size={12} /> Cadastrar
-              </button>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
-      <div>
+      <div className="flex gap-3 overflow-x-hidden pb-4 -mx-2 px-2 min-h-[110px] items-stretch">
+        {insumosExibidos.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-4 border border-dashed border-white/5 rounded-2xl opacity-40">
+             <Package className="w-6 h-6 mb-2" />
+             <span className="text-[10px] font-black uppercase">Nenhum insumo encontrado</span>
+          </div>
+        ) : insumosExibidos.map((i) => {
+          const sel = selecionados.some(s => s.id === i.id);
+          return (
+            <div 
+              key={i.id} 
+              onClick={() => alternar(i)} 
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  alternar(i);
+                }
+              }}
+              className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
+                ${sel 
+                  ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
+                  : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30"}
+              `}
+            >
+              <div className="shrink-0">
+                <div className={`p-2.5 rounded-xl transition-all duration-300 ${sel ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30" : "bg-white dark:bg-white/5 text-zinc-400 group-hover:text-indigo-500"}`}>
+                  <Box size={18} />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-hidden">
+                <h4 className="text-xs font-black uppercase truncate leading-tight">{i.nome}</h4>
+                <div className="flex flex-col mt-0.5">
+                  <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
+                    {i.categoria || 'Geral'} • <ContadorAnimado valor={i.custoMedioUnidade / 100} />
+                  </p>
+                  <span className={`text-[8px] font-black uppercase mt-0.5 ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500' : 'text-indigo-500'}`}>
+                    {i.quantidadeAtual} <span className="lowercase">{i.unidadeMedida}</span> em estoque
+                  </span>
+                </div>
+              </div>
+
+              {sel && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
+                  <Check className="w-2.5 h-2.5" />
+                </div>
+              )}
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  alternarFavorito(i.id);
+                }}
+                className={`absolute top-2 right-2 p-1 rounded-lg transition-all z-20 ${
+                  i.favorito 
+                    ? "text-amber-500 bg-amber-500/10" 
+                    : "text-zinc-700 hover:text-amber-500/50 hover:bg-white/5"
+                }`}
+                title={i.favorito ? "Remover dos favoritos" : "Marcar como favorito"}
+              >
+                <Star size={12} fill={i.favorito ? "currentColor" : "none"} />
+              </button>
+            </div>
+          );
+        })}
+
+        {insumos.length === 0 && (
+          <div className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                <Package size={14} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Sem Insumos</span>
+                <span className="text-[10px] font-bold text-zinc-500 uppercase">Seu estoque está vazio no momento</span>
+              </div>
+            </div>
+            <button 
+              onClick={abrirNovo}
+              className="px-4 h-9 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+            >
+              <Plus size={12} /> Cadastrar
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {selecionados.length === 0 ? (
             <motion.div 
@@ -261,7 +258,7 @@ export const CardInsumos = memo(function CardInsumos({
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className={`p-4 rounded-2xl border flex flex-col justify-between gap-4 group transition-all
+                    className={`p-3 rounded-2xl border flex flex-col justify-between gap-3 group transition-all
                       ${alerta ? "bg-rose-500/5 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]" : "bg-gray-50/50 dark:bg-white/[0.03] border-gray-100 dark:border-white/5"}
                     `}
                   >
@@ -272,19 +269,39 @@ export const CardInsumos = memo(function CardInsumos({
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-black uppercase tracking-tight truncate text-zinc-900 dark:text-zinc-100">{item.nome}</span>
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Insumo</span>
+                          <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">Insumo</span>
                         </div>
                       </div>
                       
-                      <button 
-                        onClick={() => remover(item.id)} 
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 shrink-0"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <div className="flex items-center flex-row-reverse">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); remover(item.id); }} 
+                            className="w-0 group-hover:w-8 h-7 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100 overflow-hidden shrink-0"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                          
+                          {modoEntrada === 'unitario' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); alternarPorLote(item.id); }}
+                              className={`px-2.5 h-7 rounded-lg text-[7px] font-black uppercase transition-all border flex items-center gap-1.5 shrink-0 ${
+                                item.porLote 
+                                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.1)]" 
+                                  : "bg-zinc-100/50 dark:bg-white/5 text-zinc-500 border-zinc-200/50 dark:border-white/10 hover:border-indigo-500/30"
+                              }`}
+                            >
+                              <div className={item.porLote ? "text-indigo-500" : "text-zinc-500"}>
+                                {item.porLote ? <LayoutGrid size={10} /> : <Box size={10} />}
+                              </div>
+                              {item.porLote ? "Mesa Completa" : "Por Peça"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mt-auto">
+                    <div className="grid grid-cols-2 gap-3 mt-2">
                       <div className="space-y-1">
                         <label className="text-[9px] font-black uppercase text-gray-400 tracking-widest">
                           Qtd ({original?.unidadeMedida || 'un'})
@@ -316,33 +333,18 @@ export const CardInsumos = memo(function CardInsumos({
 
                       <div className="space-y-1">
                         <label className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Custo Un.</label>
-                        <div className="w-full h-9 px-3 rounded-lg bg-white/40 dark:bg-black/20 flex items-center border border-gray-100 dark:border-white/5">
-                          <span className="font-black text-xs text-gray-500 dark:text-zinc-400">
-                            {centavosParaReais(item.custoCentavos)}
+                        <div className="w-full h-9 px-3 rounded-lg bg-white/40 dark:bg-black/20 flex items-center justify-center border border-gray-100 dark:border-white/5">
+                          <span className="font-black text-xs text-indigo-500 text-center">
+                            <ContadorAnimado valor={item.custoCentavos / 100} prefixo="R$ " />
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">Tipo de Custo</span>
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase">{item.porLote ? 'Fixo por Lote' : 'Variável p/ Peça'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {modoEntrada === 'unitario' && (
-                          <button
-                            onClick={() => alternarPorLote(item.id)}
-                            className={`px-2 py-1 rounded-md text-[8px] font-black uppercase transition-colors ${
-                              item.porLote 
-                                ? "bg-indigo-500/10 text-indigo-500 border border-indigo-500/30" 
-                                : "bg-white/5 text-zinc-500 border border-white/5 hover:border-indigo-500/30"
-                            }`}
-                          >
-                            {item.porLote ? "P/ Peça" : "P/ Lote"}
-                          </button>
-                        )}
-                      </div>
+                    <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <span className="text-[10px] font-black text-emerald-500 text-center">
+                        <ContadorAnimado valor={(item.quantidade * item.custoCentavos) / 100} prefixo="Total: R$ " />
+                      </span>
                     </div>
 
                     {alerta && (
@@ -356,47 +358,6 @@ export const CardInsumos = memo(function CardInsumos({
             </div>
           )}
         </AnimatePresence>
-      </div>
-
-      <div className="pt-3 border-t border-white/5">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between px-1">
-            <label className="text-[9px] font-bold uppercase text-zinc-600 tracking-widest">Custos Fixos</label>
-            <button 
-              type="button"
-              onClick={() => setCobrarInsumosFixos(!cobrarInsumosFixos)}
-              className={`relative w-6 h-3.5 rounded-full transition-all duration-300 outline-none
-                ${cobrarInsumosFixos ? "bg-indigo-500/50" : "bg-zinc-800"}
-              `}
-            >
-              <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all duration-300 shadow-sm
-                ${cobrarInsumosFixos ? "left-3" : "left-0.5"}
-              `} />
-            </button>
-          </div>
-
-          <div className={`relative flex items-center bg-zinc-900/30 rounded-lg border transition-all duration-300
-            ${cobrarInsumosFixos 
-              ? "border-white/5 opacity-100" 
-              : "border-transparent opacity-20 pointer-events-none grayscale"}
-          `}>
-            <span className="absolute left-3 text-[10px] font-bold text-zinc-600 select-none">R$</span>
-            <input 
-              type="number" 
-              placeholder="0,00" 
-              disabled={!cobrarInsumosFixos}
-              value={insumosFixos === 0 ? "" : insumosFixos} 
-              onChange={(e) => setInsumosFixos(Number(e.target.value))} 
-              className="w-full h-9 pl-9 pr-3 bg-transparent outline-none font-bold text-xs text-zinc-300" 
-            />
-          </div>
-          
-          <div className="px-1">
-            <p className={`text-[8px] font-medium uppercase tracking-[0.05em] transition-all duration-300 ${cobrarInsumosFixos ? "text-zinc-600" : "text-zinc-800"}`}>
-              Embalagem, limpeza ou suporte.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { TrendingUp, Settings } from "lucide-react";
 import { PerfilFiscal } from "../tipos";
+import { ContadorAnimado } from "@/componentes/ui";
 
 interface CardFiscalProps {
   perfisFiscais?: PerfilFiscal[];
@@ -94,8 +95,12 @@ export const CardFiscal = memo(function CardFiscal({
                 `}
               >
                 <span>{label.toUpperCase()}</span>
-                <span className={`text-[8px] font-bold opacity-80 ${tipoOperacao === id ? "text-violet-400/80" : "text-gray-400"} ${!cobrarImpostos ? "line-through text-zinc-500" : ""}`}>
-                  {id === 'mei' ? "" : id === 'servico' ? `(${p.base}% + ${p.iss}%)` : `(${p.base}% + ${p.icms}%)`}
+                <span className={`text-[8px] font-bold opacity-80 flex items-center gap-1 ${tipoOperacao === id ? "text-violet-400/80" : "text-gray-400"} ${!cobrarImpostos ? "opacity-50" : ""}`}>
+                  {id === 'mei' ? "" : (
+                    <>
+                      (<ContadorAnimado valor={p.base} prefixo="" sufixo="%" casasDecimais={1} /> + <ContadorAnimado valor={id === 'servico' ? p.iss : p.icms} prefixo="" sufixo="%" casasDecimais={1} />)
+                    </>
+                  )}
                 </span>
               </button>
             );
@@ -116,41 +121,44 @@ export const CardFiscal = memo(function CardFiscal({
 
         {tipoOperacao !== 'mei' && (
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-            <div>
-              <label className="block text-xs font-black uppercase text-zinc-400 mb-2">Base (%)</label>
-              <input 
-                type="number" 
-                placeholder="0" 
-                disabled={!cobrarImpostos} 
-                value={!cobrarImpostos ? "" : (impostos === 0 ? "" : impostos)} 
-                onChange={(e) => setImpostos(Number(e.target.value))} 
-                className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
-              />
+            <div className="flex flex-col gap-1.5 flex-1">
+              <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider">Imposto Base (%)</label>
+              <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-violet-500/40 shadow-inner">
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={impostos || ""}
+                  onChange={(e) => setImpostos(Number(e.target.value))}
+                  className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                />
+              </div>
             </div>
             {tipoOperacao !== 'servico' && (
-              <div>
-                <label className="block text-xs font-black uppercase text-zinc-400 mb-2">ICMS (%)</label>
-                <input 
-                  type="number" 
-                  placeholder="0" 
-                  disabled={!cobrarImpostos} 
-                  value={!cobrarImpostos ? "" : (icms === 0 ? "" : icms)} 
-                  onChange={(e) => setIcms(Number(e.target.value))} 
-                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
-                />
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider">ICMS (%)</label>
+                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-violet-500/40 shadow-inner">
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={icms || ""}
+                    onChange={(e) => setIcms(Number(e.target.value))}
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none text-center"
+                  />
+                </div>
               </div>
             )}
             {tipoOperacao === 'servico' && (
-              <div>
-                <label className="block text-xs font-black uppercase text-zinc-400 mb-2">ISS (%)</label>
-                <input 
-                  type="number" 
-                  placeholder="0" 
-                  disabled={!cobrarImpostos} 
-                  value={!cobrarImpostos ? "" : (iss === 0 ? "" : iss)} 
-                  onChange={(e) => setIss(Number(e.target.value))} 
-                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-violet-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
-                />
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider text-center">ISS (%)</label>
+                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-violet-500/40 shadow-inner">
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={iss || ""}
+                    onChange={(e) => setIss(Number(e.target.value))}
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none text-center"
+                  />
+                </div>
               </div>
             )}
           </div>

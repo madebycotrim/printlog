@@ -241,4 +241,19 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Scrollbar Fino e Minimalista */
+  .scrollbar-fino::-webkit-scrollbar {
+    width: 3px;
+  }
+  .scrollbar-fino::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-fino::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  .scrollbar-fino::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }

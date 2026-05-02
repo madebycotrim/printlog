@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Warehouse, Settings } from "lucide-react";
 import { PerfilMarketplace } from "../tipos";
+import { ContadorAnimado } from "@/componentes/ui";
 
 interface CardLogisticaProps {
   perfis: PerfilMarketplace[];
@@ -27,7 +28,7 @@ export const CardLogistica = memo(function CardLogistica({
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${cobrarLogistica ? 'text-orange-400 border-orange-500/30' : 'text-zinc-500 border-zinc-800'}`}>
             <Warehouse size={18} />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col items-center md:items-start">
             <span className="text-xs font-black uppercase tracking-wider text-white">Canais de Venda e Logística</span>
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Custos de plataforma e fretes</span>
           </div>
@@ -71,7 +72,9 @@ export const CardLogistica = memo(function CardLogistica({
             `}
           >
             <span>{p.nome}</span>
-            <span className={`text-[8px] font-bold opacity-80 ${perfilAtivo === p.nome ? "text-orange-400/80" : "text-gray-400"} ${!cobrarLogistica ? "opacity-50" : ""}`}>({p.taxa}% + R$ {p.fixa} + R$ {p.frete || 0})</span>
+            <span className={`text-[8px] font-bold opacity-80 flex items-center gap-1 ${perfilAtivo === p.nome ? "text-orange-400/80" : "text-gray-400"} ${!cobrarLogistica ? "opacity-50" : ""}`}>
+              (<ContadorAnimado valor={p.taxa} prefixo="" sufixo="%" casasDecimais={1} /> + <ContadorAnimado valor={p.fixa} /> + <ContadorAnimado valor={p.frete || 0} />)
+            </span>
           </button>
         ))}
         <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-orange-400 hover:border-orange-500/30 transition-all shrink-0">
@@ -107,7 +110,7 @@ export const CardLogistica = memo(function CardLogistica({
             placeholder="0" 
             value={frete === 0 ? "" : frete} 
             onChange={(e) => setFrete(Number(e.target.value))} 
-            className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
+            className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner text-center ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />
         </div>
       </div>
