@@ -525,11 +525,8 @@ export function usarCalculadora() {
       tipoMaterial: m.tipoMaterial || materiais.find(orig => orig.id === m.id)?.tipoMaterial || m.tipo
     }));
 
-    // Calcula percentuais para barras proporcionais
-    const totalCustos = calculo.custoTotalOperacional + calculo.taxaMarketplace + calculo.impostoVenda;
-    const pctMaterial  = totalCustos > 0 ? Math.round(((calculo.custoMaterial + calculo.custoInsumos) / totalCustos) * 100) : 0;
-    const pctMaquina   = totalCustos > 0 ? Math.round(((calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso) / totalCustos) * 100) : 0;
-    const pctTaxas     = totalCustos > 0 ? Math.round(((calculo.taxaMarketplace + calculo.impostoVenda) / totalCustos) * 100) : 0;
+    // Preparar dados para o PDF
+    const qtdPdf = Number(quantidade) || 1;
 
     // Número único do documento (usado no header e nos termos)
     const numDocumento = '#' + Math.floor(1000 + Math.random() * 9000);
@@ -805,13 +802,13 @@ export function usarCalculadora() {
               </div>
               <div class="stat-card secundario">
                 <div class="card-label-sm">Valor Unitário</div>
-                <div class="stat-valor-medio">R$ ${((calculo.precoSugerido / 100) / quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                <div class="stat-valor-medio">R$ ${((calculo.precoSugerido / 100) / qtdPdf).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                 <div class="stat-sub">por unidade</div>
               </div>
               <div class="stat-card destaque">
                 <div class="card-label-sm">Total do Pedido</div>
                 <div class="stat-valor-grande">R$ ${(calculo.precoSugerido / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                <div class="stat-sub">${quantidade} peça${quantidade > 1 ? 's' : ''} · total do pedido</div>
+                <div class="stat-sub">${qtdPdf} peça${qtdPdf > 1 ? 's' : ''} · total do pedido</div>
               </div>
             </div>
 

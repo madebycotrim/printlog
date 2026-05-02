@@ -33,13 +33,24 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const dados = await request.json() as any;
             const novoId = dados.id || crypto.randomUUID();
             
+            // Flexibilidade para aceitar camelCase (antigo) ou snake_case (novo)
+            const id_cliente = dados.id_cliente ?? dados.idCliente ?? null;
+            const id_impressora = dados.id_impressora ?? dados.idImpressora ?? null;
+            const valor_centavos = dados.valor_centavos ?? dados.valorCentavos ?? 0;
+            const data_criacao = dados.data_criacao ?? dados.dataCriacao ?? new Date().toISOString();
+            const descricao = dados.descricao ?? '';
+            const material = dados.material ?? '';
+            const peso_gramas = dados.peso_gramas ?? dados.pesoGramas ?? null;
+            const tempo_minutos = dados.tempo_minutos ?? dados.tempoMinutos ?? null;
+            const observacoes = dados.observacoes ?? '';
+
             // Agrupar detalhes técnicos na descrição já que o banco não tem as colunas específicas
             const descricaoCompleta = [
-                dados.descricao,
-                dados.material ? `Material: ${dados.material}` : null,
-                dados.peso_gramas ? `Peso: ${dados.peso_gramas}g` : null,
-                dados.tempo_minutos ? `Tempo: ${dados.tempo_minutos}min` : null,
-                dados.observacoes ? `Obs: ${dados.observacoes}` : null
+                descricao,
+                material ? `Material: ${material}` : null,
+                peso_gramas ? `Peso: ${peso_gramas}g` : null,
+                tempo_minutos ? `Tempo: ${tempo_minutos}min` : null,
+                observacoes ? `Obs: ${observacoes}` : null
             ].filter(Boolean).join(' | ');
 
             await env.DB.prepare(`
@@ -48,9 +59,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     status, valor_centavos, data_criacao, arquivado
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
             `).bind(
-                novoId, usuarioId, dados.id_cliente, dados.id_impressora, 
-                descricaoCompleta, dados.status || 'pendente', 
-                dados.valor_centavos, dados.data_criacao || new Date().toISOString()
+                novoId, 
+                usuarioId, 
+                id_cliente, 
+                id_impressora, 
+                descricaoCompleta, 
+                dados.status ?? 'pendente', 
+                Number(valor_centavos) || 0, 
+                data_criacao
             ).run();
 
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { 
@@ -62,15 +78,26 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         // PATCH / PUT - Atualizar
         if (metodo === "PATCH" || metodo === "PUT") {
             const dados = await request.json() as any;
+            
+            const id_cliente = dados.id_cliente ?? dados.idCliente ?? null;
+            const id_impressora = dados.id_impressora ?? dados.idImpressora ?? null;
+            const valor_centavos = dados.valor_centavos ?? dados.valorCentavos ?? 0;
+            const data_conclusao = dados.data_conclusao ?? dados.dataConclusao ?? null;
+
             await env.DB.prepare(`
                 UPDATE pedidos_impressao SET 
                     status = ?, descricao = ?, valor_centavos = ?,
                     data_conclusao = ?, id_cliente = ?, id_impressora = ?
                 WHERE id = ? AND id_usuario = ?
             `).bind(
-                dados.status, dados.descricao, dados.valor_centavos,
-                dados.data_conclusao, dados.id_cliente, dados.id_impressora,
-                dados.id, usuarioId
+                dados.status ?? 'pendente', 
+                dados.descricao ?? '', 
+                Number(valor_centavos) || 0,
+                data_conclusao, 
+                id_cliente, 
+                id_impressora,
+                dados.id, 
+                usuarioId
             ).run();
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }

@@ -24,11 +24,17 @@ export const apiPedidos = {
     mapearParaBanco: (dados: any) => {
         const mapeado: any = {};
         
-        // IDs e Chaves (Tratando string vazia como null)
+        // IDs e Chaves (Compatibilidade com Produção)
         if (dados.id) mapeado.id = dados.id;
         if (dados.idUsuario) mapeado.id_usuario = dados.idUsuario;
-        if (dados.idCliente) mapeado.id_cliente = dados.idCliente === "" ? null : dados.idCliente;
-        if (dados.idImpressora !== undefined) mapeado.id_impressora = (dados.idImpressora === "" || dados.idImpressora === null) ? null : dados.idImpressora;
+        if (dados.idCliente) {
+            mapeado.id_cliente = dados.idCliente === "" ? null : dados.idCliente;
+            mapeado.idCliente = mapeado.id_cliente; // Envia ambos para garantir
+        }
+        if (dados.idImpressora !== undefined) {
+            mapeado.id_impressora = (dados.idImpressora === "" || dados.idImpressora === null) ? null : dados.idImpressora;
+            mapeado.idImpressora = mapeado.id_impressora;
+        }
         
         // Campos de Texto e Status
         if (dados.descricao) mapeado.descricao = dados.descricao;
@@ -36,25 +42,44 @@ export const apiPedidos = {
         if (dados.material !== undefined) mapeado.material = dados.material;
         if (dados.status) mapeado.status = dados.status; 
         
-        // Campos Numéricos (Garantindo que sejam números ou null)
-        if (dados.valorCentavos !== undefined) mapeado.valor_centavos = Number(dados.valorCentavos) || 0;
-        if (dados.pesoGramas !== undefined) mapeado.peso_gramas = dados.pesoGramas === "" ? null : Number(dados.pesoGramas);
-        if (dados.tempoMinutos !== undefined) mapeado.tempo_minutos = dados.tempoMinutos === "" ? null : Number(dados.tempoMinutos);
+        // Campos Numéricos
+        if (dados.valorCentavos !== undefined) {
+            mapeado.valor_centavos = Number(dados.valorCentavos) || 0;
+            mapeado.valorCentavos = mapeado.valor_centavos;
+        }
+        if (dados.pesoGramas !== undefined) {
+            mapeado.peso_gramas = dados.pesoGramas === "" ? null : Number(dados.pesoGramas);
+            mapeado.pesoGramas = mapeado.peso_gramas;
+        }
+        if (dados.tempoMinutos !== undefined) {
+            mapeado.tempo_minutos = dados.tempoMinutos === "" ? null : Number(dados.tempoMinutos);
+            mapeado.tempoMinutos = mapeado.tempo_minutos;
+        }
         
-        // Datas (ISO String ou null)
+        // Datas
         const formatarData = (d: any) => {
             if (!d) return null;
             const data = d instanceof Date ? d : new Date(d);
             return isNaN(data.getTime()) ? null : data.toISOString();
         };
 
-        if (dados.dataCriacao) mapeado.data_criacao = formatarData(dados.dataCriacao);
-        if (dados.dataConclusao !== undefined) mapeado.data_conclusao = formatarData(dados.dataConclusao);
-        if (dados.prazoEntrega !== undefined) mapeado.prazo_entrega = formatarData(dados.prazoEntrega);
+        if (dados.dataCriacao) {
+            mapeado.data_criacao = formatarData(dados.dataCriacao);
+            mapeado.dataCriacao = mapeado.data_criacao;
+        }
+        if (dados.dataConclusao !== undefined) {
+            mapeado.data_conclusao = formatarData(dados.dataConclusao);
+            mapeado.dataConclusao = mapeado.data_conclusao;
+        }
+        if (dados.prazoEntrega !== undefined) {
+            mapeado.prazo_entrega = formatarData(dados.prazoEntrega);
+            mapeado.prazoEntrega = mapeado.prazo_entrega;
+        }
 
         // JSON para strings
         if (dados.insumosSecundarios) {
             mapeado.insumos_secundarios = JSON.stringify(dados.insumosSecundarios);
+            mapeado.insumosSecundarios = mapeado.insumos_secundarios;
         }
 
         return mapeado;
