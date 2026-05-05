@@ -50,6 +50,17 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
   const cliente = (estadoClientes.clientes || []).find(c => c.id === pedido.idCliente);
   const nomeExibicaoCliente = pedido.nomeCliente || cliente?.nome || "Cliente Avulso";
 
+  // v9.0: Blindagem de visualização - calcula totais se os campos consolidados estiverem zerados
+  const { pesoEfetivo, tempoEfetivo } = useMemo(() => {
+    const peso = pedido.pesoGramas || (pedido.materiais?.reduce((acc, m) => acc + (m.quantidadeGasta || 0), 0)) || 0;
+    const tempo = pedido.tempoMinutos || (
+      pedido.configuracoes 
+        ? ((pedido.configuracoes.tempoHoras || 0) * 60 + (pedido.configuracoes.tempoMinutos || 0))
+        : 0
+    ) || 0;
+    return { pesoEfetivo: peso, tempoEfetivo: tempo };
+  }, [pedido]);
+
   return (
     <Dialogo
       aberto={aberto}
@@ -180,7 +191,7 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                          <div className="flex items-center justify-between">
                             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Materiais Ativos</span>
                             {pedido.materiais && pedido.materiais.length > 1 && (
-                              <span className="text-[8px] font-black px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/10 uppercase">Multimaterial</span>
+                              <span className="text-[8px] font-black px-2 py-0.5 rounded bg-white/10 text-zinc-400 border border-white/5 uppercase">Multimaterial</span>
                             )}
                          </div>
                          
@@ -188,22 +199,33 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                            <div className="space-y-4">
                              {pedido.materiais.map((m, idx) => (
                                <div key={idx} className="flex items-center justify-between group">
-                                  <div className="flex items-center gap-4">
-                                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)]" />
-                                     <div className="flex flex-col">
-                                       <div className="flex items-center gap-2">
-                                          {(() => {
-                                            const infoMaterial = (estadoMateriais.materiais || []).find(mat => mat.id === m.idMaterial);
-                                            return infoMaterial?.tipoMaterial && (
-                                              <span className="text-[8px] font-black px-1.5 py-0.5 rounded border border-indigo-500/20 bg-indigo-500/5 text-indigo-400/80 uppercase tracking-tighter">
-                                                {infoMaterial.tipoMaterial}
-                                              </span>
-                                            );
-                                          })()}
-                                          <span className="text-sm font-black text-zinc-200 uppercase tracking-tight group-hover:text-white transition-colors">{m.nome}</span>
-                                       </div>
-                                     </div>
-                                  </div>
+                                    <div className="flex items-center gap-4">
+                                       {(() => {
+                                         const infoMaterial = (estadoMateriais.materiais || []).find(mat => mat.id === m.idMaterial);
+                                         const corMaterial = infoMaterial?.cor || "#3b82f6";
+                                         return (
+                                           <>
+                                             <div 
+                                               className="w-1.5 h-1.5 rounded-full" 
+                                               style={{ 
+                                                 backgroundColor: corMaterial,
+                                                 boxShadow: `0 0 12px ${corMaterial}99` 
+                                               }} 
+                                             />
+                                             <div className="flex flex-col">
+                                               <div className="flex items-center gap-2">
+                                                 {infoMaterial?.tipoMaterial && (
+                                                   <span className="text-[8px] font-black px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-zinc-400 uppercase tracking-tighter">
+                                                     {infoMaterial.tipoMaterial}
+                                                   </span>
+                                                 )}
+                                                 <span className="text-sm font-black text-zinc-200 uppercase tracking-tight group-hover:text-white transition-colors">{m.nome}</span>
+                                               </div>
+                                             </div>
+                                           </>
+                                         );
+                                       })()}
+                                    </div>
                                   <span className="text-xs font-black text-zinc-500 tabular-nums">{m.quantidadeGasta}g</span>
                                </div>
                              ))}
@@ -211,10 +233,10 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                          ) : (
                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
-                                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)]" />
-                                 <span className="text-sm font-black text-zinc-200 uppercase tracking-tight">{pedido.material || "Filamento Base"}</span>
+                                 <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
+                                 <span className="text-sm font-black text-zinc-400 uppercase tracking-tight">{pedido.material || "Filamento Base"}</span>
                               </div>
-                              <span className="text-xs font-black text-zinc-500 tabular-nums">{pedido.pesoGramas || 0}g</span>
+                              <span className="text-xs font-black text-zinc-500 tabular-nums">{pesoEfetivo}g</span>
                            </div>
                          )}
                       </div>
@@ -230,15 +252,15 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                          {/* Massa Total */}
                          <div className="p-8 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-3 group hover:bg-white/[0.05] transition-all">
                             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest group-hover:text-indigo-400/60 transition-colors">Massa Consolidada</span>
-                            <span className="text-2xl font-black text-zinc-200 tabular-nums tracking-tighter">{pedido.pesoGramas || 0}g</span>
+                            <span className="text-2xl font-black text-zinc-200 tabular-nums tracking-tighter">{pesoEfetivo}g</span>
                          </div>
                          
                          {/* Tempo */}
                          <div className="p-8 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-3 group hover:bg-white/[0.05] transition-all">
                             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest group-hover:text-indigo-400/60 transition-colors">Tempo de Máquina</span>
                             <div className="flex items-baseline gap-1">
-                              <span className="text-2xl font-black text-zinc-200 tabular-nums tracking-tighter">{Math.floor((pedido.tempoMinutos ?? 0) / 60)}h</span>
-                              <span className="text-sm font-bold text-zinc-500 tabular-nums">{(pedido.tempoMinutos ?? 0) % 60}min</span>
+                               <span className="text-2xl font-black text-zinc-200 tabular-nums tracking-tighter">{Math.floor((tempoEfetivo ?? 0) / 60)}h</span>
+                               <span className="text-sm font-bold text-zinc-500 tabular-nums">{(tempoEfetivo ?? 0) % 60}min</span>
                             </div>
                          </div>
                       </div>
@@ -428,17 +450,6 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                         </div>
                      </div>
 
-                     {/* Falha */}
-                     <div className="p-8 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col gap-4 group hover:bg-white/[0.05] transition-all">
-                        <div className="flex items-center gap-2 opacity-30 group-hover:opacity-60 transition-opacity">
-                           <Activity size={12} className="text-rose-400" />
-                           <span className="text-[9px] font-black text-white uppercase tracking-widest">Segurança</span>
-                        </div>
-                        <div className="flex flex-col">
-                           <span className="text-2xl font-black text-zinc-200 tabular-nums tracking-tighter">{pedido.configuracoes.taxaFalha}%</span>
-                           <span className="text-[10px] font-black text-zinc-600 uppercase tracking-tight">Taxa de Falha</span>
-                        </div>
-                     </div>
                   </div>
 
                   {/* Matriz de Cobrança */}

@@ -30,15 +30,20 @@ export const apiClientes = {
         // Mapeamento para snake_case (D1)
         const payload = {
             ...dadosValidados,
-            status_comercial: dados.statusComercial,
-            observacoes_crm: dados.observacoesCRM,
-            id_consentimento: dados.idConsentimento,
-            base_legal: dados.baseLegal,
-            finalidade_coleta: dados.finalidadeColeta,
-            prazo_retencao_meses: dados.prazoRetencaoMeses,
-            ltv_centavos: dados.ltvCentavos,
-            total_produtos: dados.totalProdutos,
-            historico: dados.historico ? JSON.stringify(dados.historico) : undefined
+            id: dados.id,
+            id_usuario: _usuarioId,
+            nome: dados.nome ?? null,
+            email: dados.email ?? null,
+            telefone: dados.telefone ?? null,
+            status_comercial: dados.statusComercial ?? null,
+            observacoes_crm: dados.observacoesCRM ?? null,
+            id_consentimento: dados.idConsentimento ?? null,
+            base_legal: dados.baseLegal ?? null,
+            finalidade_coleta: dados.finalidadeColeta ?? null,
+            prazo_retencao_meses: dados.prazoRetencaoMeses ?? null,
+            ltv_centavos: dados.ltvCentavos ?? null,
+            total_produtos: dados.totalProdutos ?? null,
+            historico: dados.historico ? JSON.stringify(dados.historico) : null
         };
 
         return servicoBaseApi.requisicao<Cliente>("/api/clientes", {

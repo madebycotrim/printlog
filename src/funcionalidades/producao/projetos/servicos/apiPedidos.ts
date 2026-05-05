@@ -34,8 +34,8 @@ export const apiPedidos = {
             prazoEntrega: (dados.prazo_entrega ?? dados.prazoEntrega) ? new Date(dados.prazo_entrega ?? dados.prazoEntrega) : undefined,
             observacoes: dados.observacoes || extras.observacoes,
             material: dados.material,
-            pesoGramas: dados.peso_gramas ?? dados.pesoGramas,
-            tempoMinutos: dados.tempo_minutos ?? dados.tempoMinutos,
+            pesoGramas: dados.peso_gramas ?? dados.pesoGramas ?? extras.pesoGramas ?? extras.peso_gramas ?? 0,
+            tempoMinutos: dados.tempo_minutos ?? dados.tempoMinutos ?? extras.tempoMinutos ?? extras.tempo_minutos ?? 0,
             idImpressora: dados.id_impressora ?? dados.idImpressora ?? extras.idImpressora,
             insumosSecundarios: (extras.insumosSecundarios && extras.insumosSecundarios.length > 0)
                 ? extras.insumosSecundarios
@@ -158,7 +158,9 @@ export const apiPedidos = {
                 configuracoes: dados.configuracoes,
                 idImpressora: mapeado.id_impressora,
                 prazoEntrega: mapeado.prazo_entrega,
-                observacoes: mapeado.observacoes
+                observacoes: mapeado.observacoes,
+                pesoGramas: mapeado.peso_gramas,
+                tempoMinutos: mapeado.tempo_minutos
             };
             mapeado.dados_extras = JSON.stringify(dadosExtras);
         }

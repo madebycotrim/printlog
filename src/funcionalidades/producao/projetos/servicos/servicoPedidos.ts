@@ -143,6 +143,16 @@ class ServicoPedidos {
     const erros: string[] = [];
 
     console.log(`[DEBUG] Iniciando liquidação para: ${pedido.descricao} (${pedido.id})`);
+    
+    // v9.0: Blindagem de segurança - se o peso/tempo vierem zerados (erro de mapeamento), tenta somar dos itens
+    const pesoEfetivo = pedido.pesoGramas || (pedido.materiais?.reduce((acc: number, m: any) => acc + (m.quantidadeGasta || 0), 0)) || 0;
+    const tempoEfetivo = pedido.tempoMinutos || (
+      pedido.configuracoes 
+        ? ((pedido.configuracoes.tempoHoras || 0) * 60 + (pedido.configuracoes.tempoMinutos || 0))
+        : 0
+    ) || 0;
+
+    console.log(`[DEBUG] Massa: ${pesoEfetivo}g | Tempo: ${tempoEfetivo}min`);
     console.log(`[DEBUG] Materiais: ${pedido.materiais?.length || 0} | Insumos: ${pedido.insumosSecundarios?.length || 0}`);
 
     // 1. Desconto de Materiais
@@ -213,12 +223,12 @@ class ServicoPedidos {
     }
 
     // 3. Horímetro + Métricas da Impressora
-    if (pedido.idImpressora && pedido.tempoMinutos && pedido.tempoMinutos > 0) {
+    if (pedido.idImpressora && tempoEfetivo > 0) {
       console.log(`[DEBUG] Atualizando métricas da impressora: ${pedido.idImpressora}`);
       try {
         await servicoManutencao.registrarUsoMaquina(
           pedido.idImpressora,
-          pedido.tempoMinutos,
+          tempoEfetivo,
           usuarioId,
           {
             idPedido: pedido.id,
@@ -332,8 +342,8 @@ class ServicoPedidos {
               {
                 data: new Date().toISOString(),
                 nomePeca: `[REVERSÃO] ${pedido.descricao}`,
-                quantidadeGastaGramas: -(mat.quantidadeGasta || 0), // Negativo = devolução
-                status: "CANCELADO"
+                quantidadeGastaGramas: mat.quantidadeGasta || 0,
+                status: "MANUAL"
               }
             );
           }
