@@ -61,6 +61,19 @@ export const apiPedidos = {
     /**
      * Busca todos os pedidos do usuário no D1.
      */
+    buscarPorId: async (id: string, _usuarioId: string): Promise<Pedido | null> => {
+        const dados = await servicoBaseApi.get<any>(`/api/pedidos?id=${id}`);
+        if (!dados) return null;
+        
+        // v9.0: Blindagem contra APIs que retornam array mesmo com filtro de ID
+        if (Array.isArray(dados)) {
+            const encontrado = dados.find(d => d.id === id);
+            return encontrado ? apiPedidos.mapearParaFrontend(encontrado) : null;
+        }
+        
+        return apiPedidos.mapearParaFrontend(dados);
+    },
+
     buscarTodos: async (_usuarioId: string): Promise<Pedido[]> => {
         const resultados = await servicoBaseApi.get<any[]>("/api/pedidos");
         return (resultados || []).map(apiPedidos.mapearParaFrontend);

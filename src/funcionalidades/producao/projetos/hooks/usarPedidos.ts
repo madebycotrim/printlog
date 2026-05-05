@@ -93,7 +93,7 @@ export function usarPedidos() {
 
     try {
       bloquearId(id);
-      await servicoPedidos.atualizarStatus(id, novoStatus, usuarioId);
+      await servicoPedidos.atualizarStatus(id, novoStatus, usuarioId, pedidoEncontrado);
 
       // Feedback positivo específico para conclusão
       if (novoStatus === StatusPedido.CONCLUIDO) {

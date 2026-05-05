@@ -93,9 +93,14 @@ class ServicoPedidos {
    * Atualiza o status de um pedido, orquestrando todas as operações de
    * liquidação (ao concluir) e reversão (ao sair de concluído).
    */
-  async atualizarStatus(id: string, novoStatus: StatusPedido, usuarioId: string): Promise<Pedido> {
-    const todos = await apiPedidos.buscarTodos(usuarioId);
-    const pedido = todos.find(p => p.id === id);
+  async atualizarStatus(id: string, novoStatus: StatusPedido, usuarioId: string, pedidoInicial?: Pedido): Promise<Pedido> {
+    let pedido = pedidoInicial;
+
+    // Se não temos o pedido em mãos, buscamos ele de forma isolada (evita inconsistência de buscarTodos)
+    if (!pedido) {
+      console.log(`[DEBUG] Buscando pedido individualmente para atualização: ${id}`);
+      pedido = await apiPedidos.buscarPorId(id, usuarioId) || undefined;
+    }
     
     if (!pedido) {
       registrar.error({ rastreioId: `status-${id}`, servico: "Pedidos" }, "Pedido não encontrado para atualização", { id });
