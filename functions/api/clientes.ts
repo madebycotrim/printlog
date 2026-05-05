@@ -54,6 +54,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         // ATUALIZAR
         if (metodo === "PATCH" || metodo === "PUT") {
             const dados = await request.json() as any;
+            
+            // Garantir que historico seja string e não undefined
+            let historicoStr = null;
+            if (dados.historico !== undefined && dados.historico !== null) {
+                historicoStr = typeof dados.historico === "string" ? dados.historico : JSON.stringify(dados.historico);
+            }
+
             await env.DB.prepare(`
                 UPDATE clientes SET 
                     nome = COALESCE(?, nome), 
@@ -71,9 +78,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 dados.observacoesCRM ?? null,
                 dados.ltvCentavos ?? null,
                 dados.totalProdutos ?? null,
-                dados.historico ? JSON.stringify(dados.historico) : null,
-                dados.id, 
-                usuarioId
+                historicoStr ?? null,
+                dados.id ?? null, 
+                usuarioId ?? null
             ).run();
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
