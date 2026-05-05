@@ -49,19 +49,34 @@ export function ModalGerenciamentoInsumo({
   aoRepor,
   abaInicial = "estoque"
 }: PropriedadesModalGerenciamento) {
+  const insumoPadrao: Insumo = {
+    id: "",
+    nome: "Novo Insumo",
+    categoria: "Geral",
+    unidadeMedida: "un",
+    quantidadeAtual: 0,
+    quantidadeMinima: 0,
+    custoMedioUnidade: 0,
+    historico: [],
+    dataCriacao: new Date(),
+    dataAtualizacao: new Date(),
+  };
+
+  const insumoEfetivo = insumo || insumoPadrao;
+
   const [abaAtiva, setAbaAtiva] = useState<"estoque" | "historico" | "config">(abaInicial);
   const [categoriaTemp, setCategoriaTemp] = useState<CategoriaInsumo | null>(null);
 
   useEffect(() => {
     if (aberto) {
       setAbaAtiva(abaInicial);
-      setCategoriaTemp(insumo?.categoria || null);
+      setCategoriaTemp(insumoEfetivo.categoria || null);
     }
-  }, [aberto, abaInicial, insumo]);
+  }, [aberto, abaInicial, insumoEfetivo]);
 
-  if (!insumo) return null;
+  if (!aberto) return null;
 
-  const categoriaEfetiva = categoriaTemp || insumo.categoria;
+  const categoriaEfetiva = categoriaTemp || insumoEfetivo.categoria;
   const corTema = MAPA_CORES_CATEGORIA[categoriaEfetiva] || "sky-500";
   const corHex = MAPA_CORES_HEX[categoriaEfetiva] || "#0ea5e9";
 
@@ -69,7 +84,12 @@ export function ModalGerenciamentoInsumo({
     { id: "estoque", rotulo: "Operações", icone: Database },
     { id: "historico", rotulo: "Histórico", icone: History },
     { id: "config", rotulo: "Configurações", icone: Settings },
-  ];
+  ].filter(aba => {
+    if (!insumo) return aba.id === "config";
+    return true;
+  });
+
+  const esconderAbas = !insumo;
 
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho={true}>
@@ -83,7 +103,7 @@ export function ModalGerenciamentoInsumo({
 
         {/* Cabeçalho Premium Unificado */}
         <CabecalhoModalPremium 
-          titulo={insumo.nome}
+          titulo={insumoEfetivo.nome}
           aoFechar={aoFechar}
           corTema={corTema}
           icone={<Package size={28} className={`text-${corTema} transition-colors duration-500`} strokeWidth={2.5} />}
@@ -94,19 +114,21 @@ export function ModalGerenciamentoInsumo({
               </span>
               <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
               <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-                {insumo.marca || "Genérico"}
+                {insumoEfetivo.marca || "Genérico"}
               </span>
             </>
           }
         />
 
         {/* Sistema de Abas Padronizado */}
-        <AbasModalPremium 
-          abas={abas}
-          abaAtiva={abaAtiva}
-          aoMudarAba={(id) => setAbaAtiva(id as any)}
-          corTema={corTema}
-        />
+        {!esconderAbas && (
+          <AbasModalPremium 
+            abas={abas}
+            abaAtiva={abaAtiva}
+            aoMudarAba={(id) => setAbaAtiva(id as any)}
+            corTema={corTema}
+          />
+        )}
 
         {/* Conteúdo Dinâmico */}
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col relative z-10">
@@ -121,18 +143,18 @@ export function ModalGerenciamentoInsumo({
             >
               {abaAtiva === "estoque" && (
                 <AbaOperacoesInsumo 
-                  insumo={insumo} 
-                  aoBaixar={() => aoBaixar(insumo)}
-                  aoRepor={() => aoRepor(insumo)}
+                  insumo={insumoEfetivo} 
+                  aoBaixar={() => aoBaixar(insumoEfetivo)}
+                  aoRepor={() => aoRepor(insumoEfetivo)}
                   corTema={corTema}
                 />
               )}
               {abaAtiva === "historico" && (
-                <AbaHistoricoInsumo insumo={insumo} />
+                <AbaHistoricoInsumo insumo={insumoEfetivo} />
               )}
               {abaAtiva === "config" && (
                 <AbaConfiguracaoInsumo 
-                  insumo={insumo} 
+                  insumo={insumoEfetivo} 
                   aoSalvar={aoSalvar}
                   aoCancelar={aoFechar}
                   corTema={corTema}

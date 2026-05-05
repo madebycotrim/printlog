@@ -104,9 +104,19 @@ export const servicoManutencao = {
     }
   ) => {
     const { impressoras, definirImpressoras } = usarArmazemImpressoras.getState();
-    const impressoraAlvo = impressoras.find(i => i.id === idImpressora);
+    let impressoraAlvo = impressoras.find(i => i.id === idImpressora);
     
-    if (!impressoraAlvo) return;
+    // v9.0: Se não estiver na store (ex: vindo do Kanban sem carregar impressoras), busca na API
+    if (!impressoraAlvo) {
+      registrar.info({ idImpressora, servico: "Manutenção" }, "Impressora não encontrada na store, buscando na API...");
+      const todas = await apiImpressoras.buscarTodas(usuarioId);
+      impressoraAlvo = todas.find(i => i.id === idImpressora);
+    }
+
+    if (!impressoraAlvo) {
+      registrar.error({ idImpressora, servico: "Manutenção" }, "Impressora não encontrada no sistema para registrar uso");
+      return;
+    }
 
     const eReversao = dadosPedido?.reversao === true;
 

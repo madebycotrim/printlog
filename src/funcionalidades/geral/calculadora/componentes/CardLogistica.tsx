@@ -22,7 +22,9 @@ export const CardLogistica = memo(function CardLogistica({
   perfis, perfilAtivo, setPerfilAtivo, taxaEcommerce, setTaxaEcommerce, taxaFixa, setTaxaFixa, frete, setFrete, abrirPerfis, cobrarLogistica, setCobrarLogistica
 }: CardLogisticaProps) {
   return (
-    <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarLogistica ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+    <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarLogistica ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+      {/* Efeito Glow Laranja de Fundo */}
+      <div className="absolute -top-24 -right-20 w-80 h-80 bg-orange-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${cobrarLogistica ? 'text-orange-400 border-orange-500/30' : 'text-zinc-500 border-zinc-800'}`}>
@@ -30,7 +32,7 @@ export const CardLogistica = memo(function CardLogistica({
           </div>
           <div className="flex flex-col items-center md:items-start">
             <span className="text-xs font-black uppercase tracking-wider text-white">Canais de Venda e Logística</span>
-            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Custos de plataforma e fretes</span>
+            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Custos de plataforma e fretes</span>
           </div>
         </div>
 

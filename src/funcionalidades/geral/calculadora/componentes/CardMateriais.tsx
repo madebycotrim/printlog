@@ -66,7 +66,7 @@ export const CardMateriais = memo(function CardMateriais({
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sky-400 border border-sky-500/30">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-cyan-400 border border-cyan-500/30">
             <Layers size={18} />
           </div>
           <div className="flex flex-col">
@@ -76,13 +76,13 @@ export const CardMateriais = memo(function CardMateriais({
         </div>
         
         <div className="relative group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-700 group-focus-within:text-sky-500 transition-colors" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-700 group-focus-within:text-cyan-500 transition-colors" />
           <input 
             type="text"
             placeholder="Buscar material..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="w-full md:w-64 h-10 pl-10 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700"
+            className="w-full md:w-64 h-10 pl-10 pr-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-cyan-500/30 outline-none text-xs font-bold uppercase tracking-widest transition-all text-white placeholder:text-zinc-700"
           />
         </div>
       </div>
@@ -90,19 +90,19 @@ export const CardMateriais = memo(function CardMateriais({
       <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Box className="w-3 h-3 text-sky-500" />
+            <Box className="w-3 h-3 text-cyan-500" />
             <span className="text-xs font-black uppercase tracking-widest text-gray-400">Seu Inventário</span>
             <div className="flex items-center gap-1 ml-3 bg-zinc-950/40 p-0.5 rounded-lg border border-white/5">
               <button 
                 onClick={() => setTipoOrdenacao('favoritos')}
-                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'favoritos' ? 'bg-amber-500/20 text-amber-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'favoritos' ? 'bg-cyan-500/20 text-cyan-500' : 'text-zinc-600 hover:text-zinc-400'}`}
                 title="Mostrar favoritos primeiro"
               >
                 Favoritos
               </button>
               <button 
                 onClick={() => setTipoOrdenacao('uso')}
-                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'uso' ? 'bg-sky-500/20 text-sky-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+                className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'uso' ? 'bg-cyan-500/20 text-cyan-500' : 'text-zinc-600 hover:text-zinc-400'}`}
                 title="Mostrar os mais usados primeiro"
               >
                 Mais Usados
@@ -110,12 +110,22 @@ export const CardMateriais = memo(function CardMateriais({
             </div>
           </div>
 
-          <button 
-            onClick={abrirArmazem}
-            className="text-[10px] font-black uppercase text-sky-500 hover:text-sky-400 transition-colors flex items-center gap-1 group"
-          >
-            Gerenciar Armazém <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={abrirArmazem}
+              className="text-[10px] font-black uppercase text-cyan-500 hover:text-cyan-400 transition-colors flex items-center gap-1 group"
+            >
+              Gerenciar Armazém <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+            <div className="w-[1px] h-3 bg-white/10" />
+            <button 
+              onClick={abrirCriar}
+              className="w-5 h-5 flex items-center justify-center rounded-md bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500 hover:text-white transition-all active:scale-90"
+              title="Adicionar Novo Material"
+            >
+              <Plus size={12} strokeWidth={3} />
+            </button>
+          </div>
         </div>
 
         {totalPaginas > 1 && (
@@ -124,7 +134,7 @@ export const CardMateriais = memo(function CardMateriais({
               <button 
                 onClick={() => setPagina(p => Math.max(0, p - 1))}
                 disabled={pagina === 0}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-sky-400 disabled:opacity-20 transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-cyan-400 disabled:opacity-20 transition-colors"
               >
                 <Plus className="w-3 h-3 rotate-45" />
               </button>
@@ -132,7 +142,7 @@ export const CardMateriais = memo(function CardMateriais({
               <button 
                 onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
                 disabled={pagina === totalPaginas - 1}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-sky-400 disabled:opacity-20 transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-cyan-400 disabled:opacity-20 transition-colors"
               >
                 <Plus className="w-3 h-3" />
               </button>

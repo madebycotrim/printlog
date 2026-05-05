@@ -67,7 +67,21 @@ export const apiMateriais = {
    */
   async atualizar(material: Partial<Material> & { id: string }, _usuarioId: string, registroUso?: any): Promise<void> {
     const materialValidado = materialSchema.partial().parse(material);
-    const payload: any = { ...materialValidado };
+    
+    // Mapeamento para snake_case (D1)
+    const payload: any = { 
+      id: material.id,
+      tipo: materialValidado.tipo,
+      nome: materialValidado.nome,
+      tipo_material: materialValidado.tipoMaterial,
+      fabricante: materialValidado.fabricante,
+      cor: materialValidado.cor,
+      preco_centavos: materialValidado.precoCentavos,
+      peso_gramas: materialValidado.pesoGramas,
+      estoque_unidades: materialValidado.estoque,
+      peso_restante_gramas: materialValidado.pesoRestanteGramas,
+      arquivado: materialValidado.arquivado !== undefined ? (materialValidado.arquivado ? 1 : 0) : undefined
+    };
     
     // Se houver registro de uso, valida e mapeia
     if (registroUso) {

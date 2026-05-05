@@ -24,21 +24,14 @@ class ServicoPedidos {
     
     const processados = pedidos.map((p: any) => ({
       ...p,
-      status: (p.status || p.id_status || '')
+      status: (p.status || '')
         .toLowerCase()
         .trim()
         .replace(/\s+/g, '_')
         .replace('pendente', StatusPedido.A_FAZER) || StatusPedido.A_FAZER,
       dataCriacao: new Date(p.data_criacao || p.dataCriacao),
-      dataConclusao: p.data_conclusao ? new Date(p.data_conclusao) : undefined,
+      dataConclusao: p.data_conclusao ? new Date(p.data_conclusao) : p.dataConclusao ? new Date(p.dataConclusao) : undefined,
       prazoEntrega: (p.prazo_entrega || p.prazoEntrega) ? new Date(p.prazo_entrega || p.prazoEntrega) : undefined,
-      valorCentavos: (p.valor_centavos !== undefined) ? p.valor_centavos : p.valorCentavos,
-      idCliente: p.id_cliente || p.idCliente,
-      idImpressora: p.id_impressora || p.idImpressora,
-      pesoGramas: (p.peso_gramas !== undefined) ? p.peso_gramas : p.pesoGramas,
-      tempoMinutos: (p.tempo_minutos !== undefined) ? p.tempo_minutos : p.tempoMinutos,
-      insumosSecundarios: typeof p.insumos_secundarios === 'string' ? JSON.parse(p.insumos_secundarios) : (p.insumos_secundarios || p.insumosSecundarios || []),
-      posProcesso: typeof p.pos_processo === 'string' ? JSON.parse(p.pos_processo) : (p.pos_processo || p.posProcesso || [])
     }));
 
     const agora = new Date();
@@ -73,6 +66,7 @@ class ServicoPedidos {
       dataCriacao
     };
 
+    console.log(`[DEBUG] Criando pedido: ${novoPedido.id} para usuário: ${usuarioId}`);
     await apiPedidos.criar(novoPedido, usuarioId);
     return novoPedido;
   }
@@ -85,7 +79,8 @@ class ServicoPedidos {
       dataConclusao = new Date().toISOString();
     }
 
-    const payload = { ...dados, dataConclusao };
+    const payload = { ...dados, dataConclusao, idUsuario: usuarioId };
+    console.log(`[DEBUG] Atualizando pedido: ${dados.id} com payload:`, payload);
     await apiPedidos.atualizar(payload, usuarioId);
     
     return {
@@ -97,66 +92,24 @@ class ServicoPedidos {
   /**
    * Atualiza o status de um pedido, orquestrando todas as operações de
    * liquidação (ao concluir) e reversão (ao sair de concluído).
-   *
-   * Regras de negócio:
-   * - CONCLUÍDO: desconta materiais, insumos, incrementa horímetro, atualiza cliente, lança financeiro.
-   * - SAÍDA de CONCLUÍDO (exceto para ARQUIVADO): reverte todos os itens acima.
-   * - ARQUIVADO: sem operações (estado final imutável).
    */
   async atualizarStatus(id: string, novoStatus: StatusPedido, usuarioId: string): Promise<Pedido> {
     const todos = await apiPedidos.buscarTodos(usuarioId);
     const pedido = todos.find(p => p.id === id);
-    const statusAtual = (pedido?.status as StatusPedido) || StatusPedido.A_FAZER;
+    
+    if (!pedido) {
+      registrar.error({ rastreioId: `status-${id}`, servico: "Pedidos" }, "Pedido não encontrado para atualização", { id });
+      throw new Error("Pedido não encontrado.");
+    }
 
-    // Normaliza o pedido com campos camelCase — busca em TODAS as fontes possíveis
-    const pedidoNorm = pedido ? (() => {
-      const p = pedido as any; // Cast para acessar campos snake_case do banco
-
-      // Desempacota dados_extras se existir (pode vir como string ou objeto)
-      let extras: any = {};
-      if (p.dados_extras) {
-        try { extras = typeof p.dados_extras === 'string' ? JSON.parse(p.dados_extras) : p.dados_extras; } catch { extras = {}; }
-      }
-
-      // Função auxiliar para buscar array em múltiplas fontes
-      const buscarArray = (...fontes: any[]): any[] => {
-        for (const f of fontes) {
-          if (!f) continue;
-          if (typeof f === 'string') { try { const parsed = JSON.parse(f); if (Array.isArray(parsed)) return parsed; } catch { continue; } }
-          if (Array.isArray(f) && f.length > 0) return f;
-        }
-        return [];
-      };
-
-      return {
-        ...p,
-        ...extras,
-        idImpressora: p.id_impressora || p.idImpressora || extras.idImpressora,
-        pesoGramas: p.peso_gramas ?? p.pesoGramas ?? extras.peso_gramas,
-        tempoMinutos: p.tempo_minutos ?? p.tempoMinutos ?? extras.tempo_minutos,
-        valorCentavos: p.valor_centavos ?? p.valorCentavos,
-        idCliente: p.id_cliente || p.idCliente,
-        insumosSecundarios: buscarArray(
-          extras.insumosSecundarios, extras.insumos_secundarios,
-          p.insumosSecundarios, p.insumos_secundarios
-        ),
-        materiais: buscarArray(
-          extras.materiais, p.materiais
-        ),
-        posProcesso: buscarArray(
-          extras.posProcesso, extras.pos_processo,
-          p.posProcesso, p.pos_processo
-        ),
-        configuracoes: extras.configuracoes || p.configuracoes || {},
-      };
-    })() : null;
-
+    const statusAtual = (pedido.status as StatusPedido) || StatusPedido.A_FAZER;
     const rastreioId = `pedido-${id}`;
+    const pedidoNorm = pedido;
 
     // ─────────────────────────────────────────────────────────────────────────
     // CASO 1: Movendo PARA Concluído → Liquidação completa
     // ─────────────────────────────────────────────────────────────────────────
-    if (novoStatus === StatusPedido.CONCLUIDO && statusAtual !== StatusPedido.CONCLUIDO && pedidoNorm) {
+    if (novoStatus === StatusPedido.CONCLUIDO && statusAtual !== StatusPedido.CONCLUIDO) {
       registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando liquidação de conclusão");
       await this.liquidarConclusao(pedidoNorm, usuarioId, rastreioId);
     }
@@ -168,16 +121,11 @@ class ServicoPedidos {
     if (
       statusAtual === StatusPedido.CONCLUIDO &&
       novoStatus !== StatusPedido.CONCLUIDO &&
-      novoStatus !== StatusPedido.ARQUIVADO &&
-      pedidoNorm
+      novoStatus !== StatusPedido.ARQUIVADO
     ) {
       registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando reversão de conclusão");
       await this.reverterConclusao(pedidoNorm, usuarioId, rastreioId);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // CASO 3: Movendo para ARQUIVADO → Nada a fazer (estado final)
-    // ─────────────────────────────────────────────────────────────────────────
 
     return this.atualizarPedido({ id, status: novoStatus }, usuarioId);
   }
@@ -189,28 +137,20 @@ class ServicoPedidos {
   private async liquidarConclusao(pedido: any, usuarioId: string, rastreioId: string): Promise<void> {
     const erros: string[] = [];
 
-    // Log de diagnóstico: mostra exatamente quais dados estão disponíveis para liquidação
-    registrar.info({ 
-      rastreioId, 
-      servico: "Pedidos",
-      materiais: pedido.materiais?.length ?? 0,
-      insumosSecundarios: pedido.insumosSecundarios?.length ?? 0,
-      idImpressora: pedido.idImpressora ?? "NENHUMA",
-      tempoMinutos: pedido.tempoMinutos ?? 0,
-      valorCentavos: pedido.valorCentavos ?? 0,
-      idCliente: pedido.idCliente ?? "NENHUM",
-      temConfiguracoes: pedido.configuracoes ? "SIM" : "NÃO",
-    }, "Dados do pedido para liquidação");
+    console.log(`[DEBUG] Iniciando liquidação para: ${pedido.descricao} (${pedido.id})`);
+    console.log(`[DEBUG] Materiais: ${pedido.materiais?.length || 0} | Insumos: ${pedido.insumosSecundarios?.length || 0}`);
 
-    // 1. Desconto de Materiais (filamentos, resinas)
+    // 1. Desconto de Materiais
     if (pedido.materiais && pedido.materiais.length > 0) {
+      console.log(`[DEBUG] Buscando estoque de materiais para descontar...`);
+      const listaMats = await apiMateriais.listar(usuarioId);
       for (const mat of pedido.materiais) {
         try {
-          const listaMats = await apiMateriais.listar(usuarioId);
           const materialEstoque = listaMats.find(m => m.id === mat.idMaterial || m.id === mat.id);
           
           if (materialEstoque) {
             const novoPeso = Math.max(0, (materialEstoque.pesoRestanteGramas || 0) - (mat.quantidadeGasta || 0));
+            console.log(`[DEBUG] Descontando ${mat.quantidadeGasta}g de ${materialEstoque.nome}. Novo peso: ${novoPeso}g`);
             await apiMateriais.atualizar(
               { id: materialEstoque.id, pesoRestanteGramas: novoPeso },
               usuarioId,
@@ -221,36 +161,28 @@ class ServicoPedidos {
                 status: "SUCESSO"
               }
             );
-
-            // Alerta de estoque baixo (< 200g)
-            if (novoPeso < 200) {
-              usarArmazemNotificacoes.getState().adicionarNotificacao({
-                titulo: `Estoque Baixo: ${materialEstoque.nome} ⚠️`,
-                mensagem: `Restam apenas ${Math.round(novoPeso)}g. Considere comprar mais.`,
-                tipo: TipoNotificacao.AVISO,
-                categoria: CategoriaNotificacao.SISTEMA,
-                idReferencia: materialEstoque.id,
-                link: "/materiais"
-              });
-            }
+          } else {
+            console.warn(`[DEBUG] Material não encontrado no estoque: ${mat.nome || mat.idMaterial}`);
           }
         } catch (e) {
           const msg = `Erro ao descontar material ${mat.nome || mat.idMaterial}`;
-          registrar.error({ rastreioId, servico: "Pedidos" }, msg, e);
+          console.error(`[DEBUG] ${msg}`, e);
           erros.push(msg);
         }
       }
     }
 
-    // 2. Desconto de Insumos Secundários (parafusos, tintas, embalagens, etc)
+    // 2. Desconto de Insumos Secundários
     if (pedido.insumosSecundarios && pedido.insumosSecundarios.length > 0) {
+      console.log(`[DEBUG] Buscando estoque de insumos para descontar...`);
+      const listaIns = await apiInsumos.listar(usuarioId);
       for (const ins of pedido.insumosSecundarios) {
         try {
-          const listaIns = await apiInsumos.listar(usuarioId);
           const insumoEstoque = listaIns.find(i => i.id === ins.idInsumo || i.id === ins.id);
 
           if (insumoEstoque) {
             const novaQtd = Math.max(0, (insumoEstoque.quantidadeAtual || 0) - ins.quantidade);
+            console.log(`[DEBUG] Descontando ${ins.quantidade} de ${insumoEstoque.nome}. Nova qtd: ${novaQtd}`);
             await apiInsumos.atualizar(
               { id: insumoEstoque.id, quantidadeAtual: novaQtd },
               usuarioId,
@@ -264,29 +196,20 @@ class ServicoPedidos {
                 valorTotal: ins.quantidade * (insumoEstoque.custoMedioUnidade || 0)
               }
             );
-
-            // Alerta de insumo abaixo do mínimo
-            if (novaQtd <= insumoEstoque.quantidadeMinima) {
-              usarArmazemNotificacoes.getState().adicionarNotificacao({
-                titulo: `Insumo Abaixo do Mínimo: ${insumoEstoque.nome} ⚠️`,
-                mensagem: `Estoque atual: ${novaQtd} ${insumoEstoque.unidadeMedida}. Mínimo: ${insumoEstoque.quantidadeMinima}.`,
-                tipo: TipoNotificacao.AVISO,
-                categoria: CategoriaNotificacao.SISTEMA,
-                idReferencia: insumoEstoque.id,
-                link: "/insumos"
-              });
-            }
+          } else {
+            console.warn(`[DEBUG] Insumo não encontrado no estoque: ${ins.nome || ins.idInsumo}`);
           }
         } catch (e) {
           const msg = `Erro ao descontar insumo ${ins.nome || ins.idInsumo}`;
-          registrar.error({ rastreioId, servico: "Pedidos" }, msg, e);
+          console.error(`[DEBUG] ${msg}`, e);
           erros.push(msg);
         }
       }
     }
 
-    // 3. Horímetro + Métricas Completas da Impressora
+    // 3. Horímetro + Métricas da Impressora
     if (pedido.idImpressora && pedido.tempoMinutos && pedido.tempoMinutos > 0) {
+      console.log(`[DEBUG] Atualizando métricas da impressora: ${pedido.idImpressora}`);
       try {
         await servicoManutencao.registrarUsoMaquina(
           pedido.idImpressora,
@@ -296,8 +219,6 @@ class ServicoPedidos {
             idPedido: pedido.id,
             nomeProjeto: pedido.descricao,
             valorCentavos: pedido.valorCentavos,
-            // Extrai o preço do kWh das configurações do pedido.
-            // Na calculadora, o valor é salvo em reais (ex: 0.85), então convertemos para centavos.
             precoKwhCentavos: pedido.configuracoes?.precoKwh
               ? Math.round(pedido.configuracoes.precoKwh * 100)
               : 0,
@@ -305,14 +226,14 @@ class ServicoPedidos {
           }
         );
       } catch (e) {
-        const msg = "Erro ao atualizar métricas da impressora";
-        registrar.error({ rastreioId, servico: "Pedidos" }, msg, e);
-        erros.push(msg);
+        console.error(`[DEBUG] Erro ao atualizar métricas da impressora`, e);
+        erros.push("Erro ao atualizar métricas da impressora");
       }
     }
 
     // 4. Histórico e Métricas do Cliente
     if (pedido.idCliente && pedido.idCliente !== "avulso") {
+      console.log(`[DEBUG] Atualizando histórico do cliente: ${pedido.idCliente}`);
       try {
         const listaClientes = await apiClientes.buscarTodos(usuarioId);
         const cliente = listaClientes.find(c => c.id === pedido.idCliente);
@@ -337,13 +258,13 @@ class ServicoPedidos {
           }, usuarioId);
         }
       } catch (e) {
-        const msg = "Erro ao atualizar histórico do cliente";
-        registrar.error({ rastreioId, servico: "Pedidos" }, msg, e);
-        erros.push(msg);
+        console.error(`[DEBUG] Erro ao atualizar histórico do cliente`, e);
+        erros.push("Erro ao atualizar histórico do cliente");
       }
     }
 
-    // 5. Lançamento Financeiro (Entrada de Receita)
+    // 5. Lançamento Financeiro
+    console.log(`[DEBUG] Registrando receita no financeiro: ${pedido.valorCentavos} centavos`);
     try {
       await apiFinanceiro.registrar({
         descricao: `Receita: ${pedido.descricao}`,
@@ -352,19 +273,17 @@ class ServicoPedidos {
         categoria: "Venda de Impressão 3D",
         data: new Date(),
         idCliente: pedido.idCliente,
-        // Usamos o ID do pedido como referência para podermos reverter depois
         idReferencia: pedido.id,
       }, usuarioId);
     } catch (e) {
-      const msg = "Erro ao registrar lançamento financeiro";
-      registrar.error({ rastreioId, servico: "Pedidos" }, msg, e);
-      erros.push(msg);
+      console.error(`[DEBUG] Erro ao registrar financeiro`, e);
+      erros.push("Erro ao registrar lançamento financeiro");
     }
 
     if (erros.length > 0) {
-      registrar.warn({ rastreioId, servico: "Pedidos", erros }, "Liquidação concluída com erros parciais");
+      console.warn(`[DEBUG] Liquidação concluída com avisos:`, erros);
     } else {
-      registrar.info({ rastreioId, servico: "Pedidos" }, "Liquidação de conclusão concluída com sucesso");
+      console.log(`[DEBUG] Liquidação concluída com sucesso!`);
     }
   }
 

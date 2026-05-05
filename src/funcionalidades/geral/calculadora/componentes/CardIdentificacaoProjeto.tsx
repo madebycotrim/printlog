@@ -1,4 +1,5 @@
-import { FolderKanban, ChevronDown, Check, Plus, BrainCircuit } from "lucide-react";
+import { FolderKanban, ChevronDown, Check, Plus, Box, LayoutGrid, User, PencilLine, MessageSquare } from "lucide-react";
+import { motion } from "framer-motion";
 
 /**
  * Interface para as propriedades do CardIdentificacaoProjeto.
@@ -44,18 +45,25 @@ export function CardIdentificacaoProjeto({
   quantidade
 }: PropriedadesCardIdentificacaoProjeto) {
   return (
-    <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
-      {/* Efeito Glow Azul de Fundo */}
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none transition-all duration-700" />
+    <div className={`h-full p-5 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
+      {/* Efeito Glow Azul de Fundo (Fixo) */}
+      <motion.div 
+        animate={{ 
+          backgroundColor: 'rgba(14, 165, 233, 0.06)',
+          right: modoEntrada === 'unitario' ? '-40px' : '40px',
+          scale: modoEntrada === 'unitario' ? 1 : 1.2
+        }}
+        className="absolute -top-10 w-80 h-80 bg-sky-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-1000" 
+      />
 
-      <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-4">
+      <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#00A3FF] border border-[#00A3FF]/30">
             <FolderKanban size={18} />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-black uppercase tracking-wider text-white">Identificação do Orçamento</span>
-            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Vincule o cliente e os detalhes técnicos</span>
+            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Vincule o cliente e os detalhes técnicos</span>
           </div>
         </div>
       </div>
@@ -63,24 +71,27 @@ export function CardIdentificacaoProjeto({
       <div className="relative z-20 grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
         {/* Lado Esquerdo: Dados do Cliente */}
         <div className="md:col-span-4 flex flex-col gap-2 relative">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Cliente do Projeto</label>
+          <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Cliente do Projeto</label>
 
-          <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-sky-500/40 rounded-xl shadow-inner h-12 transition-all">
+          <div className="relative flex items-center bg-white/[0.03] border border-white/5 focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+            <div className="absolute left-4 text-zinc-600 focus-within:text-sky-500">
+               <User size={16} />
+            </div>
             <input
               type="text"
-              placeholder="Buscar ou digitar cliente..."
+              placeholder="Inserir ou buscar cliente..."
               value={buscaCliente}
               onChange={(e) => {
                 setBuscaCliente(e.target.value);
                 setAbertoSeletorCliente(true);
               }}
               onFocus={() => setAbertoSeletorCliente(true)}
-              className="w-full h-full bg-transparent px-4 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600"
+              className="w-full h-full bg-transparent pl-12 pr-10 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600"
             />
             <button
               type="button"
               onClick={() => setAbertoSeletorCliente(!abertoSeletorCliente)}
-              className="absolute right-3 text-zinc-500 hover:text-white"
+              className="absolute right-3 text-zinc-600 hover:text-white transition-colors"
             >
               <ChevronDown size={16} className={`transition-transform duration-300 ${abertoSeletorCliente ? 'rotate-180' : ''}`} />
             </button>
@@ -89,7 +100,7 @@ export function CardIdentificacaoProjeto({
           {abertoSeletorCliente && (
             <>
               <div className="fixed inset-0 z-[40]" onClick={() => setAbertoSeletorCliente(false)} />
-              <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
+              <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-[#0c0c0e]/95 border border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
                 {(() => {
                   const filtrados = (clientes || []).filter(c =>
                     c.nome.toLowerCase().includes(buscaCliente.toLowerCase())
@@ -145,71 +156,116 @@ export function CardIdentificacaoProjeto({
         {/* Lado Direito: Nome e Descrição */}
         <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Nome do Projeto</label>
-            <input
-              type="text"
-              placeholder="Ex: Action Figure Batman"
-              value={nomeProjeto}
-              onChange={(e) => setNomeProjeto(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
-            />
+            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Nome do Projeto</label>
+            <div className="relative flex items-center bg-white/[0.03] border border-white/5 focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+               <div className="absolute left-4 text-zinc-600">
+                  <PencilLine size={16} />
+               </div>
+               <input
+                 type="text"
+                 placeholder="Ex: Action Figure Batman"
+                 value={nomeProjeto}
+                 onChange={(e) => setNomeProjeto(e.target.value)}
+                 className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none placeholder:text-zinc-700"
+               />
+            </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Observações Técnicas</label>
-            <input
-              type="text"
-              placeholder="Ex: Altura de camada 0.12mm"
-              value={descricaoProjeto}
-              onChange={(e) => setDescricaoProjeto(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl bg-zinc-950/60 border border-white/5 focus:border-sky-500/40 outline-none font-bold text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
-            />
+            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Observações Técnicas</label>
+            <div className="relative flex items-center bg-white/[0.03] border border-white/5 focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+               <div className="absolute left-4 text-zinc-600">
+                  <MessageSquare size={16} />
+               </div>
+               <input
+                 type="text"
+                 placeholder="Ex: Altura de camada 0.12mm"
+                 value={descricaoProjeto}
+                 onChange={(e) => setDescricaoProjeto(e.target.value)}
+                 className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none placeholder:text-zinc-700"
+               />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Seletor de Modo de Entrada Global */}
-      <div className="relative z-10 pt-6 border-t border-white/5 flex flex-col gap-3">
-        <div className="flex flex-col items-center sm:flex-row sm:justify-between gap-4">
-          <div className="flex flex-col items-center sm:items-start">
-            <span className="text-[11px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-              <BrainCircuit size={14} className="text-sky-500" /> Estratégia de Preenchimento
-            </span>
-          </div>
-
-          <div className="flex bg-zinc-900 p-1 rounded-xl border border-white/5 shadow-inner">
-            <button
-              type="button"
-              onClick={() => setModoEntrada('unitario')}
-              className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${modoEntrada === 'unitario'
-                ? 'bg-zinc-800 text-sky-400 shadow-md ring-1 ring-white/10'
-                : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-            >
-              Por Peça
-            </button>
-            <button
-              type="button"
-              onClick={() => setModoEntrada('lote')}
-              className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${modoEntrada === 'lote'
-                ? 'bg-zinc-800 text-amber-400 shadow-md ring-1 ring-white/10'
-                : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-            >
-              Mesa Completa
-            </button>
-          </div>
+      {/* Seletor de Estratégia: Cards Interativos */}
+      <div className="relative z-10 pt-4 border-t border-white/5 flex flex-col gap-4 mt-auto">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Estratégia de Preenchimento</span>
+          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Selecione como a inteligência deve processar os dados</span>
         </div>
 
-        {/* Legenda Discreta */}
-        <div className="flex items-center justify-start gap-2 px-1">
-          <div className={`w-1 h-1 rounded-full ${modoEntrada === 'unitario' ? 'bg-sky-500' : 'bg-amber-500'}`} />
-          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
-            {modoEntrada === 'unitario'
-              ? `Modo Unitário: O peso e tempo serão multiplicados por ${quantidade}x.`
-              : `Modo Mesa: Os valores digitados já são o total de ${quantidade} peças.`
-            }
-          </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card: Por Peça */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="button"
+            onClick={() => setModoEntrada('unitario')}
+            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
+              modoEntrada === 'unitario' 
+              ? 'bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
+              : 'bg-zinc-950/40 border-white/5 hover:border-white/10'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              modoEntrada === 'unitario' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-zinc-900 text-zinc-600'
+            }`}>
+              <Box size={20} />
+            </div>
+            
+            <div className="flex flex-col gap-1">
+              <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+                modoEntrada === 'unitario' ? 'text-sky-400' : 'text-zinc-400'
+              }`}>Por Peça</span>
+              <p className="text-[9px] font-bold text-zinc-400 leading-tight uppercase tracking-tighter">
+                O peso e tempo inseridos serão multiplicados por <span className={modoEntrada === 'unitario' ? 'text-sky-500' : ''}>{quantidade}x</span> automaticamente.
+              </p>
+            </div>
+
+            {modoEntrada === 'unitario' && (
+              <motion.div 
+                layoutId="active-indicator"
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+              />
+            )}
+          </motion.button>
+
+          {/* Card: Mesa Completa */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="button"
+            onClick={() => setModoEntrada('lote')}
+            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
+              modoEntrada === 'lote' 
+              ? 'bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
+              : 'bg-zinc-950/40 border-white/5 hover:border-white/10'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              modoEntrada === 'lote' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-zinc-900 text-zinc-600'
+            }`}>
+              <LayoutGrid size={20} />
+            </div>
+            
+            <div className="flex flex-col gap-1">
+              <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+                modoEntrada === 'lote' ? 'text-sky-400' : 'text-zinc-400'
+              }`}>Mesa Completa</span>
+              <p className="text-[9px] font-bold text-zinc-400 leading-tight uppercase tracking-tighter">
+                Os valores inseridos já correspondem ao total produzido das <span className={modoEntrada === 'lote' ? 'text-sky-500' : ''}>{quantidade} peças</span>.
+              </p>
+            </div>
+
+            {modoEntrada === 'lote' && (
+              <motion.div 
+                layoutId="active-indicator"
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+              />
+            )}
+          </motion.button>
         </div>
       </div>
     </div>

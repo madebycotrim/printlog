@@ -1,7 +1,8 @@
-import { Zap, Plus, Trash2, Minus } from "lucide-react";
+import { Zap, Plus, Trash2, Minus, Sparkles, LocateFixed } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
 import { useState, memo } from "react";
 import { ContadorAnimado } from "@/componentes/ui";
+import { toast } from "react-hot-toast";
 
 interface CardProducaoProps {
   tempo: number;
@@ -21,16 +22,18 @@ interface CardProducaoProps {
   aoSelecionarImpressora?: (id: string) => void;
   quantidade: number;
   setQuantidade: (v: number) => void;
+  aoDetectarTarifa?: () => Promise<any>;
 }
 
 export const CardProducao = memo(function CardProducao({
   tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
-  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade
+  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, aoDetectarTarifa
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
   
   // Estados de foco
   const [focoPos, setFocoPos] = useState<Record<string, boolean>>({});
+  const [detectando, setDetectando] = useState(false);
 
   // Buffers de digitação para garantir que o campo fique vazio ao focar
   const [tempQuantidade, setTempQuantidade] = useState<string | undefined>(undefined);
@@ -40,16 +43,36 @@ export const CardProducao = memo(function CardProducao({
   const [tempKwh, setTempKwh] = useState<string | undefined>(undefined);
   const [tempPos, setTempPos] = useState<Record<string, string>>({});
 
+  const lidarComDeteccao = async () => {
+    if (!aoDetectarTarifa) return;
+    setDetectando(true);
+    try {
+      const res = await aoDetectarTarifa();
+      if (res) {
+        toast.success(`Tarifa de ${res.estado} aplicada: R$ ${res.tarifa.toFixed(2)}/kWh`);
+      } else {
+        toast.error("Não foi possível detectar sua localização.");
+      }
+    } catch (e) {
+      toast.error("Erro ao buscar tarifas.");
+    } finally {
+      setDetectando(false);
+    }
+  };
+
   return (
     <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+      {/* Efeito Glow Indigo de Fundo */}
+      <div className="absolute -top-24 -left-20 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
+      
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400 border border-amber-500/30">
+          <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-indigo-500 border border-indigo-500/30">
             <Zap size={18} />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-black uppercase tracking-wider text-white">Produção e Impressão</span>
-            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Metricas de tempo e hardware</span>
+            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Metricas de tempo e hardware</span>
           </div>
         </div>
 
@@ -57,7 +80,7 @@ export const CardProducao = memo(function CardProducao({
         {impressoraAtiva && (
           <div className="flex items-center justify-between px-4 h-11 rounded-xl border bg-zinc-100/50 dark:bg-white/5 border-zinc-200/50 dark:border-white/10 shadow-sm min-w-[160px]">
             <div className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
               <div className="flex items-baseline gap-2">
                 <span className="text-xs font-black uppercase tracking-tight text-zinc-900 dark:text-white">
                   {impressoraAtiva.nome}
@@ -78,7 +101,7 @@ export const CardProducao = memo(function CardProducao({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Quantas peças?</label>
-              <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 transition-all shadow-inner overflow-hidden">
+              <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
                 <button 
                   type="button"
                   onClick={() => setQuantidade(Math.max(1, (quantidade || 1) - 1))}
@@ -113,7 +136,7 @@ export const CardProducao = memo(function CardProducao({
             <div>
               <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Tempo de Produção</label>
               <div className="grid grid-cols-2 gap-2">
-                <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 transition-all shadow-inner">
+                <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
                     placeholder="0" 
@@ -130,7 +153,7 @@ export const CardProducao = memo(function CardProducao({
                   <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                 </div>
 
-                <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 transition-all shadow-inner">
+                <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
                     placeholder="0" 
@@ -159,9 +182,9 @@ export const CardProducao = memo(function CardProducao({
                 <div
                   onClick={() => setCobrarEnergia(!cobrarEnergia)}
                   title={cobrarEnergia ? "Clique para desativar cobrança de energia" : "Clique para ativar cobrança de energia"}
-                  className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase flex items-center gap-0.5 w-fit cursor-pointer transition-colors hover:scale-105 active:scale-95 ${!cobrarEnergia
+                  className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase flex items-center gap-0.5 w-fit cursor-pointer transition-all hover:scale-105 active:scale-95 ${!cobrarEnergia
                       ? "bg-gray-500/10 border-gray-500/20 text-gray-500 opacity-60"
-                      : "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-500"
                     }`}
                 >
                   <input
@@ -186,37 +209,54 @@ export const CardProducao = memo(function CardProducao({
                 onClick={() => setCobrarEnergia(!cobrarEnergia)}
                 title={cobrarEnergia ? "Clique para desativar cobrança de energia" : "Clique para ativar cobrança de energia"}
                 className={`w-full h-11 px-4 rounded-xl flex items-center border cursor-pointer transition-all shadow-inner ${!cobrarEnergia ? 'bg-zinc-100/20 dark:bg-zinc-800/20 border-zinc-200/20 dark:border-white/5 opacity-40 grayscale' :
-                    impressoraAtiva ? 'bg-zinc-100/50 dark:bg-zinc-800/40 border-amber-500/20 group-hover:border-amber-500/40' : 'bg-zinc-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 group-hover:border-amber-500/30'
+                    impressoraAtiva ? 'bg-zinc-100/50 dark:bg-zinc-800/40 border-indigo-500/20 group-hover:border-indigo-500/40' : 'bg-zinc-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 group-hover:border-indigo-500/30'
                   }`}
               >
                 <span className="text-gray-400 font-black text-xs mr-2 select-none">R$</span>
-                <span className={`font-black text-sm w-full text-center ${!cobrarEnergia ? 'line-through text-gray-400' : impressoraAtiva ? 'text-amber-500' : 'text-zinc-900 dark:text-white'}`}>
+                <span className={`font-black text-sm w-full text-center ${!cobrarEnergia ? 'line-through text-gray-400' : impressoraAtiva ? 'text-indigo-500' : 'text-zinc-900 dark:text-white'}`}>
                   <ContadorAnimado valor={cobrarEnergia ? custoEnergia : 0} prefixo="" />
                 </span>
               </div>
             </div>
             <div className="flex flex-col">
-              <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">kWh (R$)</label>
-              <input 
-                type="number" 
-                step="0.01" 
-                placeholder="0" 
-                value={tempKwh !== undefined ? tempKwh : (precoKwh === 0 ? "" : precoKwh)} 
-                onFocus={() => {}}
-                onBlur={() => setTempKwh(undefined)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setTempKwh(v);
-                  setPrecoKwh(v === "" ? 0 : Number(v));
-                }} 
-                className="w-full h-11 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-amber-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner text-center" 
-              />
+              <div className="flex items-center justify-between h-4 mb-2">
+                <label className="block text-xs font-black uppercase text-gray-400">kWh (R$)</label>
+                <button
+                  onClick={lidarComDeteccao}
+                  disabled={detectando}
+                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 ${
+                    detectando 
+                      ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-500 animate-pulse' 
+                      : 'bg-zinc-500/5 border-white/5 text-zinc-500 hover:text-indigo-400 hover:border-indigo-400/30 hover:bg-indigo-400/10'
+                  }`}
+                  title="Auto-detectar tarifa pelo IP"
+                >
+                  <Sparkles size={10} className={detectando ? 'animate-spin' : ''} />
+                  <span>{detectando ? 'Buscando...' : 'Auto-ajuste'}</span>
+                </button>
+              </div>
+              <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  placeholder="0" 
+                  value={tempKwh !== undefined ? tempKwh : (precoKwh === 0 ? "" : precoKwh)} 
+                  onFocus={() => {}}
+                  onBlur={() => setTempKwh(undefined)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setTempKwh(v);
+                    setPrecoKwh(v === "" ? 0 : Number(v));
+                  }} 
+                  className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white text-center" 
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Linha Divisória Vertical */}
-        <div className="hidden md:block w-[1px] bg-amber-500/20 dark:bg-amber-500/10 self-stretch mx-3" />
+        <div className="hidden md:block w-[1px] bg-indigo-500/20 dark:bg-indigo-500/10 self-stretch mx-3" />
 
         {/* Coluna Direita: Pós-Processamento */}
         <div className="flex-1 flex flex-col h-full md:pl-6">
@@ -227,15 +267,13 @@ export const CardProducao = memo(function CardProducao({
               </label>
               <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Lixamento, Pintura, Cola e Acabamentos</p>
             </div>
-            <button
-              type="button"
+            <button 
               onClick={() => {
                 setPosProcesso([...posProcesso, { id: crypto.randomUUID(), nome: "Novo Item", valor: 0 }]);
               }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[9px] font-black uppercase tracking-widest rounded-lg hover:brightness-110 transition-all"
+              className="px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 hover:bg-indigo-500 hover:text-white text-[9px] font-black uppercase transition-all flex items-center gap-1"
             >
-              <Plus size={10} strokeWidth={3} />
-              Adicionar Item
+              <Plus size={10} strokeWidth={3} /> Adicionar Item
             </button>
           </div>
 

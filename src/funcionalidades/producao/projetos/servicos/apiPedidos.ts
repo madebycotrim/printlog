@@ -37,12 +37,16 @@ export const apiPedidos = {
             pesoGramas: dados.peso_gramas ?? dados.pesoGramas,
             tempoMinutos: dados.tempo_minutos ?? dados.tempoMinutos,
             idImpressora: dados.id_impressora ?? dados.idImpressora ?? extras.idImpressora,
-            insumosSecundarios: extras.insumosSecundarios || (typeof dados.insumos_secundarios === 'string' 
-                ? JSON.parse(dados.insumos_secundarios) 
-                : (dados.insumos_secundarios ?? dados.insumosSecundarios ?? [])),
-            materiais: extras.materiais || (typeof dados.materiais === 'string'
-                ? JSON.parse(dados.materiais)
-                : (dados.materiais ?? [])),
+            insumosSecundarios: (extras.insumosSecundarios && extras.insumosSecundarios.length > 0)
+                ? extras.insumosSecundarios
+                : (typeof dados.insumos_secundarios === 'string' && dados.insumos_secundarios !== "[]"
+                    ? JSON.parse(dados.insumos_secundarios) 
+                    : (dados.insumos_secundarios ?? dados.insumosSecundarios ?? [])),
+            materiais: (extras.materiais && extras.materiais.length > 0)
+                ? extras.materiais
+                : (typeof dados.materiais === 'string' && dados.materiais !== "[]"
+                    ? JSON.parse(dados.materiais)
+                    : (dados.materiais ?? [])),
             posProcesso: (extras.posProcesso && extras.posProcesso.length > 0) 
                 ? extras.posProcesso 
                 : (typeof dados.pos_processo === 'string' && dados.pos_processo !== "[]"

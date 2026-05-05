@@ -4,6 +4,7 @@ import { usarFormularioInsumo } from "../../hooks/usarFormularioInsumo";
 import { SecaoInformacoesBasicas } from "../formulario/SecaoInformacoesBasicas";
 import { SecaoEstoquePreco } from "../formulario/SecaoEstoquePreco";
 import { SecaoRendimentoFracionado } from "../formulario/SecaoRendimentoFracionado";
+import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
 
 interface PropriedadesAbaConfiguracao {
   insumo: Insumo;
@@ -32,6 +33,9 @@ export function AbaConfiguracaoInsumo({
     itemFracionavelAtivo,
     unidadeConsumoAtiva,
     custoEfetivo,
+    confirmarDescarte,
+    definirConfirmarDescarte,
+    lidarComTentativaFechamento,
   } = usarFormularioInsumo({ aberto: true, insumoEditando: insumo, aoSalvar, aoCancelar });
 
   // Notifica o modal sobre a mudança de categoria
@@ -82,14 +86,32 @@ export function AbaConfiguracaoInsumo({
           />
         </div>
 
-        {/* Botão de Salvar dedicado para a aba de Configuração */}
-        <div className="flex justify-end pt-8 border-t border-zinc-100 dark:border-white/5">
-          <button
-            type="submit"
-            className={`h-12 px-10 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl bg-${corTema} hover:brightness-110 shadow-${corTema}/20`}
-          >
-            Salvar Alterações
-          </button>
+        {/* Rodapé Padronizado com Descarte */}
+        <div className="pt-8 border-t border-zinc-100 dark:border-white/5">
+           {!confirmarDescarte ? (
+              <div className="flex items-center gap-4 justify-end">
+                 <button 
+                   type="button" 
+                   onClick={lidarComTentativaFechamento} 
+                   className="px-6 py-2.5 text-[11px] font-black uppercase text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all"
+                 >
+                   Cancelar
+                 </button>
+                 <button
+                   type="submit"
+                   className={`h-12 px-10 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl bg-${corTema} hover:brightness-110 shadow-${corTema}/20`}
+                 >
+                   Cadastrar Filamento
+                 </button>
+              </div>
+           ) : (
+              <div className="flex justify-end">
+                <AcoesDescarte
+                   aoConfirmarDescarte={aoCancelar}
+                   aoContinuarEditando={() => definirConfirmarDescarte(false)}
+                />
+              </div>
+           )}
         </div>
       </form>
     </div>

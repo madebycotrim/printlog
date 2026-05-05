@@ -41,21 +41,23 @@ export const CardOperacional = memo(function CardOperacional({
   }, [margemInterna, margem, setMargem]);
 
   const msgMargem = margemInterna === 0 
-    ? { texto: "Sem margem de lucro adicionada.", cor: "text-zinc-500" }
+    ? { texto: "Sem margem adicionada", cor: "text-zinc-500", corHex: "#71717a" }
     : margemInterna <= 20 
-    ? { texto: "🔴 Margem baixa (pode comprometer o lucro do estúdio)", cor: "text-rose-500" }
+    ? { texto: "Margem de Risco (Lucro muito baixo)", cor: "text-rose-500", corHex: "#f43f5e" }
     : margemInterna <= 60 
-    ? { texto: "🟡 Margem competitiva (ideal para brigar por preço)", cor: "text-amber-500" }
+    ? { texto: "Margem Competitiva (Ideal para volume)", cor: "text-amber-500", corHex: "#f59e0b" }
     : margemInterna <= 120 
-    ? { texto: "🟢 Excelente margem (ótima relação custo/retorno)", cor: "text-emerald-500 font-bold" }
+    ? { texto: "Margem Saudável (Equilíbrio ideal)", cor: "text-emerald-500", corHex: "#10b981" }
     : margemInterna <= 250 
-    ? { texto: "💎 Margem Premium (indicado para peças raras ou serviços especializados)", cor: "text-sky-500 font-bold" }
-    : { texto: "🚀 Margem Altíssima (atente-se à aceitação do mercado)", cor: "text-violet-500 font-black animate-pulse" };
+    ? { texto: "Margem Premium (Alta lucratividade)", cor: "text-sky-500", corHex: "#0ea5e9" }
+    : { texto: "Margem de Luxo (Valor agregado alto)", cor: "text-violet-500", corHex: "#8b5cf6" };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+          {/* Efeito Glow Esmeralda de Fundo */}
+          <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/30">
@@ -63,7 +65,7 @@ export const CardOperacional = memo(function CardOperacional({
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-black uppercase tracking-wider text-white">Mão de Obra</span>
-                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
               </div>
             </div>
             <button
@@ -144,15 +146,17 @@ export const CardOperacional = memo(function CardOperacional({
           </div>
       </div>
 
-        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+          {/* Efeito Glow Violeta de Fundo */}
+          <div className="absolute -top-24 -right-20 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-zinc-400 border border-zinc-500/30">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-400 border border-violet-500/30">
                 <Activity size={18} />
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-black uppercase tracking-wider text-white">Desgaste e Depreciação</span>
-                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Vida útil do equipamento</span>
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Vida útil do equipamento</span>
               </div>
             </div>
             
@@ -160,7 +164,7 @@ export const CardOperacional = memo(function CardOperacional({
               type="button"
               onClick={() => setCobrarDesgaste(!cobrarDesgaste)}
               className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-                cobrarDesgaste ? 'bg-zinc-500' : 'bg-gray-200 dark:bg-zinc-700'
+                cobrarDesgaste ? 'bg-violet-500' : 'bg-gray-200 dark:bg-zinc-700'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
@@ -182,7 +186,7 @@ export const CardOperacional = memo(function CardOperacional({
                     else setAnosVidaUtil(5);
                   }}
                   className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all hover:scale-105 active:scale-95 ${
-                    anosVidaUtil === 5 ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' :
+                    anosVidaUtil === 5 ? 'text-violet-500 bg-violet-500/10 border-violet-500/20' :
                     anosVidaUtil === 3 ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' :
                     'text-rose-500 bg-rose-500/10 border-rose-500/20'
                   }`}
@@ -194,11 +198,11 @@ export const CardOperacional = memo(function CardOperacional({
               </div>
               <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-white/5'} select-none relative group`}>
                 <span className="text-gray-400 font-black text-xs mr-2 select-none">R$</span>
-                <span className="font-black text-sm text-emerald-500 w-full text-center">
+                <span className="font-black text-sm text-violet-500 w-full text-center">
                   <ContadorAnimado valor={cobrarDesgaste ? depreciacao || 0 : 0} />
                 </span>
                 {cobrarDesgaste && (
-                  <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-zinc-500/30 to-transparent animate-pulse" />
+                  <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-violet-500/30 to-transparent animate-pulse" />
                 )}
               </div>
               {cobrarDesgaste && (
@@ -208,47 +212,58 @@ export const CardOperacional = memo(function CardOperacional({
               )}
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-500/5 border border-zinc-500/10 flex flex-col gap-2 relative overflow-hidden">
+            <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-2 relative overflow-hidden">
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-black uppercase text-zinc-500">Custo por Peça:</span>
-                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                <span className="text-[11px] font-black uppercase text-violet-500">Custo Desgaste:</span>
+                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-500' : 'text-zinc-500'}`}>
                   <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao : 0} />
                 </span>
               </div>
               {quantidade > 1 && (
-                <div className="flex justify-between items-center pt-2 border-t border-zinc-500/10">
+                <div className="flex justify-between items-center pt-2 border-t border-violet-500/10">
                   <span className="text-[11px] font-black uppercase text-zinc-400">Total do Lote ({quantidade}x):</span>
-                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-500' : 'text-zinc-500'}`}>
                     <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao * quantidade : 0} />
                   </span>
                 </div>
               )}
             </div>
           </div>
+        </div>
       </div>
-    </div>
 
       <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden">
+        {/* Efeito Glow Esmeralda de Fundo */}
+        <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: O Display do Valor e Status */}
           <div className="md:col-span-4 flex flex-col items-center md:items-center border-b md:border-b-0 md:border-r border-zinc-100 dark:border-white/5 pb-4 md:pb-0 md:pr-6">
-            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider text-center">Margem de Lucro</label>
+            <label className="text-[9px] font-black uppercase text-zinc-400 tracking-[2px] text-center mb-1">Margem de Lucro</label>
             
-            <div className="flex items-baseline gap-1 mt-1">
+            <div className="flex items-baseline gap-1 relative">
               <ContadorAnimado 
                 valor={margemInterna} 
                 prefixo="" 
                 sufixo="" 
                 casasDecimais={0} 
-                className="text-4xl font-black text-zinc-900 dark:text-white" 
+                className={`text-5xl font-black transition-colors duration-500 ${msgMargem.cor}`} 
               />
-              <span className="text-sm font-black text-zinc-400">%</span>
+              <span className={`text-base font-black transition-colors duration-500 ${msgMargem.cor} opacity-50`}>%</span>
+
+              {/* Brilho Sutil de Cor */}
+              <div 
+                className="absolute inset-0 blur-2xl opacity-20 pointer-events-none transition-all duration-700"
+                style={{ backgroundColor: msgMargem.corHex, transform: 'scale(1.5)' }}
+              />
             </div>
 
-            <p className={`text-[10px] font-black uppercase tracking-widest mt-3 transition-colors text-center w-full ${msgMargem.cor}`}>
-              {msgMargem.texto}
-            </p>
+            <div className="flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${msgMargem.cor.replace('text-', 'bg-')}`} />
+              <p className={`text-[10px] font-black uppercase tracking-widest transition-colors ${msgMargem.cor}`}>
+                {msgMargem.texto}
+              </p>
+            </div>
           </div>
 
           {/* Coluna Direita: Controles */}

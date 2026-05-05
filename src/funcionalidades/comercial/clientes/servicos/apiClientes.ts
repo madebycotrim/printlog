@@ -16,8 +16,9 @@ export const apiClientes = {
             statusComercial: c.status_comercial,
             observacoesCRM: c.observacoes_crm,
             dataCriacao: new Date(c.data_criacao),
-            ltvCentavos: 0, // Pode ser calculado no futuro
-            totalProdutos: 0
+            ltvCentavos: c.ltv_centavos || 0,
+            totalProdutos: c.total_produtos || 0,
+            historico: typeof c.historico === 'string' ? JSON.parse(c.historico) : (c.historico || [])
         }));
     },
 
@@ -26,9 +27,23 @@ export const apiClientes = {
         const dadosValidados = esquemaCliente.partial().parse(dados);
         const metodo = dados.id ? "PATCH" : "POST";
 
+        // Mapeamento para snake_case (D1)
+        const payload = {
+            ...dadosValidados,
+            status_comercial: dados.statusComercial,
+            observacoes_crm: dados.observacoesCRM,
+            id_consentimento: dados.idConsentimento,
+            base_legal: dados.baseLegal,
+            finalidade_coleta: dados.finalidadeColeta,
+            prazo_retencao_meses: dados.prazoRetencaoMeses,
+            ltv_centavos: dados.ltvCentavos,
+            total_produtos: dados.totalProdutos,
+            historico: dados.historico ? JSON.stringify(dados.historico) : undefined
+        };
+
         return servicoBaseApi.requisicao<Cliente>("/api/clientes", {
             method: metodo,
-            body: JSON.stringify(dadosValidados)
+            body: JSON.stringify(payload)
         });
     },
 

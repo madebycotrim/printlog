@@ -2,7 +2,11 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import {
-  Download, Crown
+  Download, 
+  Crown,
+  RotateCcw, 
+  History as HistoryIcon, 
+  Settings 
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -17,7 +21,7 @@ import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedid
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
-import { FormularioInsumo } from "@/funcionalidades/producao/insumos/componentes/FormularioInsumo";
+import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
 import { formatarMoedaFinancas, formatarPorcentagem, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 // Hook e Componentes Refatorados
@@ -27,20 +31,20 @@ import { CardProducao } from "./componentes/CardProducao";
 import { CardOperacional } from "./componentes/CardOperacional";
 import { CardInsumos } from "./componentes/CardInsumos";
 import { CardLogistica } from "./componentes/CardLogistica";
-import { CardFiscal } from "./componentes/CardFiscal";
 import { PainelResultados } from "./componentes/PainelResultados";
 import { ModalHistorico } from "./componentes/ModalHistorico";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Novos Componentes Extraídos
 import { CardIdentificacaoProjeto } from "./componentes/CardIdentificacaoProjeto";
+import { CardEquipamento } from "./componentes/CardEquipamento";
 import { CardPerdas } from "./componentes/CardPerdas";
 import { CardCustosFixos } from "./componentes/CardCustosFixos";
-import { SeletorImpressora } from "./componentes/SeletorImpressora";
 import { ModalConfiguracoes } from "./componentes/ModalConfiguracoes";
 import { ModalConfiguracaoFiscal } from "./componentes/ModalConfiguracaoFiscal";
 import { ModalCanaisVenda } from "./componentes/ModalCanaisVenda";
 import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
+import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
 
 export function PaginaCalculadora() {
   const { usuario } = usarAutenticacao();
@@ -69,14 +73,15 @@ export function PaginaCalculadora() {
   const { pedidos, criarPedido, atualizarPedido } = usarPedidos();
 
   // Estados de UI locais
-  const [abertoSeletor, setAbertoSeletor] = useState(false);
   const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
+  const [modalInsumosAberto, setModalInsumosAberto] = useState(false);
   const [modalCanaisAberto, setModalCanaisAberto] = useState(false);
   const [nomeProjeto, setNomeProjeto] = useState('');
   const [descricaoProjeto, setDescricaoProjeto] = useState('');
   const [clienteProjetoId, setClienteProjetoId] = useState('');
   const [buscaClienteSeletor, setBuscaClienteSeletor] = useState('');
   const [abertoSeletorCliente, setAbertoSeletorCliente] = useState(false);
+  const [abertoSeletorImpressora, setAbertoSeletorImpressora] = useState(false);
   const [criandoNovoCliente, setCriandoNovoCliente] = useState(false);
   const [modalConfigFiscalAberto, setModalConfigFiscalAberto] = useState(false);
   const [anosVidaUtil, setAnosVidaUtil] = useState<5 | 3 | 2>(() => {
@@ -462,32 +467,39 @@ export function PaginaCalculadora() {
 
   const abrirModalArmazem = useCallback(() => setModalArmazemAberto(true), []);
   const abrirCriarMaterial = useCallback(() => acoesMateriais.abrirEditar(null as any), [acoesMateriais]);
-  const abrirModalInsumos = useCallback(() => toast.error("Gerenciamento de armazém de insumos em desenvolvimento."), []);
+  const abrirModalInsumos = useCallback(() => setModalInsumosAberto(true), []);
   const abrirModalNovoInsumo = useCallback(() => abrirCriarInsumo(), [abrirCriarInsumo]);
   const abrirModalCanais = useCallback(() => setModalCanaisAberto(true), []);
-  const abrirModalFiscal = useCallback(() => setModalConfigFiscalAberto(true), []);
   const dadosCabecalho = useMemo(() => ({
     titulo: idEdicao ? "Atualizar Inteligência" : "Precificação Inteligente",
     subtitulo: idEdicao ? `Editando: ${nomeProjeto}` : "Engenharia de custos e rentabilidade",
     ocultarBusca: true,
     elementoAcao: (
-      <SeletorImpressora
-        aberto={abertoSeletor}
-        setAberto={setAbertoSeletor}
-        impressoras={impressoras}
-        impressoraSelecionada={impressoraSelecionada}
-        aoSelecionar={(id) => {
-          hook.setImpressoraSelecionadaId(id);
-          localStorage.setItem("printlog_ultima_impressora", id);
-          const imp = impressoras.find(i => i.id === id);
-          if (imp?.potenciaWatts) hook.setPotencia(imp.potenciaWatts);
-        }}
-        aoLimpar={() => hook.limpar()}
-        aoAbrirHistorico={() => setModalHistoricoAberto(true)}
-        aoAbrirConfiguracoes={() => setModalConfigAberto(true)}
-      />
+      <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-2xl backdrop-blur-md">
+        <button 
+          onClick={() => hook.limpar()}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          title="Limpar Calculadora"
+        >
+          <RotateCcw size={18} />
+        </button>
+        <button 
+          onClick={() => setModalHistoricoAberto(true)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          title="Ver Histórico"
+        >
+          <HistoryIcon size={18} />
+        </button>
+        <button 
+          onClick={() => setModalConfigAberto(true)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          title="Configurações da Máquina"
+        >
+          <Settings size={18} />
+        </button>
+      </div>
     )
-  }), [abertoSeletor, impressoras, impressoraSelecionada, hook.limpar, hook.setImpressoraSelecionadaId, hook.setPotencia]);
+  }), [idEdicao, nomeProjeto, hook.limpar]);
 
   usarDefinirCabecalho(dadosCabecalho);
 
@@ -513,38 +525,51 @@ export function PaginaCalculadora() {
         >
           <div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
 
-            <CardIdentificacaoProjeto
-              buscaCliente={buscaClienteSeletor}
-              setBuscaCliente={setBuscaClienteSeletor}
-              abertoSeletorCliente={abertoSeletorCliente}
-              setAbertoSeletorCliente={setAbertoSeletorCliente}
-              clientes={estadoClientes.clientes || []}
-              clienteId={clienteProjetoId}
-              setClienteId={setClienteProjetoId}
-              criandoNovoCliente={criandoNovoCliente}
-              aoCriarNovoCliente={async (nome) => {
-                setCriandoNovoCliente(true);
-                try {
-                  const novo = await acoesClientes.salvarCliente({ nome });
-                  if (novo && novo.id) {
-                    setClienteProjetoId(novo.id);
-                    setBuscaClienteSeletor(novo.nome);
-                  }
-                } catch (e) {
-                  toast.error("Erro ao criar contato.");
-                } finally {
-                  setCriandoNovoCliente(false);
-                  setAbertoSeletorCliente(false);
-                }
-              }}
-              nomeProjeto={nomeProjeto}
-              setNomeProjeto={setNomeProjeto}
-              descricaoProjeto={descricaoProjeto}
-              setDescricaoProjeto={setDescricaoProjeto}
-              modoEntrada={hook.modoEntrada}
-              setModoEntrada={hook.setModoEntrada}
-              quantidade={hook.quantidade}
-            />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              <div className="lg:col-span-8 h-full">
+                <CardIdentificacaoProjeto
+                  buscaCliente={buscaClienteSeletor}
+                  setBuscaCliente={setBuscaClienteSeletor}
+                  abertoSeletorCliente={abertoSeletorCliente}
+                  setAbertoSeletorCliente={setAbertoSeletorCliente}
+                  clientes={estadoClientes.clientes || []}
+                  clienteId={clienteProjetoId}
+                  setClienteId={setClienteProjetoId}
+                  criandoNovoCliente={criandoNovoCliente}
+                  aoCriarNovoCliente={async (nome) => {
+                    setCriandoNovoCliente(true);
+                    try {
+                      const novo = await acoesClientes.salvarCliente({ nome });
+                      if (novo && novo.id) {
+                        setClienteProjetoId(novo.id);
+                        setBuscaClienteSeletor(novo.nome);
+                      }
+                    } catch (e) {
+                      toast.error("Erro ao criar contato.");
+                    } finally {
+                      setCriandoNovoCliente(false);
+                      setAbertoSeletorCliente(false);
+                    }
+                  }}
+                  nomeProjeto={nomeProjeto}
+                  setNomeProjeto={setNomeProjeto}
+                  descricaoProjeto={descricaoProjeto}
+                  setDescricaoProjeto={setDescricaoProjeto}
+                  modoEntrada={hook.modoEntrada}
+                  setModoEntrada={hook.setModoEntrada}
+                  quantidade={hook.quantidade}
+                />
+              </div>
+              <div className="lg:col-span-4 h-full">
+                <CardEquipamento
+                  impressoras={impressoras}
+                  impressoraSelecionadaId={hook.impressoraSelecionadaId}
+                  aoSelecionar={hook.setImpressoraSelecionadaId}
+                  abertoSeletor={abertoSeletorImpressora}
+                  setAbertoSeletor={setAbertoSeletorImpressora}
+                />
+              </div>
+            </div>
 
             <CardMateriais
               materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
@@ -606,6 +631,7 @@ export function PaginaCalculadora() {
               impressoras={impressoras}
               idImpressoraSelecionada={hook.impressoraSelecionadaId}
               aoSelecionarImpressora={aoSelecionarImpressora}
+              aoDetectarTarifa={hook.detectarTarifa}
             />
 
             <CardOperacional
@@ -631,6 +657,7 @@ export function PaginaCalculadora() {
               setCobrarLogistica={hook.setCobrarLogistica}
             />
 
+            {/* 
             <CardFiscal
               perfisFiscais={hook.perfisFiscais}
               tipoOperacao={hook.tipoOperacao} setTipoOperacao={hook.setTipoOperacao}
@@ -639,7 +666,8 @@ export function PaginaCalculadora() {
               iss={hook.iss} setIss={hook.setIss}
               cobrarImpostos={hook.cobrarImpostos} setCobrarImpostos={hook.setCobrarImpostos}
               abrirConfigFiscal={abrirModalFiscal}
-            />
+            /> 
+            */}
           </div>
 
           <div className="xl:col-span-4 h-full xl:sticky xl:top-0 flex flex-col justify-center items-center py-8 overflow-y-auto scrollbar-hide">
@@ -725,9 +753,40 @@ export function PaginaCalculadora() {
             aoAlternarFavorito={acoesMateriais.alternarFavorito}
           />
 
+          <ModalArmazemInsumos
+            aberto={modalInsumosAberto}
+            aoFechar={() => setModalInsumosAberto(false)}
+            busca={buscaInsumo}
+            setBusca={setBuscaInsumo}
+            insumosFiltrados={insumosFiltrados}
+            selecionados={hook.insumosSelecionados}
+            aoAlternar={alternarInsumo}
+            aoCriarNovo={abrirModalNovoInsumo}
+            aoAlternarFavorito={acoesInsumos.alternarFavorito}
+          />
+
           <FormularioMaterial aberto={estadoMateriais.modalAberto} aoSalvar={acoesMateriais.salvarMaterial} aoCancelar={acoesMateriais.fecharEditar} />
 
-          <FormularioInsumo aberto={modalInsumoAberto} aoCancelar={fecharInsumoAberto} insumoEditando={insumoEditando} aoSalvar={(dados) => adicionarOuAtualizarInsumo({ ...dados, id: dados.id || crypto.randomUUID(), dataCriacao: dados.dataCriacao || new Date(), dataAtualizacao: new Date(), historico: dados.historico || [] } as any)} />
+          <ModalGerenciamentoInsumo 
+            aberto={modalInsumoAberto} 
+            aoFechar={fecharInsumoAberto} 
+            insumo={insumoEditando} 
+            abaInicial="config"
+            aoSalvar={async (dados) => {
+              const id = dados.id || crypto.randomUUID();
+              const payload = { 
+                ...dados, 
+                id, 
+                dataCriacao: dados.dataCriacao || new Date(), 
+                dataAtualizacao: new Date(), 
+                historico: dados.historico || [] 
+              };
+              await adicionarOuAtualizarInsumo(payload as any);
+              fecharInsumoAberto();
+            }}
+            aoBaixar={() => {}}
+            aoRepor={() => {}}
+          />
 
           <ModalHistorico aberto={modalHistoricoAberto} aoFechar={() => setModalHistoricoAberto(false)} historico={hook.historico} aoSalvar={hook.salvarSnapshot} aoCarregar={(v) => { hook.carregarSnapshot(v); setModalHistoricoAberto(false); }} aoRemover={hook.removerSnapshot} />
 
