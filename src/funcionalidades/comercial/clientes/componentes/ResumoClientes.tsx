@@ -1,6 +1,6 @@
 import { Cliente } from "../tipos";
-import { Users, TrendingUp, Package, Calculator, SquareDashed } from "lucide-react";
-import { CardResumo, CardResumoVazio } from "@/compartilhado/componentes/CardResumo";
+import { Users, TrendingUp, Package, UserPlus } from "lucide-react";
+import { CardResumo } from "@/compartilhado/componentes/CardResumo";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesResumoClientes {
@@ -10,14 +10,19 @@ interface PropriedadesResumoClientes {
 export function ResumoClientes({ clientes }: PropriedadesResumoClientes) {
   const total = clientes.length;
 
+  // Novos Clientes este mês
+  const novosEsteMes = clientes.filter((c) => {
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    inicioMes.setHours(0, 0, 0, 0);
+    return new Date(c.dataCriacao) >= inicioMes;
+  }).length;
+
   // Faturamento Total (LTV)
   const ltvTotalCentavos = clientes.reduce((acc, c) => acc + (c.ltvCentavos || 0), 0);
 
   // Volume de Pedidos (Total de projetos de todos os clientes)
   const totalProjetos = clientes.reduce((acc, c) => acc + (c.totalProdutos || 0), 0);
-
-  // Ticket Médio
-  const ticketMedioCentavos = total > 0 ? Math.round(ltvTotalCentavos / total) : 0;
 
 
 
@@ -32,10 +37,10 @@ export function ResumoClientes({ clientes }: PropriedadesResumoClientes) {
       />
 
       <CardResumo 
-        titulo="Ticket Médio" 
-        valor={centavosParaReais(ticketMedioCentavos)} 
-        unidade="média por cliente" 
-        icone={Calculator} 
+        titulo="Novos Clientes" 
+        valor={novosEsteMes} 
+        unidade="entradas este mês" 
+        icone={UserPlus} 
         cor="indigo" 
       />
 
