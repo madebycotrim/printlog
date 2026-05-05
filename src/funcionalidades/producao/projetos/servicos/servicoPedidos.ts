@@ -7,8 +7,6 @@ import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/a
 import { servicoFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/servicoFinanceiro";
 import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
 import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
-import { usarArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
-import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 
 /**
@@ -116,7 +114,7 @@ class ServicoPedidos {
     // ─────────────────────────────────────────────────────────────────────────
     if (novoStatus === StatusPedido.CONCLUIDO && statusAtual !== StatusPedido.CONCLUIDO) {
       registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando liquidação de conclusão");
-      await this.liquidarConclusao(pedidoNorm, usuarioId, rastreioId);
+      await this.liquidarConclusao(pedidoNorm, usuarioId);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -139,7 +137,7 @@ class ServicoPedidos {
   // LIQUIDAÇÃO DE CONCLUSÃO
   // Executa todos os descontos e acréscimos quando um pedido é concluído.
   // ───────────────────────────────────────────────────────────────────────────
-  private async liquidarConclusao(pedido: any, usuarioId: string, rastreioId: string): Promise<void> {
+  private async liquidarConclusao(pedido: any, usuarioId: string): Promise<void> {
     const erros: string[] = [];
 
     console.log(`[DEBUG] Iniciando liquidação para: ${pedido.descricao} (${pedido.id})`);
