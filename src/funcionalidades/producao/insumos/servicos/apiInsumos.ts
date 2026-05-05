@@ -70,22 +70,22 @@ export const apiInsumos = {
     // Mapeia campos de atualização para snake_case
     const paraBanco = {
       id: insumo.id,
-      nome: insumoValidado.nome,
-      descricao: insumoValidado.descricao,
-      categoria: insumoValidado.categoria,
-      link_compra: insumoValidado.linkCompra,
-      unidade_medida: insumoValidado.unidadeMedida,
-      unidade_consumo: insumoValidado.unidadeConsumo,
-      item_fracionavel: insumoValidado.itemFracionavel !== undefined ? (insumoValidado.itemFracionavel ? 1 : 0) : undefined,
-      rendimento_total: insumoValidado.rendimentoTotal,
-      quantidade_atual: insumoValidado.quantidadeAtual,
-      quantidade_minima: insumoValidado.quantidadeMinima,
-      custo_medio_unidade: insumoValidado.custoMedioUnidade,
+      nome: insumoValidado.nome ?? null,
+      descricao: insumoValidado.descricao ?? null,
+      categoria: insumoValidado.categoria ?? null,
+      linkCompra: insumoValidado.linkCompra ?? null,
+      unidadeMedida: insumoValidado.unidadeMedida ?? null,
+      unidadeConsumo: insumoValidado.unidadeConsumo ?? null,
+      itemFracionavel: insumoValidado.itemFracionavel !== undefined ? (insumoValidado.itemFracionavel ? 1 : 0) : null,
+      rendimentoTotal: insumoValidado.rendimentoTotal ?? null,
+      quantidadeAtual: insumoValidado.quantidadeAtual ?? null,
+      quantidadeMinima: insumoValidado.quantidadeMinima ?? null,
+      custoMedioUnidade: insumoValidado.custoMedioUnidade ?? null,
       data_atualizacao: new Date().toISOString(),
       movimentacao: movValidada ? {
         ...movValidada,
-        valor_total: movValidada.valorTotal
-      } : undefined
+        valorTotal: movValidada.valorTotal ?? null
+      } : null
     };
 
     await servicoBaseApi.requisicao("/api/insumos", {

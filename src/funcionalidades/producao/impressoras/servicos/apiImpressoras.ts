@@ -28,9 +28,9 @@ export const apiImpressoras = {
             receitaAcumuladaCentavos: i.receita_acumulada_centavos ?? 0,
             custoEnergiaCentavos: i.custo_energia_centavos ?? 0,
             roiPercentual: i.roi_percentual ?? 0,
-            historicoProducao: typeof i.historico_producao === 'string'
-                ? JSON.parse(i.historico_producao)
-                : (i.historico_producao || []),
+            historicoProducao: typeof i.historicoProducao === 'string'
+                ? JSON.parse(i.historicoProducao)
+                : (i.historicoProducao || []),
         }));
     },
 
@@ -45,22 +45,22 @@ export const apiImpressoras = {
             ...dadosValidados,
             id: dados.id,
             id_usuario: _usuarioId,
-            modelo_base: dados.modeloBase,
-            imagem_url: dados.imagemUrl,
-            taxa_hora_centavos: dados.taxaHoraCentavos,
-            horimetro_total_minutos: dados.horimetroTotalMinutos,
-            intervalo_revisao_minutos: dados.intervaloRevisaoMinutos,
-            valor_compra_centavos: dados.valorCompraCentavos,
-            potencia_watts: dados.potenciaWatts,
-            data_aposentadoria: dados.dataAposentadoria,
+            modelo_base: dados.modeloBase ?? null,
+            imagem_url: dados.imagemUrl ?? null,
+            taxa_hora_centavos: dados.taxaHoraCentavos ?? null,
+            horimetro_total_minutos: dados.horimetroTotalMinutos ?? null,
+            intervalo_revisao_minutos: dados.intervaloRevisaoMinutos ?? null,
+            valor_compra_centavos: dados.valorCompraCentavos ?? null,
+            potencia_watts: dados.potenciaWatts ?? null,
+            data_aposentadoria: dados.dataAposentadoria ?? null,
             // Métricas de desempenho
-            total_projetos_concluidos: dados.totalProjetosConcluidos,
-            receita_acumulada_centavos: dados.receitaAcumuladaCentavos,
-            custo_energia_centavos: dados.custoEnergiaCentavos,
-            roi_percentual: dados.roiPercentual,
+            total_projetos_concluidos: dados.totalProjetosConcluidos ?? null,
+            receita_acumulada_centavos: dados.receitaAcumuladaCentavos ?? null,
+            custo_energia_centavos: dados.custoEnergiaCentavos ?? null,
+            roi_percentual: dados.roiPercentual ?? null,
             historico_producao: dados.historicoProducao
                 ? JSON.stringify(dados.historicoProducao)
-                : undefined,
+                : null,
         };
 
         return servicoBaseApi.requisicao<Impressora>("/api/impressoras", {

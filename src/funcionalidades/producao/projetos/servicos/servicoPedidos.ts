@@ -2,6 +2,8 @@ import { StatusPedido, TipoLancamentoFinanceiro } from "@/compartilhado/tipos/mo
 import { Pedido, CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
 import { apiPedidos } from "./apiPedidos";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
+import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/apiFinanceiro";
 import { servicoFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/servicoFinanceiro";
@@ -174,6 +176,14 @@ class ServicoPedidos {
                 status: "SUCESSO"
               }
             );
+
+            // 1.1 Sincroniza com a Tela em Tempo Real
+            usarArmazemMateriais.getState().abaterPeso(
+              materialEstoque.id,
+              mat.quantidadeGasta || 0,
+              pedido.descricao,
+              "SUCESSO"
+            );
           } else {
             console.warn(`[DEBUG] Material não encontrado no estoque: ${mat.nome || mat.idMaterial}`);
           }
@@ -209,6 +219,23 @@ class ServicoPedidos {
                 valorTotal: ins.quantidade * (insumoEstoque.custoMedioUnidade || 0)
               }
             );
+
+            // 2.1 Sincroniza com a Tela em Tempo Real
+            usarArmazemInsumos.getState().adicionarOuAtualizarInsumo({
+              ...insumoEstoque,
+              quantidadeAtual: novaQtd,
+              historico: [
+                {
+                  id: crypto.randomUUID(),
+                  data: new Date().toISOString(),
+                  tipo: "Saída",
+                  quantidade: ins.quantidade,
+                  motivo: "Consumo",
+                  observacao: `Conclusão do pedido: ${pedido.descricao}`,
+                },
+                ...(insumoEstoque.historico || [])
+              ]
+            });
           } else {
             console.warn(`[DEBUG] Insumo não encontrado no estoque: ${ins.nome || ins.idInsumo}`);
           }
@@ -346,6 +373,14 @@ class ServicoPedidos {
                 status: "MANUAL"
               }
             );
+
+            // 1.1 Sincroniza com a Tela em Tempo Real (usando valor negativo para adicionar)
+            usarArmazemMateriais.getState().abaterPeso(
+              materialEstoque.id,
+              -(mat.quantidadeGasta || 0),
+              `[REVERSÃO] ${pedido.descricao}`,
+              "SUCESSO"
+            );
           }
         } catch (e) {
           const msg = `Erro ao estornar material ${mat.nome || mat.idMaterial}`;
@@ -375,6 +410,23 @@ class ServicoPedidos {
                 observacao: `[REVERSÃO] Pedido reaberto: ${pedido.descricao}`,
               }
             );
+
+            // 2.1 Sincroniza com a Tela em Tempo Real
+            usarArmazemInsumos.getState().adicionarOuAtualizarInsumo({
+              ...insumoEstoque,
+              quantidadeAtual: qtdDevolvida,
+              historico: [
+                {
+                  id: crypto.randomUUID(),
+                  data: new Date().toISOString(),
+                  tipo: "Entrada",
+                  quantidade: ins.quantidade,
+                  motivo: "Ajuste",
+                  observacao: `[REVERSÃO] Pedido reaberto: ${pedido.descricao}`,
+                },
+                ...(insumoEstoque.historico || [])
+              ]
+            });
           }
         } catch (e) {
           const msg = `Erro ao estornar insumo ${ins.nome || ins.idInsumo}`;
@@ -385,11 +437,17 @@ class ServicoPedidos {
     }
 
     // 4. Estornar horímetro + Métricas da impressora
-    if (pedido.idImpressora && pedido.tempoMinutos && pedido.tempoMinutos > 0) {
+    const tempoEfetivo = pedido.tempoMinutos || (
+      pedido.configuracoes 
+        ? ((pedido.configuracoes.tempoHoras || 0) * 60 + (pedido.configuracoes.tempoMinutos || 0))
+        : 0
+    ) || 0;
+
+    if (pedido.idImpressora && tempoEfetivo > 0) {
       try {
         await servicoManutencao.registrarUsoMaquina(
           pedido.idImpressora,
-          -pedido.tempoMinutos,
+          -tempoEfetivo,
           usuarioId,
           {
             idPedido: pedido.id,

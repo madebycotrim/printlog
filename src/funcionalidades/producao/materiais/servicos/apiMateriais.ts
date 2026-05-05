@@ -17,20 +17,24 @@ export const apiMateriais = {
       id: m.id,
       tipo: m.tipo,
       nome: m.nome,
-      tipoMaterial: m.tipo_material,
+      tipoMaterial: m.tipo_material ?? undefined,
       fabricante: m.fabricante,
       cor: m.cor,
-      precoCentavos: m.preco_centavos,
-      pesoGramas: m.peso_gramas,
-      estoque: m.estoque_unidades,
-      pesoRestanteGramas: m.peso_restante_gramas,
+      precoCentavos: m.preco_centavos ?? undefined,
+      pesoGramas: m.peso_gramas ?? undefined,
+      estoque: m.estoque_unidades ?? undefined,
+      pesoRestanteGramas: m.peso_restante_gramas ?? undefined,
       arquivado: m.arquivado === 1,
-      historicoUso: (m.historicoUso || []).map((h: any) => ({
+      favorito: m.favorito === 1,
+      dataCriacao: new Date(m.data_criacao),
+      dataAtualizacao: new Date(m.data_atualizacao),
+      historicoUso: (typeof m.historicoUso === 'string' 
+        ? JSON.parse(m.historicoUso) 
+        : (m.historicoUso || [])).map((h: any) => ({
         id: h.id,
         data: h.data,
-        nomePeca: h.nome_peca,
-        quantidadeGastaGramas: h.quantidade_gasta_gramas,
-        tempoImpressaoMinutos: h.tempo_impressao_minutos,
+        nomePeca: h.nome_peca || h.nomePeca,
+        quantidadeGastaGramas: h.quantidade_gasta_gramas || h.quantidadeGastaGramas,
         status: h.status
       }))
     }));
@@ -45,14 +49,13 @@ export const apiMateriais = {
     // Validação de segurança no cliente
     const dadosValidados = materialSchema.parse(material);
 
-    // Mapeamento inverso para o banco (camelCase -> snake_case)
     const payload = {
       ...dadosValidados,
-      tipo_material: material.tipoMaterial,
-      preco_centavos: material.precoCentavos,
-      peso_gramas: material.pesoGramas,
-      estoque_unidades: material.estoque,
-      peso_restante_gramas: material.pesoRestanteGramas,
+      tipoMaterial: material.tipoMaterial ?? null,
+      precoCentavos: material.precoCentavos ?? null,
+      pesoGramas: material.pesoGramas ?? null,
+      estoque: material.estoque ?? null,
+      pesoRestanteGramas: material.pesoRestanteGramas ?? null,
       arquivado: material.arquivado ? 1 : 0
     };
 
@@ -68,22 +71,22 @@ export const apiMateriais = {
   async atualizar(material: Partial<Material> & { id: string }, _usuarioId: string, registroUso?: any): Promise<void> {
     const materialValidado = materialSchema.partial().parse(material);
     
-    // Mapeamento para snake_case (D1)
+    // Mantém as chaves originais, o Worker espera camelCase!
     const payload: any = { 
       id: material.id,
-      tipo: materialValidado.tipo,
-      nome: materialValidado.nome,
-      tipo_material: materialValidado.tipoMaterial,
-      fabricante: materialValidado.fabricante,
-      cor: materialValidado.cor,
-      preco_centavos: materialValidado.precoCentavos,
-      peso_gramas: materialValidado.pesoGramas,
-      estoque_unidades: materialValidado.estoque,
-      peso_restante_gramas: materialValidado.pesoRestanteGramas,
-      arquivado: materialValidado.arquivado !== undefined ? (materialValidado.arquivado ? 1 : 0) : undefined
+      tipo: materialValidado.tipo ?? null,
+      nome: materialValidado.nome ?? null,
+      tipoMaterial: materialValidado.tipoMaterial ?? null,
+      fabricante: materialValidado.fabricante ?? null,
+      cor: materialValidado.cor ?? null,
+      precoCentavos: materialValidado.precoCentavos ?? null,
+      pesoGramas: materialValidado.pesoGramas ?? null,
+      estoque: materialValidado.estoque ?? null,
+      pesoRestanteGramas: materialValidado.pesoRestanteGramas ?? null,
+      arquivado: materialValidado.arquivado !== undefined ? (materialValidado.arquivado ? 1 : 0) : null
     };
     
-    // Se houver registro de uso, valida e mapeia
+    // Se houver registro de uso, valida e envia separadamente (o Worker processa o INSERT na tabela auxiliar)
     if (registroUso) {
       const registroValidado = registroUsoSchema.parse(registroUso);
       payload.registroUso = {

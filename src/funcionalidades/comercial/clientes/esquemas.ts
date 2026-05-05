@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BaseLegalLGPD, StatusComercial } from "./tipos";
+import { BaseLegalLGPD } from "./tipos";
 
 /**
  * Esquema de validação para Clientes (Zod)
@@ -13,7 +13,7 @@ export const esquemaCliente = z.object({
   ltvCentavos: z.number().int().min(0).optional(),
   totalProdutos: z.number().int().min(0).optional(),
   fiel: z.boolean().optional(),
-  statusComercial: z.nativeEnum(StatusComercial),
+
   observacoesCRM: z.string().optional(),
   idConsentimento: z.string().optional(),
   baseLegal: z.nativeEnum(BaseLegalLGPD),

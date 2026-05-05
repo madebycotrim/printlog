@@ -11,15 +11,6 @@ export enum BaseLegalLGPD {
   INTERESSE_LEGITIMO = "interesse_legitimo", // Art. 7º, IX
 }
 
-/**
- * Status do relacionamento comercial (CRM).
- */
-export enum StatusComercial {
-  PROSPECT = "Prospect",
-  ATIVO = "Ativo",
-  INATIVO = "Inativo",
-  VIP = "VIP",
-}
 
 /**
  * Registro individual de histórico para o cliente.
@@ -49,7 +40,7 @@ export interface Cliente {
   ltvCentavos: Centavos;
   totalProdutos: number;
   fiel: boolean;
-  statusComercial: StatusComercial;
+
   observacoesCRM?: string;
   historico?: RegistroHistoricoCliente[];
 

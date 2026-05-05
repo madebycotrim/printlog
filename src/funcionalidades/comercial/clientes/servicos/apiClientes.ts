@@ -13,12 +13,22 @@ export const apiClientes = {
         // Mapeamento de snake_case para camelCase
         return dados.map((c: any) => ({
             ...c,
-            statusComercial: c.status_comercial,
-            observacoesCRM: c.observacoes_crm,
-            dataCriacao: new Date(c.data_criacao),
+
+            observacoesCRM: c.observacoes_crm ?? undefined,
+            idConsentimento: c.id_consentimento ?? undefined,
+            baseLegal: c.base_legal ?? undefined,
+            finalidadeColeta: c.finalidade_coleta ?? undefined,
+            prazoRetencaoMeses: c.prazo_retencao_meses ?? undefined,
             ltvCentavos: c.ltv_centavos || 0,
             totalProdutos: c.total_produtos || 0,
-            historico: typeof c.historico === 'string' ? JSON.parse(c.historico) : (c.historico || [])
+            nome: c.nome ?? undefined,
+            email: c.email ?? undefined,
+            telefone: c.telefone ?? undefined,
+            historico: typeof c.historico === 'string' 
+                ? JSON.parse(c.historico) 
+                : (c.historico || []),
+            dataCriacao: new Date(c.data_criacao),
+            dataAtualizacao: new Date(c.data_atualizacao)
         }));
     },
 
@@ -32,18 +42,18 @@ export const apiClientes = {
             ...dadosValidados,
             id: dados.id,
             id_usuario: _usuarioId,
-            nome: dados.nome,
-            email: dados.email,
-            telefone: dados.telefone,
-            status_comercial: dados.statusComercial,
-            observacoes_crm: dados.observacoesCRM,
-            id_consentimento: dados.idConsentimento,
-            base_legal: dados.baseLegal,
-            finalidade_coleta: dados.finalidadeColeta,
-            prazo_retencao_meses: dados.prazoRetencaoMeses,
-            ltv_centavos: dados.ltvCentavos,
-            total_produtos: dados.totalProdutos,
-            historico: dados.historico ? JSON.stringify(dados.historico) : undefined
+            nome: dados.nome ?? null,
+            email: dados.email ?? null,
+            telefone: dados.telefone ?? null,
+
+            observacoesCRM: dados.observacoesCRM ?? null,
+            idConsentimento: dados.idConsentimento ?? null,
+            baseLegal: dados.baseLegal ?? null,
+            finalidadeColeta: dados.finalidadeColeta ?? null,
+            prazoRetencaoMeses: dados.prazoRetencaoMeses ?? null,
+            ltvCentavos: dados.ltvCentavos ?? null,
+            totalProdutos: dados.totalProdutos ?? null,
+            historico: dados.historico ? JSON.stringify(dados.historico) : null
         };
 
         return servicoBaseApi.requisicao<Cliente>("/api/clientes", {

@@ -34,15 +34,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const novoId = dados.id || crypto.randomUUID();
             await env.DB.prepare(`
                 INSERT INTO clientes (
-                    id, id_usuario, nome, email, telefone, status_comercial, observacoes_crm, arquivado, data_criacao
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
+                    id, id_usuario, nome, email, telefone, observacoes_crm, arquivado, data_criacao, ltv_centavos, total_produtos, historico
+                ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 0, 0, '[]')
             `).bind(
                 novoId, 
                 usuarioId, 
                 dados.nome || 'Sem Nome', 
                 dados.email || null, 
                 dados.telefone || null,
-                dados.statusComercial || 'Prospect', 
                 dados.observacoesCRM || '',
                 new Date().toISOString()
             ).run();
@@ -57,13 +56,24 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const dados = await request.json() as any;
             await env.DB.prepare(`
                 UPDATE clientes SET 
-                    nome = ?, email = ?, telefone = ?, 
-                    status_comercial = ?, observacoes_crm = ?
+                    nome = COALESCE(?, nome), 
+                    email = COALESCE(?, email), 
+                    telefone = COALESCE(?, telefone), 
+                    observacoes_crm = COALESCE(?, observacoes_crm),
+                    ltv_centavos = COALESCE(?, ltv_centavos),
+                    total_produtos = COALESCE(?, total_produtos),
+                    historico = COALESCE(?, historico)
                 WHERE id = ? AND id_usuario = ?
             `).bind(
-                dados.nome, dados.email, dados.telefone,
-                dados.statusComercial, dados.observacoesCRM,
-                dados.id, usuarioId
+                dados.nome ?? null, 
+                dados.email ?? null, 
+                dados.telefone ?? null,
+                dados.observacoesCRM ?? null,
+                dados.ltvCentavos ?? null,
+                dados.totalProdutos ?? null,
+                dados.historico ? JSON.stringify(dados.historico) : null,
+                dados.id, 
+                usuarioId
             ).run();
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
