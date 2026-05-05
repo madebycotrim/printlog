@@ -45,7 +45,7 @@ export const apiImpressoras = {
             ...dadosValidados,
             id: dados.id,
             id_usuario: _usuarioId,
-            modelo_base: dados.modeloBase ?? null,
+            modelo_base: dados.modeloBase,
             imagem_url: dados.imagemUrl,
             taxa_hora_centavos: dados.taxaHoraCentavos,
             horimetro_total_minutos: dados.horimetroTotalMinutos,
@@ -54,13 +54,13 @@ export const apiImpressoras = {
             potencia_watts: dados.potenciaWatts,
             data_aposentadoria: dados.dataAposentadoria,
             // Métricas de desempenho
-            total_projetos_concluidos: dados.totalProjetosConcluidos ?? null,
-            receita_acumulada_centavos: dados.receitaAcumuladaCentavos ?? null,
-            custo_energia_centavos: dados.custoEnergiaCentavos ?? null,
-            roi_percentual: dados.roiPercentual ?? null,
+            total_projetos_concluidos: dados.totalProjetosConcluidos,
+            receita_acumulada_centavos: dados.receitaAcumuladaCentavos,
+            custo_energia_centavos: dados.custoEnergiaCentavos,
+            roi_percentual: dados.roiPercentual,
             historico_producao: dados.historicoProducao
                 ? JSON.stringify(dados.historicoProducao)
-                : null,
+                : undefined,
         };
 
         return servicoBaseApi.requisicao<Impressora>("/api/impressoras", {

@@ -235,6 +235,7 @@ class ServicoPedidos {
             precoKwhCentavos: pedido.configuracoes?.precoKwh
               ? Math.round(pedido.configuracoes.precoKwh * 100)
               : 0,
+            consumoWatts: pedido.configuracoes?.potenciaWatts || 0,
             reversao: false,
           }
         );

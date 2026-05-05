@@ -80,7 +80,7 @@ export const apiMateriais = {
       peso_gramas: materialValidado.pesoGramas,
       estoque_unidades: materialValidado.estoque,
       peso_restante_gramas: materialValidado.pesoRestanteGramas,
-      arquivado: materialValidado.arquivado !== undefined ? (materialValidado.arquivado ? 1 : 0) : null
+      arquivado: materialValidado.arquivado !== undefined ? (materialValidado.arquivado ? 1 : 0) : undefined
     };
     
     // Se houver registro de uso, valida e mapeia
