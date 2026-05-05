@@ -60,7 +60,7 @@ export function PaginaCalculadora() {
   const config = usarArmazemConfiguracoes();
   const { estado: estadoClientes, acoes: acoesClientes } = usarGerenciadorClientes();
   const { estado } = usarGerenciadorImpressoras();
-  const { impressoras = [] } = estado;
+  const { impressorasFiltradas: impressoras = [] } = estado;
   const { materiais } = usarArmazemMateriais();
   const { insumos: insumosEstoque, adicionarOuAtualizarInsumo, abrirEditar: abrirCriarInsumo, modalCricaoAberto: modalInsumoAberto, fecharEditar: fecharInsumoAberto, insumoEditando } = usarArmazemInsumos();
   const { estado: estadoMateriais, acoes: acoesMateriais } = usarGerenciadorMateriais();
@@ -475,24 +475,24 @@ export function PaginaCalculadora() {
     subtitulo: idEdicao ? `Editando: ${nomeProjeto}` : "Engenharia de custos e rentabilidade",
     ocultarBusca: true,
     elementoAcao: (
-      <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-2xl backdrop-blur-md">
+      <div className="flex items-center gap-1 p-1 bg-card/10 border border-borda-sutil rounded-2xl backdrop-blur-md">
         <button 
           onClick={() => hook.limpar()}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all"
           title="Limpar Calculadora"
         >
           <RotateCcw size={18} />
         </button>
         <button 
           onClick={() => setModalHistoricoAberto(true)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all"
           title="Ver Histórico"
         >
           <HistoryIcon size={18} />
         </button>
         <button 
           onClick={() => setModalConfigAberto(true)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all"
           title="Configurações da Máquina"
         >
           <Settings size={18} />
@@ -796,7 +796,7 @@ export function PaginaCalculadora() {
             larguraMax="max-w-md"
             esconderCabecalho={true}
           >
-            <div className="p-8 flex flex-col gap-6 relative bg-[#0B0F19] border border-white/5 shadow-2xl rounded-2xl overflow-hidden">
+            <div className="p-8 flex flex-col gap-6 relative bg-card border border-borda-sutil shadow-2xl rounded-2xl overflow-hidden">
               {/* Fundo com efeito Glow */}
               <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-sky-500/10 to-transparent blur-2xl pointer-events-none" />
 

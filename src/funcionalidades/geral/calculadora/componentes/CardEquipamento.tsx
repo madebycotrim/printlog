@@ -23,18 +23,18 @@ export function CardEquipamento({
   const selecionada = impressoras.find(i => i.id === impressoraSelecionadaId);
 
   return (
-    <div className={`h-full p-5 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletor ? 'z-40' : 'z-10'}`}>
+    <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletor ? 'z-40' : 'z-10'}`}>
       {/* Efeito Glow Âmbar de Fundo */}
       <div className="absolute -top-24 -right-20 w-80 h-80 bg-amber-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
 
-      <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-3">
+      <div className="relative z-10 flex items-center justify-between border-b border-borda-sutil pb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-amber-500 border border-amber-500/30">
             <Cpu size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-white">Equipamento</span>
-            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Defina a máquina que produzirá o projeto</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary">Equipamento</span>
+            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Defina a máquina que produzirá o projeto</span>
           </div>
         </div>
       </div>
@@ -52,11 +52,11 @@ export function CardEquipamento({
                />
             </div>
           ) : (
-            <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-white/5 bg-white/[0.02] flex flex-col items-center justify-center gap-3 group/empty">
-               <div className="w-12 h-12 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-700 group-hover/empty:text-amber-500/50 transition-colors">
+            <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-borda-sutil bg-muted/20 dark:bg-white/[0.02] flex flex-col items-center justify-center gap-3 group/empty">
+               <div className="w-12 h-12 rounded-full bg-card border border-borda-sutil flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover/empty:text-amber-500/50 transition-colors shadow-inner">
                  <Cpu size={24} strokeWidth={1} />
                </div>
-               <span className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.2em]">Aguardando Máquina</span>
+               <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-700 uppercase tracking-[0.2em]">Aguardando Máquina</span>
             </div>
           )}
         </div>
@@ -68,30 +68,30 @@ export function CardEquipamento({
           <button
             type="button"
             onClick={() => setAbertoSeletor(!abertoSeletor)}
-            className="flex items-center justify-between bg-zinc-950/60 border border-white/5 hover:border-amber-500/30 rounded-xl px-4 h-12 transition-all group/btn"
+            className="flex items-center justify-between bg-muted/40 dark:bg-zinc-950/60 border border-borda-sutil hover:border-amber-500/30 rounded-xl px-4 h-12 transition-all group/btn shadow-inner"
           >
             <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${selecionada ? 'bg-emerald-500' : 'bg-zinc-700'}`} />
+              <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${selecionada ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
               <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-zinc-100 uppercase tracking-tight">
+                <span className="text-xs font-bold text-primary dark:text-zinc-100 uppercase tracking-tight">
                   {selecionada?.nome || "Escolher impressora..."}
                 </span>
                 {selecionada && (
-                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter mt-0.5">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter mt-0.5">
                     {selecionada.marca} {selecionada.modeloBase}
                   </span>
                 )}
               </div>
             </div>
-            <ChevronDown size={16} className={`text-zinc-500 group-hover/btn:text-amber-500 transition-transform ${abertoSeletor ? 'rotate-180' : ''}`} />
+            <ChevronDown size={16} className={`text-zinc-400 dark:text-zinc-500 group-hover/btn:text-amber-500 transition-transform ${abertoSeletor ? 'rotate-180' : ''}`} />
           </button>
 
           {abertoSeletor && (
             <>
               <div className="fixed inset-0 z-[30]" onClick={() => setAbertoSeletor(false)} />
-              <div className="absolute bottom-[calc(100%+6px)] left-0 right-0 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
+              <div className="absolute bottom-[calc(100%+6px)] left-0 right-0 bg-card border border-borda-sutil rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
                 {impressoras.length === 0 ? (
-                   <span className="text-[9px] font-bold text-zinc-600 uppercase py-4 text-center">Nenhuma impressora cadastrada</span>
+                   <span className="text-[9px] font-bold text-muted-foreground uppercase py-4 text-center">Nenhuma impressora cadastrada</span>
                 ) : (
                   impressoras.map((imp) => (
                     <button
@@ -102,8 +102,8 @@ export function CardEquipamento({
                         setAbertoSeletor(false);
                       }}
                       className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${impressoraSelecionadaId === imp.id
-                        ? 'bg-amber-500/10 text-amber-500'
-                        : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-muted dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
                         }`}
                     >
                       <div className="flex flex-col">

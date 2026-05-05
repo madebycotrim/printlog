@@ -89,13 +89,13 @@ export function ModalRegistrarPerda({ aberto, aoFechar, materiais, aoConfirmar }
 
   return (
     <Dialogo aberto={aberto} aoFechar={lidarComTentativaFechamento} titulo="Registrar Perda / Sucata" larguraMax="max-w-md">
-      <form onSubmit={lidarComEnvio} className="flex flex-col bg-white dark:bg-[#18181b]">
+      <form onSubmit={lidarComEnvio} className="flex flex-col bg-card">
         <div className="p-6 md:p-8 space-y-6">
           <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl flex items-start gap-3">
             <AlertCircle size={20} className="text-rose-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">Atenção</p>
-              <p className="text-[11px] font-medium text-rose-800 dark:text-rose-300 leading-relaxed">
+              <p className="text-[11px] font-medium text-rose-900 dark:text-rose-300 leading-relaxed">
                 Este registro abaterá o estoque e será contabilizado como **prejuízo operacional**.
               </p>
             </div>
@@ -133,13 +133,13 @@ export function ModalRegistrarPerda({ aberto, aoFechar, materiais, aoConfirmar }
           />
         </div>
 
-        <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-[#0e0e11]/50 flex flex-col items-end gap-3 rounded-b-2xl min-h-[80px] justify-center">
+        <div className="p-6 border-t border-borda-sutil bg-zinc-50 dark:bg-[#0e0e11]/50 flex flex-col items-end gap-3 rounded-b-2xl min-h-[80px] justify-center">
           {!confirmarDescarte ? (
             <div className="flex items-center gap-3 w-full justify-between md:justify-end">
               <button
                 type="button"
                 onClick={lidarComTentativaFechamento}
-                className="px-6 py-2.5 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:text-zinc-900 transition-all"
+                className="px-6 py-2.5 text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all"
               >
                 Cancelar
               </button>

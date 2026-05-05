@@ -45,7 +45,7 @@ export function CardIdentificacaoProjeto({
   quantidade
 }: PropriedadesCardIdentificacaoProjeto) {
   return (
-    <div className={`h-full p-5 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
+    <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
       {/* Efeito Glow Azul de Fundo (Fixo) */}
       <motion.div 
         animate={{ 
@@ -56,14 +56,14 @@ export function CardIdentificacaoProjeto({
         className="absolute -top-10 w-80 h-80 bg-sky-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-1000" 
       />
 
-      <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-3">
+      <div className="relative z-10 flex items-center justify-between border-b border-borda-sutil pb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#00A3FF] border border-[#00A3FF]/30">
             <FolderKanban size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-white">Identificação do Orçamento</span>
-            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Vincule o cliente e os detalhes técnicos</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary">Identificação do Orçamento</span>
+            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Vincule o cliente e os detalhes técnicos</span>
           </div>
         </div>
       </div>
@@ -73,8 +73,8 @@ export function CardIdentificacaoProjeto({
         <div className="md:col-span-4 flex flex-col gap-2 relative">
           <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Cliente do Projeto</label>
 
-          <div className="relative flex items-center bg-white/[0.03] border border-white/5 focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
-            <div className="absolute left-4 text-zinc-600 focus-within:text-sky-500">
+          <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+            <div className="absolute left-4 text-zinc-400 dark:text-zinc-600 focus-within:text-sky-500">
                <User size={16} />
             </div>
             <input
@@ -86,12 +86,12 @@ export function CardIdentificacaoProjeto({
                 setAbertoSeletorCliente(true);
               }}
               onFocus={() => setAbertoSeletorCliente(true)}
-              className="w-full h-full bg-transparent pl-12 pr-10 font-bold text-xs text-zinc-100 outline-none placeholder:text-zinc-600"
+              className="w-full h-full bg-transparent pl-12 pr-10 font-bold text-xs text-primary dark:text-zinc-100 outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-600"
             />
             <button
               type="button"
               onClick={() => setAbertoSeletorCliente(!abertoSeletorCliente)}
-              className="absolute right-3 text-zinc-600 hover:text-white transition-colors"
+              className="absolute right-3 text-zinc-400 dark:text-zinc-600 hover:text-primary dark:hover:text-white transition-colors"
             >
               <ChevronDown size={16} className={`transition-transform duration-300 ${abertoSeletorCliente ? 'rotate-180' : ''}`} />
             </button>
@@ -100,7 +100,7 @@ export function CardIdentificacaoProjeto({
           {abertoSeletorCliente && (
             <>
               <div className="fixed inset-0 z-[40]" onClick={() => setAbertoSeletorCliente(false)} />
-              <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-[#0c0c0e]/95 border border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
+              <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white dark:bg-[#0c0c0e]/95 border border-borda-sutil dark:border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
                 {(() => {
                   const filtrados = (clientes || []).filter(c =>
                     c.nome.toLowerCase().includes(buscaCliente.toLowerCase())
@@ -119,8 +119,8 @@ export function CardIdentificacaoProjeto({
                             setAbertoSeletorCliente(false);
                           }}
                           className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${clienteId === cli.id
-                            ? 'bg-sky-500/10 text-sky-400'
-                            : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                            : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
                             }`}
                         >
                           <span>{cli.nome}</span>
@@ -133,7 +133,7 @@ export function CardIdentificacaoProjeto({
                           type="button"
                           disabled={criandoNovoCliente}
                           onClick={() => aoCriarNovoCliente(buscaCliente.trim())}
-                          className="w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs text-zinc-500 hover:text-zinc-400 hover:bg-zinc-500/10 transition-colors flex items-center gap-2 border border-dashed border-zinc-500/20"
+                          className="w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-500 dark:hover:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-500/10 transition-colors flex items-center gap-2 border border-dashed border-borda-sutil dark:border-zinc-500/20"
                         >
                           <Plus size={14} />
                           {criandoNovoCliente ? 'Criando...' : `Criar "${buscaCliente}"`}
@@ -157,8 +157,8 @@ export function CardIdentificacaoProjeto({
         <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Nome do Projeto</label>
-            <div className="relative flex items-center bg-white/[0.03] border border-white/5 focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
-               <div className="absolute left-4 text-zinc-600">
+            <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+               <div className="absolute left-4 text-zinc-400 dark:text-zinc-600">
                   <PencilLine size={16} />
                </div>
                <input
@@ -166,15 +166,15 @@ export function CardIdentificacaoProjeto({
                  placeholder="Ex: Action Figure Batman"
                  value={nomeProjeto}
                  onChange={(e) => setNomeProjeto(e.target.value)}
-                 className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none placeholder:text-zinc-700"
+                 className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-primary dark:text-white outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-700"
                />
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Observações Técnicas</label>
-            <div className="relative flex items-center bg-white/[0.03] border border-white/5 focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
-               <div className="absolute left-4 text-zinc-600">
+            <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+               <div className="absolute left-4 text-zinc-400 dark:text-zinc-600">
                   <MessageSquare size={16} />
                </div>
                <input
@@ -182,7 +182,7 @@ export function CardIdentificacaoProjeto({
                  placeholder="Ex: Altura de camada 0.12mm"
                  value={descricaoProjeto}
                  onChange={(e) => setDescricaoProjeto(e.target.value)}
-                 className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none placeholder:text-zinc-700"
+                 className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-primary dark:text-white outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-700"
                />
             </div>
           </div>
@@ -190,10 +190,10 @@ export function CardIdentificacaoProjeto({
       </div>
 
       {/* Seletor de Estratégia: Cards Interativos */}
-      <div className="relative z-10 pt-4 border-t border-white/5 flex flex-col gap-4 mt-auto">
+      <div className="relative z-10 pt-4 border-t border-borda-sutil flex flex-col gap-4 mt-auto">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Estratégia de Preenchimento</span>
-          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Selecione como a inteligência deve processar os dados</span>
+          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Estratégia de Preenchimento</span>
+          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Selecione como a inteligência deve processar os dados</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -206,20 +206,20 @@ export function CardIdentificacaoProjeto({
             className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
               modoEntrada === 'unitario' 
               ? 'bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
-              : 'bg-zinc-950/40 border-white/5 hover:border-white/10'
+              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-sky-500/30'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-              modoEntrada === 'unitario' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-zinc-900 text-zinc-600'
+              modoEntrada === 'unitario' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
             }`}>
               <Box size={20} />
             </div>
             
             <div className="flex flex-col gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
-                modoEntrada === 'unitario' ? 'text-sky-400' : 'text-zinc-400'
+                modoEntrada === 'unitario' ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Por Peça</span>
-              <p className="text-[9px] font-bold text-zinc-400 leading-tight uppercase tracking-tighter">
+              <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
                 O peso e tempo inseridos serão multiplicados por <span className={modoEntrada === 'unitario' ? 'text-sky-500' : ''}>{quantidade}x</span> automaticamente.
               </p>
             </div>
@@ -241,20 +241,20 @@ export function CardIdentificacaoProjeto({
             className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
               modoEntrada === 'lote' 
               ? 'bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
-              : 'bg-zinc-950/40 border-white/5 hover:border-white/10'
+              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-sky-500/30'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-              modoEntrada === 'lote' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-zinc-900 text-zinc-600'
+              modoEntrada === 'lote' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
             }`}>
               <LayoutGrid size={20} />
             </div>
             
             <div className="flex flex-col gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
-                modoEntrada === 'lote' ? 'text-sky-400' : 'text-zinc-400'
+                modoEntrada === 'lote' ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Mesa Completa</span>
-              <p className="text-[9px] font-bold text-zinc-400 leading-tight uppercase tracking-tighter">
+              <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
                 Os valores inseridos já correspondem ao total produzido das <span className={modoEntrada === 'lote' ? 'text-sky-500' : ''}>{quantidade} peças</span>.
               </p>
             </div>

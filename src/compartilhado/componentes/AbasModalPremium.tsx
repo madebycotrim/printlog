@@ -34,13 +34,13 @@ export function AbasModalPremium({
   const classeLinhaAtiva = ehHex ? "" : `bg-${corTema}`;
 
   return (
-    <div className="flex items-center px-8 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/30 dark:bg-white/[0.005]">
+    <div className="flex items-center px-8 border-b border-borda-sutil bg-zinc-50/30 dark:bg-white/[0.005]">
       {abas.map((aba) => (
         <button
           key={aba.id}
           onClick={() => aoMudarAba(aba.id)}
           className={`relative py-5 px-6 flex items-center gap-2.5 text-[11px] font-black uppercase tracking-[0.2em] transition-all ${
-            abaAtiva === aba.id ? classeTextoAtivo : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+            abaAtiva === aba.id ? classeTextoAtivo : "text-zinc-400 hover:text-primary dark:hover:text-zinc-300"
           }`}
           style={abaAtiva === aba.id ? estiloTextoAtivo : {}}
         >

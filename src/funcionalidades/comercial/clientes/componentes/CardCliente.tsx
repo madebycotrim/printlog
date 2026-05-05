@@ -4,15 +4,9 @@ import {
   MessageCircle,
   Mail,
   Phone,
-  History,
+  History as HistoryIcon,
   MoreVertical,
   Pencil,
-  Star,
-  ShieldCheck,
-  Award,
-  Clock,
-  Ban,
-  User
 } from "lucide-react";
 import { Dica } from "@/compartilhado/componentes/Dica";
 import { useState, useRef, useEffect } from "react";
@@ -84,7 +78,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative bg-white/80 dark:bg-[#18181b]/80 backdrop-blur-xl border border-zinc-200/60 dark:border-white/5 rounded-3xl p-5 transition-all shadow-sm group/card hover:shadow-xl hover:shadow-sky-500/5 hover:-translate-y-1"
+      className="relative bg-card backdrop-blur-xl border border-borda-sutil rounded-3xl p-5 transition-all shadow-sm group/card hover:shadow-xl hover:shadow-sky-500/5 hover:-translate-y-1"
     >
       {/* Menu Superior Direito */}
       <div className="absolute top-4 right-4 z-30" ref={menuRef}>
@@ -94,7 +88,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
               e.stopPropagation();
               definirMenuAberto(!menuAberto);
             }}
-            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-400 hover:bg-gray-50 dark:hover:bg-white/5"}`}
+            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/60"}`}
           >
             <MoreVertical size={16} strokeWidth={3} />
           </button>
@@ -105,26 +99,26 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#121214] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
+                className="absolute right-0 mt-2 w-48 bg-card border border-borda-sutil rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
               >
                 <div className="p-1.5 space-y-0.5">
                   <button
                     onClick={(e) => { e.stopPropagation(); aoVerHistorico(cliente); definirMenuAberto(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-indigo-500 rounded-xl transition-all uppercase tracking-[0.15em]"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-muted-foreground hover:bg-muted hover:text-indigo-500 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
-                    <History size={14} />
+                    <HistoryIcon size={14} />
                     Histórico
                   </button>
 
                   <button
                     onClick={(e) => { e.stopPropagation(); aoEditar(cliente); definirMenuAberto(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-sky-500 rounded-xl transition-all uppercase tracking-[0.15em]"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-muted-foreground hover:bg-muted hover:text-sky-500 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
                     <Pencil size={14} />
                     Editar
                   </button>
 
-                  <div className="h-px bg-zinc-100 dark:bg-white/5 mx-2 my-1" />
+                   <div className="h-px bg-borda-sutil mx-2 my-1" />
 
                   <button
                     onClick={(e) => { e.stopPropagation(); aoRemover(cliente); definirMenuAberto(false); }}
@@ -150,15 +144,15 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100 tracking-tight truncate mb-1.5">
+             <h3 className="text-sm font-black text-primary tracking-tight truncate mb-1.5">
               {cliente.nome}
             </h3>
             
-            <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+            <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               <span className="text-emerald-600 dark:text-emerald-400">
                 {centavosParaReais(cliente.ltvCentavos)}
               </span>
-              <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+              <span className="w-1 h-1 rounded-full bg-borda-sutil" />
               <span>
                 {pluralizar(cliente.totalProdutos, "Projeto", "Projetos")}
               </span>
@@ -167,7 +161,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
         </div>
 
         {/* Rodapé - Contatos em Pílulas */}
-        <div className="flex items-center gap-2 pt-4 border-t border-zinc-100 dark:border-white/5 mt-auto">
+        <div className="flex items-center gap-2 pt-4 border-t border-borda-sutil mt-auto">
           <Dica texto="Chamar no WhatsApp" posicao="cima">
             <button
               onClick={abrirWhatsapp}

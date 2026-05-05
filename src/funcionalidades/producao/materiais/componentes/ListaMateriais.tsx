@@ -25,12 +25,12 @@ export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistor
           }}
         />
         <div className="relative z-10 flex flex-col items-center gap-4">
-          <div className="w-20 h-20 rounded-2xl bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] flex items-center justify-center">
-            <Search size={28} strokeWidth={1.5} className="text-zinc-300 dark:text-zinc-700" />
+          <div className="w-20 h-20 rounded-2xl bg-muted/40 dark:bg-white/[0.03] border border-borda-sutil flex items-center justify-center">
+            <Search size={28} strokeWidth={1.5} className="text-muted-foreground opacity-30" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="text-base font-black text-zinc-900 dark:text-white uppercase tracking-tight">Nenhum resultado encontrado</h3>
-            <p className="text-sm text-zinc-400 dark:text-zinc-600">Tente buscar com termos diferentes.</p>
+            <h3 className="text-base font-black text-primary uppercase tracking-tight">Nenhum resultado encontrado</h3>
+            <p className="text-sm text-muted-foreground">Tente buscar com termos diferentes.</p>
           </div>
         </div>
       </div>
@@ -52,14 +52,14 @@ export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistor
           >
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
-                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                <h3 className="text-xl font-black text-primary uppercase tracking-tight">
                   {tipo}
                 </h3>
-                <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-[#121214] border border-gray-200 dark:border-white/[0.04] text-[10px] font-black text-gray-600 dark:text-zinc-500 uppercase tracking-widest flex items-center h-6 leading-none shadow-sm">
+                <span className="px-2.5 py-1 rounded-lg bg-muted/60 dark:bg-[#121214] border border-borda-sutil text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center h-6 leading-none shadow-sm">
                   {lista.length} ITEM{lista.length !== 1 ? "S" : ""}
                 </span>
               </div>
-              <div className="flex-1 h-px bg-gray-200 dark:bg-white/[0.04]" />
+              <div className="flex-1 h-px bg-borda-sutil/40" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-6">

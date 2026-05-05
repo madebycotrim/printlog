@@ -304,9 +304,9 @@ export function PaginaConfiguracoes() {
           <CardPrivacidade destaque={destaqueLgpd} />
         </motion.div>
 
-        <div className="pt-4 pb-8 border-t border-gray-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="pt-4 pb-8 border-t border-borda-sutil flex flex-col md:flex-row justify-between items-center gap-4">
           <p></p>
-          <p className="text-[10px] text-gray-400 dark:text-zinc-600 text-center md:text-right leading-relaxed">
+          <p className="text-[10px] text-muted-foreground opacity-60 text-center md:text-right leading-relaxed">
             Plataforma em conformidade com a Lei Federal nº 13.709/2018 (LGPD).
             <br />
             Dados criptografados e processados sob rigorosos padrões de segurança.

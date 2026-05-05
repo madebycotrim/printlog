@@ -46,12 +46,12 @@ export function CardPerfil({
     aoMudarPlano
 }: PropsCardPerfil) {
     return (
-        <div className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
+        <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted-foreground/[0.03] to-transparent pointer-events-none" />
             <CabecalhoCard titulo="Perfil Maker" descricao="Sua conta de acesso e segurança" icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-gray-50/70 dark:bg-white/[0.02]">
+                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-muted/40">
                     <div className="relative group/avatar">
                         <Avatar 
                             plano={usuario?.plano}
@@ -80,10 +80,10 @@ export function CardPerfil({
                     <CampoDashboard label="Nome no Perfil" valor={nome} aoMudar={definirNome} placeholder="Seu nome maker" icone={User} />
 
                     <div className="w-full">
-                        <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-gray-500 dark:text-zinc-500 ml-1">E-mail de Acesso</label>
-                        <div className="h-11 w-full bg-transparent border-b-2 border-gray-200 dark:border-white/10 flex items-center gap-3">
-                            <Mail size={16} className="text-gray-400" />
-                            <span className="truncate text-sm font-semibold text-gray-700 dark:text-zinc-300 flex-1">
+                        <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground ml-1">E-mail de Acesso</label>
+                        <div className="h-11 w-full bg-transparent border-b-2 border-borda-sutil flex items-center gap-3">
+                            <Mail size={16} className="text-muted-foreground/60" />
+                            <span className="truncate text-sm font-semibold text-primary flex-1">
                                 {usuario?.email}
                             </span>
                             {usuario?.provedorGoogle && (
@@ -135,7 +135,7 @@ export function CardPerfil({
             {!sucessoEmail && (
                 <button
                     onClick={lidarComTrocaSenha}
-                    className="mt-auto h-11 w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] text-gray-700 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.12em] transition-all shadow-sm active:scale-[0.98]"
+                    className="mt-auto h-11 w-full rounded-xl border border-borda-sutil bg-muted/20 text-muted-foreground hover:border-primary/20 hover:bg-muted/40 hover:text-primary flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.12em] transition-all shadow-sm active:scale-[0.98]"
                 >
                     <Lock size={14} className="text-[var(--cor-primaria)]" />
                     Redefinir Senha
@@ -154,7 +154,7 @@ export function CardPerfil({
                 </div>
             )}
 
-            <p className="mt-4 text-[9px] text-zinc-400/50 dark:text-zinc-500/30 text-center px-6 leading-tight italic uppercase tracking-wider">
+            <p className="mt-4 text-[9px] text-muted-foreground/40 text-center px-6 leading-tight italic uppercase tracking-wider">
                 Finalidade: Seus dados de perfil são utilizados para identificação e acesso à plataforma, conforme Art. 7º, V da LGPD.
             </p>
         </div>

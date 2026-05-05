@@ -48,14 +48,14 @@ export function CardLogisticaFiscal({
   return (
     <div className="space-y-6">
       {/* Logística */}
-      <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
+      <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-borda-sutil">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 flex items-center justify-center text-indigo-400 border border-indigo-500/30 shadow-[inset_0px_1px_12px_rgba(99,102,241,0.2)]">
               <Warehouse size={18} className="animate-pulse" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-black uppercase tracking-wider text-white">Canais de Venda e Logística</span>
+              <span className="text-xs font-black uppercase tracking-wider text-primary">Canais de Venda e Logística</span>
               <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Custos de plataforma e fretes</span>
             </div>
           </div>
@@ -80,17 +80,17 @@ export function CardLogisticaFiscal({
               }}
               className={`px-4 h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex flex-col items-center justify-center text-center leading-tight shrink-0
                 ${perfilAtivo === p.nome 
-                  ? "bg-indigo-500/10 border-indigo-500 text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
-                  : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-indigo-500/30 text-zinc-400 line-through"}
-              `}
+                ? "bg-indigo-500/10 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
+                : "bg-zinc-50 dark:bg-white/5 border-borda-sutil hover:border-indigo-500/30 text-zinc-400 dark:text-zinc-500"}
+            `}
             >
               <span>{p.nome}</span>
               <span className={`text-[8px] font-bold opacity-80 ${perfilAtivo === p.nome ? "text-indigo-400/80" : "text-gray-400"}`}>({p.taxa}% + R$ {p.fixa} + R$ {p.frete || 0})</span>
             </button>
           ))}
-          <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-all shrink-0"><Settings size={16} /></button>
+          <button onClick={abrirPerfis} className="w-11 h-11 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/5 border border-borda-sutil text-zinc-400 hover:text-indigo-500 hover:border-indigo-500/30 transition-all shrink-0"><Settings size={16} /></button>
         </div>
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
+        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-borda-sutil">
           <div>
             <label className="block text-xs font-black uppercase text-zinc-400 mb-2">Comissão (%)</label>
             <input 
@@ -98,7 +98,7 @@ export function CardLogisticaFiscal({
               placeholder="0" 
               value={taxaEcommerce || ""} 
               onChange={(e) => setTaxaEcommerce(Number(e.target.value))} 
-              className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
+              className="w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner" 
             />
           </div>
           <div>
@@ -108,7 +108,7 @@ export function CardLogisticaFiscal({
               placeholder="0" 
               value={taxaFixa || ""} 
               onChange={(e) => setTaxaFixa(Number(e.target.value))} 
-              className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
+              className="w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner" 
             />
           </div>
           <div>
@@ -118,21 +118,21 @@ export function CardLogisticaFiscal({
               placeholder="0" 
               value={frete || ""} 
               onChange={(e) => setFrete(Number(e.target.value))} 
-              className="w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner" 
+              className="w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner" 
             />
           </div>
         </div>
       </div>
 
       {/* Fiscal */}
-      <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarImpostos ? "opacity-40 grayscale" : ""}`}>
-        <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
+      <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarImpostos ? "opacity-40 grayscale" : ""}`}>
+        <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center text-orange-400 border border-orange-500/30 shadow-[inset_0px_1px_12px_rgba(249,115,22,0.2)]">
               <TrendingUp size={18} className="animate-pulse" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-black uppercase tracking-wider text-white">Estrutura Fiscal</span>
+              <span className="text-xs font-black uppercase tracking-wider text-primary">Estrutura Fiscal</span>
               <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Tributos e regimes (MEI/Simples)</span>
             </div>
           </div>
@@ -175,8 +175,8 @@ export function CardLogisticaFiscal({
                   }}
                   className={`px-4 h-11 flex flex-col items-center justify-center text-center rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider shrink-0 leading-tight
                     ${tipoOperacao === id 
-                      ? "bg-orange-500/10 border-orange-500 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.15)]" 
-                      : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-orange-500/30 text-zinc-400"}
+                      ? "bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.15)]" 
+                      : "bg-zinc-50 dark:bg-white/5 border-borda-sutil hover:border-orange-500/30 text-zinc-500 dark:text-zinc-400"}
                   `}
                 >
                   <span>{p.nome.toUpperCase()}</span>
@@ -189,7 +189,7 @@ export function CardLogisticaFiscal({
             {abrirConfigFiscal && (
               <button 
                 onClick={abrirConfigFiscal} 
-                className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-orange-400 hover:border-orange-500/30 transition-all shrink-0"
+                className="w-11 h-11 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/5 border border-borda-sutil text-zinc-400 hover:text-orange-500 hover:border-orange-500/30 transition-all shrink-0"
               >
                 <Settings size={16} />
               </button>
@@ -201,7 +201,7 @@ export function CardLogisticaFiscal({
           </p>
 
           {tipoOperacao !== 'mei' && (
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-borda-sutil">
               <div>
                 <label className="block text-xs font-black uppercase text-zinc-400 mb-2">Base (%)</label>
                 <input 
@@ -210,7 +210,7 @@ export function CardLogisticaFiscal({
                   disabled={!cobrarImpostos} 
                   value={!cobrarImpostos ? 0 : (impostos || "")} 
                   onChange={(e) => setImpostos(Number(e.target.value))} 
-                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
+                  className={`w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                 />
               </div>
               {tipoOperacao !== 'servico' && (
@@ -222,7 +222,7 @@ export function CardLogisticaFiscal({
                     disabled={!cobrarImpostos} 
                     value={!cobrarImpostos ? 0 : (icms || "")} 
                     onChange={(e) => setIcms(Number(e.target.value))} 
-                    className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
+                    className={`w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                   />
                 </div>
               )}
@@ -235,7 +235,7 @@ export function CardLogisticaFiscal({
                     disabled={!cobrarImpostos} 
                     value={!cobrarImpostos ? 0 : (iss || "")} 
                     onChange={(e) => setIss(Number(e.target.value))} 
-                    className={`w-full h-14 px-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-orange-500/40 outline-none font-black text-sm text-zinc-900 dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
+                    className={`w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarImpostos ? "line-through text-zinc-400 dark:text-zinc-600" : ""}`} 
                   />
                 </div>
               )}

@@ -28,7 +28,7 @@ export function SeletorImpressora({
   aoAbrirConfiguracoes
 }: PropriedadesSeletorImpressora) {
   return (
-    <div className="flex items-center gap-1 bg-gray-50 dark:bg-white/5 p-1 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
+    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-white/5 p-1 rounded-2xl border border-borda-sutil shadow-inner">
       <div className="relative">
         <button
           onClick={() => setAberto(!aberto)}
@@ -36,7 +36,7 @@ export function SeletorImpressora({
         >
           <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
           <div className="flex flex-col items-start leading-none py-0.5">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-0.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">
               {impressoraSelecionada?.nome || "Selecionar..."}
             </span>
             {impressoraSelecionada && (
@@ -53,7 +53,7 @@ export function SeletorImpressora({
           <ChevronDown size={14} className={`text-zinc-400 group-hover:text-sky-500 transition-transform ${aberto ? "rotate-180" : ""}`} />
         </button>
         {aberto && (
-          <div className="absolute top-full left-0 mt-2 p-2 rounded-2xl bg-white dark:bg-[#0c0c0e] border border-gray-100 dark:border-white/10 shadow-2xl z-[100] w-max min-w-full">
+          <div className="absolute top-full left-0 mt-2 p-2 rounded-2xl bg-white dark:bg-[#0c0c0e] border border-borda-sutil dark:border-white/10 shadow-2xl z-[100] w-max min-w-full">
             {impressoras.map((imp) => (
               <button
                 key={imp.id}
@@ -61,7 +61,7 @@ export function SeletorImpressora({
                   aoSelecionar(imp.id);
                   setAberto(false);
                 }}
-                className={`w-full flex flex-col items-start px-4 py-3 rounded-xl transition-all ${impressoraSelecionada?.id === imp.id ? "bg-sky-500/10 text-sky-500" : "hover:bg-gray-50 dark:hover:bg-white/5"}`}
+                className={`w-full flex flex-col items-start px-4 py-3 rounded-xl transition-all ${impressoraSelecionada?.id === imp.id ? "bg-sky-500/10 text-sky-600 dark:text-sky-500" : "hover:bg-zinc-100 dark:hover:bg-white/5"}`}
               >
                 <div className="flex items-center gap-4 w-full">
                   <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">{imp.nome}</span>

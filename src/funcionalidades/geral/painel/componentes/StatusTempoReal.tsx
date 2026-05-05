@@ -40,8 +40,8 @@ export function StatusTempoReal() {
     };
 
     return (
-        <div className="bg-white dark:bg-[#121215] rounded-2xl p-8 border border-gray-100 dark:border-white/5 flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-xl font-black tracking-tight text-gray-900 dark:text-white mb-6 uppercase">Status em Tempo Real</h3>
+        <div className="bg-card rounded-2xl p-8 border border-borda-sutil flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
+            <h3 className="text-xl font-black tracking-tight text-primary mb-6 uppercase">Status em Tempo Real</h3>
 
             {resumoMaquinas.length > 0 ? (
                 <div className="space-y-6 flex-1">
@@ -61,15 +61,15 @@ export function StatusTempoReal() {
                     })}
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-gray-100 dark:border-white/5 rounded-2xl">
-                    <Printer size={40} className="text-gray-300 dark:text-zinc-700 mb-3" />
-                    <p className="text-xs font-bold text-gray-500 dark:text-zinc-500 uppercase tracking-widest">Nenhuma máquina ativa</p>
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-borda-sutil rounded-2xl">
+                    <Printer size={40} className="text-zinc-300 dark:text-zinc-700 mb-3" />
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Nenhuma máquina ativa</p>
                 </div>
             )}
 
             <button 
                 onClick={() => navegar("/impressoras")}
-                className="mt-8 w-full py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                className="mt-8 w-full py-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
             >
                 VER FARM COMPLETA
                 <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />

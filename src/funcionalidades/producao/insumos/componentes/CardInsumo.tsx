@@ -3,7 +3,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Trash2,
-  History,
+  History as HistoryIcon,
 } from "lucide-react";
 import { Insumo, CategoriaInsumo } from "@/funcionalidades/producao/insumos/tipos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -15,8 +15,8 @@ const CORES_CATEGORIA: Record<CategoriaInsumo, string> = {
   Fixação: "bg-orange-500",
   Eletrônica: "bg-violet-500",
   Acabamento: "bg-emerald-500",
-  Geral: "bg-gray-400 dark:bg-zinc-500",
-  Outros: "bg-gray-400 dark:bg-zinc-500",
+  Geral: "bg-muted-foreground/40",
+  Outros: "bg-muted-foreground/40",
 };
 
 interface PropriedadesCardInsumo {
@@ -37,7 +37,7 @@ export function CardInsumo({
   aoVerHistorico,
 }: PropriedadesCardInsumo) {
   const estaComEstoqueBaixo = insumo.quantidadeAtual <= insumo.quantidadeMinima;
-  const corDaCategoria = CORES_CATEGORIA[insumo.categoria] || "bg-gray-400 dark:bg-zinc-500";
+  const corDaCategoria = CORES_CATEGORIA[insumo.categoria] || "bg-muted-foreground/40";
   
   const CORES_AURA: Record<CategoriaInsumo, string> = {
     Limpeza: "#0ea5e9",
@@ -51,7 +51,7 @@ export function CardInsumo({
   const corAura = CORES_AURA[insumo.categoria] || "#71717a";
 
   return (
-    <div className="group relative bg-[#0a0a0a] rounded-xl border border-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.01] overflow-hidden">
+    <div className="group relative bg-card rounded-xl border border-borda-sutil p-4 transition-all duration-300 hover:bg-muted/30 overflow-hidden">
       {/* Aura de fundo dinâmica */}
       <div 
         className="absolute -right-20 -top-20 w-48 h-48 blur-[80px] opacity-[0.04] pointer-events-none transition-colors duration-1000"
@@ -66,15 +66,15 @@ export function CardInsumo({
           <div className="flex items-start gap-3 flex-1">
             <div className={`h-8 w-1 rounded-full ${corDaCategoria} shadow-sm shrink-0 mt-1`} />
             <div className="flex flex-col">
-              <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none mb-2">
+              <h3 className="text-lg font-black text-primary uppercase tracking-tight leading-none mb-2">
                 {insumo.nome}
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] px-2 py-0.5 rounded-md bg-zinc-800/80 text-zinc-400 font-black uppercase tracking-[0.1em] border border-white/5">
+                <span className="text-[9px] px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-black uppercase tracking-[0.1em] border border-borda-sutil">
                   {insumo.categoria}
                 </span>
                 {insumo.marca && (
-                  <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest truncate max-w-[100px]">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest truncate max-w-[100px]">
                     {insumo.marca}
                   </span>
                 )}
@@ -84,27 +84,27 @@ export function CardInsumo({
 
           {/* DADOS FINANCEIROS */}
           <div className="flex flex-col items-end gap-0.5 mt-1">
-             <div className="flex items-baseline gap-1">
-                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">UN:</span>
-                <span className="text-[13px] font-black text-white tabular-nums">
+              <div className="flex items-baseline gap-1">
+                <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">UN:</span>
+                <span className="text-[13px] font-black text-primary tabular-nums">
                   {centavosParaReais(insumo.custoMedioUnidade)}
                 </span>
-             </div>
-             <div className="flex items-baseline gap-1">
-                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">VALOR:</span>
-                <span className="text-[9px] font-bold text-zinc-500 tabular-nums">
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">VALOR:</span>
+                <span className="text-[9px] font-bold text-muted-foreground tabular-nums">
                   {centavosParaReais(insumo.quantidadeAtual * insumo.custoMedioUnidade)}
                 </span>
-             </div>
+              </div>
           </div>
 
           {/* ESTOQUE MONITOR */}
           <div className="flex flex-col items-center ml-2">
             <div className="flex items-baseline gap-1 leading-none">
-              <span className={`text-3xl font-black tabular-nums tracking-tighter ${estaComEstoqueBaixo ? 'text-rose-500' : 'text-white'}`}>
+              <span className={`text-3xl font-black tabular-nums tracking-tighter ${estaComEstoqueBaixo ? 'text-rose-500' : 'text-primary'}`}>
                 {insumo.quantidadeAtual}
               </span>
-              <span className="text-[9px] font-black text-zinc-600 uppercase italic">{insumo.unidadeMedida}</span>
+              <span className="text-[9px] font-black text-muted-foreground uppercase italic">{insumo.unidadeMedida}</span>
             </div>
             <div className={`mt-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] border ${
               estaComEstoqueBaixo 
@@ -140,16 +140,16 @@ export function CardInsumo({
               </button>
            </div>
 
-           <div className="h-5 w-px bg-white/5" />
+           <div className="h-5 w-px bg-borda-sutil" />
 
            <div className="flex items-center gap-1">
-             <button onClick={() => aoVerHistorico(insumo)} className="p-1.5 text-zinc-600 hover:text-sky-500 transition-all">
-               <History size={16} />
+             <button onClick={() => aoVerHistorico(insumo)} className="p-1.5 text-muted-foreground hover:text-sky-500 transition-all">
+               <HistoryIcon size={16} />
              </button>
-             <button onClick={() => aoEditar(insumo)} className="p-1.5 text-zinc-600 hover:text-indigo-500 transition-all">
+             <button onClick={() => aoEditar(insumo)} className="p-1.5 text-muted-foreground hover:text-indigo-500 transition-all">
                <Edit2 size={16} />
              </button>
-             <button onClick={() => aoExcluir(insumo)} className="p-1.5 text-zinc-600 hover:text-rose-500 transition-all">
+             <button onClick={() => aoExcluir(insumo)} className="p-1.5 text-muted-foreground hover:text-rose-500 transition-all">
                <Trash2 size={16} />
              </button>
            </div>

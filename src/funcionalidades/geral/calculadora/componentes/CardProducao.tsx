@@ -61,35 +61,35 @@ export const CardProducao = memo(function CardProducao({
   };
 
   return (
-    <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
       {/* Efeito Glow Indigo de Fundo */}
       <div className="absolute -top-24 -left-20 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
       
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-white/5">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-borda-sutil">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-indigo-500 border border-indigo-500/30">
             <Zap size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-white">Produção e Impressão</span>
-            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Metricas de tempo e hardware</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary">Produção e Impressão</span>
+            <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">Metricas de tempo e hardware</span>
           </div>
         </div>
 
         {/* Display da Impressora (Estático) */}
         {impressoraAtiva && (
-          <div className="flex items-center justify-between px-4 h-11 rounded-xl border bg-zinc-100/50 dark:bg-white/5 border-zinc-200/50 dark:border-white/10 shadow-sm min-w-[160px]">
+          <div className="flex items-center justify-between px-4 h-11 rounded-xl border bg-muted/30 dark:bg-white/5 border-borda-sutil shadow-sm min-w-[160px]">
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
               <div className="flex items-baseline gap-2">
-                <span className="text-xs font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+                <span className="text-xs font-black uppercase tracking-tight text-primary dark:text-white">
                   {impressoraAtiva.nome}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 ml-4">
-              <span className="text-[10px] font-black text-zinc-400 tracking-tighter leading-none">{impressoraAtiva.potenciaWatts}W</span>
+              <span className="text-[10px] font-black text-muted-foreground tracking-tighter leading-none">{impressoraAtiva.potenciaWatts}W</span>
             </div>
           </div>
         )}
@@ -100,12 +100,12 @@ export const CardProducao = memo(function CardProducao({
         <div className="flex-1 space-y-4 md:pr-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Quantas peças?</label>
-              <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
+              <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">Quantas peças?</label>
+              <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
                 <button 
                   type="button"
                   onClick={() => setQuantidade(Math.max(1, (quantidade || 1) - 1))}
-                  className="w-10 h-full flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  className="w-10 h-full flex items-center justify-center text-zinc-500 hover:bg-muted/50 dark:hover:bg-zinc-700/50 hover:text-primary dark:hover:text-white transition-colors"
                 >
                   <Minus size={12} />
                 </button>
@@ -121,12 +121,12 @@ export const CardProducao = memo(function CardProducao({
                     setTempQuantidade(v);
                     setQuantidade(v === "" ? 0 : Number(v));
                   }} 
-                  className="w-full h-full bg-transparent outline-none font-black text-sm text-center text-zinc-900 dark:text-white" 
+                  className="w-full h-full bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                 />
                 <button 
                   type="button"
                   onClick={() => setQuantidade((quantidade || 1) + 1)}
-                  className="w-10 h-full flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  className="w-10 h-full flex items-center justify-center text-zinc-500 hover:bg-muted/50 dark:hover:bg-zinc-700/50 hover:text-primary dark:hover:text-white transition-colors"
                 >
                   <Plus size={12} />
                 </button>
@@ -134,9 +134,9 @@ export const CardProducao = memo(function CardProducao({
             </div>
 
             <div>
-              <label className="block h-4 text-xs font-black uppercase text-gray-400 mb-2">Tempo de Produção</label>
+              <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">Tempo de Produção</label>
               <div className="grid grid-cols-2 gap-2">
-                <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner">
+                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
                     placeholder="0" 
@@ -148,12 +148,12 @@ export const CardProducao = memo(function CardProducao({
                       setTempHora(v);
                       setTempo((v === "" ? 0 : Number(v)) * 60 + (tempo % 60));
                     }} 
-                    className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-zinc-900 dark:text-white" 
+                    className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                   />
                   <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                 </div>
 
-                <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner">
+                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
                     placeholder="0" 
@@ -165,7 +165,7 @@ export const CardProducao = memo(function CardProducao({
                       setTempMinuto(v);
                       setTempo(Math.floor(tempo / 60) * 60 + (v === "" ? 0 : Number(v)));
                     }} 
-                    className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-zinc-900 dark:text-white" 
+                    className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
                   />
                   <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
                 </div>
@@ -177,14 +177,14 @@ export const CardProducao = memo(function CardProducao({
             <div className="flex flex-col group">
               <div className="flex items-center justify-between h-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <label className="block text-xs font-black uppercase text-gray-400">Energia (R$)</label>
+                  <label className="block text-xs font-black uppercase text-muted-foreground">Energia (R$)</label>
                 </div>
                 <div
                   onClick={() => setCobrarEnergia(!cobrarEnergia)}
                   title={cobrarEnergia ? "Clique para desativar cobrança de energia" : "Clique para ativar cobrança de energia"}
                   className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase flex items-center gap-0.5 w-fit cursor-pointer transition-all hover:scale-105 active:scale-95 ${!cobrarEnergia
-                      ? "bg-gray-500/10 border-gray-500/20 text-gray-500 opacity-60"
-                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-500"
+                      ? "bg-zinc-500/10 border-borda-sutil text-zinc-500 opacity-60"
+                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-500"
                     }`}
                 >
                   <input
@@ -208,26 +208,26 @@ export const CardProducao = memo(function CardProducao({
               <div
                 onClick={() => setCobrarEnergia(!cobrarEnergia)}
                 title={cobrarEnergia ? "Clique para desativar cobrança de energia" : "Clique para ativar cobrança de energia"}
-                className={`w-full h-11 px-4 rounded-xl flex items-center border cursor-pointer transition-all shadow-inner ${!cobrarEnergia ? 'bg-zinc-100/20 dark:bg-zinc-800/20 border-zinc-200/20 dark:border-white/5 opacity-40 grayscale' :
-                    impressoraAtiva ? 'bg-zinc-100/50 dark:bg-zinc-800/40 border-indigo-500/20 group-hover:border-indigo-500/40' : 'bg-zinc-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 group-hover:border-indigo-500/30'
+                className={`w-full h-11 px-4 rounded-xl flex items-center border cursor-pointer transition-all shadow-inner ${!cobrarEnergia ? 'bg-muted/20 border-borda-sutil opacity-40 grayscale' :
+                    impressoraAtiva ? 'bg-muted/40 dark:bg-zinc-800/40 border-indigo-500/20 group-hover:border-indigo-500/40' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil group-hover:border-indigo-500/30'
                   }`}
               >
-                <span className="text-gray-400 font-black text-xs mr-2 select-none">R$</span>
-                <span className={`font-black text-sm w-full text-center ${!cobrarEnergia ? 'line-through text-gray-400' : impressoraAtiva ? 'text-indigo-500' : 'text-zinc-900 dark:text-white'}`}>
+                <span className="text-muted-foreground font-black text-xs mr-2 select-none">R$</span>
+                <span className={`font-black text-sm w-full text-center ${!cobrarEnergia ? 'line-through text-zinc-400 dark:text-gray-400' : impressoraAtiva ? 'text-indigo-600 dark:text-indigo-500' : 'text-primary dark:text-white'}`}>
                   <ContadorAnimado valor={cobrarEnergia ? custoEnergia : 0} prefixo="" />
                 </span>
               </div>
             </div>
             <div className="flex flex-col">
               <div className="flex items-center justify-between h-4 mb-2">
-                <label className="block text-xs font-black uppercase text-gray-400">kWh (R$)</label>
+                <label className="block text-xs font-black uppercase text-muted-foreground">kWh (R$)</label>
                 <button
                   onClick={lidarComDeteccao}
                   disabled={detectando}
                   className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 ${
                     detectando 
                       ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-500 animate-pulse' 
-                      : 'bg-zinc-500/5 border-white/5 text-zinc-500 hover:text-indigo-400 hover:border-indigo-400/30 hover:bg-indigo-400/10'
+                      : 'bg-muted/40 border-borda-sutil text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-500/30 hover:bg-indigo-500/10'
                   }`}
                   title="Auto-detectar tarifa pelo IP"
                 >
@@ -235,7 +235,7 @@ export const CardProducao = memo(function CardProducao({
                   <span>{detectando ? 'Buscando...' : 'Auto-ajuste'}</span>
                 </button>
               </div>
-              <div className="relative flex items-center h-11 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-white/5 focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
+              <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
                 <input 
                   type="number" 
                   step="0.01" 
@@ -248,7 +248,7 @@ export const CardProducao = memo(function CardProducao({
                     setTempKwh(v);
                     setPrecoKwh(v === "" ? 0 : Number(v));
                   }} 
-                  className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white text-center" 
+                  className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-center" 
                 />
               </div>
             </div>
@@ -256,13 +256,13 @@ export const CardProducao = memo(function CardProducao({
         </div>
 
         {/* Linha Divisória Vertical */}
-        <div className="hidden md:block w-[1px] bg-indigo-500/20 dark:bg-indigo-500/10 self-stretch mx-3" />
+        <div className="hidden md:block w-[1px] bg-borda-sutil self-stretch mx-3" />
 
         {/* Coluna Direita: Pós-Processamento */}
         <div className="flex-1 flex flex-col h-full md:pl-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-primary dark:text-white">
                 Pós-Processamento
               </label>
               <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Lixamento, Pintura, Cola e Acabamentos</p>
@@ -271,22 +271,22 @@ export const CardProducao = memo(function CardProducao({
               onClick={() => {
                 setPosProcesso([...posProcesso, { id: crypto.randomUUID(), nome: "Novo Item", valor: 0 }]);
               }}
-              className="px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 hover:bg-indigo-500 hover:text-white text-[9px] font-black uppercase transition-all flex items-center gap-1"
+              className="px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-500 hover:bg-indigo-500 hover:text-white text-[9px] font-black uppercase transition-all flex items-center gap-1"
             >
               <Plus size={10} strokeWidth={3} /> Adicionar Item
             </button>
           </div>
 
-          <div className="min-h-[140px] max-h-[240px] overflow-y-auto space-y-2 mb-3 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-800/50 transition-all">
+          <div className="min-h-[140px] max-h-[240px] overflow-y-auto space-y-2 mb-3 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-800/50 transition-all">
             {posProcesso.length === 0 ? (
-              <div className="w-full border border-dashed border-gray-100 dark:border-white/5 rounded-2xl flex flex-col items-center justify-center h-[140px] p-4 text-center bg-transparent opacity-60">
-                <Plus size={20} className="text-gray-400 dark:text-zinc-600 mb-2" />
-                <span className="text-[9px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest leading-relaxed">Nenhum acabamento<br/>extra aplicado</span>
+              <div className="w-full border border-dashed border-borda-sutil rounded-2xl flex flex-col items-center justify-center h-[140px] p-4 text-center bg-transparent opacity-60">
+                <Plus size={20} className="text-zinc-300 dark:text-zinc-700 mb-2" />
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-relaxed">Nenhum acabamento<br/>extra aplicado</span>
               </div>
             ) : (
               <div className="space-y-3">
                 {posProcesso.map((item, index) => (
-                  <div key={item.id} className="flex items-center gap-3 p-2 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-xl group animate-in slide-in-from-right-2 duration-300">
+                  <div key={item.id} className="flex items-center gap-3 p-2 bg-muted/20 dark:bg-white/[0.02] border border-borda-sutil rounded-xl group animate-in slide-in-from-right-2 duration-300">
                     <div className="flex-1 min-w-[120px]">
                       <input
                         type="text"
@@ -297,12 +297,12 @@ export const CardProducao = memo(function CardProducao({
                           novaLista[index].nome = e.target.value;
                           setPosProcesso(novaLista);
                         }}
-                        className="w-full bg-transparent border-0 border-b border-zinc-200 dark:border-white/10 text-[11px] font-black uppercase tracking-tight text-zinc-900 dark:text-white outline-none focus:border-amber-500 py-1 transition-colors"
+                        className="w-full bg-transparent border-0 border-b border-borda-sutil text-[11px] font-black uppercase tracking-tight text-primary dark:text-white outline-none focus:border-indigo-500 py-1 transition-colors"
                       />
                     </div>
 
                     <div className="flex items-center gap-2 w-20">
-                      <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">R$</span>
+                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">R$</span>
                       <input
                         type="number"
                         step="0.01"
@@ -323,7 +323,7 @@ export const CardProducao = memo(function CardProducao({
                           novaLista[index].valor = v === "" ? 0 : Math.round(Number(v) * 100);
                           setPosProcesso(novaLista);
                         }}
-                        className="w-full bg-transparent border-0 border-b border-zinc-200 dark:border-white/10 text-[11px] font-black text-center text-zinc-900 dark:text-white outline-none focus:border-amber-500 py-1 transition-colors"
+                        className="w-full bg-transparent border-0 border-b border-borda-sutil text-[11px] font-black text-center text-primary dark:text-white outline-none focus:border-indigo-500 py-1 transition-colors"
                       />
                     </div>
 
@@ -339,8 +339,8 @@ export const CardProducao = memo(function CardProducao({
 
                 <div className="pt-2 px-3 flex justify-end">
                   <div className="text-right">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Total em Pós-Processamento</p>
-                    <p className="text-xs font-black text-zinc-900 dark:text-white">
+                    <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Total em Pós-Processamento</p>
+                    <p className="text-xs font-black text-primary dark:text-white">
                       {(posProcesso.reduce((acc, i) => acc + (i.valor || 0), 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
                   </div>

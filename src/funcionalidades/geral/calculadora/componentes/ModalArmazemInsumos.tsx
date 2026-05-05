@@ -43,15 +43,15 @@ export function ModalArmazemInsumos({
         {/* Botão Novo Insumo */}
         <button
           onClick={aoCriarNovo}
-          className="p-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-teal-500/50 hover:bg-teal-500/5 transition-all flex items-center gap-4 h-24 group"
+          className="p-3 rounded-2xl border-2 border-dashed border-borda-sutil dark:border-white/10 hover:border-teal-500/50 hover:bg-teal-500/5 transition-all flex items-center gap-4 h-24 group"
         >
           <div className="shrink-0 w-14 flex items-center justify-center">
-            <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white transition-all">
+            <div className="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white transition-all text-zinc-400 group-hover:text-white">
               <Plus size={22} />
             </div>
           </div>
           <div className="flex flex-col text-left">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">Novo Insumo</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary dark:text-white">Novo Insumo</span>
             <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">Adicionar ao catálogo</span>
           </div>
         </button>
@@ -72,7 +72,7 @@ export function ModalArmazemInsumos({
                   aoAlternar(i);
                 }
               }}
-              className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-white dark:bg-zinc-900/50 cursor-pointer ${isSelecionado ? "shadow-md" : "hover:shadow-lg"}`}
+              className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-card cursor-pointer ${isSelecionado ? "shadow-md" : "hover:shadow-lg"}`}
               style={{
                 borderColor: isSelecionado ? '#14b8a6' : '#14b8a622',
                 backgroundColor: isSelecionado ? '#14b8a611' : undefined
@@ -91,7 +91,7 @@ export function ModalArmazemInsumos({
               <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1">
                 <div className="flex justify-between items-start">
                   <div className="min-w-0">
-                    <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-900 dark:text-white truncate">
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white truncate">
                       {i.nome}
                     </h4>
                     <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter truncate">
@@ -119,7 +119,7 @@ export function ModalArmazemInsumos({
                   </div>
                 </div>
 
-                <div className="flex items-end justify-between gap-2 border-t border-gray-100 dark:border-white/5 pt-2 mt-1">
+                <div className="flex items-end justify-between gap-2 border-t border-borda-sutil dark:border-white/5 pt-2 mt-1">
                   <div className="flex flex-col">
                     <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Estoque</span>
                     <span className={`text-[9px] font-black tabular-nums ${i.quantidadeAtual < (i.quantidadeMinima || 0) ? 'text-rose-500' : 'text-zinc-600 dark:text-zinc-300'}`}>

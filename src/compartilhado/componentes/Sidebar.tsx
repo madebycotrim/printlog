@@ -110,8 +110,8 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
 
   const classesContainer = `
         fixed inset-y-0 left-0 z-50 flex flex-col
-        bg-white dark:bg-[var(--bg-sidebar)]
-        border-r border-gray-100 dark:border-white/[0.08]
+        bg-card
+        border-r border-borda-sutil
         transition-all duration-300 ease-in-out md:translate-x-0
         ${abertaMobile ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
         md:static md:shadow-none
@@ -144,7 +144,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
 
             {!colapsada && (
               <div className="flex flex-col justify-center transition-all duration-300">
-                <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-white leading-none">
+                <span className="text-xl font-black tracking-tighter text-primary dark:text-white leading-none">
                   PRINTLOG
                 </span>
                 <span className="text-[10px] font-bold text-primaria tracking-[0.3em] uppercase">Studio</span>
@@ -152,13 +152,13 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
             )}
 
             {aoFechar ? (
-              <button onClick={aoFechar} className="md:hidden ml-auto p-2 text-gray-400 hover:text-red-500 transition-colors">
+              <button onClick={aoFechar} className="md:hidden ml-auto p-2 text-muted-foreground hover:text-rose-500 transition-colors">
                 <X size={20} />
               </button>
             ) : (
               <button 
                 onClick={() => setColapsada(!colapsada)} 
-                className={`hidden md:flex p-1.5 rounded-lg text-gray-400 hover:text-sky-500 hover:bg-gray-100/50 dark:hover:bg-white/[0.04] transition-all ml-auto ${colapsada ? "mt-2 ml-0" : ""}`}
+                className={`hidden md:flex p-1.5 rounded-lg text-zinc-400 hover:text-primaria hover:bg-muted dark:hover:bg-white/[0.04] transition-all ml-auto ${colapsada ? "mt-2 ml-0" : ""}`}
                 title={colapsada ? "Expandir menu" : "Recolher menu"}
               >
                 {colapsada ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -178,17 +178,17 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
               <div key={grupo.titulo} className="space-y-1.5">
                 <div className={`flex items-center gap-3 px-4 mb-3 mt-4 first:mt-0 ${colapsada ? "justify-center px-0" : ""}`}>
                   {!colapsada && (
-                    <h3 className="text-[10px] font-black text-gray-400 dark:text-[var(--text-muted)] uppercase tracking-[0.2em] whitespace-nowrap">
+                    <h3 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] whitespace-nowrap">
                       {grupo.titulo}
                     </h3>
                   )}
                   {/* Linha Divisória de Categoria */}
                   {!colapsada ? (
-                    <div className="flex-1 flex items-center h-[1px] bg-gradient-to-r from-gray-200 via-gray-200/50 to-transparent dark:from-white/[0.12] dark:via-white/[0.05] dark:to-transparent">
-                      <div className="w-[3px] h-[3px] rounded-full bg-gray-300 dark:bg-zinc-600 -ml-[1px]" />
+                    <div className="flex-1 flex items-center h-[1px] bg-gradient-to-r from-zinc-200 via-zinc-200/50 to-transparent dark:from-white/[0.12] dark:via-white/[0.05] dark:to-transparent">
+                      <div className="w-[3px] h-[3px] rounded-full bg-zinc-300 dark:bg-zinc-600 -ml-[1px]" />
                     </div>
                   ) : (
-                    <div className="w-6 h-[2px] rounded-full bg-gray-200/50 dark:bg-white/5" />
+                    <div className="w-6 h-[2px] rounded-full bg-zinc-200/50 dark:bg-white/5" />
                   )}
                 </div>
                 
@@ -206,7 +206,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                           ${colapsada ? "justify-center px-0 mx-1" : "px-4"}
                           ${ativo 
                             ? "text-primaria bg-gradient-to-r from-primaria/10 to-transparent dark:from-primaria/5 dark:to-transparent backdrop-blur-md shadow-[inset_1px_1px_1px_rgba(255,255,255,0.05)]" 
-                            : "text-gray-500 dark:text-[var(--text-secondary)] hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-white/[0.02]"}
+                            : "text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-muted dark:hover:bg-white/[0.02]"}
                         `}
                       >
                         {/* Indicador de Profundidade 3D (Borda Brilhante) */}
@@ -218,7 +218,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                           <item.icone
                             size={colapsada ? 20 : 18}
                             strokeWidth={ativo ? 2.5 : 2}
-                            className={`transition-colors ${ativo ? "text-primaria" : "text-gray-400 dark:text-zinc-600 group-hover:text-primaria"}`}
+                            className={`transition-colors ${ativo ? "text-primaria" : "text-zinc-400 dark:text-zinc-600 group-hover:text-primaria"}`}
                           />
                         </div>
 
@@ -245,7 +245,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                 </div>
                 <button
                   onClick={() => resetarTudo()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-red-500 bg-gray-50 dark:bg-white/[0.02] border border-transparent hover:border-red-500/20 transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold text-zinc-400 hover:text-rose-500 bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-rose-500/20 transition-all"
                 >
                   Ocultar Beta
                 </button>
@@ -256,9 +256,9 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
           {/* User Profile - Rodapé Premium */}
           <div className={`relative mt-auto ${colapsada ? "p-3 pb-5" : "p-4"}`}>
             {/* Elegant Faded Separator */}
-            <div className={`absolute top-0 h-[1px] bg-gradient-to-r from-transparent via-gray-100 dark:via-white/10 to-transparent ${colapsada ? "left-2 right-2" : "left-6 right-6"}`} />
+            <div className={`absolute top-0 h-[1px] bg-gradient-to-r from-transparent via-borda-sutil to-transparent ${colapsada ? "left-2 right-2" : "left-6 right-6"}`} />
             
-            <div className={`flex items-center gap-3 p-2 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] transition-all group overflow-hidden ${colapsada ? "justify-center p-1.5 bg-transparent" : "hover:bg-gray-100 dark:hover:bg-white/[0.04]"}`}>
+            <div className={`flex items-center gap-3 p-2 rounded-xl bg-muted/40 dark:bg-white/[0.02] transition-all group overflow-hidden ${colapsada ? "justify-center p-1.5 bg-transparent" : "hover:bg-muted/60 dark:hover:bg-white/[0.04]"}`}>
               <div title={colapsada ? "Sair da plataforma" : undefined} onClick={colapsada ? lidarComSair : undefined} className={colapsada ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}>
                  <Avatar 
                    nome={usuario?.nome} 
@@ -271,7 +271,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
               {!colapsada && (
                 <>
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <p className="text-xs font-black text-gray-900 dark:text-white truncate leading-tight mb-0.5">
+                    <p className="text-xs font-black text-primary dark:text-white truncate leading-tight mb-0.5">
                       {usuario?.nome?.split(" ")[0] || "Usuário"}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">

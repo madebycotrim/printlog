@@ -27,62 +27,62 @@ export function DockAcoes({
         
         <button 
           onClick={() => aoNavegar("/calculadora")}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-amber-500/20 hover:border-amber-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-amber-500/20 hover:border-amber-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Novo Orçamento</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Novo Orçamento</span>
           <Calculator size={20} className="text-amber-500" />
         </button>
 
         <button 
           onClick={() => aoNavegar("/projetos")}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-sky-500/20 hover:border-sky-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-sky-500/20 hover:border-sky-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Ver Fila</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Ver Fila</span>
           <Clock size={20} className="text-sky-500" />
         </button>
 
         <button 
           onClick={aoAbrirModalCliente}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Novo Cliente</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Novo Cliente</span>
           <UserPlus size={20} className="text-indigo-500" />
         </button>
 
         <button 
           onClick={aoAbrirModalSelecaoMat}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Repor Material</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Repor Material</span>
           <Package size={20} className="text-emerald-500" />
         </button>
 
         <button 
           onClick={aoAbrirModalSelecaoIns}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-teal-500/20 hover:border-teal-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-teal-500/20 hover:border-teal-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Repor Insumo</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Repor Insumo</span>
           <Box size={20} className="text-teal-500" />
         </button>
 
         <button 
           onClick={() => aoNavegar("/impressoras")}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-rose-500/20 hover:border-rose-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-rose-500/20 hover:border-rose-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Status Máquinas</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Status Máquinas</span>
           <Wrench size={20} className="text-rose-500" />
         </button>
 
         <button 
           onClick={aoAbrirModalFinanceiro}
-          className="flex items-center justify-between w-52 bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl hover:bg-violet-500/20 hover:border-violet-500/50 transition-all group/btn"
+          className="flex items-center justify-between w-52 bg-card/80 backdrop-blur-xl border border-borda-sutil p-3.5 rounded-2xl hover:bg-violet-500/20 hover:border-violet-500/50 transition-all group/btn shadow-xl"
         >
-          <span className="text-[10px] font-black uppercase tracking-widest text-white transition-all">Lançar Venda</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary transition-all">Lançar Venda</span>
           <PlusCircle size={20} className="text-violet-500" />
         </button>
       </div>
 
-      <div className="bg-zinc-900/90 backdrop-blur-2xl border border-white/10 p-4 rounded-3xl shadow-2xl shadow-black/50 cursor-pointer group-hover:scale-110 transition-all">
+      <div className="bg-card/90 backdrop-blur-2xl border border-borda-sutil p-4 rounded-3xl shadow-2xl shadow-black/10 cursor-pointer group-hover:scale-110 transition-all">
         <PlusCircle size={24} className="text-amber-500" />
       </div>
     </div>

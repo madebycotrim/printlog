@@ -58,11 +58,11 @@ export function GraficoConsumo() {
     }, []);
 
     return (
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm min-h-[450px]">
+        <div className="lg:col-span-2 bg-card rounded-2xl p-8 border border-borda-sutil shadow-sm min-h-[450px]">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-xl font-black tracking-tight dark:text-white">Consumo de Filamento</h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Gramas consumidas por dia nesta semana</p>
+                    <h3 className="text-xl font-black tracking-tight text-primary">Consumo de Filamento</h3>
+                    <p className="text-sm text-zinc-500">Gramas consumidas por dia nesta semana</p>
                 </div>
                 <select className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl text-xs font-bold px-3 py-2 outline-none cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
                     <option>Últimos 7 dias</option>
@@ -91,12 +91,13 @@ export function GraficoConsumo() {
                             <YAxis hide />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#18181b',
-                                    border: 'none',
+                                    backgroundColor: 'var(--bg-card)',
+                                    border: '1px solid var(--border-subtle)',
                                     borderRadius: '12px',
-                                    color: '#fff'
+                                    color: 'var(--text-primary)',
+                                    boxShadow: 'var(--sombra-media)'
                                 }}
-                                itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
+                                itemStyle={{ color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold' }}
                                 cursor={{ stroke: "var(--cor-primaria)", strokeWidth: 2 }}
                             />
                             <Area

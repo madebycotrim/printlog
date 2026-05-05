@@ -48,7 +48,7 @@ export function ModalHistoricoUso({
 
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-3xl" esconderCabecalho={true}>
-      <div className="bg-white dark:bg-[#121214] min-h-[600px] flex flex-col overflow-hidden rounded-2xl shadow-2xl">
+      <div className="bg-card min-h-[600px] flex flex-col overflow-hidden rounded-2xl shadow-2xl">
         
         {/* Cabeçalho Premium Unificado com Aura Dinâmica */}
         <CabecalhoModalPremium 
@@ -66,7 +66,7 @@ export function ModalHistoricoUso({
               <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
                 {material.tipoMaterial}
               </span>
-              <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+              <span className="w-1 h-1 rounded-full bg-border" />
               <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
                 {material.fabricante}
               </span>

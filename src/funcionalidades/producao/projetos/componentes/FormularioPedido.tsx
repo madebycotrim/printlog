@@ -178,18 +178,18 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
     };
 
     const ConteudoFormulario = (
-        <div className={`flex flex-col bg-[#080809] ${ehPagina ? 'min-h-screen' : 'min-h-[75vh] max-h-[85vh]'} overflow-hidden ${!ehPagina && 'rounded-b-3xl'}`}>
+        <div className={`flex flex-col bg-card ${ehPagina ? 'min-h-screen' : 'min-h-[75vh] max-h-[85vh]'} overflow-hidden ${!ehPagina && 'rounded-b-3xl'}`}>
             <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col h-full overflow-hidden">
-                <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-thin scrollbar-thumb-white/5 scrollbar-track-transparent">
+                <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-thin scrollbar-thumb-borda-sutil scrollbar-track-transparent">
                         
                         {/* 🚀 HEADER DE ESTADO (Estilo Calculadora) */}
-                        <div className="flex items-center justify-between p-6 rounded-3xl bg-[#121214] border border-white/5 shadow-2xl">
+                        <div className="flex items-center justify-between p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil shadow-2xl">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sky-400 border border-sky-500/30 bg-sky-500/5">
                                     <Cpu size={24} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h2 className="text-lg font-black text-white uppercase tracking-tighter italic">
+                                    <h2 className="text-lg font-black text-primary dark:text-white uppercase tracking-tighter italic">
                                         {pedidoEdicao ? "Ajustar Parâmetros" : "Lançar Novo Projeto"}
                                     </h2>
                                     <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em]">
@@ -199,8 +199,8 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                             </div>
 
                             <div className="hidden md:flex flex-col items-end gap-2">
-                                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Valor de Mercado</span>
-                                <div className="flex items-center gap-3 px-6 py-3 bg-zinc-950/60 border border-white/5 rounded-2xl focus-within:border-emerald-500/40 transition-all">
+                                <span className="text-[9px] font-black text-zinc-500 dark:text-zinc-600 uppercase tracking-widest">Valor de Mercado</span>
+                                <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-950/60 border border-borda-sutil rounded-2xl focus-within:border-emerald-500/40 transition-all">
                                     <DollarSign size={16} className="text-emerald-500" />
                                     <input 
                                         type="text" 
@@ -217,15 +217,15 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                             <div className="lg:col-span-7 space-y-8">
                                 
                                 {/* 1. IDENTIFICAÇÃO (Estilo CardIdentificacaoProjeto) */}
-                                <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden relative">
+                                <div className="p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden relative">
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
                                     
-                                    <div className="relative z-10 flex items-center gap-3 border-b border-white/5 pb-4">
+                                    <div className="relative z-10 flex items-center gap-3 border-b border-borda-sutil pb-4">
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/30 bg-indigo-500/5">
                                             <User size={18} />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-black uppercase tracking-wider text-white">Identificação do Job</span>
+                                            <span className="text-xs font-black uppercase tracking-wider text-primary dark:text-white">Identificação do Job</span>
                                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Vincule o cliente e os detalhes operacionais</span>
                                         </div>
                                     </div>
@@ -247,12 +247,12 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
 
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Nome / Descrição do Job</label>
-                                            <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-indigo-500/40 rounded-xl h-12 transition-all">
+                                            <div className="relative flex items-center bg-white dark:bg-zinc-950/60 border border-borda-sutil focus-within:border-indigo-500/40 rounded-xl h-12 transition-all">
                                                 <FileText size={16} className="absolute left-4 text-zinc-600" />
                                                 <input 
                                                     type="text"
                                                     placeholder="Ex: Protótipo de Engenharia Rev.02"
-                                                    className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none placeholder:text-zinc-700"
+                                                    className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-primary dark:text-white outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
                                                     {...register("descricao")}
                                                 />
                                             </div>
@@ -262,15 +262,15 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                 </div>
 
                                 {/* 2. HARDWARE (Estilo CardProducao) */}
-                                <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 relative">
+                                <div className="p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 relative">
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-                                    <div className="relative z-10 flex items-center gap-3 border-b border-white/5 pb-4">
+                                    <div className="relative z-10 flex items-center gap-3 border-b border-borda-sutil pb-4">
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/30 bg-emerald-500/5">
                                             <Settings size={18} />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-black uppercase tracking-wider text-white">Hardware & Alocação</span>
+                                            <span className="text-xs font-black uppercase tracking-wider text-primary dark:text-white">Hardware & Alocação</span>
                                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Defina o equipamento e o deadline técnico</span>
                                         </div>
                                     </div>
@@ -278,10 +278,10 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                     <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Equipamento Ativo</label>
-                                            <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-emerald-500/40 rounded-xl h-12 transition-all">
+                                            <div className="relative flex items-center bg-white dark:bg-zinc-950/60 border border-borda-sutil focus-within:border-emerald-500/40 rounded-xl h-12 transition-all">
                                                 <Cpu size={16} className="absolute left-4 text-zinc-600" />
                                                 <select 
-                                                    className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none appearance-none cursor-pointer" 
+                                                    className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-primary dark:text-white outline-none appearance-none cursor-pointer" 
                                                     {...register("idImpressora")}
                                                 >
                                                     <option value="" className="bg-zinc-900">AUTO-ALOCAÇÃO (SISTEMA)</option>
@@ -293,11 +293,11 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
 
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Prazo de Entrega</label>
-                                            <div className="relative flex items-center bg-zinc-950/60 border border-white/5 focus-within:border-emerald-500/40 rounded-xl h-12 transition-all">
+                                            <div className="relative flex items-center bg-white dark:bg-zinc-950/60 border border-borda-sutil focus-within:border-emerald-500/40 rounded-xl h-12 transition-all">
                                                 <Calendar size={16} className="absolute left-4 text-zinc-600" />
                                                 <input 
                                                     type="date" 
-                                                    className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-white outline-none [color-scheme:dark]" 
+                                                    className="w-full h-full bg-transparent pl-12 pr-4 font-bold text-xs text-primary dark:text-white outline-none [color-scheme:light] dark:[color-scheme:dark]" 
                                                     {...register("prazoEntrega")} 
                                                 />
                                             </div>
@@ -310,7 +310,7 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                             <div className="lg:col-span-5 space-y-8">
                                  
                                  {/* 3. PERFORMANCE (Métricas Técnicas) */}
-                                 <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 relative">
+                                 <div className="p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 relative">
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
                                     <div className="relative z-10 flex items-center gap-3 border-b border-white/5 pb-4">
@@ -318,19 +318,19 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                             <TrendingUp size={18} />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-black uppercase tracking-wider text-white">Métricas de Performance</span>
+                                            <span className="text-xs font-black uppercase tracking-wider text-primary dark:text-white">Métricas de Performance</span>
                                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Tempo de máquina e massa total</span>
                                         </div>
                                     </div>
 
                                     <div className="relative z-10 grid grid-cols-2 gap-4">
-                                        <div className="flex flex-col gap-2 p-5 rounded-2xl bg-zinc-950/60 border border-white/5 group/time transition-all hover:border-amber-500/20">
+                                        <div className="flex flex-col gap-2 p-5 rounded-2xl bg-white dark:bg-zinc-950/60 border border-borda-sutil group/time transition-all hover:border-amber-500/20">
                                             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Tempo Estimado</span>
                                             <div className="flex items-center gap-3 mt-1">
                                                 <div className="flex-1 flex items-baseline gap-1">
                                                     <input 
                                                         type="number" 
-                                                        className="bg-transparent text-2xl font-black text-white outline-none tabular-nums w-full"
+                                                        className="bg-transparent text-2xl font-black text-primary dark:text-white outline-none tabular-nums w-full"
                                                         value={Math.floor((watch("tempoMinutos") || 0) / 60)}
                                                         onChange={(e) => {
                                                             const h = Math.max(0, parseInt(e.target.value) || 0);
@@ -345,7 +345,7 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                                     <input 
                                                         type="number" 
                                                         max={59}
-                                                        className="bg-transparent text-2xl font-black text-white outline-none tabular-nums w-full"
+                                                        className="bg-transparent text-2xl font-black text-primary dark:text-white outline-none tabular-nums w-full"
                                                         value={(watch("tempoMinutos") || 0) % 60}
                                                         onChange={(e) => {
                                                             const h = Math.floor((watch("tempoMinutos") || 0) / 60);
@@ -358,12 +358,12 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col gap-2 p-5 rounded-2xl bg-zinc-950/60 border border-white/5 transition-all hover:border-white/10">
+                                        <div className="flex flex-col gap-2 p-5 rounded-2xl bg-white dark:bg-zinc-950/60 border border-borda-sutil transition-all hover:border-white/10">
                                             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Massa Total</span>
                                             <div className="flex items-baseline gap-1 mt-1">
                                                 <input 
                                                     type="number" 
-                                                    className="bg-transparent text-2xl font-black text-white outline-none tabular-nums w-full" 
+                                                    className="bg-transparent text-2xl font-black text-primary dark:text-white outline-none tabular-nums w-full" 
                                                     {...register("pesoGramas", { valueAsNumber: true })} 
                                                 />
                                                 <span className="text-[10px] font-black text-zinc-500 uppercase italic">G</span>
@@ -373,7 +373,7 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                 </div>
 
                                 {/* 4. MATERIAIS (Seletor Premium) */}
-                                <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 relative">
+                                <div className="p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 relative">
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
 
                                     <div className="relative z-10 flex items-center gap-3 border-b border-white/5 pb-4">
@@ -381,7 +381,7 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                             <Box size={18} />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-black uppercase tracking-wider text-white">Inventário de Suprimentos</span>
+                                            <span className="text-xs font-black uppercase tracking-wider text-primary dark:text-white">Inventário de Suprimentos</span>
                                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Materiais e insumos secundários</span>
                                         </div>
                                     </div>
@@ -407,17 +407,17 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                         </div>
 
                         {/* 📝 OBSERVAÇÕES TÉCNICAS */}
-                        <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 shadow-2xl relative overflow-hidden group">
+                        <div className="p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil shadow-2xl relative overflow-hidden group">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-zinc-400 border border-white/10 bg-white/5">
                                     <MessageSquare size={18} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-black uppercase tracking-wider text-white">Log de Operação / Notas</span>
+                                    <span className="text-xs font-black uppercase tracking-wider text-primary dark:text-white">Log de Operação / Notas</span>
                                     <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Instruções especiais para a produção</span>
                                 </div>
                             </div>
-                            <div className="relative bg-zinc-950/60 border border-white/5 rounded-2xl p-4 focus-within:border-white/20 transition-all">
+                            <div className="relative bg-white dark:bg-zinc-950/60 border border-borda-sutil rounded-2xl p-4 focus-within:border-white/20 transition-all">
                                 <textarea 
                                     className="w-full bg-transparent outline-none font-bold text-xs text-zinc-300 min-h-[100px] resize-none placeholder:text-zinc-700"
                                     placeholder="Ex: Reforçar paredes internas, acabamento com primer cinza..."
@@ -428,18 +428,18 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                     </div>
 
                     {/* 📑 FOOTER DE AÇÕES (Dashboard Style) */}
-                    <footer className="px-12 py-8 bg-[#0a0a0c] border-t border-white/5 flex items-center justify-between">
+                    <footer className="px-12 py-8 bg-zinc-100 dark:bg-[#0a0a0c] border-t border-borda-sutil flex items-center justify-between">
                         <button 
                             type="button" 
                             onClick={aoCancelar} 
-                            className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 hover:text-white transition-colors"
+                            className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-primary dark:hover:text-white transition-colors"
                         >
                             Abortar Alterações
                         </button>
                         
                         <button 
                             type="submit" 
-                            className="group relative flex items-center gap-6 px-10 py-4 bg-white text-black rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-white/10 overflow-hidden"
+                            className="group relative flex items-center gap-6 px-10 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-white/10 overflow-hidden"
                         >
                             <Save size={18} strokeWidth={3} />
                             <span className="text-[11px] font-black uppercase tracking-[0.2em]">

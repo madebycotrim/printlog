@@ -28,7 +28,7 @@ export function ModalHistorico({
             placeholder="Nome da variação (Ex: Orçamento Resina Premium)..." 
             value={novoNome}
             onChange={(e) => setNovoNome(e.target.value)}
-            className="flex-1 h-12 px-4 rounded-xl bg-white dark:bg-black/40 outline-none font-bold text-xs uppercase text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-1 focus:ring-sky-500"
+            className="flex-1 h-12 px-4 rounded-xl bg-white dark:bg-black/40 border border-borda-sutil outline-none font-bold text-xs uppercase text-primary dark:text-white placeholder:text-zinc-400 focus:ring-1 focus:ring-sky-500"
           />
           <button 
             onClick={() => { aoSalvar(novoNome); setNovoNome(""); }}
@@ -43,16 +43,16 @@ export function ModalHistorico({
           
           <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto scrollbar-hide">
             {historico.length === 0 ? (
-              <div className="py-12 border-2 border-dashed border-gray-100 dark:border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
-                <Timer size={24} className="text-gray-300 opacity-50" />
-                <p className="text-[10px] font-bold text-gray-400 uppercase">Nenhum snapshot salvo ainda.</p>
+              <div className="py-12 border-2 border-dashed border-borda-sutil dark:border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
+                <Timer size={24} className="text-zinc-300 dark:text-gray-300 opacity-50" />
+                <p className="text-[10px] font-bold text-zinc-400 dark:text-gray-400 uppercase">Nenhum snapshot salvo ainda.</p>
               </div>
             ) : (
               historico.map((v) => (
-                <div key={v.id} className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-sky-500/30 transition-all flex items-center justify-between group">
+                <div key={v.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/5 border border-transparent hover:border-sky-500/30 transition-all flex items-center justify-between group">
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-black uppercase tracking-widest text-gray-900 dark:text-white mb-1">{v.nome}</span>
-                    <span className="text-[8px] font-bold text-gray-400 uppercase">
+                    <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-white mb-1">{v.nome}</span>
+                    <span className="text-[8px] font-bold text-zinc-400 dark:text-gray-400 uppercase">
                       {new Date(v.data).toLocaleString('pt-BR')} • {centavosParaReais(v.calculo.precoSugerido)}
                     </span>
                   </div>
@@ -66,7 +66,7 @@ export function ModalHistorico({
                     </button>
                     <button 
                       onClick={() => aoRemover(v.id)}
-                      className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                      className="p-2 text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
                     >
                       <Trash2 size={14} />
                     </button>

@@ -40,10 +40,20 @@
   /* Palette Exata PrintLog */
   --bg-page: #f4f4f5;
   --bg-sidebar: #ffffff;
+  --bg-header: #ffffff;
   --bg-card: #ffffff;
   --border-subtle: #e4e4e7;
   --accent-blue: #0ea5e9;
   --accent-green: #10b981;
+
+  /* Cores de Marca */
+  --cor-primaria: #0ea5e9;
+  --cor-primaria-rgb: 14 165 233;
+
+  /* Sistema de Cores de Texto */
+  --text-primary: #18181b; /* Zinc 900 */
+  --text-secondary: #52525b; /* Zinc 600 */
+  --text-muted: #71717a; /* Zinc 500 */
 
   /* Sombras Adaptativas */
   --sombra-suave: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);

@@ -38,14 +38,14 @@ export const CardFiscal = memo(function CardFiscal({
   };
 
   return (
-    <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarImpostos ? "opacity-40 grayscale" : ""}`}>
-      <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
+    <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 ${!cobrarImpostos ? "opacity-40 grayscale" : ""}`}>
+      <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-400 border border-violet-500/30">
             <TrendingUp size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-white">Estrutura Fiscal</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary">Estrutura Fiscal</span>
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Tributos e regimes (MEI/Simples)</span>
           </div>
         </div>
@@ -90,8 +90,8 @@ export const CardFiscal = memo(function CardFiscal({
                 }}
                 className={`px-4 h-11 flex flex-col items-center justify-center text-center rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider shrink-0 leading-tight
                   ${tipoOperacao === id 
-                    ? "bg-violet-500/10 border-violet-500 text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.15)]" 
-                    : "bg-gray-50/50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-violet-500/30 text-zinc-400"}
+                    ? "bg-violet-500/10 border-violet-500 text-violet-600 dark:text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.15)]" 
+                    : "bg-zinc-50 dark:bg-white/5 border-borda-sutil hover:border-violet-500/30 text-zinc-500 dark:text-zinc-400"}
                 `}
               >
                 <span>{label.toUpperCase()}</span>
@@ -108,7 +108,7 @@ export const CardFiscal = memo(function CardFiscal({
           {abrirConfigFiscal && (
             <button 
               onClick={abrirConfigFiscal} 
-              className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-zinc-400 hover:text-violet-400 hover:border-violet-500/30 transition-all shrink-0"
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/5 border border-borda-sutil text-zinc-400 hover:text-violet-500 hover:border-violet-500/30 transition-all shrink-0"
             >
               <Settings size={16} />
             </button>
@@ -120,29 +120,29 @@ export const CardFiscal = memo(function CardFiscal({
         </p>
 
         {tipoOperacao !== 'mei' && (
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-borda-sutil">
             <div className="flex flex-col gap-1.5 flex-1">
               <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider">Imposto Base (%)</label>
-              <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-violet-500/40 shadow-inner">
+              <div className="relative flex items-center bg-zinc-100 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-violet-500/40 shadow-inner">
                 <input
                   type="number"
                   placeholder="0"
                   value={impostos || ""}
                   onChange={(e) => setImpostos(Number(e.target.value))}
-                  className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                  className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
                 />
               </div>
             </div>
             {tipoOperacao !== 'servico' && (
               <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider">ICMS (%)</label>
-                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-violet-500/40 shadow-inner">
+                <div className="relative flex items-center bg-zinc-100 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-violet-500/40 shadow-inner">
                   <input
                     type="number"
                     placeholder="0"
                     value={icms || ""}
                     onChange={(e) => setIcms(Number(e.target.value))}
-                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none text-center"
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none text-center"
                   />
                 </div>
               </div>
@@ -150,13 +150,13 @@ export const CardFiscal = memo(function CardFiscal({
             {tipoOperacao === 'servico' && (
               <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider text-center">ISS (%)</label>
-                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-violet-500/40 shadow-inner">
+                <div className="relative flex items-center bg-zinc-100 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-violet-500/40 shadow-inner">
                   <input
                     type="number"
                     placeholder="0"
                     value={iss || ""}
                     onChange={(e) => setIss(Number(e.target.value))}
-                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none text-center"
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none text-center"
                   />
                 </div>
               </div>

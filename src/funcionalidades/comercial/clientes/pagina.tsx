@@ -75,11 +75,11 @@ export function PaginaClientes() {
 
             {estado.clientesFiltrados.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Search size={36} strokeWidth={1.5} className="text-zinc-300 dark:text-zinc-700 mb-4" />
-                <h3 className="text-base font-black text-zinc-900 dark:text-white mb-1 uppercase tracking-tight">
+                <Search size={36} strokeWidth={1.5} className="text-muted-foreground opacity-30 mb-4" />
+                <h3 className="text-base font-black text-primary mb-1 uppercase tracking-tight">
                   Nenhum cliente para este filtro
                 </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">
+                <p className="text-sm text-muted-foreground italic">
                   Tente buscar com termos diferentes ou ajuste a ordem.
                 </p>
               </div>

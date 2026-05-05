@@ -19,7 +19,7 @@ function BarraProgressoSuperior() {
         times: [0, 0.2, 0.5, 1],
         ease: "easeOut",
       }}
-      className="h-[2px] bg-zinc-800 dark:bg-white shadow-[0_0_8px_rgba(255,255,255,0.3)] dark:shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+      className="h-[2px] bg-primary dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.1)] dark:shadow-[0_0_8px_rgba(255,255,255,0.5)]"
     />
   );
 }

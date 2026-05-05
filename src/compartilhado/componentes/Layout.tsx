@@ -16,7 +16,7 @@ export function Layout({ children }: PropriedadesLayout) {
 
   return (
     <ProvedorCabecalho>
-      <div className="flex h-screen bg-zinc-50 dark:bg-[var(--bg-page)] font-sans text-zinc-900 dark:text-gray-100 transition-colors duration-300 relative">
+      <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950 font-sans text-primary dark:text-gray-100 transition-colors duration-300 relative">
         {/* Sidebar Fixa (Desktop) / Drawer (Mobile) */}
         <BarraLateral abertaMobile={sidebarAberta} aoFechar={() => definirSidebarAberta(false)} />
 

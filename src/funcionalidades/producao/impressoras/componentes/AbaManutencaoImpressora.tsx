@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Wrench, History, Activity, AlertTriangle, Plus, Clock, Tooltip, CheckCircle2 } from "lucide-react";
+import { Wrench, History, Activity, AlertTriangle, Plus, Clock, CheckCircle2 } from "lucide-react";
 import { Impressora } from "../tipos";
 import { usarManutencao } from "../manutencao/hooks/usarManutencao";
 import { MonitorPecas } from "../manutencao/componentes/MonitorPecas";
@@ -31,7 +31,7 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
       
       {/* 1. Dashboard de Saúde & Investimento */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 p-8 rounded-3xl bg-zinc-900 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-2 p-8 rounded-3xl bg-zinc-900 dark:bg-zinc-950 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_30%,rgba(56,189,248,0.05),transparent)] pointer-events-none" />
            
            <div className="flex flex-col gap-1 text-center md:text-left relative z-10">
@@ -99,12 +99,12 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="p-8 rounded-3xl border border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.01]"
+            className="p-8 rounded-3xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01]"
           >
             <div className="flex justify-between items-center mb-8 px-2">
                <div className="flex items-center gap-3">
                   <Wrench size={20} className="text-sky-500" />
-                  <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">Registrar Intervenção</h3>
+                  <h3 className="text-xl font-black text-primary dark:text-white uppercase tracking-tighter">Registrar Intervenção</h3>
                </div>
                <button onClick={() => setExibirFormulario(false)} className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                   Cancelar
@@ -140,12 +140,12 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
               
               <div className={`relative space-y-8 ${
                 manutencoes.length > 0 
-                  ? "pl-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-zinc-100 dark:before:bg-white/10" 
+                  ? "pl-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-borda-sutil" 
                   : ""
               }`}>
                 {manutencoes.length === 0 ? (
-                  <div className="py-10 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-100 dark:border-white/5 bg-zinc-50/30 dark:bg-white/[0.01] opacity-60">
-                    <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-white/5 text-zinc-400 mb-3">
+                  <div className="py-10 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-borda-sutil bg-zinc-50/30 dark:bg-white/[0.01] opacity-60">
+                    <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-white/5 text-zinc-400 mb-3">
                       <Wrench size={24} strokeWidth={1.5} />
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Nenhum registro técnico</p>
@@ -160,11 +160,11 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
                       className="relative group"
                     >
                       {/* Indicador de Timeline */}
-                      <div className={`absolute -left-8 top-1.5 w-4 h-4 rounded-full border-4 border-white dark:border-[#121214] ring-1 ring-zinc-100 dark:ring-white/10 ${
+                      <div className={`absolute -left-8 top-1.5 w-4 h-4 rounded-full border-4 border-card ring-1 ring-borda-sutil ${
                         m.tipo === 'Preventiva' ? 'bg-emerald-500' : m.tipo === 'Corretiva' ? 'bg-rose-500' : 'bg-sky-500'
                       }`} />
 
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl border border-zinc-100 dark:border-white/5 bg-white dark:bg-white/[0.01] hover:border-sky-500/30 transition-all duration-300 shadow-sm">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl border border-borda-sutil bg-white dark:bg-white/[0.01] hover:border-sky-500/30 transition-all duration-300 shadow-sm">
                         <div className="flex-1 space-y-2">
                            <div className="flex items-center gap-3">
                               <span className="text-[10px] font-bold text-zinc-400 tabular-nums">
@@ -176,7 +176,7 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
                                 {m.tipo}
                               </span>
                            </div>
-                           <h5 className="text-sm font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-tight leading-tight">
+                           <h5 className="text-sm font-black text-primary dark:text-zinc-200 uppercase tracking-tight leading-tight">
                               {m.descricao}
                            </h5>
                         </div>
@@ -192,7 +192,7 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
                            )}
                            {m.custoCentavos > 0 && (
                              <div className="flex flex-col items-end">
-                                <div className="text-sm font-black text-zinc-900 dark:text-white tabular-nums leading-none">
+                                <div className="text-sm font-black text-primary dark:text-white tabular-nums leading-none">
                                    {centavosParaReais(m.custoCentavos)}
                                 </div>
                                 <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Peças/Serviço</span>

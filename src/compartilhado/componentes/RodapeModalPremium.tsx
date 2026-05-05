@@ -37,13 +37,13 @@ export function RodapeModalPremium({
   const classeCor = coresBotao[corTema as keyof typeof coresBotao] || coresBotao["sky-500"];
 
   return (
-    <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-[#0e0e11]/50 backdrop-blur-md flex flex-col items-end gap-3 rounded-b-2xl min-h-[80px] justify-center">
+    <div className="p-6 border-t border-borda-sutil bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-md flex flex-col items-end gap-3 rounded-b-2xl min-h-[80px] justify-center">
       {children ? children : (
         <div className="flex items-center gap-4 w-full justify-between md:justify-end">
           <button
             type="button"
             onClick={aoCancelar}
-            className="px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all"
+            className="px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-primary dark:hover:text-white transition-all"
           >
             {rotuloCancelar}
           </button>

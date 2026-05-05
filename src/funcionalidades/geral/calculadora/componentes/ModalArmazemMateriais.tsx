@@ -58,7 +58,7 @@ export function ModalArmazemMateriais({
               onClick={() => setFiltroTipo(f.id as any)}
               className={`px-6 h-full min-w-[100px] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filtroTipo === f.id
                 ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
-                : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
                 }`}
             >
               {f.label}
@@ -71,15 +71,15 @@ export function ModalArmazemMateriais({
         {/* Botão Novo Material */}
         <button
           onClick={aoCriarNovo}
-          className="p-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-sky-500/50 hover:bg-sky-500/5 transition-all flex items-center gap-4 h-24 group"
+          className="p-3 rounded-2xl border-2 border-dashed border-borda-sutil dark:border-white/10 hover:border-sky-500/50 hover:bg-sky-500/5 transition-all flex items-center gap-4 h-24 group"
         >
           <div className="shrink-0 w-14 flex items-center justify-center">
-            <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-sky-500 group-hover:text-white transition-all">
+            <div className="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-sky-500 group-hover:text-white transition-all text-zinc-400 group-hover:text-white">
               <Plus size={22} />
             </div>
           </div>
           <div className="flex flex-col text-left">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">Novo Material</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary dark:text-white">Novo Material</span>
             <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">Adicionar ao catálogo</span>
           </div>
         </button>
@@ -102,7 +102,7 @@ export function ModalArmazemMateriais({
                   aoAlternar(m.id);
                 }
               }}
-              className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-white dark:bg-zinc-900/50 cursor-pointer ${isSelecionado ? "shadow-md" : "hover:shadow-lg"}`}
+              className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-card cursor-pointer ${isSelecionado ? "shadow-md" : "hover:shadow-lg"}`}
               style={{
                 borderColor: isSelecionado ? m.cor : `${m.cor}22`,
                 backgroundColor: isSelecionado ? `${m.cor}11` : undefined
@@ -126,7 +126,7 @@ export function ModalArmazemMateriais({
               <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1">
                 <div className="flex justify-between items-start">
                   <div className="min-w-0">
-                    <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-900 dark:text-white truncate">
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white truncate">
                       {m.nome}
                     </h4>
                     <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter truncate">
@@ -154,7 +154,7 @@ export function ModalArmazemMateriais({
                   </div>
                 </div>
 
-                <div className="flex items-end justify-between gap-2 border-t border-gray-100 dark:border-white/5 pt-2 mt-1">
+                <div className="flex items-end justify-between gap-2 border-t border-borda-sutil dark:border-white/5 pt-2 mt-1">
                   <div className="flex flex-col">
                     <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Saldo</span>
                     <span className={`text-[9px] font-black tabular-nums ${m.pesoRestanteGramas < 100 ? 'text-rose-500' : 'text-zinc-600 dark:text-zinc-300'}`}>

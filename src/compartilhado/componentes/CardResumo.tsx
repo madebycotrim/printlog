@@ -58,9 +58,9 @@ export function CardResumo({
       hover: "hover:border-violet-500/30",
     },
     zinc: {
-      texto: "text-zinc-500",
-      bg: "bg-zinc-500/5 dark:bg-zinc-500/10 border-zinc-500/10 dark:border-zinc-500/20",
-      hover: "hover:border-zinc-500/30",
+      texto: "text-muted-foreground",
+      bg: "bg-muted/40 border-borda-sutil",
+      hover: "hover:border-primary/20",
     },
   };
 
@@ -71,7 +71,7 @@ export function CardResumo({
     <Container
       onClick={aoClicar}
       className={`
-                bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/[0.04] 
+                bg-card border border-borda-sutil 
                 p-5 rounded-2xl shadow-sm flex items-center gap-4 relative overflow-hidden group transition-all duration-700 text-left
                 ${aoClicar ? `hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] cursor-pointer active:scale-[0.98]` : ""}
             `}
@@ -99,17 +99,17 @@ export function CardResumo({
 
       {/* Conteúdo */}
       <div className="relative z-10 flex flex-col">
-        <h4 className="text-[9px] font-black text-gray-400 dark:text-zinc-600 uppercase tracking-[0.2em] mb-0.5 leading-none">
+        <h4 className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-0.5 leading-none">
           {titulo}
         </h4>
         <div className="flex items-baseline gap-1.5 mt-0.5">
           <span
-            className={`text-2xl font-black tracking-tighter tabular-nums whitespace-nowrap leading-none ${carregando ? "skeleton h-8 w-12 rounded-lg" : "text-gray-900 dark:text-white"}`}
+            className={`text-2xl font-black tracking-tighter tabular-nums whitespace-nowrap leading-none ${carregando ? "skeleton h-8 w-12 rounded-lg" : "text-primary"}`}
           >
             {!carregando && valor}
           </span>
           {unidade && !carregando && (
-            <span className="text-[8px] font-black text-gray-400 dark:text-zinc-700 uppercase tracking-[0.1em] italic leading-none">
+            <span className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-[0.1em] italic leading-none">
               {unidade}
             </span>
           )}
@@ -118,7 +118,7 @@ export function CardResumo({
 
       {/* Ícone de Fundo Decorativo */}
       <Icone
-        className="absolute -right-6 -bottom-6 text-gray-100 dark:text-white/[0.02] transition-transform group-hover:scale-110 group-hover:-rotate-12 duration-500 pointer-events-none"
+        className="absolute -right-6 -bottom-6 text-muted-foreground/5 dark:text-white/[0.02] transition-transform group-hover:scale-110 group-hover:-rotate-12 duration-500 pointer-events-none"
         size={100}
         strokeWidth={1}
       />
@@ -137,8 +137,8 @@ export function CardResumoVazio({
   icone: ElementType;
 }) {
   return (
-    <div className="bg-zinc-50/50 dark:bg-zinc-950/40 border border-dashed border-gray-200 dark:border-white/10 p-6 rounded-2xl flex items-center justify-center relative overflow-hidden group transition-all">
-      <div className="flex flex-col items-center gap-2 text-gray-300 dark:text-zinc-700 relative z-10 transition-colors group-hover:text-gray-400 dark:group-hover:text-zinc-500 text-center">
+    <div className="bg-zinc-50/50 dark:bg-zinc-950/40 border border-dashed border-borda-sutil p-6 rounded-2xl flex items-center justify-center relative overflow-hidden group transition-all">
+      <div className="flex flex-col items-center gap-2 text-zinc-300 dark:text-zinc-700 relative z-10 transition-colors group-hover:text-zinc-400 dark:group-hover:text-zinc-500 text-center">
         <Icone size={24} className="opacity-40" />
         <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-40">{texto}</span>
       </div>

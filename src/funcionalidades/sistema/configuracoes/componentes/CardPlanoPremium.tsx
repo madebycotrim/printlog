@@ -51,7 +51,7 @@ export function CardPlanoPremium({
                         <span className="text-[9px] font-black tracking-[0.2em] uppercase text-zinc-500">
                             Nível de Acesso
                         </span>
-                        <h3 className={`text-xl font-black tracking-tight mt-0.5 ${ehFundador ? 'text-zinc-100' : 'text-zinc-100'}`}>
+                        <h3 className="text-xl font-black tracking-tight mt-0.5 text-zinc-900 dark:text-white">
                             {ehFundador ? 'Maker Fundador' : 'Maker Pro'}
                         </h3>
                     </div>

@@ -44,7 +44,7 @@ export function CardCustosFixos({
           }}
           className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
             ? "bg-fuchsia-500 text-white border-fuchsia-600 shadow-sm shadow-fuchsia-500/30 hover:bg-fuchsia-600"
-            : "bg-white dark:bg-white/5 text-zinc-400 hover:text-fuchsia-400 hover:border-fuchsia-500/40 border-zinc-200 dark:border-white/10"
+            : "bg-card text-muted-foreground hover:text-fuchsia-600 dark:hover:text-fuchsia-400 hover:border-fuchsia-500/40 border-borda-sutil shadow-sm"
             }`}
         >
           {mostrar ? "Ocultar" : "Adicionar"}
@@ -58,13 +58,13 @@ export function CardCustosFixos({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,#fafafa_12px)] dark:bg-[linear-gradient(to_bottom,transparent_12px,#18181b_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
+            className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,var(--bg-card)_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
           >
             {/* Quininhas para preencher o gap dos cantos arredondados */}
-            <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
-            <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
+            <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
+            <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
 
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
+            <div className="flex items-center justify-between pb-3 border-b border-borda-sutil">
               <div className="flex items-center gap-3">
                 <Box size={16} className="text-fuchsia-400" />
                 <h3 className="text-[10px] font-black uppercase tracking-wider text-fuchsia-500">Gestão de Custos Adicionais</h3>
@@ -73,19 +73,19 @@ export function CardCustosFixos({
 
             <div className="grid grid-cols-1 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider ml-1">Valor do Custo Fixo (R$)</label>
-                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-fuchsia-500/40 shadow-inner">
-                  <span className="absolute left-4 text-[10px] font-black text-zinc-500">R$</span>
+                <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor do Custo Fixo (R$)</label>
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-fuchsia-500/40 shadow-inner">
+                  <span className="absolute left-4 text-[10px] font-black text-muted-foreground">R$</span>
                   <input
                     type="number"
                     min="0"
                     placeholder="0,00"
                     value={insumosFixos || ""}
                     onChange={(e) => setInsumosFixos(Number(e.target.value))}
-                    className="w-full h-11 bg-transparent pl-10 pr-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                    className="w-full h-11 bg-transparent pl-10 pr-4 font-black text-xs text-primary dark:text-white outline-none"
                   />
                 </div>
-                <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-1 ml-1">
+                <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1 ml-1">
                   Este valor será somado diretamente ao custo final do projeto.
                 </p>
               </div>

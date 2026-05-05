@@ -42,12 +42,12 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           <span>SEU PLANO PRO ESTÁ EXPIRADO. ENTRE EM CONTATO COM O SUPORTE PARA RENOVAR E EVITAR O BLOQUEIO DA CONTA.</span>
         </div>
       )}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-6 md:px-12 h-20 md:h-24 bg-white/80 dark:bg-[#0c0c10]/90 backdrop-blur-2xl border-b border-gray-100 dark:border-white/[0.08] transition-all duration-300 shadow-[0_1px_0_rgba(255,255,255,0.02)]">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-6 md:px-12 h-20 md:h-24 bg-white/80 dark:bg-zinc-950/90 backdrop-blur-2xl border-b border-borda-sutil transition-all duration-300 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.02)]">
         {/* Esquerda: Menu Mobile + Título */}
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={aoAbrirBarraLateral}
-            className="md:hidden p-2 -ml-2 text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+            className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-colors"
           >
             <Menu size={24} strokeWidth={2} />
           </button>
@@ -55,7 +55,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           {/* Aesthetic: Minimalista. Sem barras glowing, apenas tipografia marcante. */}
           <div className="flex flex-col justify-center flex-1 min-w-0">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl md:text-[28px] font-black tracking-tight text-gray-900 dark:text-white truncate">
+              <h1 className="text-xl md:text-[28px] font-black tracking-tight text-primary dark:text-white truncate">
                 {dados.titulo}
               </h1>
 
@@ -76,7 +76,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               ></div>
             </div>
             {dados.subtitulo && (
-              <p className="text-sm font-medium text-gray-500 dark:text-zinc-500 hidden md:block truncate mt-0.5">
+              <p className="text-sm font-medium text-zinc-500 hidden md:block truncate mt-0.5">
                 {dados.subtitulo}
               </p>
             )}
@@ -89,7 +89,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           {!dados.ocultarBusca && (
             <div className="relative group w-auto md:w-64 max-w-[280px]">
               <Search
-                className="absolute z-10 left-0 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500 group-focus-within:text-gray-900 dark:group-focus-within:text-white transition-colors pointer-events-none"
+                className="absolute z-10 left-0 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 group-focus-within:text-primary dark:group-focus-within:text-white transition-colors pointer-events-none"
                 size={18}
                 strokeWidth={2}
               />
@@ -97,7 +97,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                 type="text"
                 placeholder={dados.placeholderBusca || "Pesquisar..."}
                 onChange={(e) => dados.aoBuscar && dados.aoBuscar(e.target.value)}
-                className="w-full h-10 pl-8 pr-2 bg-transparent border-0 border-b-2 border-gray-200 dark:border-white/10 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-600 outline-none transition-all duration-300 focus:border-zinc-800 dark:focus:border-white"
+                className="w-full h-10 pl-8 pr-2 bg-transparent border-0 border-b-2 border-zinc-100 dark:border-white/10 text-sm font-medium text-primary dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none transition-all duration-300 focus:border-primary dark:focus:border-white"
               />
             </div>
           )}
@@ -109,7 +109,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
             <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
                {/* Divisor se houver outras funções normais vindo depois */}
               {(dados.acao || dados.segundaAcao) && (
-                <div className="hidden lg:block w-px h-8 bg-gray-100 dark:bg-white/5 mx-2" />
+                <div className="hidden lg:block w-px h-8 bg-borda-sutil mx-2" />
               )}
               {dados.elementoAcao}
             </div>
@@ -123,8 +123,8 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                 disabled={dados.segundaAcao.desabilitado}
                 className={`flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-bold text-xs md:text-sm active:scale-95 transition-all duration-200 shrink-0 ${
                   dados.segundaAcao.desabilitado
-                    ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed opacity-50"
-                    : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
+                    ? "text-zinc-300 dark:text-zinc-700 cursor-not-allowed opacity-50"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
                 }`}
               >
                 {dados.segundaAcao.icone && (

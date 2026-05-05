@@ -41,7 +41,7 @@ export function CardPerdas({
           onClick={() => setMostrar(!mostrar)}
           className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
             ? "bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/30 hover:bg-rose-600"
-            : "bg-white dark:bg-white/5 text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 border-zinc-200 dark:border-white/10"
+            : "bg-card text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-500/40 border-borda-sutil shadow-sm"
             }`}
         >
           {mostrar ? "Ocultar" : "Reportar"}
@@ -55,42 +55,42 @@ export function CardPerdas({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,#fafafa_12px)] dark:bg-[linear-gradient(to_bottom,transparent_12px,#18181b_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
+            className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,var(--bg-card)_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
           >
             {/* Quininhas para preencher o gap dos cantos arredondados */}
-            <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_100%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
-            <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#fafafa_12px)] dark:bg-[radial-gradient(circle_at_0%_0%,transparent_12px,#18181b_12px)] z-[-1]" />
-            <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+            <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
+            <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
+            <div className="flex items-center gap-3 pb-3 border-b border-borda-sutil">
               <AlertCircle size={16} className="text-rose-400" />
               <h3 className="text-[10px] font-black uppercase tracking-wider text-rose-500">Registro de Desperdício</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider ml-1">Filamento Perdido</label>
-                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-rose-500/40 shadow-inner">
+                <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Filamento Perdido</label>
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-rose-500/40 shadow-inner">
                   <input
                     type="number"
                     min="0"
                     placeholder="0"
                     value={materialPerdido || ""}
                     onChange={(e) => setMaterialPerdido(Number(e.target.value))}
-                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
                   />
-                  <span className="absolute right-4 text-[10px] font-black text-zinc-400">gramas</span>
+                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground">gramas</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-zinc-400 tracking-wider ml-1">Tempo Perdido</label>
-                <div className="relative flex items-center bg-white dark:bg-black/20 rounded-xl border border-zinc-200 dark:border-white/10 focus-within:border-rose-500/40 shadow-inner">
+                <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo Perdido</label>
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-rose-500/40 shadow-inner">
                   <input
                     type="number"
                     min="0"
                     placeholder="0"
                     value={tempoPerdido / 60 || ""}
                     onChange={(e) => setTempoPerdido(Number(e.target.value) * 60)}
-                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-zinc-900 dark:text-white outline-none"
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
                   />
-                  <span className="absolute right-4 text-[10px] font-black text-zinc-400">horas</span>
+                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground">horas</span>
                 </div>
               </div>
             </div>

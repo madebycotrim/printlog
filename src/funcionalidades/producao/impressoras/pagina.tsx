@@ -71,10 +71,10 @@ export function PaginaImpressoras() {
                   initial={{ opacity: 0, scale: 0.9, y: -20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                  className="fixed top-24 right-10 z-[100] flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-full shadow-2xl pointer-events-none"
+                  className="fixed top-24 right-10 z-[100] flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-xl border border-borda-sutil rounded-full shadow-2xl pointer-events-none"
                 >
                   <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                     Sincronizando
                   </span>
                 </motion.div>
@@ -101,10 +101,10 @@ export function PaginaImpressoras() {
             </div>
 
              {estado.impressorasFiltradas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center bg-zinc-50/50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-zinc-200 dark:border-white/5">
-                <Search size={40} strokeWidth={1} className="text-gray-300 dark:text-zinc-700 mb-4" />
-                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Nenhum resultado</h3>
-                <p className="text-sm text-gray-500 dark:text-zinc-400 mb-8 max-w-xs">
+              <div className="flex flex-col items-center justify-center py-20 text-center bg-muted/20 rounded-2xl border border-dashed border-borda-sutil">
+                <Search size={40} strokeWidth={1} className="text-muted-foreground opacity-30 mb-4" />
+                <h3 className="text-lg font-black text-primary mb-2 uppercase tracking-tight">Nenhum resultado</h3>
+                <p className="text-sm text-muted-foreground mb-8 max-w-xs">
                   Não encontramos máquinas com os critérios atuais de busca ou filtros.
                 </p>
                 <button
@@ -112,7 +112,7 @@ export function PaginaImpressoras() {
                     acoes.pesquisar("");
                     acoes.filtrarPorTecnologia("Todas");
                   }}
-                  className="px-6 py-3 bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/10 transition-all shadow-sm"
+                  className="px-6 py-3 bg-card border border-borda-sutil rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-muted/80 transition-all shadow-sm"
                 >
                   Limpar todos os filtros
                 </button>
@@ -132,14 +132,14 @@ export function PaginaImpressoras() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3">
-                          <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                          <h3 className="text-xl font-black text-primary uppercase tracking-tight">
                             {tecnologia}
                           </h3>
-                          <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-[#27272a] border border-gray-200 dark:border-zinc-700/50 text-[10px] font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-widest flex items-center h-6 leading-none shadow-sm">
+                          <span className="px-2.5 py-1 rounded-lg bg-muted/60 dark:bg-[#27272a] border border-borda-sutil text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center h-6 leading-none shadow-sm">
                             {lista.length} ITEM{lista.length !== 1 ? "S" : ""}
                           </span>
                         </div>
-                        <div className="flex-1 h-px bg-gray-200 dark:bg-white/5" />
+                        <div className="flex-1 h-px bg-borda-sutil/40" />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">

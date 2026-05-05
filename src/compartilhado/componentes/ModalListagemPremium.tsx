@@ -71,12 +71,12 @@ export function ModalListagemPremium({
 
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} titulo={titulo} larguraMax={larguraMax} telaCheia={false} semScroll={true}>
-      <div className={`flex flex-col bg-white dark:bg-[var(--bg-card)] ${altura}`}>
+      <div className={`flex flex-col bg-card ${altura}`}>
         {/* 🔍 Barra de Busca Superior */}
          <div
-          className={`px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-${corDestaque}-50/30 dark:bg-${corDestaque}-500/[0.02] backdrop-blur-sm sticky top-0 z-20`}
+          className={`px-6 py-4 border-b border-borda-sutil bg-${corDestaque}-500/[0.03] dark:bg-${corDestaque}-500/[0.02] backdrop-blur-sm sticky top-0 z-20`}
         >
-          <div className={`flex items-center bg-white/50 dark:bg-white/5 border border-transparent focus-within:border-${corHex}/30 rounded-2xl overflow-hidden h-14 transition-all`}>
+          <div className={`flex items-center bg-white/50 dark:bg-zinc-950/40 border border-borda-sutil focus-within:border-${corHex}/30 rounded-2xl overflow-hidden h-14 transition-all`}>
             <div className="relative flex-1 h-full group">
               <Search
                 className={`absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-${corHex} transition-colors`}
@@ -87,12 +87,12 @@ export function ModalListagemPremium({
                 value={termoBusca}
                 onChange={(e) => aoMudarBusca(e.target.value)}
                 placeholder={placeholderBusca}
-                className="w-full h-full pl-12 pr-4 bg-transparent text-xs font-bold uppercase tracking-widest outline-none"
+                className="w-full h-full pl-12 pr-4 bg-transparent text-xs font-bold uppercase tracking-widest outline-none text-primary dark:text-white"
               />
               {termoBusca && (
                 <button
                   onClick={() => aoMudarBusca("")}
-                  className={`absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-${corHex} transition-colors`}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-${corHex} transition-colors`}
                 >
                   <X size={16} />
                 </button>
@@ -108,7 +108,7 @@ export function ModalListagemPremium({
         </div>
 
         {/* 📦 Área de Conteúdo */}
-        <div className={`flex-1 ${!temResultados ? "overflow-hidden" : "overflow-y-auto"} p-6 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/5`}>
+        <div className={`flex-1 ${!temResultados ? "overflow-hidden" : "overflow-y-auto"} p-6 scrollbar-thin scrollbar-thumb-borda-sutil dark:scrollbar-thumb-white/5`}>
           {!temResultados && !loading ? (
             <EstadoVazio titulo="Sem resultados" descricao={mensagemVazio} icone={iconeVazio || Search} />
           ) : (
@@ -118,7 +118,7 @@ export function ModalListagemPremium({
 
         {/* 📑 Rodapé Informativo */}
         <div
-          className={`px-6 py-4 border-t border-gray-100 dark:border-white/5 bg-${corDestaque}-50/20 dark:bg-${corDestaque}-500/[0.01] flex items-center justify-between`}
+          className={`px-6 py-4 border-t border-borda-sutil bg-${corDestaque}-500/[0.02] dark:bg-${corDestaque}-500/[0.01] flex items-center justify-between`}
         >
           <div className="flex items-center gap-2">
             {IconeTitulo && <IconeTitulo size={14} className={`text-${corHex}`} />}

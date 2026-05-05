@@ -114,8 +114,8 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
       <div
         className={`
           relative p-3 rounded-2xl border transition-all duration-500
-          bg-[#121216] border-white/[0.04] group-hover/card:border-white/[0.08]
-          group-hover/card:bg-[#16161c]
+          bg-card border-borda-sutil group-hover/card:border-zinc-300 dark:group-hover/card:border-white/[0.08]
+          group-hover/card:bg-zinc-50 dark:group-hover/card:bg-[#16161c]
           ${estaAtrasado ? "border-rose-500/30 ring-1 ring-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.1)]" : "hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)]"}
           ${menuAberto ? "z-[100]" : "z-10"}
         `}
@@ -155,7 +155,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                 {pedido.nomeCliente || "Cliente avulso"}
               </span>
             </div>
-            <h4 className="text-[11px] font-black text-zinc-300 group-hover/card:text-white leading-tight tracking-tight line-clamp-1 uppercase transition-colors">
+            <h4 className="text-[11px] font-black text-primary dark:text-zinc-300 group-hover/card:text-zinc-950 dark:group-hover/card:text-white leading-tight tracking-tight line-clamp-1 uppercase transition-colors">
               {pedido.descricao}
             </h4>
           </div>
@@ -168,7 +168,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                 e.stopPropagation();
                 setMenuAberto(!menuAberto);
               }}
-              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${menuAberto ? "bg-white/10 text-white" : "text-zinc-800 hover:text-white hover:bg-white/5 opacity-0 group-hover/card:opacity-100"}`}
+              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-primary dark:text-white" : "text-zinc-400 dark:text-zinc-800 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 opacity-0 group-hover/card:opacity-100"}`}
             >
               <MoreVertical size={14} />
             </button>
@@ -176,12 +176,11 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
             <AnimatePresence>
               {menuAberto && (
                 <motion.div
-                  initial={{ opacity: 0, y: 5, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 5, scale: 0.95 }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-full mt-1 w-44 bg-[#1a1a1e] border border-white/10 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] p-1 z-[110]"
+                  className="absolute right-0 top-full mt-1 w-44 bg-card border border-borda-sutil rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.8)] p-1 z-[110]"
                 >
                   <button
                     onClick={(e) => {
@@ -190,7 +189,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                       navegar(`/calculadora?edicao=${pedido.id}`);
                       setMenuAberto(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-colors"
                   >
                     <Edit3 size={12} className="text-indigo-400" /> Editar
                   </button>
@@ -201,7 +200,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                       setModalFalhaAberto(true);
                       setMenuAberto(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-colors"
                   >
                     <Settings size={12} className="text-amber-500/70" /> Registrar Falha
                   </button>
@@ -226,7 +225,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
         <div className="space-y-3 relative pl-2">
           <div className="flex items-center justify-between">
             <div 
-              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md transition-all border border-white/[0.05] bg-white/[0.02] shadow-sm group-hover/card:border-white/[0.08] group-hover/card:bg-white/[0.04]`}
+              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md transition-all border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.02] shadow-sm group-hover/card:border-zinc-300 dark:group-hover/card:border-white/[0.08] dark:group-hover/card:bg-white/[0.04]`}
             >
               <DollarSign 
                 size={10} 
@@ -246,7 +245,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[8px] font-black uppercase tracking-tighter transition-colors ${
                   estaAtrasado
                     ? "bg-rose-500 text-white border-rose-400 animate-pulse"
-                    : "bg-white/[0.02] border-white/5 text-zinc-500 group-hover/card:border-white/10"
+                    : "bg-zinc-50/50 dark:bg-white/[0.02] border-borda-sutil text-zinc-500 group-hover/card:border-zinc-300 dark:group-hover/card:border-white/10"
                 }`}
               >
                 <Clock size={8} />
@@ -255,7 +254,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
             )}
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-white/[0.03]">
+          <div className="flex items-center justify-between pt-2 border-t border-borda-sutil">
             {pedido.status === StatusPedido.A_FAZER ? (
               <div className="flex flex-col gap-2 w-full pt-1">
                 <span className="text-[7px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-0.5 ml-1 opacity-70 group-hover/card:opacity-100 transition-opacity">

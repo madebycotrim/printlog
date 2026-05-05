@@ -57,15 +57,15 @@ export function CardImpressora({
       layout
       onClick={() => aoGerenciamento(impressora, "producao")}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="group relative flex flex-col h-full rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/[0.04] overflow-hidden transition-all duration-300 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.2)] cursor-pointer"
+      className="group relative flex flex-col h-full rounded-2xl bg-card border border-borda-sutil overflow-hidden transition-all duration-300 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.2)] cursor-pointer"
     >
       {/* ═══════ HEADER: IDENTIDADE ═══════ */}
       <div className="p-5 flex justify-between items-start relative z-20">
         <div className="flex flex-col min-w-0 pr-4">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600 mb-1">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
             {impressora.marca || "Custom"} {impressora.modeloBase}
           </span>
-          <h4 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none uppercase">
+          <h4 className="text-2xl font-black text-primary tracking-tighter leading-none uppercase">
             {impressora.nome}
           </h4>
         </div>
@@ -76,7 +76,7 @@ export function CardImpressora({
               e.stopPropagation();
               definirMenuAberto(!menuAberto);
             }}
-            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white" : "text-zinc-400 hover:bg-gray-50 dark:hover:bg-white/5"}`}
+            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/60"}`}
           >
             <MoreVertical size={18} />
           </button>
@@ -87,15 +87,15 @@ export function CardImpressora({
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="absolute right-0 top-12 w-52 bg-white dark:bg-[#18181b] border border-zinc-100 dark:border-white/10 rounded-xl shadow-2xl z-50 p-1.5"
+                 className="absolute right-0 top-12 w-52 bg-card border border-borda-sutil rounded-xl shadow-2xl z-50 p-1.5"
               >
-                <button onClick={(e) => { e.stopPropagation(); aoGerenciamento(impressora, "manutencao"); fecharMenu(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                <button onClick={(e) => { e.stopPropagation(); aoGerenciamento(impressora, "manutencao"); fecharMenu(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black hover:bg-muted/60 rounded-lg transition-all uppercase tracking-widest text-muted-foreground">
                   <Wrench size={14} /> Manutenções
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); aoGerenciamento(impressora, "config"); fecharMenu(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                <button onClick={(e) => { e.stopPropagation(); aoGerenciamento(impressora, "config"); fecharMenu(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black hover:bg-muted/60 rounded-lg transition-all uppercase tracking-widest text-muted-foreground">
                   <Edit2 size={14} /> Editar Setup
                 </button>
-                <div className="h-px bg-zinc-100 dark:bg-white/5 my-1" />
+                <div className="h-px bg-borda-sutil/50 my-1" />
                 <button onClick={(e) => { e.stopPropagation(); aoAposentar(impressora); fecharMenu(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black text-rose-500 hover:bg-rose-500/5 rounded-lg transition-all uppercase tracking-widest">
                   <Archive size={14} /> Desativar
                 </button>
@@ -111,8 +111,8 @@ export function CardImpressora({
           {impressora.imagemUrl ? (
             <img src={impressora.imagemUrl} alt={impressora.nome} className="max-h-[220px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]" />
           ) : (
-            <div className="w-24 h-24 rounded-full border border-dashed border-zinc-200 dark:border-white/10 flex items-center justify-center bg-zinc-50/30 dark:bg-white/[0.01]">
-               <Activity size={24} className="text-zinc-200 dark:text-zinc-800 opacity-50" />
+            <div className="w-24 h-24 rounded-full border border-dashed border-borda-sutil flex items-center justify-center bg-muted/20">
+               <Activity size={24} className="text-muted-foreground opacity-30" />
             </div>
           )}
         </div>
@@ -120,19 +120,19 @@ export function CardImpressora({
 
       {/* ═══════ FOOTER: MÉTRICAS TÉCNICAS ═══════ */}
       <div className="p-6 pt-0 space-y-6">
-        <div className="flex items-end justify-between border-t border-gray-100 dark:border-white/[0.04] pt-5">
+        <div className="flex items-end justify-between border-t border-borda-sutil pt-5">
           <div className="flex flex-col">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600 mb-1">
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
               Produção Total
             </span>
-            <div className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter tabular-nums leading-none">
+            <div className="text-2xl font-black text-primary tracking-tighter tabular-nums leading-none">
               {horasUsadas}
               <span className="text-[10px] uppercase opacity-30 ml-1">hrs</span>
             </div>
           </div>
 
           <div className="flex flex-col items-end text-right">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600 mb-1">
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
               Saúde do Ativo
             </span>
             <div className={`text-2xl font-black tracking-tighter tabular-nums leading-none ${coresManutencao.text}`}>
@@ -142,7 +142,7 @@ export function CardImpressora({
         </div>
 
         <div className="space-y-2">
-          <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden relative shadow-inner">
+          <div className="h-1.5 w-full bg-muted dark:bg-white/5 rounded-full overflow-hidden relative shadow-inner">
             <motion.div
               initial={{ width: 0 }} animate={{ width: `${Math.max(0, saudeSistema)}%` }} transition={{ duration: 1 }}
               className={`h-full rounded-full ${coresManutencao.bg} relative`}
@@ -152,10 +152,10 @@ export function CardImpressora({
           </div>
           
           <div className="flex justify-between items-center opacity-50">
-             <span className="text-[7px] font-bold text-zinc-400 dark:text-zinc-700 uppercase tracking-widest">
+             <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">
                Status Nominal
              </span>
-             <span className="text-[7px] font-bold text-zinc-400 dark:text-zinc-700 uppercase tracking-widest">
+             <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">
                Revisão: {Math.max(0, (impressora.intervaloRevisaoMinutos || 0) - (impressora.horimetroTotalMinutos || 0))}m
              </span>
           </div>

@@ -68,20 +68,20 @@ export function Dialogo({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
               className={`
-                w-full pointer-events-auto flex flex-col overflow-hidden bg-[#121214] border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]
+                w-full pointer-events-auto flex flex-col overflow-hidden bg-card border-borda-sutil shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]
                 ${telaCheia ? "h-full w-full border-none rounded-none" : `${larguraMax} rounded-[2rem] border max-h-[90vh]`}
               `}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* CabeÃ§alho */}
+              {/* Cabeçalho */}
               {!esconderCabecalho && (
                 <div className={`flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-transparent backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-2xl"}`}>
-                  <h3 className="text-sm font-bold text-gray-500 dark:text-zinc-400 tracking-widest uppercase">
+                  <h3 className="text-sm font-black text-muted-foreground tracking-widest uppercase">
                     {titulo}
                   </h3>
                   <button
                     onClick={aoFechar}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-200/50 dark:text-zinc-500 dark:hover:text-white dark:hover:bg-white/10 transition-all active:scale-90"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-all active:scale-90"
                     aria-label="Fechar"
                   >
                     <X size={18} strokeWidth={2.5} />
@@ -90,7 +90,7 @@ export function Dialogo({
               )}
 
               {/* ConteÃºdo com Scroll (Opcional) */}
-              <div className={`flex-1 p-0 ${semScroll ? "overflow-hidden" : "overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600"}`}>
+              <div className={`flex-1 p-0 ${semScroll ? "overflow-hidden" : "overflow-y-auto scrollbar-fino"}`}>
                 {children}
               </div>
             </motion.div>

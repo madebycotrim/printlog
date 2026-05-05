@@ -99,8 +99,8 @@ export function PaginaFinanceiro() {
             <div className={`
               relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-700 shadow-lg group
               ${dre.lucroLiquidoCentavos >= 0 
-                ? "bg-gradient-to-br from-zinc-900 to-emerald-900/40 border-emerald-500/20 shadow-emerald-500/5" 
-                : "bg-gradient-to-br from-zinc-900 to-rose-900/40 border-rose-500/20 shadow-rose-500/5"}
+                ? "bg-gradient-to-br from-zinc-900 dark:from-zinc-900 to-emerald-800/80 dark:to-emerald-900/40 border-emerald-500/20 shadow-emerald-500/5" 
+                : "bg-gradient-to-br from-zinc-900 dark:from-zinc-900 to-rose-800/80 dark:to-rose-900/40 border-rose-500/20 shadow-rose-500/5"}
             `}>
               <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700">
                 <FileBarChart size={200} className={dre.lucroLiquidoCentavos >= 0 ? "text-emerald-500" : "text-rose-500"} />
@@ -133,22 +133,22 @@ export function PaginaFinanceiro() {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="mt-6 p-6 rounded-2xl bg-zinc-900 border border-indigo-500/30 shadow-lg shadow-indigo-500/10 overflow-hidden relative"
+                className="mt-6 p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-indigo-500/30 shadow-lg shadow-indigo-500/10 overflow-hidden relative"
               >
                 <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none text-indigo-500">
                    <Sliders size={180} />
                 </div>
                 
                 <div className="flex items-center gap-3 mb-6 relative z-10">
-                  <div className="p-2 bg-indigo-500/20 rounded-xl text-indigo-400">
+                  <div className="p-2 bg-indigo-500/20 rounded-xl text-indigo-600 dark:text-indigo-400">
                     <TrendingUp size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest">Simulador de Margem DRE</h3>
-                      <span className="bg-indigo-500/20 text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">IA Lab</span>
+                      <h3 className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Simulador de Margem DRE</h3>
+                      <span className="bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">IA Lab</span>
                     </div>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Estresse seu DRE e veja o impacto financeiro no Saldo Livre.</p>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Estresse seu DRE e veja o impacto financeiro no Saldo Livre.</p>
                   </div>
                 </div>
 
@@ -164,7 +164,7 @@ export function PaginaFinanceiro() {
                         type="range" min="0" max="100" step="5"
                         value={simulaAcrescimoMargem} 
                         onChange={(e) => setSimulaAcrescimoMargem(Number(e.target.value))}
-                        className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        className="w-full h-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                       />
                     </div>
 
@@ -178,19 +178,19 @@ export function PaginaFinanceiro() {
                         type="range" min="1" max="1.5" step="0.2"
                         value={simulaBandeiraEnergia} 
                         onChange={(e) => setSimulaBandeiraEnergia(Number(e.target.value))}
-                        className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                        className="w-full h-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col justify-center text-center">
+                  <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl p-5 flex flex-col justify-center text-center">
                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Lucro Simulado Projetado</span>
-                    <span className={`text-4xl font-black ${dre.lucroLiquidoCentavos + (dre.receitaBrutaCentavos * (simulaAcrescimoMargem/100)) - (dre.receitaBrutaCentavos * 0.1 * (simulaBandeiraEnergia - 1)) >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                    <span className={`text-4xl font-black ${dre.lucroLiquidoCentavos + (dre.receitaBrutaCentavos * (simulaAcrescimoMargem/100)) - (dre.receitaBrutaCentavos * 0.1 * (simulaBandeiraEnergia - 1)) >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
                       {centavosParaReais(dre.lucroLiquidoCentavos + (dre.receitaBrutaCentavos * (simulaAcrescimoMargem/100)) - (dre.receitaBrutaCentavos * 0.1 * (simulaBandeiraEnergia - 1)))}
                     </span>
-                    <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
+                    <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-white/10 flex justify-between items-center text-xs">
                        <span className="text-zinc-500">Nova Rentabilidade:</span>
-                       <span className="font-bold text-white">{(dre.lucratividadePercentual + simulaAcrescimoMargem - ((simulaBandeiraEnergia - 1) * 10)).toFixed(1)}%</span>
+                       <span className="font-bold text-primary dark:text-white">{(dre.lucratividadePercentual + simulaAcrescimoMargem - ((simulaBandeiraEnergia - 1) * 10)).toFixed(1)}%</span>
                     </div>
                   </div>
                 </div>

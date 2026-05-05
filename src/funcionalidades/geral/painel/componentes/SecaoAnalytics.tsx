@@ -152,7 +152,7 @@ export function SecaoAnalytics({ pedidos, impressoras, pedidosAtivos, metricasIn
       {/* GRÁFICOS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* GRÁFICO DE TENDÊNCIA */}
-        <div className="bg-[#121214] border border-white/5 rounded-3xl p-8 flex flex-col gap-6 relative overflow-hidden group">
+        <div className="bg-card border border-borda-sutil rounded-3xl p-8 flex flex-col gap-6 relative overflow-hidden group">
            <div className="absolute -right-20 -top-20 w-64 h-64 bg-sky-500/5 blur-[100px] pointer-events-none group-hover:opacity-100 opacity-50 transition-opacity" />
            
            <div className="flex items-center justify-between relative z-10">
@@ -172,8 +172,13 @@ export function SecaoAnalytics({ pedidos, impressoras, pedidosAtivos, metricasIn
                     </linearGradient>
                   </defs>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }}
-                    itemStyle={{ color: '#fff', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--bg-card)', 
+                      border: '1px solid var(--border-subtle)', 
+                      borderRadius: '16px',
+                      boxShadow: 'var(--sombra-media)'
+                    }}
+                    itemStyle={{ color: 'var(--text-primary)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
                   />
                   <Area 
                     type="monotone" 
@@ -189,7 +194,7 @@ export function SecaoAnalytics({ pedidos, impressoras, pedidosAtivos, metricasIn
         </div>
 
         {/* GRÁFICO DE STATUS */}
-        <div className="bg-[#121214] border border-white/5 rounded-3xl p-8 flex flex-col gap-6 relative overflow-hidden">
+        <div className="bg-card border border-borda-sutil rounded-3xl p-8 flex flex-col gap-6 relative overflow-hidden">
            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Distribuição de Status</h3>
            
            <div className="h-[250px] w-full relative flex items-center justify-center">
@@ -209,14 +214,19 @@ export function SecaoAnalytics({ pedidos, impressoras, pedidosAtivos, metricasIn
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--bg-card)', 
+                      border: '1px solid var(--border-subtle)', 
+                      borderRadius: '16px',
+                      boxShadow: 'var(--sombra-media)'
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>
               
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                 <span className="text-4xl font-black text-white tracking-tighter">{totalJobs}</span>
-                 <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.3em]">TOTAL</span>
+                 <span className="text-4xl font-black text-primary tracking-tighter">{totalJobs}</span>
+                 <span className="text-[9px] font-black text-zinc-600 dark:text-zinc-500 uppercase tracking-[0.3em]">TOTAL</span>
               </div>
            </div>
         </div>
@@ -238,7 +248,7 @@ function CardAnalitico({ titulo, valor, icone: Icone, unidade, cor = "sky" }: an
   };
 
   return (
-    <div className="bg-[#121214] border border-white/5 p-6 rounded-3xl flex items-center gap-6 group hover:bg-white/[0.015] transition-all relative overflow-hidden">
+    <div className="bg-card border border-borda-sutil p-6 rounded-3xl flex items-center gap-6 group hover:bg-white/[0.015] transition-all relative overflow-hidden">
       {/* Icon Container (Left side) */}
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-2xl transition-transform group-hover:scale-110 ${cores[cor]}`}>
         <Icone size={24} strokeWidth={2.5} />
@@ -247,7 +257,7 @@ function CardAnalitico({ titulo, valor, icone: Icone, unidade, cor = "sky" }: an
       <div className="flex flex-col gap-0.5">
         <span className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">{titulo}</span>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-2xl font-black text-white tracking-tighter uppercase tabular-nums">
+          <span className="text-2xl font-black text-primary tracking-tighter uppercase tabular-nums">
             {valor}
           </span>
           {unidade && (

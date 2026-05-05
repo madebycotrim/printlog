@@ -55,27 +55,27 @@ export const CardOperacional = memo(function CardOperacional({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
           {/* Efeito Glow Esmeralda de Fundo */}
           <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
-          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
+          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/30">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                 <DollarSign size={18} />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-black uppercase tracking-wider text-white">Mão de Obra</span>
-                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
+                <span className="text-xs font-black uppercase tracking-wider text-primary">Mão de Obra</span>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setCobrarMaoDeObra(!cobrarMaoDeObra)}
               className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-                cobrarMaoDeObra ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-zinc-700'
+                cobrarMaoDeObra ? 'bg-emerald-500' : 'bg-muted dark:bg-zinc-700'
               }`}
             >
-              <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
+              <div className={`w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-300 ${
                 cobrarMaoDeObra ? 'translate-x-4' : 'translate-x-0'
               }`} />
             </button>
@@ -87,49 +87,49 @@ export const CardOperacional = memo(function CardOperacional({
                   <div className="flex items-center mb-2">
                     <label className="block text-xs font-black uppercase text-gray-400">Custo da Hora</label>
                   </div>
-                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
-                    <span className="absolute left-4 font-black text-xs text-zinc-400 select-none">R$</span>
+                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
+                    <span className="absolute left-4 font-black text-xs text-muted-foreground select-none">R$</span>
                     <input 
                       type="number" 
                       placeholder="0"
                       value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : maoDeObra) : 0} 
                       onChange={(e) => setMaoDeObra?.(Number(e.target.value))} 
-                      className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white"
+                      className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                     />
                   </div>
                 </div>
                 
                 <div>
                   <div className="flex items-center mb-2">
-                    <label className="block text-xs font-black uppercase text-gray-400">Setup p/ Projeto</label>
+                    <label className="block text-xs font-black uppercase text-muted-foreground">Setup p/ Projeto</label>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
+                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
                       <input 
                         type="number" 
                         placeholder="0"
                         value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : Math.floor(tempoSetup / 60)) : ""} 
                         onChange={(e) => setTempoSetup(Number(e.target.value) * 60 + (tempoSetup % 60))} 
-                        className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white"
+                        className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                       />
-                      <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
+                      <span className="absolute right-3 font-black text-[10px] text-muted-foreground uppercase tracking-wider select-none">h</span>
                     </div>
 
-                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-gray-100/50 dark:bg-zinc-800/40 border-zinc-200/50 dark:border-white/5 focus-within:border-emerald-500/40'}`}>
+                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
                       <input 
                         type="number" 
                         placeholder="0"
                         value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : tempoSetup % 60) : ""} 
                         onChange={(e) => setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Number(e.target.value))} 
-                        className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-zinc-900 dark:text-white"
+                        className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                       />
-                      <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
+                      <span className="absolute right-3 font-black text-[10px] text-muted-foreground uppercase tracking-wider select-none">min</span>
                     </div>
                   </div>
                 </div>
               </div>
               {cobrarMaoDeObra && (
-                <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 mt-1 text-right uppercase tracking-wider pr-1">
+                <p className="text-[9px] font-bold text-muted-foreground mt-1 text-right uppercase tracking-wider pr-1">
                   💡 Fórmula: (Tempo Setup / 60) * R$/h Operador
                 </p>
               )}
@@ -137,8 +137,8 @@ export const CardOperacional = memo(function CardOperacional({
             
             <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex flex-col gap-2 relative overflow-hidden">
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-black uppercase text-emerald-500">Custo Total Setup:</span>
-                <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                <span className="text-[11px] font-black uppercase text-emerald-600 dark:text-emerald-500">Custo Total Setup:</span>
+                <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground'}`}>
                   <ContadorAnimado valor={cobrarMaoDeObra ? (tempoSetup / 60) * maoDeObra : 0} />
                 </span>
               </div>
@@ -146,17 +146,17 @@ export const CardOperacional = memo(function CardOperacional({
           </div>
       </div>
 
-        <div className={`p-6 rounded-3xl bg-[#121214] border border-white/5 relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
           {/* Efeito Glow Violeta de Fundo */}
           <div className="absolute -top-24 -right-20 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
-          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/5">
+          <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-400 border border-violet-500/30">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-500/30">
                 <Activity size={18} />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-black uppercase tracking-wider text-white">Desgaste e Depreciação</span>
-                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Vida útil do equipamento</span>
+                <span className="text-xs font-black uppercase tracking-wider text-primary">Desgaste e Depreciação</span>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Vida útil do equipamento</span>
               </div>
             </div>
             
@@ -164,10 +164,10 @@ export const CardOperacional = memo(function CardOperacional({
               type="button"
               onClick={() => setCobrarDesgaste(!cobrarDesgaste)}
               className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-                cobrarDesgaste ? 'bg-violet-500' : 'bg-gray-200 dark:bg-zinc-700'
+                cobrarDesgaste ? 'bg-violet-500' : 'bg-muted dark:bg-zinc-700'
               }`}
             >
-              <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
+              <div className={`w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-300 ${
                 cobrarDesgaste ? 'translate-x-4' : 'translate-x-0'
               }`} />
             </button>
@@ -176,7 +176,7 @@ export const CardOperacional = memo(function CardOperacional({
           <div className={`flex-1 flex flex-col justify-between pt-6 transition-opacity ${!cobrarDesgaste ? "opacity-50 pointer-events-none" : ""}`}>
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-black uppercase text-gray-400">Custo do Desgaste</label>
+                <label className="block text-xs font-black uppercase text-muted-foreground">Custo do Desgaste</label>
                 <button
                   type="button"
                   onClick={() => {
@@ -186,9 +186,9 @@ export const CardOperacional = memo(function CardOperacional({
                     else setAnosVidaUtil(5);
                   }}
                   className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all hover:scale-105 active:scale-95 ${
-                    anosVidaUtil === 5 ? 'text-violet-500 bg-violet-500/10 border-violet-500/20' :
-                    anosVidaUtil === 3 ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' :
-                    'text-rose-500 bg-rose-500/10 border-rose-500/20'
+                    anosVidaUtil === 5 ? 'text-violet-600 bg-violet-500/10 border-violet-500/20' :
+                    anosVidaUtil === 3 ? 'text-amber-600 bg-amber-500/10 border-amber-500/20' :
+                    'text-rose-600 bg-rose-500/10 border-rose-500/20'
                   }`}
                 >
                   {anosVidaUtil === 5 && "Uso Padrão (5 anos)"}
@@ -196,9 +196,9 @@ export const CardOperacional = memo(function CardOperacional({
                   {anosVidaUtil === 2 && "Uso Extremo (2 anos)"}
                 </button>
               </div>
-              <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-white/5'} select-none relative group`}>
-                <span className="text-gray-400 font-black text-xs mr-2 select-none">R$</span>
-                <span className="font-black text-sm text-violet-500 w-full text-center">
+              <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/50 border-borda-sutil'} select-none relative group`}>
+                <span className="text-muted-foreground font-black text-xs mr-2 select-none">R$</span>
+                <span className="font-black text-sm text-violet-600 dark:text-violet-500 w-full text-center">
                   <ContadorAnimado valor={cobrarDesgaste ? depreciacao || 0 : 0} />
                 </span>
                 {cobrarDesgaste && (
@@ -206,7 +206,7 @@ export const CardOperacional = memo(function CardOperacional({
                 )}
               </div>
               {cobrarDesgaste && (
-                <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 mt-1 text-right uppercase tracking-wider pr-1">
+                <p className="text-[9px] font-bold text-muted-foreground mt-1 text-right uppercase tracking-wider pr-1">
                   💡 Fórmula: (Valor / {anosVidaUtil} Anos) / 12 Meses / 240h
                 </p>
               )}
@@ -214,15 +214,15 @@ export const CardOperacional = memo(function CardOperacional({
 
             <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-2 relative overflow-hidden">
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-black uppercase text-violet-500">Custo Desgaste:</span>
-                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-500' : 'text-zinc-500'}`}>
+                <span className="text-[11px] font-black uppercase text-violet-600 dark:text-violet-500">Custo Desgaste:</span>
+                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
                   <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao : 0} />
                 </span>
               </div>
               {quantidade > 1 && (
                 <div className="flex justify-between items-center pt-2 border-t border-violet-500/10">
-                  <span className="text-[11px] font-black uppercase text-zinc-400">Total do Lote ({quantidade}x):</span>
-                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-500' : 'text-zinc-500'}`}>
+                  <span className="text-[11px] font-black uppercase text-muted-foreground">Total do Lote ({quantidade}x):</span>
+                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
                     <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao * quantidade : 0} />
                   </span>
                 </div>
@@ -232,14 +232,14 @@ export const CardOperacional = memo(function CardOperacional({
         </div>
       </div>
 
-      <div className="p-6 rounded-3xl bg-[#121214] border border-white/5 relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden">
+      <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden">
         {/* Efeito Glow Esmeralda de Fundo */}
         <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: O Display do Valor e Status */}
-          <div className="md:col-span-4 flex flex-col items-center md:items-center border-b md:border-b-0 md:border-r border-zinc-100 dark:border-white/5 pb-4 md:pb-0 md:pr-6">
-            <label className="text-[9px] font-black uppercase text-zinc-400 tracking-[2px] text-center mb-1">Margem de Lucro</label>
+          <div className="md:col-span-4 flex flex-col items-center md:items-center border-b md:border-b-0 md:border-r border-borda-sutil pb-4 md:pb-0 md:pr-6">
+            <label className="text-[9px] font-black uppercase text-muted-foreground tracking-[2px] text-center mb-1">Margem de Lucro</label>
             
             <div className="flex items-baseline gap-1 relative">
               <ContadorAnimado 
@@ -258,7 +258,7 @@ export const CardOperacional = memo(function CardOperacional({
               />
             </div>
 
-            <div className="flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+            <div className="flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-muted/30 dark:bg-white/5 border border-borda-sutil">
               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${msgMargem.cor.replace('text-', 'bg-')}`} />
               <p className={`text-[10px] font-black uppercase tracking-widest transition-colors ${msgMargem.cor}`}>
                 {msgMargem.texto}
@@ -269,7 +269,7 @@ export const CardOperacional = memo(function CardOperacional({
           {/* Coluna Direita: Controles */}
           <div className="md:col-span-8 flex flex-col space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Presets rápidos</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Presets rápidos</span>
               
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 {/* Presets Inteligentes */}
@@ -283,8 +283,8 @@ export const CardOperacional = memo(function CardOperacional({
                     }}
                     className={`text-[10px] font-black px-3 py-1.5 rounded-xl border transition-all ${
                       margemInterna === preset 
-                        ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30 shadow-sm shadow-emerald-500/5' 
-                        : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-white bg-gray-50 dark:bg-white/5 border-transparent'
+                        ? 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/30 shadow-sm shadow-emerald-500/5' 
+                        : 'text-muted-foreground hover:text-primary dark:hover:text-white bg-muted/40 dark:bg-white/5 border-transparent'
                     }`}
                   >
                     {preset}%
@@ -292,7 +292,7 @@ export const CardOperacional = memo(function CardOperacional({
                 ))}
 
                 {/* Input Direto */}
-                <div className="flex items-center bg-gray-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-2 w-24 h-8">
+                <div className="flex items-center bg-muted/40 dark:bg-white/5 border border-borda-sutil rounded-xl px-2 w-24 h-8">
                   <input 
                     type="number" 
                     value={margemInterna === 0 ? "" : margemInterna} 
@@ -300,10 +300,10 @@ export const CardOperacional = memo(function CardOperacional({
                       const val = Number(e.target.value);
                       setMargemInterna(val);
                     }} 
-                    className="w-full bg-transparent border-none outline-none font-black text-xs text-right text-zinc-900 dark:text-white pr-1"
+                    className="w-full bg-transparent border-none outline-none font-black text-xs text-right text-primary dark:text-white pr-1"
                     placeholder="0"
                   />
-                  <span className="text-[10px] font-black text-zinc-400">%</span>
+                  <span className="text-[10px] font-black text-muted-foreground">%</span>
                 </div>
               </div>
             </div>
@@ -311,7 +311,7 @@ export const CardOperacional = memo(function CardOperacional({
             {/* Slider de Arrastar */}
             <div className="relative flex items-center pt-2 w-full">
               {/* Fundo da Barra */}
-              <div className="absolute w-full h-1.5 bg-zinc-100 dark:bg-white/[0.03] rounded-full" />
+              <div className="absolute w-full h-1.5 bg-muted dark:bg-white/[0.03] border border-borda-sutil/20 rounded-full" />
               
               {/* Preenchimento Colorido até a marcação */}
               <div 
