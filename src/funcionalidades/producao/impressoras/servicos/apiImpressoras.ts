@@ -43,7 +43,9 @@ export const apiImpressoras = {
         // Converte camelCase para snake_case para o D1
         const payload = {
             ...dadosValidados,
-            modelo_base: dados.modeloBase,
+            id: dados.id,
+            id_usuario: _usuarioId,
+            modelo_base: dados.modeloBase ?? null,
             imagem_url: dados.imagemUrl,
             taxa_hora_centavos: dados.taxaHoraCentavos,
             horimetro_total_minutos: dados.horimetroTotalMinutos,

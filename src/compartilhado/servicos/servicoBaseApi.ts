@@ -137,25 +137,41 @@ export const servicoBaseApi = {
   post<T>(caminho: string, dados: unknown): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "POST",
-      body: JSON.stringify(dados),
+      body: JSON.stringify(this.limparUndefined(dados)),
     });
   },
 
   put<T>(caminho: string, dados: unknown): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "PUT",
-      body: JSON.stringify(dados),
+      body: JSON.stringify(this.limparUndefined(dados)),
     });
   },
 
   patch<T>(caminho: string, dados: unknown): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "PATCH",
-      body: JSON.stringify(dados),
+      body: JSON.stringify(this.limparUndefined(dados)),
     });
   },
 
   delete<T>(caminho: string): Promise<T> {
     return this.requisicao<T>(caminho, { method: "DELETE" });
   },
+
+  /**
+   * Remove recursivamente todas as chaves com valor 'undefined' de um objeto.
+   * Essencial para compatibilidade com Cloudflare D1 que não aceita undefined em SQL.
+   */
+  limparUndefined(obj: any): any {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj instanceof Date) return obj.toISOString();
+    if (Array.isArray(obj)) return obj.map(v => this.limparUndefined(v));
+    
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, this.limparUndefined(v)])
+    );
+  }
 };

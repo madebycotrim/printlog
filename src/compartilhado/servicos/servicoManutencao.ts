@@ -99,7 +99,8 @@ export const servicoManutencao = {
       idPedido: string;
       nomeProjeto: string;
       valorCentavos: number;
-      precoKwhCentavos?: number; // Custo do kWh em centavos
+      precoKwhCentavos?: number;
+      consumoWatts?: number;
       reversao?: boolean;
     }
   ) => {
@@ -108,13 +109,13 @@ export const servicoManutencao = {
     
     // v9.0: Se não estiver na store (ex: vindo do Kanban sem carregar impressoras), busca na API
     if (!impressoraAlvo) {
-      registrar.info({ idImpressora, servico: "Manutenção" }, "Impressora não encontrada na store, buscando na API...");
+      registrar.info({ rastreioId: idImpressora, idImpressora, servico: "Manutenção" }, "Impressora não encontrada na store, buscando na API...");
       const todas = await apiImpressoras.buscarTodas(usuarioId);
       impressoraAlvo = todas.find(i => i.id === idImpressora);
     }
 
     if (!impressoraAlvo) {
-      registrar.error({ idImpressora, servico: "Manutenção" }, "Impressora não encontrada no sistema para registrar uso");
+      registrar.error({ rastreioId: idImpressora, idImpressora, servico: "Manutenção" }, "Impressora não encontrada no sistema para registrar uso");
       return;
     }
 
@@ -126,8 +127,10 @@ export const servicoManutencao = {
     // ── 2. Custo de Energia ─────────────────────────────────────────────────
     // Fórmula: (potência em kW) * (tempo em horas) * (preço kWh em centavos)
     let custoPedidoCentavos = 0;
-    if (impressoraAlvo.potenciaWatts && impressoraAlvo.potenciaWatts > 0 && minutos > 0) {
-      const consumoKw = (impressoraAlvo.potenciaWatts / 1000);
+    const potenciaUtilizada = dadosPedido?.consumoWatts || impressoraAlvo.potenciaWatts || 0;
+    
+    if (potenciaUtilizada > 0 && minutos !== 0) {
+      const consumoKw = (potenciaUtilizada / 1000);
       const horasUso = Math.abs(minutos) / 60;
       const precoKwhCentavos = dadosPedido?.precoKwhCentavos ?? 0;
       custoPedidoCentavos = Math.round(consumoKw * horasUso * precoKwhCentavos);
@@ -173,21 +176,37 @@ export const servicoManutencao = {
     }
 
     // ── 7. Atualização Otimista no Zustand ───────────────────────────────────
-    const impressorasAtualizadas = impressoras.map((i) => {
-      if (i.id === idImpressora) {
-        return {
-          ...i,
-          horimetroTotalMinutos: novoHorimetro,
-          totalProjetosConcluidos: novoTotalProjetos,
-          receitaAcumuladaCentavos: novaReceita,
-          custoEnergiaCentavos: novoCustoEnergia,
-          roiPercentual: novoRoi,
-          historicoProducao: novoHistorico,
-          dataAtualizacao: new Date(),
-        };
-      }
-      return i;
-    });
+    const existeNaStore = impressoras.some(i => i.id === idImpressora);
+    let impressorasAtualizadas;
+
+    if (existeNaStore) {
+      impressorasAtualizadas = impressoras.map((i) => {
+        if (i.id === idImpressora) {
+          return {
+            ...i,
+            horimetroTotalMinutos: novoHorimetro,
+            totalProjetosConcluidos: novoTotalProjetos,
+            receitaAcumuladaCentavos: novaReceita,
+            custoEnergiaCentavos: novoCustoEnergia,
+            roiPercentual: novoRoi,
+            historicoProducao: novoHistorico,
+            dataAtualizacao: new Date(),
+          };
+        }
+        return i;
+      });
+    } else {
+      impressorasAtualizadas = [...impressoras, {
+        ...impressoraAlvo,
+        horimetroTotalMinutos: novoHorimetro,
+        totalProjetosConcluidos: novoTotalProjetos,
+        receitaAcumuladaCentavos: novaReceita,
+        custoEnergiaCentavos: novoCustoEnergia,
+        roiPercentual: novoRoi,
+        historicoProducao: novoHistorico,
+        dataAtualizacao: new Date(),
+      }];
+    }
 
     definirImpressoras(impressorasAtualizadas);
 

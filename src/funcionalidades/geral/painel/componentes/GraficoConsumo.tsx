@@ -34,7 +34,13 @@ export function GraficoConsumo() {
         materiais.forEach(material => {
             const historico = Array.isArray(material.historicoUso) ? material.historicoUso : [];
             historico.forEach(registro => {
-                const dataRegistro = new Date(Number(registro.id)).toISOString().split('T')[0];
+                const dataRaw = registro.data || (typeof registro.id === 'number' ? registro.id : null);
+                if (!dataRaw) return;
+                
+                const d = new Date(dataRaw);
+                if (isNaN(d.getTime())) return;
+
+                const dataRegistro = d.toISOString().split('T')[0];
                 const diaEncontrado = ultimos7Dias.find(d => d.dataStr === dataRegistro);
                 if (diaEncontrado) {
                     diaEncontrado.valor += registro.quantidadeGastaGramas;
