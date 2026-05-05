@@ -165,7 +165,7 @@ class ServicoPedidos {
             const novoPeso = Math.max(0, (materialEstoque.pesoRestanteGramas || 0) - (mat.quantidadeGasta || 0));
             console.log(`[DEBUG] Descontando ${mat.quantidadeGasta}g de ${materialEstoque.nome}. Novo peso: ${novoPeso}g`);
             await apiMateriais.atualizar(
-              { id: materialEstoque.id, pesoRestanteGramas: novoPeso },
+              { ...materialEstoque, id: materialEstoque.id, pesoRestanteGramas: novoPeso },
               usuarioId,
               {
                 data: new Date().toISOString(),
@@ -197,7 +197,7 @@ class ServicoPedidos {
             const novaQtd = Math.max(0, (insumoEstoque.quantidadeAtual || 0) - ins.quantidade);
             console.log(`[DEBUG] Descontando ${ins.quantidade} de ${insumoEstoque.nome}. Nova qtd: ${novaQtd}`);
             await apiInsumos.atualizar(
-              { id: insumoEstoque.id, quantidadeAtual: novaQtd },
+              { ...insumoEstoque, id: insumoEstoque.id, quantidadeAtual: novaQtd },
               usuarioId,
               {
                 id: crypto.randomUUID(),
@@ -265,6 +265,7 @@ class ServicoPedidos {
           ];
 
           await apiClientes.salvar({
+            ...cliente,
             id: cliente.id,
             ltvCentavos: (cliente.ltvCentavos || 0) + pedido.valorCentavos,
             totalProdutos: (cliente.totalProdutos || 0) + 1,
@@ -336,7 +337,7 @@ class ServicoPedidos {
             // Limita ao máximo do peso original do carretel
             const novoPeso = Math.min(pesoDevolucao, materialEstoque.pesoGramas || pesoDevolucao);
             await apiMateriais.atualizar(
-              { id: materialEstoque.id, pesoRestanteGramas: novoPeso },
+              { ...materialEstoque, id: materialEstoque.id, pesoRestanteGramas: novoPeso },
               usuarioId,
               {
                 data: new Date().toISOString(),
@@ -364,7 +365,7 @@ class ServicoPedidos {
           if (insumoEstoque) {
             const qtdDevolvida = (insumoEstoque.quantidadeAtual || 0) + ins.quantidade;
             await apiInsumos.atualizar(
-              { id: insumoEstoque.id, quantidadeAtual: qtdDevolvida },
+              { ...insumoEstoque, id: insumoEstoque.id, quantidadeAtual: qtdDevolvida },
               usuarioId,
               {
                 id: crypto.randomUUID(),
@@ -420,6 +421,7 @@ class ServicoPedidos {
           );
 
           await apiClientes.salvar({
+            ...cliente,
             id: cliente.id,
             ltvCentavos: Math.max(0, (cliente.ltvCentavos || 0) - pedido.valorCentavos),
             totalProdutos: Math.max(0, (cliente.totalProdutos || 0) - 1),

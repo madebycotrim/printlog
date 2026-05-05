@@ -213,6 +213,7 @@ export const servicoManutencao = {
     // ── 8. Persistência no Banco de Dados ────────────────────────────────────
     try {
       await apiImpressoras.salvar({
+        ...impressoraAlvo,
         id: idImpressora,
         horimetroTotalMinutos: novoHorimetro,
         totalProjetosConcluidos: novoTotalProjetos,

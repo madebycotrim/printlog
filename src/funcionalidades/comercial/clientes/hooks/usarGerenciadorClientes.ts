@@ -71,7 +71,8 @@ export function usarGerenciadorClientes() {
       registrar.info({ rastreioId, cliente: dados.nome }, "Salvando cliente no banco");
 
       const id = estado.clienteSendoEditado?.id;
-      const clienteParaSalvar = { ...dados, id };
+      const clienteExistente = id ? estado.clientes.find(c => c.id === id) : {};
+      const clienteParaSalvar = { ...clienteExistente, ...dados, id };
 
       const clienteFinal = await apiClientes.salvar(clienteParaSalvar, usuarioId);
       
