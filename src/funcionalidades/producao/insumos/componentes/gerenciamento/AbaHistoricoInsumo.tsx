@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { History, Package, Search } from "lucide-react";
+import { Package, Search } from "lucide-react";
 import { motion } from "framer-motion";
-import { Insumo, RegistroMovimentacaoInsumo } from "../../tipos";
+import { Insumo } from "../../tipos";
 
 interface PropriedadesAbaHistorico {
   insumo: Insumo;

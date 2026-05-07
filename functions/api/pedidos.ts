@@ -145,7 +145,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                             status = ?, 
                             descricao = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE descricao END,
                             valor_centavos = CASE WHEN ? IS NOT NULL THEN ? ELSE valor_centavos END,
-                            data_conclusao = COALESCE(?, data_conclusao), 
+                            data_conclusao = CASE WHEN ? = 1 THEN NULL ELSE COALESCE(?, data_conclusao) END, 
                             id_cliente = COALESCE(?, id_cliente), 
                             id_impressora = COALESCE(?, id_impressora),
                             dados_extras = ?
@@ -154,7 +154,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                         dados.status ?? 'pendente', 
                         dados.descricao ?? null, dados.descricao ?? null, dados.descricao ?? null,
                         valor_centavos ?? null, valor_centavos ?? null,
-                        data_conclusao,
+                        dados.limparDataConclusao ? 1 : 0, data_conclusao,
                         id_cliente,
                         id_impressora,
                         dadosExtrasFinais,
@@ -166,11 +166,11 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     await env.DB.prepare(`
                         UPDATE pedidos_impressao SET 
                             status = ?, 
-                            data_conclusao = COALESCE(?, data_conclusao)
+                            data_conclusao = CASE WHEN ? = 1 THEN NULL ELSE COALESCE(?, data_conclusao) END
                         WHERE id = ? AND id_usuario = ?
                     `).bind(
                         dados.status ?? 'pendente',
-                        data_conclusao,
+                        dados.limparDataConclusao ? 1 : 0, data_conclusao,
                         dados.id, 
                         usuarioId
                     ).run();
@@ -192,12 +192,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             }
         }
 
-        // DELETE - Soft Delete
+        // DELETE - Hard Delete (Economia de Espaço D1)
         if (metodo === "DELETE") {
             if (!id) return new Response(JSON.stringify({ erro: "ID não fornecido" }), { status: 400, headers: { "Content-Type": "application/json" } });
+            
             await env.DB.prepare(
-                "UPDATE pedidos_impressao SET arquivado = 1 WHERE id = ? AND id_usuario = ?"
+                "DELETE FROM pedidos_impressao WHERE id = ? AND id_usuario = ?"
             ).bind(id, usuarioId).run();
+
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
             });

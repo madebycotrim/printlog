@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, Building2, Layers, Tag, Weight, BoxSelect, Sparkles } from "lucide-react";
 import { useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Material } from "../tipos";
 import { FABRICANTES, MATERIAIS_FDM, MATERIAIS_SLA, CORES_PREDEFINIDAS } from "@/funcionalidades/producao/materiais/constantes";
 import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";

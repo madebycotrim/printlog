@@ -42,7 +42,7 @@ export const VALORES_PADRAO = {
   margemLucro: "150,00%",
   nomeEstudio: "",
   sloganEstudio: "",
-  plano: "PRO" as PlanoUsuario,
+  plano: "FREE" as PlanoUsuario,
   cicloPagamento: "MENSAL",
   vencimentoPlano: null,
 };

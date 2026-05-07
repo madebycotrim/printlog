@@ -1,16 +1,4 @@
-import { Centavos, StatusPedido } from "@/compartilhado/tipos/modelos";
-
-/**
- * Bases legais da LGPD (Art. 7º da Lei 13.709/2018).
- * Conforme Regra 9.0.
- */
-export enum BaseLegalLGPD {
-  CONSENTIMENTO = "consentimento", // Art. 7º, I
-  OBRIGACAO_LEGAL = "obrigacao_legal", // Art. 7º, II
-  EXECUCAO_CONTRATO = "execucao_contrato", // Art. 7º, V
-  INTERESSE_LEGITIMO = "interesse_legitimo", // Art. 7º, IX
-}
-
+import { Centavos, StatusPedido, BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 
 /**
  * Registro individual de histórico para o cliente.

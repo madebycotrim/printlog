@@ -68,8 +68,8 @@ export function ColunaKanban({ titulo, status, pedidos, aoMover, abrirFormulario
       onDrop={lidarComDrop}
     >
       <div className="flex items-center justify-between px-1 shrink-0">
-        <div className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full ${configCor.bg} border ${configCor.border} backdrop-blur-md shadow-lg shadow-black/20`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${configCor.dot} shadow-[0_0_8px_rgba(0,0,0,0.5)]`} />
+        <div className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full ${configCor.bg} border ${configCor.border} backdrop-blur-md shadow-sm dark:shadow-lg dark:shadow-black/40`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${configCor.dot} shadow-[0_0_8px_rgba(0,0,0,0.1)] dark:shadow-[0_0_8px_rgba(0,0,0,0.5)]`} />
           <h3 className={`font-black text-[9px] tracking-[0.2em] uppercase ${configCor.text}`}>
             {titulo}
           </h3>
@@ -84,8 +84,8 @@ export function ColunaKanban({ titulo, status, pedidos, aoMover, abrirFormulario
           flex-1 flex flex-col gap-3 p-3 rounded-[24px] border transition-all duration-500 min-h-[450px] relative overflow-hidden
           ${
             arrastandoSobre
-              ? "bg-white/[0.04] border-white/10 shadow-[inset_0_0_40px_rgba(255,255,255,0.01)]"
-              : "bg-zinc-900/10 border-white/[0.02]"
+              ? "bg-zinc-100/50 dark:bg-white/[0.04] border-zinc-200 dark:border-white/10 shadow-inner"
+              : "bg-zinc-50 dark:bg-zinc-900/10 border-zinc-100 dark:border-white/[0.02]"
           }
         `}
       >
@@ -106,10 +106,10 @@ export function ColunaKanban({ titulo, status, pedidos, aoMover, abrirFormulario
               <div className={`w-10 h-10 rounded-2xl ${configCor.bg} border ${configCor.border} flex items-center justify-center mb-4`}>
                  <FolderKanban size={16} className={configCor.text} />
               </div>
-              <p className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] mb-1">
+              <p className="text-[9px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-[0.4em] mb-1">
                 Fluxo Limpo
               </p>
-              <span className="text-[8px] font-medium text-zinc-800 uppercase tracking-widest">Aguardando novos projetos</span>
+              <span className="text-[8px] font-medium text-zinc-400 dark:text-zinc-800 uppercase tracking-widest">Aguardando novos projetos</span>
             </motion.div>
           ) : (
             <motion.div

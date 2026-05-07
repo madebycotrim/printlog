@@ -264,7 +264,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                    nome={usuario?.nome} 
                    fotoUrl={usuario?.fotoUrl} 
                    tamanho={colapsada ? "h-10 w-10" : "h-9 w-9"}
-                   pro={usuario?.plano === "PRO"}
+                   pro={usuario?.plano === "PRO" || usuario?.plano === "FUNDADOR"}
                  />
               </div>
               

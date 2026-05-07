@@ -5,7 +5,8 @@ import { Save, User, Mail, Phone, FileText, Star } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
 import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { Cliente, BaseLegalLGPD } from "../tipos";
+import { Cliente } from "../tipos";
+import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 import { esquemaCliente, TipoDadosCliente } from "../esquemas";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 
@@ -27,13 +28,14 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
     control,
     formState: { errors, isDirty },
   } = useForm<TipoDadosCliente>({
-    resolver: zodResolver(esquemaCliente) as any,
+    resolver: zodResolver(esquemaCliente),
     mode: "onChange",
     defaultValues: {
       nome: "",
       email: "",
       telefone: "",
       baseLegal: BaseLegalLGPD.EXECUCAO_CONTRATO,
+      idConsentimento: crypto.randomUUID(),
       finalidadeColeta: "Gestão de pedidos e orçamentos de impressão 3D.",
       prazoRetencaoMeses: 60,
       observacoesCRM: "",
@@ -148,8 +150,6 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
             </div>
 
             <div className="space-y-4">
-
-
               <CampoTexto
                 rotulo="Notas do Perfil (Útil para o dia a dia)"
                 icone={FileText}

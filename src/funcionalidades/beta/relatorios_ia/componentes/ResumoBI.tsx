@@ -217,13 +217,11 @@ export function ResumoBI({ pedidos, materiais, lancamentos }: ResumoBIProps) {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#18181b",
-                      border: "none",
+                      border: "1px solid rgba(255,255,255,0.1)",
                       borderRadius: "12px",
-                      fontSize: "10px",
-                      fontWeight: "bold",
-                      color: "#fff",
                       boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
                     }}
+                    itemStyle={{ color: "#fff", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase" }}
                   />
                   <Legend
                     verticalAlign="bottom"

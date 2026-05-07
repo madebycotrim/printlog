@@ -27,6 +27,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
     definirConfirmarDescarte,
     finalFormularioRef,
     register,
+    control,
     handleSubmit,
     setValue,
     errors,
@@ -93,6 +94,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
               <SecaoEstoquePreco 
                 register={register}
                 errors={errors}
+                control={control}
                 setValue={setValue}
                 unidadeMedidaAtiva={unidadeMedidaAtiva}
               />

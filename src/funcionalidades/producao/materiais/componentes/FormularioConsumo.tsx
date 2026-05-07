@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Scale, Check, Trash2, ArrowDownRight, MinusCircle, AlertCircle } from "lucide-react";
+import { Scale, Check, MinusCircle, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PropriedadesFormularioConsumo {

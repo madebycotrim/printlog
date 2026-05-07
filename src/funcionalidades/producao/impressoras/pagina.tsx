@@ -147,7 +147,6 @@ export function PaginaImpressoras() {
                           <CardImpressora
                             key={impressora.id}
                             impressora={impressora}
-                            aoEditar={acoes.abrirEditar}
                             aoAposentar={acoes.abrirAposentar}
                             aoGerenciamento={acoes.abrirGerenciamento}
                           />

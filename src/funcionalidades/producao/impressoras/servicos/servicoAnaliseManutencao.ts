@@ -4,7 +4,7 @@
  * Conforme Fase 2 do Roadmap.
  */
 
-import { PecaDesgaste } from "../manutencao/tipos";
+import { PecaDesgaste } from "../tipos";
 
 export interface AlertaManutencao {
   idPeca: string;
@@ -22,7 +22,7 @@ export const servicoAnaliseManutencao = {
   analisarPecas: (pecas: PecaDesgaste[]): AlertaManutencao[] => {
     return pecas
       .map((p) => {
-        const nivelUso = (p.minutosUsoAtual / p.vidaUtilEstimadaMinutos) * 100;
+        const nivelUso = (p.horasUsoAtualMinutos / p.vidaUtilMinutos) * 100;
         return {
           idPeca: p.id,
           nomePeca: p.nome,
@@ -39,7 +39,7 @@ export const servicoAnaliseManutencao = {
    */
   calcularSaudeGeral: (pecas: PecaDesgaste[]): number => {
     if (pecas.length === 0) return 100;
-    const totalUso = pecas.reduce((acc, p) => acc + p.minutosUsoAtual / p.vidaUtilEstimadaMinutos, 0);
+    const totalUso = pecas.reduce((acc, p) => acc + p.horasUsoAtualMinutos / p.vidaUtilMinutos, 0);
     const mediaUso = totalUso / pecas.length;
     return Math.max(0, Math.round(100 - mediaUso * 100));
   },

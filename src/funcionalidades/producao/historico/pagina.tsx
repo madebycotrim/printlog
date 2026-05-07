@@ -141,11 +141,12 @@ export function PaginaHistoricoProducao() {
                 <YAxis hide />
                 <Tooltip
                   contentStyle={{
+                    backgroundColor: 'var(--bg-card)',
                     borderRadius: "16px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                    fontSize: "11px",
+                    border: "1px solid var(--border-subtle)",
+                    boxShadow: "var(--sombra-media)",
                   }}
+                  itemStyle={{ color: 'var(--text-primary)', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}
                   formatter={(value: any) => [`${value}g`, "Peso"]}
                 />
                 <Area

@@ -1,4 +1,4 @@
-import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, Crown, MessageCircle, AlertTriangle } from "lucide-react";
+import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -60,8 +60,8 @@ export const PainelResultados = memo(function PainelResultados({
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400">Preço Sugerido</span>
           {(usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
-            <div className="p-1.5 rounded-lg text-sky-400">
-              <Crown size={14} />
+            <div className="p-1.5 rounded-lg text-sky-400 animate-pulse">
+              <Sparkles size={14} className="fill-sky-400/20" />
             </div>
           )}
         </div>
@@ -106,7 +106,7 @@ export const PainelResultados = memo(function PainelResultados({
             { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
             { label: 'Mão de Obra', valor: calculo.custoMaoDeObra, icone: Timer, cor: 'text-emerald-400' },
             { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400' },
-            { label: 'Taxas & Impostos', valor: calculo.taxaMarketplace + calculo.impostoVenda, icone: DollarSign, cor: 'text-violet-400' },
+            { label: 'Taxas', valor: calculo.taxaMarketplace, icone: DollarSign, cor: 'text-violet-400' },
             { label: 'Frete e Logística', valor: (modoEntrada === 'lote' ? frete * 100 : frete * 100 * quantidade) + (taxaFixa * 100), icone: Package, cor: 'text-orange-400' },
           ].filter(i => i.valor > 0);
 
@@ -121,7 +121,7 @@ export const PainelResultados = memo(function PainelResultados({
                   <span className="text-[9px] font-bold text-muted-foreground/60 text-center tracking-tight uppercase">Insira pesos e tempos nos cards ao lado</span>
                 </div>
               ) : (
-                <div className="max-h-[380px] overflow-y-auto pr-1 scrollbar-fino space-y-4">
+                <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-fino space-y-4">
                   <AnimatePresence>
                   {itens.map((item) => {
                     // Calcular subitens
@@ -254,7 +254,7 @@ export const PainelResultados = memo(function PainelResultados({
                   </ResponsiveContainer>
                 </div>
 
-                <div className="grid grid-cols-2 gap-y-3 gap-x-4 px-1">
+                <div className="max-h-[180px] overflow-y-auto pr-2 scrollbar-fino grid grid-cols-2 gap-y-3 gap-x-4 px-1">
                   {dadosPizza.map((d) => (
                     <div key={d.name} className="flex items-center justify-between group">
                       <div className="flex items-center gap-2">

@@ -9,8 +9,6 @@ import {
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { Combobox } from "@/compartilhado/componentes/Combobox";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoAreaTexto } from "@/compartilhado/componentes/CampoAreaTexto";
 import { CriarPedidoInput, Pedido } from "../tipos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
 import { SeletorInsumosSecundarios } from "./SeletorInsumosSecundarios";

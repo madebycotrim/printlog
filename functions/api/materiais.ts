@@ -163,10 +163,11 @@ export const onRequestDelete: PagesFunction<Env, any, { uid: string }> = async (
     if (!id) return new Response("ID não informado", { status: 400 });
 
     try {
-        // Soft Delete: Mantém o registro mas marca como arquivado
-        await env.DB.prepare(
-            "UPDATE materiais SET arquivado = 1 WHERE id = ? AND id_usuario = ?"
-        ).bind(id, usuarioId).run();
+        // Hard Delete: Remove o material e também seu histórico para limpar o banco
+        await env.DB.batch([
+            env.DB.prepare("DELETE FROM materiais WHERE id = ? AND id_usuario = ?").bind(id, usuarioId),
+            env.DB.prepare("DELETE FROM historico_uso_materiais WHERE id_material = ? AND id_usuario = ?").bind(id, usuarioId)
+        ]);
 
         return new Response(JSON.stringify({ sucesso: true }), {
             headers: { "Content-Type": "application/json" }

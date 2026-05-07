@@ -88,7 +88,7 @@ export function CardMaterial({ material, aoEditar, aoExcluir, aoHistorico, aoAlt
         >
           {!estaVisivel ? (
             <div
-              className="w-20 h-20 rounded-full opacity-50 border-4 shadow-inner border-gray-200 dark:border-white/5"
+              className="w-20 h-20 rounded-full opacity-50 border-4 shadow-inner border-borda-sutil dark:border-white/5"
               style={{ backgroundColor: material.cor || "#27272a" }}
             />
           ) : material.tipo === "FDM" ? (
@@ -135,7 +135,7 @@ export function CardMaterial({ material, aoEditar, aoExcluir, aoHistorico, aoAlt
               e.stopPropagation();
               definirMenuAberto(!menuAberto);
             }}
-            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/60"}`}
+            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-primary dark:text-white" : "text-muted-foreground hover:bg-zinc-500/10 dark:hover:bg-white/10 hover:text-primary dark:hover:text-white"}`}
           >
             <MoreVertical size={18} />
           </button>

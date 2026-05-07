@@ -131,11 +131,12 @@ export function PaginaDesperdicio() {
                 <YAxis hide />
                 <Tooltip
                   contentStyle={{
+                    backgroundColor: 'var(--bg-card)',
                     borderRadius: "16px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                    fontSize: "12px",
+                    border: "1px solid var(--border-subtle)",
+                    boxShadow: "var(--sombra-media)",
                   }}
+                  itemStyle={{ color: 'var(--text-primary)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
                   formatter={(value: any) => centavosParaReais(Number(value || 0))}
                 />
                 <Area
@@ -169,7 +170,16 @@ export function PaginaDesperdicio() {
                     <Cell key={`cell-${index}`} fill={CORES[index % CORES.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: any) => centavosParaReais(Number(value || 0))} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'var(--bg-card)',
+                    borderRadius: "16px",
+                    border: "1px solid var(--border-subtle)",
+                    boxShadow: "var(--sombra-media)",
+                  }}
+                  itemStyle={{ color: 'var(--text-primary)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
+                  formatter={(value: any) => centavosParaReais(Number(value || 0))} 
+                />
               </RePieChart>
             </ResponsiveContainer>
             <div className="space-y-4 pr-10">

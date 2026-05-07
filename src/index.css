@@ -13,6 +13,11 @@
   --color-card-fundo: var(--bg-card);
   --color-borda-sutil: var(--border-subtle);
   --color-subtle: var(--border-subtle);
+
+  /* Sombras Customizadas Premium */
+  --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.08), 0 10px 20px -10px rgba(0, 0, 0, 0.04);
+  --shadow-flat: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  --shadow-glow: 0 0 20px -5px var(--cor-primaria);
 }
 
 /* Fontsource - Inter & JetBrains Mono */
@@ -37,12 +42,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Palette Exata PrintLog */
-  --bg-page: #f4f4f5;
+  /* Palette Exata PrintLog - Refinada para Modo Claro Premium */
+  --bg-page: #f8fafc;
   --bg-sidebar: #ffffff;
   --bg-header: #ffffff;
   --bg-card: #ffffff;
-  --border-subtle: #e4e4e7;
+  --border-subtle: #f1f1f4;
   --accent-blue: #0ea5e9;
   --accent-green: #10b981;
 
@@ -51,15 +56,24 @@
   --cor-primaria-rgb: 14 165 233;
 
   /* Sistema de Cores de Texto */
-  --text-primary: #18181b; /* Zinc 900 */
-  --text-secondary: #52525b; /* Zinc 600 */
-  --text-muted: #71717a; /* Zinc 500 */
+  --text-primary: #0f172a; /* Slate 900 */
+  --text-secondary: #475569; /* Slate 600 */
+  --text-muted: #94a3b8; /* Slate 400 */
 
-  /* Sombras Adaptativas */
-  --sombra-suave: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --sombra-media: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --sombra-forte: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --sombra-primaria: 0 10px 15px -3px rgba(14, 165, 233, 0.25);
+  /* Sombras Adaptativas Premium */
+  --sombra-suave: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --sombra-media: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --sombra-forte: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+  --sombra-primaria: 0 10px 15px -3px rgba(14, 165, 233, 0.15);
+  
+  /* Variáveis de Status Globais (Glows, Pills, Barras) */
+  --cor-status-zinc: #71717a;
+  --cor-status-amber: #f59e0b;
+  --cor-status-emerald: #10b981;
+  --cor-status-indigo: #6366f1;
+  --cor-status-fuchsia: #d946ef;
+  --cor-status-sky: #0ea5e9;
+  --cor-status-rose: #f43f5e;
 }
 
 .dark {
@@ -87,14 +101,7 @@
   --sombra-forte: 0 25px 50px -12px rgba(0, 0, 0, 0.98);
   --sombra-primaria: 0 8px 30px -4px rgba(14, 165, 233, 0.12);
 
-  /* Variáveis de Status para Glows e Pills */
-  --cor-status-zinc: #71717a;
-  --cor-status-amber: #f59e0b;
-  --cor-status-emerald: #10b981;
-  --cor-status-indigo: #6366f1;
-  --cor-status-fuchsia: #d946ef;
-  --cor-status-sky: #0ea5e9;
-  --cor-status-rose: #f43f5e;
+
 
   color-scheme: dark;
 }
@@ -153,11 +160,11 @@ body {
 
 /* Títulos com Gradiente de Alta Fidelidade */
 .text-gradient-title {
-  background: linear-gradient(135deg, #f8fafc 0%, #64748b 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #475569 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
 }
 
 .dark .text-gradient-title {

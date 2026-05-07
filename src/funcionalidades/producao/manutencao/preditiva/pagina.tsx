@@ -19,7 +19,7 @@ import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalh
 
 export function PaginaManutencaoPreditiva() {
   const navigate = useNavigate();
-  const { impressoras, abrirManutencao } = usarArmazemImpressoras();
+  const { impressoras, abrirGerenciamento } = usarArmazemImpressoras();
 
   const agenda = useMemo(() => servicoPredicaoManutencao.gerarAgendaPreditiva(impressoras), [impressoras]);
 
@@ -178,7 +178,7 @@ export function PaginaManutencaoPreditiva() {
                       onClick={() => {
                         const impressora = impressoras.find((i) => i.id === item.idImpressora);
                         if (impressora) {
-                          abrirManutencao(impressora);
+                          abrirGerenciamento(impressora, "manutencao");
                           navigate("/impressoras");
                         }
                       }}

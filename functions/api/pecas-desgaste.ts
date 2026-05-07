@@ -67,12 +67,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             });
         }
 
-        // DELETE - Soft Delete
+        // DELETE - Hard Delete (Limpeza de Espaço)
         if (metodo === "DELETE") {
             if (!id) return new Response("ID não informado", { status: 400 });
+            
             await env.DB.prepare(
-                "UPDATE pecas_desgaste SET arquivado = 1 WHERE id = ? AND id_usuario = ?"
+                "DELETE FROM pecas_desgaste WHERE id = ? AND id_usuario = ?"
             ).bind(id, usuarioId).run();
+
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
             });

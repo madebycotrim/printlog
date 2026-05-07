@@ -319,8 +319,8 @@ export const CardInsumos = memo(function CardInsumos({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mt-2">
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-gray-400 tracking-widest">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-gray-400 tracking-widest leading-none">
                           Qtd ({original?.unidadeMedida || 'un'})
                         </label>
                         <div className="flex items-center h-9 rounded-lg bg-zinc-100 dark:bg-black/40 overflow-hidden border border-borda-sutil focus-within:border-indigo-500/30 transition-all">
@@ -348,8 +348,10 @@ export const CardInsumos = memo(function CardInsumos({
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-gray-400 tracking-widest block">Custo Un.</label>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-gray-400 tracking-widest leading-none">
+                          Custo Un.
+                        </label>
                         <div className="w-full h-9 px-3 rounded-lg bg-zinc-100 dark:bg-black/40 flex items-center justify-center border border-borda-sutil">
                           <span className="font-black text-xs text-indigo-500 text-center">
                             <ContadorAnimado valor={item.custoCentavos / 100} prefixo="R$ " />

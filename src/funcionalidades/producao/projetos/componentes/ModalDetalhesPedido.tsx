@@ -3,8 +3,9 @@ import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { 
   Settings, Box, MessageSquare, 
   TrendingUp, Zap, Percent, 
-  Coins, Hammer, Activity, ShieldCheck,
-  Truck, Receipt, Calendar, Clock
+  Hammer, Activity, ShieldCheck,
+  Truck, Calendar, Clock,
+  Warehouse, ShoppingBag
 } from "lucide-react";
 
 import { centavosParaReais, formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
@@ -458,7 +459,6 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                        { label: 'Energia', ativa: pedido.configuracoes.cobrarEnergia },
                        { label: 'Mão de Obra', ativa: pedido.configuracoes.cobrarMaoDeObra },
                        { label: 'Desgaste', ativa: pedido.configuracoes.cobrarDesgaste },
-                       { label: 'Impostos', ativa: pedido.configuracoes.cobrarImpostos },
                        { label: 'Insumos Fixos', ativa: pedido.configuracoes.cobrarInsumosFixos },
                        { label: 'Logística', ativa: pedido.configuracoes.cobrarLogistica },
                      ].map((t, idx) => (
@@ -474,23 +474,51 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
               )}
 
               {/* 🚚 Logística & Fiscal (Apenas se houver cobrança) */}
-              {pedido.configuracoes && (pedido.configuracoes.cobrarLogistica || pedido.configuracoes.cobrarImpostos || pedido.configuracoes.cobrarInsumosFixos) && (
+              {pedido.configuracoes && (pedido.configuracoes.cobrarLogistica || pedido.configuracoes.cobrarInsumosFixos || pedido.configuracoes.perfilAtivo) && (
                 <section className="col-span-1 md:col-span-2 space-y-8 pt-8 border-t border-white/5">
-                   <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
-                        <Box size={16} />
-                     </div>
-                     <h3 className="text-[11px] font-black text-primary dark:text-white uppercase tracking-[0.4em]">Logística & Estrutura Fiscal</h3>
-                   </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">
+                         <Warehouse size={16} />
+                      </div>
+                      <h3 className="text-[11px] font-black text-primary dark:text-white uppercase tracking-[0.4em]">Logística e Vendas</h3>
+                    </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Canal de Venda */}
+                    {pedido.configuracoes?.perfilAtivo && (
+                      <div className="p-8 rounded-2xl bg-orange-500/[0.03] border border-orange-500/10 flex flex-col gap-6 group hover:bg-orange-500/5 transition-all">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 opacity-30 group-hover:opacity-60 transition-opacity">
+                            <ShoppingBag size={12} className="text-orange-500" />
+                            <span className="text-[9px] font-black text-primary dark:text-white uppercase tracking-widest">Canal de Venda</span>
+                          </div>
+                          <span className="text-2xl font-black text-orange-400 tabular-nums tracking-tighter uppercase">{pedido.configuracoes.perfilAtivo}</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-orange-500/10">
+                           <div className="flex flex-col gap-1">
+                              <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest leading-none">Marketplace</span>
+                              <span className="text-xs font-black text-primary dark:text-zinc-200 tabular-nums">{pedido.configuracoes.taxaEcommerce || 0}%</span>
+                           </div>
+                           <div className="flex flex-col gap-1 border-x border-orange-500/10 px-4">
+                              <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest leading-none">Taxa Fixa</span>
+                              <span className="text-xs font-black text-primary dark:text-zinc-200 tabular-nums">{centavosParaReais((pedido.configuracoes.taxaFixa || 0) * 100)}</span>
+                           </div>
+                           <div className="flex flex-col gap-1 pl-1">
+                              <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest leading-none">Logística</span>
+                              <span className="text-xs font-black text-primary dark:text-zinc-200 tabular-nums">{centavosParaReais((pedido.configuracoes.frete || 0) * 100)}</span>
+                           </div>
+                        </div>
+                      </div>
+                    )}
+
                      {/* Logística */}
                      {(pedido.configuracoes.cobrarLogistica || pedido.configuracoes.cobrarInsumosFixos) && (
                         <div className="space-y-4">
                            {pedido.configuracoes.cobrarLogistica && (
                              <div className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil">
                                <div className="flex items-center gap-4">
-                                  <Truck size={16} className="text-sky-500" />
+                                  <Truck size={16} className="text-orange-500" />
                                   <div className="flex flex-col">
                                      <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Logística e Frete</span>
                                      <span className="text-xs font-bold text-zinc-300">R$ {pedido.configuracoes.frete?.toFixed(2) || "0.00"}</span>
@@ -501,7 +529,7 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                            {pedido.configuracoes.cobrarInsumosFixos && (
                              <div className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil">
                                <div className="flex items-center gap-4">
-                                  <Box size={16} className="text-amber-500" />
+                                  <Box size={16} className="text-orange-500" />
                                   <div className="flex flex-col">
                                      <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Insumos Fixos (Embalagem, etc)</span>
                                      <span className="text-xs font-bold text-zinc-300">R$ {pedido.configuracoes.insumosFixos?.toFixed(2) || "0.00"}</span>
@@ -509,39 +537,6 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                                </div>
                             </div>
                           )}
-                       </div>
-                     )}
-
-                      {/* Fiscal */}
-                      {pedido.configuracoes.cobrarImpostos && (
-                        <div className="p-6 rounded-2xl bg-indigo-500/5 dark:bg-indigo-500/[0.02] border border-indigo-500/20 dark:border-indigo-500/10 flex flex-col gap-6">
-                          <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                 <Receipt size={16} className="text-indigo-400" />
-                                 <span className="text-[9px] font-black text-primary dark:text-white uppercase tracking-widest">Regime: {pedido.configuracoes.tipoOperacao?.toUpperCase()}</span>
-                              </div>
-                             <span className="text-[9px] font-black text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded uppercase tracking-tighter">Perfil: {pedido.configuracoes.perfilAtivo}</span>
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-4">
-                             <div className="flex flex-col gap-1">
-                                <span className="text-[7px] font-black text-zinc-600 uppercase">Impostos</span>
-                                <span className="text-xs font-black text-zinc-300 tabular-nums">{pedido.configuracoes.impostos}%</span>
-                             </div>
-                             <div className="flex flex-col gap-1">
-                                <span className="text-[7px] font-black text-zinc-600 uppercase">ICMS</span>
-                                <span className="text-xs font-black text-zinc-300 tabular-nums">{pedido.configuracoes.icms}%</span>
-                             </div>
-                             <div className="flex flex-col gap-1">
-                                <span className="text-[7px] font-black text-zinc-600 uppercase">ISS</span>
-                                <span className="text-xs font-black text-zinc-300 tabular-nums">{pedido.configuracoes.iss}%</span>
-                             </div>
-                          </div>
-
-                          <div className="mt-auto flex items-center justify-center gap-2 p-2 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] bg-indigo-500/10 text-indigo-400">
-                             <ShieldCheck size={12} />
-                             INCIDÊNCIA FISCAL ATIVA
-                          </div>
                        </div>
                      )}
                   </div>

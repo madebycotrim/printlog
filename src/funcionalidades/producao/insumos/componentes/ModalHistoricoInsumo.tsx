@@ -65,7 +65,7 @@ export function ModalHistoricoInsumo({ aberto, aoFechar, insumo }: ModalHistoric
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-5 relative z-10">
-            <div className="w-14 h-14 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 flex items-center justify-center shrink-0 shadow-xl shadow-black/5 transform group-hover:rotate-6 transition-transform">
+            <div className="w-14 h-14 rounded-xl bg-gray-50 dark:bg-black/40 border border-borda-sutil dark:border-white/10 flex items-center justify-center shrink-0 shadow-sm transform group-hover:rotate-6 transition-transform">
               <Box size={28} strokeWidth={1.5} className="text-[var(--cor-primaria)]" />
             </div>
             <div className="flex flex-col min-w-0 flex-1">

@@ -1,4 +1,4 @@
-import { DollarSign, User, MoreVertical, Trash2, Edit3, Clock, Package } from "lucide-react";
+import { DollarSign, User, MoreVertical, Trash2, Edit3, Clock, Package, Archive } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Pedido } from "../tipos";
@@ -21,9 +21,11 @@ interface PropriedadesCartaoPedido {
 }
 
 
-// 🎉 Mini-componente de Confetes Discretos
-function EfeitoConfeteDiscreto() {
-  const particulas = Array.from({ length: 15 });
+// 🎉 Mini-componente de Confetes Vibrantes
+function EfeitoConfeteVibrante() {
+  const particulas = Array.from({ length: 25 });
+  const cores = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#ffffff'];
+  
   return (
     <div className="absolute inset-0 pointer-events-none overflow-visible z-[100]">
       {particulas.map((_, i) => (
@@ -31,20 +33,20 @@ function EfeitoConfeteDiscreto() {
           key={i}
           initial={{ x: "50%", y: "50%", scale: 0, opacity: 1 }}
           animate={{ 
-            x: `${Math.random() * 200 - 50}%`, 
-            y: `${Math.random() * -150 - 20}%`, 
-            scale: [0, 1, 0.5, 0],
-            opacity: [1, 1, 0],
-            rotate: Math.random() * 360 
+            x: `${Math.random() * 300 - 150}%`, 
+            y: `${Math.random() * -200 - 50}%`, 
+            scale: [0, 1.2, 0.8, 0],
+            opacity: [1, 1, 0.8, 0],
+            rotate: Math.random() * 720 
           }}
           transition={{ 
-            duration: 1.2, 
-            ease: "easeOut",
-            delay: Math.random() * 0.1
+            duration: 1.8, 
+            ease: [0.23, 1, 0.32, 1],
+            delay: Math.random() * 0.2
           }}
-          className="absolute w-1 h-1 rounded-sm"
+          className="absolute w-1.5 h-1.5 rounded-sm"
           style={{ 
-            backgroundColor: ['#0ea5e9', '#38bdf8', '#ffffff', '#7dd3fc'][Math.floor(Math.random() * 4)] 
+            backgroundColor: cores[Math.floor(Math.random() * cores.length)] 
           }}
         />
       ))}
@@ -63,8 +65,19 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
   const [modalExcluirAberto, setModalExcluirAberto] = useState(false);
   const [exibirConfete, setExibirConfete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const statusAnteriorRef = useRef(pedido.status);
 
   const estaAtrasado = useMemo(() => verificarSeEstaAtrasado(pedido), [pedido]);
+
+  // Efeito de Confete Automático ao Concluir
+  useEffect(() => {
+    if (pedido.status === StatusPedido.CONCLUIDO && statusAnteriorRef.current !== StatusPedido.CONCLUIDO) {
+      setExibirConfete(true);
+      const timer = setTimeout(() => setExibirConfete(false), 2500);
+      return () => clearTimeout(timer);
+    }
+    statusAnteriorRef.current = pedido.status;
+  }, [pedido.status]);
 
   useEffect(() => {
     const clicarFora = (e: MouseEvent) => {
@@ -76,7 +89,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
     return () => document.removeEventListener("mousedown", clicarFora);
   }, []);
 
-  // Configuração Visual do Status sincronizada com o QuadroKanban
+  // ... (switch do configStatus permanece igual)
   const configStatus = useMemo(() => {
     switch (pedido.status) {
       case StatusPedido.A_FAZER:
@@ -116,22 +129,22 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
           relative p-3 rounded-2xl border transition-all duration-500
           bg-card border-borda-sutil group-hover/card:border-zinc-300 dark:group-hover/card:border-white/[0.08]
           group-hover/card:bg-zinc-50 dark:group-hover/card:bg-[#16161c]
-          ${estaAtrasado ? "border-rose-500/30 ring-1 ring-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.1)]" : "hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)]"}
+          ${estaAtrasado ? "border-rose-500/30 ring-1 ring-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.1)]" : "hover:shadow-premium"}
           ${menuAberto ? "z-[100]" : "z-10"}
         `}
       >
         <AnimatePresence>
-          {exibirConfete && <EfeitoConfeteDiscreto />}
+          {exibirConfete && <EfeitoConfeteVibrante />}
           {bloqueado && (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-[120] flex items-center justify-center bg-[#121214]/40 rounded-xl backdrop-blur-[1px]"
+              className="absolute inset-0 z-[120] flex items-center justify-center bg-white/70 dark:bg-[#121214]/60 rounded-xl backdrop-blur-[2px]"
             >
               <div className="flex flex-col items-center gap-2">
-                <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-amber-500">Gravando...</span>
+                <div className="w-4 h-4 border-2 border-amber-600 dark:border-amber-400 border-t-transparent rounded-full animate-spin" />
+                <span className="text-[8px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">Gravando...</span>
               </div>
             </motion.div>
           )}
@@ -168,7 +181,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                 e.stopPropagation();
                 setMenuAberto(!menuAberto);
               }}
-              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-primary dark:text-white" : "text-zinc-400 dark:text-zinc-800 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 opacity-0 group-hover/card:opacity-100"}`}
+              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-primary dark:text-white" : "text-zinc-400 dark:text-zinc-800 hover:bg-zinc-500/10 dark:hover:bg-white/10 hover:text-primary dark:hover:text-white opacity-0 group-hover/card:opacity-100"}`}
             >
               <MoreVertical size={14} />
             </button>
@@ -204,6 +217,32 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                   >
                     <Settings size={12} className="text-amber-500/70" /> Registrar Falha
                   </button>
+                  {pedido.status === StatusPedido.CONCLUIDO && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        moverPedido(pedido.id, StatusPedido.ARQUIVADO);
+                        setMenuAberto(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-500/70 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors"
+                    >
+                      <Archive size={12} /> Arquivar
+                    </button>
+                  )}
+                  {pedido.status === StatusPedido.ARQUIVADO && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        moverPedido(pedido.id, StatusPedido.CONCLUIDO);
+                        setMenuAberto(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-amber-500/70 hover:bg-amber-500/10 hover:text-amber-500 transition-colors"
+                    >
+                      <Archive size={12} className="rotate-180" /> Desarquivar
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -306,9 +345,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setExibirConfete(true);
                     moverPedido(pedido.id, StatusPedido.CONCLUIDO);
-                    setTimeout(() => setExibirConfete(false), 1500);
                   }}
                   className="flex-1 bg-sky-500/10 hover:bg-sky-500 text-sky-500 hover:text-white py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-sky-500/20"
                 >

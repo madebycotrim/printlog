@@ -73,7 +73,7 @@ export function TabelaLancamentos({ lancamentos }: TabelaLancamentosProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -2 }}
-                className="relative flex items-center justify-between p-5 rounded-2xl border border-zinc-100 dark:border-white/5 bg-white dark:bg-[#18181b] hover:border-zinc-300 dark:hover:border-white/10 hover:shadow-xl hover:shadow-zinc-200/50 dark:hover:shadow-black/20 transition-all group overflow-hidden"
+                className="relative flex items-center justify-between p-5 rounded-2xl border border-borda-sutil dark:border-white/5 bg-card hover:border-zinc-200 dark:hover:border-white/10 hover:shadow-premium transition-all group overflow-hidden"
               >
                 {/* Marca d'água (Background Icon) */}
                 <div className="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.05] pointer-events-none transition-transform group-hover:scale-110 group-hover:rotate-6 duration-700">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { History, Settings, Package, Database, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { History, Settings, Package, Database } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Insumo } from "../tipos";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";

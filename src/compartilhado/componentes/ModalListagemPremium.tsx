@@ -8,7 +8,7 @@ interface PropriedadesModalListagemPremium {
   aoFechar: () => void;
   titulo: string;
   iconeTitulo?: LucideIcon;
-  corDestaque?: "indigo" | "rose" | "emerald" | "sky" | "amber" | "violet" | "zinc" | "orange";
+  corDestaque?: "indigo" | "rose" | "emerald" | "sky" | "amber" | "violet" | "zinc" | "orange" | "teal";
 
   // Busca
   termoBusca: string;
@@ -65,6 +65,7 @@ export function ModalListagemPremium({
     violet: "violet-500",
     orange: "orange-500",
     zinc: "zinc-500",
+    teal: "teal-500",
   };
 
   const corHex = mapasCores[corDestaque] || "sky-500";

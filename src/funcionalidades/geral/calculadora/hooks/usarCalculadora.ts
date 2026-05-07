@@ -13,7 +13,6 @@ import {
   ItemPosProcesso, 
   InsumoSelecionado, 
   PerfilMarketplace, 
-  PerfilFiscal,
   VersaoCalculo,
   CalculoResultado 
 } from "../tipos";
@@ -53,18 +52,18 @@ export function usarCalculadora() {
     return salvo !== null ? Number(salvo) : extrairValorNumerico(config.margemLucro);
   });
   
-  const [quantidade, setQuantidade] = useState<number>(() => Number(localStorage.getItem("printlog_quantidade")) || 1);
+  const [quantidade, setQuantidade] = useState<number>(() => Number(localStorage.getItem("printlog_quantidade")) || 0);
   const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => {
     const salvo = localStorage.getItem("printlog_calculadora_modo_entrada");
     return (salvo as 'unitario' | 'lote') || "lote";
   });
   const [tempoSetup, setTempoSetup] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_tempo_setup");
-    return salvo !== null ? Number(salvo) : 15;
+    return salvo !== null ? Number(salvo) : 0;
   });
   const [taxaFalha, setTaxaFalha] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_taxa_falha");
-    return salvo !== null ? Number(salvo) : 10;
+    return salvo !== null ? Number(salvo) : 0;
   });
   const [materialPerdido, setMaterialPerdido] = useState<number>(() => Number(localStorage.getItem("printlog_material_perdido")) || 0);
   const [tempoPerdido, setTempoPerdido] = useState<number>(() => Number(localStorage.getItem("printlog_tempo_perdido")) || 0);
@@ -83,27 +82,21 @@ export function usarCalculadora() {
   const [cobrarDesgaste, setCobrarDesgaste] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_desgaste") !== "false");
   const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_mao_de_obra") !== "false");
   const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_energia") !== "false");
-  const [cobrarImpostos, setCobrarImpostos] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_impostos") !== "false");
   const [cobrarInsumosFixos, setCobrarInsumosFixos] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_insumos_fixos") !== "false");
   const [cobrarLogistica, setCobrarLogistica] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_logistica") !== "false");
   const [perfilAtivo, setPerfilAtivo] = useState(() => localStorage.getItem("printlog_perfil_ativo") || "Direto");
   const [taxaEcommerce, setTaxaEcommerce] = useState<number>(0);
   const [taxaFixa, setTaxaFixa] = useState<number>(0);
 
-  const [tipoOperacao, setTipoOperacao] = useState(() => localStorage.getItem("printlog_tipo_operacao") || "mei"); 
-  const [impostos, setImpostos] = useState(0);
-  const [icms, setIcms] = useState(0); 
-  const [iss, setIss] = useState(0);
+
 
   // Efeitos de persistência
   useEffect(() => { localStorage.setItem("printlog_cobrar_desgaste", String(cobrarDesgaste)); }, [cobrarDesgaste]);
   useEffect(() => { localStorage.setItem("printlog_cobrar_mao_de_obra", String(cobrarMaoDeObra)); }, [cobrarMaoDeObra]);
   useEffect(() => { localStorage.setItem("printlog_cobrar_energia", String(cobrarEnergia)); }, [cobrarEnergia]);
-  useEffect(() => { localStorage.setItem("printlog_cobrar_impostos", String(cobrarImpostos)); }, [cobrarImpostos]);
   useEffect(() => { localStorage.setItem("printlog_cobrar_insumos_fixos", String(cobrarInsumosFixos)); }, [cobrarInsumosFixos]);
   useEffect(() => { localStorage.setItem("printlog_cobrar_logistica", String(cobrarLogistica)); }, [cobrarLogistica]);
   useEffect(() => { localStorage.setItem("printlog_perfil_ativo", perfilAtivo); }, [perfilAtivo]);
-  useEffect(() => { localStorage.setItem("printlog_tipo_operacao", tipoOperacao); }, [tipoOperacao]);
   useEffect(() => { localStorage.setItem("printlog_materiais_selecionados", JSON.stringify(materiaisSelecionados)); }, [materiaisSelecionados]);
   useEffect(() => { localStorage.setItem("printlog_calculadora_tempo", String(tempo)); }, [tempo]);
   useEffect(() => { localStorage.setItem("printlog_calculadora_modo_entrada", modoEntrada); }, [modoEntrada]);
@@ -121,31 +114,6 @@ export function usarCalculadora() {
   useEffect(() => { localStorage.setItem("printlog_insumos_fixos", String(insumosFixos)); }, [insumosFixos]);
   useEffect(() => { localStorage.setItem("printlog_insumos_selecionados", JSON.stringify(insumosSelecionados)); }, [insumosSelecionados]);
   useEffect(() => { localStorage.setItem("printlog_itens_pos_processo", JSON.stringify(itensPosProcesso)); }, [itensPosProcesso]);
-
-  const [perfisFiscais, setPerfisFiscais] = useState<PerfilFiscal[]>(() => {
-    const salvo = localStorage.getItem("printlog_perfis_fiscais");
-    let listaPadrao = [
-      { nome: "MEI", base: 0, icms: 0, iss: 0 },
-      { nome: "CPF", base: 10, icms: 0, iss: 0 },
-      { nome: "Produto", base: 4, icms: 0, iss: 0 },
-      { nome: "Servico", base: 6, icms: 0, iss: 0 },
-    ];
-    if (salvo) {
-      try {
-        return JSON.parse(salvo);
-      } catch (e) { return listaPadrao; }
-    }
-    return listaPadrao;
-  });
-
-  useEffect(() => {
-    const perfilAtual = perfisFiscais.find(p => p.nome.toLowerCase() === tipoOperacao.toLowerCase());
-    if (perfilAtual) {
-      setImpostos(perfilAtual.base);
-      setIcms(perfilAtual.icms);
-      setIss(perfilAtual.iss);
-    }
-  }, [tipoOperacao, perfisFiscais]);
 
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";
@@ -166,10 +134,10 @@ export function usarCalculadora() {
     const salvo = localStorage.getItem("printlog_perfis_marketplace");
     if (salvo) return JSON.parse(salvo);
     return [
-      { nome: "Direto", taxa: 0, fixa: 0, frete: 0, ins: 0, imp: 6 },
-      { nome: "M. Livre", taxa: 18, fixa: 6, frete: 0, ins: 2, imp: 6 },
-      { nome: "Shopee", taxa: 20, fixa: 3, frete: 0, ins: 1.5, imp: 6 },
-      { nome: "Site", taxa: 5, fixa: 0, frete: 0, ins: 5, imp: 6 },
+      { nome: "Direto", taxa: 0, fixa: 0, frete: 0 },
+      { nome: "M. Livre", taxa: 18, fixa: 6, frete: 0 },
+      { nome: "Shopee", taxa: 20, fixa: 3, frete: 0 },
+      { nome: "Site", taxa: 5, fixa: 0, frete: 0 },
     ];
   });
 
@@ -210,14 +178,11 @@ export function usarCalculadora() {
     const margemPercentual = margem / 100;
     const taxaMktPercentual = cobrarLogistica ? taxaEcommerce / 100 : 0;
     const taxaFixaVendaCentavos = cobrarLogistica ? Math.round(taxaFixa * 100) : 0;
-    const impostoPercentual = cobrarImpostos ? (impostos + icms + iss) / 100 : 0;
-    const lucroDesejadoCentavos = Math.round(custoProducaoTotalCentavos * margemPercentual);
-    const precoBaseVendaCentavos = custoProducaoTotalCentavos + lucroDesejadoCentavos + custoFreteCentavos + taxaFixaVendaCentavos;
-    const denominadorTaxas = 1 - taxaMktPercentual - impostoPercentual;
+    const precoBaseVendaCentavos = custoProducaoTotalCentavos + (custoProducaoTotalCentavos * margemPercentual) + custoFreteCentavos + taxaFixaVendaCentavos;
+    const denominadorTaxas = 1 - taxaMktPercentual;
     const precoSugeridoCentavos = denominadorTaxas > 0.05 ? Math.round(precoBaseVendaCentavos / denominadorTaxas) : Math.round(precoBaseVendaCentavos * 1.5);
     const taxaMktTotalCentavos = Math.round(precoSugeridoCentavos * taxaMktPercentual + taxaFixaVendaCentavos);
-    const impostoTotalCentavos = cobrarImpostos ? Math.round(precoSugeridoCentavos * impostoPercentual) : 0;
-    const lucroLiquidoCentavos = precoSugeridoCentavos - taxaMktTotalCentavos - impostoTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos;
+    const lucroLiquidoCentavos = precoSugeridoCentavos - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos;
     return {
       custoMaterial: Math.round(custoMaterialTotalCentavos),
       custoEnergia: custoEnergiaCentavos,
@@ -226,14 +191,13 @@ export function usarCalculadora() {
       custoPosProcesso: custoPosProcessoCentavos,
       custoInsumos: custoInsumosDinamicosCentavos + custoInsumosFixosCentavos,
       taxaMarketplace: taxaMktTotalCentavos,
-      impostoVenda: impostoTotalCentavos,
       precoSugerido: precoSugeridoCentavos,
       lucroLiquido: lucroLiquidoCentavos,
       custoTotalOperacional: custoProducaoTotalCentavos,
       margemReal: precoSugeridoCentavos > 0 ? (lucroLiquidoCentavos / precoSugeridoCentavos) * 100 : 0,
       custoFalha: custoFalhaRealCentavos
     };
-  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarImpostos, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, impostos, icms, iss, quantidade, tempoSetup, materialPerdido, tempoPerdido, modoEntrada]);
+  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, quantidade, tempoSetup, materialPerdido, tempoPerdido, modoEntrada]);
 
   // Alertas de Estoque
   const alertasEstoque = useMemo(() => {
@@ -274,7 +238,19 @@ export function usarCalculadora() {
 
   // Ações
   const salvarSnapshot = (nome: string) => {
-    const novaVersao: VersaoCalculo = { id: crypto.randomUUID(), data: new Date().toISOString(), nome: nome || `Versão ${historico.length + 1}`, calculo, configuracoes: { materiaisSelecionados, tempo, perfilAtivo, margem, potencia, precoKwh, maoDeObra, depreciacaoHora, quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos, insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarImpostos, tipoOperacao, impostos, icms, iss, cobrarInsumosFixos, cobrarLogistica } };
+    const novaVersao: VersaoCalculo = { 
+      id: crypto.randomUUID(), 
+      data: new Date().toISOString(), 
+      nome: nome || `Versão ${historico.length + 1}`, 
+      calculo, 
+      configuracoes: { 
+        materiaisSelecionados, tempo, perfilAtivo, margem, potencia, precoKwh, maoDeObra, depreciacaoHora, 
+        quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos, 
+        insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra, 
+        cobrarEnergia, cobrarInsumosFixos, cobrarLogistica,
+        taxaEcommerce, taxaFixa // Adicionados aqui
+      } 
+    };
     const novoHistorico = [novaVersao, ...historico];
     setHistorico(novoHistorico);
     localStorage.setItem("printlog_historico_calculadora", JSON.stringify(novoHistorico));
@@ -299,7 +275,24 @@ export function usarCalculadora() {
 
   const gerarPdf = useCallback((nomeEstudio?: string, slogan?: string, nomeCliente?: string, nomeProjeto?: string, idPedido?: string) => {
     // Lógica simplificada de PDF para manter integridade
-    const layout = `<html><body><h1>Orcamento: ${nomeProjeto}</h1><p>Cliente: ${nomeCliente}</p><p>Total: R$ ${(calculo.precoSugerido/100).toFixed(2)}</p><script>window.print();</script></body></html>`;
+    const layout = `
+      <html>
+        <body style="font-family: sans-serif; padding: 40px;">
+          <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="margin: 0;">${nomeEstudio || 'Orcamento'}</h1>
+            <p style="margin: 5px 0; color: #666;">${slogan || ''}</p>
+          </div>
+          <hr />
+          <h2>Projeto: ${nomeProjeto}</h2>
+          <p><strong>Cliente:</strong> ${nomeCliente}</p>
+          <p><strong>ID do Pedido:</strong> ${idPedido || 'N/A'}</p>
+          <div style="margin-top: 40px; font-size: 24px; font-weight: bold;">
+            Total: R$ ${(calculo.precoSugerido/100).toFixed(2)}
+          </div>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `;
     const win = window.open("", "_blank");
     win?.document.write(layout);
     win?.document.close();
@@ -308,7 +301,7 @@ export function usarCalculadora() {
   const limpar = useCallback((silencioso = false) => {
     setMateriaisSelecionados([]);
     setTempo(0);
-    setQuantidade(1);
+    setQuantidade(0);
     setInsumosSelecionados([]);
     setItensPosProcesso([]);
     if (!silencioso) toast.success("Resetado!");
@@ -341,7 +334,6 @@ export function usarCalculadora() {
     cobrarDesgaste, setCobrarDesgaste,
     cobrarMaoDeObra, setCobrarMaoDeObra,
     cobrarEnergia, setCobrarEnergia,
-    cobrarImpostos, setCobrarImpostos,
     cobrarLogistica, setCobrarLogistica,
     margem, setMargem,
     frete, setFrete,
@@ -353,11 +345,6 @@ export function usarCalculadora() {
     taxaEcommerce, setTaxaEcommerce,
     taxaFixa, setTaxaFixa,
     perfisMarketplace, setPerfisMarketplace,
-    perfisFiscais, setPerfisFiscais,
-    tipoOperacao, setTipoOperacao,
-    impostos, setImpostos,
-    icms, setIcms,
-    iss, setIss,
     impressoraSelecionadaId, setImpressoraSelecionadaId,
     historico,
     calculo,

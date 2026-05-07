@@ -1,13 +1,13 @@
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { Impressora, RegistroProducao } from "@/funcionalidades/producao/impressoras/tipos";
+import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { 
-  Printer, Zap, DollarSign, Wrench, Clock, 
-  Edit2, Box, X, Activity, TrendingUp, 
-  History, CheckCircle2, AlertTriangle, AlertCircle
+  Printer, Zap, DollarSign, Wrench, 
+  Box, X, Activity, TrendingUp, 
+  History, CheckCircle2
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ModalDetalhesImpressoraProps {
   impressora: Impressora | null;
@@ -76,7 +76,6 @@ export function ModalDetalhesImpressora({
 
   if (!impressora || !metricas) return null;
 
-  const isManutencao = impressora.status === StatusImpressora.MANUTENCAO;
   const statusConfig = {
     [StatusImpressora.LIVRE]: { cor: "text-blue-500", bg: "bg-blue-500/10", label: "Livre" },
     [StatusImpressora.IMPRIMINDO]: { cor: "text-emerald-500", bg: "bg-emerald-500/10", label: "Imprimindo" },

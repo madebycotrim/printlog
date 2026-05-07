@@ -44,9 +44,11 @@ export function SecaoAnalytics({ pedidos, impressoras, pedidosAtivos, metricasIn
   const pesoTotalGramas = pedidosConcluidos.reduce((acc, p) => acc + (p.pesoGramas || 0), 0);
   const custoTotalCentavos = pedidosConcluidos.reduce((acc, p) => acc + (p.valorCentavos || 0), 0);
 
-  // Lucro Estimado (Considerando margem média de 60% sobre o faturamento no MVP)
-  // TODO: Migrar para custo real quando o snapshot de custo estiver no banco
-  const lucroTotalCentavos = custoTotalCentavos * 0.6;
+  // Lucro Real ou Estimado (Pega do Snapshot salvo no momento da precificação, ou aplica fallback de 60%)
+  const lucroTotalCentavos = pedidosConcluidos.reduce((acc, p) => {
+    const lucroReal = p.configuracoes?.lucroLiquidoCentavos;
+    return acc + (lucroReal !== undefined ? lucroReal : ((p.valorCentavos || 0) * 0.6));
+  }, 0);
 
   // Taxa de Sucesso Real
   const totalTentativas = impressoras.reduce((acc, imp) => acc + (imp.historicoProducao?.length || 0), 0);
@@ -220,6 +222,7 @@ export function SecaoAnalytics({ pedidos, impressoras, pedidosAtivos, metricasIn
                       borderRadius: '16px',
                       boxShadow: 'var(--sombra-media)'
                     }}
+                    itemStyle={{ color: 'var(--text-primary)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
                   />
                 </PieChart>
               </ResponsiveContainer>

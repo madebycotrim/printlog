@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BaseLegalLGPD } from "./tipos";
+import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 
 /**
  * Esquema de validação para Clientes (Zod)

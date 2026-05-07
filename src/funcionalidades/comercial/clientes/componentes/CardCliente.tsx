@@ -78,7 +78,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative bg-card backdrop-blur-xl border border-borda-sutil rounded-3xl p-5 transition-all shadow-sm group/card hover:shadow-xl hover:shadow-sky-500/5 hover:-translate-y-1"
+      className="relative bg-card backdrop-blur-xl border border-borda-sutil rounded-3xl p-5 transition-all shadow-sm group/card hover:shadow-premium hover:-translate-y-1"
     >
       {/* Menu Superior Direito */}
       <div className="absolute top-4 right-4 z-30" ref={menuRef}>
@@ -88,7 +88,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
               e.stopPropagation();
               definirMenuAberto(!menuAberto);
             }}
-            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/60"}`}
+            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-primary dark:text-white" : "text-muted-foreground hover:bg-zinc-500/10 dark:hover:bg-white/10 hover:text-primary dark:hover:text-white"}`}
           >
             <MoreVertical size={16} strokeWidth={3} />
           </button>

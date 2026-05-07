@@ -17,6 +17,8 @@ import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
+import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
+import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/apiFinanceiro";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
 // Componentes do Painel
@@ -106,11 +108,11 @@ export function PaginaInicial() {
     if (!usuario?.uid) return;
     definirCarregandoUpgrade(true);
     try {
-      definirPlano("PRO");
+      definirPlano("FUNDADOR");
       await salvarConfiguracoes(usuario.uid);
-      toast.success("Parabéns! Agora você é um MAKER FUNDADOR PRO ✨");
+      toast.success("Parabéns! Agora você é um MAKER FUNDADOR vitalício ✨");
     } catch (erro) {
-      toast.error("Não foi possível ativar seu plano PRO agora.");
+      toast.error("Não foi possível ativar seu plano agora.");
     } finally {
       definirCarregandoUpgrade(false);
     }
@@ -156,7 +158,9 @@ export function PaginaInicial() {
           aberto={modalClienteAberto}
           clienteEditando={null}
           aoCancelar={() => definirModalClienteAberto(false)}
-          aoSalvar={async () => {
+          aoSalvar={async (dados) => {
+            if (!usuario?.uid) return;
+            await apiClientes.salvar(dados, usuario.uid);
             definirModalClienteAberto(false);
             toast.success("Cliente cadastrado com sucesso!");
           }} 
@@ -171,7 +175,9 @@ export function PaginaInicial() {
         <FormularioLancamento 
           aberto={modalFinanceiroAberto}
           aoCancelar={() => definirModalFinanceiroAberto(false)}
-          aoSalvar={async () => {
+          aoSalvar={async (dados) => {
+            if (!usuario?.uid) return;
+            await apiFinanceiro.registrar(dados as any, usuario.uid);
             definirModalFinanceiroAberto(false);
             toast.success("Lançamento registrado!");
           }} 

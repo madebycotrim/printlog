@@ -93,7 +93,7 @@ export function FormularioManutencao({
           {[
             { id: TipoManutencao.PREVENTIVA, rotulo: "Preventiva", icone: CheckCircle2, cor: "emerald", classes: "border-emerald-500 bg-emerald-500/10 text-emerald-500 shadow-emerald-500/10", iconeCor: "bg-emerald-500" },
             { id: TipoManutencao.CORRETIVA, rotulo: "Corretiva", icone: AlertTriangle, cor: "rose", classes: "border-rose-500 bg-rose-500/10 text-rose-500 shadow-rose-500/10", iconeCor: "bg-rose-500" },
-            { id: TipoManutencao.UPGRADE, rotulo: "Upgrade", icone: TrendingUp, cor: "sky", classes: "border-sky-500 bg-sky-500/10 text-sky-500 shadow-sky-500/10", iconeCor: "bg-sky-500" },
+            { id: TipoManutencao.MELHORIA, rotulo: "Upgrade", icone: TrendingUp, cor: "sky", classes: "border-sky-500 bg-sky-500/10 text-sky-500 shadow-sky-500/10", iconeCor: "bg-sky-500" },
           ].map((item) => (
             <button
               key={item.id}

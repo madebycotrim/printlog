@@ -97,7 +97,15 @@ export function usarPedidos() {
 
       // Feedback positivo específico para conclusão
       if (novoStatus === StatusPedido.CONCLUIDO) {
-        toast.success("Projeto concluído! Estoque, financeiro e métricas atualizados. 🎉");
+        if (pedidoOriginal.status === StatusPedido.ARQUIVADO) {
+          toast.success("Projeto restaurado do arquivo! ♻️");
+        } else {
+          toast.success("Projeto concluído! Estoque, financeiro e métricas atualizados. 🎉");
+        }
+      }
+
+      if (novoStatus === StatusPedido.ARQUIVADO) {
+        toast.success("Projeto enviado para o arquivo. 📦");
       }
     } catch (erro: any) {
       atualizarPedidoNoEstado(id, pedidoOriginal);

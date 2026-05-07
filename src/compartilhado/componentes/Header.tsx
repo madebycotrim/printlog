@@ -139,10 +139,10 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               <button
                 onClick={dados.acao.aoClicar}
                 disabled={dados.acao.desabilitado}
-                className={`flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-xs md:text-sm active:scale-95 transition-all duration-200 shadow-sm shrink-0 ${
+                className={`flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-xs md:text-sm active:scale-95 transition-all duration-200 shrink-0 ${
                   dados.acao.desabilitado
                     ? "bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-zinc-600 cursor-not-allowed opacity-70"
-                    : "text-white hover:brightness-110 shadow-lg"
+                    : "text-white hover:brightness-110"
                 }`}
                 style={
                   !dados.acao.desabilitado

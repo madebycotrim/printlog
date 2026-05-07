@@ -1,6 +1,6 @@
 export type UnidadeInsumo = "un" | "ml" | "L" | "g" | "kg" | "Rolo" | "Caixa" | "Par";
 export type CategoriaInsumo = "Geral" | "Embalagem" | "Fixação" | "Eletrônica" | "Acabamento" | "Limpeza" | "Outros";
-export type MotivoBaixaInsumo = "Consumo" | "Descarte" | "Avaria" | "Outro";
+export type MotivoBaixaInsumo = "Consumo" | "Descarte" | "Avaria" | "Ajuste" | "Outro";
 
 export interface RegistroMovimentacaoInsumo {
     id: string;

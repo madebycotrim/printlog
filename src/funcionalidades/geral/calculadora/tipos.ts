@@ -28,15 +28,6 @@ export interface PerfilMarketplace {
   taxa: number;
   fixa: number;
   frete?: number;
-  ins: number;
-  imp: number;
-}
-
-export interface PerfilFiscal {
-  nome: string;
-  base: number;
-  icms: number;
-  iss: number;
 }
 
 export interface VersaoCalculo {
@@ -55,7 +46,6 @@ export interface CalculoResultado {
   custoPosProcesso: number;
   custoInsumos: number;
   taxaMarketplace: number;
-  impostoVenda: number;
   precoSugerido: number;
   lucroLiquido: number;
   custoTotalOperacional: number;

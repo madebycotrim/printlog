@@ -1,5 +1,4 @@
 import { Save } from "lucide-react";
-import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
 
 interface PropriedadesRodape {
   confirmarDescarte: boolean;

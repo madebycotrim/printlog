@@ -1,4 +1,4 @@
-import { Zap, Plus, Trash2, Minus, Sparkles, LocateFixed } from "lucide-react";
+import { Zap, Plus, Trash2, Minus, Sparkles } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
 import { useState, memo } from "react";
 import { ContadorAnimado } from "@/componentes/ui";
@@ -32,7 +32,6 @@ export const CardProducao = memo(function CardProducao({
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
   
   // Estados de foco
-  const [focoPos, setFocoPos] = useState<Record<string, boolean>>({});
   const [detectando, setDetectando] = useState(false);
 
   // Buffers de digitação para garantir que o campo fique vazio ao focar

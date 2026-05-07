@@ -18,7 +18,7 @@ export function AtalhoItem({ titulo, subtitulo, icone: Icone, cor, link }: Propr
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navegar(link)}
-            className="flex items-center gap-5 p-5 rounded-[2rem] bg-white dark:bg-card border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 transition-all group w-full shadow-sm hover:shadow-xl dark:shadow-none relative overflow-hidden"
+            className="flex items-center gap-5 p-5 rounded-[2rem] bg-card border border-borda-sutil hover:border-zinc-200 dark:hover:border-white/10 transition-all group w-full shadow-sm hover:shadow-premium relative overflow-hidden"
         >
             <div className={`absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none`} />
 

@@ -41,7 +41,6 @@ import { CardEquipamento } from "./componentes/CardEquipamento";
 import { CardPerdas } from "./componentes/CardPerdas";
 import { CardCustosFixos } from "./componentes/CardCustosFixos";
 import { ModalConfiguracoes } from "./componentes/ModalConfiguracoes";
-import { ModalConfiguracaoFiscal } from "./componentes/ModalConfiguracaoFiscal";
 import { ModalCanaisVenda } from "./componentes/ModalCanaisVenda";
 import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
 import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
@@ -69,7 +68,7 @@ export function PaginaCalculadora() {
   // Hook Central de Inteligência
   const hook = usarCalculadora();
   const [searchParams] = useSearchParams();
-  const idEdicao = searchParams.get("id");
+  const idEdicao = searchParams.get("id") || searchParams.get("edicao");
   const { pedidos, criarPedido, atualizarPedido } = usarPedidos();
 
   // Estados de UI locais
@@ -83,7 +82,6 @@ export function PaginaCalculadora() {
   const [abertoSeletorCliente, setAbertoSeletorCliente] = useState(false);
   const [abertoSeletorImpressora, setAbertoSeletorImpressora] = useState(false);
   const [criandoNovoCliente, setCriandoNovoCliente] = useState(false);
-  const [modalConfigFiscalAberto, setModalConfigFiscalAberto] = useState(false);
   const [anosVidaUtil, setAnosVidaUtil] = useState<5 | 3 | 2>(() => {
     const salvo = localStorage.getItem("printlog_anos_vida_util");
     return salvo ? Number(salvo) as 5 | 3 | 2 : 5;
@@ -94,8 +92,6 @@ export function PaginaCalculadora() {
   }, [anosVidaUtil]);
   const [indiceCanalSendoEditado, setIndiceCanalSendoEditado] = useState<number | null>(null);
   const [nomeCanalTemporario, setNomeCanalTemporario] = useState('');
-  const [indiceFiscalSendoEditado, setIndiceFiscalSendoEditado] = useState<number | null>(null);
-  const [nomeFiscalTemporario, setNomeFiscalTemporario] = useState('');
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const [modalPdfAberto, setModalPdfAberto] = useState(false);
@@ -255,16 +251,11 @@ export function PaginaCalculadora() {
           if (cfg.cobrarDesgaste !== undefined) hook.setCobrarDesgaste(cfg.cobrarDesgaste);
           if (cfg.cobrarMaoDeObra !== undefined) hook.setCobrarMaoDeObra(cfg.cobrarMaoDeObra);
           if (cfg.cobrarEnergia !== undefined) hook.setCobrarEnergia(cfg.cobrarEnergia);
-          if (cfg.cobrarImpostos !== undefined) hook.setCobrarImpostos(cfg.cobrarImpostos);
           if (cfg.cobrarInsumosFixos !== undefined) hook.setCobrarInsumosFixos(cfg.cobrarInsumosFixos);
           if (cfg.cobrarLogistica !== undefined) hook.setCobrarLogistica(cfg.cobrarLogistica);
           
-          // Perfis e Fiscal
+          // Perfis
           if (cfg.perfilAtivo !== undefined) hook.setPerfilAtivo(cfg.perfilAtivo);
-          if (cfg.tipoOperacao !== undefined) hook.setTipoOperacao(cfg.tipoOperacao);
-          if (cfg.impostos !== undefined) hook.setImpostos(cfg.impostos);
-          if (cfg.icms !== undefined) hook.setIcms(cfg.icms);
-          if (cfg.iss !== undefined) hook.setIss(cfg.iss);
         }
       }
     }
@@ -279,7 +270,6 @@ export function PaginaCalculadora() {
     try {
       // Trava de segurança: garante que valores desabilitados sejam zero absoluto
       const precoFinal = hook.calculo.precoSugerido;
-      console.log("[Calculadora] Salvando projeto com valor (centavos):", precoFinal);
 
       const dadosBase = {
         idCliente: clienteProjetoId,
@@ -330,14 +320,10 @@ export function PaginaCalculadora() {
           cobrarDesgaste: hook.cobrarDesgaste,
           cobrarMaoDeObra: hook.cobrarMaoDeObra,
           cobrarEnergia: hook.cobrarEnergia,
-          cobrarImpostos: hook.cobrarImpostos,
           cobrarInsumosFixos: hook.cobrarInsumosFixos,
           cobrarLogistica: hook.cobrarLogistica,
           perfilAtivo: hook.perfilAtivo,
-          tipoOperacao: hook.tipoOperacao,
-          impostos: hook.impostos,
-          icms: hook.icms,
-          iss: hook.iss
+          lucroLiquidoCentavos: hook.calculo.lucroLiquido
         }
       };
 
@@ -657,17 +643,7 @@ export function PaginaCalculadora() {
               setCobrarLogistica={hook.setCobrarLogistica}
             />
 
-            {/* 
-            <CardFiscal
-              perfisFiscais={hook.perfisFiscais}
-              tipoOperacao={hook.tipoOperacao} setTipoOperacao={hook.setTipoOperacao}
-              impostos={hook.impostos} setImpostos={hook.setImpostos}
-              icms={hook.icms} setIcms={hook.setIcms}
-              iss={hook.iss} setIss={hook.setIss}
-              cobrarImpostos={hook.cobrarImpostos} setCobrarImpostos={hook.setCobrarImpostos}
-              abrirConfigFiscal={abrirModalFiscal}
-            /> 
-            */}
+
           </div>
 
           <div className="xl:col-span-4 h-full xl:sticky xl:top-0 flex flex-col justify-center items-center py-8 overflow-y-auto scrollbar-hide">
@@ -719,15 +695,7 @@ export function PaginaCalculadora() {
             }}
           />
 
-          <ModalConfiguracaoFiscal
-            aberto={modalConfigFiscalAberto}
-            aoFechar={() => setModalConfigFiscalAberto(false)}
-            hook={hook}
-            indiceSendoEditado={indiceFiscalSendoEditado}
-            setIndiceSendoEditado={setIndiceFiscalSendoEditado}
-            nomeTemporario={nomeFiscalTemporario}
-            setNomeTemporario={setNomeFiscalTemporario}
-          />
+
 
           <ModalCanaisVenda
             aberto={modalCanaisAberto}

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Box, CheckCircle2, XCircle, Clock, DollarSign, Target, Zap, Gauge } from "lucide-react";
+import { Box, CheckCircle2, XCircle, Clock, DollarSign, Zap, Gauge } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { motion } from "framer-motion";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";

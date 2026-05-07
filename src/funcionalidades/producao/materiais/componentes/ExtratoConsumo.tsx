@@ -1,6 +1,6 @@
-import { formatarData } from "@/compartilhado/utilitarios/formatadores";
+
 import { RegistroUso } from "../tipos";
-import { History, ArrowDownRight, Info } from "lucide-react";
+import { History, ArrowDownRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface ExtratoConsumoProps {

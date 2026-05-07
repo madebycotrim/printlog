@@ -50,8 +50,8 @@ class ServicoPedidos {
       return { ...p, status };
     }));
 
-    // Retorna apenas os não arquivados para o Kanban padrão
-    return finalizados.filter((p) => p.status !== StatusPedido.ARQUIVADO);
+    // Retorna todos os pedidos (o Kanban filtra o que deve exibir)
+    return finalizados;
   }
 
   async criarPedido(dados: CriarPedidoInput, usuarioId: string): Promise<Pedido> {
@@ -66,7 +66,6 @@ class ServicoPedidos {
       dataCriacao
     };
 
-    console.log(`[DEBUG] Criando pedido: ${novoPedido.id} para usuário: ${usuarioId}`);
     await apiPedidos.criar(novoPedido, usuarioId);
     return novoPedido;
   }
@@ -79,8 +78,7 @@ class ServicoPedidos {
       dataConclusao = new Date().toISOString();
     }
 
-    const payload = { ...dados, dataConclusao, idUsuario: usuarioId };
-    console.log(`[DEBUG] Atualizando pedido: ${dados.id} com payload:`, payload);
+    const payload = { ...dados, dataConclusao, idUsuario: usuarioId, limparDataConclusao: false };
     await apiPedidos.atualizar(payload, usuarioId);
     
     return {
@@ -98,7 +96,6 @@ class ServicoPedidos {
 
     // Se não temos o pedido em mãos, buscamos ele de forma isolada (evita inconsistência de buscarTodos)
     if (!pedido) {
-      console.log(`[DEBUG] Buscando pedido individualmente para atualização: ${id}`);
       pedido = await apiPedidos.buscarPorId(id, usuarioId) || undefined;
     }
     
@@ -112,10 +109,14 @@ class ServicoPedidos {
     const pedidoNorm = pedido;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CASO 1: Movendo PARA Concluído → Liquidação completa
+    // CASO 1: Movendo PARA Concluído ou Arquivado → Liquidação completa
+    // Só liquida se NÃO vier de um estado que já foi liquidado (Concluído/Arquivado)
     // ─────────────────────────────────────────────────────────────────────────
-    if (novoStatus === StatusPedido.CONCLUIDO && statusAtual !== StatusPedido.CONCLUIDO) {
-      registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando liquidação de conclusão");
+    if (
+      (novoStatus === StatusPedido.CONCLUIDO || novoStatus === StatusPedido.ARQUIVADO) &&
+      (statusAtual !== StatusPedido.CONCLUIDO && statusAtual !== StatusPedido.ARQUIVADO)
+    ) {
+      registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando liquidação de conclusão/arquivamento");
       await this.liquidarConclusao(pedidoNorm, usuarioId);
     }
 
@@ -123,16 +124,21 @@ class ServicoPedidos {
     // CASO 2: Saindo de Concluído para qualquer status (exceto Arquivado)
     //         → Reverter toda a liquidação
     // ─────────────────────────────────────────────────────────────────────────
+    const payload: any = { id, status: novoStatus };
+
+    // Se estiver retrocedendo (saindo de concluído/arquivado para um estado ativo), 
+    // removemos a data de conclusão para que o projeto saia de todos os históricos.
     if (
-      statusAtual === StatusPedido.CONCLUIDO &&
-      novoStatus !== StatusPedido.CONCLUIDO &&
-      novoStatus !== StatusPedido.ARQUIVADO
+      (statusAtual === StatusPedido.CONCLUIDO || statusAtual === StatusPedido.ARQUIVADO) &&
+      (novoStatus !== StatusPedido.CONCLUIDO && novoStatus !== StatusPedido.ARQUIVADO)
     ) {
-      registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando reversão de conclusão");
+      payload.dataConclusao = null;
+      payload.limparDataConclusao = true; // Flag explícita para o backend limpar o campo
+      registrar.info({ rastreioId, servico: "Pedidos" }, "Iniciando reversão total (removendo do histórico)");
       await this.reverterConclusao(pedidoNorm, usuarioId, rastreioId);
     }
 
-    return this.atualizarPedido({ id, status: novoStatus }, usuarioId);
+    return this.atualizarPedido(payload, usuarioId);
   }
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -142,8 +148,6 @@ class ServicoPedidos {
   private async liquidarConclusao(pedido: any, usuarioId: string): Promise<void> {
     const erros: string[] = [];
 
-    console.log(`[DEBUG] Iniciando liquidação para: ${pedido.descricao} (${pedido.id})`);
-    
     // v9.0: Blindagem de segurança - se o peso/tempo vierem zerados (erro de mapeamento), tenta somar dos itens
     const pesoEfetivo = pedido.pesoGramas || (pedido.materiais?.reduce((acc: number, m: any) => acc + (m.quantidadeGasta || 0), 0)) || 0;
     const tempoEfetivo = pedido.tempoMinutos || (
@@ -152,12 +156,8 @@ class ServicoPedidos {
         : 0
     ) || 0;
 
-    console.log(`[DEBUG] Massa: ${pesoEfetivo}g | Tempo: ${tempoEfetivo}min`);
-    console.log(`[DEBUG] Materiais: ${pedido.materiais?.length || 0} | Insumos: ${pedido.insumosSecundarios?.length || 0}`);
-
     // 1. Desconto de Materiais
     if (pedido.materiais && pedido.materiais.length > 0) {
-      console.log(`[DEBUG] Buscando estoque de materiais para descontar...`);
       const listaMats = await apiMateriais.listar(usuarioId);
       for (const mat of pedido.materiais) {
         try {
@@ -165,7 +165,6 @@ class ServicoPedidos {
           
           if (materialEstoque) {
             const novoPeso = Math.max(0, (materialEstoque.pesoRestanteGramas || 0) - (mat.quantidadeGasta || 0));
-            console.log(`[DEBUG] Descontando ${mat.quantidadeGasta}g de ${materialEstoque.nome}. Novo peso: ${novoPeso}g`);
             await apiMateriais.atualizar(
               { ...materialEstoque, id: materialEstoque.id, pesoRestanteGramas: novoPeso },
               usuarioId,
@@ -197,7 +196,6 @@ class ServicoPedidos {
 
     // 2. Desconto de Insumos Secundários
     if (pedido.insumosSecundarios && pedido.insumosSecundarios.length > 0) {
-      console.log(`[DEBUG] Buscando estoque de insumos para descontar...`);
       const listaIns = await apiInsumos.listar(usuarioId);
       for (const ins of pedido.insumosSecundarios) {
         try {
@@ -205,7 +203,6 @@ class ServicoPedidos {
 
           if (insumoEstoque) {
             const novaQtd = Math.max(0, (insumoEstoque.quantidadeAtual || 0) - ins.quantidade);
-            console.log(`[DEBUG] Descontando ${ins.quantidade} de ${insumoEstoque.nome}. Nova qtd: ${novaQtd}`);
             await apiInsumos.atualizar(
               { ...insumoEstoque, id: insumoEstoque.id, quantidadeAtual: novaQtd },
               usuarioId,
@@ -249,7 +246,6 @@ class ServicoPedidos {
 
     // 3. Horímetro + Métricas da Impressora
     if (pedido.idImpressora && tempoEfetivo > 0) {
-      console.log(`[DEBUG] Atualizando métricas da impressora: ${pedido.idImpressora}`);
       try {
         await servicoManutencao.registrarUsoMaquina(
           pedido.idImpressora,
@@ -274,7 +270,6 @@ class ServicoPedidos {
 
     // 4. Histórico e Métricas do Cliente
     if (pedido.idCliente && pedido.idCliente !== "avulso") {
-      console.log(`[DEBUG] Atualizando histórico do cliente: ${pedido.idCliente}`);
       try {
         const listaClientes = await apiClientes.buscarTodos(usuarioId);
         const cliente = listaClientes.find(c => c.id === pedido.idCliente);
@@ -306,7 +301,6 @@ class ServicoPedidos {
     }
 
     // 5. Lançamento Financeiro
-    console.log(`[DEBUG] Registrando receita no financeiro: ${pedido.valorCentavos} centavos`);
     try {
       await apiFinanceiro.registrar({
         descricao: `Receita: ${pedido.descricao}`,
@@ -323,9 +317,9 @@ class ServicoPedidos {
     }
 
     if (erros.length > 0) {
-      console.warn(`[DEBUG] Liquidação concluída com avisos:`, erros);
+      registrar.warn({ rastreioId: pedido.id, servico: "Pedidos", erros }, "Liquidação concluída com avisos");
     } else {
-      console.log(`[DEBUG] Liquidação concluída com sucesso!`);
+      registrar.info({ rastreioId: pedido.id, servico: "Pedidos" }, "Liquidação concluída com sucesso");
     }
   }
 
@@ -365,13 +359,7 @@ class ServicoPedidos {
             const novoPeso = Math.min(pesoDevolucao, materialEstoque.pesoGramas || pesoDevolucao);
             await apiMateriais.atualizar(
               { ...materialEstoque, id: materialEstoque.id, pesoRestanteGramas: novoPeso },
-              usuarioId,
-              {
-                data: new Date().toISOString(),
-                nomePeca: `[REVERSÃO] ${pedido.descricao}`,
-                quantidadeGastaGramas: mat.quantidadeGasta || 0,
-                status: "MANUAL"
-              }
+              usuarioId
             );
 
             // 1.1 Sincroniza com a Tela em Tempo Real (usando valor negativo para adicionar)
@@ -401,14 +389,7 @@ class ServicoPedidos {
             const qtdDevolvida = (insumoEstoque.quantidadeAtual || 0) + ins.quantidade;
             await apiInsumos.atualizar(
               { ...insumoEstoque, id: insumoEstoque.id, quantidadeAtual: qtdDevolvida },
-              usuarioId,
-              {
-                id: crypto.randomUUID(),
-                data: new Date().toISOString(),
-                tipo: "Entrada",
-                quantidade: ins.quantidade,
-                observacao: `[REVERSÃO] Pedido reaberto: ${pedido.descricao}`,
-              }
+              usuarioId
             );
 
             // 2.1 Sincroniza com a Tela em Tempo Real

@@ -15,7 +15,6 @@ interface CampoMonetarioProps extends Omit<InputHTMLAttributes<HTMLInputElement>
  */
 export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
   ({ rotulo, erro, prefixo = "BRL", icone: Icone = DollarSign, className = "", onChange, value, onBlur, ...props }, ref) => {
-    const [focado, setFocado] = useState(false);
     const [valorTemporario, setValorTemporario] = useState<string | undefined>(undefined);
 
     /**
@@ -29,7 +28,7 @@ export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
     };
 
     const lidarComBlur = (e: any) => {
-      setFocado(false);
+
       // NÃO limpamos o valorTemporario aqui para evitar o reset visual no uncontrolled mode
       onBlur?.(e);
     };
@@ -63,7 +62,6 @@ export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
             inputMode="decimal"
             pattern="^[0-9]*[.,]?[0-9]*$"
             value={valorParaExibir}
-            onFocus={() => setFocado(true)}
             onBlur={lidarComBlur}
             {...props}
             onChange={lidarComMudanca}

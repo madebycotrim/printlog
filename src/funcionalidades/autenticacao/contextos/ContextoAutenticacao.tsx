@@ -233,7 +233,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         nome: nome,
         fotoUrl: credencial.user.photoURL,
         provedorGoogle: false,
-        plano: "PRO",
+        plano: "FREE",
       });
     } catch (erro: unknown) {
       registrar.warn(

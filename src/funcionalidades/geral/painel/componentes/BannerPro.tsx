@@ -52,7 +52,7 @@ export function BannerPro({ plano, aoRealizarUpgrade, carregandoUpgrade }: Propr
         <button
           onClick={aoRealizarUpgrade}
           disabled={carregandoUpgrade}
-          className="px-10 py-5 bg-white text-zinc-950 font-black uppercase text-xs tracking-[0.2em] rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center gap-3 shrink-0"
+          className="px-10 py-5 bg-white text-indigo-700 font-black uppercase text-xs tracking-[0.2em] rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center gap-3 shrink-0"
         >
           {carregandoUpgrade ? "Unindo-se..." : "Ser um Maker Fundador"}
           <Sparkles size={16} className="text-sky-500" />

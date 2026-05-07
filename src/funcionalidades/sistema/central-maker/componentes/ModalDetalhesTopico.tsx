@@ -1,6 +1,6 @@
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { Clock } from "lucide-react";
-import { useState } from "react";
+
 
 interface InterfaceTopico {
   id: string;

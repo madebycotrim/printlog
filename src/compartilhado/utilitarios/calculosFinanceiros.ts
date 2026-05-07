@@ -88,6 +88,7 @@ export function calcularCustoImpressao(params: ParametrosCusto): DetalhamentoCus
     custoOperacional,
     custoTotalReal,
     taxaMarketplace,
+    valorImposto,
     precoSugerido,
   };
 }

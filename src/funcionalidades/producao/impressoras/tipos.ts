@@ -57,6 +57,7 @@ export interface RegistroProducao {
   valorGeradoCentavos: Centavos;
   dataConclusao: string;
   sucesso: boolean;
+  consumoMaterialGramas?: number;
 }
 
 export interface Impressora {

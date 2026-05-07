@@ -65,7 +65,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
         }
 
         // PUT — Upsert das configurações (cria ou atualiza)
-        // OBSERVAÇÃO DE SEGURANÇA: plano e ciclo_pagamento nunca são atualizados aqui, apenas inseridos no registro inicial!
+        // O plano pode ser atualizado para 'FUNDADOR' através de promoções.
         if (metodo === "PUT") {
             const dados = await request.json() as any;
 
@@ -80,6 +80,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     margem_lucro   = excluded.margem_lucro,
                     nome_estudio   = excluded.nome_estudio,
                     slogan_estudio = excluded.slogan_estudio,
+                    plano          = excluded.plano,
                     atualizado_em  = excluded.atualizado_em
             `).bind(
                 usuarioId,
@@ -90,7 +91,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 dados.margemLucro,
                 dados.nomeEstudio || "",
                 dados.sloganEstudio || "",
-                "FREE",
+                dados.plano || "FREE",
                 "MENSAL",
                 new Date().toISOString()
             ).run();

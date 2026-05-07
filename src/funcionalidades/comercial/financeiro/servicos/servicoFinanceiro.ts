@@ -22,7 +22,8 @@ class ServicoFinanceiro {
     return apiFinanceiro.registrar(dados, usuarioId);
   }
 
-  async obterResumo(usuarioId: string): Promise<ResumoFinanceiro> {
+  async obterResumo(usuarioId: string, rastreioId: string = "sistema"): Promise<ResumoFinanceiro> {
+    registrar.info({ rastreioId, servico: "ServicoFinanceiro" }, "Calculando resumo financeiro");
     const lancamentos = await apiFinanceiro.buscarTodos(usuarioId);
     
     const agora = new Date();

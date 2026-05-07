@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, Trash2, ArrowRight, Tag, AlertCircle } from "lucide-react";
+import { Save, Trash2, Tag, AlertCircle } from "lucide-react";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { Combobox } from "@/compartilhado/componentes/Combobox";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
