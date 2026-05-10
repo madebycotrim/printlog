@@ -1,6 +1,7 @@
 import { Settings, Plus, Star, Check } from "lucide-react";
 import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 /**
  * Interface para as propriedades do ModalArmazemMateriais.
@@ -163,7 +164,7 @@ export function ModalArmazemMateriais({
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] font-black text-emerald-500 tracking-tighter tabular-nums">
-                      R$ {precoPorUnidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {centavosParaReais(Math.round(precoPorUnidade * 100))}
                     </span>
                   </div>
                 </div>

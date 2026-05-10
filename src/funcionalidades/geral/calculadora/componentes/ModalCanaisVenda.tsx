@@ -134,11 +134,12 @@ export function ModalCanaisVenda({
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Taxa (%)</span>
                       <input
                         type="number"
-                        value={p.taxa ?? ""}
+                        value={p.taxaPontosBase !== undefined ? p.taxaPontosBase / 100 : ""}
                         onChange={(e) => {
                           const novos = [...hook.perfisMarketplace];
-                          novos[idx].taxa = Number(e.target.value);
+                          novos[idx].taxaPontosBase = Math.round(Number(e.target.value) * 100);
                           hook.setPerfisMarketplace(novos);
+                          if (selecionado) hook.setTaxaEcommerce(Math.round(Number(e.target.value) * 100));
                         }}
                         className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-borda-sutil dark:border-white/10 font-black text-xs text-primary dark:text-white outline-none text-right focus:border-orange-500"
                       />
@@ -147,11 +148,12 @@ export function ModalCanaisVenda({
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Fixa (R$)</span>
                       <input
                         type="number"
-                        value={p.fixa ?? ""}
+                        value={p.fixaCentavos !== undefined ? p.fixaCentavos / 100 : ""}
                         onChange={(e) => {
                           const novos = [...hook.perfisMarketplace];
-                          novos[idx].fixa = Number(e.target.value);
+                          novos[idx].fixaCentavos = Math.round(Number(e.target.value) * 100);
                           hook.setPerfisMarketplace(novos);
+                          if (selecionado) hook.setTaxaFixa(Math.round(Number(e.target.value) * 100));
                         }}
                         className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-borda-sutil dark:border-white/10 font-black text-xs text-primary dark:text-white outline-none text-right focus:border-orange-500"
                       />
@@ -160,12 +162,13 @@ export function ModalCanaisVenda({
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Frete (R$)</span>
                       <input
                         type="number"
-                        value={p.frete ?? 0}
+                        value={p.freteCentavos !== undefined ? p.freteCentavos / 100 : 0}
                         onChange={(e) => {
+                          const val = Math.round(Number(e.target.value) * 100);
                           const novos = [...hook.perfisMarketplace];
-                          novos[idx].frete = Number(e.target.value);
+                          novos[idx].freteCentavos = val;
                           hook.setPerfisMarketplace(novos);
-                          if (selecionado) hook.setFrete(Number(e.target.value));
+                          if (selecionado) hook.setFrete(val);
                         }}
                         className="w-16 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-borda-sutil dark:border-white/10 font-black text-xs text-primary dark:text-white outline-none text-right focus:border-orange-500"
                       />

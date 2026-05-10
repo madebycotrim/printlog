@@ -3,6 +3,7 @@ import { ItemPosProcesso } from "../tipos";
 import { useState, memo } from "react";
 import { ContadorAnimado } from "@/componentes/ui";
 import { toast } from "react-hot-toast";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardProducaoProps {
   tempo: number;
@@ -239,13 +240,13 @@ export const CardProducao = memo(function CardProducao({
                   type="number" 
                   step="0.01" 
                   placeholder="0" 
-                  value={tempKwh !== undefined ? tempKwh : (precoKwh === 0 ? "" : precoKwh)} 
+                  value={tempKwh !== undefined ? tempKwh : (precoKwh === 0 ? "" : (precoKwh / 100).toFixed(2))} 
                   onFocus={() => {}}
                   onBlur={() => setTempKwh(undefined)}
                   onChange={(e) => {
                     const v = e.target.value;
                     setTempKwh(v);
-                    setPrecoKwh(v === "" ? 0 : Number(v));
+                    setPrecoKwh(v === "" ? 0 : Math.round(extrairValorNumerico(v) * 100));
                   }} 
                   className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-center" 
                 />
@@ -340,7 +341,7 @@ export const CardProducao = memo(function CardProducao({
                   <div className="text-right">
                     <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Total em Pós-Processamento</p>
                     <p className="text-xs font-black text-primary dark:text-white">
-                      {(posProcesso.reduce((acc, i) => acc + (i.valor || 0), 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      {centavosParaReais(posProcesso.reduce((acc, i) => acc + (i.valor || 0), 0))}
                     </p>
                   </div>
                 </div>

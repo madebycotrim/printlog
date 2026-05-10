@@ -1,17 +1,3 @@
-/**
- * Formata um valor numérico para o padrão de moeda BRL (R$ 0,00)
- * @param valor - String de dígitos
- * @returns String formatada em R$
- */
-export function formatarMoedaBr(valor: string): string {
-    const apenasDigitos = valor.replace(/\D/g, "");
-    const valorNumerico = Number(apenasDigitos) / 100;
-
-    return valorNumerico.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-    });
-}
 
 /**
  * Converte centavos (inteiro) para string formatada de Reais.
@@ -92,12 +78,6 @@ export function formatarPorcentagem(valor: string): string {
     }) + "%";
 }
 
-/**
- * Remove formatação e retorna apenas os dígitos como string
- */
-export function extrairApenasDigitos(valor: string): string {
-    return valor.replace(/\D/g, "");
-}
 
 /**
  * Formata um objeto Date para o padrão brasileiro (dd/mm/aaaa)
@@ -151,4 +131,16 @@ export function formatarDataCompleta(data: Date | string | number): string {
 export function pluralizar(valor: number, singular: string, plural: string): string {
     const termo = Math.abs(valor) === 1 ? singular : plural;
     return `${valor} ${termo}`;
+}
+/**
+ * Formata uma string para máscara de telefone brasileira (10 ou 11 dígitos).
+ * @param valor - String de dígitos
+ * @returns String formatada: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+ */
+export function formatarTelefone(valor: string): string {
+    const limpo = valor.replace(/\D/g, "");
+    if (limpo.length <= 10) {
+        return limpo.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    }
+    return limpo.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
 }

@@ -147,7 +147,7 @@ export const PainelResultados = memo(function PainelResultados({
                       }));
                       const subPos = posProcesso.map(p => ({
                         nome: modoEntrada === 'unitario' ? <>{p.nome} (<span className="lowercase">x</span>{quantidade})</> : p.nome,
-                        valor: Math.round(p.valor * 100) * (modoEntrada === 'lote' ? 1 : quantidade)
+                        valor: p.valor * (modoEntrada === 'lote' ? 1 : quantidade)
                       }));
                       subitens = [...subInsumos, ...subPos];
 

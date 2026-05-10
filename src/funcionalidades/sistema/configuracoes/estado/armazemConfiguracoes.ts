@@ -10,10 +10,10 @@ import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
  * Finalidade: Configuração de custo operacional | Base Legal: Contrato (Art. 7º, V — LGPD)
  */
 interface ArmazemConfiguracoes {
-  custoEnergia: string;
-  horaMaquina: string;
-  horaOperador: string;
-  margemLucro: string;
+  custoEnergia: number; // Centavos
+  horaMaquina: number;  // Centavos
+  horaOperador: number; // Centavos
+  margemLucro: number;  // Pontos base (ex: 15000 = 150.00%)
   nomeEstudio: string;
   sloganEstudio: string;
   plano: PlanoUsuario;
@@ -23,10 +23,10 @@ interface ArmazemConfiguracoes {
 
   // Ações
   carregarDoD1: (usuarioId: string) => Promise<void>;
-  definirCustoEnergia: (valor: string) => void;
-  definirHoraMaquina: (valor: string) => void;
-  definirHoraOperador: (valor: string) => void;
-  definirMargemLucro: (valor: string) => void;
+  definirCustoEnergia: (valor: number) => void;
+  definirHoraMaquina: (valor: number) => void;
+  definirHoraOperador: (valor: number) => void;
+  definirMargemLucro: (valor: number) => void;
   definirIdentidadeEstudio: (nome: string, slogan: string) => void;
   definirPlano: (plano: PlanoUsuario) => void;
   salvarNoD1: (usuarioId: string) => Promise<void>;
@@ -36,10 +36,10 @@ interface ArmazemConfiguracoes {
 }
 
 export const VALORES_PADRAO = {
-  custoEnergia: "R$ 0,95",
-  horaMaquina: "R$ 5,00",
-  horaOperador: "R$ 20,00",
-  margemLucro: "150,00%",
+  custoEnergia: 95,
+  horaMaquina: 500,
+  horaOperador: 2000,
+  margemLucro: 15000,
   nomeEstudio: "",
   sloganEstudio: "",
   plano: "FREE" as PlanoUsuario,
@@ -65,11 +65,23 @@ export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
     set({ carregando: true });
     try {
       const dados = await apiConfiguracoes.buscar(usuarioId);
+      
+      // Função auxiliar para garantir que o valor seja numérico (suporta migração de strings legadas)
+      const paraNumero = (v: any): number => {
+        if (typeof v === 'number') return v;
+        if (typeof v === 'string') {
+           // Se for string formatada (ex: "R$ 0,95"), extrai e converte para centavos
+           const num = parseFloat(v.replace(/[^\d,.-]/g, '').replace(',', '.'));
+           return isNaN(num) ? 0 : Math.round(num * 100);
+        }
+        return 0;
+      };
+
       set({
-        custoEnergia: dados.custoEnergia,
-        horaMaquina: dados.horaMaquina,
-        horaOperador: dados.horaOperador,
-        margemLucro: dados.margemLucro,
+        custoEnergia: paraNumero(dados.custoEnergia),
+        horaMaquina: paraNumero(dados.horaMaquina),
+        horaOperador: paraNumero(dados.horaOperador),
+        margemLucro: paraNumero(dados.margemLucro),
         nomeEstudio: dados.nomeEstudio || "",
         sloganEstudio: dados.sloganEstudio || "",
         plano: dados.plano || "PRO",

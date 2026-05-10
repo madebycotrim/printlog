@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const configuracoesSchema = z.object({
-  custoEnergia: z.string().min(1),
-  horaMaquina: z.string().min(1),
-  horaOperador: z.string().min(1),
-  margemLucro: z.string().min(1),
+  custoEnergia: z.number().int(),
+  horaMaquina: z.number().int(),
+  horaOperador: z.number().int(),
+  margemLucro: z.number().int(),
   nomeEstudio: z.string().optional(),
   sloganEstudio: z.string().optional(),
   plano: z.enum(["FREE", "PRO", "FUNDADOR"]).optional(),

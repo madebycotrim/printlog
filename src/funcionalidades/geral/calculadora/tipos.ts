@@ -25,9 +25,9 @@ export interface InsumoSelecionado {
 
 export interface PerfilMarketplace {
   nome: string;
-  taxa: number;
-  fixa: number;
-  frete?: number;
+  taxaPontosBase: number; // ex: 1500 = 15%
+  fixaCentavos: number;
+  freteCentavos?: number;
 }
 
 export interface VersaoCalculo {

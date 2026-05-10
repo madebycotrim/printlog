@@ -3,14 +3,14 @@ import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { formatarMoedaFinancas, formatarPorcentagem, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropsCardOperacional {
-    custoEnergia: string;
-    definirCustoEnergia: (v: string) => void;
-    horaMaquina: string;
-    definirHoraMaquina: (v: string) => void;
-    horaOperador: string;
-    definirHoraOperador: (v: string) => void;
-    margemLucro: string;
-    definirMargemLucro: (v: string) => void;
+    custoEnergia: number;
+    definirCustoEnergia: (v: number) => void;
+    horaMaquina: number;
+    definirHoraMaquina: (v: number) => void;
+    horaOperador: number;
+    definirHoraOperador: (v: number) => void;
+    margemLucro: number;
+    definirMargemLucro: (v: number) => void;
     pendente?: boolean;
 }
 
@@ -32,26 +32,26 @@ export function CardOperacional({
             <div className="grid grid-cols-2 gap-4">
                 <CampoDashboard
                     label="Energia (R$/kWh)"
-                    valor={custoEnergia}
-                    aoMudar={(v) => definirCustoEnergia(formatarMoedaFinancas(extrairValorNumerico(v), 2))}
+                    valor={formatarMoedaFinancas(custoEnergia / 100, 2)}
+                    aoMudar={(v) => definirCustoEnergia(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Zap}
                 />
                 <CampoDashboard
                     label="Máquina (R$/h)"
-                    valor={horaMaquina}
-                    aoMudar={(v) => definirHoraMaquina(formatarMoedaFinancas(v.includes(",") ? Number(v.replace("R$", "").replace(",", ".")) : extrairValorNumerico(v), v.split(",")[1]?.length > 2 ? 3 : 2))}
+                    valor={formatarMoedaFinancas(horaMaquina / 100, 3)}
+                    aoMudar={(v) => definirHoraMaquina(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Clock}
                 />
                 <CampoDashboard
                     label="Operador (R$/h)"
-                    valor={horaOperador}
-                    aoMudar={(v) => definirHoraOperador(formatarMoedaFinancas(extrairValorNumerico(v), 2))}
+                    valor={formatarMoedaFinancas(horaOperador / 100, 2)}
+                    aoMudar={(v) => definirHoraOperador(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Wrench}
                 />
                 <CampoDashboard
                     label="Margem (%)"
-                    valor={margemLucro}
-                    aoMudar={(v) => definirMargemLucro(formatarPorcentagem(v))}
+                    valor={formatarPorcentagem(String(margemLucro / 100))}
+                    aoMudar={(v) => definirMargemLucro(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Percent}
                 />
             </div>

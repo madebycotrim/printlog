@@ -129,10 +129,11 @@ export function ModalConfiguracoes({
               <input
                 type="text"
                 placeholder="R$ 0,00"
-                value={extrairValorNumerico(config.custoEnergia) === 0 ? "" : config.custoEnergia}
+                value={config.custoEnergia === 0 ? "" : (config.custoEnergia / 100).toFixed(2)}
                 onChange={(e) => {
-                  config.definirCustoEnergia(e.target.value);
-                  hook.setPrecoKwh(extrairValorNumerico(e.target.value));
+                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
+                  config.definirCustoEnergia(v);
+                  hook.setPrecoKwh(v);
                 }}
                 className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
               />
@@ -150,10 +151,11 @@ export function ModalConfiguracoes({
               <input
                 type="text"
                 placeholder="0,00%"
-                value={extrairValorNumerico(config.margemLucro) === 0 ? "" : config.margemLucro}
+                value={config.margemLucro === 0 ? "" : (config.margemLucro / 100).toFixed(2) + "%"}
                 onChange={(e) => {
-                  config.definirMargemLucro(e.target.value);
-                  hook.setMargem(extrairValorNumerico(e.target.value));
+                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
+                  config.definirMargemLucro(v);
+                  hook.setMargem(v);
                 }}
                 className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
               />
@@ -171,10 +173,11 @@ export function ModalConfiguracoes({
               <input
                 type="text"
                 placeholder="R$ 0,00"
-                value={extrairValorNumerico(config.horaOperador) === 0 ? "" : config.horaOperador}
+                value={config.horaOperador === 0 ? "" : (config.horaOperador / 100).toFixed(2)}
                 onChange={(e) => {
-                  config.definirHoraOperador(e.target.value);
-                  hook.setMaoDeObra(extrairValorNumerico(e.target.value));
+                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
+                  config.definirHoraOperador(v);
+                  hook.setMaoDeObra(v);
                 }}
                 className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
               />
@@ -192,10 +195,11 @@ export function ModalConfiguracoes({
               <input
                 type="text"
                 placeholder="R$ 0,00"
-                value={extrairValorNumerico(config.horaMaquina) === 0 ? "" : config.horaMaquina}
+                value={config.horaMaquina === 0 ? "" : (config.horaMaquina / 100).toFixed(2)}
                 onChange={(e) => {
-                  config.definirHoraMaquina(e.target.value);
-                  hook.setDepreciacaoHora(extrairValorNumerico(e.target.value));
+                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
+                  config.definirHoraMaquina(v);
+                  hook.setDepreciacaoHora(v);
                 }}
                 className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
               />

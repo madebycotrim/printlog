@@ -1,5 +1,6 @@
 import { Settings, Plus, Star, Check, Package } from "lucide-react";
 import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesModalArmazemInsumos {
   aberto: boolean;
@@ -128,7 +129,7 @@ export function ModalArmazemInsumos({
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] font-black text-emerald-500 tracking-tighter tabular-nums">
-                      R$ {(custoUnitario / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {centavosParaReais(custoUnitario)}
                     </span>
                   </div>
                 </div>

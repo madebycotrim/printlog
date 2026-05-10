@@ -42,13 +42,13 @@ export const CardOperacional = memo(function CardOperacional({
 
   const msgMargem = margemInterna === 0 
     ? { texto: "Sem margem adicionada", cor: "text-zinc-500", corHex: "#71717a" }
-    : margemInterna <= 20 
+    : margemInterna <= 2000 
     ? { texto: "Margem de Risco (Lucro muito baixo)", cor: "text-rose-500", corHex: "#f43f5e" }
-    : margemInterna <= 60 
+    : margemInterna <= 6000 
     ? { texto: "Margem Competitiva (Ideal para volume)", cor: "text-amber-500", corHex: "#f59e0b" }
-    : margemInterna <= 120 
+    : margemInterna <= 12000 
     ? { texto: "Margem Saudável (Equilíbrio ideal)", cor: "text-emerald-500", corHex: "#10b981" }
-    : margemInterna <= 250 
+    : margemInterna <= 25000 
     ? { texto: "Margem Premium (Alta lucratividade)", cor: "text-sky-500", corHex: "#0ea5e9" }
     : { texto: "Margem de Luxo (Valor agregado alto)", cor: "text-violet-500", corHex: "#8b5cf6" };
 
@@ -92,8 +92,8 @@ export const CardOperacional = memo(function CardOperacional({
                     <input 
                       type="number" 
                       placeholder="0"
-                      value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : maoDeObra) : 0} 
-                      onChange={(e) => setMaoDeObra?.(Number(e.target.value))} 
+                      value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : (maoDeObra / 100).toFixed(2)) : 0} 
+                      onChange={(e) => setMaoDeObra?.(Math.round(extrairValorNumerico(e.target.value) * 100))} 
                       className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                     />
                   </div>
@@ -139,7 +139,7 @@ export const CardOperacional = memo(function CardOperacional({
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-black uppercase text-emerald-600 dark:text-emerald-500">Custo Total Setup:</span>
                 <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground'}`}>
-                  <ContadorAnimado valor={cobrarMaoDeObra ? (tempoSetup / 60) * maoDeObra : 0} />
+                  <ContadorAnimado valor={cobrarMaoDeObra ? (tempoSetup / 60) * (maoDeObra / 100) : 0} />
                 </span>
               </div>
             </div>
@@ -199,7 +199,7 @@ export const CardOperacional = memo(function CardOperacional({
               <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/50 border-borda-sutil'} select-none relative group`}>
                 <span className="text-muted-foreground font-black text-xs mr-2 select-none">R$</span>
                 <span className="font-black text-sm text-violet-600 dark:text-violet-500 w-full text-center">
-                  <ContadorAnimado valor={cobrarDesgaste ? depreciacao || 0 : 0} />
+                  <ContadorAnimado valor={cobrarDesgaste ? (depreciacao / 100) || 0 : 0} />
                 </span>
                 {cobrarDesgaste && (
                   <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-violet-500/30 to-transparent animate-pulse" />
@@ -216,14 +216,14 @@ export const CardOperacional = memo(function CardOperacional({
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-black uppercase text-violet-600 dark:text-violet-500">Custo Desgaste:</span>
                 <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
-                  <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao : 0} />
+                  <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * (depreciacao / 100) : 0} />
                 </span>
               </div>
               {quantidade > 1 && (
                 <div className="flex justify-between items-center pt-2 border-t border-violet-500/10">
                   <span className="text-[11px] font-black uppercase text-muted-foreground">Total do Lote ({quantidade}x):</span>
                   <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
-                    <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * depreciacao * quantidade : 0} />
+                    <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * (depreciacao / 100) * quantidade : 0} />
                   </span>
                 </div>
               )}
@@ -243,7 +243,7 @@ export const CardOperacional = memo(function CardOperacional({
             
             <div className="flex items-baseline gap-1 relative">
               <ContadorAnimado 
-                valor={margemInterna} 
+                valor={margemInterna / 100} 
                 prefixo="" 
                 sufixo="" 
                 casasDecimais={0} 
@@ -273,31 +273,34 @@ export const CardOperacional = memo(function CardOperacional({
               
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 {/* Presets Inteligentes */}
-                {[30, 50, 100, 150, 200].map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => {
-                      setMargemInterna(preset);
-                      setMargem(preset);
-                    }}
-                    className={`text-[10px] font-black px-3 py-1.5 rounded-xl border transition-all ${
-                      margemInterna === preset 
-                        ? 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/30 shadow-sm shadow-emerald-500/5' 
-                        : 'text-muted-foreground hover:text-primary dark:hover:text-white bg-muted/40 dark:bg-white/5 border-transparent'
-                    }`}
-                  >
-                    {preset}%
-                  </button>
-                ))}
+                {[30, 50, 100, 150, 200].map((p) => {
+                  const preset = p * 100;
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setMargemInterna(preset);
+                        setMargem(preset);
+                      }}
+                      className={`text-[10px] font-black px-3 py-1.5 rounded-xl border transition-all ${
+                        margemInterna === preset 
+                          ? 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/30 shadow-sm shadow-emerald-500/5' 
+                          : 'text-muted-foreground hover:text-primary dark:hover:text-white bg-muted/40 dark:bg-white/5 border-transparent'
+                      }`}
+                    >
+                      {p}%
+                    </button>
+                  );
+                })}
 
                 {/* Input Direto */}
                 <div className="flex items-center bg-muted/40 dark:bg-white/5 border border-borda-sutil rounded-xl px-2 w-24 h-8">
                   <input 
                     type="number" 
-                    value={margemInterna === 0 ? "" : margemInterna} 
+                    value={margemInterna === 0 ? "" : (margemInterna / 100)} 
                     onChange={(e) => {
-                      const val = Number(e.target.value);
+                      const val = Math.round(Number(e.target.value) * 100);
                       setMargemInterna(val);
                     }} 
                     className="w-full bg-transparent border-none outline-none font-black text-xs text-right text-primary dark:text-white pr-1"
@@ -329,9 +332,9 @@ export const CardOperacional = memo(function CardOperacional({
               <input 
                 type="range" 
                 min="0" 
-                max="500" 
-                step="1" 
-                value={margemInterna > 500 ? 500 : margemInterna} 
+                max="50000" 
+                step="100" 
+                value={margemInterna > 50000 ? 50000 : margemInterna} 
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   setMargemInterna(val);

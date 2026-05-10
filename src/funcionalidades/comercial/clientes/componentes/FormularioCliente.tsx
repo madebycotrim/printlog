@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Save, User, Mail, Phone, FileText, Star } from "lucide-react";
+import { Save, User, Mail, Phone, FileText } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
 import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
 import { Cliente } from "../tipos";
 import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 import { esquemaCliente, TipoDadosCliente } from "../esquemas";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { formatarTelefone } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesFormularioCliente {
   aberto: boolean;
@@ -25,6 +27,7 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
     register,
     handleSubmit,
     reset,
+    setValue,
     control,
     formState: { errors, isDirty },
   } = useForm<TipoDadosCliente>({
@@ -99,23 +102,14 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
       larguraMax="max-w-2xl"
     >
       <form onSubmit={handleSubmit(lidarComEnvio)} className="flex flex-col bg-white dark:bg-[#18181b]">
-        <div className="p-6 space-y-8">
-          <section className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-500 flex items-center justify-center">
-                <User size={16} />
-              </span>
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-400">
-                Identificação
-              </h4>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="group relative col-span-2">
+        <div className="flex-1 p-8 space-y-12 overflow-y-auto">
+          <SecaoFormulario titulo="Dados de Identificação">
+            <GradeCampos colunas={2}>
+              <div className="md:col-span-2">
                 <CampoTexto
-                  rotulo="Nome Completo / Razão Social"
+                  rotulo="Nome Completo"
                   icone={User}
-                  placeholder="Ex: João Silva da Tecnologia"
+                  placeholder="Ex: João Silva"
                   erro={errors.nome?.message}
                   className="w-full"
                   {...register("nome")}
@@ -136,29 +130,25 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
                 icone={Phone}
                 placeholder="(11) 99999-9999"
                 erro={errors.telefone?.message}
-                {...register("telefone")}
+                {...register("telefone", {
+                  onChange: (e) => {
+                    const formatado = formatarTelefone(e.target.value);
+                    setValue("telefone", formatado);
+                  }
+                })}
               />
-            </div>
-          </section>
+            </GradeCampos>
+          </SecaoFormulario>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
-                <Star size={16} />
-              </span>
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Notas</h4>
-            </div>
-
-            <div className="space-y-4">
-              <CampoTexto
-                rotulo="Notas do Perfil (Útil para o dia a dia)"
-                icone={FileText}
-                placeholder="Ex: Gosta de peças em resina, prefere retirada, costuma pedir brindes..."
-                erro={errors.observacoesCRM?.message}
-                {...register("observacoesCRM")}
-              />
-            </div>
-          </section>
+          <SecaoFormulario titulo="Notas e CRM">
+            <CampoTexto
+              rotulo="Notas do Perfil (Útil para o dia a dia)"
+              icone={FileText}
+              placeholder="Ex: Gosta de peças em resina, prefere retirada, costuma pedir brindes..."
+              erro={errors.observacoesCRM?.message}
+              {...register("observacoesCRM")}
+            />
+          </SecaoFormulario>
         </div>
 
         <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-[#0e0e11]/50 backdrop-blur-md flex flex-col gap-4">
@@ -174,7 +164,8 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
               </button>
               <button
                 type="submit"
-                className="px-8 py-2.5 flex-1 md:flex-none justify-center bg-[#00a3ff] hover:brightness-110 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 transition-all active:scale-95"
+                style={{ backgroundColor: "var(--cor-primaria)" }}
+                className="px-8 py-2.5 flex-1 md:flex-none justify-center hover:brightness-110 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 transition-all active:scale-95"
               >
                 <Save size={16} strokeWidth={3} />
                 {estaEditando ? "Salvar Alterações" : "Cadastrar Cliente"}

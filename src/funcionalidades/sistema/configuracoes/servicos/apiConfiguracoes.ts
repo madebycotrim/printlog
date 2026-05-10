@@ -4,10 +4,10 @@ import { configuracoesSchema } from "../esquemas";
 export type PlanoUsuario = "FREE" | "PRO" | "FUNDADOR";
 
 export interface ConfiguracoesSalvas {
-  custoEnergia: string;
-  horaMaquina: string;
-  horaOperador: string;
-  margemLucro: string;
+  custoEnergia: number;
+  horaMaquina: number;
+  horaOperador: number;
+  margemLucro: number;
   nomeEstudio?: string;
   sloganEstudio?: string;
   plano?: PlanoUsuario;

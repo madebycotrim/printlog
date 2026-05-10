@@ -62,9 +62,9 @@ export const CardLogistica = memo(function CardLogistica({
                 setFrete(0);
               } else {
                 setPerfilAtivo(p.nome);
-                setTaxaEcommerce(p.taxa);
-                setTaxaFixa(p.fixa);
-                if (p.frete !== undefined) setFrete(p.frete);
+                setTaxaEcommerce(p.taxaPontosBase || 0);
+                setTaxaFixa(p.fixaCentavos || 0);
+                if (p.freteCentavos !== undefined) setFrete(p.freteCentavos);
               }
             }}
             className={`px-4 h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex flex-col items-center justify-center text-center leading-tight shrink-0
@@ -75,7 +75,7 @@ export const CardLogistica = memo(function CardLogistica({
           >
             <span>{p.nome}</span>
             <span className={`text-[8px] font-bold opacity-80 flex items-center gap-1 ${perfilAtivo === p.nome ? "text-orange-600 dark:text-orange-400/80" : "text-muted-foreground dark:text-gray-400"} ${!cobrarLogistica ? "opacity-50" : ""}`}>
-              (<ContadorAnimado valor={p.taxa} prefixo="" sufixo="%" casasDecimais={1} /> + <ContadorAnimado valor={p.fixa} /> + <ContadorAnimado valor={p.frete || 0} />)
+              (<ContadorAnimado valor={(p.taxaPontosBase || 0) / 100} prefixo="" sufixo="%" casasDecimais={1} /> + <ContadorAnimado valor={(p.fixaCentavos || 0) / 100} /> + <ContadorAnimado valor={(p.freteCentavos || 0) / 100} />)
             </span>
           </button>
         ))}
@@ -90,8 +90,8 @@ export const CardLogistica = memo(function CardLogistica({
           <input 
             type="number" 
             placeholder="0" 
-            value={taxaEcommerce === 0 ? "" : taxaEcommerce} 
-            onChange={(e) => setTaxaEcommerce(Number(e.target.value))} 
+            value={taxaEcommerce === 0 ? "" : (taxaEcommerce / 100)} 
+            onChange={(e) => setTaxaEcommerce(Math.round(Number(e.target.value) * 100))} 
             className={`w-full h-14 px-4 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />
         </div>
@@ -100,8 +100,8 @@ export const CardLogistica = memo(function CardLogistica({
           <input 
             type="number" 
             placeholder="0" 
-            value={taxaFixa === 0 ? "" : taxaFixa} 
-            onChange={(e) => setTaxaFixa(Number(e.target.value))} 
+            value={taxaFixa === 0 ? "" : (taxaFixa / 100).toFixed(2)} 
+            onChange={(e) => setTaxaFixa(Math.round(Number(e.target.value) * 100))} 
             className={`w-full h-14 px-4 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />
         </div>
@@ -110,8 +110,8 @@ export const CardLogistica = memo(function CardLogistica({
           <input 
             type="number" 
             placeholder="0" 
-            value={frete === 0 ? "" : frete} 
-            onChange={(e) => setFrete(Number(e.target.value))} 
+            value={frete === 0 ? "" : (frete / 100).toFixed(2)} 
+            onChange={(e) => setFrete(Math.round(Number(e.target.value) * 100))} 
             className={`w-full h-14 px-4 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner text-center ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />
         </div>

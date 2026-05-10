@@ -5,7 +5,6 @@ import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estad
 import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 import { usarGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/usarGerenciadorImpressoras";
-import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 import { toast } from "react-hot-toast";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { 
@@ -37,19 +36,19 @@ export function usarCalculadora() {
   const [potencia, setPotencia] = useState<number>(() => Number(localStorage.getItem("printlog_potencia")) || 0);
   const [precoKwh, setPrecoKwh] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_preco_kwh");
-    return (salvo !== null && salvo !== "0") ? Number(salvo) : extrairValorNumerico(config.custoEnergia);
+    return (salvo !== null && salvo !== "0") ? Number(salvo) : config.custoEnergia;
   });
   const [maoDeObra, setMaoDeObra] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_mao_de_obra");
-    return salvo !== null ? Number(salvo) : extrairValorNumerico(config.horaOperador);
+    return salvo !== null ? Number(salvo) : config.horaOperador;
   });
   const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_depreciacao_hora");
-    return salvo !== null ? Number(salvo) : extrairValorNumerico(config.horaMaquina);
+    return salvo !== null ? Number(salvo) : config.horaMaquina;
   });
   const [margem, setMargem] = useState<number>(() => {
     const salvo = localStorage.getItem("printlog_margem");
-    return salvo !== null ? Number(salvo) : extrairValorNumerico(config.margemLucro);
+    return salvo !== null ? Number(salvo) : config.margemLucro;
   });
   
   const [quantidade, setQuantidade] = useState<number>(() => Number(localStorage.getItem("printlog_quantidade")) || 0);
@@ -68,8 +67,14 @@ export function usarCalculadora() {
   const [materialPerdido, setMaterialPerdido] = useState<number>(() => Number(localStorage.getItem("printlog_material_perdido")) || 0);
   const [tempoPerdido, setTempoPerdido] = useState<number>(() => Number(localStorage.getItem("printlog_tempo_perdido")) || 0);
   
-  const [frete, setFrete] = useState<number>(() => Number(localStorage.getItem("printlog_frete")) || 0);
-  const [insumosFixos, setInsumosFixos] = useState<number>(() => Number(localStorage.getItem("printlog_insumos_fixos")) || 0);
+  const [frete, setFrete] = useState<number>(() => {
+    const salvo = localStorage.getItem("printlog_frete");
+    return salvo !== null ? Number(salvo) : 0;
+  });
+  const [insumosFixos, setInsumosFixos] = useState<number>(() => {
+    const salvo = localStorage.getItem("printlog_insumos_fixos");
+    return salvo !== null ? Number(salvo) : 0;
+  });
   const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>(() => {
     const salvo = localStorage.getItem("printlog_insumos_selecionados");
     return salvo ? JSON.parse(salvo) : [];
@@ -124,7 +129,7 @@ export function usarCalculadora() {
       const imp = impressorasCadastradas.find(i => i.id === impressoraSelecionadaId);
       if (imp) {
         if (imp.potenciaWatts) setPotencia(imp.potenciaWatts);
-        if (imp.taxaHoraCentavos) setDepreciacaoHora(imp.taxaHoraCentavos / 100);
+        if (imp.taxaHoraCentavos) setDepreciacaoHora(imp.taxaHoraCentavos);
         localStorage.setItem("printlog_ultima_impressora", impressoraSelecionadaId);
       }
     }
@@ -132,20 +137,33 @@ export function usarCalculadora() {
 
   const [perfisMarketplace, setPerfisMarketplace] = useState<PerfilMarketplace[]>(() => {
     const salvo = localStorage.getItem("printlog_perfis_marketplace");
-    if (salvo) return JSON.parse(salvo);
+    if (salvo) {
+      try {
+        const parsed = JSON.parse(salvo);
+        return parsed.map((p: any) => ({
+          nome: p.nome,
+          taxaPontosBase: p.taxaPontosBase !== undefined ? p.taxaPontosBase : (p.taxa || 0) * 100,
+          fixaCentavos: p.fixaCentavos !== undefined ? p.fixaCentavos : (p.fixa || 0) * 100,
+          freteCentavos: p.freteCentavos !== undefined ? p.freteCentavos : (p.frete || 0) * 100
+        }));
+      } catch (e) {
+        console.error("Erro ao migrar perfis:", e);
+      }
+    }
     return [
-      { nome: "Direto", taxa: 0, fixa: 0, frete: 0 },
-      { nome: "M. Livre", taxa: 18, fixa: 6, frete: 0 },
-      { nome: "Shopee", taxa: 20, fixa: 3, frete: 0 },
-      { nome: "Site", taxa: 5, fixa: 0, frete: 0 },
+      { nome: "Direto", taxaPontosBase: 0, fixaCentavos: 0, freteCentavos: 0 },
+      { nome: "M. Livre", taxaPontosBase: 1800, fixaCentavos: 600, freteCentavos: 0 },
+      { nome: "Shopee", taxaPontosBase: 2000, fixaCentavos: 300, freteCentavos: 0 },
+      { nome: "Site", taxaPontosBase: 500, fixaCentavos: 0, freteCentavos: 0 },
     ];
   });
 
   useEffect(() => {
     const perfil = perfisMarketplace.find(p => p.nome === perfilAtivo);
     if (perfil) {
-      setTaxaEcommerce(perfil.taxa);
-      setTaxaFixa(perfil.fixa);
+      setTaxaEcommerce(perfil.taxaPontosBase);
+      setTaxaFixa(perfil.fixaCentavos);
+      if (perfil.freteCentavos !== undefined) setFrete(perfil.freteCentavos);
     }
   }, [perfilAtivo, perfisMarketplace]);
 
@@ -165,19 +183,21 @@ export function usarCalculadora() {
       return acc + (i.porLote ? valorBase : valorBase * quantidade);
     }, 0);
     const horasDecimaisMaquina = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * quantidade;
-    const custoEnergiaCentavos = cobrarEnergia ? Math.round((potencia / 1000) * horasDecimaisMaquina * precoKwh * 100) : 0;
-    const custoDepreciacaoCentavos = cobrarDesgaste ? Math.round(horasDecimaisMaquina * depreciacaoHora * 100) : 0;
+    const custoEnergiaCentavos = cobrarEnergia ? Math.round((potencia / 1000) * horasDecimaisMaquina * precoKwh) : 0;
+    const custoDepreciacaoCentavos = cobrarDesgaste ? Math.round(horasDecimaisMaquina * depreciacaoHora) : 0;
     const custoFilamentoPerdidoCentavos = materiaisSelecionados.reduce((acc, m) => acc + (materialPerdido / 1000) * m.precoKgCentavos, 0);
-    const custoTempoPerdidoCentavos = ((tempoPerdido / 60) * depreciacaoHora * 100) + (cobrarEnergia ? Math.round((potencia / 1000) * (tempoPerdido / 60) * precoKwh * 100) : 0);
+    const custoTempoPerdidoCentavos = ((tempoPerdido / 60) * depreciacaoHora) + (cobrarEnergia ? Math.round((potencia / 1000) * (tempoPerdido / 60) * precoKwh) : 0);
     const custoFalhaRealCentavos = Math.round(custoFilamentoPerdidoCentavos + custoTempoPerdidoCentavos);
-    const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round((tempoSetup / 60) * maoDeObra * 100) : 0;
+    const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round((tempoSetup / 60) * maoDeObra) : 0;
     const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor), 0) * (modoEntrada === 'lote' ? 1 : quantidade);
-    const custoInsumosFixosCentavos = cobrarInsumosFixos ? Math.round(insumosFixos * 100) : 0;
-    const custoFreteCentavos = cobrarLogistica ? Math.round(frete * 100) : 0;
+    const custoInsumosFixosCentavos = cobrarInsumosFixos ? insumosFixos : 0;
+    const custoFreteCentavos = cobrarLogistica ? frete : 0;
     const custoProducaoTotalCentavos = custoMaterialTotalCentavos + custoEnergiaCentavos + custoMaoDeObraCentavos + custoDepreciacaoCentavos + custoPosProcessoCentavos + custoInsumosDinamicosCentavos + custoInsumosFixosCentavos + custoFalhaRealCentavos;
-    const margemPercentual = margem / 100;
-    const taxaMktPercentual = cobrarLogistica ? taxaEcommerce / 100 : 0;
-    const taxaFixaVendaCentavos = cobrarLogistica ? Math.round(taxaFixa * 100) : 0;
+    
+    const margemPercentual = margem / 10000;
+    const taxaMktPercentual = cobrarLogistica ? taxaEcommerce / 10000 : 0;
+    const taxaFixaVendaCentavos = cobrarLogistica ? taxaFixa : 0;
+    
     const precoBaseVendaCentavos = custoProducaoTotalCentavos + (custoProducaoTotalCentavos * margemPercentual) + custoFreteCentavos + taxaFixaVendaCentavos;
     const denominadorTaxas = 1 - taxaMktPercentual;
     const precoSugeridoCentavos = denominadorTaxas > 0.05 ? Math.round(precoBaseVendaCentavos / denominadorTaxas) : Math.round(precoBaseVendaCentavos * 1.5);
@@ -310,7 +330,7 @@ export function usarCalculadora() {
   const detectarTarifa = async () => {
     const resultado = await detectarTarifaKwhAutomatico();
     if (resultado) {
-      setPrecoKwh(resultado.tarifa);
+      setPrecoKwh(Math.round(resultado.tarifa * 100));
       return resultado;
     }
     return null;

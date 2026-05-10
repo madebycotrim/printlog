@@ -8,6 +8,8 @@ import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { toast } from "react-hot-toast";
 import { Carregamento } from "@/compartilhado/componentes/Carregamento";
 import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
+import { formatarData } from "@/compartilhado/utilitarios/formatadores";
+import { mascararEmail } from "@/compartilhado/utilitarios/texto";
 
 interface UsuarioAdmin {
   id_usuario: string;
@@ -19,13 +21,6 @@ interface UsuarioAdmin {
   atualizado_em: string;
 }
 
-const mascararEmail = (email?: string) => {
-  if (!email) return "";
-  const [nome, dominio] = email.split('@');
-  if (!dominio) return email;
-  const mascara = nome.length > 2 ? `${nome[0]}***${nome[nome.length - 1]}` : `${nome[0]}***`;
-  return `${mascara}@${dominio}`;
-};
 
 const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
   if (ciclo === "VITALICIO") return { texto: "Nunca expira", cor: "text-blue-500", bg: "bg-blue-500/10" };
@@ -37,7 +32,7 @@ const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
 
   if (diffDias < 0) return { texto: `Expirado há ${Math.abs(diffDias)} dias`, cor: "text-red-500", bg: "bg-red-500/10" };
   if (diffDias <= 7) return { texto: `Expira em ${diffDias} dias`, cor: "text-amber-500", bg: "bg-amber-500/10" };
-  return { texto: `Expira: ${venc.toLocaleDateString('pt-BR')}`, cor: "text-emerald-500", bg: "bg-emerald-500/10" };
+  return { texto: `Expira: ${formatarData(venc)}`, cor: "text-emerald-500", bg: "bg-emerald-500/10" };
 };
 
 /**
@@ -221,7 +216,7 @@ export function PaginaAdmin() {
                       <span className="text-xs font-bold text-gray-900 dark:text-white truncate max-w-[200px]">
                         {u.email ? mascararEmail(u.email) : (u.id_usuario.length > 20 ? u.id_usuario.slice(0, 15) + '...' : u.id_usuario)}
                       </span>
-                      <span className="text-[9px] text-gray-400 font-medium">ID: {u.id_usuario.slice(0, 6)}... | Ativ: {new Date(u.atualizado_em).toLocaleDateString('pt-BR')}</span>
+                      <span className="text-[9px] text-gray-400 font-medium">ID: {u.id_usuario.slice(0, 6)}... | Ativ: {formatarData(u.atualizado_em)}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">

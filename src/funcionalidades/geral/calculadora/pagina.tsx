@@ -22,7 +22,6 @@ import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/ho
 import { Dialogo } from "@/compartilhado/componentes/Dialogo";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
-import { formatarMoedaFinancas, formatarPorcentagem, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 // Hook e Componentes Refatorados
 import { usarCalculadora } from "./hooks/usarCalculadora";
@@ -230,22 +229,41 @@ export function PaginaCalculadora() {
           hook.setItensPosProcesso(p.posProcesso);
         }
 
-        // --- RESTAURAR TODAS AS VARIÁVEIS TÉCNICAS (v10.0) ---
-        if (p.configuracoes) {
-          const cfg = p.configuracoes;
-          if (cfg.potencia !== undefined) hook.setPotencia(cfg.potencia);
-          if (cfg.precoKwh !== undefined) hook.setPrecoKwh(cfg.precoKwh);
-          if (cfg.maoDeObra !== undefined) hook.setMaoDeObra(cfg.maoDeObra);
-          if (cfg.depreciacaoHora !== undefined) hook.setDepreciacaoHora(cfg.depreciacaoHora);
-          if (cfg.margem !== undefined) hook.setMargem(cfg.margem);
-          if (cfg.quantidade !== undefined) hook.setQuantidade(cfg.quantidade);
-          if (cfg.modoEntrada !== undefined) hook.setModoEntrada(cfg.modoEntrada);
-          if (cfg.tempoSetup !== undefined) hook.setTempoSetup(cfg.tempoSetup);
-          if (cfg.taxaFalha !== undefined) hook.setTaxaFalha(cfg.taxaFalha);
-          if (cfg.materialPerdido !== undefined) hook.setMaterialPerdido(cfg.materialPerdido);
-          if (cfg.tempoPerdido !== undefined) hook.setTempoPerdido(cfg.tempoPerdido);
-          if (cfg.frete !== undefined) hook.setFrete(cfg.frete);
-          if (cfg.insumosFixos !== undefined) hook.setInsumosFixos(cfg.insumosFixos);
+          // --- RESTAURAR TODAS AS VARIÁVEIS TÉCNICAS (v10.0) ---
+          if (p.configuracoes) {
+            const cfg = p.configuracoes;
+            
+            // Helper de migração: se o valor for pequeno (padrão antigo float), converte para centavos
+            const migrarParaCentavos = (v: any, threshold: number = 200) => {
+              if (v === undefined || v === null) return 0;
+              const num = Number(v);
+              if (num > 0 && num < threshold) return Math.round(num * 100);
+              return num;
+            };
+
+            const migrarMargem = (v: any) => {
+              if (v === undefined || v === null) return 0;
+              const num = Number(v);
+              // Antigamente margem era 150 (150%), agora é 15000
+              if (num > 0 && num < 1000) return Math.round(num * 100);
+              return num;
+            };
+
+            if (cfg.potencia !== undefined) hook.setPotencia(cfg.potencia);
+            if (cfg.precoKwh !== undefined) hook.setPrecoKwh(migrarParaCentavos(cfg.precoKwh));
+            if (cfg.maoDeObra !== undefined) hook.setMaoDeObra(migrarParaCentavos(cfg.maoDeObra, 1000));
+            if (cfg.depreciacaoHora !== undefined) hook.setDepreciacaoHora(migrarParaCentavos(cfg.depreciacaoHora));
+            if (cfg.margem !== undefined) hook.setMargem(migrarMargem(cfg.margem));
+            if (cfg.quantidade !== undefined) hook.setQuantidade(cfg.quantidade);
+            if (cfg.modoEntrada !== undefined) hook.setModoEntrada(cfg.modoEntrada);
+            if (cfg.tempoSetup !== undefined) hook.setTempoSetup(cfg.tempoSetup);
+            if (cfg.taxaFalha !== undefined) hook.setTaxaFalha(migrarMargem(cfg.taxaFalha));
+            if (cfg.materialPerdido !== undefined) hook.setMaterialPerdido(cfg.materialPerdido);
+            if (cfg.tempoPerdido !== undefined) hook.setTempoPerdido(cfg.tempoPerdido);
+            if (cfg.frete !== undefined) hook.setFrete(migrarParaCentavos(cfg.frete, 500));
+            if (cfg.insumosFixos !== undefined) hook.setInsumosFixos(migrarParaCentavos(cfg.insumosFixos, 500));
+            if (cfg.taxaEcommerce !== undefined) hook.setTaxaEcommerce(migrarMargem(cfg.taxaEcommerce));
+            if (cfg.taxaFixa !== undefined) hook.setTaxaFixa(migrarParaCentavos(cfg.taxaFixa, 100));
           
           // Toggles de Cobrança
           if (cfg.cobrarDesgaste !== undefined) hook.setCobrarDesgaste(cfg.cobrarDesgaste);
@@ -403,14 +421,14 @@ export function PaginaCalculadora() {
     // Sincroniza a depreciação (desgaste)
     if (impressoraSelecionada?.valorCompraCentavos) {
       // Cálculo automático inteligente baseado nos anos de vida útil selecionados
-      const depreciacaoAnual = (impressoraSelecionada.valorCompraCentavos / 100) / anosVidaUtil;
+      const depreciacaoAnual = impressoraSelecionada.valorCompraCentavos / anosVidaUtil;
       const depreciacaoMensal = depreciacaoAnual / 12;
-      const taxaHoraReal = depreciacaoMensal / 240;
-      hook.setDepreciacaoHora(Number(taxaHoraReal.toFixed(2)));
+      const taxaHoraRealCentavos = Math.round(depreciacaoMensal / 240);
+      hook.setDepreciacaoHora(taxaHoraRealCentavos);
     } else if (impressoraSelecionada?.taxaHoraCentavos) {
-      hook.setDepreciacaoHora(impressoraSelecionada.taxaHoraCentavos / 100);
+      hook.setDepreciacaoHora(impressoraSelecionada.taxaHoraCentavos);
     } else if (config?.horaMaquina) {
-      hook.setDepreciacaoHora(extrairValorNumerico(config.horaMaquina));
+      hook.setDepreciacaoHora(config.horaMaquina);
     } else {
       hook.setDepreciacaoHora(0);
     }
@@ -445,9 +463,9 @@ export function PaginaCalculadora() {
     const imp = impressoras.find(i => i.id === id);
     if (imp?.potenciaWatts) hook.setPotencia(imp.potenciaWatts);
     if (imp?.taxaHoraCentavos) {
-      const taxa = imp.taxaHoraCentavos / 100;
+      const taxa = imp.taxaHoraCentavos;
       hook.setDepreciacaoHora(taxa);
-      config.definirHoraMaquina(formatarMoedaFinancas(taxa, 2));
+      config.definirHoraMaquina(taxa);
     }
   }, [impressoras, hook.setImpressoraSelecionadaId, hook.setPotencia, hook.setDepreciacaoHora, config]);
 
@@ -610,7 +628,7 @@ export function PaginaCalculadora() {
               tempo={hook.tempo} setTempo={hook.setTempo}
               modoEntrada={hook.modoEntrada}
               potencia={hook.potencia} setPotencia={hook.setPotencia}
-              precoKwh={hook.precoKwh} setPrecoKwh={(v) => { hook.setPrecoKwh(v); config.definirCustoEnergia(formatarMoedaFinancas(v, 2)); }}
+              precoKwh={hook.precoKwh} setPrecoKwh={(v) => { hook.setPrecoKwh(v); config.definirCustoEnergia(v); }}
               custoEnergia={hook.calculo.custoEnergia / 100}
               cobrarEnergia={hook.cobrarEnergia} setCobrarEnergia={hook.setCobrarEnergia}
               posProcesso={hook.itensPosProcesso} setPosProcesso={hook.setItensPosProcesso}
@@ -621,8 +639,8 @@ export function PaginaCalculadora() {
             />
 
             <CardOperacional
-              maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(formatarMoedaFinancas(v, 2)); }}
-              margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(formatarPorcentagem(String(v))); }}
+              maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(v); }}
+              margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(v); }}
               depreciacao={hook.depreciacaoHora}
               cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
               cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
@@ -683,10 +701,10 @@ export function PaginaCalculadora() {
             config={config}
             hook={hook}
             aoSalvar={async () => {
-              config.definirCustoEnergia(config.custoEnergia && config.custoEnergia.trim() !== "" ? formatarMoedaFinancas(hook.precoKwh, 2) : "R$ 0,00");
-              config.definirHoraOperador(config.horaOperador && config.horaOperador.trim() !== "" ? formatarMoedaFinancas(hook.maoDeObra, 2) : "R$ 0,00");
-              config.definirHoraMaquina(config.horaMaquina && config.horaMaquina.trim() !== "" ? formatarMoedaFinancas(hook.depreciacaoHora, 3) : "R$ 0,000");
-              config.definirMargemLucro(config.margemLucro && config.margemLucro.trim() !== "" ? formatarPorcentagem(String(hook.margem)) : "0,00%");
+              config.definirCustoEnergia(hook.precoKwh);
+              config.definirHoraOperador(hook.maoDeObra);
+              config.definirHoraMaquina(hook.depreciacaoHora);
+              config.definirMargemLucro(hook.margem);
               if (usuario?.uid) {
                 await config.salvarNoD1(usuario.uid);
                 setModalConfigAberto(false);
