@@ -63,7 +63,7 @@ export const CardMateriais = memo(function CardMateriais({
   const materiaisExibidos = materiaisOrdenados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
 
   return (
-    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 premium-card premium-card-cyan">
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-borda-sutil">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">

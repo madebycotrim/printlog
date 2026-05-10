@@ -45,7 +45,7 @@ export function CardIdentificacaoProjeto({
   quantidade
 }: PropriedadesCardIdentificacaoProjeto) {
   return (
-    <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
+    <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-sky ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
       {/* Efeito Glow Azul de Fundo (Fixo) */}
       <motion.div 
         animate={{ 

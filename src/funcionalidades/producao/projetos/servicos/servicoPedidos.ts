@@ -255,9 +255,7 @@ class ServicoPedidos {
             idPedido: pedido.id,
             nomeProjeto: pedido.descricao,
             valorCentavos: pedido.valorCentavos,
-            precoKwhCentavos: pedido.configuracoes?.precoKwh
-              ? Math.round(pedido.configuracoes.precoKwh * 100)
-              : 0,
+            precoKwhCentavos: pedido.configuracoes?.precoKwh || 0,
             consumoWatts: pedido.configuracoes?.potenciaWatts || 0,
             reversao: false,
           }
@@ -434,9 +432,7 @@ class ServicoPedidos {
             idPedido: pedido.id,
             nomeProjeto: pedido.descricao,
             valorCentavos: pedido.valorCentavos,
-            precoKwhCentavos: pedido.configuracoes?.precoKwh
-              ? Math.round(pedido.configuracoes.precoKwh * 100)
-              : 0,
+            precoKwhCentavos: pedido.configuracoes?.precoKwh || 0,
             reversao: true,
           }
         );

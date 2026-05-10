@@ -54,7 +54,7 @@ export const PainelResultados = memo(function PainelResultados({
 
 
   return (
-    <div className="pt-4 pb-6 px-6 rounded-2xl bg-card border border-borda-sutil shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl">
+    <div className={`pt-4 pb-6 px-6 rounded-2xl bg-card border border-borda-sutil shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl premium-card premium-card-sky`}>
       <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-sky-500/20 to-transparent blur-3xl" />
       <div className="relative z-10 w-full">
         <div className="flex items-center justify-center gap-2 mb-1">

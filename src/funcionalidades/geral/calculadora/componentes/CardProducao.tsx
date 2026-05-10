@@ -3,7 +3,7 @@ import { ItemPosProcesso } from "../tipos";
 import { useState, memo } from "react";
 import { ContadorAnimado } from "@/componentes/ui";
 import { toast } from "react-hot-toast";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardProducaoProps {
   tempo: number;
@@ -61,7 +61,7 @@ export const CardProducao = memo(function CardProducao({
   };
 
   return (
-    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
+    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500 premium-card premium-card-indigo">
       {/* Efeito Glow Indigo de Fundo */}
       <div className="absolute -top-24 -left-20 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
       

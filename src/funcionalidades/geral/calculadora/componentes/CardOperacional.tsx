@@ -1,6 +1,7 @@
 import { useState, useEffect, memo } from "react";
 import { DollarSign, Activity } from "lucide-react";
 import { ContadorAnimado } from "@/componentes/ui";
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardOperacionalProps {
   maoDeObra: number;
@@ -55,7 +56,7 @@ export const CardOperacional = memo(function CardOperacional({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-emerald ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
           {/* Efeito Glow Esmeralda de Fundo */}
           <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
@@ -146,7 +147,7 @@ export const CardOperacional = memo(function CardOperacional({
           </div>
       </div>
 
-        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-violet ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
           {/* Efeito Glow Violeta de Fundo */}
           <div className="absolute -top-24 -right-20 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">

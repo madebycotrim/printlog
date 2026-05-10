@@ -22,7 +22,7 @@ export const CardLogistica = memo(function CardLogistica({
   perfis, perfilAtivo, setPerfilAtivo, taxaEcommerce, setTaxaEcommerce, taxaFixa, setTaxaFixa, frete, setFrete, abrirPerfis, cobrarLogistica, setCobrarLogistica
 }: CardLogisticaProps) {
   return (
-    <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${!cobrarLogistica ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+    <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-orange ${!cobrarLogistica ? 'opacity-50 grayscale-[0.5]' : ''}`}>
       {/* Efeito Glow Laranja de Fundo */}
       <div className="absolute -top-24 -right-20 w-80 h-80 bg-orange-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-borda-sutil">
