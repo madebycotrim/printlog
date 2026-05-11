@@ -5,6 +5,7 @@ import { z } from "zod";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Impressora, PerfilImpressoraCatalogo } from "../tipos";
 import { StatusImpressora } from "@/compartilhado/tipos/modelos";
+import { LISTA_IMPRESSORAS } from "../constantes/impressoras";
 
 const esquemaImpressora = z.object({
   nome: z.string().min(2, "O apelido deve ter pelo menos 2 caracteres"),
@@ -65,22 +66,15 @@ export function usarFormularioImpressora({ aberto, impressoraEditando, aoSalvar,
 
   // Carregar catálogo de impressoras
   useEffect(() => {
-    fetch("/impressoras.json")
-      .then((res) => res.json())
-      .then((dados: any[]) => {
-        const dadosMapeados: PerfilImpressoraCatalogo[] = dados.map((item) => ({
-          marca: item.brand,
-          modelo: item.model,
-          nome: item.name,
-          consumoKw: item.consumoKw,
-          tipo: item.type,
-          imagem: item.img,
-        }));
-        definirCatalogo(dadosMapeados);
-      })
-      .catch((erro) =>
-        registrar.error({ rastreioId: "sistema", servico: "FormularioImpressora" }, "Erro ao carregar catálogo", erro),
-      );
+    const dadosMapeados: PerfilImpressoraCatalogo[] = LISTA_IMPRESSORAS.map((item) => ({
+      marca: item.brand,
+      modelo: item.model,
+      nome: item.name,
+      consumoKw: item.consumoKw,
+      tipo: item.type,
+      imagem: item.img,
+    }));
+    definirCatalogo(dadosMapeados);
   }, []);
 
   // Sincronizar dados ao abrir/editar

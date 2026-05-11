@@ -1,4 +1,4 @@
-import { Settings, Factory, AlertTriangle, Thermometer, PenTool, Store, Zap, Flame } from "lucide-react";
+import { Settings, Factory, AlertTriangle, Thermometer, PenTool, Store, Zap, Flame, Wrench } from "lucide-react";
 
 export interface InterfaceTopico {
   id: string;
@@ -259,6 +259,45 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "Verifique conectores de alta corrente (Mesa/Placa). Instale sensores de fumaça acima das máquinas. Segurança operacional vem antes do lucro imediato.",
         nivel: "Crítico",
         atualizado: "REV 2026.04",
+      },
+    ],
+  },
+  {
+    id: "09",
+    titulo: "Plano de Manutenção",
+    subtitulo: "Longevidade da Máquina",
+    icone: Wrench,
+    corPaleta: "indigo",
+    cor: "text-indigo-500",
+    fundo: "bg-indigo-500/10",
+    topicos: [
+      {
+        id: "mnt1",
+        titulo: "Rotina por Impressão",
+        conteudo: "Limpeza da mesa com álcool isopropílico para garantir a aderência. Inspeção visual rápida em busca de restos de plástico no bico ou fiação solta antes de iniciar um novo trabalho.",
+        nivel: "Diário",
+        atualizado: "REV 2026.05",
+      },
+      {
+        id: "mnt2",
+        titulo: "Revisão de 50-100 Horas",
+        conteudo: "Aperte correias e parafusos para evitar vibrações e desalinhamentos de camada. Refaça o nivelamento da mesa (mesmo com sensor) para garantir a perfeição da primeira camada.",
+        nivel: "Intermediário",
+        atualizado: "REV 2026.05",
+      },
+      {
+        id: "mnt3",
+        titulo: "Manutenção de 100-200 Horas",
+        conteudo: "Lubrifique trilhos e guias com óleo leve ou graxa PTFE. Realize a limpeza 'Cold Pull' no bico para remover carbonizações e limpe a poeira das ventoinhas para evitar Heat Creep.",
+        nivel: "Profundo",
+        atualizado: "REV 2026.05",
+      },
+      {
+        id: "mnt4",
+        titulo: "Cuidados de Longo Prazo",
+        conteudo: "Troque o bico a cada 3-6 meses ou se notar queda na qualidade. Verifique se o tubo de PTFE está queimado ou degradado na ponta e substitua se necessário.",
+        nivel: "Sazonal",
+        atualizado: "REV 2026.05",
       },
     ],
   },

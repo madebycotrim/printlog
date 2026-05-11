@@ -41,7 +41,7 @@ export function CardImpressora({
     impressora.horimetroTotalMinutos || 0,
     impressora.intervaloRevisaoMinutos || 0,
   );
-  
+
   const statusManutencaoUI = obterStatusManutencao(
     impressora.horimetroTotalMinutos || 0,
     impressora.intervaloRevisaoMinutos || 0,
@@ -67,7 +67,7 @@ export function CardImpressora({
             {impressora.nome}
           </h4>
         </div>
-        
+
         <div className="flex items-center gap-3" ref={referenciaMenu}>
           <button
             onClick={(e) => {
@@ -78,14 +78,14 @@ export function CardImpressora({
           >
             <MoreVertical size={18} />
           </button>
-          
+
           <AnimatePresence>
             {menuAberto && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                 className="absolute right-0 top-12 w-52 bg-card border border-borda-sutil rounded-xl shadow-2xl z-50 p-1.5"
+                className="absolute right-0 top-12 w-52 bg-card border border-borda-sutil rounded-xl shadow-2xl z-50 p-1.5"
               >
                 <button onClick={(e) => { e.stopPropagation(); aoGerenciamento(impressora, "manutencao"); fecharMenu(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black hover:bg-muted/60 rounded-lg transition-all uppercase tracking-widest text-muted-foreground">
                   <Wrench size={14} /> Manutenções
@@ -107,10 +107,25 @@ export function CardImpressora({
       <div className="flex-1 relative flex items-center justify-center min-h-[240px]">
         <div className="relative z-10 transition-transform duration-500 group-hover:scale-110">
           {impressora.imagemUrl ? (
-            <img src={impressora.imagemUrl} alt={impressora.nome} className="max-h-[220px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]" />
+            <img
+              src={impressora.imagemUrl}
+              alt={impressora.nome}
+              className="max-h-[220px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+              onError={(e) => {
+                const alvo = e.target as HTMLImageElement;
+                const tecnologia = String(impressora.tecnologia || "").toUpperCase();
+                const fallback = (tecnologia.includes("SLA") || tecnologia.includes("RESINA"))
+                  ? ""
+                  : "";
+
+                if (alvo.src !== fallback) {
+                  alvo.src = fallback;
+                }
+              }}
+            />
           ) : (
             <div className="w-24 h-24 rounded-full border border-dashed border-borda-sutil flex items-center justify-center bg-muted/20">
-               <Activity size={24} className="text-muted-foreground opacity-30" />
+              <Activity size={24} className="text-muted-foreground opacity-30" />
             </div>
           )}
         </div>
@@ -148,14 +163,14 @@ export function CardImpressora({
               <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" />
             </motion.div>
           </div>
-          
+
           <div className="flex justify-between items-center opacity-50">
-             <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">
-               Status Nominal
-             </span>
-             <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">
-               Revisão: {Math.max(0, (impressora.intervaloRevisaoMinutos || 0) - (impressora.horimetroTotalMinutos || 0))}m
-             </span>
+            <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">
+              Status Nominal
+            </span>
+            <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">
+              Revisão: {Math.max(0, (impressora.intervaloRevisaoMinutos || 0) - (impressora.horimetroTotalMinutos || 0))}m
+            </span>
           </div>
         </div>
       </div>

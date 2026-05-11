@@ -1,570 +1,84 @@
 [
   {
-    "brand": "Creality",
-    "model": "Ender 3",
-    "name": "Creality Ender 3",
-    "consumoKw": 0.12,
-    "type": "FDM",
-    "img": "https://creality3d.shop/cdn/shop/products/creality-ender-3-3d-printer-1.jpg",
-    "description": "Modelo clássico, perfeito para iniciantes"
+    "brand": "Anycubic",
+    "model": "Fóton P1",
+    "name": "Anycubic Fóton P1",
+    "consumoKw": 0.04,
+    "type": "SLA",
+    "img": "",
+    "_comentario": "--- ANYCUBIC ---"
   },
   {
-    "brand": "Creality",
-    "model": "Ender 3 V2",
-    "name": "Creality Ender 3 V2",
-    "consumoKw": 0.13,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71q0K6yOXnL._AC_SL1500_.jpg",
-    "description": "Versão melhorada com mais estabilidade"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 3 V2 Neo",
-    "name": "Creality Ender 3 V2 Neo",
-    "consumoKw": 0.13,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YRQc-KSUL._AC_SL1500_.jpg",
-    "description": "Versão Neo com placa 32-bit"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 3 V3 SE",
-    "name": "Creality Ender 3 V3 SE",
-    "consumoKw": 0.14,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71xZYvJcDzL._AC_SL1500_.jpg",
-    "description": "Montagem rápida em 3 etapas"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 3 V3",
-    "name": "Creality Ender 3 V3",
-    "consumoKw": 0.15,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71b0C4yL6ZL._AC_SL1500_.jpg",
-    "description": "Velocidade até 250mm/s"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 3 V3 KE",
-    "name": "Creality Ender 3 V3 KE",
-    "consumoKw": 0.15,
-    "type": "FDM",
-    "img": "https://creality3d.shop/cdn/shop/files/Ender-3V3KE_1.jpg",
-    "description": "Versão rápida com 500mm/s"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 3 S1",
-    "name": "Creality Ender 3 S1",
-    "consumoKw": 0.16,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71vK9nzlV4L._AC_SL1500_.jpg",
-    "description": "Série S1 com hotend de fluxo máximo"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 3 S1 Pro",
-    "name": "Creality Ender 3 S1 Pro",
-    "consumoKw": 0.16,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71t-bvGY5ZL._AC_SL1500_.jpg",
-    "description": "Série S1 Pro com câmara fechada"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 5",
-    "name": "Creality Ender 5",
-    "consumoKw": 0.14,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71QoT0T8OzL._AC_SL1500_.jpg",
-    "description": "Estrutura cúbica clássica"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 5 Pro",
-    "name": "Creality Ender 5 Pro",
-    "consumoKw": 0.18,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71qVm0cCNOL._AC_SL1500_.jpg",
-    "description": "Versão Pro com melhorias estruturais"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 5 Plus",
-    "name": "Creality Ender 5 Plus",
-    "consumoKw": 0.25,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71K-bvGH2uL._AC_SL1500_.jpg",
-    "description": "Volume grande 350x350x400mm"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 5 S1",
-    "name": "Creality Ender 5 S1",
-    "consumoKw": 0.22,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71nqW0L4YtL._AC_SL1500_.jpg",
-    "description": "Série S1 com hotend avançado"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 5 Max",
-    "name": "Creality Ender 5 Max",
-    "consumoKw": 0.28,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71VUGZL-ryL._AC_SL1500_.jpg",
-    "description": "Topo de linha série Ender 5"
-  },
-  {
-    "brand": "Creality",
-    "model": "Ender 6",
-    "name": "Creality Ender 6",
-    "consumoKw": 0.20,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71jK6ShD8wL._AC_SL1500_.jpg",
-    "description": "Estrutura cartesiana com CoreXY"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10",
-    "name": "Creality CR-10",
-    "consumoKw": 0.22,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71yHN6kLs4L._AC_SL1500_.jpg",
-    "description": "Clássico de grande formato 300x300x400mm"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10 S Pro",
-    "name": "Creality CR-10 S Pro",
-    "consumoKw": 0.23,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71eHd2c5SWL._AC_SL1500_.jpg",
-    "description": "Grande formato com hotend avançado"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10 S5",
-    "name": "Creality CR-10 S5",
-    "consumoKw": 0.35,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YJ0nrS9uL._AC_SL1500_.jpg",
-    "description": "Extra grande 500x500x500mm"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10 Max",
-    "name": "Creality CR-10 Max",
-    "consumoKw": 0.40,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Maior volume 450x450x470mm"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10 SE",
-    "name": "Creality CR-10 SE",
-    "consumoKw": 0.20,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71VGQP-wMhL._AC_SL1500_.jpg",
-    "description": "Grande formato acessível"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10 Smart",
-    "name": "Creality CR-10 Smart",
-    "consumoKw": 0.24,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71fxVqfQqTL._AC_SL1500_.jpg",
-    "description": "Com conexão WiFi e câmera"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-10 Smart Pro",
-    "name": "Creality CR-10 Smart Pro",
-    "consumoKw": 0.25,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71WK5KdI9TL._AC_SL1500_.jpg",
-    "description": "Versão Pro com mais recursos"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-6 SE",
-    "name": "Creality CR-6 SE",
-    "consumoKw": 0.14,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71WrMGjLvyL._AC_SL1500_.jpg",
-    "description": "Nivelamento automático Leveling"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-6 Max",
-    "name": "Creality CR-6 Max",
-    "consumoKw": 0.28,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71Rq8wXPL5L._AC_SL1500_.jpg",
-    "description": "Grande formato 400x400x400mm"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-5 Pro H",
-    "name": "Creality CR-5 Pro H",
-    "consumoKw": 0.30,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71k8x7L8p0L._AC_SL1500_.jpg",
-    "description": "Estrutura robusta para produção"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-30",
-    "name": "Creality CR-30",
-    "consumoKw": 0.16,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71QOZj3P6XL._AC_SL1500_.jpg",
-    "description": "Impressora infinita com cama móvel"
-  },
-  {
-    "brand": "Creality",
-    "model": "CR-M4",
-    "name": "Creality CR-M4",
-    "consumoKw": 0.18,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71EwFk8g5uL._AC_SL1500_.jpg",
-    "description": "Multi-material com 4 cores"
-  },
-  {
-    "brand": "Creality",
-    "model": "K1",
-    "name": "Creality K1",
-    "consumoKw": 0.35,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/61HzyELfS8L._AC_SL1500_.jpg",
-    "description": "Alta velocidade 600mm/s CoreXY"
-  },
-  {
-    "brand": "Creality",
-    "model": "K1 Max",
-    "name": "Creality K1 Max",
-    "consumoKw": 0.40,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Volume grande 300x300x300mm"
-  },
-  {
-    "brand": "Creality",
-    "model": "K1C",
-    "name": "Creality K1C",
-    "consumoKw": 0.35,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71wrY9c5wNL._AC_SL1500_.jpg",
-    "description": "Para fibra de carbono e materiais avançados"
-  },
-  {
-    "brand": "Creality",
-    "model": "K2",
-    "name": "Creality K2",
-    "consumoKw": 0.42,
-    "type": "FDM",
-    "img": "https://creality.com/cdn/shop/files/K2_1200x.jpg",
-    "description": "Profissional com automação avançada"
-  },
-  {
-    "brand": "Creality",
-    "model": "K2 Plus",
-    "name": "Creality K2 Plus",
-    "consumoKw": 0.45,
-    "type": "FDM",
-    "img": "https://creality.com/cdn/shop/files/K2Plus-KLP-6_1200x.jpg",
-    "description": "Versão Plus para produção contínua"
-  },
-  {
-    "brand": "Creality",
-    "model": "K2 Pro",
-    "name": "Creality K2 Pro",
-    "consumoKw": 0.48,
-    "type": "FDM",
-    "img": "https://creality.com/cdn/shop/files/K2-Pro_1200x.jpg",
-    "description": "Topo de linha com câmara fechada"
-  },
-  {
-    "brand": "Creality",
-    "model": "Hi",
-    "name": "Creality Hi",
-    "consumoKw": 0.16,
-    "type": "FDM",
-    "img": "https://creality.com/cdn/shop/files/1_e618e5d8-36be-40cc-8e1f-89f79ab5f8ab_1200x.png",
-    "description": "Equilíbrio entre desempenho e facilidade"
-  },
-  {
-    "brand": "Creality",
-    "model": "Sermoon D3",
-    "name": "Creality Sermoon D3",
-    "consumoKw": 0.12,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Educacional com câmara fechada"
-  },
-  {
-    "brand": "Creality",
-    "model": "Sermoon D3 Pro",
-    "name": "Creality Sermoon D3 Pro",
-    "consumoKw": 0.14,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Versão Pro da série Sermoon"
-  },
-  {
-    "brand": "Creality",
-    "model": "Halot Mage Pro",
-    "name": "Creality Halot Mage Pro",
+    "brand": "Anycubic",
+    "model": "Fóton P1 Máx.",
+    "name": "Anycubic Fóton P1 Máx.",
     "consumoKw": 0.06,
     "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Resina LCD 8K profissional"
-  },
-  {
-    "brand": "Creality",
-    "model": "LD-002R",
-    "name": "Creality LD-002R",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61yBf7IJPBL._AC_SL1500_.jpg",
-    "description": "LCD 2K acessível"
-  },
-  {
-    "brand": "Creality",
-    "model": "LD-002H",
-    "name": "Creality LD-002H",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61yBf7IJPBL._AC_SL1500_.jpg",
-    "description": "LCD com câmara aquecida"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "A1",
-    "name": "Bambu Lab A1",
-    "consumoKw": 0.10,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/A1_Combo_1.png",
-    "description": "Velocidade 500mm/s com calibração automática"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "A1 Mini",
-    "name": "Bambu Lab A1 Mini",
-    "consumoKw": 0.08,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/A1_Mini_1.png",
-    "description": "Compacta para hobistas"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "P1S",
-    "name": "Bambu Lab P1S",
-    "consumoKw": 0.20,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/P1S_1.png",
-    "description": "Multicolor com até 16 cores (AMS)"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "P1",
-    "name": "Bambu Lab P1",
-    "consumoKw": 0.18,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/P1_1.png",
-    "description": "Versão básica da série P"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "X1 Carbon",
-    "name": "Bambu Lab X1 Carbon",
-    "consumoKw": 0.35,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/X1C_Combo_1.png",
-    "description": "Topo de linha com LIDAR e IA"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "P2S",
-    "name": "Bambu Lab P2S",
-    "consumoKw": 0.22,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/P2S_1.png",
-    "description": "Sucessora da P1S com melhorias"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "H2D",
-    "name": "Bambu Lab H2D",
-    "consumoKw": 0.24,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/H2D_1.png",
-    "description": "Profissional multi-material"
-  },
-  {
-    "brand": "Bambu Lab",
-    "model": "H2C",
-    "name": "Bambu Lab H2C",
-    "consumoKw": 0.26,
-    "type": "FDM",
-    "img": "https://bambulab.com/cdn/shop/files/H2C_1.png",
-    "description": "Versão com câmara fechada"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra",
-    "name": "Anycubic Kobra",
-    "consumoKw": 0.14,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/61pZkSgbZXL._AC_SL1500_.jpg",
-    "description": "Auto-nivelamento com excelente custo-benefício"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra Go",
-    "name": "Anycubic Kobra Go",
-    "consumoKw": 0.13,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Versão Go compacta e portátil"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra Max",
-    "name": "Anycubic Kobra Max",
-    "consumoKw": 0.28,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71UdvUIE1YL._AC_SL1500_.jpg",
-    "description": "Grande volume 420x420x500mm"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra 2",
-    "name": "Anycubic Kobra 2",
-    "consumoKw": 0.16,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71UdvUIE1YL._AC_SL1500_.jpg",
-    "description": "Série 2 com melhorias de hardware"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra 2 Max",
-    "name": "Anycubic Kobra 2 Max",
-    "consumoKw": 0.28,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71UdvUIE1YL._AC_SL1500_.jpg",
-    "description": "Grande formato série 2"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra 3",
-    "name": "Anycubic Kobra 3",
-    "consumoKw": 0.24,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71nZuVz2KTL._AC_SL1500_.jpg",
-    "description": "Multi-material com sistema ACE"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Kobra 3 V2",
-    "name": "Anycubic Kobra 3 V2",
-    "consumoKw": 0.26,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71nZuVz2KTL._AC_SL1500_.jpg",
-    "description": "Versão V2 com atualizações"
+    "img": ""
   },
   {
     "brand": "Anycubic",
     "model": "Kobra 3 Max",
     "name": "Anycubic Kobra 3 Max",
-    "consumoKw": 0.32,
+    "consumoKw": 0.35,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Grande formato multi-material"
+    "img": ""
   },
   {
     "brand": "Anycubic",
     "model": "Kobra S1",
     "name": "Anycubic Kobra S1",
+    "consumoKw": 0.28,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Kobra S1 Max",
+    "name": "Anycubic Kobra S1 Max",
+    "consumoKw": 0.4,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Kobra X",
+    "name": "Anycubic Kobra X",
     "consumoKw": 0.18,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "CoreXY fechada de alta velocidade"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Photon",
-    "name": "Anycubic Photon",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61fQXz7PSNL._AC_SL1500_.jpg",
-    "description": "Clássica LCD 2K"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Photon S",
-    "name": "Anycubic Photon S",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61ZGU7YYXOL._AC_SL1500_.jpg",
-    "description": "Com eixo duplo para maior precisão"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Photon Mono",
-    "name": "Anycubic Photon Mono",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61fQXz7PSNL._AC_SL1500_.jpg",
-    "description": "LCD monocromático 6K"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Photon Mono SE",
-    "name": "Anycubic Photon Mono SE",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61gU8eZe6xL._AC_SL1500_.jpg",
-    "description": "Alta precisão para peças delicadas"
+    "img": ""
   },
   {
     "brand": "Anycubic",
     "model": "Photon Mono 4",
     "name": "Anycubic Photon Mono 4",
-    "consumoKw": 0.05,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61Q8rFGqYKL._AC_SL1500_.jpg",
-    "description": "Resolução 10K ultra-detalhada"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Photon Mono 4K",
-    "name": "Anycubic Photon Mono 4K",
     "consumoKw": 0.04,
     "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61Q8rFGqYKL._AC_SL1500_.jpg",
-    "description": "4K com qualidade profissional"
+    "img": ""
   },
   {
     "brand": "Anycubic",
-    "model": "Photon Mono M3",
-    "name": "Anycubic Photon Mono M3",
+    "model": "Photon Mono 4 Ultra",
+    "name": "Anycubic Photon Mono 4 Ultra",
     "consumoKw": 0.05,
     "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61Q8rFGqYKL._AC_SL1500_.jpg",
-    "description": "Série M3 compacta"
+    "img": ""
   },
   {
     "brand": "Anycubic",
-    "model": "Photon Mono M5s",
-    "name": "Anycubic Photon Mono M5s",
+    "model": "Photon Mono M7",
+    "name": "Anycubic Photon Mono M7",
     "consumoKw": 0.05,
     "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61ywJvfSo2L._AC_SL1500_.jpg",
-    "description": "12K ultra resolução 70mm/h"
+    "img": ""
+  },
+  {
+    "brand": "Anycubic",
+    "model": "Photon Mono M7 Max",
+    "name": "Anycubic Photon Mono M7 Max",
+    "consumoKw": 0.07,
+    "type": "SLA",
+    "img": ""
   },
   {
     "brand": "Anycubic",
@@ -572,161 +86,16 @@
     "name": "Anycubic Photon Mono M7 Pro",
     "consumoKw": 0.06,
     "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61xbOtXqBPL._AC_SL1500_.jpg",
-    "description": "14K profissional 223x126x230mm"
+    "img": ""
   },
   {
-    "brand": "Anycubic",
-    "model": "Photon M3 Plus",
-    "name": "Anycubic Photon M3 Plus",
-    "consumoKw": 0.05,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61Q8rFGqYKL._AC_SL1500_.jpg",
-    "description": "M3 Plus com maior volume"
-  },
-  {
-    "brand": "Anycubic",
-    "model": "Photon M3 Max",
-    "name": "Anycubic Photon M3 Max",
-    "consumoKw": 0.06,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61Q8rFGqYKL._AC_SL1500_.jpg",
-    "description": "Maior formato M3"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Neptune 4",
-    "name": "Elegoo Neptune 4",
-    "consumoKw": 0.20,
+    "brand": "Artillery",
+    "model": "Genius Pro",
+    "name": "Artillery Genius Pro",
+    "consumoKw": 0.2,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71F-qL7RQOL._AC_SL1500_.jpg",
-    "description": "Klipper nativo com alta velocidade"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Neptune 4 Pro",
-    "name": "Elegoo Neptune 4 Pro",
-    "consumoKw": 0.22,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71fWh7CzFcL._AC_SL1500_.jpg",
-    "description": "Versão Pro com melhorias"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Neptune 4 Max",
-    "name": "Elegoo Neptune 4 Max",
-    "consumoKw": 0.30,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71yQgYN8CHL._AC_SL1500_.jpg",
-    "description": "Grande formato 420x420x480mm"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Neptune 3",
-    "name": "Elegoo Neptune 3",
-    "consumoKw": 0.18,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71F-qL7RQOL._AC_SL1500_.jpg",
-    "description": "Série 3 Klipper nativo"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "OrangeStorm Giga",
-    "name": "Elegoo OrangeStorm Giga",
-    "consumoKw": 0.45,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Gigante 500x500x500mm"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Centauri Carbon",
-    "name": "Elegoo Centauri Carbon",
-    "consumoKw": 0.32,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Fibra de carbono especializada"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Mars 3",
-    "name": "Elegoo Mars 3",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61VKDv3dR2L._AC_SL1500_.jpg",
-    "description": "4K LCD para miniaturas"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Mars 3 Pro",
-    "name": "Elegoo Mars 3 Pro",
-    "consumoKw": 0.04,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61VKDv3dR2L._AC_SL1500_.jpg",
-    "description": "Versão Pro com câmara aquecida"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Mars 4",
-    "name": "Elegoo Mars 4",
-    "consumoKw": 0.05,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/71ys0+FqCpL._AC_SL1500_.jpg",
-    "description": "9K ultra HD"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Mars 4 Max",
-    "name": "Elegoo Mars 4 Max",
-    "consumoKw": 0.06,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/71ys0+FqCpL._AC_SL1500_.jpg",
-    "description": "Maior volume série Mars 4"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Mars 5",
-    "name": "Elegoo Mars 5",
-    "consumoKw": 0.05,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61pZ7xZH7nL._AC_SL1500_.jpg",
-    "description": "Série 5 com Monochrome LCD"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Mars 5 Ultra",
-    "name": "Elegoo Mars 5 Ultra",
-    "consumoKw": 0.05,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61pZ7xZH7nL._AC_SL1500_.jpg",
-    "description": "12K ultra velocidade"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Saturn 2",
-    "name": "Elegoo Saturn 2",
-    "consumoKw": 0.07,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Formato médio 218x122x110mm"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Saturn 3",
-    "name": "Elegoo Saturn 3",
-    "consumoKw": 0.08,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/61F8bsOB-oL._AC_SL1500_.jpg",
-    "description": "12K formato médio 218x122x250mm"
-  },
-  {
-    "brand": "Elegoo",
-    "model": "Saturn 4 Ultra",
-    "name": "Elegoo Saturn 4 Ultra",
-    "consumoKw": 0.09,
-    "type": "SLA",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "18K máxima resolução"
+    "img": "https://cdn.simplyprint.io/i/printer_types/artillery_3d/genius_pro/product_photo_md.png?6431248611def",
+    "_comentario": "--- ARTILLERY ---"
   },
   {
     "brand": "Artillery",
@@ -734,8 +103,7 @@
     "name": "Artillery Sidewinder X1",
     "consumoKw": 0.22,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71VrVIwMjSL._AC_SL1500_.jpg",
-    "description": "Clássica de grande volume"
+    "img": "https://cdn.simplyprint.io/i/printer_types/artillery_3d/sidewinder_x1/product_photo_md.png?618833f014c3f"
   },
   {
     "brand": "Artillery",
@@ -743,8 +111,7 @@
     "name": "Artillery Sidewinder X2",
     "consumoKw": 0.25,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71VrVIwMjSL._AC_SL1500_.jpg",
-    "description": "Versão X2 com nivelamento automático"
+    "img": "https://cdn.simplyprint.io/i/printer_types/artillery_3d/sidewinder_x2/product_photo_md.png?616595219270f"
   },
   {
     "brand": "Artillery",
@@ -752,62 +119,72 @@
     "name": "Artillery Sidewinder X3 Plus",
     "consumoKw": 0.28,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71VrVIwMjSL._AC_SL1500_.jpg",
-    "description": "X3 Plus com motor duplo no eixo Z"
+    "img": "https://cdn.simplyprint.io/i/printer_types/artillery_3d/sidewinder_x3_plus/product_photo_md.png?65d488e928a35"
   },
   {
-    "brand": "Artillery",
-    "model": "Genius Pro",
-    "name": "Artillery Genius Pro",
-    "consumoKw": 0.20,
+    "brand": "Bambu Lab",
+    "model": "A1",
+    "name": "Bambu Lab A1",
+    "consumoKw": 0.1,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Extrusor Titan e hotend Volcano"
+    "img": "",
+    "_comentario": "--- BAMBU LAB ---"
   },
   {
-    "brand": "TWO TREES",
-    "model": "Bluer Silence",
-    "name": "TWO TREES Bluer Silence",
-    "consumoKw": 0.12,
+    "brand": "Bambu Lab",
+    "model": "A1 Mini",
+    "name": "Bambu Lab A1 Mini",
+    "consumoKw": 0.08,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Versão silenciosa com drivers TMC"
+    "img": ""
   },
   {
-    "brand": "TWO TREES",
-    "model": "Bluer V3",
-    "name": "TWO TREES Bluer V3",
-    "consumoKw": 0.13,
+    "brand": "Bambu Lab",
+    "model": "H2C",
+    "name": "Bambu Lab H2C",
+    "consumoKw": 0.26,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "V3 com drivers silenciosos TMC2209"
+    "img": ""
   },
   {
-    "brand": "TWO TREES",
-    "model": "Bluer Plus",
-    "name": "TWO TREES Bluer Plus",
-    "consumoKw": 0.14,
+    "brand": "Bambu Lab",
+    "model": "H2D",
+    "name": "Bambu Lab H2D",
+    "consumoKw": 0.24,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Plus com volume maior"
+    "img": ""
   },
   {
-    "brand": "TWO TREES",
-    "model": "Sapphire Pro SP3",
-    "name": "TWO TREES Sapphire Pro SP3",
+    "brand": "Bambu Lab",
+    "model": "P1",
+    "name": "Bambu Lab P1",
     "consumoKw": 0.18,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Safira Pro pequena 235x235x250mm"
+    "img": ""
   },
   {
-    "brand": "TWO TREES",
-    "model": "Sapphire Plus SP5",
-    "name": "TWO TREES Sapphire Plus SP5",
+    "brand": "Bambu Lab",
+    "model": "P1S",
+    "name": "Bambu Lab P1S",
+    "consumoKw": 0.2,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "P2S",
+    "name": "Bambu Lab P2S",
     "consumoKw": 0.22,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Safira Plus grande 300x300x350mm"
+    "img": ""
+  },
+  {
+    "brand": "Bambu Lab",
+    "model": "X1 Carbon",
+    "name": "Bambu Lab X1 Carbon",
+    "consumoKw": 0.35,
+    "type": "FDM",
+    "img": ""
   },
   {
     "brand": "BIQU",
@@ -815,8 +192,8 @@
     "name": "BIQU B1",
     "consumoKw": 0.14,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Cartesiana clássica 235x235x270mm"
+    "img": "",
+    "_comentario": "--- BIQU ---"
   },
   {
     "brand": "BIQU",
@@ -824,8 +201,7 @@
     "name": "BIQU B1 SE",
     "consumoKw": 0.15,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "SE com melhorias estruturais"
+    "img": ""
   },
   {
     "brand": "BIQU",
@@ -833,17 +209,15 @@
     "name": "BIQU B1 SE Plus",
     "consumoKw": 0.16,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Plus com volume maior 250x250x280mm"
+    "img": ""
   },
   {
     "brand": "BIQU",
     "model": "BX",
     "name": "BIQU BX",
-    "consumoKw": 0.20,
+    "consumoKw": 0.2,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Grande volume 300x300x320mm"
+    "img": ""
   },
   {
     "brand": "BIQU",
@@ -851,8 +225,281 @@
     "name": "BIQU Hurakan",
     "consumoKw": 0.28,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Ultra rápida CoreXY 300x300x400mm"
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3",
+    "name": "Creality Ender-3",
+    "consumoKw": 0.12,
+    "type": "FDM",
+    "img": "",
+    "_comentario": "--- CREALITY ---"
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V2",
+    "name": "Creality Ender-3 V2",
+    "consumoKw": 0.13,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V2 Neo",
+    "name": "Creality Ender-3 V2 Neo",
+    "consumoKw": 0.13,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3",
+    "name": "Creality Ender-3 V3",
+    "consumoKw": 0.15,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 KE",
+    "name": "Creality Ender-3 V3 KE",
+    "consumoKw": 0.15,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-3 V3 SE",
+    "name": "Creality Ender-3 V3 SE",
+    "consumoKw": 0.14,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Ender-5 Max",
+    "name": "Creality Ender-5 Max",
+    "consumoKw": 0.28,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot-Mage",
+    "name": "Creality Halot-Mage",
+    "consumoKw": 0.05,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot-Mage Pro",
+    "name": "Creality Halot-Mage Pro",
+    "consumoKw": 0.06,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot-One",
+    "name": "Creality Halot-One",
+    "consumoKw": 0.04,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot-One Plus",
+    "name": "Creality Halot-One Plus",
+    "consumoKw": 0.04,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Halot-Sky",
+    "name": "Creality Halot-Sky",
+    "consumoKw": 0.05,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "Hi",
+    "name": "Creality Hi",
+    "consumoKw": 0.16,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "K1",
+    "name": "Creality K1",
+    "consumoKw": 0.35,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "K1 Max",
+    "name": "Creality K1 Max",
+    "consumoKw": 0.4,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "K1C",
+    "name": "Creality K1C",
+    "consumoKw": 0.35,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "K2",
+    "name": "Creality K2",
+    "consumoKw": 0.42,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "K2 Plus",
+    "name": "Creality K2 Plus",
+    "consumoKw": 0.45,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Creality",
+    "model": "K2 Pro",
+    "name": "Creality K2 Pro",
+    "consumoKw": 0.48,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Centauri Carbon",
+    "name": "Elegoo Centauri Carbon",
+    "consumoKw": 0.32,
+    "type": "FDM",
+    "img": "",
+    "_comentario": "--- ELEGOO ---"
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 3",
+    "name": "Elegoo Mars 3",
+    "consumoKw": 0.04,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 3 Pro",
+    "name": "Elegoo Mars 3 Pro",
+    "consumoKw": 0.04,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 4",
+    "name": "Elegoo Mars 4",
+    "consumoKw": 0.05,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 4 Max",
+    "name": "Elegoo Mars 4 Max",
+    "consumoKw": 0.06,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 5",
+    "name": "Elegoo Mars 5",
+    "consumoKw": 0.05,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Mars 5 Ultra",
+    "name": "Elegoo Mars 5 Ultra",
+    "consumoKw": 0.05,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 3",
+    "name": "Elegoo Neptune 3",
+    "consumoKw": 0.18,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4",
+    "name": "Elegoo Neptune 4",
+    "consumoKw": 0.2,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4 Max",
+    "name": "Elegoo Neptune 4 Max",
+    "consumoKw": 0.3,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Neptune 4 Pro",
+    "name": "Elegoo Neptune 4 Pro",
+    "consumoKw": 0.22,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "OrangeStorm Giga",
+    "name": "Elegoo OrangeStorm Giga",
+    "consumoKw": 0.45,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Saturn 2",
+    "name": "Elegoo Saturn 2",
+    "consumoKw": 0.07,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Saturn 3",
+    "name": "Elegoo Saturn 3",
+    "consumoKw": 0.08,
+    "type": "SLA",
+    "img": ""
+  },
+  {
+    "brand": "Elegoo",
+    "model": "Saturn 4 Ultra",
+    "name": "Elegoo Saturn 4 Ultra",
+    "consumoKw": 0.09,
+    "type": "SLA",
+    "img": ""
   },
   {
     "brand": "Flashforge",
@@ -860,8 +507,8 @@
     "name": "Flashforge Adventurer 3",
     "consumoKw": 0.14,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/61uL+oOhvML._AC_SL1200_.jpg",
-    "description": "Fechada para uso seguro"
+    "img": "",
+    "_comentario": "--- FLASHFORGE ---"
   },
   {
     "brand": "Flashforge",
@@ -869,8 +516,7 @@
     "name": "Flashforge Adventurer 3 Pro",
     "consumoKw": 0.15,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/61uL+oOhvML._AC_SL1200_.jpg",
-    "description": "Pro com WiFi e nuvem"
+    "img": ""
   },
   {
     "brand": "Flashforge",
@@ -878,17 +524,15 @@
     "name": "Flashforge Adventurer 4",
     "consumoKw": 0.16,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Série 4 com câmara aquecida"
+    "img": ""
   },
   {
     "brand": "Flashforge",
     "model": "Adventurer 5M",
     "name": "Flashforge Adventurer 5M",
-    "consumoKw": 0.20,
+    "consumoKw": 0.2,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Média velocidade 300mm/s"
+    "img": ""
   },
   {
     "brand": "Flashforge",
@@ -896,125 +540,15 @@
     "name": "Flashforge Adventurer 5M Pro",
     "consumoKw": 0.22,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Pro com até 600mm/s"
+    "img": ""
   },
   {
     "brand": "Flashforge",
     "model": "Guider II",
     "name": "Flashforge Guider II",
-    "consumoKw": 0.30,
+    "consumoKw": 0.3,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Profissional fechada grande"
-  },
-  {
-    "brand": "Qidi Tech",
-    "model": "X-Plus",
-    "name": "Qidi Tech X-Plus",
-    "consumoKw": 0.26,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Duplo extrusor 270x200x200mm"
-  },
-  {
-    "brand": "Qidi Tech",
-    "model": "X-Plus 3",
-    "name": "Qidi Tech X-Plus 3",
-    "consumoKw": 0.28,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Série 3 com Klipper"
-  },
-  {
-    "brand": "Qidi Tech",
-    "model": "X-Max",
-    "name": "Qidi Tech X-Max",
-    "consumoKw": 0.32,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Grande formato 300x250x300mm"
-  },
-  {
-    "brand": "Qidi Tech",
-    "model": "X-Max 3",
-    "name": "Qidi Tech X-Max 3",
-    "consumoKw": 0.38,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "600mm/s CoreXY profissional"
-  },
-  {
-    "brand": "Qidi Tech",
-    "model": "Q1 Pro",
-    "name": "Qidi Tech Q1 Pro",
-    "consumoKw": 0.24,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Compacta profissional"
-  },
-  {
-    "brand": "Prusa",
-    "model": "i3 MK3S+",
-    "name": "Prusa i3 MK3S+",
-    "consumoKw": 0.12,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/61B7oqVFDsL._AC_SL1500_.jpg",
-    "description": "Referência em confiabilidade"
-  },
-  {
-    "brand": "Prusa",
-    "model": "i3 MK4",
-    "name": "Prusa i3 MK4",
-    "consumoKw": 0.13,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Geração 4 com atualizações"
-  },
-  {
-    "brand": "Prusa",
-    "model": "Mini+",
-    "name": "Prusa Mini+",
-    "consumoKw": 0.08,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/61nXxuSxGYL._AC_SL1500_.jpg",
-    "description": "Compacta 180x180x180mm"
-  },
-  {
-    "brand": "Mingda",
-    "model": "MD 100",
-    "name": "Mingda MD 100",
-    "consumoKw": 0.14,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Entrada profissional"
-  },
-  {
-    "brand": "Mingda",
-    "model": "MD 600",
-    "name": "Mingda MD 600",
-    "consumoKw": 0.26,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Grande formato 400x400x600mm"
-  },
-  {
-    "brand": "Mingda",
-    "model": "MD 600 Pro",
-    "name": "Mingda MD 600 Pro",
-    "consumoKw": 0.28,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Pro com câmara aquecida"
-  },
-  {
-    "brand": "Mingda",
-    "model": "Magician",
-    "name": "Mingda Magician",
-    "consumoKw": 0.18,
-    "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Mágica com automação"
+    "img": ""
   },
   {
     "brand": "Kingroon",
@@ -1022,8 +556,8 @@
     "name": "Kingroon KP3S",
     "consumoKw": 0.12,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Compacta de entrada 180x180x180mm"
+    "img": "",
+    "_comentario": "--- KINGROON ---"
   },
   {
     "brand": "Kingroon",
@@ -1031,8 +565,7 @@
     "name": "Kingroon KP3S Pro",
     "consumoKw": 0.13,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Pro com sensor de filamento"
+    "img": ""
   },
   {
     "brand": "Kingroon",
@@ -1040,8 +573,106 @@
     "name": "Kingroon KP5",
     "consumoKw": 0.16,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Maior volume 220x220x250mm"
+    "img": ""
+  },
+  {
+    "brand": "Mingda",
+    "model": "Magician",
+    "name": "Mingda Magician",
+    "consumoKw": 0.18,
+    "type": "FDM",
+    "img": "",
+    "_comentario": "--- MINGDA ---"
+  },
+  {
+    "brand": "Mingda",
+    "model": "MD 100",
+    "name": "Mingda MD 100",
+    "consumoKw": 0.14,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Mingda",
+    "model": "MD 600",
+    "name": "Mingda MD 600",
+    "consumoKw": 0.26,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Mingda",
+    "model": "MD 600 Pro",
+    "name": "Mingda MD 600 Pro",
+    "consumoKw": 0.28,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Prusa",
+    "model": "i3 MK3S+",
+    "name": "Prusa i3 MK3S+",
+    "consumoKw": 0.12,
+    "type": "FDM",
+    "img": "",
+    "_comentario": "--- PRUSA ---"
+  },
+  {
+    "brand": "Prusa",
+    "model": "i3 MK4",
+    "name": "Prusa i3 MK4",
+    "consumoKw": 0.13,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Prusa",
+    "model": "Mini+",
+    "name": "Prusa Mini+",
+    "consumoKw": 0.08,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "Q1 Pro",
+    "name": "Qidi Tech Q1 Pro",
+    "consumoKw": 0.24,
+    "type": "FDM",
+    "img": "",
+    "_comentario": "--- QIDI TECH ---"
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "X-Max",
+    "name": "Qidi Tech X-Max",
+    "consumoKw": 0.32,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "X-Max 3",
+    "name": "Qidi Tech X-Max 3",
+    "consumoKw": 0.38,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "X-Plus",
+    "name": "Qidi Tech X-Plus",
+    "consumoKw": 0.26,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Qidi Tech",
+    "model": "X-Plus 3",
+    "name": "Qidi Tech X-Plus 3",
+    "consumoKw": 0.28,
+    "type": "FDM",
+    "img": ""
   },
   {
     "brand": "Tronxy",
@@ -1049,17 +680,16 @@
     "name": "Tronxy X5SA",
     "consumoKw": 0.24,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Grande formato 500x500x620mm"
+    "img": "",
+    "_comentario": "--- TRONXY ---"
   },
   {
     "brand": "Tronxy",
     "model": "X5SA-400",
     "name": "Tronxy X5SA-400",
-    "consumoKw": 0.20,
+    "consumoKw": 0.2,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Formato 400x400x400mm"
+    "img": ""
   },
   {
     "brand": "Tronxy",
@@ -1067,8 +697,7 @@
     "name": "Tronxy X5SA-500PRO",
     "consumoKw": 0.28,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "PRO 500x500x600mm"
+    "img": ""
   },
   {
     "brand": "Tronxy",
@@ -1076,26 +705,48 @@
     "name": "Tronxy XY-2",
     "consumoKw": 0.14,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Entrada cartesiana"
+    "img": ""
   },
   {
-    "brand": "Voron",
-    "model": "V2.4",
-    "name": "Voron V2.4",
-    "consumoKw": 0.32,
+    "brand": "TWO TREES",
+    "model": "Bluer Plus",
+    "name": "TWO TREES Bluer Plus",
+    "consumoKw": 0.14,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "CoreXY profissional 300x300x300mm"
+    "img": "",
+    "_comentario": "--- TWO TREES ---"
   },
   {
-    "brand": "Voron",
-    "model": "Trident",
-    "name": "Voron Trident",
-    "consumoKw": 0.28,
+    "brand": "TWO TREES",
+    "model": "Bluer Silence",
+    "name": "TWO TREES Bluer Silence",
+    "consumoKw": 0.12,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Delta 300x300x300mm"
+    "img": ""
+  },
+  {
+    "brand": "TWO TREES",
+    "model": "Bluer V3",
+    "name": "TWO TREES Bluer V3",
+    "consumoKw": 0.13,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "TWO TREES",
+    "model": "Sapphire Plus SP5",
+    "name": "TWO TREES Sapphire Plus SP5",
+    "consumoKw": 0.22,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "TWO TREES",
+    "model": "Sapphire Pro SP3",
+    "name": "TWO TREES Sapphire Pro SP3",
+    "consumoKw": 0.18,
+    "type": "FDM",
+    "img": ""
   },
   {
     "brand": "Voron",
@@ -1103,7 +754,23 @@
     "name": "Voron Switchwire",
     "consumoKw": 0.24,
     "type": "FDM",
-    "img": "https://m.media-amazon.com/images/I/71YxVPi3ubL._AC_SL1500_.jpg",
-    "description": "Cartesiana linear"
+    "img": "",
+    "_comentario": "--- VORON ---"
+  },
+  {
+    "brand": "Voron",
+    "model": "Trident",
+    "name": "Voron Trident",
+    "consumoKw": 0.28,
+    "type": "FDM",
+    "img": ""
+  },
+  {
+    "brand": "Voron",
+    "model": "V2.4",
+    "name": "Voron V2.4",
+    "consumoKw": 0.32,
+    "type": "FDM",
+    "img": ""
   }
 ]

@@ -53,7 +53,7 @@ export function EspecificacoesTecnicas({ register, control, errors }: Propriedad
             control={control}
             render={({ field }) => (
               <CampoMonetario
-                placeholder="15,00"
+                placeholder="0,00"
                 erro={errors.taxaHoraCentavos?.message}
                 {...field}
               />
