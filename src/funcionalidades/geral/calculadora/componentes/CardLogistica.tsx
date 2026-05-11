@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Warehouse, Settings } from "lucide-react";
 import { PerfilMarketplace } from "../tipos";
-import { ContadorAnimado } from "@/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 
 interface CardLogisticaProps {
   perfis: PerfilMarketplace[];

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
+import { Dialogo } from "@/compartilhado/componentes";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
 import { ArrowUpCircle, TrendingUp, Info, Package, DollarSign, FileText } from "lucide-react";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
 

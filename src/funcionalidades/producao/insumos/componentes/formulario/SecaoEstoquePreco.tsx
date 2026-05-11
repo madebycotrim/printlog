@@ -1,8 +1,8 @@
 import { Controller } from "react-hook-form";
 import { Package, Ruler, AlertCircle, Link as LinkIcon } from "lucide-react";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
+import { Combobox } from "@/compartilhado/componentes";
 import { UNIDADES } from "../../constantes";
 import { UnidadeInsumo } from "../../tipos";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";

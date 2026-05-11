@@ -1,5 +1,5 @@
 import { Trash2, AlertTriangle, User } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Cliente } from "../tipos";
 
 interface PropriedadesModalRemocaoCliente {

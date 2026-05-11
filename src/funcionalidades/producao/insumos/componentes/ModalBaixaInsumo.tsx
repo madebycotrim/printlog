@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
+import { Dialogo } from "@/compartilhado/componentes";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { Combobox } from "@/compartilhado/componentes";
 import { MotivoBaixaInsumo, Insumo } from "@/funcionalidades/producao/insumos/tipos";
 import { ArrowDownCircle, Package, Tag, FileText } from "lucide-react";
 

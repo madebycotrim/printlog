@@ -65,22 +65,72 @@ export function usarTema() {
 
   const { modoTema, corPrimaria, fonte } = preferencias;
 
+  const [modoEfetivo, definirModoEfetivo] = useState<ModoTema>(() => {
+    if (modoTema === TemaInterface.SISTEMA) {
+      return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? TemaInterface.ESCURO
+        : TemaInterface.CLARO;
+    }
+    return modoTema;
+  });
+
+  useEffect(() => {
+    // Sincroniza o modoEfetivo quando o modoTema muda
+    if (modoTema !== TemaInterface.SISTEMA) {
+      definirModoEfetivo(modoTema);
+    } else {
+      definirModoEfetivo(
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? TemaInterface.ESCURO
+          : TemaInterface.CLARO
+      );
+    }
+  }, [modoTema]);
+
   useEffect(() => {
     // Persiste as escolhas e aplica variaveis globais de tema/cor
     localStorage.setItem(CHAVE_PERSISTENCIA, JSON.stringify(preferencias));
 
     const root = document.documentElement;
-    root.setAttribute("data-tema", modoTema.toLowerCase());
     root.style.setProperty("--cor-primaria", PALETA_CORES[corPrimaria].hex);
     root.style.setProperty("--cor-primaria-rgb", PALETA_CORES[corPrimaria].rgb);
     root.style.setProperty("--familia-fonte", DICIONARIO_FONTES[fonte]);
 
-    if (modoTema === TemaInterface.ESCURO) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    const aplicarDOM = (modo: ModoTema) => {
+      root.setAttribute("data-tema", modo.toLowerCase());
+      if (modo === TemaInterface.ESCURO) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    };
+
+    aplicarDOM(modoEfetivo);
+
+    // Se estiver no modo SISTEMA, ouvimos mudanças no SO
+    if (modoTema === TemaInterface.SISTEMA) {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const manipulador = (e: MediaQueryListEvent | MediaQueryList) => {
+        const novoModo = e.matches ? TemaInterface.ESCURO : TemaInterface.CLARO;
+        definirModoEfetivo(novoModo);
+      };
+      
+      // Suporte para navegadores antigos e novos
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener("change", manipulador);
+      } else {
+        mediaQuery.addListener(manipulador);
+      }
+
+      return () => {
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener("change", manipulador);
+        } else {
+          mediaQuery.removeListener(manipulador);
+        }
+      };
     }
-  }, [preferencias]);
+  }, [preferencias, modoEfetivo]);
 
   function alternarTema() {
     definirPreferencias((prev) => ({
@@ -101,8 +151,12 @@ export function usarTema() {
     definirPreferencias((prev) => ({ ...prev, fonte: novaFonte }));
   }
 
+  // modoEfetivo agora é um estado reativo
+
+
   return {
     modoTema,
+    modoEfetivo,
     definirModoTema,
     alternarTema,
     corPrimaria,

@@ -24,13 +24,13 @@ export function SeloPlano({
     FUNDADOR: {
       rotulo: "Maker Fundador",
       icone: Crown,
-      classes: "bg-sky-500/10 border-sky-500/20 text-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.15)]",
+      classes: "bg-sky-500/10 border-sky-500/20 text-sky-500 shadow-[0_0_5px_rgba(14,165,233,0.1)]",
       iconeClasse: "fill-sky-500 animate-pulse",
     },
     PRO: {
       rotulo: "Maker Pro",
       icone: Zap,
-      classes: "bg-indigo-500/10 border-indigo-500/20 text-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.15)]",
+      classes: "bg-indigo-500/10 border-indigo-500/20 text-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.1)]",
       iconeClasse: "fill-indigo-500",
     },
     FREE: {

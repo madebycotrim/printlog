@@ -29,7 +29,7 @@ export function PainelBranding({
         <div className="inline-flex items-center gap-3">
           <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/5 backdrop-blur-md shadow-lg">
             <img
-              src="/logo-colorida.png"
+              src="/logo-branca.png"
               alt="Logo"
               className="w-6 h-6 object-contain"
             />

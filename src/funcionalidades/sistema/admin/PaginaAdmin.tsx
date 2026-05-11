@@ -6,8 +6,8 @@ import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { toast } from "react-hot-toast";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
+import { Carregamento } from "@/compartilhado/componentes";
+import { EstadoVazio } from "@/compartilhado/componentes";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { mascararEmail } from "@/compartilhado/utilitarios/texto";
 

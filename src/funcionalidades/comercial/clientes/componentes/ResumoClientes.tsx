@@ -1,6 +1,6 @@
 import { Cliente } from "../tipos";
 import { Users, TrendingUp, Package, UserPlus } from "lucide-react";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
+import { CardResumo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesResumoClientes {

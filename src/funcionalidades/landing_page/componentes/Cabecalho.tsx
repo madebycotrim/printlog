@@ -32,7 +32,7 @@ export function Cabecalho() {
             className="flex items-center gap-2 cursor-pointer group relative z-50"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <img src="/logo-colorida.png" alt="Logo PrintLog" className="h-8 w-auto" />
+            <img src="/logo-azul.png" alt="Logo PrintLog" className="h-8 w-auto" />
             <span className="text-white font-black text-xl tracking-tighter">
               PRINTLOG{" "}
               <span className="text-[#0ea5e9] text-xs not-italic font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 align-top ml-1 animate-pulse">

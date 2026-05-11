@@ -22,9 +22,10 @@ import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/Conte
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { Avatar } from "./Avatar";
-import { SeloPlano } from "./SeloPlano";
+import { Avatar, SeloPlano } from "./ui";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
+import { usarContextoTema } from "@/configuracoes/tema/tema_provider";
+import { TemaInterface } from "@/compartilhado/tipos/modelos";
 
 type PropriedadesBarraLateral = {
   abertaMobile?: boolean;
@@ -48,6 +49,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const localizacao = useLocation();
   const { usuario, sair } = usarAutenticacao();
   const { participarPrototipos, betaMultiEstudio, resetarTudo } = usarBeta();
+  const { modoEfetivo } = usarContextoTema();
   
   // Estado de colapso da Barra Lateral (Desktop)
   const [colapsada, setColapsada] = useState(false);
@@ -139,7 +141,11 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
           <div className={`h-24 flex items-center gap-3 ${colapsada ? "justify-center px-0 flex-col py-4" : "px-6"}`}>
             <div className="relative group shrink-0">
               <div className="absolute -inset-1.5 bg-primaria/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-500" />
-              <img src="/logo-colorida.png" alt="PrintLog" className="relative w-9 h-9 object-contain" />
+              <img 
+                src={modoEfetivo === TemaInterface.ESCURO ? "/logo-branca.png" : "/logo-preta.png"} 
+                alt="PrintLog" 
+                className="relative w-9 h-9 object-contain" 
+              />
             </div>
 
             {!colapsada && (

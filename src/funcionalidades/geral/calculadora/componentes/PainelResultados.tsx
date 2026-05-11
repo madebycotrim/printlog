@@ -4,10 +4,8 @@ import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { memo } from "react";
-import { ContadorAnimado } from "@/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { usarEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 
 interface PainelResultadosProps {
   calculo: CalculoResultado;
@@ -26,22 +24,21 @@ interface PainelResultadosProps {
   modoEntrada?: 'unitario' | 'lote';
   frete?: number;
   taxaFixa?: number;
+  aoSugerirPrecoIA?: () => void;
 }
 
 export const PainelResultados = memo(function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
-  tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0
+  tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA
 }: PainelResultadosProps) {
   const { usuario } = usarAutenticacao();
-  const { betaOrcamentosMagicos, templateOrcamento } = usarBeta();
-  const { estudioAtivo } = usarEstudio();
 
   const compartilharWhatsApp = () => {
-    const nomeEstudio = estudioAtivo?.nome || "Meu Estúdio 3D";
+    const nomeEstudio = "Meu Estúdio 3D";
     const valorFormatado = centavosParaReais(calculo.precoSugerido);
     
-    const baseTemplate = templateOrcamento || "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀";
+    const baseTemplate = "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀";
     
     const mensagem = baseTemplate
       .replace(/{estudio}/g, nomeEstudio)
@@ -60,9 +57,13 @@ export const PainelResultados = memo(function PainelResultados({
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400">Preço Sugerido</span>
           {(usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
-            <div className="p-1.5 rounded-lg text-sky-400 animate-pulse">
-              <Sparkles size={14} className="fill-sky-400/20" />
-            </div>
+            <button 
+              onClick={aoSugerirPrecoIA}
+              title="Otimizar Preço com IA"
+              className="p-1.5 rounded-lg text-sky-400 bg-sky-500/5 border border-sky-500/10 hover:bg-sky-500/20 hover:border-sky-500/30 hover:scale-110 active:scale-95 transition-all animate-pulse hover:animate-none group/ia"
+            >
+              <Sparkles size={14} className="fill-sky-400/20 group-hover/ia:fill-sky-400" />
+            </button>
           )}
         </div>
 
@@ -307,38 +308,40 @@ export const PainelResultados = memo(function PainelResultados({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-4 w-full">
+        <div className="flex items-center gap-3 mt-4 w-full">
           <button 
             onClick={salvarProjeto}
-            className="h-11 font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-2 bg-sky-500 text-white hover:bg-sky-400 hover:shadow-sky-500/30 transition-all active:scale-[0.98] shadow-[0_8px_20px_-6px_rgba(14,165,233,0.4)] disabled:opacity-30 disabled:pointer-events-none"
+            className="flex-1 h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-2 bg-sky-500 text-white hover:bg-sky-400 hover:shadow-sky-500/30 transition-all active:scale-[0.98] shadow-[0_8px_20px_-6px_rgba(14,165,233,0.4)] disabled:opacity-30 disabled:pointer-events-none"
             disabled={calculo.precoSugerido <= 0}
+            title="Salvar Projeto"
           >
-            <FolderKanban size={14} />
-            Salvar Projeto
+            <FolderKanban size={18} />
+            <span>Salvar Projeto</span>
           </button>
 
           <button 
             onClick={gerarPdf} 
-            className="h-11 font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-2 bg-muted/40 dark:bg-zinc-800 hover:bg-muted/80 dark:hover:bg-zinc-700/80 hover:text-primary dark:hover:text-white text-muted-foreground dark:text-zinc-300 border border-borda-sutil transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none" 
+            className="flex-1 h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-2 bg-muted/40 dark:bg-zinc-800 hover:bg-muted/80 dark:hover:bg-zinc-700/80 hover:text-primary dark:hover:text-white text-muted-foreground dark:text-zinc-300 border border-borda-sutil transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none" 
             disabled={calculo.precoSugerido <= 0 || carregandoPdf}
+            title="Gerar PDF"
           >
-            {carregandoPdf ? <Activity className="animate-spin" size={14} /> : <Download size={14} />}
-            {carregandoPdf ? "PDF..." : "Gerar PDF"}
+            {carregandoPdf ? <Activity className="animate-spin" size={18} /> : <Download size={18} />}
+            <span>Exportar PDF</span>
+          </button>
+
+          <button 
+            onClick={compartilharWhatsApp}
+            disabled={calculo.precoSugerido <= 0}
+            title="Enviar no WhatsApp"
+            className="w-12 h-12 flex items-center justify-center transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
+          >
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/960px-WhatsApp.svg.png" 
+              alt="WhatsApp" 
+              className="w-8 h-8" 
+            />
           </button>
         </div>
-
-        {betaOrcamentosMagicos && (
-          <div className="mt-4 w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
-             <button 
-               onClick={compartilharWhatsApp}
-               disabled={calculo.precoSugerido <= 0}
-               className="w-full h-12 font-black uppercase tracking-[0.1em] text-[11px] rounded-2xl flex items-center justify-center gap-2 bg-[#25D366] text-white hover:bg-[#20BE5A] transition-all active:scale-95 shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] disabled:opacity-50 disabled:shadow-none"
-             >
-               <MessageCircle size={16} />
-               Enviar Orçamento no WhatsApp (Beta)
-             </button>
-          </div>
-        )}
       </div>
     </div>
   );

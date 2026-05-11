@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Clock } from "lucide-react";
 
 

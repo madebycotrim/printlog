@@ -3,15 +3,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, Tag, FileText, Calendar, User, ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
-import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
+import { AcoesDescarte } from "@/compartilhado/componentes";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
 import { CriarLancamentoInput } from "../tipos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Combobox } from "@/compartilhado/componentes";
+import { Dialogo } from "@/compartilhado/componentes";
 import { toast } from "react-hot-toast";
 
 const esquemaLancamento = z.object({

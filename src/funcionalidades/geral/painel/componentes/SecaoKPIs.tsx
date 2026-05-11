@@ -1,5 +1,5 @@
 import { TrendingUp, Clock, Printer, Box, Package } from "lucide-react";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
+import { CardResumo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 /**

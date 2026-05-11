@@ -1,7 +1,7 @@
 import { LucideIcon, Search, X } from "lucide-react";
 import { ReactNode } from "react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
+import { Dialogo } from "@/compartilhado/componentes";
+import { EstadoVazio } from "@/compartilhado/componentes";
 
 interface PropriedadesModalListagemPremium {
   aberto: boolean;
@@ -88,7 +88,7 @@ export function ModalListagemPremium({
                 value={termoBusca}
                 onChange={(e) => aoMudarBusca(e.target.value)}
                 placeholder={placeholderBusca}
-                className="w-full h-full pl-12 pr-4 bg-transparent text-xs font-bold uppercase tracking-widest outline-none text-primary dark:text-white"
+                className="w-full h-full pl-12 pr-4 bg-transparent text-[10px] font-black uppercase tracking-[0.2em] outline-none text-primary dark:text-white placeholder:text-zinc-500"
               />
               {termoBusca && (
                 <button

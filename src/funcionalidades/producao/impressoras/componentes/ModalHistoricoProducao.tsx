@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { Printer, Box, CheckCircle2, XCircle, TrendingUp, Clock, Target, DollarSign, History } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
-import { GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
+import { GradeCampos } from "@/compartilhado/componentes";
+import { CardResumo } from "@/compartilhado/componentes";
 import { Impressora, RegistroProducao } from "@/funcionalidades/producao/impressoras/tipos";
 
 interface ModalHistoricoProducaoProps {

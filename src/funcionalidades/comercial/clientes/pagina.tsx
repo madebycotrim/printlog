@@ -8,8 +8,8 @@ import { FiltrosCliente } from "./componentes/FiltrosCliente";
 import { ModalRemocaoCliente } from "./componentes/ModalRemocaoCliente";
 import { ModalHistoricoCliente } from "./componentes/ModalHistoricoCliente";
 import { motion, AnimatePresence } from "framer-motion";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { EstadoVazio } from "@/compartilhado/componentes";
+import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaClientes() {
   const { estado, acoes } = usarGerenciadorClientes();
@@ -27,7 +27,7 @@ export function PaginaClientes() {
   });
 
   return (
-    <div className="space-y-10 min-h-[60vh] flex flex-col">
+    <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
         {estado.carregando && estado.clientes.length === 0 ? (
           <motion.div
@@ -45,6 +45,7 @@ export function PaginaClientes() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            className="flex-1 flex flex-col"
           >
             <EstadoVazio
               titulo="Nenhum cliente no radar"

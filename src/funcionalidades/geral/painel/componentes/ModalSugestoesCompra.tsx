@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { SugestaoCompra } from "@/compartilhado/servicos/servicoInventario";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { AlertCircle, ShoppingCart, ArrowRight, FileSpreadsheet, Copy, Check } from "lucide-react";

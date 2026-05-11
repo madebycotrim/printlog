@@ -1,7 +1,7 @@
 import { Pencil, Trash2, History as HistoryIcon, MoreVertical, Scale, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
-import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { useState, useRef, useEffect } from "react";
 import { pluralizar, centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 

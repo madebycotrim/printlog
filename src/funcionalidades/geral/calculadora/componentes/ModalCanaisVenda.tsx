@@ -1,5 +1,5 @@
 import { Settings, Check, X, Pencil, Trash } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 
 /**
  * Interface para as propriedades do ModalCanaisVenda.
@@ -56,11 +56,11 @@ export function ModalCanaisVenda({
                     <div className="flex-1 min-w-0">
                       {indiceSendoEditado === idx ? (
                         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                          <input
+                           <input
                             type="text"
                             value={nomeTemporario}
                             onChange={(e) => setNomeTemporario(e.target.value)}
-                            className="flex-1 min-w-0 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-orange-500 font-bold text-xs text-primary dark:text-white outline-none"
+                            className="flex-1 min-w-0 h-8 px-2 rounded-lg bg-white dark:bg-zinc-900 border border-orange-500 font-black text-[10px] uppercase tracking-[0.2em] text-primary dark:text-white outline-none"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {

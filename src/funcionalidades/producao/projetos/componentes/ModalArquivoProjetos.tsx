@@ -3,7 +3,7 @@ import { CartaoPedido } from "./CartaoPedido";
 import { Archive, FolderKanban } from "lucide-react";
 import { useState, useMemo } from "react";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 
 interface PropriedadesModalArquivoProjetos {
   aberto: boolean;

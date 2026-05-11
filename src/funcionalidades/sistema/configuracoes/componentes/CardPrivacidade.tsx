@@ -4,7 +4,7 @@ import { Shield, AlertTriangle, Trash2, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { CabecalhoCard } from "./Compartilhados";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 /**

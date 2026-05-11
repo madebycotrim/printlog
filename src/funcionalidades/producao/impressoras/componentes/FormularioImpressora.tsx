@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { usarFormularioImpressora } from "../hooks/usarFormularioImpressora";
 import { IdentificacaoHardware } from "./formulario/IdentificacaoHardware";

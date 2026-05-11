@@ -1,6 +1,6 @@
 import { Settings, Plus, Star, Check } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
-import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
+import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 /**

@@ -230,9 +230,6 @@ export function Apresentacao() {
                     85%  { opacity:1; transform:translateY(0); }
                     100% { opacity:0; transform:translateY(12px); }
                 }
-                @keyframes movimentoGradeApresentacao {
-                    from { background-position: 0 0; }
-                    to   { background-position: 40px 40px; }
                 }
                 @keyframes feixeApresentacao {
                     0%   { transform: translateX(-100%) skewX(-15deg); opacity:0; }
@@ -287,25 +284,8 @@ export function Apresentacao() {
       <section
         id="apresentacao"
         className="relative min-h-screen flex items-center pt-28 pb-24 overflow-hidden"
-        style={{ background: "#050507" }}
       >
-        {/* ── Vinheta ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 0%, transparent 0%, #050507 70%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 40% at 50% 100%, transparent 0%, #050507 60%)",
-          }}
-        />
-
-        {/* ── Orbes de Brilho ── */}
+        {/* Orbes de Brilho Dinâmicos (Mantidos por serem específicos do Hero) */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -315,44 +295,8 @@ export function Apresentacao() {
             width: 800,
             height: 500,
             background:
-              "radial-gradient(ellipse, rgba(14,165,233,.18) 0%, transparent 70%)",
+              "radial-gradient(ellipse, rgba(14,165,233,.15) 0%, transparent 70%)",
             animation: "brilhoApresentacao 6s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: "20%",
-            left: "15%",
-            width: 400,
-            height: 400,
-            background:
-              "radial-gradient(ellipse, rgba(99,102,241,.12) 0%, transparent 70%)",
-            animation: "brilhoApresentacao 8s ease-in-out infinite 2s",
-          }}
-        />
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: "30%",
-            right: "10%",
-            width: 350,
-            height: 350,
-            background:
-              "radial-gradient(ellipse, rgba(16,185,129,.1) 0%, transparent 70%)",
-            animation: "brilhoApresentacao 7s ease-in-out infinite 1s",
-          }}
-        />
-
-        {/* ── Grade Animada (Camada sobre efeitos) ── */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right,rgba(14,165,233,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(14,165,233,.04) 1px,transparent 1px)",
-            backgroundSize: "40px 40px",
-            animation: "movimentoGradeApresentacao 20s linear infinite",
-            transform: `translateY(${rolagemY * 0.4}px)`,
             zIndex: 1,
           }}
         />

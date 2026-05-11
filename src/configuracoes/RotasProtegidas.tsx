@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 
 interface RotaProtegidaProps {
   children: React.ReactNode;

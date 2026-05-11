@@ -1,5 +1,5 @@
 import { Box, AlertTriangle, DollarSign, BoxSelect } from "lucide-react";
-import { CardResumo, CardResumoVazio } from "@/compartilhado/componentes/CardResumo";
+import { CardResumo, CardResumoVazio } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion } from "framer-motion";
 

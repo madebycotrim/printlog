@@ -5,10 +5,10 @@ import { QuadroKanban } from "./componentes/QuadroKanban";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
 import { ModalProjetosAtrasados } from "./componentes/ModalProjetosAtrasados";
 import { usarPedidos } from "./hooks/usarPedidos";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
+import { EstadoVazio } from "@/compartilhado/componentes";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
 import { motion, AnimatePresence } from "framer-motion";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 import { useNavigate } from "react-router-dom";
 import { FormularioPedido } from "./componentes/FormularioPedido";
 import { Pedido } from "./tipos";
@@ -41,7 +41,7 @@ export function PaginaProjetos() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-[60vh]">
+    <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
         {carregando && pedidos.length === 0 ? (
           <motion.div

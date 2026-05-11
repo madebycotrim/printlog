@@ -1,7 +1,7 @@
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { usarPedidos } from "../hooks/usarPedidos";
 import { ColunaKanban } from "./ColunaKanban";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 import { Pedido } from "../tipos";
 import { verificarSeEstaAtrasado } from "@/compartilhado/utilitarios/gestaoAtrasos";
 

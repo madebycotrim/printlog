@@ -1,13 +1,13 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Layout } from "@/compartilhado/componentes/Layout";
-import { RotaProtegida } from "@/configuracoes/rotas-protegidas";
+import { Layout } from "@/compartilhado/componentes";
+import { RotaProtegida } from "@/configuracoes/RotasProtegidas";
 import { ScrollParaTopo } from "@/compartilhado/utilitarios/ScrollParaTopo";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 import { ProvedorAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ProvedorEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 import { ProvedorBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { ToasterPremium } from "@/compartilhado/componentes/ToasterPremium";
+import { ToasterPremium } from "@/compartilhado/componentes";
 import { WidgetFeedbackBeta } from "@/funcionalidades/beta/componentes/WidgetFeedbackBeta";
 
 // Landing Page Publica

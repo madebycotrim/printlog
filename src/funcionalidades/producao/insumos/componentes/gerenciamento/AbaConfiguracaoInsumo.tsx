@@ -4,7 +4,7 @@ import { usarFormularioInsumo } from "../../hooks/usarFormularioInsumo";
 import { SecaoInformacoesBasicas } from "../formulario/SecaoInformacoesBasicas";
 import { SecaoEstoquePreco } from "../formulario/SecaoEstoquePreco";
 import { SecaoRendimentoFracionado } from "../formulario/SecaoRendimentoFracionado";
-import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
+import { AcoesDescarte } from "@/compartilhado/componentes";
 
 interface PropriedadesAbaConfiguracao {
   insumo: Insumo;

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Search, X, ChevronRight } from "lucide-react";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
+import { EstadoVazio } from "@/compartilhado/componentes";
 import { InterfaceTopico } from "../utilitarios/dados";
 
 interface PropriedadesResultados {

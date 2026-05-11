@@ -3,7 +3,7 @@ import { CartaoPedido } from "./CartaoPedido";
 import { Clock, AlertTriangle } from "lucide-react";
 import { useState, useMemo } from "react";
 import { verificarSeEstaAtrasado } from "@/compartilhado/utilitarios/gestaoAtrasos";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 
 interface PropriedadesModalProjetosAtrasados {
   aberto: boolean;

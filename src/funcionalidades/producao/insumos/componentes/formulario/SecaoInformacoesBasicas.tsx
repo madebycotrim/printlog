@@ -1,5 +1,5 @@
 import { Box, Tag } from "lucide-react";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
+import { CampoTexto } from "@/compartilhado/componentes";
 import { CATEGORIAS } from "../../constantes";
 import { CategoriaInsumo } from "../../tipos";
 

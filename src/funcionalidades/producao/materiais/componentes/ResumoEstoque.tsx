@@ -2,8 +2,8 @@ import { PackageSearch, DollarSign, AlertTriangle, Activity } from "lucide-react
 import { useState, useMemo } from "react";
 import { GraficoConsumoMateriais } from "./GraficoConsumoMateriais";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { CardResumo } from "@/compartilhado/componentes";
+import { Dialogo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 import { motion } from "framer-motion";

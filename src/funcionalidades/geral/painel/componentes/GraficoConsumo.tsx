@@ -5,8 +5,8 @@ import {
     ResponsiveContainer,
     Tooltip,
     XAxis,
-    YAxis,
-    CartesianGrid
+    CartesianGrid,
+    YAxis
 } from "recharts";
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 
@@ -14,12 +14,10 @@ export function GraficoConsumo() {
     const [isMounted, setIsMounted] = useState(false);
     const materiais = usarArmazemMateriais((s) => s.materiais);
 
-    // 🧮 CÁLCULO DE DADOS REAIS
     const dadosGrafico = useMemo(() => {
         const hoje = new Date();
         const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
         
-        // Inicializa os últimos 7 dias com zero
         const ultimos7Dias = Array.from({ length: 7 }, (_, i) => {
             const data = new Date();
             data.setDate(hoje.getDate() - (6 - i));
@@ -30,11 +28,10 @@ export function GraficoConsumo() {
             };
         });
 
-        // Agrega o consumo real de todos os materiais
         materiais.forEach(material => {
             const historico = Array.isArray(material.historicoUso) ? material.historicoUso : [];
             historico.forEach(registro => {
-                const dataRaw = registro.data || (typeof registro.id === 'number' ? registro.id : null);
+                const dataRaw = registro.data;
                 if (!dataRaw) return;
                 
                 const d = new Date(dataRaw);
@@ -52,61 +49,70 @@ export function GraficoConsumo() {
     }, [materiais]);
 
     useEffect(() => {
-        // Aguarda a animação de entrada da página (AnimatePresence) terminar
-        const construtor = setTimeout(() => setIsMounted(true), 500);
+        const construtor = setTimeout(() => setIsMounted(true), 300);
         return () => clearTimeout(construtor);
     }, []);
 
     return (
-        <div className="lg:col-span-2 bg-card rounded-2xl p-8 border border-borda-sutil shadow-sm min-h-[450px]">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h3 className="text-xl font-black tracking-tight text-primary">Consumo de Filamento</h3>
-                    <p className="text-sm text-zinc-500">Gramas consumidas por dia nesta semana</p>
+        <div className="bg-card border border-borda-sutil rounded-3xl p-8 shadow-media relative overflow-hidden group">
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-sky-500/5 blur-[100px] pointer-events-none group-hover:opacity-100 opacity-50 transition-opacity" />
+            
+            <div className="flex items-center justify-between mb-10 relative z-10">
+                <div className="flex flex-col">
+                    <h3 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">Consumo Semanal</h3>
+                    <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-2xl font-black text-primary tracking-tighter">Fluxo MP</span>
+                        <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase tracking-widest italic">Real-time</span>
+                    </div>
                 </div>
-                <select className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl text-xs font-bold px-3 py-2 outline-none cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
-                    <option>Últimos 7 dias</option>
-                    <option>Últimos 30 dias</option>
-                </select>
+                <div className="flex gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-borda-sutil text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                        <div className="w-1.5 h-1.5 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]" />
+                        Grama (g)
+                    </div>
+                </div>
             </div>
 
-            <div className="h-[300px] w-full relative min-h-[300px] overflow-hidden">
+            <div className="h-[280px] w-full relative z-10">
                 {isMounted && (
-                    <ResponsiveContainer width="99%" height="100%" debounce={100} minWidth={0}>
-                        <AreaChart data={dadosGrafico} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={dadosGrafico} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                             <defs>
-                                <linearGradient id="colorValor" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--cor-primaria)" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="var(--cor-primaria)" stopOpacity={0} />
+                                <linearGradient id="colorConsumo" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.15} />
+                                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-zinc-800" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
                             <XAxis
                                 dataKey="nome"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 'bold' }}
+                                tick={{ fill: '#64748b', fontSize: 9, fontWeight: 900 }}
                                 dy={10}
                             />
                             <YAxis hide />
                             <Tooltip
+                                cursor={{ stroke: '#0ea5e9', strokeWidth: 1, strokeDasharray: '4 4' }}
                                 contentStyle={{
-                                    backgroundColor: 'var(--bg-card)',
-                                    border: '1px solid var(--border-subtle)',
+                                    backgroundColor: '#0c0c0e',
+                                    border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: '12px',
-                                    color: 'var(--text-primary)',
-                                    boxShadow: 'var(--sombra-media)'
+                                    padding: '12px',
+                                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
                                 }}
-                                itemStyle={{ color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold' }}
-                                cursor={{ stroke: "var(--cor-primaria)", strokeWidth: 2 }}
+                                itemStyle={{ color: '#fff', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }}
+                                labelStyle={{ display: 'none' }}
+                                formatter={(value: any) => [`${value}g`, 'CONSUMO']}
                             />
                             <Area
                                 type="monotone"
                                 dataKey="valor"
-                                stroke="var(--cor-primaria)"
-                                strokeWidth={4}
+                                stroke="#0ea5e9"
+                                strokeWidth={3}
                                 fillOpacity={1}
-                                fill="url(#colorValor)"
+                                fill="url(#colorConsumo)"
+                                animationDuration={1500}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
@@ -115,3 +121,4 @@ export function GraficoConsumo() {
         </div>
     );
 }
+

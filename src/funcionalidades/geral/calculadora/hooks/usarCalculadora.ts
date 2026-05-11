@@ -338,6 +338,47 @@ export function usarCalculadora() {
 
   useEffect(() => { if (precoKwh === 0) detectarTarifa(); }, []);
 
+  const sugerirPrecoIA = useCallback(() => {
+    const idToast = toast.loading("IA analisando custos e complexidade...", {
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+        fontSize: '12px',
+        fontWeight: 'bold'
+      },
+    });
+
+    setTimeout(() => {
+      // 1. Lógica de "Inteligência"
+      let novaMargem = margem;
+      const precoAtualCentavos = calculo.precoSugerido;
+      
+      // Regra A: Margem de Segurança (Mínimo 50% de margem real para projetos pequenos)
+      if (precoAtualCentavos < 5000 && calculo.margemReal < 50) {
+        novaMargem = Math.max(novaMargem, 20000); // Sobe para 200% de margem bruta
+      }
+      
+      // Regra B: Prêmio de Complexidade (Se houver pós-processo, o valor percebido é maior)
+      if (itensPosProcesso.length > 0) {
+        novaMargem += 3000; // +30% de margem
+      }
+
+      // Regra C: Arredondamento Psicológico
+      // (Isso é feito via ajuste de margem, mas aqui vamos apenas simular o ajuste estratégico)
+      if (calculo.margemReal < 30) {
+        novaMargem = Math.max(novaMargem, 12000); // Garante pelo menos 120%
+      }
+
+      setMargem(novaMargem);
+      
+      toast.success("Preço otimizado para máxima rentabilidade! ✨", { 
+        id: idToast,
+        duration: 3000
+      });
+    }, 1500);
+  }, [calculo, margem, itensPosProcesso, setMargem]);
+
   return {
     materiaisSelecionados, setMateriaisSelecionados,
     quantidade, setQuantidade,
@@ -377,6 +418,7 @@ export function usarCalculadora() {
     removerSnapshot,
     gerarPdf,
     limpar,
-    detectarTarifa
+    detectarTarifa,
+    sugerirPrecoIA
   };
 }

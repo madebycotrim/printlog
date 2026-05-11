@@ -1,9 +1,9 @@
 import { memo, useState, useEffect, useMemo } from "react";
 import { Layers, Box, RefreshCcw, Check, Plus, Trash2, Star, Search } from "lucide-react";
-import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { motion, AnimatePresence } from "framer-motion";
 import { MaterialSelecionado } from "../tipos";
-import { ContadorAnimado } from "@/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 
 interface CardMateriaisProps {
   materiais: any[];

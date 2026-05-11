@@ -1,6 +1,6 @@
 import { Ruler } from "lucide-react";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { Combobox } from "@/compartilhado/componentes";
 import { UNIDADES_CONSUMO } from "../../constantes";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 

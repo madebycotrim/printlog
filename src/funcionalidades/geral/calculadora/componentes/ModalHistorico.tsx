@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Timer, Trash2, Check, Save } from "lucide-react";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { VersaoCalculo } from "../tipos";
@@ -25,10 +25,10 @@ export function ModalHistorico({
         <div className="flex gap-3 p-4 rounded-2xl bg-sky-500/5 border border-sky-500/20">
           <input 
             type="text" 
-            placeholder="Nome da variação (Ex: Orçamento Resina Premium)..." 
+            placeholder="NOME DA VARIAÇÃO..." 
             value={novoNome}
             onChange={(e) => setNovoNome(e.target.value)}
-            className="flex-1 h-12 px-4 rounded-xl bg-white dark:bg-black/40 border border-borda-sutil outline-none font-bold text-xs uppercase text-primary dark:text-white placeholder:text-zinc-400 focus:ring-1 focus:ring-sky-500"
+            className="flex-1 h-12 px-4 rounded-xl bg-white dark:bg-black/40 border border-borda-sutil outline-none font-black text-[10px] uppercase tracking-[0.2em] text-primary dark:text-white placeholder:text-zinc-400 focus:ring-1 focus:ring-sky-500"
           />
           <button 
             onClick={() => { aoSalvar(novoNome); setNovoNome(""); }}

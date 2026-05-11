@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Activity, Wrench, Settings, Printer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Impressora } from "../tipos";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { AbaProducaoImpressora } from "./AbaProducaoImpressora";
 import { AbaManutencaoImpressora } from "./AbaManutencaoImpressora";
 import { ConteudoFormularioImpressora } from "./ConteudoFormularioImpressora";
-import { CabecalhoModalPremium } from "@/compartilhado/componentes/CabecalhoModalPremium";
-import { AbasModalPremium } from "@/compartilhado/componentes/AbasModalPremium";
+import { CabecalhoModalPremium } from "@/compartilhado/componentes";
+import { AbasModalPremium } from "@/compartilhado/componentes";
 
 interface PropriedadesModalGerenciamento {
   aberto: boolean;

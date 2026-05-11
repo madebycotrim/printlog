@@ -144,3 +144,23 @@ export function formatarTelefone(valor: string): string {
     }
     return limpo.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
 }
+/**
+ * Formata uma data de forma amigável (Hoje, Ontem ou Data completa)
+ */
+export function formatarDataOuRelativa(data: Date | string | number): string {
+    const d = new Date(data);
+    const hoje = new Date();
+    const ontem = new Date();
+    ontem.setDate(hoje.getDate() - 1);
+
+    const dataString = d.toLocaleDateString("pt-BR");
+    const hojeString = hoje.toLocaleDateString("pt-BR");
+    const ontemString = ontem.toLocaleDateString("pt-BR");
+
+    const hora = d.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+
+    if (dataString === hojeString) return `Hoje, ${hora}`;
+    if (dataString === ontemString) return `Ontem, ${hora}`;
+    
+    return `${dataString}, ${hora}`;
+}

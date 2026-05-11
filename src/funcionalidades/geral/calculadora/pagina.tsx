@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 import {
   Download, 
   Crown,
@@ -19,7 +19,7 @@ import { usarGerenciadorMateriais } from "@/funcionalidades/producao/materiais/h
 import { usarGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/usarGerenciadorInsumos";
 import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
 
@@ -690,6 +690,7 @@ export function PaginaCalculadora() {
               modoEntrada={hook.modoEntrada}
               frete={hook.frete}
               taxaFixa={hook.taxaFixa}
+              aoSugerirPrecoIA={hook.sugerirPrecoIA}
             />
           </div>
 

@@ -2,7 +2,7 @@ import { memo, useState, useEffect, useMemo } from "react";
 import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, LayoutGrid } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
-import { ContadorAnimado } from "@/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 
 interface CardInsumosProps {
   insumos: any[];

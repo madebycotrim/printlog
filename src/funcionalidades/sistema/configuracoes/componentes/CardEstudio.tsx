@@ -2,7 +2,7 @@ import { Beaker, Building2, Settings2, ChevronDown, AlertTriangle, ShieldCheck, 
 import { useState } from "react";
 import { CabecalhoCard } from "./Compartilhados";
 import { usarEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 
 interface PropsCardEstudio {
   participarPrototipos: boolean;

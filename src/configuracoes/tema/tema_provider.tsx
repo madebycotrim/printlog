@@ -4,6 +4,7 @@ import type { CorPrimaria, ModoTema, TipoFonte } from "@/compartilhado/tipos/mod
 
 type TemaContexto = {
   modoTema: ModoTema;
+  modoEfetivo: ModoTema;
   definirModoTema: (modo: ModoTema) => void;
   alternarTema: () => void;
   corPrimaria: CorPrimaria;

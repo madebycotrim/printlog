@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { History, Package, DollarSign, User, TrendingUp } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 import { Cliente, RegistroHistoricoCliente } from "../tipos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";

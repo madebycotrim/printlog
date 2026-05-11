@@ -1,5 +1,5 @@
 import { Settings, Plus, Star, Check, Package } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesModalArmazemInsumos {

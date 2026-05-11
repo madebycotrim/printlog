@@ -6,7 +6,7 @@ import { PainelBranding } from "./componentes/PainelBranding";
 import { InputAuth } from "./componentes/InputAuth";
 import { usarAutenticacao } from "./contextos/ContextoAutenticacao";
 import { ComponenteTurnstile } from "./componentes/ComponenteTurnstile";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaAcesso() {
   const navegar = useNavigate();
@@ -117,7 +117,7 @@ export function PaginaAcesso() {
       <div className="w-full lg:w-1/2 p-8 lg:p-14 flex flex-col justify-center relative bg-black/20">
         {/* Mobile Logo */}
         <div className="lg:hidden flex items-center gap-2 mb-8">
-          <img src="/logo-colorida.png" alt="Logo" className="w-8 h-8 object-contain" />
+          <img src="/logo-azul.png" alt="Logo" className="w-10 h-10 object-contain" />
           <span className="text-white font-black tracking-tighter text-xl">PRINTLOG</span>
         </div>
 

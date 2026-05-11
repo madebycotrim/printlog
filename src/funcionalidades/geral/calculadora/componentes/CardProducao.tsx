@@ -1,7 +1,7 @@
 import { Zap, Plus, Trash2, Minus, Sparkles } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
 import { useState, memo } from "react";
-import { ContadorAnimado } from "@/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { toast } from "react-hot-toast";
 import { centavosParaReais, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
@@ -27,7 +27,7 @@ interface CardProducaoProps {
 }
 
 export const CardProducao = memo(function CardProducao({
-  tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
+  tempo, setTempo, modoEntrada, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
   impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, aoDetectarTarifa
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);

@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { History, Scale, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Material } from "../tipos";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { ExtratoConsumo } from "./ExtratoConsumo";
 import { FormularioConsumo } from "./FormularioConsumo";
 import { ConteudoFormularioMaterial } from "./ConteudoFormularioMaterial";
-import { CabecalhoModalPremium } from "@/compartilhado/componentes/CabecalhoModalPremium";
-import { AbasModalPremium } from "@/compartilhado/componentes/AbasModalPremium";
+import { CabecalhoModalPremium } from "@/compartilhado/componentes";
+import { AbasModalPremium } from "@/compartilhado/componentes";
 
 interface PropriedadesModalHistoricoUso {
   aberto: boolean;

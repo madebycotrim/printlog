@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Impressora } from "../../tipos";
 import { usarManutencao } from "../hooks/usarManutencao";
 import { MonitorPecas } from "./MonitorPecas";

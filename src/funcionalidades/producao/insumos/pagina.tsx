@@ -10,8 +10,8 @@ import { ModalArquivamentoInsumo } from "./componentes/ModalArquivamentoInsumo";
 import { FiltrosInsumo } from "./componentes/FiltrosInsumo";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { EstadoVazio } from "@/compartilhado/componentes";
+import { Carregamento } from "@/compartilhado/componentes";
 import { useEffect } from "react";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
@@ -45,7 +45,7 @@ export function PaginaInsumos() {
   const metricasConsolidadas = servicoInventario.gerarRelatorioConsolidado(materiais, estado.insumos);
 
   return (
-    <div className="space-y-10 min-h-[60vh] flex flex-col">
+    <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
         {estado.carregando && estado.insumos.length === 0 ? (
           <motion.div
@@ -63,6 +63,7 @@ export function PaginaInsumos() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            className="flex-1 flex flex-col"
           >
             <EstadoVazio
               titulo="Nenhum insumo encontrado"

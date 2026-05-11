@@ -32,45 +32,18 @@ export function LayoutAutenticacao({
 
   return (
     <div className="min-h-screen w-full font-sans bg-[#050505] relative flex items-center justify-center p-4 overflow-hidden selection:bg-[#0ea5e9] selection:text-white">
-      {/* Efeitos de Fundo */}
-      <div className="absolute inset-0 bg-[#050507] z-0">
-        <div
-          className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] ${cores.gradiente} via-[#050507] to-[#050507]`}
-        />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl mx-auto pointer-events-none">
-          <div
-            className={`absolute top-1/4 left-1/4 w-96 h-96 ${variante === "emerald" ? "bg-emerald-500/10" : "bg-blue-500/10"} rounded-full blur-3xl mix-blend-screen animate-pulse`}
-          />
-          <div
-            className={`absolute bottom-1/4 right-1/4 w-96 h-96 ${variante === "emerald" ? "bg-sky-500/10" : "bg-emerald-500/10"} rounded-full blur-3xl mix-blend-screen animate-pulse delay-1000`}
-          />
-        </div>
+      {/* Elementos de Design de Fundo (Padrão Global) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Grade Técnica Padronizada */}
+        <div className="absolute inset-0 bg-grid-printlog opacity-[0.03] dark:opacity-[0.08]" />
+        
+        {/* Glows de Profundidade Premium */}
+        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-sky-500/10 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full" />
+        
+        {/* Gradiente Central de Foco */}
+        <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${cores.gradiente} via-transparent to-transparent opacity-50`} />
       </div>
-
-      {/* ── Grade Animada (Blueprint Style) ── */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, ${cores.grade} 1px, transparent 1px),
-            linear-gradient(to bottom, ${cores.grade} 1px, transparent 1px),
-            linear-gradient(to right, ${cores.subGrade} 1px, transparent 1px),
-            linear-gradient(to bottom, ${cores.subGrade} 1px, transparent 1px)
-          `,
-          backgroundSize: "64px 64px, 64px 64px, 16px 16px, 16px 16px",
-          maskImage: "radial-gradient(circle at center, black, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(circle at center, black, transparent 100%)",
-          animation: "movimentoGrade 60s linear infinite",
-        }}
-      />
-
-      <style>{`
-                @keyframes movimentoGrade {
-                    from { background-position: 0 0; }
-                    to   { background-position: 64px 64px; }
-                }
-            `}</style>
 
       {/* Link Voltar */}
       <nav className="absolute top-6 left-6 z-50">

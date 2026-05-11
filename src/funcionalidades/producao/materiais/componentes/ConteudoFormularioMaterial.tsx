@@ -6,10 +6,10 @@ import { useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Material } from "../tipos";
 import { FABRICANTES, MATERIAIS_FDM, MATERIAIS_SLA, CORES_PREDEFINIDAS } from "@/funcionalidades/producao/materiais/constantes";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
-import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
+import { Combobox } from "@/compartilhado/componentes";
+import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 
 const esquemaMaterial = z.object({
   tipo: z.enum(["FDM", "SLA"]),

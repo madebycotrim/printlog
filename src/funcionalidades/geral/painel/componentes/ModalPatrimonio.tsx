@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";

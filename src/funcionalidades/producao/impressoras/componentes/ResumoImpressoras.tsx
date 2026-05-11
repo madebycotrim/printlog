@@ -1,5 +1,5 @@
 import { Printer, Timer, Wrench, DollarSign } from "lucide-react";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
+import { CardResumo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesResumoImpressoras {

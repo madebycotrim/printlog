@@ -1,8 +1,8 @@
 import { Zap } from "lucide-react";
 import { Controller } from "react-hook-form";
-import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
+import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
 
 interface PropriedadesEspecificacoes {
   register: any;

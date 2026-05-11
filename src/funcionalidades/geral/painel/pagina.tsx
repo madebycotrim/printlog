@@ -23,24 +23,32 @@ import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
 // Componentes do Painel
 import { BannerPro } from "./componentes/BannerPro";
-import { SecaoAnalytics } from "./componentes/SecaoAnalytics";
-import { SecaoOperacional } from "./componentes/SecaoOperacional";
+import { MetricasPainel } from "./componentes/MetricasPainel";
+
+import { StatusTempoReal } from "./componentes/StatusTempoReal";
 import { ModalPatrimonio } from "./componentes/ModalPatrimonio";
 import { ModalSelecaoMaterial } from "./componentes/ModalSelecaoMaterial";
 import { ModalSelecaoInsumo } from "./componentes/ModalSelecaoInsumo";
 import { DockAcoes } from "./componentes/DockAcoes";
+import { WidgetOrcamentos } from "./componentes/WidgetOrcamentos";
+import { GraficoConsumo } from "./componentes/GraficoConsumo";
+import { WidgetInsumos } from "./componentes/WidgetInsumos";
+import { WidgetMateriais } from "./componentes/WidgetMateriais";
+import { WidgetAvisos } from "./componentes/WidgetAvisos";
 
 // Componentes Compartilhados e de Outras Funcionalidades
 import { FormularioCliente } from "@/funcionalidades/comercial/clientes/componentes/FormularioCliente";
 import { FormularioLancamento } from "@/funcionalidades/comercial/financeiro/componentes/FormularioLancamento";
 import { ModalReposicaoEstoque } from "@/funcionalidades/producao/materiais/componentes/ModalReposicaoEstoque";
 import { ModalReposicaoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalReposicaoInsumo";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 
 /**
  * Página principal do dashboard (Painel).
  * Centraliza as principais métricas, status de produção e ações rápidas.
  */
+import { motion } from "framer-motion";
+
 export function PaginaInicial() {
   const { usuario } = usarAutenticacao();
   const { pedidos } = usarPedidos();
@@ -125,22 +133,78 @@ export function PaginaInicial() {
   });
 
   return (
-    <div className="space-y-12 pb-10">
-      <BannerPro 
-        plano={plano} 
-        aoRealizarUpgrade={realizarUpgradeGratis} 
-        carregandoUpgrade={carregandoUpgrade} 
-      />
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8 pb-10 relative"
+    >
+      {/* BACKGROUND PATTERN DISCRETO */}
+      <div className="absolute inset-0 -top-20 bg-grid-printlog opacity-[0.03] pointer-events-none -z-10" />
 
-      <SecaoAnalytics 
+      {/* BANNER DE UPGRADE - Oculto para Founders */}
+      {plano !== "FUNDADOR" && (
+        <BannerPro 
+          plano={plano} 
+          aoRealizarUpgrade={realizarUpgradeGratis} 
+          carregandoUpgrade={carregandoUpgrade} 
+        />
+      )}
+
+      {/* MÉTRICAS DE ALTO IMPACTO */}
+      <MetricasPainel 
         pedidos={pedidos} 
         impressoras={impressoras} 
         pedidosAtivos={pedidosAtivos}
         metricasInventario={metricasInventario}
       />
 
-      <SecaoOperacional />
-      
+      {/* GRADE OPERACIONAL PRINCIPAL */}
+      <div className="grid grid-cols-12 gap-6 items-start">
+        {/* COLUNA ESQUERDA: Atividade Comercial */}
+        <div className="col-span-12 lg:col-span-8 space-y-6">
+          <div className="lg:h-[500px]">
+            <WidgetOrcamentos 
+              pedidos={pedidos} 
+              aoVerTodos={() => navegar("/projetos")} 
+            />
+          </div>
+        </div>
+
+        {/* COLUNA DIREITA: Status de Hardware */}
+        <div className="col-span-12 lg:col-span-4">
+          <div className="lg:h-[500px]">
+            <StatusTempoReal />
+          </div>
+        </div>
+
+        {/* LINHA DE UTILITÁRIOS: 3 CARDS ALINHADOS */}
+        <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+          <WidgetInsumos 
+            insumos={insumos} 
+            aoVerTodos={() => navegar("/insumos")} 
+          />
+        </div>
+        <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+          <WidgetMateriais 
+            materiais={materiais} 
+            aoVerTodos={() => navegar("/materiais")} 
+          />
+        </div>
+        <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+          <WidgetAvisos 
+            impressoras={impressoras} 
+            aoAgendarManutencao={() => navegar("/producao/manutencao")} 
+          />
+        </div>
+
+        {/* LINHA DE TENDÊNCIA: Gráfico de Consumo Full Width */}
+        <div className="col-span-12">
+          <div className="lg:h-[400px]">
+            <GraficoConsumo />
+          </div>
+        </div>
+      </div>
+
       {/* MODAIS GLOBAIS */}
       <ModalPatrimonio
         aberto={modalPatrimonioAberto}
@@ -252,6 +316,6 @@ export function PaginaInicial() {
         aoAbrirModalSelecaoIns={() => definirModalSelecaoInsAberto(true)}
         aoAbrirModalFinanceiro={() => definirModalFinanceiroAberto(true)}
       />
-    </div>
+    </motion.div>
   );
 }

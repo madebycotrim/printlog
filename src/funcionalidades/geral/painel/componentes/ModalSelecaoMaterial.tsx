@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Search, Star, Settings } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { Dialogo } from "@/compartilhado/componentes";
+import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 /**
@@ -79,7 +79,7 @@ export function ModalSelecaoMaterial({
               <input 
                 type="text" 
                 placeholder="PESQUISAR..."
-                className="bg-transparent border-none outline-none text-[11px] font-black uppercase tracking-widest w-full placeholder:text-zinc-700"
+                className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-[0.2em] w-full placeholder:text-zinc-700"
                 value={termoBusca}
                 onChange={(e) => definirTermoBusca(e.target.value)}
               />

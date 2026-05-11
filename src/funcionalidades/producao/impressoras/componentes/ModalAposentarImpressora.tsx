@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { AlertTriangle, Archive, Wrench } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 

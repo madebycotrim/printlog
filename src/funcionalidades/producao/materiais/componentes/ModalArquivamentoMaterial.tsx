@@ -1,7 +1,7 @@
 import { Trash2, AlertTriangle } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
-import { Carretel, GarrafaResina } from "@/compartilhado/componentes/Icones3D";
+import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 
 interface PropriedadesModalArquivamentoMaterial {
   aberto: boolean;

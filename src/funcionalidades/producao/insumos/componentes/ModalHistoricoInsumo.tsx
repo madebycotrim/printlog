@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { History, DollarSign, Package, Box } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 import { Insumo, RegistroMovimentacaoInsumo } from "@/funcionalidades/producao/insumos/tipos";
 import { motion } from "framer-motion";
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { DollarSign, Activity } from "lucide-react";
-import { ContadorAnimado } from "@/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardOperacionalProps {

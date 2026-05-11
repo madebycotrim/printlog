@@ -1,5 +1,5 @@
 import { Pedido, ItemPosProcesso } from "../tipos";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { 
   Settings, Box, MessageSquare, 
   TrendingUp, Zap, Percent, 

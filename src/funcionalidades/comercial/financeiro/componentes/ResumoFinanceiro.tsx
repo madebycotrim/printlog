@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown, Wallet, Target } from "lucide-react";
 import { ResumoFinanceiro } from "../tipos";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
+import { CardResumo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface ResumoFinanceiroProps {

@@ -8,7 +8,7 @@ import {
   MoreVertical,
   Pencil,
 } from "lucide-react";
-import { Dica } from "@/compartilhado/componentes/Dica";
+import { Dica } from "@/compartilhado/componentes";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { centavosParaReais, pluralizar } from "@/compartilhado/utilitarios/formatadores";

@@ -6,7 +6,7 @@ import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalh
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
+import { Carregamento } from "@/compartilhado/componentes";
 
 import { CardPerfil } from "./componentes/CardPerfil";
 import { CardOperacional } from "./componentes/CardOperacional";

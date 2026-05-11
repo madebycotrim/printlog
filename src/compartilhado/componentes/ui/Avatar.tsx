@@ -48,15 +48,13 @@ export function Avatar({
   const mostrarIniciais = !fotoUrl || imagemFalhou;
 
   const efeitoElite = () => {
-    const p = plano || (pro ? "PRO" : "FREE");
-    if (p === "FUNDADOR") return "ring-2 ring-sky-500/50 shadow-[0_0_15px_rgba(14,165,233,0.4)]";
-    if (p === "PRO") return "ring-2 ring-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.4)]";
+    // Efeito de anel removido conforme solicitado
     return "";
   };
 
   return (
     <div
-      className={`${tamanho} ${arredondamento} flex items-center justify-center text-xl font-bold shrink-0 relative overflow-hidden border border-black/5 dark:border-white/5 ${efeitoElite()} ${className}`}
+      className={`${tamanho} ${arredondamento} flex items-center justify-center text-xl font-bold shrink-0 relative overflow-hidden border-none ring-0 shadow-none ${efeitoElite()} ${className}`}
       style={{
         backgroundColor: mostrarIniciais ? corFundo : "transparent",
         color: "white",
@@ -75,8 +73,7 @@ export function Avatar({
         <span className="select-none tracking-tight">{iniciais}</span>
       )}
       
-      {/* Overlay de Brilho para estética premium */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+      {/* Overlay de Brilho removido */}
     </div>
   );
 }

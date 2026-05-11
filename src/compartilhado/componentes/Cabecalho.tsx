@@ -6,7 +6,7 @@ import { usarProcessadorNotificacoes } from "../hooks/usarProcessadorNotificacoe
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { SeloPlano } from "./SeloPlano";
+import { SeloPlano } from "./ui";
 
 type PropriedadesCabecalho = {
   aoAbrirBarraLateral: () => void;
@@ -95,9 +95,9 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               />
               <input
                 type="text"
-                placeholder={dados.placeholderBusca || "Pesquisar..."}
+                placeholder={dados.placeholderBusca || "PESQUISAR..."}
                 onChange={(e) => dados.aoBuscar && dados.aoBuscar(e.target.value)}
-                className="w-full h-10 pl-8 pr-2 bg-transparent border-0 border-b-2 border-zinc-100 dark:border-white/10 text-sm font-medium text-primary dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none transition-all duration-300 focus:border-primary dark:focus:border-white"
+                className="w-full h-10 pl-8 pr-2 bg-transparent border-0 border-b-2 border-zinc-100 dark:border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-primary dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-primary dark:focus:border-white"
               />
             </div>
           )}

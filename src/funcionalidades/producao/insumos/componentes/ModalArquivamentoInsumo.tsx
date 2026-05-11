@@ -1,5 +1,5 @@
 import { Trash2, AlertTriangle, Box } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
 
 interface ModalArquivamentoInsumoProps {

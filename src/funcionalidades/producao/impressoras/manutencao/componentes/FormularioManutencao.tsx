@@ -4,9 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, Wrench, Clock, CheckCircle2, AlertTriangle, Cpu, TrendingUp } from "lucide-react";
 import { TipoManutencao, RegistrarManutencaoInput, PecaDesgaste } from "../../tipos";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
-import { CampoAreaTexto } from "@/compartilhado/componentes/CampoAreaTexto";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
+import { CampoAreaTexto } from "@/compartilhado/componentes";
 import { motion } from "framer-motion";
 
 const esquemaManutencao = z.object({

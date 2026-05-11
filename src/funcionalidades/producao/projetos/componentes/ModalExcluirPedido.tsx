@@ -1,4 +1,4 @@
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Trash2, AlertTriangle } from "lucide-react";
 import { Pedido } from "../tipos";
 

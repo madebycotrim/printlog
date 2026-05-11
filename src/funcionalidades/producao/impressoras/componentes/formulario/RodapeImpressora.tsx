@@ -1,5 +1,5 @@
 import { Save } from "lucide-react";
-import { RodapeModalPremium } from "@/compartilhado/componentes/RodapeModalPremium";
+import { RodapeModalPremium } from "@/compartilhado/componentes";
 
 interface PropriedadesRodape {
   confirmarDescarte: boolean;

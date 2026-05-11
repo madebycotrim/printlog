@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { Carregamento } from "@/compartilhado/componentes/Carregamento";
-import { EstadoVazio } from "@/compartilhado/componentes/EstadoVazio";
+import { Carregamento } from "@/compartilhado/componentes";
+import { EstadoVazio } from "@/compartilhado/componentes";
 import { usarGerenciadorMateriais } from "./hooks/usarGerenciadorMateriais";
 import { Material } from "./tipos";
 import { FormularioMaterial } from "./componentes/FormularioMaterial";
@@ -49,7 +49,7 @@ export function PaginaMateriais() {
   const metricasConsolidadas = servicoInventario.gerarRelatorioConsolidado(estado.materiais, insumos);
 
   return (
-    <div className="space-y-10 min-h-[60vh] flex flex-col">
+    <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
         {estado.carregando && estado.materiais.length === 0 ? (
           <motion.div

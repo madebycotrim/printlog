@@ -7,8 +7,8 @@ import {
     Cpu, DollarSign, Box, Package, Settings, TrendingUp, MessageSquare, ChevronDown
 } from "lucide-react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
+import { Dialogo } from "@/compartilhado/componentes";
+import { Combobox } from "@/compartilhado/componentes";
 import { CriarPedidoInput, Pedido } from "../tipos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
 import { SeletorInsumosSecundarios } from "./SeletorInsumosSecundarios";
@@ -16,7 +16,7 @@ import { SeletorMateriaisPedido } from "./SeletorMateriaisPedido";
 import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
-import { ModalListagemPremium } from "@/compartilhado/componentes/ModalListagemPremium";
+import { ModalListagemPremium } from "@/compartilhado/componentes";
 
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 

@@ -1,6 +1,6 @@
 import { Clock, Wrench } from "lucide-react";
-import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
+import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes";
+import { CampoTexto } from "@/compartilhado/componentes";
 
 interface PropriedadesManutencao {
   register: any;

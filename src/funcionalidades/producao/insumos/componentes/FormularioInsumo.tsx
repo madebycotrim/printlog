@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Package, Database, Activity } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
-import { CabecalhoModalPremium } from "@/compartilhado/componentes/CabecalhoModalPremium";
-import { AbasModalPremium } from "@/compartilhado/componentes/AbasModalPremium";
+import { Dialogo } from "@/compartilhado/componentes";
+import { CabecalhoModalPremium } from "@/compartilhado/componentes";
+import { AbasModalPremium } from "@/compartilhado/componentes";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
 import { usarFormularioInsumo } from "../hooks/usarFormularioInsumo";
 import { SecaoInformacoesBasicas } from "./formulario/SecaoInformacoesBasicas";

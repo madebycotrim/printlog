@@ -1,5 +1,5 @@
 import { FolderKanban, AlertTriangle, Plus, Archive } from "lucide-react";
-import { CardResumo } from "@/compartilhado/componentes/CardResumo";
+import { CardResumo } from "@/compartilhado/componentes";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { Pedido } from "../tipos";
 import { filtrarPedidosAtrasados } from "@/compartilhado/utilitarios/gestaoAtrasos";

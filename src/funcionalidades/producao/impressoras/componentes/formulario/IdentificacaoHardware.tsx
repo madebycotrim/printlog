@@ -1,7 +1,7 @@
 import { Layers, Droplet, Building2, Tag } from "lucide-react";
-import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes/FormularioLayout";
-import { Combobox } from "@/compartilhado/componentes/Combobox";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
+import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes";
+import { Combobox } from "@/compartilhado/componentes";
+import { CampoTexto } from "@/compartilhado/componentes";
 
 interface PropriedadesIdentificacao {
   tecnologiaAtiva: string;

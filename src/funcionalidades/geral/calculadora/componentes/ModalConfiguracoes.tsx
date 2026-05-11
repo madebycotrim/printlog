@@ -1,5 +1,5 @@
 import { Crown, Settings, Zap, Percent, Wrench, Clock, X } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 /**

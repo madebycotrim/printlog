@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { PackagePlus, Save, ShoppingCart, Package } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes/Dialogo";
+import { Dialogo } from "@/compartilhado/componentes";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
-import { CampoTexto } from "@/compartilhado/componentes/CampoTexto";
-import { CampoMonetario } from "@/compartilhado/componentes/CampoMonetario";
-import { AcoesDescarte } from "@/compartilhado/componentes/AcoesDescarte";
+import { CampoTexto } from "@/compartilhado/componentes";
+import { CampoMonetario } from "@/compartilhado/componentes";
+import { AcoesDescarte } from "@/compartilhado/componentes";
 
 interface PropriedadesModalReposicaoEstoque {
   aberto: boolean;
