@@ -9,28 +9,14 @@ import { ProvedorEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/
 import { ProvedorBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { ToasterPremium } from "@/compartilhado/componentes";
 import { WidgetFeedbackBeta } from "@/funcionalidades/beta/componentes/WidgetFeedbackBeta";
+import { AvisoCookies } from "@/funcionalidades/lgpd/componentes/AvisoCookies";
 
 // Landing Page Publica
-const PaginaLanding = lazy(() =>
-  import("@/funcionalidades/landing_page/PaginaLanding").then((m) => ({
-    default: m.PaginaLanding,
-  })),
-);
-const SegurancaPrivacidade = lazy(() =>
-  import("@/funcionalidades/landing_page/seguranca-e-privacidade").then((m) => ({
-    default: m.SegurancaPrivacidade,
-  })),
-);
-const PoliticaPrivacidade = lazy(() =>
-  import("@/funcionalidades/landing_page/politica-de-privacidade").then((m) => ({
-    default: m.PoliticaPrivacidade,
-  })),
-);
-const TermosUso = lazy(() =>
-  import("@/funcionalidades/landing_page/termos-de-uso").then((m) => ({
-    default: m.TermosUso,
-  })),
-);
+const PaginaLanding = lazy(() => import("@/funcionalidades/landing_page/PaginaLanding"));
+const SegurancaPrivacidade = lazy(() => import("@/funcionalidades/landing_page/seguranca-e-privacidade"));
+const PoliticaPrivacidade = lazy(() => import("@/funcionalidades/lgpd/PaginaPoliticaPrivacidade"));
+const TermosUso = lazy(() => import("@/funcionalidades/lgpd/PaginaTermosUso"));
+const PaginaGestaoDados = lazy(() => import("@/funcionalidades/lgpd/PaginaGestaoDados"));
 
 // Autenticação
 const PaginaAcesso = lazy(() =>
@@ -134,6 +120,7 @@ export function RoteadorPrincipal() {
             <ToasterPremium />
             <WidgetFeedbackBeta />
             <ScrollParaTopo />
+            <AvisoCookies />
             <Suspense fallback={<Carregamento />}>
               <Routes>
                 <Route path="/" element={<PaginaLanding />} />
@@ -290,6 +277,16 @@ export function RoteadorPrincipal() {
                     <RotaProtegida>
                       <Layout>
                         <PaginaAdmin />
+                      </Layout>
+                    </RotaProtegida>
+                  }
+                />
+                <Route
+                  path="/meus-dados"
+                  element={
+                    <RotaProtegida>
+                      <Layout>
+                        <PaginaGestaoDados />
                       </Layout>
                     </RotaProtegida>
                   }

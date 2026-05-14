@@ -11,9 +11,9 @@ import { validarForcaSenha, type ResultadoValidacaoSenha } from "@/compartilhado
 export function PaginaCadastro() {
   const navegar = useNavigate();
   const { cadastro, loginGoogle, usuario, carregando } = usarAutenticacao();
-  const [nome, definirNome] = useState("");
-  const [email, definirEmail] = useState("");
-  const [senha, definirSenha] = useState("");
+  const [nome, definirNome] = useState(""); // Finalidade: Identificação pessoal | Base Legal: Execução de Contrato (Art. 7º, V)
+  const [email, definirEmail] = useState(""); // Finalidade: Comunicação e login | Base Legal: Execução de Contrato (Art. 7º, V)
+  const [senha, definirSenha] = useState(""); // Finalidade: Segurança e autenticação (armazenado com hash)
   const [aceiteTermos, definirAceiteTermos] = useState(false);
   const [erro, definirErro] = useState("");
   const [carregandoCadastro, definirCarregandoCadastro] = useState(false);

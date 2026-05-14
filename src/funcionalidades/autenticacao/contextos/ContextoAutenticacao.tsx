@@ -73,8 +73,8 @@ const registrarAceiteTermos = async (uid: string) => {
     const payload = {
       user_id: uid,
       data_aceite: new Date().toISOString(),
-      versao_termos: "2026-02-24",
-      versao_politica: "2026-02-24",
+      versao_termos: "2026-05-14",
+      versao_politica: "2026-05-14",
       ip: ip,
     };
 
@@ -137,6 +137,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           fotoUrl: user.photoURL,
           provedorGoogle: ehGoogle,
           plano: plano,
+          dataAceiteTermos: new Date().toISOString(), // Idealmente buscar do banco D1
+          versaoTermos: "2026-05-14",
         });
         carregarConfiguracoes(user.uid);
       } else {
@@ -380,8 +382,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           ultimoLogin: metadadosFirebase?.lastSignInTime || "Não disponível",
         },
         conformidadeLegis: {
-          versaoTermosAceitos: "2026-02-24",
-          versaoPoliticaPrivacidade: "2026-02-24",
+          versaoTermosAceitos: "2026-05-14",
+          versaoPoliticaPrivacidade: "2026-05-14",
           dataExportacao: new Date().toISOString(),
           baseLegal: "Art. 18, V (Portabilidade) - LGPD",
           finalidade: "Exercício do direito de portabilidade de dados pessoais",

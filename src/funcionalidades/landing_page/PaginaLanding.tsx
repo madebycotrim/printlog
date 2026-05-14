@@ -6,7 +6,7 @@ import { Precificacao } from "./componentes/Precificacao";
 import { ChamadaAcao } from "./componentes/CTA";
 import { Rodape } from "./componentes/Rodape";
 
-export function PaginaLanding() {
+export default function PaginaLanding() {
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-white selection:bg-[#0ea5e9] selection:text-white overflow-x-hidden relative">
       {/* Elementos de Design de Fundo (Padrão Global) */}

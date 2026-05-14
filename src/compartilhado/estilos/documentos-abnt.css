@@ -1,0 +1,128 @@
+/* Simulação de Folha A4 seguindo normas ABNT */
+
+.folha-a4-container {
+  background-color: #0c0c0e; /* Tom ligeiramente mais claro para contraste */
+  padding: 40px 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grade Discreta - Aumentada visibilidade */
+.folha-a4-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 85%);
+  pointer-events: none;
+}
+
+.folha-a4 {
+  background-color: white;
+  color: black;
+  width: 210mm;
+  min-height: 297mm;
+  padding: 30mm 20mm 20mm 30mm; /* Margens ABNT: Sup 3, Dir 2, Inf 2, Esq 3 */
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  font-family: Arial, sans-serif;
+  line-height: 1.5;
+  text-align: justify;
+  position: relative;
+  overflow: hidden;
+}
+
+.abnt-titulo {
+  font-size: 14pt;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 24pt;
+}
+
+.abnt-subtitulo {
+  font-size: 12pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 18pt;
+  margin-bottom: 12pt;
+}
+
+.abnt-texto {
+  font-size: 12pt;
+  margin-bottom: 12pt;
+  text-indent: 1.25cm;
+}
+
+.abnt-lista {
+  margin-left: 1.25cm;
+  margin-bottom: 12pt;
+}
+
+.abnt-lista li {
+  margin-bottom: 6pt;
+}
+
+.abnt-rodape {
+  font-size: 10pt;
+  text-align: center;
+  margin-top: 40pt;
+  border-top: 1px solid #eee;
+  padding-top: 10pt;
+}
+
+/* Ajustes para Impressão Real */
+@media print {
+  .folha-a4-container {
+    background-color: transparent !important;
+    padding: 0 !important;
+  }
+  
+  .folha-a4 {
+    box-shadow: none !important;
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important; /* O navegador já aplica margens do @page */
+  }
+
+  @page {
+    size: A4;
+    margin: 3cm 2cm 2cm 3cm;
+  }
+  
+  /* Esconder elementos de UI durante a impressão */
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Responsividade para Mobile (simula a folha mas escala) */
+@media (max-width: 210mm) {
+  .folha-a4 {
+    width: 100%;
+    padding: 15mm;
+  }
+}
+
+/* Scrollbar para o banner de cookies */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

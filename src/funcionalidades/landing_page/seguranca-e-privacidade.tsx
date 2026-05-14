@@ -15,7 +15,7 @@ const surgir = {
   },
 };
 
-export function SegurancaPrivacidade() {
+export default function SegurancaPrivacidade() {
   const navigate = useNavigate();
   const { usuario } = usarAutenticacao();
 

@@ -148,7 +148,7 @@ export function Precificacao() {
            className="mt-16 text-center"
         >
           <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em]">
-            * Plano 100% OFF válido para os primeiros 500 membros fundadores.
+            * Plano 100% OFF válido por tempo limitado.
           </p>
         </motion.div>
       </div>
