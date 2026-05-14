@@ -95,22 +95,29 @@ export function AvisoCookies() {
                     <button
                       onClick={() => salvarConsentimento("TUDO")}
                       disabled={carregando}
-                      className="w-full h-12 bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-amber-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full h-12 bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-amber-50 hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] transition-all active:scale-95 flex items-center justify-center gap-2 group"
                     >
-                      {carregando ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} strokeWidth={3} /> Aceitar Todos</>}
+                      {carregando ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <>
+                          <Check size={16} strokeWidth={3} className="group-hover:scale-110 transition-transform" /> 
+                          Aceitar Todos
+                        </>
+                      )}
                     </button>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => salvarConsentimento("ESSENCIAIS")}
                         disabled={carregando}
-                        className="h-11 bg-zinc-900 text-zinc-400 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-zinc-800 hover:text-white transition-all border border-white/5"
+                        className="h-11 bg-zinc-900/50 text-zinc-400 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-zinc-800 hover:text-white transition-all border border-white/5 active:scale-95"
                       >
                         Apenas Essenciais
                       </button>
                       <button
                         onClick={() => setModo("configurar")}
-                        className="h-11 bg-zinc-900 text-zinc-400 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-zinc-800 hover:text-white transition-all border border-white/5 flex items-center justify-center gap-2"
+                        className="h-11 bg-zinc-900/50 text-zinc-400 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-zinc-800 hover:text-white transition-all border border-white/5 flex items-center justify-center gap-2 active:scale-95"
                       >
                         <Settings size={14} />
                         Configurar
@@ -122,9 +129,9 @@ export function AvisoCookies() {
                 <div className="space-y-6">
                   <button 
                     onClick={() => setModo("banner")}
-                    className="flex items-center gap-2 text-zinc-500 hover:text-white text-[10px] font-black uppercase tracking-widest mb-4 transition-colors"
+                    className="flex items-center gap-2 text-zinc-500 hover:text-white text-[10px] font-black uppercase tracking-widest mb-4 transition-colors group"
                   >
-                    <ArrowLeft size={14} />
+                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                     Voltar
                   </button>
 
@@ -132,7 +139,7 @@ export function AvisoCookies() {
 
                   <div className="space-y-4 max-h-[550px] overflow-y-auto pr-2 custom-scrollbar">
                     {/* Essenciais - Âmbar */}
-                    <div className="p-4 rounded-2xl bg-amber-500/[0.03] border border-amber-500/10 hover:border-amber-500/20 transition-colors">
+                    <div className="p-4 rounded-2xl bg-amber-500/[0.03] border border-amber-500/10 hover:border-amber-500/20 transition-all">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2 text-amber-500">
                           <Shield size={16} />
@@ -146,7 +153,7 @@ export function AvisoCookies() {
                     </div>
 
                     {/* Analíticos - Blue */}
-                    <div className="p-4 rounded-2xl bg-sky-500/[0.03] border border-sky-500/10 hover:border-sky-500/20 transition-colors">
+                    <div className="p-4 rounded-2xl bg-sky-500/[0.03] border border-sky-500/10 hover:border-sky-500/20 transition-all">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2 text-sky-500">
                           <BarChart3 size={16} />
@@ -159,7 +166,7 @@ export function AvisoCookies() {
                             onChange={(e) => setAnaliticos(e.target.checked)} 
                             className="sr-only peer" 
                           />
-                          <div className="w-8 h-4 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 peer-checked:after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-sky-600"></div>
+                          <div className="w-10 h-5 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-zinc-500 peer-checked:after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-sky-500 peer-checked:shadow-[0_0_10px_rgba(14,165,233,0.4)]"></div>
                         </label>
                       </div>
                       <p className="text-[11px] text-zinc-400 leading-relaxed">
@@ -168,7 +175,7 @@ export function AvisoCookies() {
                     </div>
 
                     {/* Funcionais - Violet */}
-                    <div className="p-4 rounded-2xl bg-violet-500/[0.03] border border-violet-500/10 hover:border-sky-500/20 transition-colors">
+                    <div className="p-4 rounded-2xl bg-violet-500/[0.03] border border-violet-500/10 hover:border-violet-500/20 transition-all">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2 text-violet-500">
                           <Globe size={16} />
@@ -181,7 +188,7 @@ export function AvisoCookies() {
                             onChange={(e) => setFuncionais(e.target.checked)} 
                             className="sr-only peer" 
                           />
-                          <div className="w-8 h-4 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 peer-checked:after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-violet-600"></div>
+                          <div className="w-10 h-5 bg-zinc-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-zinc-500 peer-checked:after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-violet-500 peer-checked:shadow-[0_0_10px_rgba(139,92,246,0.4)]"></div>
                         </label>
                       </div>
                       <p className="text-[11px] text-zinc-400 leading-relaxed">
@@ -193,9 +200,16 @@ export function AvisoCookies() {
                   <button
                     onClick={() => salvarConsentimento("CUSTOM")}
                     disabled={carregando}
-                    className="w-full h-11 bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl hover:bg-zinc-200 transition-all active:scale-95 shadow-lg shadow-white/5"
+                    className="w-full h-12 bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-zinc-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
-                    {carregando ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Confirmar Minhas Escolhas"}
+                    {carregando ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <>
+                        <Check size={16} strokeWidth={3} />
+                        Salvar Minhas Preferências
+                      </>
+                    )}
                   </button>
                 </div>
               )}

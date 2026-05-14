@@ -6,6 +6,7 @@ import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/ar
 import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 import { usarGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/usarGerenciadorImpressoras";
 import { toast } from "react-hot-toast";
+import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { 
   MaterialSelecionado, 
@@ -25,100 +26,68 @@ export function usarCalculadora() {
   const impressorasCadastradas = estadoImpressoras.impressoras;
 
   // --- ESTADOS BASE ---
-  const [materiaisSelecionados, setMateriaisSelecionados] = useState<MaterialSelecionado[]>(() => {
-    const salvo = localStorage.getItem("printlog_materiais_selecionados");
-    return salvo ? JSON.parse(salvo) : [];
-  });
-  const [tempo, setTempo] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_calculadora_tempo") || localStorage.getItem("printlog_tempo");
-    return salvo ? Number(salvo) : 0;
-  });
-  const [potencia, setPotencia] = useState<number>(() => Number(localStorage.getItem("printlog_potencia")) || 0);
+  const [materiaisSelecionados, setMateriaisSelecionados] = useState<MaterialSelecionado[]>(() => 
+    armazenamentoSeguro.obter("printlog_materiais_selecionados", [])
+  );
+  const [tempo, setTempo] = useState<number>(() => 
+    armazenamentoSeguro.obter("printlog_calculadora_tempo", 0) || armazenamentoSeguro.obter("printlog_tempo", 0)
+  );
+  const [potencia, setPotencia] = useState<number>(() => armazenamentoSeguro.obter("printlog_potencia", 0));
   const [precoKwh, setPrecoKwh] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_preco_kwh");
-    return (salvo !== null && salvo !== "0") ? Number(salvo) : config.custoEnergia;
+    const salvo = armazenamentoSeguro.obter<number | null>("printlog_preco_kwh", null);
+    return (salvo !== null && salvo !== 0) ? salvo : config.custoEnergia;
   });
-  const [maoDeObra, setMaoDeObra] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_mao_de_obra");
-    return salvo !== null ? Number(salvo) : config.horaOperador;
-  });
-  const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_depreciacao_hora");
-    return salvo !== null ? Number(salvo) : config.horaMaquina;
-  });
-  const [margem, setMargem] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_margem");
-    return salvo !== null ? Number(salvo) : config.margemLucro;
-  });
+  const [maoDeObra, setMaoDeObra] = useState<number>(() => armazenamentoSeguro.obter("printlog_mao_de_obra", config.horaOperador));
+  const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => armazenamentoSeguro.obter("printlog_depreciacao_hora", config.horaMaquina));
+  const [margem, setMargem] = useState<number>(() => armazenamentoSeguro.obter("printlog_margem", config.margemLucro));
   
-  const [quantidade, setQuantidade] = useState<number>(() => Number(localStorage.getItem("printlog_quantidade")) || 0);
-  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => {
-    const salvo = localStorage.getItem("printlog_calculadora_modo_entrada");
-    return (salvo as 'unitario' | 'lote') || "lote";
-  });
-  const [tempoSetup, setTempoSetup] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_tempo_setup");
-    return salvo !== null ? Number(salvo) : 0;
-  });
-  const [taxaFalha, setTaxaFalha] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_taxa_falha");
-    return salvo !== null ? Number(salvo) : 0;
-  });
-  const [materialPerdido, setMaterialPerdido] = useState<number>(() => Number(localStorage.getItem("printlog_material_perdido")) || 0);
-  const [tempoPerdido, setTempoPerdido] = useState<number>(() => Number(localStorage.getItem("printlog_tempo_perdido")) || 0);
+  const [quantidade, setQuantidade] = useState<number>(() => armazenamentoSeguro.obter("printlog_quantidade", 0));
+  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => armazenamentoSeguro.obter<'unitario' | 'lote'>("printlog_calculadora_modo_entrada", "lote"));
+  const [tempoSetup, setTempoSetup] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_setup", 0));
+  const [taxaFalha, setTaxaFalha] = useState<number>(() => armazenamentoSeguro.obter("printlog_taxa_falha", 0));
+  const [materialPerdido, setMaterialPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_material_perdido", 0));
+  const [tempoPerdido, setTempoPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_perdido", 0));
   
-  const [frete, setFrete] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_frete");
-    return salvo !== null ? Number(salvo) : 0;
-  });
-  const [insumosFixos, setInsumosFixos] = useState<number>(() => {
-    const salvo = localStorage.getItem("printlog_insumos_fixos");
-    return salvo !== null ? Number(salvo) : 0;
-  });
-  const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>(() => {
-    const salvo = localStorage.getItem("printlog_insumos_selecionados");
-    return salvo ? JSON.parse(salvo) : [];
-  });
-  const [itensPosProcesso, setItensPosProcesso] = useState<ItemPosProcesso[]>(() => {
-    const salvo = localStorage.getItem("printlog_itens_pos_processo");
-    return salvo ? JSON.parse(salvo) : [];
-  });
+  const [frete, setFrete] = useState<number>(() => armazenamentoSeguro.obter("printlog_frete", 0));
+  const [insumosFixos, setInsumosFixos] = useState<number>(() => armazenamentoSeguro.obter("printlog_insumos_fixos", 0));
+  const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>(() => armazenamentoSeguro.obter("printlog_insumos_selecionados", []));
+  const [itensPosProcesso, setItensPosProcesso] = useState<ItemPosProcesso[]>(() => armazenamentoSeguro.obter("printlog_itens_pos_processo", []));
   
-  const [cobrarDesgaste, setCobrarDesgaste] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_desgaste") !== "false");
-  const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_mao_de_obra") !== "false");
-  const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_energia") !== "false");
-  const [cobrarInsumosFixos, setCobrarInsumosFixos] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_insumos_fixos") !== "false");
-  const [cobrarLogistica, setCobrarLogistica] = useState<boolean>(() => localStorage.getItem("printlog_cobrar_logistica") !== "false");
-  const [perfilAtivo, setPerfilAtivo] = useState(() => localStorage.getItem("printlog_perfil_ativo") || "Direto");
+  const [cobrarDesgaste, setCobrarDesgaste] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_desgaste", true));
+  const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_mao_de_obra", true));
+  const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_energia", true));
+  const [cobrarInsumosFixos, setCobrarInsumosFixos] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_insumos_fixos", true));
+  const [cobrarLogistica, setCobrarLogistica] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_logistica", true));
+  const [perfilAtivo, setPerfilAtivo] = useState(() => armazenamentoSeguro.obter("printlog_perfil_ativo", "Direto"));
   const [taxaEcommerce, setTaxaEcommerce] = useState<number>(0);
   const [taxaFixa, setTaxaFixa] = useState<number>(0);
 
 
 
-  // Efeitos de persistência
-  useEffect(() => { localStorage.setItem("printlog_cobrar_desgaste", String(cobrarDesgaste)); }, [cobrarDesgaste]);
-  useEffect(() => { localStorage.setItem("printlog_cobrar_mao_de_obra", String(cobrarMaoDeObra)); }, [cobrarMaoDeObra]);
-  useEffect(() => { localStorage.setItem("printlog_cobrar_energia", String(cobrarEnergia)); }, [cobrarEnergia]);
-  useEffect(() => { localStorage.setItem("printlog_cobrar_insumos_fixos", String(cobrarInsumosFixos)); }, [cobrarInsumosFixos]);
-  useEffect(() => { localStorage.setItem("printlog_cobrar_logistica", String(cobrarLogistica)); }, [cobrarLogistica]);
-  useEffect(() => { localStorage.setItem("printlog_perfil_ativo", perfilAtivo); }, [perfilAtivo]);
-  useEffect(() => { localStorage.setItem("printlog_materiais_selecionados", JSON.stringify(materiaisSelecionados)); }, [materiaisSelecionados]);
-  useEffect(() => { localStorage.setItem("printlog_calculadora_tempo", String(tempo)); }, [tempo]);
-  useEffect(() => { localStorage.setItem("printlog_calculadora_modo_entrada", modoEntrada); }, [modoEntrada]);
-  useEffect(() => { localStorage.setItem("printlog_potencia", String(potencia)); }, [potencia]);
-  useEffect(() => { localStorage.setItem("printlog_preco_kwh", String(precoKwh)); }, [precoKwh]);
-  useEffect(() => { localStorage.setItem("printlog_mao_de_obra", String(maoDeObra)); }, [maoDeObra]);
-  useEffect(() => { localStorage.setItem("printlog_depreciacao_hora", String(depreciacaoHora)); }, [depreciacaoHora]);
-  useEffect(() => { localStorage.setItem("printlog_margem", String(margem)); }, [margem]);
-  useEffect(() => { localStorage.setItem("printlog_quantidade", String(quantidade)); }, [quantidade]);
-  useEffect(() => { localStorage.setItem("printlog_tempo_setup", String(tempoSetup)); }, [tempoSetup]);
-  useEffect(() => { localStorage.setItem("printlog_taxa_falha", String(taxaFalha)); }, [taxaFalha]);
-  useEffect(() => { localStorage.setItem("printlog_material_perdido", String(materialPerdido)); }, [materialPerdido]);
-  useEffect(() => { localStorage.setItem("printlog_tempo_perdido", String(tempoPerdido)); }, [tempoPerdido]);
-  useEffect(() => { localStorage.setItem("printlog_frete", String(frete)); }, [frete]);
-  useEffect(() => { localStorage.setItem("printlog_insumos_fixos", String(insumosFixos)); }, [insumosFixos]);
-  useEffect(() => { localStorage.setItem("printlog_insumos_selecionados", JSON.stringify(insumosSelecionados)); }, [insumosSelecionados]);
-  useEffect(() => { localStorage.setItem("printlog_itens_pos_processo", JSON.stringify(itensPosProcesso)); }, [itensPosProcesso]);
+  // Efeitos de persistência segura
+  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_desgaste", cobrarDesgaste); }, [cobrarDesgaste]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_mao_de_obra", cobrarMaoDeObra); }, [cobrarMaoDeObra]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_energia", cobrarEnergia); }, [cobrarEnergia]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_insumos_fixos", cobrarInsumosFixos); }, [cobrarInsumosFixos]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_logistica", cobrarLogistica); }, [cobrarLogistica]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_perfil_ativo", perfilAtivo); }, [perfilAtivo]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_materiais_selecionados", materiaisSelecionados); }, [materiaisSelecionados]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_calculadora_tempo", tempo); }, [tempo]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_calculadora_modo_entrada", modoEntrada); }, [modoEntrada]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_potencia", potencia); }, [potencia]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_preco_kwh", precoKwh); }, [precoKwh]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_mao_de_obra", maoDeObra); }, [maoDeObra]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_depreciacao_hora", depreciacaoHora); }, [depreciacaoHora]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_margem", margem); }, [margem]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_quantidade", quantidade); }, [quantidade]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_setup", tempoSetup); }, [tempoSetup]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_taxa_falha", taxaFalha); }, [taxaFalha]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_material_perdido", materialPerdido); }, [materialPerdido]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_perdido", tempoPerdido); }, [tempoPerdido]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_frete", frete); }, [frete]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_insumos_fixos", insumosFixos); }, [insumosFixos]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_insumos_selecionados", insumosSelecionados); }, [insumosSelecionados]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_itens_pos_processo", itensPosProcesso); }, [itensPosProcesso]);
 
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";
@@ -136,11 +105,10 @@ export function usarCalculadora() {
   }, [impressoraSelecionadaId, impressorasCadastradas]);
 
   const [perfisMarketplace, setPerfisMarketplace] = useState<PerfilMarketplace[]>(() => {
-    const salvo = localStorage.getItem("printlog_perfis_marketplace");
+    const salvo = armazenamentoSeguro.obter<any[] | null>("printlog_perfis_marketplace", null);
     if (salvo) {
       try {
-        const parsed = JSON.parse(salvo);
-        return parsed.map((p: any) => ({
+        return salvo.map((p: any) => ({
           nome: p.nome,
           taxaPontosBase: p.taxaPontosBase !== undefined ? p.taxaPontosBase : (p.taxa || 0) * 100,
           fixaCentavos: p.fixaCentavos !== undefined ? p.fixaCentavos : (p.fixa || 0) * 100,
@@ -167,10 +135,9 @@ export function usarCalculadora() {
     }
   }, [perfilAtivo, perfisMarketplace]);
 
-  const [historico, setHistorico] = useState<VersaoCalculo[]>(() => {
-    const salvo = localStorage.getItem("printlog_historico_calculadora");
-    return salvo ? JSON.parse(salvo) : [];
-  });
+  const [historico, setHistorico] = useState<VersaoCalculo[]>(() => 
+    armazenamentoSeguro.obter("printlog_historico_calculadora", [])
+  );
 
   // Cálculo de Resultados
   const calculo = useMemo((): CalculoResultado => {
@@ -273,7 +240,7 @@ export function usarCalculadora() {
     };
     const novoHistorico = [novaVersao, ...historico];
     setHistorico(novoHistorico);
-    localStorage.setItem("printlog_historico_calculadora", JSON.stringify(novoHistorico));
+    armazenamentoSeguro.definir("printlog_historico_calculadora", novoHistorico);
     toast.success("Snapshot salvo!");
   };
 
@@ -290,22 +257,37 @@ export function usarCalculadora() {
   const removerSnapshot = (id: string) => {
     const novo = historico.filter(v => v.id !== id);
     setHistorico(novo);
-    localStorage.setItem("printlog_historico_calculadora", JSON.stringify(novo));
+    armazenamentoSeguro.definir("printlog_historico_calculadora", novo);
+  };
+
+  /**
+   * Sanitiza uma string para evitar injeção de HTML/Script.
+   */
+  const sanitizar = (texto: string) => {
+    return texto.replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m] || m));
   };
 
   const gerarPdf = useCallback((nomeEstudio?: string, slogan?: string, nomeCliente?: string, nomeProjeto?: string, idPedido?: string) => {
-    // Lógica simplificada de PDF para manter integridade
+    // Sanitização de segurança para prevenir XSS no document.write
+    const sEstudio = sanitizar(nomeEstudio || 'Orcamento');
+    const sSlogan = sanitizar(slogan || '');
+    const sCliente = sanitizar(nomeCliente || 'Cliente');
+    const sProjeto = sanitizar(nomeProjeto || 'Projeto');
+    const sPedido = sanitizar(idPedido || 'N/A');
+
     const layout = `
       <html>
         <body style="font-family: sans-serif; padding: 40px;">
           <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="margin: 0;">${nomeEstudio || 'Orcamento'}</h1>
-            <p style="margin: 5px 0; color: #666;">${slogan || ''}</p>
+            <h1 style="margin: 0;">${sEstudio}</h1>
+            <p style="margin: 5px 0; color: #666;">${sSlogan}</p>
           </div>
           <hr />
-          <h2>Projeto: ${nomeProjeto}</h2>
-          <p><strong>Cliente:</strong> ${nomeCliente}</p>
-          <p><strong>ID do Pedido:</strong> ${idPedido || 'N/A'}</p>
+          <h2>Projeto: ${sProjeto}</h2>
+          <p><strong>Cliente:</strong> ${sCliente}</p>
+          <p><strong>ID do Pedido:</strong> ${sPedido}</p>
           <div style="margin-top: 40px; font-size: 24px; font-weight: bold;">
             Total: R$ ${(calculo.precoSugerido/100).toFixed(2)}
           </div>

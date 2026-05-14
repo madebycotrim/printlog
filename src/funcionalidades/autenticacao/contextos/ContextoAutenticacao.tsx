@@ -16,7 +16,7 @@ import {
   deleteUser,
 } from "firebase/auth";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
-import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 
 import { Usuario } from "@/compartilhado/tipos/modelos";
@@ -79,7 +79,8 @@ const registrarAceiteTermos = async (uid: string) => {
     };
 
     // Simulação - Integrar com Cloudflare D1 em breve
-    registrar.info({ rastreioId: `aceite-${uid}`, payload }, "Registrando aceite no banco de dados (Cloudflare D1)");
+    const payloadLog = { ...payload, ip: mascararDadoPessoal(ip, "ip") };
+    registrar.info({ rastreioId: `aceite-${uid}`, payload: payloadLog }, "Registrando aceite no banco de dados (Cloudflare D1)");
   } catch (erro) {
     registrar.error({ rastreioId: `aceite-${uid}` }, "Falha ao registrar aceite", erro);
   }
@@ -108,7 +109,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         if (resultado) {
           registrar.info(
             { rastreioId: resultado.user.uid, servico: "Autenticacao", evento: "LOGIN_REDIRECT_SUCESSO" },
-            `Google Redirect detectado para: ${resultado.user.email}`
+            `Google Redirect detectado para: ${mascararDadoPessoal(resultado.user.email || "", "email")}`
           );
         } else {
           registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Nenhum resultado de redirecionamento pendente.");
@@ -123,7 +124,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     const cancelarInscricao = onAuthStateChanged(autenticacao, (user) => {
       registrar.info(
         { rastreioId: user?.uid || "anônimo", servico: "Autenticacao", evento: "AUTH_STATE_CHANGED" },
-        user ? `Usuário identificado: ${user.email}` : "Nenhum usuário logado."
+        user ? `Usuário identificado: ${mascararDadoPessoal(user.email || "", "email")}` : "Nenhum usuário logado."
       );
 
       if (user) {

@@ -6,6 +6,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { Notificacao } from "../tipos/notificacoes";
+import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
 
 interface ArmazemNotificacoesState {
   notificacoes: Notificacao[];
@@ -75,17 +76,16 @@ export const usarArmazemNotificacoes = create<ArmazemNotificacoesState>()(
         // Necessário para serializar o Date corretamente
         storage: {
           getItem: (name) => {
-            const str = localStorage.getItem(name);
-            if (!str) return null;
-            const data = JSON.parse(str);
+            const data = armazenamentoSeguro.obter<any>(name, null);
+            if (!data || !data.state) return null;
             data.state.notificacoes = data.state.notificacoes.map((n: any) => ({
               ...n,
               data: new Date(n.data),
             }));
             return data;
           },
-          setItem: (name, value) => localStorage.setItem(name, JSON.stringify(value)),
-          removeItem: (name) => localStorage.removeItem(name),
+          setItem: (name, value) => armazenamentoSeguro.definir(name, value),
+          removeItem: (name) => armazenamentoSeguro.remover(name),
         },
       },
     ),

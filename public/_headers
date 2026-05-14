@@ -1,16 +1,55 @@
+# ==========================================
+# PRINTLOG SECURITY HEADERS - v4.0 (ULTRA HARDENED)
+# Remediação de Pentest TrueHacking
+# ==========================================
+
 /*
+  # 1. Blindagem de Transporte e Compressão (BREACH)
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Vary: Accept-Encoding
+  
+  # 2. Prevenção de Clickjacking e XSS
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=()
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  X-Permitted-Cross-Domain-Policies: none
-  Cross-Origin-Opener-Policy: unsafe-none
-  Cross-Origin-Embedder-Policy: unsafe-none
-  Cross-Origin-Resource-Policy: cross-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://apis.google.com https://www.gstatic.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://api.ipify.org https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://printlog.pages.dev wss://*.firebaseio.com; font-src 'self' data: https://fonts.gstatic.com; frame-src https://challenges.cloudflare.com https://*.firebaseapp.com https://printlog-85fe6.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';
+  X-XSS-Protection: 1; mode=block
+  
+  # 3. Content Security Policy (CSP) - Nível Enterprise
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://apis.google.com https://www.gstatic.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.ipify.org https://identitytoolkit.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; frame-src https://challenges.cloudflare.com https://*.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';
+
+  # 4. Correção de CORS (Elimina Achado de Wildcard)
+  Access-Control-Allow-Origin: https://www.printlog.com.br
+  Access-Control-Allow-Methods: GET, POST, OPTIONS
+  Access-Control-Allow-Headers: Content-Type, Authorization
+  Access-Control-Allow-Credentials: true
+
+  # 5. Ofuscação de Infraestrutura (Anti-Fingerprinting)
+  Server: Cloudflare Managed WAF / PrintLog Shield
+  X-Powered-By: PrintLog Security Engine
+  X-Content-Security-Policy: default-src 'self'
+
+# ------------------------------------------
+# BLOCO DE AUTENTICAÇÃO SEGURO (Achado MED #2)
+# ------------------------------------------
+
+/login
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; frame-ancestors 'none';
   Cache-Control: no-store, no-cache, must-revalidate
   Pragma: no-cache
+
+/cadastro
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; frame-ancestors 'none';
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/recuperar-senha
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; frame-ancestors 'none';
+  Cache-Control: no-store, no-cache, must-revalidate
+
+# ------------------------------------------
+# ASSETS E CACHE
+# ------------------------------------------
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

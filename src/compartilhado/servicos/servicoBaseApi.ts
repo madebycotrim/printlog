@@ -65,10 +65,8 @@ export const servicoBaseApi = {
       headers.set("Authorization", `Bearer ${token}`);
     }
 
-    // Temporário: Mantém compatibilidade com o backend atual
-    if (usuario) {
-      headers.set("x-usuario-id", usuario.uid);
-    }
+    // Autenticação baseada exclusivamente em Bearer Token (JWT)
+    // O UID deve ser extraído do token no backend para evitar spoofing.
 
     try {
       const resposta = await fetch(url, {

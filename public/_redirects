@@ -1,0 +1,52 @@
+# ==========================================
+# PRINTLOG SECURITY BLINDAGE - CLOUDFLARE
+# Proteção contra ffuf, Nikto, Nuclei e ZAP
+# ==========================================
+
+# 1. Bloqueio de WordPress & CMS (Mesmo não usando, evita "noise" de scanners)
+/wp-admin* /404 404
+/wp-content* /404 404
+/wp-includes* /404 404
+/wp-login.php /404 404
+/xmlrpc.php /404 404
+/administrator* /404 404
+/joomla* /404 404
+
+# 2. Bloqueio de Arquivos de Configuração e Fuzzing (ffuf/Dirb)
+/.env* /404 404
+/.git* /404 404
+/.svn* /404 404
+/.hg* /404 404
+/*.sql /404 404
+/*.sql.gz /404 404
+/*.zip /404 404
+/*.tar /404 404
+/*.gz /404 404
+/*.bak /404 404
+/*.old /404 404
+/*.swp /404 404
+/*.log /404 404
+/error_log /404 404
+/access_log /404 404
+
+# 3. Bloqueio de Interfaces de Admin e Debug comuns
+/phpinfo.php /404 404
+/info.php /404 404
+/config.php /404 404
+/configuration.php /404 404
+/server-status /404 404
+/server-info /404 404
+/elmah.axd /404 404
+/.well-known/phpmyadmin* /404 404
+/pma* /404 404
+
+# 4. Bloqueio de Arquivos de Servidor e Credenciais
+/web.config /404 404
+/.htaccess /404 404
+/server.key /404 404
+/privkey.pem /404 404
+/id_rsa /404 404
+
+# 5. SPA Routing (React Router)
+# Este deve ser o último para não sobrescrever os bloqueios acima
+/* /index.html 200

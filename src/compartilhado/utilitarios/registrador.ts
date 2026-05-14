@@ -68,7 +68,7 @@ export const registrar = {
  * Higieniza dados sensíveis (LGPD) para logs.
  * @lgpd Art. 5º, X - Higienização de PII em logs de operação.
  */
-export function mascararDadoPessoal(valor: string, tipo: 'cpf' | 'email' | 'cartao' | 'token'): string {
+export function mascararDadoPessoal(valor: string, tipo: 'cpf' | 'email' | 'cartao' | 'token' | 'ip'): string {
     if (!valor) return valor;
 
     switch (tipo) {
@@ -80,6 +80,8 @@ export function mascararDadoPessoal(valor: string, tipo: 'cpf' | 'email' | 'cart
         case 'token':
         case 'cartao':
             return `****${valor.slice(-4)}`;
+        case 'ip':
+            return valor.replace(/^(\d{1,3}\.\d{1,3})\..*$/, '$1.*.*');
         default:
             return '********';
     }

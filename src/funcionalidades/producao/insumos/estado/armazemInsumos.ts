@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Insumo, CategoriaInsumo } from "@/funcionalidades/producao/insumos/tipos";
+import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
 
 export type OrdenacaoInsumo = "nome" | "quantidade" | "atualizacao" | "custo";
 
@@ -118,7 +119,8 @@ export const usarArmazemInsumos = create<ArmazemInsumosState>()(
             fecharHistorico: () => set({ modalHistoricoAberto: false, insumoHistorico: null })
         }),
         {
-            name: "ArmazemInsumos",
+            name: "printlog_armazem_insumos",
+            storage: armazenamentoSeguro.adaptadorZustand,
             partialize: (state) => ({ insumos: state.insumos }) // Persiste no LocalStorage somente db
         }
     )

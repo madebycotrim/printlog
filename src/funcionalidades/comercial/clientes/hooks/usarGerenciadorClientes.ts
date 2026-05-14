@@ -68,7 +68,7 @@ export function usarGerenciadorClientes() {
         throw new ErroValidacao("Dados obrigatórios ausentes", CodigoErro.LANCAMENTO_VALOR_INVALIDO);
       }
 
-      registrar.info({ rastreioId, cliente: dados.nome }, "Salvando cliente no banco");
+      registrar.info({ rastreioId }, "Salvando registro de cliente no banco");
 
       const id = estado.clienteSendoEditado?.id;
       const clienteExistente = id ? estado.clientes.find(c => c.id === id) : {};

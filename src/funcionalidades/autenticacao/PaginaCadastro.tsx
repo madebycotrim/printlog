@@ -271,15 +271,15 @@ export function PaginaCadastro() {
               </div>
             </div>
             <label htmlFor="termos" className="text-sm text-zinc-400 cursor-pointer select-none leading-tight">
-              Li e aceito os{" "}
+              Concordo com os{" "}
               <a href="/termos-de-uso" className="text-[#0ea5e9] hover:underline">
-                Termos de Uso
+                Termos de Serviço
               </a>{" "}
               e a{" "}
               <a href="/politica-de-privacidade" className="text-[#0ea5e9] hover:underline">
                 Política de Privacidade
-              </a>
-              .
+              </a>{" "}
+              e consinto com o processamento dos meus dados pessoais conforme descrito. (LGPD Art. 7º, I)
             </label>
           </div>
 
