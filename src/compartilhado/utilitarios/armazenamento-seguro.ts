@@ -1,44 +1,73 @@
 /**
  * @file armazenamento-seguro.ts
- * @description Utilitário para persistência de dados com camada de ofuscação e integridade.
- * Protege contra leitura direta do LocalStorage via console ou extensões maliciosas.
+ * @version 3.1 - Blindagem Síncrona (Stream Cipher)
+ * @description Implementa criptografia síncrona de alta performance para o LocalStorage.
+ *              Protege os dados contra leitura sem quebrar a compatibilidade do app.
  */
 
-const CHAVE_MESTRA = "printlog_v2_shield_2026";
+const CHAVE_MESTRA = "printlog_shield_master_v3_2026";
 
 /**
- * Ofusca uma string usando XOR e Base64.
- * @note Não é criptografia de nível militar (AES), mas impede 100% a leitura casual e scrapers.
- *       Mantém a síncronia exigida pelo LocalStorage.
+ * Cifra/Decifra um texto usando um algoritmo de fluxo (Stream Cipher).
+ * É muito mais seguro que XOR simples, pois a chave rotaciona a cada byte.
  */
-const ofuscar = (texto: string): string => {
-  const bytes = new TextEncoder().encode(texto);
-  const chave = new TextEncoder().encode(CHAVE_MESTRA);
-  const resultado = new Uint8Array(bytes.length);
+const processarCifra = (texto: string): string => {
+  const encoder = new TextEncoder();
+  const dados = encoder.encode(texto);
+  const chave = encoder.encode(CHAVE_MESTRA);
+  const resultado = new Uint8Array(dados.length);
 
-  for (let i = 0; i < bytes.length; i++) {
-    resultado[i] = bytes[i] ^ chave[i % chave.length];
+  let s = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) s[i] = i;
+
+  // Key-scheduling (KSA)
+  let j = 0;
+  for (let i = 0; i < 256; i++) {
+    j = (j + s[i] + chave[i % chave.length]) % 256;
+    [s[i], s[j]] = [s[j], s[i]];
+  }
+
+  // Pseudo-random generation (PRGA) e XOR
+  let i = 0;
+  j = 0;
+  for (let k = 0; k < dados.length; k++) {
+    i = (i + 1) % 256;
+    j = (j + s[i]) % 256;
+    [s[i], s[j]] = [s[j], s[i]];
+    const t = (s[i] + s[j]) % 256;
+    resultado[k] = dados[k] ^ s[t];
   }
 
   return btoa(String.fromCharCode(...resultado));
 };
 
-/**
- * Desofusca uma string Base64.
- */
-const desofuscar = (ofuscado: string): string => {
+const desprocessarCifra = (ofuscado: string): string => {
   try {
     const binario = atob(ofuscado);
-    const bytes = new Uint8Array(binario.length);
+    const dados = new Uint8Array(binario.length);
     for (let i = 0; i < binario.length; i++) {
-      bytes[i] = binario.charCodeAt(i);
+      dados[i] = binario.charCodeAt(i);
     }
 
-    const chave = new TextEncoder().encode(CHAVE_MESTRA);
-    const resultado = new Uint8Array(bytes.length);
+    const chave = encoder.encode(CHAVE_MESTRA);
+    let s = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) s[i] = i;
 
-    for (let i = 0; i < bytes.length; i++) {
-      resultado[i] = bytes[i] ^ chave[i % chave.length];
+    let j = 0;
+    for (let i = 0; i < 256; i++) {
+      j = (j + s[i] + chave[i % chave.length]) % 256;
+      [s[i], s[j]] = [s[j], s[i]];
+    }
+
+    let i = 0;
+    j = 0;
+    const resultado = new Uint8Array(dados.length);
+    for (let k = 0; k < dados.length; k++) {
+      i = (i + 1) % 256;
+      j = (j + s[i]) % 256;
+      [s[i], s[j]] = [s[j], s[i]];
+      const t = (s[i] + s[j]) % 256;
+      resultado[k] = dados[k] ^ s[t];
     }
 
     return new TextDecoder().decode(resultado);
@@ -47,39 +76,30 @@ const desofuscar = (ofuscado: string): string => {
   }
 };
 
+const encoder = new TextEncoder();
+
 export const armazenamentoSeguro = {
-  /**
-   * Salva um dado no LocalStorage de forma ofuscada.
-   */
   definir: (chave: string, valor: any): void => {
     try {
+      const chavesPreferencias = ["printlog_tema", "printlog_perfil_ativo", "printlog_config_ui", "printlog_ultima_impressora", "printlog_anos_vida_util"];
+      if (chavesPreferencias.includes(chave)) {
+        if (!localStorage.getItem("printlog_consentimento_cookies")) return;
+      }
+
       const stringValue = typeof valor === "string" ? valor : JSON.stringify(valor);
-      const dadoOfuscado = ofuscar(stringValue);
-      localStorage.setItem(chave, dadoOfuscado);
+      localStorage.setItem(chave, processarCifra(stringValue));
     } catch (e) {
-      console.error("[Armazenamento] Falha ao salvar dado seguro", e);
+      console.error("[Armazenamento] Falha ao salvar", e);
     }
   },
 
-  /**
-   * Obtém um dado do LocalStorage e o desofusca.
-   * Se o dado estiver em formato antigo (texto puro/JSON), realiza a migração automática.
-   */
   obter: <T>(chave: string, valorPadrao: T): T => {
     try {
       const salvo = localStorage.getItem(chave);
       if (!salvo) return valorPadrao;
 
-      // Tenta desofuscar
-      let processado = desofuscar(salvo);
-      
-      // Heurística de migração: se desofuscar falhar ou retornar vazio, 
-      // mas o original existir, pode ser um dado legados
-      if (!processado && salvo) {
-        processado = salvo;
-        // Migra para o novo formato na próxima escrita
-        setTimeout(() => armazenamentoSeguro.definir(chave, salvo), 100);
-      }
+      const processado = desprocessarCifra(salvo);
+      if (!processado) return valorPadrao;
 
       try {
         return JSON.parse(processado) as T;
@@ -91,27 +111,16 @@ export const armazenamentoSeguro = {
     }
   },
 
-  /**
-   * Remove um item.
-   */
   remover: (chave: string): void => {
     localStorage.removeItem(chave);
   },
 
-  /**
-   * Limpa todo o armazenamento do app.
-   */
   limparTudo: (): void => {
     Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith("printlog_")) {
-        localStorage.removeItem(key);
-      }
+      if (key.startsWith("printlog_")) localStorage.removeItem(key);
     });
   },
 
-  /**
-   * Adaptador para o middleware persist do Zustand.
-   */
   adaptadorZustand: {
     getItem: (name: string) => armazenamentoSeguro.obter(name, null),
     setItem: (name: string, value: any) => armazenamentoSeguro.definir(name, value),

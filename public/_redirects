@@ -46,6 +46,20 @@
 /server.key /404 404
 /privkey.pem /404 404
 /id_rsa /404 404
+/id_dsa /404 404
+
+# 5. Bloqueio de Arquivos de Instalação e READMEs (Anti-Fingerprinting)
+/readme.html /404 404
+/readme.txt /404 404
+/license.txt /404 404
+/install.php /404 404
+/setup.php /404 404
+/install.sh /404 404
+/setup.sh /404 404
+/Makefile /404 404
+/package.json /404 404
+/package-lock.json /404 404
+/tsconfig.json /404 404
 
 # 5. SPA Routing (React Router)
 # Este deve ser o último para não sobrescrever os bloqueios acima

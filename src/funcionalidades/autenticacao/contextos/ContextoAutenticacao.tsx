@@ -49,38 +49,27 @@ interface ProvedorAutenticacaoProps {
 }
 
 /**
- * Obtém o endereço IP do usuário para fins de auditoria de segurança (LGPD).
- * @returns IP em string
- */
-const obterIpUsuario = async (): Promise<string> => {
-  try {
-    const resposta = await fetch("https://api.ipify.org?format=json");
-    const dados = (await resposta.json()) as { ip: string };
-    return dados.ip;
-  } catch (erro) {
-    registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Erro ao obter IP", erro);
-    return "0.0.0.0";
-  }
-};
-
-/**
  * Registra o aceite dos termos e política de privacidade no banco de dados.
  * @param uid - ID do usuário
  */
 const registrarAceiteTermos = async (uid: string) => {
   try {
-    const ip = await obterIpUsuario();
-    const payload = {
-      user_id: uid,
-      data_aceite: new Date().toISOString(),
-      versao_termos: "2026-05-14",
-      versao_politica: "2026-05-14",
-      ip: ip,
-    };
+    const token = await autenticacao.currentUser?.getIdToken();
+    if (!token) return;
 
-    // Simulação - Integrar com Cloudflare D1 em breve
-    const payloadLog = { ...payload, ip: mascararDadoPessoal(ip, "ip") };
-    registrar.info({ rastreioId: `aceite-${uid}`, payload: payloadLog }, "Registrando aceite no banco de dados (Cloudflare D1)");
+    await fetch("/api/usuario-aceite", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        versao_termos: "2026-05-14",
+        versao_politica: "2026-05-14",
+      })
+    });
+
+    registrar.info({ rastreioId: `aceite-${uid}` }, "Aceite de termos registrado no Cloudflare D1.");
   } catch (erro) {
     registrar.error({ rastreioId: `aceite-${uid}` }, "Falha ao registrar aceite", erro);
   }
@@ -354,12 +343,37 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
   /**
    * Exclui permanentemente a conta do usuário (Direito ao Esquecimento - LGPD).
+   * Realiza a purga dos dados no D1 antes de remover a credencial do Firebase.
    */
   const excluirConta = async () => {
     try {
       if (!autenticacao.currentUser) throw new Error("Usuário não autenticado.");
+
+      registrar.info({ rastreioId: autenticacao.currentUser.uid, servico: "Autenticacao" }, "Iniciando purga de dados no D1...");
+      
+      // 1. Limpa os dados de negócio no Cloudflare D1
+      const token = await autenticacao.currentUser.getIdToken();
+      const respostaPurga = await fetch("/api/usuario-excluir", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!respostaPurga.ok) {
+        const erroPurga = await respostaPurga.json() as any;
+        throw new Error(erroPurga?.erro || "Falha ao limpar dados do banco de dados.");
+      }
+
+      registrar.info({ rastreioId: autenticacao.currentUser.uid, servico: "Autenticacao" }, "Purga no D1 concluída. Removendo usuário do Firebase Auth...");
+
+      // 2. Remove o usuário do Firebase Auth (Ação irreversível)
       await deleteUser(autenticacao.currentUser);
+      
+      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Conta excluída permanentemente com sucesso.");
     } catch (erro: unknown) {
+      registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha total na exclusão de conta", erro);
       traduzirErroFirebase(erro);
     }
   };

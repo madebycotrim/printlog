@@ -150,46 +150,6 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
             />
           </SecaoFormulario>
 
-          <SecaoFormulario titulo="Privacidade & LGPD">
-            <GradeCampos colunas={2}>
-              <div className="md:col-span-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 block">
-                  Base Legal (Art. 7º LGPD)
-                </label>
-                <select
-                  {...register("baseLegal")}
-                  className="w-full h-11 px-4 rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-sm font-medium focus:ring-2 focus:ring-sky-500/50 transition-all"
-                >
-                  <option value={BaseLegalLGPD.EXECUCAO_CONTRATO}>Execução de Contrato</option>
-                  <option value={BaseLegalLGPD.CONSENTIMENTO}>Consentimento</option>
-                  <option value={BaseLegalLGPD.LEGITIMO_INTERESSE}>Legítimo Interesse</option>
-                  <option value={BaseLegalLGPD.OBRIGACAO_LEGAL}>Obrigação Legal</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-1">
-                <CampoTexto
-                  rotulo="Prazo de Retenção (Meses)"
-                  type="number"
-                  placeholder="60"
-                  erro={errors.prazoRetencaoMeses?.message}
-                  {...register("prazoRetencaoMeses", { valueAsNumber: true })}
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <CampoTexto
-                  rotulo="Finalidade Específica da Coleta"
-                  placeholder="Ex: Gestão de pedidos e orçamentos de impressão 3D."
-                  erro={errors.finalidadeColeta?.message}
-                  {...register("finalidadeColeta")}
-                />
-                <p className="text-[10px] text-zinc-500 mt-2 italic">
-                  * Estes dados são registrados para fins de auditoria e conformidade com a ANPD.
-                </p>
-              </div>
-            </GradeCampos>
-          </SecaoFormulario>
         </div>
 
         <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-[#0e0e11]/50 backdrop-blur-md flex flex-col gap-4">

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Sparkles, Crown, Zap } from "lucide-react";
+import { Check, Sparkles, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const planos = [
@@ -31,11 +31,12 @@ const planos = [
       "Insights de Mercado e Dicas da IA",
       "Identidade Visual do seu Estúdio",
       "Orçamentos Profissionais Personalizados",
-      "Selo Exclusivo de Membro Fundador",
-      "Suporte Prioritário",
+      "Proteção de Dados (AES-256)",
+      "Acesso a todas as ferramentas",
+      "Suporte via e-mail",
     ],
     destaque: true,
-    botao: "Garantir Vaga Pro",
+    botao: "Assinar Plano PRO",
   },
 ];
 
@@ -45,15 +46,6 @@ export function Precificacao() {
     <section id="planos" className="py-24 relative overflow-hidden bg-[#050505]">
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col items-center text-center mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6"
-          >
-            <Zap size={12} />
-            Evolução Constante
-          </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +53,7 @@ export function Precificacao() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-5xl font-black tracking-tighter mb-6"
           >
-            Escolha o Plano Ideal para seu <span className="text-sky-500">Sucesso</span>
+            Escolha o Plano Ideal para sua <span className="text-sky-500">Gestão</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -70,7 +62,7 @@ export function Precificacao() {
             transition={{ delay: 0.2 }}
             className="text-zinc-400 max-w-2xl text-lg"
           >
-            Comece grátis e evolua conforme seu estúdio cresce. Aproveite nossa oferta histórica de lançamento para o plano PRO.
+            O PrintLog é um projeto independente. Comece grátis e, se precisar de mais recursos, assine o plano PRO para ajudar a manter o servidor online.
           </motion.p>
         </div>
 

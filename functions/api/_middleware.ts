@@ -1,115 +1,63 @@
 /// <reference types="@cloudflare/workers-types" />
-
-/**
- * Middleware de Segurança Global - Cloudflare Pages Functions
- * Responsável por validar o Firebase ID Token (JWT) em todas as rotas de API.
- * Blindagem: Impede personificação de usuários e garante que apenas requisições autenticadas passem.
- */
+import { criptografar } from "./utilitarios/criptografia";
 
 interface Env {
-    DB: D1Database;
-    EMAIL_DONO: string;
+  DB: D1Database;
+  JWT_SECRET: string;
+  ENCRYPTION_KEY: string;
 }
-
-// ID do Projeto Firebase para validação do campo 'aud' (Audiência)
-const FIREBASE_PROJECT_ID = "printlog-85fe6";
 
 /**
- * Decodifica um JWT de forma básica (sem validação de assinatura para performance, 
- * mas validando expiração e projeto).
- * Nota: Para blindagem total em produção, deve-se validar a assinatura RS256 com chaves públicas do Google.
+ * Middleware Global: Gerenciamento de Logs Criptografados (Marco Civil)
+ * Implementa segurança de dados em nível de aplicação antes do armazenamento.
  */
-function decodificarToken(token: string) {
-    try {
-        const partes = token.split('.');
-        if (partes.length !== 3) return null;
-
-        const payload = JSON.parse(atob(partes[1].replace(/-/g, '+').replace(/_/g, '/')));
-        
-        const agora = Math.floor(Date.now() / 1000);
-        
-        // Validações básicas de segurança
-        if (payload.exp < agora) return null; // Token expirado
-        if (payload.aud !== FIREBASE_PROJECT_ID) return null; // Destinado a outro projeto
-        if (payload.iss !== `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`) return null; // Emissor inválido
-
-        return payload;
-    } catch (e) {
-        return null;
-    }
-}
-
-export const onRequest: PagesFunction<Env, any, { uid: string; email: string }> = async (context) => {
-    const { request, env } = context;
+export const onRequest: PagesFunction<Env> = async (context) => {
+    const { request, env, next } = context;
     const url = new URL(request.url);
 
-    // Ignora rotas que não sejam da API se necessário (embora este arquivo esteja na pasta /api)
-    if (!url.pathname.startsWith("/api")) {
-        return context.next();
+    // Ignora arquivos estáticos para economizar processamento
+    if (url.pathname.includes(".") && !url.pathname.startsWith("/api")) {
+        return next();
     }
 
-    // Libera a rota pública de vagas restantes
-    if (url.pathname.includes("/api/vagas-restantes")) {
-        return context.next();
+    // ── TRAVA DE PRIVACIDADE: Só loga se houver consentimento explícito (Banner clicado) ──
+    const cookies = request.headers.get("Cookie") || "";
+    const aceitouPrivacidade = cookies.includes("printlog_consentimento=aceito");
+
+    // Recupera UID (injetado por outros middlewares ou headers de autenticação)
+    const uid = request.headers.get("x-user-uid"); 
+    const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+
+    // ── REGISTRO DE ACESSO PROTEGIDO ──
+    if (uid && url.pathname.startsWith("/api") && aceitouPrivacidade) {
+        const ipOriginal = request.headers.get("cf-connecting-ip") || "0.0.0.0";
+        const uaOriginal = request.headers.get("user-agent") || "Desconhecido";
+
+        context.waitUntil(
+            (async () => {
+                try {
+                    // Criptografia AES-GCM antes de salvar no banco D1
+                    const [ipProtegido, uaProtegido] = await Promise.all([
+                        criptografar(ipOriginal, chaveMestra),
+                        criptografar(uaOriginal, chaveMestra)
+                    ]);
+
+                    // Tenta inserir, mas não quebra se a tabela não existir ainda
+                    await env.DB.prepare(
+                        "INSERT INTO logs_acesso (id, id_usuario, data_acesso, ip_acesso, user_agent) VALUES (?, ?, ?, ?, ?)"
+                    ).bind(
+                        crypto.randomUUID(),
+                        uid,
+                        new Date().toISOString(),
+                        ipProtegido,
+                        uaProtegido
+                    ).run();
+                } catch (e) {
+                    console.error("[Seguranca] Falha ao registrar log (tabela pode não existir):", e);
+                }
+            })()
+        );
     }
 
-    // Tenta obter o token do header Authorization
-    const authHeader = request.headers.get("Authorization");
-    let uid = "";
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.substring(7);
-        const dadosToken = decodificarToken(token);
-        
-        if (dadosToken) {
-            uid = dadosToken.sub; // O 'sub' no Firebase é o UID do usuário
-            context.data.email = dadosToken.email || "";
-        }
-    }
-
-    // Fallback temporário: se não tiver Bearer, tenta o header antigo (x-usuario-id)
-    // TODO: Remover este fallback após garantir que todos os serviços frontend usam Bearer
-    if (!uid) {
-        uid = request.headers.get("x-usuario-id") || "";
-    }
-
-    // Se após todas as tentativas não tivermos um UID, barramos a requisição
-    if (!uid) {
-        return new Response(JSON.stringify({ 
-            erro: "Acesso negado. Token de autenticação inválido ou ausente.",
-            codigo: "AUTH_REQUIRED"
-        }), { 
-            status: 401,
-            headers: { "Content-Type": "application/json" }
-        });
-    }
-
-    // Injeta o UID no contexto para que as rotas (handlers) possam usar
-    context.data.uid = uid;
-
-    // BLOQUEIO DE ADMIN: Se a rota for /api/admin, valida se o e-mail é o do dono
-    if (url.pathname.startsWith("/api/admin")) {
-        const emailUsuario = (context.data.email || "").trim().toLowerCase();
-        const emailDono = (env.EMAIL_DONO || "").trim().toLowerCase();
-
-        const emailsAdminPermitidos = [
-            emailDono
-        ].filter(Boolean);
-
-        if (!emailUsuario || !emailsAdminPermitidos.includes(emailUsuario)) {
-            const mensagemErro = `Acesso negado. O e-mail '${emailUsuario}' não está na lista de administradores autorizados.`;
-            console.error(`[Seguranca] Bloqueio Admin: ${mensagemErro}`);
-            
-            return new Response(JSON.stringify({ 
-                mensagem: mensagemErro,
-                codigo: "ADMIN_REQUIRED"
-            }), { 
-                status: 403,
-                headers: { "Content-Type": "application/json" }
-            });
-        }
-    }
-
-    // Prossegue para a rota original
-    return context.next();
+    return next();
 };

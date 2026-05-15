@@ -35,14 +35,14 @@ export function LayoutAutenticacao({
       {/* Elementos de Design de Fundo (Padrão Global) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Grade Técnica Padronizada */}
-        <div className="absolute inset-0 bg-grid-printlog opacity-[0.03] dark:opacity-[0.08]" />
+        <div className="absolute inset-0 bg-grid-printlog opacity-[0.15] dark:opacity-20" />
         
         {/* Glows de Profundidade Premium */}
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-sky-500/10 blur-[120px] rounded-full" />
         <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full" />
         
         {/* Gradiente Central de Foco */}
-        <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${cores.gradiente} via-transparent to-transparent opacity-50`} />
+        <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${cores.gradiente} via-[#050505]/80 to-[#050505] opacity-100`} />
       </div>
 
       {/* Link Voltar */}

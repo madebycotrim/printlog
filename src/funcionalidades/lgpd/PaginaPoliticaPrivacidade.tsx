@@ -1,93 +1,125 @@
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "@/compartilhado/estilos/documentos-abnt.css";
 
 /**
- * Política de Privacidade - Padrão ABNT e Linguagem Simples.
- * Conformidade: LGPD (Lei 13.709/2018) e Recomendações ANPD.
+ * Política de Privacidade - Versão 2.0 (Conformidade Integral LGPD)
+ * Estrutura baseada nas diretrizes da ANPD e normas ABNT de documentação.
  */
 export default function PaginaPoliticaPrivacidade() {
   const navegar = useNavigate();
-  const dataVersao = "14 de maio de 2026 (Versão 1.1)";
+  const dataAtualizacao = "14 de maio de 2026";
 
   return (
-    <div className="folha-a4-container">
-      {/* Botões de Ação (não saem na impressão) */}
-      <div className="fixed top-6 left-6 no-print z-50">
+    <div className="bg-[#f8f9fa] min-h-screen py-12 px-4 font-serif selection:bg-sky-500/30">
+      {/* Botão de Retorno */}
+      <div className="max-w-[210mm] mx-auto mb-8 no-print">
         <button
           onClick={() => navegar(-1)}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 border border-white/10 text-white rounded-xl hover:bg-zinc-800 transition-all backdrop-blur-md shadow-xl"
+          className="flex items-center gap-2 text-zinc-500 hover:text-sky-600 transition-all font-sans text-xs font-black uppercase tracking-widest"
         >
-          <ArrowLeft size={16} />
-          Voltar ao Site
+          <ArrowLeft size={14} /> Voltar ao Sistema
         </button>
       </div>
 
-      {/* Folha A4 Simulada */}
-      <article className="folha-a4">
-        <h1 className="abnt-titulo">
-          POLÍTICA DE PRIVACIDADE E PROTEÇÃO DE DADOS PESSOAIS
-        </h1>
-
-        <p className="abnt-texto">
-          Olá! Bem-vindo ao <strong>PrintLog</strong>. Esta política explica, de forma clara e direta, como cuidamos das suas informações quando você utiliza nosso sistema de gestão para estúdios de impressão 3D. Estamos comprometidos em proteger sua privacidade conforme a Lei Geral de Proteção de Dados (LGPD).
-        </p>
-
-        <h2 className="abnt-subtitulo">1. QUEM É O RESPONSÁVEL PELOS SEUS DADOS?</h2>
-        <p className="abnt-texto">
-          O <strong>PrintLog</strong> (projeto de software de titularidade de pessoa física) é o "Controlador" dos seus dados. Isso significa que decidimos como suas informações são usadas para que você possa acessar o sistema.
-        </p>
-        <p className="abnt-texto">
-          <strong>Importante:</strong> Se você cadastrar dados dos <em>seus</em> clientes no sistema, você é o responsável (Controlador) por esses dados, e nós somos apenas a ferramenta que os processa (Operador).
-        </p>
-
-        <h2 className="abnt-subtitulo">2. QUAIS INFORMAÇÕES COLETAMOS E PARA QUÊ?</h2>
-        <p className="abnt-texto">
-          Coletamos apenas o mínimo necessário para o sistema funcionar bem:
-        </p>
-        <ul className="abnt-lista">
-          <li><strong>Dados de Cadastro:</strong> Nome completo e e-mail. (Para identificar você e permitir o login).</li>
-          <li><strong>Dados Técnicos:</strong> Endereço IP e registros de acesso. (Exigência da lei Marco Civil da Internet para segurança).</li>
-          <li><strong>Cookies:</strong> Pequenos arquivos para lembrar suas preferências. (Você pode desligar os cookies de desempenho se desejar).</li>
-        </ul>
-
-        <h2 className="abnt-subtitulo">3. COM QUEM COMPARTILHAMOS OS DADOS?</h2>
-        <p className="abnt-texto">
-          Não vendemos seus dados para ninguém. Compartilhamos apenas com serviços de tecnologia essenciais (como Cloudflare para o banco de dados e Google para o login), que seguem padrões internacionais de segurança.
-        </p>
-
-        <h2 className="abnt-subtitulo">4. POR QUANTO TEMPO GUARDAMOS SEUS DADOS?</h2>
-        <p className="abnt-texto">
-          Guardamos suas informações enquanto sua conta estiver ativa. Se você decidir sair, apagaremos tudo, exceto o que a lei nos obriga a guardar (como registros de acesso por 6 meses).
-        </p>
-
-        <h2 className="abnt-subtitulo">5. QUAIS SÃO OS SEUS DIREITOS?</h2>
-        <p className="abnt-texto">
-          A LGPD garante que você tenha controle total. Você pode nos pedir para:
-        </p>
-        <ul className="abnt-lista">
-          <li>Confirmar se estamos usando seus dados;</li>
-          <li>Corrigir informações erradas;</li>
-          <li>Apagar seus dados permanentemente;</li>
-          <li>Exportar seus dados para levar para outro lugar.</li>
-        </ul>
-
-        <h2 className="abnt-subtitulo">6. SEGURANÇA</h2>
-        <p className="abnt-texto">
-          Tratamos seus dados como se fossem nossos. Usamos criptografia e ferramentas modernas para evitar qualquer tipo de vazamento ou acesso não autorizado.
-        </p>
-
-        <h2 className="abnt-subtitulo">7. CONTATO (DPO)</h2>
-        <p className="abnt-texto">
-          Se tiver qualquer dúvida ou quiser exercer um de seus direitos, mande um e-mail para nosso responsável por dados: <strong>privacidade@printlog.com.br</strong>. Responderemos em até 15 dias úteis.
-        </p>
-
-        <div className="abnt-rodape">
-          <p>Documento atualizado em: {dataVersao}</p>
-          <p>PrintLog - Gestão Inteligente para Impressão 3D</p>
-          <p>Em conformidade com a Lei nº 13.709/2018 (LGPD)</p>
+      {/* Documento Estilo A4 */}
+      <article className="max-w-[210mm] mx-auto bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] p-[20mm] md:p-[30mm] text-zinc-800 leading-relaxed text-justify relative overflow-hidden">
+        
+        {/* Selo de Autenticidade (Marca d'água discreta) */}
+        <div className="absolute top-10 right-10 opacity-[0.03] pointer-events-none">
+          <ShieldCheck size={200} />
         </div>
+
+        <header className="mb-12 border-b-2 border-zinc-100 pb-8">
+          <h1 className="text-2xl font-black text-zinc-900 mb-2 uppercase tracking-tight">
+            Política de Privacidade e Proteção de Dados
+          </h1>
+          <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+            Documento Interno: PL-PRIV-2026-V2 · Atualizado em: {dataAtualizacao}
+          </p>
+        </header>
+
+        <section className="space-y-8 text-sm">
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. DISPOSIÇÕES GERAIS</h2>
+            <p className="mb-4">
+              Esta Política de Privacidade descreve as práticas do <strong>PrintLog</strong> (doravante denominado "Controlador") em relação à coleta, processamento e armazenamento de dados pessoais, em estrita observância à Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 - LGPD).
+            </p>
+            <div className="p-4 bg-sky-50 rounded-lg border-l-4 border-sky-500 font-sans italic text-zinc-600">
+              <strong>Em resumo:</strong> Este documento é o nosso compromisso legal de que cuidaremos bem dos seus dados. Ele explica o que fazemos com o seu nome e e-mail.
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. AGENTES DE TRATAMENTO</h2>
+            <p className="mb-2 text-left">
+              <strong>Controlador:</strong> PrintLog (Desenvolvedor Solo).<br />
+              <strong>Encarregado (DPO):</strong> Responsável pela Privacidade PrintLog (privacidade@printlog.com.br).<br />
+              <strong>Operadores:</strong> Cloudflare, Inc. (Infraestrutura) e Google LLC (Autenticação).
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. COLETA E FINALIDADE DOS DADOS</h2>
+            <p className="mb-4">
+              O tratamento de dados pessoais pelo PrintLog limita-se ao mínimo necessário para a prestação do serviço, fundamentando-se no <strong>Artigo 7º, inciso V</strong> (Execução de Contrato):
+            </p>
+            <ul className="list-disc pl-6 space-y-2 mb-4">
+              <li><strong>Dados de Identificação:</strong> Nome e sobrenome (ou apelido) e endereço de correio eletrônico (e-mail) para fins de autenticação e suporte.</li>
+              <li><strong>Dados Técnicos:</strong> Endereço IP e registros de data/hora, processados para garantir a integridade do sistema e conformidade com o Marco Civil da Internet (Art. 15).</li>
+              <li><strong>Dados de Negócio:</strong> Informações de custos e orçamentos inseridos pelo usuário, processados exclusivamente para a geração de relatórios sob demanda.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. DIREITOS DO TITULAR (ART. 18 LGPD)</h2>
+            <p className="mb-4">
+              O Titular dos dados possui o direito de solicitar a qualquer momento:
+            </p>
+            <ol className="list-decimal pl-6 space-y-2">
+              <li>Confirmação da existência de tratamento;</li>
+              <li>Acesso facilitado aos dados;</li>
+              <li>Correção de dados incompletos ou inexatos;</li>
+              <li>Portabilidade dos dados (conforme regulamentação da ANPD);</li>
+              <li>Eliminação definitiva dos dados (Direito ao Esquecimento).</li>
+            </ol>
+            <div className="mt-4 p-4 bg-zinc-50 rounded-lg font-sans text-xs text-zinc-500">
+              <strong>Nota Técnica:</strong> As solicitações podem ser feitas diretamente pelo painel de configurações ou via e-mail para o DPO.
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">5. SEGURANÇA E ARMAZENAMENTO</h2>
+            <p className="mb-4">
+              O Controlador adota medidas técnicas de segurança, incluindo criptografia <strong>AES-256</strong> (em repouso) e <strong>TLS 1.3</strong> (em trânsito). Os dados residem em servidores da Cloudflare e Google, localizados nos Estados Unidos e Europa, garantindo proteção física de alto nível.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">6. RETENÇÃO E EXCLUSÃO</h2>
+            <p className="mb-4">
+              Dados pessoais e de negócio são retidos enquanto a conta do Titular permanecer ativa. Após a solicitação de exclusão, ocorre a <strong>purga definitiva</strong> de todos os dados de negócio. Registros de acesso (IP) são mantidos por 180 dias para cumprimento de obrigação legal.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. DISPOSIÇÕES FINAIS</h2>
+            <p>
+              Esta política pode ser atualizada periodicamente. Alterações significativas serão notificadas por e-mail ou via sistema. Para qualquer controvérsia, elege-se o foro da comarca de domicílio do Controlador.
+            </p>
+          </div>
+        </section>
+
+        <footer className="mt-20 pt-12 border-t border-zinc-100 text-[10px] text-zinc-400 font-mono text-center">
+          <p>ESTE DOCUMENTO POSSUI VALIDADE JURÍDICA E TÉCNICA · PRINTLOG © 2026</p>
+          <p className="mt-1">REPRODUÇÃO PROIBIDA · EM CONFORMIDADE COM A LEI 13.709/2018</p>
+        </footer>
       </article>
+
+      {/* Rodapé Adicional */}
+      <div className="max-w-[210mm] mx-auto mt-8 text-center text-[10px] text-zinc-400 font-sans uppercase tracking-[0.2em] no-print">
+        Fim do Documento · Página 1 de 1
+      </div>
     </div>
   );
 }

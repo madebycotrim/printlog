@@ -1,90 +1,116 @@
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Gavel } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "@/compartilhado/estilos/documentos-abnt.css";
 
 /**
- * Termos de Uso - Padrão ABNT e Linguagem Simples.
- * Natureza Jurídica: Contrato de Licenciamento de Software.
+ * Termos de Serviço - Versão 2.0 (Contrato de Licença de Uso de Software)
+ * Estrutura formal com foco em responsabilidades, propriedade intelectual e limites de garantia.
  */
 export default function PaginaTermosUso() {
   const navegar = useNavigate();
-  const dataVersao = "14 de maio de 2026 (Versão 1.1)";
+  const dataAtualizacao = "14 de maio de 2026";
 
   return (
-    <div className="folha-a4-container">
-      {/* Botões de Ação (não saem na impressão) */}
-      <div className="fixed top-6 left-6 no-print z-50">
+    <div className="bg-[#f3f4f6] min-h-screen py-12 px-4 font-serif selection:bg-sky-500/30">
+      {/* Botão de Retorno */}
+      <div className="max-w-[210mm] mx-auto mb-8 no-print">
         <button
           onClick={() => navegar(-1)}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 border border-white/10 text-white rounded-xl hover:bg-zinc-800 transition-all backdrop-blur-md shadow-xl"
+          className="flex items-center gap-2 text-zinc-500 hover:text-sky-600 transition-all font-sans text-xs font-black uppercase tracking-widest"
         >
-          <ArrowLeft size={16} />
-          Voltar ao Site
+          <ArrowLeft size={14} /> Voltar ao Sistema
         </button>
       </div>
 
-      {/* Folha A4 Simulada */}
-      <article className="folha-a4">
-        <h1 className="abnt-titulo">
-          TERMOS DE USO E LICENÇA DE SOFTWARE
-        </h1>
-
-        <p className="abnt-texto">
-          Este documento é um contrato entre você e o <strong>PrintLog</strong>. Ao criar uma conta e usar nosso sistema, você concorda com as regras abaixo. Leia com atenção.
-        </p>
-
-        <h2 className="abnt-subtitulo">1. O QUE É O PRINTLOG?</h2>
-        <p className="abnt-texto">
-          O PrintLog é um software de gestão para quem trabalha com impressão 3D (makers e estúdios). Ele ajuda a calcular custos, gerenciar materiais, clientes e orçamentos. Ao usar o sistema, você não está comprando o software, mas sim "alugando" o direito de usá-lo (Licença de Uso).
-        </p>
-
-        <h2 className="abnt-subtitulo">2. QUEM PODE USAR?</h2>
-        <p className="abnt-texto">
-          Qualquer pessoa com mais de 18 anos ou empresas legalmente constituídas. Você deve fornecer informações verdadeiras no cadastro e é o único responsável pela segurança da sua senha.
-        </p>
-
-        <h2 className="abnt-subtitulo">3. REGRAS DE BOA CONDUTA</h2>
-        <p className="abnt-texto">
-          Você se compromete a usar o sistema de forma honesta. É proibido:
-        </p>
-        <ul className="abnt-lista">
-          <li>Tentar copiar o código ou o design do sistema;</li>
-          <li>Usar robôs para extrair dados;</li>
-          <li>Usar o sistema para fins ilegais;</li>
-          <li>Emprestar ou vender sua conta para outras pessoas.</li>
-        </ul>
-
-        <h2 className="abnt-subtitulo">4. RESPONSABILIDADES</h2>
-        <p className="abnt-texto">
-          Nós nos esforçamos para que o sistema esteja sempre no ar, mas não podemos garantir que ele nunca terá falhas técnicas. O PrintLog é uma ferramenta de apoio; a decisão final sobre seus lucros, preços e gestão do seu estúdio é sempre sua.
-        </p>
-
-        <h2 className="abnt-subtitulo">5. GRATUIDADE E PLANOS</h2>
-        <p className="abnt-texto">
-          Atualmente o PrintLog é gratuito. Se no futuro decidirmos criar planos pagos, avisaremos você com pelo menos 30 dias de antecedência para que você decida se quer continuar ou não.
-        </p>
-
-        <h2 className="abnt-subtitulo">6. PROPRIEDADE INTELECTUAL</h2>
-        <p className="abnt-texto">
-          Tudo o que você vê no PrintLog (design, logomarca, códigos e ideias) pertence ao criador do sistema. Você tem o direito de usar a ferramenta, mas não se torna dono dela.
-        </p>
-
-        <h2 className="abnt-subtitulo">7. CANCELAMENTO</h2>
-        <p className="abnt-texto">
-          Você pode cancelar sua conta a qualquer momento direto pelo painel. Nós também podemos suspender contas que desrespeitem estas regras ou que tentem prejudicar o sistema.
-        </p>
-
-        <h2 className="abnt-subtitulo">8. DÚVIDAS</h2>
-        <p className="abnt-texto">
-          Caso precise de ajuda ou tenha dúvidas sobre este contrato, entre em contato via: <strong>suporte@printlog.com.br</strong>.
-        </p>
-
-        <div className="abnt-rodape">
-          <p>Documento atualizado em: {dataVersao}</p>
-          <p>PrintLog - Gestão Inteligente para Impressão 3D</p>
-          <p>Regido pelas leis da República Federativa do Brasil</p>
+      {/* Documento Estilo A4 */}
+      <article className="max-w-[210mm] mx-auto bg-white shadow-[0_0_60px_rgba(0,0,0,0.05)] p-[20mm] md:p-[30mm] text-zinc-800 leading-relaxed text-justify relative overflow-hidden">
+        
+        {/* Marca d'água Jurídica */}
+        <div className="absolute top-10 right-10 opacity-[0.03] pointer-events-none text-zinc-900">
+          <Gavel size={200} />
         </div>
+
+        <header className="mb-12 border-b-2 border-zinc-100 pb-8">
+          <h1 className="text-2xl font-black text-zinc-900 mb-2 uppercase tracking-tight">
+            Termos e Condições de Uso de Software (EULA)
+          </h1>
+          <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+            Contrato Ref: PL-TERMS-2026-V2 · Vigência: {dataAtualizacao}
+          </p>
+        </header>
+
+        <section className="space-y-8 text-sm">
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. OBJETO DO CONTRATO</h2>
+            <p className="mb-4">
+              O presente instrumento regula a licença de uso, não exclusiva e intransferível, da plataforma <strong>PrintLog</strong>, uma ferramenta SaaS (Software as a Service) voltada à gestão técnica e precificação para estúdios de manufatura aditiva (Impressão 3D).
+            </p>
+            <div className="p-4 bg-zinc-50 rounded-lg border-l-4 border-zinc-300 font-sans italic text-zinc-600">
+              <strong>Em resumo:</strong> Ao usar o PrintLog, você está aceitando as regras de como o software funciona. Ele é uma ferramenta de auxílio, não um substituto para a sua gestão financeira.
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. ELEGIBILIDADE E CADASTRO</h2>
+            <p className="mb-4">
+              Para utilizar o PrintLog, o usuário declara possuir capacidade civil plena (maior de 18 anos) e obriga-se a fornecer informações verídicas no ato do cadastro. O acesso é pessoal e as credenciais (via Google Auth) são de responsabilidade exclusiva do usuário.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. PROPRIEDADE INTELECTUAL</h2>
+            <p className="mb-4">
+              Todo o código-fonte, algoritmos de cálculo, design de interface e marcas associadas ao PrintLog são de propriedade intelectual exclusiva do Controlador. É vedada qualquer prática de engenharia reversa, descompilação ou reprodução sem autorização prévia por escrito.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. LIMITAÇÃO DE RESPONSABILIDADE</h2>
+            <p className="mb-4">
+              O PrintLog fornece cálculos baseados em parâmetros inseridos pelo usuário. O Controlador não se responsabiliza por:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 mb-4">
+              <li>Prejuízos decorrentes de precificação inadequada baseada em dados incorretos inseridos pelo usuário;</li>
+              <li>Falhas de hardware ou interrupções de serviço por parte dos provedores de infraestrutura (Cloudflare/Google);</li>
+              <li>Danos causados por vírus ou invasões ao dispositivo do usuário.</li>
+            </ul>
+            <div className="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-400 font-sans italic text-zinc-600">
+              <strong>Importante:</strong> Nós fornecemos a calculadora, mas quem decide o preço final e assume o risco do negócio é você.
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">5. PLANOS E PAGAMENTOS</h2>
+            <p className="mb-4">
+              A licença de uso pode ser gratuita ou paga (Planos Pro/Master). Planos pagos são processados via gateways de pagamento parceiros. O inadimplemento poderá resultar na suspensão do acesso às funcionalidades premium até a regularização.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">6. RESCISÃO E EXCLUSÃO</h2>
+            <p className="mb-4">
+              O usuário poderá rescindir este contrato a qualquer momento, solicitando a exclusão de sua conta. O Controlador reserva-se o direito de encerrar contas que violem estes termos ou pratiquem atividades ilícitas dentro da plataforma.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. FORO E LEGISLAÇÃO APLICÁVEL</h2>
+            <p>
+              Este contrato é regido pelas leis da República Federativa do Brasil. As partes elegem o foro de domicílio do Controlador para dirimir quaisquer dúvidas oriundas deste instrumento.
+            </p>
+          </div>
+        </section>
+
+        <footer className="mt-20 pt-12 border-t border-zinc-100 text-[10px] text-zinc-400 font-mono text-center">
+          <p>ESTE É UM CONTRATO DE ADESÃO DIGITAL · PRINTLOG © 2026</p>
+          <p className="mt-1">REVISADO SEGUNDO O CÓDIGO CIVIL E LEI DO SOFTWARE (LEI 9.609/98)</p>
+        </footer>
       </article>
+
+      {/* Rodapé Adicional */}
+      <div className="max-w-[210mm] mx-auto mt-8 text-center text-[10px] text-zinc-400 font-sans uppercase tracking-[0.2em] no-print">
+        Fim do Documento · Página 1 de 1
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Download, ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight, UserX, Database, Loader2 } from "lucide-react";
+import { Trash2, Download, ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, UserX, Database, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
@@ -42,7 +42,20 @@ export default function PaginaGestaoDados() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-300 py-24 px-6">
+    <div className="min-h-screen bg-[#050505] text-zinc-300 py-24 px-6 relative">
+      {/* Botão Voltar Padronizado */}
+      <div className="fixed top-6 left-6 z-50">
+        <button
+          onClick={() => window.history.back()}
+          className="group flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm font-medium"
+        >
+          <div className="p-1.5 rounded-lg bg-white/5 border border-white/5 group-hover:bg-white/10 transition-all">
+            <ArrowLeft size={14} />
+          </div>
+          Voltar
+        </button>
+      </div>
+
       <div className="max-w-2xl mx-auto">
         <header className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold mb-6 uppercase tracking-widest">

@@ -56,11 +56,23 @@ export function usarFinanceiro() {
     try {
       const novo = await servicoFinanceiro.registrarLancamento(dados, usuarioId, rastreioId);
       toast.success("Lançamento registrado!");
-      await carregarDados(); // Recarrega para atualizar saldo e lista
+      await carregarDados();
       return novo;
     } catch (erro) {
       const mensagem = erro instanceof ErroPrintLog ? erro.mensagem : "Erro ao registrar lançamento.";
       toast.error(mensagem);
+      throw erro;
+    }
+  };
+
+  const atualizarLancamento = async (dados: Partial<LancamentoFinanceiro> & { id: string }) => {
+    if (!usuarioId) return;
+    try {
+      await apiFinanceiro.atualizar(dados);
+      toast.success("Lançamento atualizado!");
+      await carregarDados();
+    } catch (erro) {
+      toast.error("Erro ao atualizar lançamento.");
       throw erro;
     }
   };
@@ -125,10 +137,11 @@ export function usarFinanceiro() {
     inverterOrdem,
     pesquisar,
     adicionarLancamento,
+    atualizarLancamento,
     removerLancamento: async (id: string) => {
       if (!usuarioId) return;
       try {
-        await servicoFinanceiro.excluirLancamento(id, usuarioId);
+        await apiFinanceiro.remover(id, usuarioId);
         toast.success("Lançamento removido.");
         await carregarDados();
       } catch (erro) {

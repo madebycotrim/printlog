@@ -99,7 +99,7 @@ export function PaginaCadastro() {
         fundoEfeito="emerald"
         titulo={
           <>
-            Junte-se à Elite
+            Junte-se à Comunidade
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-[#0ea5e9]">
               dos Makers.
@@ -272,7 +272,7 @@ export function PaginaCadastro() {
             </div>
             <label htmlFor="termos" className="text-sm text-zinc-400 cursor-pointer select-none leading-tight">
               Concordo com os{" "}
-              <a href="/termos-de-uso" className="text-[#0ea5e9] hover:underline">
+              <a href="/termos-de-servico" className="text-[#0ea5e9] hover:underline">
                 Termos de Serviço
               </a>{" "}
               e a{" "}

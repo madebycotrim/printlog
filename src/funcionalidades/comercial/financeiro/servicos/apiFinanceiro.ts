@@ -28,5 +28,9 @@ export const apiFinanceiro = {
 
     remover: async (id: string, _usuarioId: string): Promise<void> => {
         await servicoBaseApi.delete(`/api/financeiro?id=${id}`);
+    },
+
+    atualizar: async (dados: Partial<LancamentoFinanceiro> & { id: string }): Promise<void> => {
+        await servicoBaseApi.patch("/api/financeiro", dados);
     }
 };

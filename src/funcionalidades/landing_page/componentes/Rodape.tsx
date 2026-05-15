@@ -73,10 +73,10 @@ export function Rodape() {
                   Política de Privacidade
                 </Link>
                 <Link
-                  to="/termos-de-uso"
+                  to="/termos-de-servico"
                   className="hover:text-sky-400 transition-colors duration-300"
                 >
-                  Termos de Uso
+                  Termos de Serviço
                 </Link>
               </div>
             </div>

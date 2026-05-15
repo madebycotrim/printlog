@@ -14,15 +14,20 @@ import { Carregamento } from "@/compartilhado/componentes";
 import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
 import { servicoFinanceiroAvancado } from "@/compartilhado/servicos/servicoFinanceiroAvancado";
+import { LancamentoFinanceiro } from "./tipos";
 
 export function PaginaFinanceiro() {
   const [modalAberto, setModalAberto] = useState(false);
+  const [lancamentoSendoEditado, setLancamentoSendoEditado] = useState<LancamentoFinanceiro | null>(null);
+
   const {
     lancamentos,
     lancamentosFiltrados,
     resumo,
     carregando,
     adicionarLancamento,
+    atualizarLancamento,
+    removerLancamento,
     filtroTipo,
     ordenacao,
     ordemInvertida,
@@ -45,6 +50,16 @@ export function PaginaFinanceiro() {
     [pedidos, lancamentos, materiais],
   );
 
+  const abrirNovoLancamento = () => {
+    setLancamentoSendoEditado(null);
+    setModalAberto(true);
+  };
+
+  const abrirEdicaoLancamento = (lancamento: LancamentoFinanceiro) => {
+    setLancamentoSendoEditado(lancamento);
+    setModalAberto(true);
+  };
+
   usarDefinirCabecalho({
     titulo: "Fluxo de Caixa",
     subtitulo: "Acompanhamento detalhado de rentabilidade e saúde financeira",
@@ -53,7 +68,7 @@ export function PaginaFinanceiro() {
     acao: {
       texto: "Registrar Transação",
       icone: Plus,
-      aoClicar: () => setModalAberto(true),
+      aoClicar: abrirNovoLancamento,
     },
   });
 
@@ -82,7 +97,7 @@ export function PaginaFinanceiro() {
               descricao="Comece registrando suas contas para visualizar sua rentabilidade e margem de lucro real."
               icone={ReceiptText}
               textoBotao="Novo Lançamento"
-              aoClicarBotao={() => setModalAberto(true)}
+              aoClicarBotao={abrirNovoLancamento}
             />
           </motion.div>
         ) : (
@@ -220,7 +235,11 @@ export function PaginaFinanceiro() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <TabelaLancamentos lancamentos={lancamentosFiltrados} />
+                  <TabelaLancamentos 
+                    lancamentos={lancamentosFiltrados} 
+                    aoExcluir={removerLancamento}
+                    aoEditar={abrirEdicaoLancamento}
+                  />
                 </motion.div>
               </AnimatePresence>
             )}
@@ -230,8 +249,20 @@ export function PaginaFinanceiro() {
 
       <FormularioLancamento
         aberto={modalAberto}
-        aoCancelar={() => setModalAberto(false)}
-        aoSalvar={adicionarLancamento}
+        lancamentoEditando={lancamentoSendoEditado}
+        aoCancelar={() => {
+          setModalAberto(false);
+          setLancamentoSendoEditado(null);
+        }}
+        aoSalvar={async (dados) => {
+          if (lancamentoSendoEditado) {
+            await atualizarLancamento({ ...dados, id: lancamentoSendoEditado.id } as any);
+          } else {
+            await adicionarLancamento(dados);
+          }
+          setModalAberto(false);
+          setLancamentoSendoEditado(null);
+        }}
       />
     </div>
   );

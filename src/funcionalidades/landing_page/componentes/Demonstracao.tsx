@@ -108,7 +108,7 @@ export function Demonstracao() {
                   ))}
                 </div>
                 <div className="w-10 h-10 rounded-full bg-zinc-800 border border-white/10 overflow-hidden ring-2 ring-white/5">
-                  <img src="https://ui-avatars.com/api/?name=Maker+Pro&background=0ea5e9&color=fff" alt="User" />
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhhMb-388CYaSI9TYqhC4NDiTUEgJaIvwjnQ&s" alt="User" />
                 </div>
               </div>
 

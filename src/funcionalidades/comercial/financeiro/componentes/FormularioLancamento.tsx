@@ -8,7 +8,7 @@ import { CampoMonetario } from "@/compartilhado/componentes";
 import { AcoesDescarte } from "@/compartilhado/componentes";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
-import { CriarLancamentoInput } from "../tipos";
+import { CriarLancamentoInput, LancamentoFinanceiro } from "../tipos";
 import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
 import { Combobox } from "@/compartilhado/componentes";
 import { Dialogo } from "@/compartilhado/componentes";
@@ -20,18 +20,19 @@ const esquemaLancamento = z.object({
   descricao: z.string().min(3, "Descrição muito curta"),
   categoria: z.string().min(1, "Selecione uma categoria"),
   idCliente: z.string().optional(),
-  data: z.date(),
+  data: z.any(), // Flexível para lidar com Date ou String ISO
 });
 
 type LancamentoFormData = z.infer<typeof esquemaLancamento>;
 
 interface FormularioLancamentoProps {
   aberto: boolean;
+  lancamentoEditando?: LancamentoFinanceiro | null;
   aoSalvar: (dados: CriarLancamentoInput) => Promise<unknown>;
   aoCancelar: () => void;
 }
 
-export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: FormularioLancamentoProps) {
+export function FormularioLancamento({ aberto, lancamentoEditando, aoSalvar, aoCancelar }: FormularioLancamentoProps) {
   const { estado: estadoClientes, acoes: acoesClientes } = usarGerenciadorClientes();
   const [confirmarDescarte, setConfirmarDescarte] = useState(false);
 
@@ -52,7 +53,7 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
       valor: 0,
       categoria: "",
       idCliente: "",
-      data: new Date(),
+      data: new Date().toLocaleDateString("en-CA"),
     },
   });
 
@@ -61,17 +62,30 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
 
   useEffect(() => {
     if (aberto) {
-      reset({
-        tipo: TipoLancamentoFinanceiro.ENTRADA,
-        descricao: "",
-        valor: 0,
-        categoria: "",
-        idCliente: "",
-        data: new Date().toLocaleDateString("en-CA") as any,
-      });
+      if (lancamentoEditando) {
+        // Modo Edição: Preenche com dados existentes
+        reset({
+          tipo: lancamentoEditando.tipo,
+          descricao: lancamentoEditando.descricao,
+          valor: lancamentoEditando.valorCentavos / 100,
+          categoria: lancamentoEditando.categoria || "",
+          idCliente: lancamentoEditando.idCliente || "",
+          data: new Date(lancamentoEditando.dataCriacao).toLocaleDateString("en-CA"),
+        });
+      } else {
+        // Modo Criação: Reseta para o padrão
+        reset({
+          tipo: TipoLancamentoFinanceiro.ENTRADA,
+          descricao: "",
+          valor: 0,
+          categoria: "",
+          idCliente: "",
+          data: new Date().toLocaleDateString("en-CA"),
+        });
+      }
       setConfirmarDescarte(false);
     }
-  }, [aberto, reset]);
+  }, [aberto, lancamentoEditando, reset]);
 
   const aoSubmeter = async (dados: LancamentoFormData) => {
     try {
@@ -81,7 +95,7 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
         valorCentavos: Math.round(dados.valor * 100),
         categoria: dados.categoria,
         idCliente: dados.idCliente,
-        data: dados.data,
+        data: new Date(dados.data),
       });
       aoCancelar();
     } catch (erro) {
@@ -105,10 +119,7 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
   };
 
   const lidarComTentativaFechamento = () => {
-    const valores = control._formValues;
-    const temConteudo = valores.descricao || (valores.valor > 0) || valores.categoria || valores.idCliente;
-
-    if (isDirty && temConteudo) {
+    if (isDirty) {
       setConfirmarDescarte(true);
     } else {
       aoCancelar();
@@ -119,7 +130,13 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
     <Dialogo
       aberto={aberto}
       aoFechar={lidarComTentativaFechamento}
-      titulo={tipoSelecionado === TipoLancamentoFinanceiro.ENTRADA ? "Nova Receita Maker" : "Registrar Despesa"}
+      titulo={
+        lancamentoEditando 
+          ? "Ajustar Transação" 
+          : tipoSelecionado === TipoLancamentoFinanceiro.ENTRADA 
+            ? "Nova Receita Maker" 
+            : "Registrar Despesa"
+      }
       larguraMax="max-w-2xl"
     >
       <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col bg-card">
@@ -215,7 +232,7 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
                   icone={Calendar}
                   type="date"
                   erro={errors.data?.message}
-                  {...register("data", { valueAsDate: true })}
+                  {...register("data")}
                 />
               </div>
             </div>
@@ -241,7 +258,11 @@ export function FormularioLancamento({ aberto, aoSalvar, aoCancelar }: Formulari
                 }`}
               >
                 <Save size={16} strokeWidth={3} />
-                {tipoSelecionado === TipoLancamentoFinanceiro.ENTRADA ? "Confirmar Entrada" : "Confirmar Saída"}
+                {lancamentoEditando 
+                  ? "Salvar Alterações" 
+                  : tipoSelecionado === TipoLancamentoFinanceiro.ENTRADA 
+                    ? "Confirmar Entrada" 
+                    : "Confirmar Saída"}
               </button>
             </div>
           ) : (
