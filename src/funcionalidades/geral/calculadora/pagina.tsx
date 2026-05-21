@@ -6,7 +6,8 @@ import {
   Crown,
   RotateCcw, 
   History as HistoryIcon, 
-  Settings 
+  Settings,
+  CloudUpload
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -497,6 +498,13 @@ export function PaginaCalculadora() {
           title="Limpar Calculadora"
         >
           <RotateCcw size={18} />
+        </button>
+        <button 
+          onClick={() => hook.salvarRascunhoNuvem(nomeProjeto, descricaoProjeto, clienteProjetoId)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all"
+          title="Salvar Rascunho na Nuvem"
+        >
+          <CloudUpload size={18} />
         </button>
         <button 
           onClick={() => setModalHistoricoAberto(true)}

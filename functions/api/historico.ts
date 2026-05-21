@@ -12,10 +12,22 @@ interface Env {
 export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
     const { env, data, request } = context;
 
+    const metodo = request.method;
+
+    // Tratamento de CORS Preflight (OPTIONS)
+    if (metodo === "OPTIONS") {
+        return new Response(null, {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Max-Age": "86400"
+            }
+        });
+    }
+
     const usuarioId = data.uid;
     if (!usuarioId) return new Response("Não autorizado", { status: 401 });
-
-    const metodo = request.method;
 
     try {
         if (metodo === "GET") {
@@ -42,8 +54,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             const dadosJson = JSON.stringify(body.dados);
             const criadoEm = new Date().toISOString();
 
+            // INSERT OR REPLACE para permitir a sobreposição do rascunho_ativo
             await env.DB.prepare(
-                "INSERT INTO historico_calculos (id, id_usuario, nome, dados_json, criado_em) VALUES (?, ?, ?, ?, ?)"
+                "INSERT OR REPLACE INTO historico_calculos (id, id_usuario, nome, dados_json, criado_em) VALUES (?, ?, ?, ?, ?)"
             ).bind(id, usuarioId, nome, dadosJson, criadoEm).run();
 
             return new Response(JSON.stringify({ sucesso: true, id }), {

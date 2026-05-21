@@ -126,17 +126,20 @@ export function ModalConfiguracoes({
                   <span className="text-[7px] font-bold text-zinc-500">Custo por kWh</span>
                 </div>
               </div>
-              <input
-                type="text"
-                placeholder="R$ 0,00"
-                value={config.custoEnergia === 0 ? "" : (config.custoEnergia / 100).toFixed(2)}
-                onChange={(e) => {
-                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
-                  config.definirCustoEnergia(v);
-                  hook.setPrecoKwh(v);
-                }}
-                className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
-              />
+              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+                <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={config.custoEnergia === 0 ? "" : (config.custoEnergia / 100)}
+                  onChange={(e) => {
+                    const v = Math.round(Number(e.target.value) * 100);
+                    config.definirCustoEnergia(v);
+                    hook.setPrecoKwh(v);
+                  }}
+                  className="w-full h-10 bg-transparent outline-none pl-9 pr-3 font-bold text-xs text-primary dark:text-white"
+                />
+              </div>
             </div>
 
             {/* Margem */}
@@ -148,17 +151,20 @@ export function ModalConfiguracoes({
                   <span className="text-[7px] font-bold text-zinc-500">Padrão do estúdio</span>
                 </div>
               </div>
-              <input
-                type="text"
-                placeholder="0,00%"
-                value={config.margemLucro === 0 ? "" : (config.margemLucro / 100).toFixed(2) + "%"}
-                onChange={(e) => {
-                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
-                  config.definirMargemLucro(v);
-                  hook.setMargem(v);
-                }}
-                className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
-              />
+              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={config.margemLucro === 0 ? "" : (config.margemLucro / 100)}
+                  onChange={(e) => {
+                    const v = Math.round(Number(e.target.value) * 100);
+                    config.definirMargemLucro(v);
+                    hook.setMargem(v);
+                  }}
+                  className="w-full h-10 bg-transparent outline-none pl-3 pr-8 font-bold text-xs text-primary dark:text-white"
+                />
+                <span className="absolute right-3 font-black text-[10px] text-zinc-400 select-none">%</span>
+              </div>
             </div>
 
             {/* Operador */}
@@ -170,17 +176,20 @@ export function ModalConfiguracoes({
                   <span className="text-[7px] font-bold text-zinc-500">Mão de obra / h</span>
                 </div>
               </div>
-              <input
-                type="text"
-                placeholder="R$ 0,00"
-                value={config.horaOperador === 0 ? "" : (config.horaOperador / 100).toFixed(2)}
-                onChange={(e) => {
-                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
-                  config.definirHoraOperador(v);
-                  hook.setMaoDeObra(v);
-                }}
-                className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
-              />
+              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+                <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={config.horaOperador === 0 ? "" : (config.horaOperador / 100)}
+                  onChange={(e) => {
+                    const v = Math.round(Number(e.target.value) * 100);
+                    config.definirHoraOperador(v);
+                    hook.setMaoDeObra(v);
+                  }}
+                  className="w-full h-10 bg-transparent outline-none pl-9 pr-3 font-bold text-xs text-primary dark:text-white"
+                />
+              </div>
             </div>
 
             {/* Máquina */}
@@ -192,17 +201,20 @@ export function ModalConfiguracoes({
                   <span className="text-[7px] font-bold text-zinc-500">Uso do equipamento / h</span>
                 </div>
               </div>
-              <input
-                type="text"
-                placeholder="R$ 0,00"
-                value={config.horaMaquina === 0 ? "" : (config.horaMaquina / 100).toFixed(2)}
-                onChange={(e) => {
-                  const v = Math.round(extrairValorNumerico(e.target.value) * 100);
-                  config.definirHoraMaquina(v);
-                  hook.setDepreciacaoHora(v);
-                }}
-                className="w-full h-10 bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-700 outline-none rounded-lg px-3 font-bold text-xs text-primary dark:text-white text-center"
-              />
+              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+                <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={config.horaMaquina === 0 ? "" : (config.horaMaquina / 100)}
+                  onChange={(e) => {
+                    const v = Math.round(Number(e.target.value) * 100);
+                    config.definirHoraMaquina(v);
+                    hook.setDepreciacaoHora(v);
+                  }}
+                  className="w-full h-10 bg-transparent outline-none pl-9 pr-3 font-bold text-xs text-primary dark:text-white"
+                />
+              </div>
             </div>
           </div>
 
