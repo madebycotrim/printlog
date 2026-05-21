@@ -27,13 +27,11 @@ export function PainelBranding({
       {/* Logo */}
       <div className="relative z-10">
         <div className="inline-flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/5 backdrop-blur-md shadow-lg">
-            <img
-              src="/logo-branca.png"
-              alt="Logo"
-              className="w-6 h-6 object-contain"
-            />
-          </div>
+          <img
+            src="/logo-branca.png"
+            alt="Logo"
+            className="w-8 h-8 object-contain"
+          />
           <span className="text-xl font-black tracking-tighter text-white">
             PRINTLOG
             <span className="text-[#0ea5e9] text-[10px] align-top ml-1 font-bold px-1.5 py-0.5 bg-[#0ea5e9]/10 rounded uppercase tracking-wide border border-[#0ea5e9]/10">

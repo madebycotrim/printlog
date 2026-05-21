@@ -66,7 +66,13 @@ export function PaginaAcesso() {
 
 
   if (carregando || usuario) {
-    return <Carregamento texto="Preparando sua Farm..." />;
+    return (
+      <LayoutAutenticacao variante="sky">
+        <div className="w-full min-h-[450px] flex items-center justify-center">
+          <Carregamento texto="Preparando sua Farm..." tipo="ponto" />
+        </div>
+      </LayoutAutenticacao>
+    );
   }
 
   return (

@@ -78,7 +78,7 @@ export function ModalHistorico({
         </div>
 
         <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest text-center">
-          * Os snapshots são salvos localmente no seu navegador.
+          * Os snapshots são salvos no banco de dados e sincronizados na sua conta.
         </p>
       </div>
     </Dialogo>

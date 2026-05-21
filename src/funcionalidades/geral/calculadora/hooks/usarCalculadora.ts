@@ -16,6 +16,7 @@ import {
   VersaoCalculo,
   CalculoResultado 
 } from "../tipos";
+import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 
 export function usarCalculadora() {
   const config = usarArmazemConfiguracoes();
@@ -135,9 +136,28 @@ export function usarCalculadora() {
     }
   }, [perfilAtivo, perfisMarketplace]);
 
-  const [historico, setHistorico] = useState<VersaoCalculo[]>(() => 
-    armazenamentoSeguro.obter("printlog_historico_calculadora", [])
-  );
+  const [historico, setHistorico] = useState<VersaoCalculo[]>([]);
+
+  useEffect(() => {
+    const carregarHistorico = async () => {
+      try {
+        const dados = await servicoBaseApi.get<any[]>("/api/historico");
+        if (dados && Array.isArray(dados)) {
+          const formatado = dados.map(d => ({
+            id: d.id,
+            nome: d.nome,
+            data: d.criadoEm,
+            calculo: d.dados.calculo,
+            configuracoes: d.dados.configuracoes
+          }));
+          setHistorico(formatado);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar histórico", e);
+      }
+    };
+    carregarHistorico();
+  }, []);
 
   // Cálculo de Resultados
   const calculo = useMemo((): CalculoResultado => {
@@ -224,7 +244,7 @@ export function usarCalculadora() {
   ].filter(d => d.value > 0), [calculo]);
 
   // Ações
-  const salvarSnapshot = (
+  const salvarSnapshot = async (
     nome: string,
     nomeProjeto?: string,
     descricaoProjeto?: string,
@@ -240,7 +260,7 @@ export function usarCalculadora() {
         quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos, 
         insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra, 
         cobrarEnergia, cobrarInsumosFixos, cobrarLogistica,
-        taxaEcommerce, taxaFixa, // Adicionados aqui
+        taxaEcommerce, taxaFixa,
         nomeProjeto,
         descricaoProjeto,
         clienteProjetoId,
@@ -249,10 +269,25 @@ export function usarCalculadora() {
         taxaFalha
       } 
     };
+    
+    // Atualiza a UI primeiro (Otimista)
     const novoHistorico = [novaVersao, ...historico];
     setHistorico(novoHistorico);
-    armazenamentoSeguro.definir("printlog_historico_calculadora", novoHistorico);
-    toast.success("Snapshot salvo!");
+
+    try {
+      await servicoBaseApi.post("/api/historico", {
+        id: novaVersao.id,
+        nome: novaVersao.nome,
+        dados: {
+          calculo: novaVersao.calculo,
+          configuracoes: novaVersao.configuracoes
+        }
+      });
+      toast.success("Snapshot salvo no banco de dados!");
+    } catch (e) {
+      console.error("Erro ao salvar snapshot", e);
+      toast.error("Falha ao salvar no banco. Tente novamente.");
+    }
   };
 
   const carregarSnapshot = (versao: VersaoCalculo) => {
@@ -291,10 +326,16 @@ export function usarCalculadora() {
     toast.success(`Carregado: ${versao.nome}`);
   };
 
-  const removerSnapshot = (id: string) => {
+  const removerSnapshot = async (id: string) => {
     const novo = historico.filter(v => v.id !== id);
     setHistorico(novo);
-    armazenamentoSeguro.definir("printlog_historico_calculadora", novo);
+    try {
+      await servicoBaseApi.delete(`/api/historico?id=${id}`);
+      toast.success("Snapshot removido!");
+    } catch (e) {
+      console.error("Erro ao remover snapshot", e);
+      toast.error("Falha ao remover.");
+    }
   };
 
   /**

@@ -7,6 +7,7 @@ import { LayoutAutenticacao } from "./componentes/LayoutAutenticacao";
 import { PainelBranding } from "./componentes/PainelBranding";
 import { InputAuth } from "./componentes/InputAuth";
 import { validarForcaSenha, type ResultadoValidacaoSenha } from "@/compartilhado/utilitarios/validar-senha";
+import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaCadastro() {
   const navegar = useNavigate();
@@ -89,7 +90,13 @@ export function PaginaCadastro() {
   };
 
   if (carregando || usuario) {
-    return null;
+    return (
+      <LayoutAutenticacao variante="emerald">
+        <div className="w-full min-h-[450px] flex items-center justify-center">
+          <Carregamento texto="Preparando sua Farm..." tipo="ponto" />
+        </div>
+      </LayoutAutenticacao>
+    );
   }
 
   return (
