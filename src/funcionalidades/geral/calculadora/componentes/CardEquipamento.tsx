@@ -1,5 +1,7 @@
 import { Cpu, ChevronDown, Check } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
+import { useState, useEffect } from "react";
+import { obterImagemImpressora } from "@/funcionalidades/producao/impressoras/utilitarios/obter-imagem-simplyprint";
 
 interface PropriedadesCardEquipamento {
   impressoras: Impressora[];
@@ -21,6 +23,14 @@ export function CardEquipamento({
   setAbertoSeletor,
 }: PropriedadesCardEquipamento) {
   const selecionada = impressoras.find(i => i.id === impressoraSelecionadaId);
+  const [erroImagem, definirErroImagem] = useState(false);
+
+  useEffect(() => {
+    definirErroImagem(false);
+  }, [impressoraSelecionadaId]);
+
+  const urlImagem = selecionada ? obterImagemImpressora(selecionada.imagemUrl, selecionada.marca, selecionada.modeloBase) : "";
+  const exibirImagem = urlImagem && !erroImagem;
 
   return (
     <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletor ? 'z-40' : 'z-10'}`}>
@@ -41,16 +51,29 @@ export function CardEquipamento({
 
       <div className="relative z-20 flex flex-col gap-5 pt-2 h-full">
         {/* Visualização da Impressora */}
-        <div className="flex-1 min-h-[100px] flex items-center justify-center relative">
-          {selecionada?.imagemUrl ? (
-            <div className="relative w-full h-full max-h-[130px] group/img">
-               <div className="absolute inset-0 bg-amber-500/5 blur-2xl rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity duration-700" />
-               <img 
-                 src={selecionada.imagemUrl} 
-                 alt={selecionada.nome}
-                 className="w-full h-full object-contain relative z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover/img:scale-105"
-               />
-            </div>
+        <div className="flex-1 min-h-[220px] flex items-center justify-center relative">
+          {selecionada ? (
+            exibirImagem ? (
+              <div className="relative w-full h-full max-h-[220px] group/img">
+                 <div className="absolute inset-0 bg-amber-500/5 blur-2xl rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity duration-700" />
+                 <img 
+                   src={urlImagem} 
+                   alt={selecionada.nome}
+                   className="w-full h-full object-contain relative z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover/img:scale-105"
+                   onError={() => definirErroImagem(true)}
+                 />
+              </div>
+            ) : (
+              <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/[0.02] flex flex-col items-center justify-center gap-3">
+                 <div className="w-12 h-12 rounded-full bg-card border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-inner animate-pulse">
+                   <Cpu size={24} strokeWidth={1} />
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                   <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em]">{selecionada.nome}</span>
+                   <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">{selecionada.marca} {selecionada.modeloBase}</span>
+                 </div>
+              </div>
+            )
           ) : (
             <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-borda-sutil bg-muted/20 dark:bg-white/[0.02] flex flex-col items-center justify-center gap-3 group/empty">
                <div className="w-12 h-12 rounded-full bg-card border border-borda-sutil flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover/empty:text-amber-500/50 transition-colors shadow-inner">

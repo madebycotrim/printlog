@@ -224,7 +224,12 @@ export function usarCalculadora() {
   ].filter(d => d.value > 0), [calculo]);
 
   // Ações
-  const salvarSnapshot = (nome: string) => {
+  const salvarSnapshot = (
+    nome: string,
+    nomeProjeto?: string,
+    descricaoProjeto?: string,
+    clienteProjetoId?: string
+  ) => {
     const novaVersao: VersaoCalculo = { 
       id: crypto.randomUUID(), 
       data: new Date().toISOString(), 
@@ -235,7 +240,13 @@ export function usarCalculadora() {
         quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos, 
         insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra, 
         cobrarEnergia, cobrarInsumosFixos, cobrarLogistica,
-        taxaEcommerce, taxaFixa // Adicionados aqui
+        taxaEcommerce, taxaFixa, // Adicionados aqui
+        nomeProjeto,
+        descricaoProjeto,
+        clienteProjetoId,
+        impressoraSelecionadaId,
+        modoEntrada,
+        taxaFalha
       } 
     };
     const novoHistorico = [novaVersao, ...historico];
@@ -247,10 +258,36 @@ export function usarCalculadora() {
   const carregarSnapshot = (versao: VersaoCalculo) => {
     const c = versao.configuracoes;
     if (!c) return;
-    setMateriaisSelecionados(c.materiaisSelecionados || []);
-    setTempo(c.tempo || 0);
-    setPrecoKwh(c.precoKwh || 0);
-    setQuantidade(c.quantidade || 1);
+    
+    if (c.materiaisSelecionados !== undefined) setMateriaisSelecionados(c.materiaisSelecionados || []);
+    if (c.tempo !== undefined) setTempo(c.tempo || 0);
+    if (c.perfilAtivo !== undefined) setPerfilAtivo(c.perfilAtivo || "");
+    if (c.margem !== undefined) setMargem(c.margem !== undefined && c.margem !== null ? c.margem : 100);
+    if (c.potencia !== undefined) setPotencia(c.potencia || 0);
+    if (c.precoKwh !== undefined) setPrecoKwh(c.precoKwh || 0);
+    if (c.maoDeObra !== undefined) setMaoDeObra(c.maoDeObra || 0);
+    if (c.depreciacaoHora !== undefined) setDepreciacaoHora(c.depreciacaoHora || 0);
+    if (c.quantidade !== undefined) setQuantidade(c.quantidade || 0);
+    if (c.tempoSetup !== undefined) setTempoSetup(c.tempoSetup || 0);
+    if (c.taxaFalha !== undefined) setTaxaFalha(c.taxaFalha || 0);
+    if (c.materialPerdido !== undefined) setMaterialPerdido(c.materialPerdido || 0);
+    if (c.tempoPerdido !== undefined) setTempoPerdido(c.tempoPerdido || 0);
+    if (c.frete !== undefined) setFrete(c.frete || 0);
+    if (c.insumosFixos !== undefined) setInsumosFixos(c.insumosFixos || 0);
+    if (c.insumosSelecionados !== undefined) setInsumosSelecionados(c.insumosSelecionados || []);
+    if (c.itensPosProcesso !== undefined) setItensPosProcesso(c.itensPosProcesso || []);
+    
+    if (c.cobrarDesgaste !== undefined) setCobrarDesgaste(!!c.cobrarDesgaste);
+    if (c.cobrarMaoDeObra !== undefined) setCobrarMaoDeObra(!!c.cobrarMaoDeObra);
+    if (c.cobrarEnergia !== undefined) setCobrarEnergia(!!c.cobrarEnergia);
+    if (c.cobrarInsumosFixos !== undefined) setCobrarInsumosFixos(!!c.cobrarInsumosFixos);
+    if (c.cobrarLogistica !== undefined) setCobrarLogistica(!!c.cobrarLogistica);
+
+    if (c.taxaEcommerce !== undefined) setTaxaEcommerce(c.taxaEcommerce || 0);
+    if (c.taxaFixa !== undefined) setTaxaFixa(c.taxaFixa || 0);
+    if (c.modoEntrada !== undefined) setModoEntrada(c.modoEntrada || "simples");
+    if (c.impressoraSelecionadaId !== undefined) setImpressoraSelecionadaId(c.impressoraSelecionadaId || "");
+
     toast.success(`Carregado: ${versao.nome}`);
   };
 
@@ -271,34 +308,465 @@ export function usarCalculadora() {
 
   const gerarPdf = useCallback((nomeEstudio?: string, slogan?: string, nomeCliente?: string, nomeProjeto?: string, idPedido?: string) => {
     // Sanitização de segurança para prevenir XSS no document.write
-    const sEstudio = sanitizar(nomeEstudio || 'Orcamento');
-    const sSlogan = sanitizar(slogan || '');
-    const sCliente = sanitizar(nomeCliente || 'Cliente');
-    const sProjeto = sanitizar(nomeProjeto || 'Projeto');
-    const sPedido = sanitizar(idPedido || 'N/A');
+    const sEstudio = sanitizar(nomeEstudio || 'Meu Estúdio 3D');
+    const sSlogan = sanitizar(slogan || 'Impressões 3D de alta qualidade e precisão');
+    const sCliente = sanitizar(nomeCliente || 'Consumidor Final');
+    const sProjeto = sanitizar(nomeProjeto || 'Projeto Personalizado');
+    const sPedido = sanitizar(idPedido || `PROP-${Math.floor(100000 + Math.random() * 900000)}`);
+
+    const dataRef = new Date();
+    const validade = new Date();
+    validade.setDate(dataRef.getDate() + 7);
+
+    const opcoesData: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric' };
+    const emissaoStr = dataRef.toLocaleDateString('pt-BR', opcoesData);
+    const validadeStr = validade.toLocaleDateString('pt-BR', opcoesData);
+
+
+    const horas = Math.floor(tempo / 60);
+    const minutos = Math.round(tempo % 60);
+    const tempoFormatado = horas > 0 
+      ? `${horas}h ${minutos > 0 ? `${minutos}min` : ''}`
+      : `${minutos}min`;
+
+    const unitPrice = Math.round(calculo.precoSugerido / Math.max(1, quantidade));
+
+    // Logo: nome da loja todo em negrito, com barra de acento lateral
+    const logoHtml = `
+      <div style="display:flex; align-items:stretch; gap:10px;">
+        <div style="width:3px; background:#0f172a; border-radius:2px; flex-shrink:0;"></div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span style="font-size:18px; font-weight:900; text-transform:uppercase; letter-spacing:-0.04em; color:#0f172a; line-height:1;">${sEstudio}</span>
+          <span style="font-size:7px; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:#64748b;">${sSlogan}</span>
+        </div>
+      </div>
+    `;
+
+
+    // Renderizar lista de materiais minimalistas
+    const listaMateriaisHtml = materiaisSelecionados.length > 0 
+      ? materiaisSelecionados.map(m => `
+        <span class="spec-tag" style="background-color: #f8fafc;">
+          <span class="spec-color-dot" style="background-color: ${m.cor || '#0ea5e9'};"></span>
+          <strong>${sanitizar(m.nome)}</strong> 
+          <span style="color: #64748b; margin-left: 2px;">${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'} (${m.tipoMaterial || m.tipo})</span>
+        </span>
+      `).join('')
+      : '<span class="tech-empty">Material Padrão</span>';
+
+
+
+    // Fator para distribuir o lucro proporcionalmente em cada item de custo
+    // Isso faz os valores exibidos somarem ao preço final sem expor a margem
+    const custoBase = calculo.custoTotalOperacional > 0 ? calculo.custoTotalOperacional : 1;
+    const fatorProporcional = calculo.precoSugerido / custoBase;
+    const proporcionar = (centavos: number) => ((centavos * fatorProporcional) / 100).toFixed(2).replace('.', ',');
 
     const layout = `
-      <html>
-        <body style="font-family: sans-serif; padding: 40px;">
-          <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="margin: 0;">${sEstudio}</h1>
-            <p style="margin: 5px 0; color: #666;">${sSlogan}</p>
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <title>Proposta Técnica - ${sProjeto}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+            @page { size: A4; margin: 12mm 14mm; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: 'Inter', sans-serif;
+              color: #0f172a;
+              background: #fff;
+              font-size: 10px;
+              line-height: 1.4;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            /* ── CABEÇALHO ── */
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-bottom: 10px;
+              margin-bottom: 10px;
+              border-bottom: 1.5px solid #0f172a;
+            }
+            .meta-grid { display: flex; gap: 16px; text-align: right; }
+            .meta-col { display: flex; flex-direction: column; gap: 1px; }
+            .meta-label { font-size: 7px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }
+            .meta-val { font-size: 9.5px; font-weight: 700; color: #0f172a; }
+
+
+            /* ── TÍTULO ABNT ── */
+            .doc-title {
+              text-align: center;
+              font-size: 11px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.1em;
+              color: #0f172a;
+              margin: 9px 0 9px;
+              padding-bottom: 6px;
+              border-bottom: 1px solid #e2e8f0;
+            }
+
+            /* ── SEÇÃO 1: PARTES ── */
+            .partes-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 20px;
+              margin-bottom: 10px;
+              padding-bottom: 10px;
+              border-bottom: 1px dashed #e2e8f0;
+            }
+            .parte-label {
+              font-size: 7px;
+              font-weight: 700;
+              color: #94a3b8;
+              text-transform: uppercase;
+              letter-spacing: 0.1em;
+              margin-bottom: 3px;
+            }
+            .parte-nome { font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.1; }
+            .parte-sub { font-size: 9px; font-weight: 500; color: #64748b; margin-top: 1px; }
+
+            /* ── SECTION TITLE ── */
+            .secao {
+              font-size: 7.5px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.1em;
+              color: #0f172a;
+              border-bottom: 1px solid #0f172a;
+              padding-bottom: 3px;
+              margin: 10px 0 6px;
+            }
+
+            /* ── TABELA UNIFICADA ── */
+            table { width: 100%; border-collapse: collapse; }
+            th {
+              font-size: 7px;
+              font-weight: 700;
+              text-transform: uppercase;
+              color: #94a3b8;
+              letter-spacing: 0.06em;
+              padding: 5px 4px 5px 0;
+              border-bottom: 1px solid #e2e8f0;
+              text-align: left;
+            }
+            th.r { text-align: right; }
+            th.c { text-align: center; }
+            td {
+              font-size: 9.5px;
+              color: #334155;
+              padding: 5px 4px 5px 0;
+              border-bottom: 1px solid #f1f5f9;
+              vertical-align: middle;
+            }
+            td.r { text-align: right; }
+            td.c { text-align: center; }
+            .row-header td {
+              background: #f8fafc;
+              padding: 8px 4px;
+              border-bottom: none;
+            }
+            .row-total td {
+              font-weight: 700;
+              font-size: 10px;
+              color: #0f172a;
+              padding: 6px 4px 6px 0;
+              border-bottom: 2px solid #e2e8f0;
+            }
+            .row-sep td {
+              padding: 8px 0 3px;
+              border-bottom: none;
+              font-size: 7px;
+              font-weight: 800;
+              color: #94a3b8;
+              text-transform: uppercase;
+              letter-spacing: 0.1em;
+            }
+            .badge {
+              display: inline-block;
+              font-size: 7.5px;
+              font-weight: 600;
+              color: #475569;
+              background: #e2e8f0;
+              padding: 1px 7px;
+              border-radius: 100px;
+              margin-left: 6px;
+            }
+            .spec-tag {
+              display: inline-block;
+              font-size: 7.5px;
+              font-weight: 500;
+              background: #f1f5f9;
+              color: #475569;
+              padding: 1px 5px;
+              border-radius: 3px;
+              border: 1px solid #e2e8f0;
+              margin: 1px 2px 1px 0;
+            }
+            .dot {
+              display: inline-block;
+              width: 6px; height: 6px;
+              border-radius: 50%;
+              border: 1px solid rgba(0,0,0,0.1);
+              margin-right: 3px;
+              vertical-align: middle;
+            }
+
+            /* ── TOTAIS ── */
+            .totais-wrap {
+              display: flex;
+              justify-content: flex-end;
+              margin-top: 8px;
+              margin-bottom: 12px;
+            }
+            .totais-block { width: 260px; }
+            .totais-row {
+              display: flex;
+              justify-content: space-between;
+              font-size: 9.5px;
+              color: #64748b;
+              margin-bottom: 4px;
+            }
+            .totais-row .v { font-weight: 600; color: #0f172a; }
+            .totais-div { height: 1px; background: #e2e8f0; margin: 6px 0; }
+            .totais-final {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+            }
+            .totais-final-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+            .totais-final-sub { font-size: 7px; color: #94a3b8; margin-top: 1px; }
+            .totais-final-val { font-size: 20px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+
+            /* ── ASSINATURAS ── */
+            .sig-wrap {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 40px;
+              margin-top: 16px;
+              padding-top: 16px;
+              border-top: 1px dashed #e2e8f0;
+            }
+            .sig-box { display: flex; flex-direction: column; align-items: center; }
+            .sig-line { width: 200px; height: 1px; background: #94a3b8; margin-bottom: 5px; }
+            .sig-name { font-size: 9px; font-weight: 600; color: #0f172a; }
+            .sig-role { font-size: 7px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+
+            /* ── RODAPÉ ── */
+            .footer {
+              margin-top: 12px;
+              padding-top: 8px;
+              border-top: 1px solid #f1f5f9;
+              font-size: 7px;
+              color: #94a3b8;
+              text-align: center;
+              line-height: 1.5;
+            }
+          </style>
+        </head>
+        <body>
+          <!-- CABEÇALHO -->
+          <div class="header">
+            ${logoHtml}
+            <div class="meta-grid">
+              <div class="meta-col">
+                <span class="meta-label">Proposta nº</span>
+                <span class="meta-val">${sPedido}</span>
+              </div>
+              <div class="meta-col">
+                <span class="meta-label">Emissão</span>
+                <span class="meta-val">${emissaoStr}</span>
+              </div>
+              <div class="meta-col">
+                <span class="meta-label">Validade</span>
+                <span class="meta-val">${validadeStr}</span>
+              </div>
+            </div>
           </div>
-          <hr />
-          <h2>Projeto: ${sProjeto}</h2>
-          <p><strong>Cliente:</strong> ${sCliente}</p>
-          <p><strong>ID do Pedido:</strong> ${sPedido}</p>
-          <div style="margin-top: 40px; font-size: 24px; font-weight: bold;">
-            Total: R$ ${(calculo.precoSugerido/100).toFixed(2)}
+
+          <!-- TÍTULO -->
+          <div class="doc-title">Proposta Técnica e Comercial — Manufatura Aditiva 3D</div>
+
+          <!-- 1. PARTES -->
+          <div class="secao">1. Identificação das Partes</div>
+          <div class="partes-grid">
+            <div>
+              <div class="parte-label">Contratante (Cliente)</div>
+              <div class="parte-nome">${sCliente}</div>
+              <div class="parte-sub">Projeto: ${sProjeto}</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="parte-label">Contratada (Executante)</div>
+              <div class="parte-nome" style="font-size: 11px;">${sEstudio}</div>
+              <div class="parte-sub">Serviço de Manufatura Aditiva</div>
+            </div>
           </div>
-          <script>window.print();</script>
+
+          <!-- 2. ESPECIFICAÇÕES + COMPOSIÇÃO DE CUSTOS -->
+          <div class="secao">2. Especificações Técnicas &amp; Composição de Custos</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:52%">Item / Componente</th>
+                <th class="c" style="width:14%">Referência</th>
+                <th class="r" style="width:17%">Valor Unit.</th>
+                <th class="r" style="width:17%">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Cabeçalho do serviço -->
+              <tr class="row-header">
+                <td colspan="4">
+                  <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Serviço de Manufatura Aditiva 3D</span>
+                  <span class="badge">FDM / SLA Alta Resolução</span>
+                  <span class="badge">Tempo: ${tempoFormatado}</span>
+                  <div style="margin-top:5px; line-height:1.8;">
+                    ${listaMateriaisHtml}
+                    ${itensPosProcesso.map(p => `<span class="spec-tag">${sanitizar(p.nome)}</span>`).join('')}
+                    ${insumosSelecionados.map(i => `<span class="spec-tag">${sanitizar(i.nome)} <strong>×${i.quantidade}</strong></span>`).join('')}
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Valor total do serviço -->
+              <tr class="row-total">
+                <td>Serviço completo de manufatura aditiva</td>
+                <td class="c">${quantidade}x</td>
+                <td class="r">R$ ${(unitPrice/100).toFixed(2).replace('.', ',')}</td>
+                <td class="r">R$ ${(calculo.precoSugerido/100).toFixed(2).replace('.', ',')}</td>
+              </tr>
+
+              <!-- Separador -->
+              <tr class="row-sep">
+                <td colspan="4">▸ Detalhamento da Composição de Custos (valores incluem encargos operacionais proporcionais)</td>
+              </tr>
+
+              <!-- Matéria-Prima -->
+              <tr>
+                <td>Matéria-Prima &amp; Materiais de Impressão</td>
+                <td class="c" style="color:#94a3b8;">${materiaisSelecionados.map(m => `${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'}`).join(' + ') || '—'}</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoMaterial)}</td>
+              </tr>
+
+              ${calculo.custoEnergia > 0 ? `
+              <tr>
+                <td>Energia Elétrica Operacional</td>
+                <td class="c" style="color:#94a3b8;">${tempoFormatado}</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoEnergia)}</td>
+              </tr>` : ''}
+
+              ${calculo.custoDepreciacao > 0 ? `
+              <tr>
+                <td>Depreciação de Equipamento &amp; Desgaste</td>
+                <td class="c" style="color:#94a3b8;">${tempoFormatado}</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoDepreciacao)}</td>
+              </tr>` : ''}
+
+              ${calculo.custoMaoDeObra > 0 ? `
+              <tr>
+                <td>Mão de Obra Técnica (Setup, Calibração &amp; Acompanhamento)</td>
+                <td class="c" style="color:#94a3b8;">—</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoMaoDeObra)}</td>
+              </tr>` : ''}
+
+              ${calculo.custoPosProcesso > 0 ? `
+              <tr>
+                <td>Acabamento &amp; Pós-Processamento Manual</td>
+                <td class="c" style="color:#94a3b8;">${itensPosProcesso.length} etapa(s)</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoPosProcesso)}</td>
+              </tr>` : ''}
+
+              ${calculo.custoInsumos > 0 ? `
+              <tr>
+                <td>Componentes &amp; Insumos Extras</td>
+                <td class="c" style="color:#94a3b8;">${insumosSelecionados.length} item(s)</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoInsumos)}</td>
+              </tr>` : ''}
+
+              ${calculo.custoFalha > 0 ? `
+              <tr>
+                <td>Encargo Operacional de Processo</td>
+                <td class="c" style="color:#94a3b8;">—</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.custoFalha)}</td>
+              </tr>` : ''}
+
+              ${calculo.taxaMarketplace > 0 ? `
+              <tr>
+                <td>Gestão Administrativa &amp; Canais de Distribuição</td>
+                <td class="c" style="color:#94a3b8;">—</td>
+                <td class="r" style="color:#94a3b8;">—</td>
+                <td class="r" style="font-weight:600;">R$ ${proporcionar(calculo.taxaMarketplace)}</td>
+              </tr>` : ''}
+            </tbody>
+          </table>
+
+          <!-- 3. CONDIÇÕES COMERCIAIS -->
+          <div class="secao">3. Condições Comerciais &amp; Investimento</div>
+          <div class="totais-wrap">
+            <div class="totais-block">
+              <div class="totais-row">
+                <span>Subtotal dos Serviços</span>
+                <span class="v">R$ ${(calculo.precoSugerido/100).toFixed(2).replace('.', ',')}</span>
+              </div>
+              ${frete > 0 ? `
+              <div class="totais-row">
+                <span>Frete / Logística Externa</span>
+                <span class="v">R$ ${(frete/100).toFixed(2).replace('.', ',')}</span>
+              </div>` : ''}
+              <div class="totais-div"></div>
+              <div class="totais-final">
+                <div>
+                  <div class="totais-final-label">Investimento Total</div>
+                  <div class="totais-final-sub">Pagamento: à vista ou Pix</div>
+                </div>
+                <div class="totais-final-val">R$ ${((calculo.precoSugerido + frete)/100).toFixed(2).replace('.', ',')}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. ASSINATURAS -->
+          <div class="secao">4. Termo de Aceite</div>
+          <p style="font-size:8px; color:#475569; margin-bottom:14px; line-height:1.5;">
+            As partes declaram estar de acordo com os termos, escopo e composição de custos desta proposta. O início da produção fica condicionado à confirmação formal do aceite.
+          </p>
+          <div class="sig-wrap">
+            <div class="sig-box">
+              <div class="sig-line"></div>
+              <div class="sig-name">${sEstudio}</div>
+              <div class="sig-role">Responsável Técnico / Emissor</div>
+            </div>
+            <div class="sig-box">
+              <div class="sig-line"></div>
+              <div class="sig-name">${sCliente}</div>
+              <div class="sig-role">Contratante / Aceite Comercial</div>
+            </div>
+          </div>
+
+          <!-- RODAPÉ -->
+          <div class="footer">
+            Documento elaborado automaticamente em conformidade com as diretrizes ABNT NBR para propostas técnicas e comerciais. &nbsp;•&nbsp; Gerado por <strong>PrintLog OS Pro</strong>
+          </div>
+
+          <script>window.onload = () => { window.print(); }</script>
         </body>
       </html>
     `;
+
     const win = window.open("", "_blank");
     win?.document.write(layout);
     win?.document.close();
-  }, [calculo]);
+  }, [calculo, materiaisSelecionados, tempo, quantidade, estimativaPrazo, itensPosProcesso, insumosSelecionados, frete, modoEntrada]);
 
   const limpar = useCallback((silencioso = false) => {
     setMateriaisSelecionados([]);

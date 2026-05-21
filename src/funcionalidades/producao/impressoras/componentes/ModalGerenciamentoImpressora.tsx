@@ -8,6 +8,7 @@ import { AbaManutencaoImpressora } from "./AbaManutencaoImpressora";
 import { ConteudoFormularioImpressora } from "./ConteudoFormularioImpressora";
 import { CabecalhoModalPremium } from "@/compartilhado/componentes";
 import { AbasModalPremium } from "@/compartilhado/componentes";
+import { obterImagemImpressora } from "../utilitarios/obter-imagem-simplyprint";
 
 interface PropriedadesModalGerenciamento {
   aberto: boolean;
@@ -25,12 +26,14 @@ export function ModalGerenciamentoImpressora({
   abaInicial = "manutencao"
 }: PropriedadesModalGerenciamento) {
   const [abaAtiva, setAbaAtiva] = useState<"producao" | "manutencao" | "config">(abaInicial);
+  const [erroImagem, definirErroImagem] = useState(false);
 
   useEffect(() => {
     if (aberto) {
       setAbaAtiva(abaInicial);
+      definirErroImagem(false);
     }
-  }, [aberto, abaInicial]);
+  }, [aberto, abaInicial, impressora]);
 
   if (!impressora) return null;
 
@@ -39,6 +42,9 @@ export function ModalGerenciamentoImpressora({
     { id: "producao", rotulo: "Produção", icone: Activity },
     { id: "config", rotulo: "Especificações", icone: Settings },
   ];
+
+  const urlImagem = obterImagemImpressora(impressora.imagemUrl, impressora.marca, impressora.modeloBase);
+  const exibirImagem = urlImagem && !erroImagem;
 
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho={true}>
@@ -50,8 +56,8 @@ export function ModalGerenciamentoImpressora({
           aoFechar={aoFechar}
           corTema="sky-500"
           icone={
-            impressora.imagemUrl ? (
-              <img src={impressora.imagemUrl} alt={impressora.nome} className="w-[80%] h-[80%] object-contain" />
+            exibirImagem ? (
+              <img src={urlImagem} alt={impressora.nome} className="w-[80%] h-[80%] object-contain" onError={() => definirErroImagem(true)} />
             ) : (
               <Printer size={24} className="text-muted-foreground" />
             )

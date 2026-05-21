@@ -15,11 +15,34 @@ export const apiPedidos = {
         let extras: any = {};
         if (dados.dados_extras) {
             try {
-                extras = typeof dados.dados_extras === 'string' ? JSON.parse(dados.dados_extras) : dados.dados_extras;
+                if (typeof dados.dados_extras === 'string') {
+                    const trimmed = dados.dados_extras.trim();
+                    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                        extras = JSON.parse(trimmed);
+                    }
+                } else {
+                    extras = dados.dados_extras;
+                }
             } catch (e) {
                 console.warn("[apiPedidos] Erro ao processar dados_extras:", e);
             }
         }
+
+        const garantirArray = (valor: any): any[] => {
+            if (!valor) return [];
+            if (Array.isArray(valor)) return valor;
+            if (typeof valor === 'string') {
+                const trimmed = valor.trim();
+                if (trimmed === "" || trimmed === "[]") return [];
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
+                }
+            }
+            return [];
+        };
 
         return {
             id: dados.id,
@@ -37,21 +60,21 @@ export const apiPedidos = {
             pesoGramas: dados.peso_gramas ?? dados.pesoGramas ?? extras.pesoGramas ?? extras.peso_gramas ?? 0,
             tempoMinutos: dados.tempo_minutos ?? dados.tempoMinutos ?? extras.tempoMinutos ?? extras.tempo_minutos ?? 0,
             idImpressora: dados.id_impressora ?? dados.idImpressora ?? extras.idImpressora,
-            insumosSecundarios: (extras.insumosSecundarios && extras.insumosSecundarios.length > 0)
-                ? extras.insumosSecundarios
-                : (typeof dados.insumos_secundarios === 'string' && dados.insumos_secundarios !== "[]"
-                    ? JSON.parse(dados.insumos_secundarios) 
-                    : (dados.insumos_secundarios ?? dados.insumosSecundarios ?? [])),
-            materiais: (extras.materiais && extras.materiais.length > 0)
-                ? extras.materiais
-                : (typeof dados.materiais === 'string' && dados.materiais !== "[]"
-                    ? JSON.parse(dados.materiais)
-                    : (dados.materiais ?? [])),
-            posProcesso: (extras.posProcesso && extras.posProcesso.length > 0) 
-                ? extras.posProcesso 
-                : (typeof dados.pos_processo === 'string' && dados.pos_processo !== "[]"
-                    ? JSON.parse(dados.pos_processo)
-                    : (dados.pos_processo ?? dados.posProcesso ?? extras.posProcesso ?? [])),
+            insumosSecundarios: garantirArray(
+                (extras.insumosSecundarios && extras.insumosSecundarios.length > 0)
+                    ? extras.insumosSecundarios
+                    : (dados.insumos_secundarios ?? dados.insumosSecundarios)
+            ),
+            materiais: garantirArray(
+                (extras.materiais && extras.materiais.length > 0)
+                    ? extras.materiais
+                    : dados.materiais
+            ),
+            posProcesso: garantirArray(
+                (extras.posProcesso && extras.posProcesso.length > 0) 
+                    ? extras.posProcesso 
+                    : (dados.pos_processo ?? dados.posProcesso)
+            ),
             configuracoes: extras.configuracoes || (typeof dados.configuracoes === 'string'
                 ? JSON.parse(dados.configuracoes)
                 : (dados.configuracoes ?? {}))

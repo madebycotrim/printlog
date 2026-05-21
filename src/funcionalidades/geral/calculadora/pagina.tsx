@@ -106,6 +106,17 @@ export function PaginaCalculadora() {
     };
   }, [hook.limpar]);
 
+  // Reseta tudo: estados do hook + campos locais de identificação e equipamento
+  const limparTudo = useCallback(() => {
+    hook.limpar();
+    setNomeProjeto('');
+    setDescricaoProjeto('');
+    setClienteProjetoId('');
+    setBuscaClienteSeletor('');
+    hook.setImpressoraSelecionadaId('');
+  }, [hook.limpar, hook.setImpressoraSelecionadaId]);
+
+
   const carregandoDados = estado.carregando || estadoMateriais.carregando;
 
   const [buscaMaterial, setBuscaMaterial] = useState("");
@@ -403,7 +414,7 @@ export function PaginaCalculadora() {
       navegar("/projetos");
     } catch (erro) {
       console.warn("Erro ao salvar projeto:", erro);
-      hook.salvarSnapshot(nomeProjeto || "Orçamento via Calculadora");
+      hook.salvarSnapshot(nomeProjeto || "Orçamento via Calculadora", nomeProjeto, descricaoProjeto, clienteProjetoId);
       hook.limpar();
       setNomeProjeto("");
       setDescricaoProjeto("");
@@ -481,7 +492,7 @@ export function PaginaCalculadora() {
     elementoAcao: (
       <div className="flex items-center gap-1 p-1 bg-card/10 border border-borda-sutil rounded-2xl backdrop-blur-md">
         <button 
-          onClick={() => hook.limpar()}
+          onClick={() => limparTudo()}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all"
           title="Limpar Calculadora"
         >
@@ -775,7 +786,29 @@ export function PaginaCalculadora() {
             aoRepor={() => {}}
           />
 
-          <ModalHistorico aberto={modalHistoricoAberto} aoFechar={() => setModalHistoricoAberto(false)} historico={hook.historico} aoSalvar={hook.salvarSnapshot} aoCarregar={(v) => { hook.carregarSnapshot(v); setModalHistoricoAberto(false); }} aoRemover={hook.removerSnapshot} />
+          <ModalHistorico 
+            aberto={modalHistoricoAberto} 
+            aoFechar={() => setModalHistoricoAberto(false)} 
+            historico={hook.historico} 
+            aoSalvar={(nome) => hook.salvarSnapshot(nome, nomeProjeto, descricaoProjeto, clienteProjetoId)} 
+            aoCarregar={(v) => { 
+              hook.carregarSnapshot(v); 
+              if (v.configuracoes?.nomeProjeto) setNomeProjeto(v.configuracoes.nomeProjeto);
+              if (v.configuracoes?.descricaoProjeto) setDescricaoProjeto(v.configuracoes.descricaoProjeto);
+              if (v.configuracoes?.clienteProjetoId) {
+                setClienteProjetoId(v.configuracoes.clienteProjetoId);
+                const clienteEncontrado = (estadoClientes.clientes || []).find((c: any) => c.id === v.configuracoes.clienteProjetoId);
+                if (clienteEncontrado) {
+                  setBuscaClienteSeletor(clienteEncontrado.nome);
+                }
+              } else {
+                setClienteProjetoId("");
+                setBuscaClienteSeletor("");
+              }
+              setModalHistoricoAberto(false); 
+            }} 
+            aoRemover={hook.removerSnapshot} 
+          />
 
           <Dialogo
             aberto={modalPdfAberto}

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
+import { obterImagemImpressora } from "../utilitarios/obter-imagem-simplyprint";
 
 interface ModalDetalhesImpressoraProps {
   impressora: Impressora | null;
@@ -24,11 +25,13 @@ export function ModalDetalhesImpressora({
 }: ModalDetalhesImpressoraProps) {
   const [editandoObs, setEditandoObs] = useState(false);
   const [obsTexto, setObsTexto] = useState("");
+  const [erroImagem, definirErroImagem] = useState(false);
 
   useEffect(() => {
     if (impressora) {
       setObsTexto(impressora.observacoes || "");
       setEditandoObs(false);
+      definirErroImagem(false);
     }
   }, [impressora, aberto]);
 
@@ -88,6 +91,9 @@ export function ModalDetalhesImpressora({
     setEditandoObs(false);
   };
 
+  const urlImagem = obterImagemImpressora(impressora.imagemUrl, impressora.marca, impressora.modeloBase);
+  const exibirImagem = urlImagem && !erroImagem;
+
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho>
       <div className="flex flex-col relative overflow-hidden bg-white dark:bg-[#0c0c0e] min-h-[600px]">
@@ -96,8 +102,8 @@ export function ModalDetalhesImpressora({
           <div className="relative group">
             <div className="absolute -inset-4 bg-indigo-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition duration-500" />
             <div className="relative w-32 h-32 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shadow-2xl flex items-center justify-center p-4 overflow-hidden">
-               {impressora.imagemUrl ? (
-                 <img src={impressora.imagemUrl} alt={impressora.nome} className="w-full h-full object-contain" />
+               {exibirImagem ? (
+                 <img src={urlImagem} alt={impressora.nome} className="w-full h-full object-contain" onError={() => definirErroImagem(true)} />
                ) : (
                  <Printer size={48} className="text-zinc-200 dark:text-zinc-800" />
                )}

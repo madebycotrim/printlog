@@ -51,9 +51,9 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
       definirConfirmarDescarte(false);
       
       const valoresIniciais = clienteEditando ? {
-        nome: clienteEditando.nome,
-        email: clienteEditando.email,
-        telefone: clienteEditando.telefone,
+        nome: clienteEditando.nome || "",
+        email: clienteEditando.email || "",
+        telefone: clienteEditando.telefone || "",
         observacoesCRM: clienteEditando.observacoesCRM || "",
         baseLegal: clienteEditando.baseLegal || BaseLegalLGPD.EXECUCAO_CONTRATO,
         finalidadeColeta: clienteEditando.finalidadeColeta || "Gestão de pedidos e orçamentos de impressão 3D.",

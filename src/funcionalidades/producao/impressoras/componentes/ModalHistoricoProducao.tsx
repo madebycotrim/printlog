@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Printer, Box, CheckCircle2, XCircle, TrendingUp, Clock, Target, DollarSign, History } from "lucide-react";
 import { ModalListagemPremium } from "@/compartilhado/componentes";
 import { GradeCampos } from "@/compartilhado/componentes";
 import { CardResumo } from "@/compartilhado/componentes";
 import { Impressora, RegistroProducao } from "@/funcionalidades/producao/impressoras/tipos";
+import { obterImagemImpressora } from "../utilitarios/obter-imagem-simplyprint";
 
 interface ModalHistoricoProducaoProps {
   aberto: boolean;
@@ -53,6 +54,13 @@ function gerarMockHistorico(horimetroTotalMinutos: number): RegistroProducao[] {
 
 export function ModalHistoricoProducao({ aberto, aoFechar, impressora }: ModalHistoricoProducaoProps) {
   const [busca, setBusca] = useState("");
+  const [erroImagem, definirErroImagem] = useState(false);
+
+  useEffect(() => {
+    if (aberto) {
+      definirErroImagem(false);
+    }
+  }, [aberto, impressora]);
 
   const registrosRaw = useMemo(() => {
     if (!impressora) return [];
@@ -77,6 +85,9 @@ export function ModalHistoricoProducao({ aberto, aoFechar, impressora }: ModalHi
   const taxaSucesso = totalPecas > 0 ? (pecasComSucesso / totalPecas) * 100 : 0;
   const totalFaturadoCentavos = registrosRaw.reduce((acc, curr) => acc + curr.valorGeradoCentavos, 0);
 
+  const urlImagem = obterImagemImpressora(impressora.imagemUrl, impressora.marca, impressora.modeloBase);
+  const exibirImagem = urlImagem && !erroImagem;
+
   return (
     <ModalListagemPremium
       aberto={aberto}
@@ -98,11 +109,12 @@ export function ModalHistoricoProducao({ aberto, aoFechar, impressora }: ModalHi
         <div className="bg-gray-50/50 dark:bg-white/[0.02] p-8 rounded-2xl border border-gray-100 dark:border-white/5 space-y-8 relative overflow-hidden">
           <div className="flex items-center gap-6 mb-2">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white dark:bg-card border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden flex-shrink-0 group">
-              {impressora.imagemUrl ? (
+              {exibirImagem ? (
                 <img
-                  src={impressora.imagemUrl}
+                  src={urlImagem}
                   alt={impressora.nome}
                   className="w-[85%] h-[85%] object-contain group-hover:scale-110 transition-transform duration-500"
+                  onError={() => definirErroImagem(true)}
                 />
               ) : (
                 <Printer size={32} className="text-zinc-400 dark:text-zinc-700" />

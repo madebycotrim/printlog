@@ -3,6 +3,7 @@ import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { calcularPercentualVidaUtil, obterStatusManutencao, obterCorStatusManutencao } from "../utilitarios/utilitariosManutencao";
+import { obterImagemImpressora } from "../utilitarios/obter-imagem-simplyprint";
 
 interface PropriedadesCardImpressora {
   impressora: Impressora;
@@ -16,6 +17,7 @@ export function CardImpressora({
   aoGerenciamento,
 }: PropriedadesCardImpressora) {
   const [menuAberto, definirMenuAberto] = useState(false);
+  const [erroImagem, definirErroImagem] = useState(false);
   const referenciaMenu = useRef<HTMLDivElement>(null);
   const fecharMenu = useCallback(() => definirMenuAberto(false), []);
 
@@ -49,6 +51,9 @@ export function CardImpressora({
   const coresManutencao = obterCorStatusManutencao(statusManutencaoUI);
 
   const horasUsadas = Math.floor((impressora.horimetroTotalMinutos || 0) / 60);
+
+  const urlImagem = obterImagemImpressora(impressora.imagemUrl, impressora.marca, impressora.modeloBase);
+  const exibirImagem = urlImagem && !erroImagem;
 
   return (
     <motion.div
@@ -106,22 +111,12 @@ export function CardImpressora({
       {/* ═══════ CORPO: VISUAL ═══════ */}
       <div className="flex-1 relative flex items-center justify-center min-h-[240px]">
         <div className="relative z-10 transition-transform duration-500 group-hover:scale-110">
-          {impressora.imagemUrl ? (
+          {exibirImagem ? (
             <img
-              src={impressora.imagemUrl}
+              src={urlImagem}
               alt={impressora.nome}
               className="max-h-[220px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
-              onError={(e) => {
-                const alvo = e.target as HTMLImageElement;
-                const tecnologia = String(impressora.tecnologia || "").toUpperCase();
-                const fallback = (tecnologia.includes("SLA") || tecnologia.includes("RESINA"))
-                  ? ""
-                  : "";
-
-                if (alvo.src !== fallback) {
-                  alvo.src = fallback;
-                }
-              }}
+              onError={() => definirErroImagem(true)}
             />
           ) : (
             <div className="w-24 h-24 rounded-full border border-dashed border-borda-sutil flex items-center justify-center bg-muted/20">

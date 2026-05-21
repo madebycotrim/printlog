@@ -1,6 +1,8 @@
 import { Dialogo } from "@/compartilhado/componentes";
 import { AlertTriangle, Archive, Wrench } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
+import { useState, useEffect } from "react";
+import { obterImagemImpressora } from "../utilitarios/obter-imagem-simplyprint";
 
 interface ModalAposentarImpressoraProps {
   aberto: boolean;
@@ -10,7 +12,19 @@ interface ModalAposentarImpressoraProps {
 }
 
 export function ModalAposentarImpressora({ aberto, aoFechar, aoConfirmar, impressora }: ModalAposentarImpressoraProps) {
+  const [erroImagem, definirErroImagem] = useState(false);
+
+  useEffect(() => {
+    if (aberto) {
+      definirErroImagem(false);
+    }
+  }, [aberto, impressora]);
+
   if (!impressora) return null;
+
+  const urlImagem = obterImagemImpressora(impressora.imagemUrl, impressora.marca, impressora.modeloBase);
+  const exibirImagem = urlImagem && !erroImagem;
+
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} titulo="Aposentar Impressora" larguraMax="max-w-md">
       <div className="flex flex-col bg-white dark:bg-[#18181b]">
@@ -34,11 +48,12 @@ export function ModalAposentarImpressora({ aberto, aoFechar, aoConfirmar, impres
           {/* Card Resumo da Impressora */}
           <div className="flex items-center gap-5 bg-gray-50/50 dark:bg-black/20 p-5 rounded-2xl border border-gray-100 dark:border-white/5 w-full shadow-inner group">
             <div className="w-16 h-16 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/5 flex items-center justify-center shrink-0 relative overflow-hidden shadow-sm group-hover:scale-110 transition-transform duration-500">
-              {impressora.imagemUrl ? (
+              {exibirImagem ? (
                 <img
-                  src={impressora.imagemUrl}
+                  src={urlImagem}
                   alt={impressora.nome}
                   className="w-[85%] h-[85%] object-contain scale-110 drop-shadow-md"
+                  onError={() => definirErroImagem(true)}
                 />
               ) : (
                 <Wrench size={28} className="text-zinc-400 dark:text-zinc-600" />

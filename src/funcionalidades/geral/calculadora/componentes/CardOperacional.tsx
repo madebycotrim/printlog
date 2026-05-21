@@ -192,9 +192,9 @@ export const CardOperacional = memo(function CardOperacional({
                     'text-rose-600 bg-rose-500/10 border-rose-500/20'
                   }`}
                 >
-                  {anosVidaUtil === 5 && "Uso Padrão (5 anos)"}
+                  {anosVidaUtil === 5 && "Uso Padrão (2 anos)"}
                   {anosVidaUtil === 3 && "Uso Severo (3 anos)"}
-                  {anosVidaUtil === 2 && "Uso Extremo (2 anos)"}
+                  {anosVidaUtil === 2 && "Uso Extremo (5 anos)"}
                 </button>
               </div>
               <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/50 border-borda-sutil'} select-none relative group`}>
