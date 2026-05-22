@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Insumo, CategoriaInsumo } from "../../tipos";
-import { usarFormularioInsumo } from "../../hooks/usarFormularioInsumo";
+import { useFormularioInsumo } from "../../hooks/useFormularioInsumo";
 import { SecaoInformacoesBasicas } from "../formulario/SecaoInformacoesBasicas";
 import { SecaoEstoquePreco } from "../formulario/SecaoEstoquePreco";
 import { SecaoRendimentoFracionado } from "../formulario/SecaoRendimentoFracionado";
@@ -36,7 +36,7 @@ export function AbaConfiguracaoInsumo({
     confirmarDescarte,
     definirConfirmarDescarte,
     lidarComTentativaFechamento,
-  } = usarFormularioInsumo({ aberto: true, insumoEditando: insumo, aoSalvar, aoCancelar });
+  } = useFormularioInsumo({ aberto: true, insumoEditando: insumo, aoSalvar, aoCancelar });
 
   // Notifica o modal sobre a mudança de categoria
   useEffect(() => {

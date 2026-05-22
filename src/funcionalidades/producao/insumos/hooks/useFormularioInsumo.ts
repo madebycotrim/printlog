@@ -10,7 +10,7 @@ interface ConfigHookInsumo {
   aoCancelar: () => void;
 }
 
-export function usarFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancelar }: ConfigHookInsumo) {
+export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancelar }: ConfigHookInsumo) {
   const estaEditando = Boolean(insumoEditando);
   const [confirmarDescarte, definirConfirmarDescarte] = useState(false);
   const finalFormularioRef = useRef<HTMLDivElement>(null);

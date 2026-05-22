@@ -26,18 +26,19 @@ export function Avatar({
   fotoUrl,
   tamanho = "h-9 w-9",
   variante = "quadrado",
-  pro = false,
-  plano,
+  pro: _pro = false,
+  plano: _plano,
   className = "",
   style,
   ...outrasPropriedades
 }: PropriedadesAvatar) {
+  const [prevFotoUrl, definirPrevFotoUrl] = useState(fotoUrl);
   const [imagemFalhou, definirImagemFalhou] = useState(false);
-  
-  // Reinicia o estado de erro se a fotoUrl mudar
-  useEffect(() => {
+
+  if (fotoUrl !== prevFotoUrl) {
+    definirPrevFotoUrl(fotoUrl);
     definirImagemFalhou(false);
-  }, [fotoUrl]);
+  }
 
   const iniciais = gerarIniciais(nome);
   const corFundo = gerarCorPorNome(nome);

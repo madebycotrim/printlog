@@ -1,14 +1,14 @@
 import { MessageCircle, X, Send, Beaker } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { toast } from "react-hot-toast";
 
 /**
  * Widget flutuante de feedback para usuários do Programa Beta.
  */
 export function WidgetFeedbackBeta() {
-  const { participarPrototipos } = usarBeta();
+  const { participarPrototipos } = useBeta();
   const [aberto, setAberto] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [enviando, setEnviando] = useState(false);

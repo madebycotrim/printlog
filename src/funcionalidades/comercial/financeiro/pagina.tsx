@@ -1,18 +1,18 @@
 import { Plus, ReceiptText, Search, FileBarChart, Sliders, TrendingUp, Zap as ZapIcon } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { ResumoFinanceiroComponente } from "./componentes/ResumoFinanceiro";
 import { TabelaLancamentos } from "./componentes/TabelaLancamentos";
 import { FormularioLancamento } from "./componentes/FormularioLancamento";
 import { FiltrosFinanceiro } from "./componentes/FiltrosFinanceiro";
 import { EstadoVazio } from "@/compartilhado/componentes";
-import { usarFinanceiro } from "./hooks/usarFinanceiro";
+import { useFinanceiro } from "./hooks/useFinanceiro";
 import { Carregamento } from "@/compartilhado/componentes";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { servicoFinanceiroAvancado } from "@/compartilhado/servicos/servicoFinanceiroAvancado";
 import { LancamentoFinanceiro } from "./tipos";
 
@@ -35,15 +35,15 @@ export function PaginaFinanceiro() {
     ordenarPor,
     inverterOrdem,
     pesquisar,
-  } = usarFinanceiro();
-  const { betaSimuladorMargem } = usarBeta();
+  } = useFinanceiro();
+  const { betaSimuladorMargem } = useBeta();
 
   // Estados do Simulador Beta
   const [simulaAcrescimoMargem, setSimulaAcrescimoMargem] = useState(0);
   const [simulaBandeiraEnergia, setSimulaBandeiraEnergia] = useState(1);
 
-  const materiais = usarArmazemMateriais((s) => s.materiais);
-  const { pedidos } = usarPedidos();
+  const materiais = useArmazemMateriais((s) => s.materiais);
+  const { pedidos } = usePedidos();
 
   const dre = useMemo(
     () => servicoFinanceiroAvancado.gerarDRE(pedidos, lancamentos, materiais),
@@ -60,7 +60,7 @@ export function PaginaFinanceiro() {
     setModalAberto(true);
   };
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Fluxo de Caixa",
     subtitulo: "Acompanhamento detalhado de rentabilidade e saúde financeira",
     placeholderBusca: "Buscar transações, categorias ou referências...",

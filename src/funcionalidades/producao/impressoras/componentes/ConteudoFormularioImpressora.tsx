@@ -1,5 +1,5 @@
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
-import { usarFormularioImpressora } from "../hooks/usarFormularioImpressora";
+import { useFormularioImpressora } from "../hooks/useFormularioImpressora";
 import { IdentificacaoHardware } from "./formulario/IdentificacaoHardware";
 import { EspecificacoesTecnicas } from "./formulario/EspecificacoesTecnicas";
 import { ManutencaoPreventiva } from "./formulario/ManutencaoPreventiva";
@@ -37,7 +37,7 @@ export function ConteudoFormularioImpressora({
     opcoesModelo,
     aoAlterarModelo,
     onSubmit,
-  } = usarFormularioImpressora({ aberto: true, impressoraEditando: impressora, aoSalvar, aoCancelar });
+  } = useFormularioImpressora({ aberto: true, impressoraEditando: impressora, aoSalvar, aoCancelar });
 
   return (
     <div className="bg-transparent animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">

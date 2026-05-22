@@ -15,23 +15,23 @@ import {
   Area,
 } from "recharts";
 
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { servicoDesperdicio } from "@/compartilhado/servicos/servicoDesperdicio";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 
 const CORES = ["#f43f5e", "#fbbf24", "#0ea5e9", "#10b981", "#8b5cf6"];
 
 export function PaginaDesperdicio() {
   const navigate = useNavigate();
-  const materiais = usarArmazemMateriais((s) => s.materiais);
-  const insumos = usarArmazemInsumos((s) => s.insumos);
+  const materiais = useArmazemMateriais((s) => s.materiais);
+  const insumos = useArmazemInsumos((s) => s.insumos);
 
   const metricas = useMemo(() => servicoDesperdicio.calcularMetricas(materiais, insumos), [materiais, insumos]);
   const historico = useMemo(() => servicoDesperdicio.gerarHistorico(materiais, insumos), [materiais, insumos]);
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Análise de Desperdício",
     subtitulo: "Monitore falhas e sucatas para otimizar sua margem de lucro.",
     acao: {

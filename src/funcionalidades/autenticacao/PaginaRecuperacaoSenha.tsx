@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usarAutenticacao } from "./contextos/ContextoAutenticacao";
+import { useAutenticacao } from "./contextos/ContextoAutenticacao";
 import { useNavigate } from "react-router-dom";
 import { Mail, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { LayoutAutenticacao } from "./componentes/LayoutAutenticacao";
@@ -8,7 +8,7 @@ import { InputAuth } from "./componentes/InputAuth";
 
 export function PaginaRecuperacaoSenha() {
   const navegar = useNavigate();
-  const { recuperarSenha } = usarAutenticacao();
+  const { recuperarSenha } = useAutenticacao();
   const [email, definirEmail] = useState("");
   const [erro, definirErro] = useState("");
   const [sucesso, definirSucesso] = useState(false);

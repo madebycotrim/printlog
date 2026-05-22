@@ -4,7 +4,7 @@ import { Dialogo } from "@/compartilhado/componentes";
 import { CabecalhoModalPremium } from "@/compartilhado/componentes";
 import { AbasModalPremium } from "@/compartilhado/componentes";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
-import { usarFormularioInsumo } from "../hooks/usarFormularioInsumo";
+import { useFormularioInsumo } from "../hooks/useFormularioInsumo";
 import { SecaoInformacoesBasicas } from "./formulario/SecaoInformacoesBasicas";
 import { SecaoEstoquePreco } from "./formulario/SecaoEstoquePreco";
 import { SecaoRendimentoFracionado } from "./formulario/SecaoRendimentoFracionado";
@@ -40,7 +40,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
     lidarComTentativaFechamento,
     fecharModalRealmente,
     onSubmit,
-  } = usarFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancelar });
+  } = useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancelar });
 
   const [abaAtiva, definirAbaAtiva] = useState("identificacao");
 

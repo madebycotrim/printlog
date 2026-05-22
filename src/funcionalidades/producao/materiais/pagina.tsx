@@ -1,12 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, PackageSearch, Sparkles } from "lucide-react";
 import { useEffect } from "react";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { Carregamento } from "@/compartilhado/componentes";
 import { EstadoVazio } from "@/compartilhado/componentes";
-import { usarGerenciadorMateriais } from "./hooks/usarGerenciadorMateriais";
+import { useGerenciadorMateriais } from "./hooks/useGerenciadorMateriais";
 import { Material } from "./tipos";
 import { FormularioMaterial } from "./componentes/FormularioMaterial";
 import { ResumoEstoque } from "./componentes/ResumoEstoque";
@@ -15,16 +15,16 @@ import { ListaMateriais } from "./componentes/ListaMateriais";
 import { ModalHistoricoUso } from "./componentes/ModalHistoricoUso";
 import { ModalArquivamentoMaterial } from "./componentes/ModalArquivamentoMaterial";
 import { ModalReposicaoEstoque } from "./componentes/ModalReposicaoEstoque";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/constantesNegocio";
 
 export function PaginaMateriais() {
-  const { estado, acoes } = usarGerenciadorMateriais();
-  const { insumos, definirInsumos } = usarArmazemInsumos();
-  const { usuario } = usarAutenticacao();
-  const { betaEstoqueInteligente } = usarBeta();
+  const { estado, acoes } = useGerenciadorMateriais();
+  const { insumos, definirInsumos } = useArmazemInsumos();
+  const { usuario } = useAutenticacao();
+  const { betaEstoqueInteligente } = useBeta();
 
   // 🔄 SINCRONIZAÇÃO DE INSUMOS PARA CÁLCULO CONSOLIDADO
   useEffect(() => {
@@ -33,7 +33,7 @@ export function PaginaMateriais() {
     }
   }, [usuario?.uid]);
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Meus Materiais",
     subtitulo: "Gestão inteligente de filamentos, resinas e patrimônio técnico",
     placeholderBusca: "Buscar fabricante, cor ou tipo de material...",

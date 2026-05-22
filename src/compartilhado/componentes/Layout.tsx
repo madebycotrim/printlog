@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { BarraLateral } from "./BarraLateral";
 import { Cabecalho } from "./Cabecalho";
 import { ProvedorCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarAutoLogout } from "@/compartilhado/hooks/usarAutoLogout";
+import { useAutoLogout } from "@/compartilhado/hooks/useAutoLogout";
 
 type PropriedadesLayout = {
   children: ReactNode;
@@ -12,7 +12,7 @@ export function Layout({ children }: PropriedadesLayout) {
   const [sidebarAberta, definirSidebarAberta] = useState(false);
 
   // Segurança: logout automático após 30 min de inatividade
-  usarAutoLogout();
+  useAutoLogout();
 
   return (
     <ProvedorCabecalho>

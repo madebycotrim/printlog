@@ -36,7 +36,7 @@ interface PreferenciasInterface {
   fonte: TipoFonte;
 }
 
-export function usarTema() {
+export function useTema() {
   // Inicializa o estado lendo diretamente do localStorage ou preferência do sistema
   const [preferencias, definirPreferencias] = useState<PreferenciasInterface>(() => {
     if (typeof window !== "undefined") {

@@ -4,13 +4,13 @@ import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 
 // Hooks e Estado
-import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
-import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 
 // Serviços e Utilitários
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
@@ -50,21 +50,21 @@ import { Dialogo } from "@/compartilhado/componentes";
 import { motion } from "framer-motion";
 
 export function PaginaInicial() {
-  const { usuario } = usarAutenticacao();
-  const { pedidos } = usarPedidos();
+  const { usuario } = useAutenticacao();
+  const { pedidos } = usePedidos();
   const navegar = useNavigate();
 
   // 🏪 ACESSO AO ESTADO
-  const materiais = usarArmazemMateriais((s) => s.materiais);
-  const impressoras = usarArmazemImpressoras((s) => s.impressoras);
-  const insumos = usarArmazemInsumos((s) => s.insumos);
+  const materiais = useArmazemMateriais((s) => s.materiais);
+  const impressoras = useArmazemImpressoras((s) => s.impressoras);
+  const insumos = useArmazemInsumos((s) => s.insumos);
 
-  const { insumos: insumosEstoque, adicionarOuAtualizarInsumo } = usarArmazemInsumos();
-  const { reporEstoque: reporEstoqueMat } = usarArmazemMateriais();
+  const { insumos: insumosEstoque, adicionarOuAtualizarInsumo } = useArmazemInsumos();
+  const { reporEstoque: reporEstoqueMat } = useArmazemMateriais();
 
-  const acoesMateriais = usarArmazemMateriais(useShallow(s => ({ definirMateriais: s.definirMateriais })));
-  const acoesInsumos = usarArmazemInsumos(useShallow(s => ({ definirInsumos: s.definirInsumos })));
-  const acoesImpressoras = usarArmazemImpressoras(useShallow(s => ({ definirImpressoras: s.definirImpressoras })));
+  const acoesMateriais = useArmazemMateriais(useShallow(s => ({ definirMateriais: s.definirMateriais })));
+  const acoesInsumos = useArmazemInsumos(useShallow(s => ({ definirInsumos: s.definirInsumos })));
+  const acoesImpressoras = useArmazemImpressoras(useShallow(s => ({ definirImpressoras: s.definirImpressoras })));
 
   // 🔄 SINCRONIZAÇÃO GLOBAL NO DASHBOARD
   useEffect(() => {
@@ -94,9 +94,9 @@ export function PaginaInicial() {
   ).length;
 
   // 👑 LÓGICA DE UPGRADE PRO
-  const plano = usarArmazemConfiguracoes((s) => s.plano);
-  const definirPlano = usarArmazemConfiguracoes((s) => s.definirPlano);
-  const salvarConfiguracoes = usarArmazemConfiguracoes((s) => s.salvarNoD1);
+  const plano = useArmazemConfiguracoes((s) => s.plano);
+  const definirPlano = useArmazemConfiguracoes((s) => s.definirPlano);
+  const salvarConfiguracoes = useArmazemConfiguracoes((s) => s.salvarNoD1);
   const [carregandoUpgrade, definirCarregandoUpgrade] = useState(false);
 
   // Estados de Modais
@@ -126,7 +126,7 @@ export function PaginaInicial() {
     }
   };
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: `Olá, ${usuario?.nome?.split(" ")[0] || "Maker"}! 👋`,
     subtitulo: "Seu centro de comando para custos reais e gestão profissional.",
     placeholderBusca: "PESQUISAR EM TODA A PLATAFORMA...",

@@ -5,19 +5,19 @@ import {
   FiltroTipoMaterial,
   OrdenacaoMaterial,
 } from "@/funcionalidades/producao/materiais/componentes/FiltrosMaterial";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
 import { toast } from "react-hot-toast";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 
-export function usarGerenciadorMateriais() {
+export function useGerenciadorMateriais() {
   // 🎯 SELETORES OTIMIZADOS
-  const materiais = usarArmazemMateriais((s) => s.materiais);
-  const carregando = usarArmazemMateriais((s) => s.carregando);
-  const acoesArmazem = usarArmazemMateriais(
+  const materiais = useArmazemMateriais((s) => s.materiais);
+  const carregando = useArmazemMateriais((s) => s.carregando);
+  const acoesArmazem = useArmazemMateriais(
     useShallow((s) => ({
       atualizarMaterial: s.atualizarMaterial,
       adicionarMaterial: s.adicionarMaterial,
@@ -49,8 +49,8 @@ export function usarGerenciadorMateriais() {
   const [ordemInvertida, definirOrdemInvertida] = useState(false);
   const [termoBusca, definirTermoBusca] = useState("");
 
-  const { usuario } = usarAutenticacao();
-  const { limiteAlertaEstoque } = usarBeta();
+  const { usuario } = useAutenticacao();
+  const { limiteAlertaEstoque } = useBeta();
 
   // 🔄 SINCRONIZAÇÃO INICIAL COM D1
   useEffect(() => {

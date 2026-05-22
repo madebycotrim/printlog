@@ -37,7 +37,7 @@ interface ArmazemClientesState {
     fecharHistorico: () => void;
 }
 
-export const usarArmazemClientes = create<ArmazemClientesState>()(
+export const useArmazemClientes = create<ArmazemClientesState>()(
     devtools(
         (set) => ({
             clientes: [],

@@ -21,12 +21,18 @@ const calcularVencimento = (ciclo: string, dataBase: Date = new Date()) => {
     return data.toISOString();
 };
 
-export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
     const { env, data, request } = context;
 
     // 1. Verificação de Identidade (Middleware JWT já validou que o usuário existe no Firebase)
     const usuarioId = data.uid;
     if (!usuarioId) return new Response("Não autorizado", { status: 401 });
+
+    const userEmail = data.email;
+    const donoEmail = env.EMAIL_DONO;
+    if (!userEmail || !donoEmail || userEmail.toLowerCase() !== donoEmail.toLowerCase()) {
+        return new Response("Não autorizado", { status: 403 });
+    }
 
     const metodo = request.method;
 

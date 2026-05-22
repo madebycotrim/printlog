@@ -5,7 +5,7 @@ import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { memo } from "react";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 interface PainelResultadosProps {
   calculo: CalculoResultado;
@@ -32,7 +32,7 @@ export const PainelResultados = memo(function PainelResultados({
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
   tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA
 }: PainelResultadosProps) {
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
 
   const compartilharWhatsApp = () => {
     const nomeEstudio = "Meu Estúdio 3D";

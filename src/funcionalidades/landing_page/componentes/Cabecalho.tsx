@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { LayoutDashboard } from "lucide-react";
 
 export function Cabecalho() {
-  const { usuario, carregando } = usarAutenticacao();
+  const { usuario, carregando } = useAutenticacao();
   const [rolouTela, definirRolouTela] = useState(false);
   const [menuMobileAberto, definirMenuMobileAberto] = useState(false);
 

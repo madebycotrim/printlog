@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 /**
  * Propriedades do componente CardPrivacidade.
@@ -21,7 +21,7 @@ interface PropsCardPrivacidade {
  */
 export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
   const navegar = useNavigate();
-  const { excluirConta, exportarDadosPessoais } = usarAutenticacao();
+  const { excluirConta, exportarDadosPessoais } = useAutenticacao();
 
   const [confirmouEliminacao, definirConfirmouEliminacao] = useState(false);
   const [modalAberto, definirModalAberto] = useState(false);

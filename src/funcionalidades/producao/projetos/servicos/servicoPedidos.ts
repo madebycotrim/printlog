@@ -2,8 +2,8 @@ import { StatusPedido, TipoLancamentoFinanceiro } from "@/compartilhado/tipos/mo
 import { Pedido, CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
 import { apiPedidos } from "./apiPedidos";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/apiFinanceiro";
 import { servicoFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/servicoFinanceiro";
@@ -177,7 +177,7 @@ class ServicoPedidos {
             );
 
             // 1.1 Sincroniza com a Tela em Tempo Real
-            usarArmazemMateriais.getState().abaterPeso(
+            useArmazemMateriais.getState().abaterPeso(
               materialEstoque.id,
               mat.quantidadeGasta || 0,
               pedido.descricao,
@@ -218,7 +218,7 @@ class ServicoPedidos {
             );
 
             // 2.1 Sincroniza com a Tela em Tempo Real
-            usarArmazemInsumos.getState().adicionarOuAtualizarInsumo({
+            useArmazemInsumos.getState().adicionarOuAtualizarInsumo({
               ...insumoEstoque,
               quantidadeAtual: novaQtd,
               historico: [
@@ -361,7 +361,7 @@ class ServicoPedidos {
             );
 
             // 1.1 Sincroniza com a Tela em Tempo Real (usando valor negativo para adicionar)
-            usarArmazemMateriais.getState().abaterPeso(
+            useArmazemMateriais.getState().abaterPeso(
               materialEstoque.id,
               -(mat.quantidadeGasta || 0),
               `[REVERSÃO] ${pedido.descricao}`,
@@ -391,7 +391,7 @@ class ServicoPedidos {
             );
 
             // 2.1 Sincroniza com a Tela em Tempo Real
-            usarArmazemInsumos.getState().adicionarOuAtualizarInsumo({
+            useArmazemInsumos.getState().adicionarOuAtualizarInsumo({
               ...insumoEstoque,
               quantidadeAtual: qtdDevolvida,
               historico: [

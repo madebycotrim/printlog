@@ -2,25 +2,25 @@ import { useState } from "react";
 import { Download, Database, User, PackageSearch, Activity, FolderKanban, CheckCircle2 } from "lucide-react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { CabecalhoCard } from "./Compartilhados";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
-import { usarArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
-import { usarArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
+import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 import { toast } from "react-hot-toast";
 
 export function CardMetricas() {
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
   const [exportando, definirExportando] = useState(false);
   const [mensagemSucesso, definirMensagemSucesso] = useState("");
 
   // Acessando dados reais dos armazéns (Estado Global)
-  const totalClientes = usarArmazemClientes((estado) => estado.clientes.length);
-  const totalMateriais = usarArmazemMateriais((estado) => estado.materiais.length);
-  const totalInsumos = usarArmazemInsumos((estado) => estado.insumos.length);
-  const totalMaquinas = usarArmazemImpressoras((estado) => estado.impressoras.length);
-  const totalProjetos = usarArmazemPedidos((estado) => estado.pedidos.length);
+  const totalClientes = useArmazemClientes((estado) => estado.clientes.length);
+  const totalMateriais = useArmazemMateriais((estado) => estado.materiais.length);
+  const totalInsumos = useArmazemInsumos((estado) => estado.insumos.length);
+  const totalMaquinas = useArmazemImpressoras((estado) => estado.impressoras.length);
+  const totalProjetos = useArmazemPedidos((estado) => estado.pedidos.length);
 
   const gerarLogBackend = (formato: string) => {
     // [Art. 37 - ROA] Simulando log em um sistema de auditoria (D1/Logs).
@@ -64,11 +64,11 @@ export function CardMetricas() {
             isolamento: "Dados restritos ao UID logado (Art. 6º, I).",
           },
           dados_pessoais: {
-            clientes: usarArmazemClientes.getState().clientes,
-            projetos: usarArmazemPedidos.getState().pedidos,
-            filamentos: usarArmazemMateriais.getState().materiais,
-            insumos: usarArmazemInsumos.getState().insumos,
-            maquinas: usarArmazemImpressoras.getState().impressoras,
+            clientes: useArmazemClientes.getState().clientes,
+            projetos: useArmazemPedidos.getState().pedidos,
+            filamentos: useArmazemMateriais.getState().materiais,
+            insumos: useArmazemInsumos.getState().insumos,
+            maquinas: useArmazemImpressoras.getState().impressoras,
           },
         };
         const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });

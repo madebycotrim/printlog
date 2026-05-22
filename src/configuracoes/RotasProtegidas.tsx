@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { Carregamento } from "@/compartilhado/componentes";
 
 interface RotaProtegidaProps {
@@ -7,7 +7,7 @@ interface RotaProtegidaProps {
 }
 
 export function RotaProtegida({ children }: RotaProtegidaProps) {
-  const { usuario, carregando } = usarAutenticacao();
+  const { usuario, carregando } = useAutenticacao();
 
   if (carregando) {
     return <Carregamento texto="Verificando Acesso..." />;

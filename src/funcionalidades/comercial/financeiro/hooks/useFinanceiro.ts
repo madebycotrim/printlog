@@ -3,29 +3,29 @@ import { CriarLancamentoInput } from "../tipos";
 import { servicoFinanceiro } from "../servicos/servicoFinanceiro";
 import { toast } from "react-hot-toast";
 import { ErroPrintLog } from "@/compartilhado/utilitarios/excecoes";
-import { usarArmazemFinanceiro } from "../estado/armazemFinanceiro";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemFinanceiro } from "../estado/armazemFinanceiro";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
-export function usarFinanceiro() {
+export function useFinanceiro() {
   // Seletores estáveis para evitar re-renderizações desnecessárias
-  const lancamentos = usarArmazemFinanceiro((s) => s.lancamentos);
-  const resumo = usarArmazemFinanceiro((s) => s.resumo);
-  const carregando = usarArmazemFinanceiro((s) => s.carregando);
-  const filtroTipo = usarArmazemFinanceiro((s) => s.filtroTipo);
-  const termoBusca = usarArmazemFinanceiro((s) => s.termoBusca);
-  const ordenacao = usarArmazemFinanceiro((s) => s.ordenacao);
-  const ordemInvertida = usarArmazemFinanceiro((s) => s.ordemInvertida);
+  const lancamentos = useArmazemFinanceiro((s) => s.lancamentos);
+  const resumo = useArmazemFinanceiro((s) => s.resumo);
+  const carregando = useArmazemFinanceiro((s) => s.carregando);
+  const filtroTipo = useArmazemFinanceiro((s) => s.filtroTipo);
+  const termoBusca = useArmazemFinanceiro((s) => s.termoBusca);
+  const ordenacao = useArmazemFinanceiro((s) => s.ordenacao);
+  const ordemInvertida = useArmazemFinanceiro((s) => s.ordemInvertida);
 
   // Ações (também obtidas via seletor para garantir estabilidade absoluta)
-  const definirCarregando = usarArmazemFinanceiro((s) => s.definirCarregando);
-  const definirLancamentos = usarArmazemFinanceiro((s) => s.definirLancamentos);
-  const definirResumo = usarArmazemFinanceiro((s) => s.definirResumo);
-  const definirFiltroTipo = usarArmazemFinanceiro((s) => s.definirFiltroTipo);
-  const ordenarPor = usarArmazemFinanceiro((s) => s.ordenarPor);
-  const inverterOrdem = usarArmazemFinanceiro((s) => s.inverterOrdem);
-  const pesquisar = usarArmazemFinanceiro((s) => s.pesquisar);
+  const definirCarregando = useArmazemFinanceiro((s) => s.definirCarregando);
+  const definirLancamentos = useArmazemFinanceiro((s) => s.definirLancamentos);
+  const definirResumo = useArmazemFinanceiro((s) => s.definirResumo);
+  const definirFiltroTipo = useArmazemFinanceiro((s) => s.definirFiltroTipo);
+  const ordenarPor = useArmazemFinanceiro((s) => s.ordenarPor);
+  const inverterOrdem = useArmazemFinanceiro((s) => s.inverterOrdem);
+  const pesquisar = useArmazemFinanceiro((s) => s.pesquisar);
 
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
 
   // Gerado uma vez por sessão do hook para agrupar operações relacionadas

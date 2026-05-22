@@ -3,7 +3,7 @@ import { RegistroManutencao, PecaDesgaste, RegistrarManutencaoInput } from "../.
 import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
 import { toast } from "react-hot-toast";
 
-export function usarManutencao(idImpressora?: string) {
+export function useManutencao(idImpressora?: string) {
   const [manutencoes, setManutencoes] = useState<RegistroManutencao[]>([]);
   const [pecas, setPecas] = useState<PecaDesgaste[]>([]);
   const [carregando, setCarregando] = useState(false);

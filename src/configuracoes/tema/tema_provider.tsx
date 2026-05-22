@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from "react";
-import { usarTema } from "./logica/usar_tema";
+import { useTema } from "./logica/use_tema";
 import type { CorPrimaria, ModoTema, TipoFonte } from "@/compartilhado/tipos/modelos";
 
 type TemaContexto = {
@@ -17,16 +17,16 @@ type TemaContexto = {
 const ContextoTema = createContext<TemaContexto | null>(null);
 
 export function ProvedorTema({ children }: { children: ReactNode }) {
-  const tema = usarTema();
+  const tema = useTema();
 
   return <ContextoTema.Provider value={tema}>{children}</ContextoTema.Provider>;
 }
 
-export function usarContextoTema() {
+export function useContextoTema() {
   const contexto = useContext(ContextoTema);
 
   if (!contexto) {
-    throw new Error("usarContextoTema deve estar dentro do ProvedorTema");
+    throw new Error("useContextoTema deve estar dentro do ProvedorTema");
   }
 
   return contexto;

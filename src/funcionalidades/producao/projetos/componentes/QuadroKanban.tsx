@@ -1,5 +1,5 @@
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { usarPedidos } from "../hooks/usarPedidos";
+import { usePedidos } from "../hooks/usePedidos";
 import { ColunaKanban } from "./ColunaKanban";
 import { Carregamento } from "@/compartilhado/componentes";
 import { Pedido } from "../tipos";
@@ -12,7 +12,7 @@ interface PropriedadesQuadroKanban {
 }
 
 export function QuadroKanban({ pedidosInjetados, abrirFormularioEdicao, aoMover }: PropriedadesQuadroKanban) {
-  const { pedidos: pedidosHook, carregando, moverPedido: moverPedidoHook } = usarPedidos();
+  const { pedidos: pedidosHook, carregando, moverPedido: moverPedidoHook } = usePedidos();
 
   // Se pedidosInjetados for fornecido, usa ele (para busca/filtros da página),
   // caso contrário usa o estado interno do hook.

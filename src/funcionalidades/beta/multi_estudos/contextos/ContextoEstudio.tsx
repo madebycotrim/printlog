@@ -16,7 +16,7 @@ const ContextoEstudio = createContext<ContextoEstudioProps>({
   carregando: true,
 });
 
-export function usarEstudio() {
+export function useEstudio() {
   return useContext(ContextoEstudio);
 }
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, Users, Crown, Zap, Search } from "lucide-react";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
@@ -40,7 +40,7 @@ const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
  * Acesso restrito via e-mail definido no .env da Cloudflare.
  */
 export function PaginaAdmin() {
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
   const [usuarios, definirUsuarios] = useState<UsuarioAdmin[]>([]);
   const [carregando, definirCarregando] = useState(true);
   const [busca, definirBusca] = useState("");
@@ -108,7 +108,7 @@ export function PaginaAdmin() {
     }
   };
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Gestão Master",
     subtitulo: "Administração de Fundadores e Planos Premium",
     ocultarBusca: true,

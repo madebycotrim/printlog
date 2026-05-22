@@ -1,10 +1,10 @@
 import { FolderKanban, Plus, Archive } from "lucide-react";
 import { useState } from "react";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
 import { ModalProjetosAtrasados } from "./componentes/ModalProjetosAtrasados";
-import { usarPedidos } from "./hooks/usarPedidos";
+import { usePedidos } from "./hooks/usePedidos";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,9 +19,9 @@ export function PaginaProjetos() {
   const [modalArquivoAberto, setModalArquivoAberto] = useState(false);
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
-  const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido } = usarPedidos();
+  const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido } = usePedidos();
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Fluxo de Produção",
     subtitulo: "Gerencie seus pedidos no Kanban",
     placeholderBusca: "BUSCAR PEDIDO...",

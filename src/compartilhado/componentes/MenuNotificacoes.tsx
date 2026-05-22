@@ -9,12 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
-import { usarArmazemNotificacoes } from "../estado/armazemNotificacoes";
+import { useArmazemNotificacoes } from "../estado/armazemNotificacoes";
 import { TipoNotificacao } from "../tipos/notificacoes";
 
 export function MenuNotificacoes() {
   const { notificacoes, marcarComoLida, marcarTodasComoLidas, limparNotificacoes, removerNotificacao } =
-    usarArmazemNotificacoes();
+    useArmazemNotificacoes();
   const [aberto, setAberto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navegar = useNavigate();

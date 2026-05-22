@@ -5,11 +5,11 @@ import { Pedido } from "../tipos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { usarPedidos } from "../hooks/usarPedidos";
+import { usePedidos } from "../hooks/usePedidos";
 import { verificarSeEstaAtrasado } from "@/compartilhado/utilitarios/gestaoAtrasos";
 import { formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { ModalDetalhesPedido } from "./ModalDetalhesPedido";
 import { ModalFalhaProjeto } from "./ModalFalhaProjeto";
 import { ModalExcluirPedido } from "./ModalExcluirPedido";
@@ -56,9 +56,9 @@ function EfeitoConfeteVibrante() {
 
 export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
   const navegar = useNavigate();
-  const { excluirPedido, moverPedido, idsBloqueados } = usarPedidos();
+  const { excluirPedido, moverPedido, idsBloqueados } = usePedidos();
   const bloqueado = idsBloqueados.includes(pedido.id);
-  const { impressoras } = usarArmazemImpressoras();
+  const { impressoras } = useArmazemImpressoras();
   const [menuAberto, setMenuAberto] = useState(false);
   const [modalDetalhesAberto, setModalDetalhesAberto] = useState(false);
   const [modalFalhaAberto, setModalFalhaAberto] = useState(false);

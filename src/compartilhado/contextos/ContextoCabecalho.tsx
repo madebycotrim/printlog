@@ -79,19 +79,19 @@ export function ProvedorCabecalho({ children }: { children: ReactNode }) {
   );
 }
 
-export function usarCabecalho() {
+export function useCabecalho() {
   const contexto = useContext(ContextoCabecalho);
   if (!contexto) {
     throw new Error(
-      "usarCabecalho deve ser usado dentro de um ProvedorCabecalho",
+      "useCabecalho deve ser usado dentro de um ProvedorCabecalho",
     );
   }
   return contexto;
 }
 
 // Hook para ser usado nas páginas
-export function usarDefinirCabecalho(dadosInput: DadosCabecalho) {
-  const { definirDados } = usarCabecalho();
+export function useDefinirCabecalho(dadosInput: DadosCabecalho) {
+  const { definirDados } = useCabecalho();
 
   // 1. Manter as funções instáveis em refs para não trigar useEffect
   const acaoCallbackRef = useRef(dadosInput.acao?.aoClicar);

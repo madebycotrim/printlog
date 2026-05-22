@@ -8,7 +8,7 @@ import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
-import { usarArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
+import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 import { servicoPredicaoManutencao } from "@/funcionalidades/producao/manutencao/preditiva/servicos/servicoPredicaoManutencao";
 
 export const servicoNotificacoes = {
@@ -16,7 +16,7 @@ export const servicoNotificacoes = {
    * Varre o sistema em busca de inconsistências ou prazos críticos.
    */
   processarAlertasAutomaticos: (pedidos: Pedido[], impressoras: Impressora[]) => {
-    const { adicionarNotificacao, notificacoes } = usarArmazemNotificacoes.getState();
+    const { adicionarNotificacao, notificacoes } = useArmazemNotificacoes.getState();
     const agora = new Date();
 
     // 1. Verificação de Pedidos Atrasados

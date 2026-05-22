@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { detectarTarifaKwhAutomatico } from "@/compartilhado/utilitarios/tarifas-energia";
-import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
-import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
-import { usarGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/usarGerenciadorImpressoras";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
+import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { toast } from "react-hot-toast";
 import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
@@ -18,12 +18,12 @@ import {
 } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 
-export function usarCalculadora() {
-  const config = usarArmazemConfiguracoes();
-  const { materiais } = usarArmazemMateriais();
-  const { insumos: insumosEstoque } = usarArmazemInsumos();
-  const { pedidos } = usarPedidos();
-  const { estado: estadoImpressoras } = usarGerenciadorImpressoras();
+export function useCalculadora() {
+  const config = useArmazemConfiguracoes();
+  const { materiais } = useArmazemMateriais();
+  const { insumos: insumosEstoque } = useArmazemInsumos();
+  const { pedidos } = usePedidos();
+  const { estado: estadoImpressoras } = useGerenciadorImpressoras();
   const impressorasCadastradas = estadoImpressoras.impressoras;
 
   // --- ESTADOS BASE ---

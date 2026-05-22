@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Trash2, Download, ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, UserX, Database, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 /**
  * Página de Gestão de Dados Pessoais (Direitos do Titular).
@@ -9,7 +9,7 @@ import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/Conte
  * Conectado ao Firebase Auth e sistema de portabilidade.
  */
 export default function PaginaGestaoDados() {
-  const { exportarDadosPessoais, excluirConta, usuario } = usarAutenticacao();
+  const { exportarDadosPessoais, excluirConta, usuario } = useAutenticacao();
   const [etapa, setEtapa] = useState<"escolha" | "confirmacao_exclusao" | "processando" | "sucesso">("escolha");
   const [carregando, setCarregando] = useState(false);
 

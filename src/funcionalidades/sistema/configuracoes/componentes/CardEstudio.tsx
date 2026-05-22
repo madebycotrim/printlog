@@ -1,7 +1,7 @@
 import { Beaker, Building2, Settings2, ChevronDown, AlertTriangle, ShieldCheck, Zap, Share2, PackageSearch, TrendingUp, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { CabecalhoCard } from "./Compartilhados";
-import { usarEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
+import { useEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 import { Dialogo } from "@/compartilhado/componentes";
 
 interface PropsCardEstudio {
@@ -39,7 +39,7 @@ export function CardEstudio({
   definirLimiteAlertaEstoque,
   pendente,
 }: PropsCardEstudio) {
-  const { estudioAtivo, estudios, definirEstudioAtivo } = usarEstudio();
+  const { estudioAtivo, estudios, definirEstudioAtivo } = useEstudio();
   const [mostrarConfigEstudio, setMostrarConfigEstudio] = useState(false);
   const [mostrarConfigOrcamento, setMostrarConfigOrcamento] = useState(false);
   const [mostrarConfigEstoque, setMostrarConfigEstoque] = useState(false);

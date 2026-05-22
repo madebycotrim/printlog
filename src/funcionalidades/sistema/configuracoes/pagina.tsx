@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { Save, Check, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { toast } from "react-hot-toast";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { Carregamento } from "@/compartilhado/componentes";
 
 import { CardPerfil } from "./componentes/CardPerfil";
@@ -16,17 +16,17 @@ import { CardMetricas } from "./componentes/CardMetricas";
 import { CardPrivacidade } from "./componentes/CardPrivacidade";
 import { CardEstudio } from "./componentes/CardEstudio";
 
-import { usarContextoTema } from "@/configuracoes/tema/tema_provider";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { usarArmazemConfiguracoes } from "./estado/armazemConfiguracoes";
+import { useContextoTema } from "@/configuracoes/tema/tema_provider";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useArmazemConfiguracoes } from "./estado/armazemConfiguracoes";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 
 export function PaginaConfiguracoes() {
-  const { usuario, atualizarPerfil, recuperarSenha } = usarAutenticacao();
-  const contextoTema = usarContextoTema();
-  const beta = usarBeta();
-  const config = usarArmazemConfiguracoes();
+  const { usuario, atualizarPerfil, recuperarSenha } = useAutenticacao();
+  const contextoTema = useContextoTema();
+  const beta = useBeta();
+  const config = useArmazemConfiguracoes();
   const { search } = useLocation();
 
   const [destaqueLgpd, definirDestaqueLgpd] = useState(false);
@@ -207,7 +207,7 @@ export function PaginaConfiguracoes() {
     }
   };
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Configurações",
     subtitulo: temAlteracoes
       ? `Você possui ${totalAlteracoes} ${totalAlteracoes === 1 ? "seção com alterações pendentes" : "seções com alterações pendentes"}`

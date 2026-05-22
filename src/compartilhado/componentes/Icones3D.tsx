@@ -38,7 +38,8 @@ export const Carretel = memo(
     id?: string;
     className?: string;
   }) => {
-    const idUnico = (id || useId()).replace(/:/g, "");
+    const reactId = useId();
+    const idUnico = (id || reactId).replace(/:/g, "");
     const { base, claro, escuro } = useMemo(() => gerarCores(cor), [cor]);
 
     const porcentagemSegura = Math.max(0, Math.min(100, Number(porcentagem) || 0));
@@ -245,7 +246,8 @@ export const GarrafaResina = memo(
     id?: string;
     className?: string;
   }) => {
-    const idUnico = (id || useId()).replace(/:/g, "");
+    const reactId = useId();
+    const idUnico = (id || reactId).replace(/:/g, "");
     const { base, claro, escuro } = useMemo(() => gerarCores(cor || "#3b82f6"), [cor]);
 
     const porcentagemSegura = Math.max(0, Math.min(100, Number(porcentagem) || 0));

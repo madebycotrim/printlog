@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { usarAutenticacao } from "./contextos/ContextoAutenticacao";
+import { useAutenticacao } from "./contextos/ContextoAutenticacao";
 import { ComponenteTurnstile } from "./componentes/ComponenteTurnstile";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ArrowRight, AlertCircle, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
@@ -11,7 +11,7 @@ import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaCadastro() {
   const navegar = useNavigate();
-  const { cadastro, loginGoogle, usuario, carregando } = usarAutenticacao();
+  const { cadastro, loginGoogle, usuario, carregando } = useAutenticacao();
   const [nome, definirNome] = useState(""); // Finalidade: Identificação pessoal | Base Legal: Execução de Contrato (Art. 7º, V)
   const [email, definirEmail] = useState(""); // Finalidade: Comunicação e login | Base Legal: Execução de Contrato (Art. 7º, V)
   const [senha, definirSenha] = useState(""); // Finalidade: Segurança e autenticação (armazenado com hash)

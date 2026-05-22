@@ -6,7 +6,7 @@
 
 import { Impressora, RegistroManutencao, PecaDesgaste, RegistrarManutencaoInput } from "@/funcionalidades/producao/impressoras/tipos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { servicoBaseApi } from "./servicoBaseApi";
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 
@@ -104,7 +104,7 @@ export const servicoManutencao = {
       reversao?: boolean;
     }
   ) => {
-    const { impressoras, definirImpressoras } = usarArmazemImpressoras.getState();
+    const { impressoras, definirImpressoras } = useArmazemImpressoras.getState();
     let impressoraAlvo = impressoras.find(i => i.id === idImpressora);
     
     // v9.0: Se não estiver na store (ex: vindo do Kanban sem carregar impressoras), busca na API

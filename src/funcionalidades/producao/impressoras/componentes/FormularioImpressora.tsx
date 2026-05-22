@@ -1,6 +1,6 @@
 import { Dialogo } from "@/compartilhado/componentes";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
-import { usarFormularioImpressora } from "../hooks/usarFormularioImpressora";
+import { useFormularioImpressora } from "../hooks/useFormularioImpressora";
 import { IdentificacaoHardware } from "./formulario/IdentificacaoHardware";
 import { EspecificacoesTecnicas } from "./formulario/EspecificacoesTecnicas";
 import { ManutencaoPreventiva } from "./formulario/ManutencaoPreventiva";
@@ -41,7 +41,7 @@ export function FormularioImpressora({
     opcoesModelo,
     aoAlterarModelo,
     onSubmit,
-  } = usarFormularioImpressora({ aberto, impressoraEditando, aoSalvar, aoCancelar });
+  } = useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, aoCancelar });
 
   if (!aberto) return null;
 

@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { WIKI_EXTENDIDA, FAQS, InterfaceTopico } from "../utilitarios/dados";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MessageCircle } from "lucide-react";
 
-export function usarCentralMaker() {
+export function useCentralMaker() {
   const [busca, definirBusca] = useState("");
   const [abrirSuporte, definirAbrirSuporte] = useState(false);
   const [topicoSelecionado, definirTopicoSelecionado] = useState<InterfaceTopico | null>(null);
@@ -33,7 +33,7 @@ export function usarCentralMaker() {
     );
   }, [busca]);
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Central Maker",
     subtitulo: "Hub de inteligência técnica e suporte estratégico",
     placeholderBusca: "PESQUISAR MANUAIS OU DÚVIDAS TÉCNICAS...",

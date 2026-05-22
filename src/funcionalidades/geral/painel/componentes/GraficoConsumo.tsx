@@ -8,11 +8,11 @@ import {
     CartesianGrid,
     YAxis
 } from "recharts";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 
 export function GraficoConsumo() {
     const [isMounted, setIsMounted] = useState(false);
-    const materiais = usarArmazemMateriais((s) => s.materiais);
+    const materiais = useArmazemMateriais((s) => s.materiais);
 
     const dadosGrafico = useMemo(() => {
         const hoje = new Date();

@@ -1,6 +1,6 @@
 import { Plus, Printer, Search } from "lucide-react";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarGerenciadorImpressoras } from "./hooks/usarGerenciadorImpressoras";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useGerenciadorImpressoras } from "./hooks/useGerenciadorImpressoras";
 import { FormularioImpressora } from "./componentes/FormularioImpressora";
 import { CardImpressora } from "./componentes/CardImpressora";
 import { ResumoImpressoras } from "./componentes/ResumoImpressoras";
@@ -13,9 +13,9 @@ import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaImpressoras() {
-  const { estado, acoes } = usarGerenciadorImpressoras();
+  const { estado, acoes } = useGerenciadorImpressoras();
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Minhas Impressoras",
     subtitulo: "Gerencie seu parque de máquinas",
     placeholderBusca: "Buscar impressora (Ex: Kobra S1)...",

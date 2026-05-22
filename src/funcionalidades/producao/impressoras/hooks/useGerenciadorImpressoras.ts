@@ -1,21 +1,21 @@
 import { useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { apiImpressoras } from "../servicos/apiImpressoras";
 import { apiManutencoes } from "../servicos/apiManutencoes";
 import { apiPecas } from "../servicos/apiPecas";
 import { Impressora, PecaDesgaste, RegistroManutencao } from "@/funcionalidades/producao/impressoras/tipos";
 import { obterStatusManutencao } from "../utilitarios/utilitariosManutencao";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import toast from "react-hot-toast";
 
-export function usarGerenciadorImpressoras() {
-  const { usuario } = usarAutenticacao();
+export function useGerenciadorImpressoras() {
+  const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
 
   // 🎯 SELETORES OTIMIZADOS
-  const estadoArmazem = usarArmazemImpressoras(
+  const estadoArmazem = useArmazemImpressoras(
     useShallow((s) => ({
       impressoras: s.impressoras,
       carregando: s.carregando,
@@ -33,7 +33,7 @@ export function usarGerenciadorImpressoras() {
     })),
   );
 
-  const acoesArmazem = usarArmazemImpressoras(
+  const acoesArmazem = useArmazemImpressoras(
     useShallow((s) => ({
       definirImpressoras: s.definirImpressoras,
       definirCarregando: s.definirCarregando,

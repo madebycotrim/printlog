@@ -42,7 +42,7 @@ interface ArmazemImpressorasState {
     fecharGerenciamento: () => void;
 }
 
-export const usarArmazemImpressoras = create<ArmazemImpressorasState>()(
+export const useArmazemImpressoras = create<ArmazemImpressorasState>()(
     devtools(
         (set) => ({
             impressoras: [],

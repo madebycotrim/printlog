@@ -3,7 +3,7 @@ import { RegistroUso } from "../tipos";
 import { servicoUsoMateriais } from "../servicos/servicoUsoMateriais";
 import { toast } from "react-hot-toast";
 
-export function usarHistoricoMateriais(idMaterial?: string) {
+export function useHistoricoMateriais(idMaterial?: string) {
   const [historico, setHistorico] = useState<RegistroUso[]>([]);
   const [carregando, setCarregando] = useState(false);
 

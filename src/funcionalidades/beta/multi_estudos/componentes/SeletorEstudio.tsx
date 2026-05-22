@@ -1,10 +1,10 @@
 import { ChevronDown, Briefcase, Plus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usarEstudio } from "../contextos/ContextoEstudio";
+import { useEstudio } from "../contextos/ContextoEstudio";
 
 export function SeletorEstudio() {
-  const { estudioAtivo, estudios, definirEstudioAtivo } = usarEstudio();
+  const { estudioAtivo, estudios, definirEstudioAtivo } = useEstudio();
   const [aberto, setAberto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

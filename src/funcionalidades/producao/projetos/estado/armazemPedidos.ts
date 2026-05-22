@@ -19,7 +19,7 @@ interface EstadoPedidos {
     desbloquearId: (id: string) => void;
 }
 
-export const usarArmazemPedidos = create<EstadoPedidos>((set) => ({
+export const useArmazemPedidos = create<EstadoPedidos>((set) => ({
     pedidos: [],
     carregando: true,
     termoBusca: "",

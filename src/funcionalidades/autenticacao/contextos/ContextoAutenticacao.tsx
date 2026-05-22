@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
-import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 
 import { Usuario } from "@/compartilhado/tipos/modelos";
 
@@ -40,7 +40,7 @@ const ContextoAutenticacao = createContext<ContextoAutenticacaoProps>({} as Cont
 /**
  * Hook para acessar o contexto de autenticação.
  */
-export function usarAutenticacao() {
+export function useAutenticacao() {
   return useContext(ContextoAutenticacao);
 }
 
@@ -83,7 +83,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const [usuario, definirUsuario] = useState<Usuario | null>(null);
   const [carregando, definirCarregando] = useState(true);
   const inicializadoRef = useRef(false);
-  const carregarConfiguracoes = usarArmazemConfiguracoes((s) => s.carregarDoD1);
+  const carregarConfiguracoes = useArmazemConfiguracoes((s) => s.carregarDoD1);
 
   useEffect(() => {
     const inicializarApp = async () => {
@@ -118,7 +118,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
       if (user) {
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
-        const plano = usarArmazemConfiguracoes.getState().plano;
+        const plano = useArmazemConfiguracoes.getState().plano;
         
         definirUsuario({
           uid: user.uid,
@@ -147,7 +147,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
   // Sincroniza o plano do ArmazemConfiguracoes com o objeto de usuário de forma reativa
   useEffect(() => {
-    const cancelarInscricaoPlano = usarArmazemConfiguracoes.subscribe(
+    const cancelarInscricaoPlano = useArmazemConfiguracoes.subscribe(
       (estado) => estado.plano,
       (plano) => {
         definirUsuario((prev) => (prev ? { ...prev, plano } : null));

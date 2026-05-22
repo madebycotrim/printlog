@@ -11,9 +11,9 @@ import {
 import { centavosParaReais, formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useMemo } from "react";
-import { usarGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/usarGerenciadorImpressoras";
-import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
-import { usarGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/usarGerenciadorMateriais";
+import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
+import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
+import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/useGerenciadorMateriais";
 
 
 interface PropriedadesModalDetalhes {
@@ -23,10 +23,10 @@ interface PropriedadesModalDetalhes {
 }
 
 export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesModalDetalhes) {
-  const { estado: estadoImpressoras } = usarGerenciadorImpressoras();
+  const { estado: estadoImpressoras } = useGerenciadorImpressoras();
   const impressoras = estadoImpressoras.impressoras;
-  const { estado: estadoClientes } = usarGerenciadorClientes();
-  const { estado: estadoMateriais } = usarGerenciadorMateriais();
+  const { estado: estadoClientes } = useGerenciadorClientes();
+  const { estado: estadoMateriais } = useGerenciadorMateriais();
 
 
   const configStatus = useMemo(() => {
@@ -45,14 +45,9 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
     }
   }, [pedido?.status]);
 
-  if (!pedido) return null;
-
-  const impressora = impressoras.find(i => i.id === pedido.idImpressora);
-  const cliente = (estadoClientes.clientes || []).find(c => c.id === pedido.idCliente);
-  const nomeExibicaoCliente = pedido.nomeCliente || cliente?.nome || "Cliente Avulso";
-
   // v9.0: Blindagem de visualização - calcula totais se os campos consolidados estiverem zerados
   const { pesoEfetivo, tempoEfetivo } = useMemo(() => {
+    if (!pedido) return { pesoEfetivo: 0, tempoEfetivo: 0 };
     const peso = pedido.pesoGramas || (pedido.materiais?.reduce((acc, m) => acc + (m.quantidadeGasta || 0), 0)) || 0;
     const tempo = pedido.tempoMinutos || (
       pedido.configuracoes 
@@ -61,6 +56,8 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
     ) || 0;
     return { pesoEfetivo: peso, tempoEfetivo: tempo };
   }, [pedido]);
+
+  if (!pedido) return null;
 
   return (
     <Dialogo

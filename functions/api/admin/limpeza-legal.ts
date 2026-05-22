@@ -6,10 +6,20 @@
 
 interface Env {
   DB: D1Database;
+  EMAIL_DONO: string;
 }
 
-export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const { env } = context;
+export const onRequestGet: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
+  const { env, data } = context;
+
+  const usuarioId = data?.uid;
+  if (!usuarioId) return new Response("Não autorizado", { status: 401 });
+
+  const userEmail = data?.email;
+  const donoEmail = env.EMAIL_DONO;
+  if (!userEmail || !donoEmail || userEmail.toLowerCase() !== donoEmail.toLowerCase()) {
+    return new Response("Não autorizado", { status: 403 });
+  }
 
   try {
     // 1. Executa a limpeza baseada no padrão SQLite para datas ISO8601

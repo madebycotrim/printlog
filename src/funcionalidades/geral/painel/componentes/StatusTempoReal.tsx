@@ -1,14 +1,14 @@
 import { ChevronRight, Printer } from "lucide-react";
 
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { StatusImpressora, StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useNavigate } from "react-router-dom";
-import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { motion } from "framer-motion";
 
 export function StatusTempoReal() {
-    const { impressoras } = usarArmazemImpressoras();
-    const { pedidos } = usarPedidos();
+    const { impressoras } = useArmazemImpressoras();
+    const { pedidos } = usePedidos();
     const navegar = useNavigate();
 
     const maquinasAtivas = impressoras.filter(imp => !imp.dataAposentadoria);

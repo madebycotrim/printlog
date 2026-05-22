@@ -10,22 +10,22 @@ import {
   CloudUpload
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
-import { usarGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/usarGerenciadorImpressoras";
-import { usarGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/usarGerenciadorMateriais";
-import { usarGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/usarGerenciadorInsumos";
-import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
-import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
+import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/useGerenciadorMateriais";
+import { useGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/useGerenciadorInsumos";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
+import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { Dialogo } from "@/compartilhado/componentes";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
 
 // Hook e Componentes Refatorados
-import { usarCalculadora } from "./hooks/usarCalculadora";
+import { useCalculadora } from "./hooks/useCalculadora";
 import { CardMateriais } from "./componentes/CardMateriais";
 import { CardProducao } from "./componentes/CardProducao";
 import { CardOperacional } from "./componentes/CardOperacional";
@@ -46,7 +46,7 @@ import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
 import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
 
 export function PaginaCalculadora() {
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
   const navegar = useNavigate();
   const eProOuSuperior = useMemo(() => {
     const plano = ((usuario as any)?.plano || '').toUpperCase();
@@ -56,20 +56,20 @@ export function PaginaCalculadora() {
       plano.includes('FUNDADOR') || role.includes('FUNDADOR');
   }, [usuario]);
 
-  const config = usarArmazemConfiguracoes();
-  const { estado: estadoClientes, acoes: acoesClientes } = usarGerenciadorClientes();
-  const { estado } = usarGerenciadorImpressoras();
+  const config = useArmazemConfiguracoes();
+  const { estado: estadoClientes, acoes: acoesClientes } = useGerenciadorClientes();
+  const { estado } = useGerenciadorImpressoras();
   const { impressorasFiltradas: impressoras = [] } = estado;
-  const { materiais } = usarArmazemMateriais();
-  const { insumos: insumosEstoque, adicionarOuAtualizarInsumo, abrirEditar: abrirCriarInsumo, modalCricaoAberto: modalInsumoAberto, fecharEditar: fecharInsumoAberto, insumoEditando } = usarArmazemInsumos();
-  const { estado: estadoMateriais, acoes: acoesMateriais } = usarGerenciadorMateriais();
-  const { acoes: acoesInsumos } = usarGerenciadorInsumos();
+  const { materiais } = useArmazemMateriais();
+  const { insumos: insumosEstoque, adicionarOuAtualizarInsumo, abrirEditar: abrirCriarInsumo, modalCricaoAberto: modalInsumoAberto, fecharEditar: fecharInsumoAberto, insumoEditando } = useArmazemInsumos();
+  const { estado: estadoMateriais, acoes: acoesMateriais } = useGerenciadorMateriais();
+  const { acoes: acoesInsumos } = useGerenciadorInsumos();
 
   // Hook Central de Inteligência
-  const hook = usarCalculadora();
+  const hook = useCalculadora();
   const [searchParams] = useSearchParams();
   const idEdicao = searchParams.get("id") || searchParams.get("edicao");
-  const { pedidos, criarPedido, atualizarPedido } = usarPedidos();
+  const { pedidos, criarPedido, atualizarPedido } = usePedidos();
 
   // Estados de UI locais
   const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
@@ -524,7 +524,7 @@ export function PaginaCalculadora() {
     )
   }), [idEdicao, nomeProjeto, hook.limpar]);
 
-  usarDefinirCabecalho(dadosCabecalho);
+  useDefinirCabecalho(dadosCabecalho);
 
   return (
     <AnimatePresence mode="wait">

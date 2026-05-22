@@ -19,7 +19,7 @@ interface ArmazemNotificacoesState {
   removerNotificacao: (id: string) => void;
 }
 
-export const usarArmazemNotificacoes = create<ArmazemNotificacoesState>()(
+export const useArmazemNotificacoes = create<ArmazemNotificacoesState>()(
   devtools(
     persist(
       (set) => ({

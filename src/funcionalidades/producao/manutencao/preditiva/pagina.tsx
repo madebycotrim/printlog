@@ -12,18 +12,18 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { servicoPredicaoManutencao } from "./servicos/servicoPredicaoManutencao";
 import { obterCorStatusManutencao } from "@/funcionalidades/producao/impressoras/utilitarios/utilitariosManutencao";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 
 export function PaginaManutencaoPreditiva() {
   const navigate = useNavigate();
-  const { impressoras, abrirGerenciamento } = usarArmazemImpressoras();
+  const { impressoras, abrirGerenciamento } = useArmazemImpressoras();
 
   const agenda = useMemo(() => servicoPredicaoManutencao.gerarAgendaPreditiva(impressoras), [impressoras]);
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Agenda de Manutenção Preditiva",
     subtitulo: "Evite paradas não planejadas monitorando a saúde do seu parque.",
     acao: {

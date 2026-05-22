@@ -4,20 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 
-import { usarArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
+import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 import { servicoRelatorios } from "@/compartilhado/servicos/servicoRelatorios";
 import { servicoExportacao } from "@/compartilhado/servicos/servicoExportacao";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import toast from "react-hot-toast";
 
 export function PaginaHistoricoProducao() {
   const navigate = useNavigate();
-  const pedidos = usarArmazemPedidos((s) => s.pedidos);
+  const pedidos = useArmazemPedidos((s) => s.pedidos);
 
   const historico = useMemo(() => servicoRelatorios.gerarHistoricoGlobal(pedidos), [pedidos]);
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Histórico Global de Produção",
     subtitulo: "Rastreabilidade total de tudo que já foi produzido no seu estúdio.",
     acao: {

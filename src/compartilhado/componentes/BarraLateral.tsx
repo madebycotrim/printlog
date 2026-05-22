@@ -18,13 +18,13 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { Avatar, SeloPlano } from "./ui";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
-import { usarContextoTema } from "@/configuracoes/tema/tema_provider";
+import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { TemaInterface } from "@/compartilhado/tipos/modelos";
 
 type PropriedadesBarraLateral = {
@@ -47,9 +47,9 @@ type GrupoNavegacao = {
 
 export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBarraLateral) {
   const localizacao = useLocation();
-  const { usuario, sair } = usarAutenticacao();
-  const { participarPrototipos, betaMultiEstudio, resetarTudo } = usarBeta();
-  const { modoEfetivo } = usarContextoTema();
+  const { usuario, sair } = useAutenticacao();
+  const { participarPrototipos, betaMultiEstudio, resetarTudo } = useBeta();
+  const { modoEfetivo } = useContextoTema();
   
   // Estado de colapso da Barra Lateral (Desktop)
   const [colapsada, setColapsada] = useState(false);
@@ -57,7 +57,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const lidarComSair = async () => {
     try {
       await sair();
-      window.location.href = "/";
+      window.location.replace("/");
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "BarraLateral" }, "Erro ao realizar logout", erro);
     }

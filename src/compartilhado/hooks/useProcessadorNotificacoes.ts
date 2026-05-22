@@ -1,16 +1,16 @@
 /**
- * @file usarProcessadorNotificacoes.ts
+ * @file useProcessadorNotificacoes.ts
  * @description Hook para processar alertas automáticos periodicamente.
  */
 
 import { useEffect } from "react";
-import { usarPedidos } from "@/funcionalidades/producao/projetos/hooks/usarPedidos";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { servicoNotificacoes } from "../servicos/servicoNotificacoes";
 
-export function usarProcessadorNotificacoes() {
-  const { pedidos } = usarPedidos();
-  const impressoras = usarArmazemImpressoras((s) => s.impressoras);
+export function useProcessadorNotificacoes() {
+  const { pedidos } = usePedidos();
+  const impressoras = useArmazemImpressoras((s) => s.impressoras);
 
   useEffect(() => {
     // Processa alertas na montagem e sempre que os dados mudarem significativamente

@@ -30,7 +30,7 @@ interface ConfigHookImpressora {
   aoCancelar: () => void;
 }
 
-export function usarFormularioImpressora({ aberto, impressoraEditando, aoSalvar, aoCancelar }: ConfigHookImpressora) {
+export function useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, aoCancelar }: ConfigHookImpressora) {
   const estaEditando = Boolean(impressoraEditando);
   const [confirmarDescarte, definirConfirmarDescarte] = useState(false);
   const [catalogo, definirCatalogo] = useState<PerfilImpressoraCatalogo[]>([]);

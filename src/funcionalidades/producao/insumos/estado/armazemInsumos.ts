@@ -56,7 +56,7 @@ interface ArmazemInsumosState {
     fecharHistorico: () => void;
 }
 
-export const usarArmazemInsumos = create<ArmazemInsumosState>()(
+export const useArmazemInsumos = create<ArmazemInsumosState>()(
     persist(
         (set) => ({
             insumos: [],

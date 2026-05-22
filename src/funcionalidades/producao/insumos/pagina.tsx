@@ -1,6 +1,6 @@
 import { Box, Plus, Search } from "lucide-react";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarGerenciadorInsumos } from "./hooks/usarGerenciadorInsumos";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useGerenciadorInsumos } from "./hooks/useGerenciadorInsumos";
 import { ResumoInsumos } from "./componentes/ResumoInsumos";
 import { CardInsumo } from "./componentes/CardInsumo";
 import { ModalGerenciamentoInsumo } from "./componentes/ModalGerenciamentoInsumo";
@@ -13,15 +13,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
 import { useEffect } from "react";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
 
 export function PaginaInsumos() {
-  const { estado, acoes } = usarGerenciadorInsumos();
-  const { materiais, definirMateriais } = usarArmazemMateriais();
-  const { usuario } = usarAutenticacao();
+  const { estado, acoes } = useGerenciadorInsumos();
+  const { materiais, definirMateriais } = useArmazemMateriais();
+  const { usuario } = useAutenticacao();
 
   // 🔄 SINCRONIZAÇÃO DE MATERIAIS PARA CÁLCULO CONSOLIDADO
   useEffect(() => {
@@ -30,7 +30,7 @@ export function PaginaInsumos() {
     }
   }, [usuario?.uid]);
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Meus Insumos",
     subtitulo: "Gerencie peças e outros materiais logísticos",
     placeholderBusca: "Buscar insumo (Ex: Álcool Isopropílico)...",

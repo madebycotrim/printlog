@@ -6,7 +6,7 @@
 
 import { Plus, Trash2, Package } from "lucide-react";
 import { InsumoProjeto } from "../tipos";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 
 interface PropriedadesSeletor {
     selecionados: InsumoProjeto[];
@@ -15,7 +15,7 @@ interface PropriedadesSeletor {
 }
 
 export function SeletorInsumosSecundarios({ selecionados, aoAbrirArmazem, aoAlterar }: PropriedadesSeletor) {
-    const { insumos } = usarArmazemInsumos();
+    const { insumos } = useArmazemInsumos();
 
     const adicionarInsumo = () => {
         aoAbrirArmazem();

@@ -1,6 +1,6 @@
 import { Plus, Users, Search } from "lucide-react";
-import { usarDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { usarGerenciadorClientes } from "./hooks/usarGerenciadorClientes";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useGerenciadorClientes } from "./hooks/useGerenciadorClientes";
 import { CardCliente } from "./componentes/CardCliente";
 import { FormularioCliente } from "./componentes/FormularioCliente";
 import { ResumoClientes } from "./componentes/ResumoClientes";
@@ -12,9 +12,9 @@ import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaClientes() {
-  const { estado, acoes } = usarGerenciadorClientes();
+  const { estado, acoes } = useGerenciadorClientes();
 
-  usarDefinirCabecalho({
+  useDefinirCabecalho({
     titulo: "Ecossistema de Clientes",
     subtitulo: "Gestão comercial, CRM e acompanhamento de parceiros",
     placeholderBusca: "Pesquisar por nome, e-mail ou status...",

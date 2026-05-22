@@ -1,5 +1,5 @@
 import { Palette, Sun, Moon, Check, Type, Monitor } from "lucide-react";
-import { usarContextoTema } from "@/configuracoes/tema/tema_provider";
+import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { CorPrimaria, TemaInterface } from "@/compartilhado/tipos/modelos";
 import { CabecalhoCard } from "./Compartilhados";
 
@@ -32,7 +32,7 @@ interface CardAparenciaProps {
 }
 
 export function CardAparencia({ pendente }: CardAparenciaProps) {
-  const { modoTema, definirModoTema, corPrimaria, definirCorPrimaria, fonte, definirFonte } = usarContextoTema();
+  const { modoTema, definirModoTema, corPrimaria, definirCorPrimaria, fonte, definirFonte } = useContextoTema();
 
   return (
     <div className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-4 md:p-5 flex flex-col gap-4 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-700">

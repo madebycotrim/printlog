@@ -52,7 +52,7 @@ export const VALORES_PADRAO = {
  * Os dados são persistidos no Cloudflare D1 e carregados na inicialização.
  * Não usa mais localStorage — funciona entre dispositivos e browsers.
  */
-export const usarArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
+export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
   subscribeWithSelector((set, get) => ({
   ...VALORES_PADRAO,
   carregando: false,

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { useShallow } from "zustand/react/shallow";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import {
   Insumo,
   RegistroMovimentacaoInsumo,
@@ -9,15 +9,15 @@ import {
   CategoriaInsumo,
 } from "@/funcionalidades/producao/insumos/tipos";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useEffect } from "react";
 import { apiInsumos } from "../servicos/apiInsumos";
 
-export function usarGerenciadorInsumos() {
+export function useGerenciadorInsumos() {
   // -----------------------------------------------------------------------------------
   // 🎯 SELETORES OTIMIZADOS (Zustand v5)
   // -----------------------------------------------------------------------------------
-  const estadoArmazem = usarArmazemInsumos(
+  const estadoArmazem = useArmazemInsumos(
     useShallow((s) => ({
       insumos: s.insumos,
       carregando: s.carregando,
@@ -38,7 +38,7 @@ export function usarGerenciadorInsumos() {
     })),
   );
 
-  const acoesArmazem = usarArmazemInsumos(
+  const acoesArmazem = useArmazemInsumos(
     useShallow((s) => ({
       adicionarOuAtualizarInsumo: s.adicionarOuAtualizarInsumo,
       definirCarregando: s.definirCarregando,
@@ -60,7 +60,7 @@ export function usarGerenciadorInsumos() {
     })),
   );
 
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
 
   // 🔄 SINCRONIZAÇÃO INICIAL COM D1
   useEffect(() => {

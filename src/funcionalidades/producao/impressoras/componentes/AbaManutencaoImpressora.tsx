@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Wrench, History, Activity, AlertTriangle, Plus, Clock, CheckCircle2 } from "lucide-react";
 import { Impressora } from "../tipos";
-import { usarManutencao } from "../manutencao/hooks/usarManutencao";
+import { useManutencao } from "../manutencao/hooks/useManutencao";
 import { MonitorPecas } from "../manutencao/componentes/MonitorPecas";
 import { FormularioManutencao } from "../manutencao/componentes/FormularioManutencao";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -12,7 +12,7 @@ interface PropriedadesAbaManutencao {
 }
 
 export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutencao) {
-  const { pecas, manutencoes, registrarManutencao } = usarManutencao(impressora.id);
+  const { pecas, manutencoes, registrarManutencao } = useManutencao(impressora.id);
   const [exibirFormulario, setExibirFormulario] = useState(false);
 
   const metrics = useMemo(() => {

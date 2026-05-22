@@ -1,11 +1,11 @@
 import { Menu, Search, Beaker, AlertTriangle } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { usarCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { useCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";
-import { usarProcessadorNotificacoes } from "../hooks/usarProcessadorNotificacoes";
-import { usarBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { usarArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useProcessadorNotificacoes } from "../hooks/useProcessadorNotificacoes";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { SeloPlano } from "./ui";
 
 type PropriedadesCabecalho = {
@@ -13,10 +13,10 @@ type PropriedadesCabecalho = {
 };
 
 export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
-  const { dados } = usarCabecalho();
-  const { participarPrototipos } = usarBeta();
-  const { usuario } = usarAutenticacao();
-  const { vencimentoPlano, plano } = usarArmazemConfiguracoes();
+  const { dados } = useCabecalho();
+  const { participarPrototipos } = useBeta();
+  const { usuario } = useAutenticacao();
+  const { vencimentoPlano, plano } = useArmazemConfiguracoes();
   const localizacao = useLocation();
 
   // Rotas onde o selo de elite deve aparecer
@@ -24,7 +24,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const exibirSeloElite = rotasElite.some(rota => localizacao.pathname.startsWith(rota));
 
   // Inicializa o processador de notificações globais (pedidos atrasados, manutenção, etc.)
-  usarProcessadorNotificacoes();
+  useProcessadorNotificacoes();
 
   // Verificação de expiração
   const estaExpirado = () => {

@@ -1,12 +1,12 @@
 /**
- * @file usarAutoLogout.ts
+ * @file useAutoLogout.ts
  * @description Hook de segurança que detecta inatividade do usuário e realiza logout automático.
  * Evita que sessões fiquem abertas indefinidamente em computadores compartilhados/estúdios.
  * @lgpd Base legal: Legítimo Interesse — proteção de sessão contra acesso indevido.
  */
 
 import { useEffect, useRef, useCallback } from "react";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 
 /** Tempo de inatividade antes do logout automático: 30 minutos */
@@ -24,8 +24,8 @@ const EVENTOS_ATIVIDADE: (keyof DocumentEventMap)[] = [
  * Hook que monitora atividade do usuário e realiza logout após inatividade prolongada.
  * Deve ser usado dentro de um componente que esteja sempre montado (ex: Layout).
  */
-export function usarAutoLogout() {
-  const { usuario, sair } = usarAutenticacao();
+export function useAutoLogout() {
+  const { usuario, sair } = useAutenticacao();
   const temporizadorRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const executarLogout = useCallback(async () => {

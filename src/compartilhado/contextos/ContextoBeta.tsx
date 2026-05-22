@@ -37,33 +37,33 @@ const ContextoBeta = createContext<ContextoBetaProps>({
   resetarTudo: () => {},
 });
 
-export function usarBeta() {
+export function useBeta() {
   return useContext(ContextoBeta);
 }
 
 const CHAVE_BETA = "printlog:beta_preferencias" as const;
 
 export function ProvedorBeta({ children }: { children: ReactNode }) {
-  const [preferencias, setPreferencias] = useState({
-    participarPrototipos: false,
-    betaMultiEstudio: false,
-    betaOrcamentosMagicos: false,
-    betaEstoqueInteligente: false,
-    betaSimuladorMargem: false,
-    templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
-    limiteAlertaEstoque: 500,
-  });
-
-  useEffect(() => {
-    const salvo = localStorage.getItem(CHAVE_BETA);
-    if (salvo) {
-      try {
-        setPreferencias(JSON.parse(salvo));
-      } catch (e) {
-        registrar.error({ rastreioId: crypto.randomUUID() }, "Erro ao carregar preferências beta", e);
+  const [preferencias, setPreferencias] = useState(() => {
+    const padrao = {
+      participarPrototipos: false,
+      betaMultiEstudio: false,
+      betaOrcamentosMagicos: false,
+      betaEstoqueInteligente: false,
+      betaSimuladorMargem: false,
+      templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
+      limiteAlertaEstoque: 500,
+    };
+    try {
+      const salvo = typeof window !== "undefined" ? localStorage.getItem(CHAVE_BETA) : null;
+      if (salvo) {
+        return { ...padrao, ...JSON.parse(salvo) };
       }
+    } catch (e) {
+      registrar.error({ rastreioId: crypto.randomUUID() }, "Erro ao carregar preferências beta", e);
     }
-  }, []);
+    return padrao;
+  });
 
   const atualizar = (novas: Partial<typeof preferencias>) => {
     setPreferencias((prev) => {

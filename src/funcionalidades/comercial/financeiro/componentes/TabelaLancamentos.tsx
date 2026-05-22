@@ -1,7 +1,7 @@
 import { LancamentoFinanceiro } from "../tipos";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
 import { ArrowUpRight, ArrowDownLeft, Tag, User, Pencil, Trash2, AlertCircle } from "lucide-react";
-import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
+import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { motion } from "framer-motion";
 
 interface TabelaLancamentosProps {
@@ -11,7 +11,7 @@ interface TabelaLancamentosProps {
 }
 
 export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLancamentosProps) {
-  const { estado: estadoClientes } = usarGerenciadorClientes();
+  const { estado: estadoClientes } = useGerenciadorClientes();
   
   const formatarMoeda = (centavos: number) => {
     return (centavos / 100).toLocaleString("pt-BR", {

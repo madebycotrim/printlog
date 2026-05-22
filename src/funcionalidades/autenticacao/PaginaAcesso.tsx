@@ -4,14 +4,14 @@ import { Mail, Lock, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react"
 import { LayoutAutenticacao } from "./componentes/LayoutAutenticacao";
 import { PainelBranding } from "./componentes/PainelBranding";
 import { InputAuth } from "./componentes/InputAuth";
-import { usarAutenticacao } from "./contextos/ContextoAutenticacao";
+import { useAutenticacao } from "./contextos/ContextoAutenticacao";
 import { ComponenteTurnstile } from "./componentes/ComponenteTurnstile";
 import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaAcesso() {
   const navegar = useNavigate();
   const localizacao = useLocation();
-  const { login, loginGoogle, usuario, carregando } = usarAutenticacao();
+  const { login, loginGoogle, usuario, carregando } = useAutenticacao();
   const [email, definirEmail] = useState("");
   const [senha, definirSenha] = useState("");
   const [erro, definirErro] = useState("");

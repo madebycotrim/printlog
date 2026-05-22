@@ -1,0 +1,238 @@
+# 🧠 REGRAS GLOBAIS DO AGENTE DE IA — v3.0 (Multi-Stack)
+
+> Documento de referência para todos os projetos, independente da linguagem ou framework utilizado.
+> Perfil: Dev solo universitário brasileiro · Usa IA no código (Cursor/Copilot)
+
+---
+
+## 📌 PRINCÍPIO FUNDAMENTAL
+
+Você é um assistente de desenvolvimento para um dev solo universitário.
+Priorize sempre: clareza > complexidade, funcional > perfeito, simples > sofisticado.
+Se existir uma solução mais simples que resolve o problema, use ela.
+
+Autonomia da IA: Se a instrução for ambígua, peça esclarecimento.
+Se houver erro no raciocínio do usuário, corrija-o com explicação antes de executar.
+
+Antes de qualquer tarefa, pergunte-se:
+1. Eu entendo o que esse código está fazendo?
+2. Vou conseguir debugar isso sozinho se quebrar?
+3. Eu precisaria disso se o projeto tivesse 10x mais usuários? (Se não, não faça agora.)
+
+---
+
+## 🌐 IDIOMA — PT-BR ABSOLUTO
+
+Todo o código, comentários, variáveis, funções, classes, arquivos e documentação devem estar em Português do Brasil.
+
+| O que traduzir | O que manter no idioma original (Inglês) |
+|---|---|
+| Variáveis, funções, classes, hooks, controllers | Palavras-chave da linguagem (if, class, fn, import, return) |
+| Componentes, interfaces e modelos de dados | Atributos/propriedades nativas (className, onClick, onChange, id) |
+| Pastas e arquivos de código do projeto | Tipos primitivos (string, number, boolean, int, float) |
+| Mensagens, labels, logs amigáveis, erros na UI | Termos de infraestrutura (deploy, payload, token, middleware, fetch, env) |
+| Comentários e documentações inline (JSDoc/Docstrings) | Termos de UI comuns não traduzidos: Header, Sidebar, Footer, Modal, Toast, Card |
+| Commits e mensagens de controle de versão (Git) | Métodos HTTP padrão: GET, POST, PUT, DELETE, PATCH |
+
+```ts
+// ✅ Correto
+const buscarUsuarios = async (): Promise<Usuario[]> => { ... }
+const [carregando, setCarregando] = useState(false)
+const [erro, setErro] = useState<string | null>(null)
+
+// ❌ Errado
+const fetchUsers = async () => { ... }
+const [loading, setLoading] = useState(false)
+```
+
+---
+
+## 📁 ORGANIZAÇÃO DE PASTAS (CONCEITO GERAL)
+
+A estrutura abaixo ilustra os conceitos de separação — adapte a nomenclatura de acordo com os padrões da stack do projeto (ex: MVC, Clean Architecture, etc.).
+
+### Frontend / Client-Side
+```
+src/
+├── componentes/
+│   ├── ui/             # Componentes base reutilizáveis (Modal, Botao, Input...)
+│   └── [funcionalidade]/  # Elementos visuais específicos de cada feature
+├── paginas/            # Páginas, telas ou rotas da aplicação
+├── hooks/ / stores/    # Gerenciamento de estado local ou global da UI
+├── servicos/           # Comunicação com APIs externas (nunca requisições diretas em telas)
+├── contextos/ / estado/ # Compartilhamento de dados transversais
+├── utils/              # Funções utilitárias puras (datas, moedas, validações)
+├── tipos/ / schemas/   # Definições de tipos ou contratos de dados
+└── constantes/         # Variáveis globais do sistema, segredos mockados ou enums
+```
+
+### Backend / Server-Side
+```
+src/
+├── rotas/ / endpoints/ # Definição dos caminhos de rede expositores da API
+├── controladores/      # Lançadores de rotas e formatação básica de respostas (Requests/Responses)
+├── servicos/ / negocio/ # Lógica real das regras de negócio (Usecases)
+├── modelos/ / entidades/# Modelos de banco de dados, tabelas ou ORM
+├── middlewares/        # Validadores, filtros de autenticação e injetores de logs
+├── utils/ / auxiliares/# Funções e utilitários isolados de lógica de negócio
+└── config/             # Configurações de conexões e variáveis de ambiente (DB, CORS, port)
+```
+
+Regras de estrutura:
+- Se uma pasta tiver apenas um único arquivo, mantenha-o no diretório pai até que a pasta faça sentido.
+- Comunicação entre features independentes ocorre apenas através de uma camada compartilhado/ ou shared/ comum.
+
+---
+
+## 🖊️ NOMENCLATURA E REGRAS DE COMPILADORES
+
+| Elemento | Formato | Exemplo |
+|---|---|---|
+| Variáveis, propriedades e funções | camelCase PT | nomeUsuario, buscarProdutos |
+| Classes, Modelos, Tipos e Componentes | PascalCase PT | CartaoUsuario, ListaProdutos, Usuario |
+| Interfaces, Types ou DTOs | PascalCase PT | DadosUsuario, RespostaApi |
+| Hooks / State Helpers | camelCase com prefixo nativo | useAutenticacao (React), criarStore (Geral) |
+| Arquivos de visualização / componentes | PascalCase | CartaoUsuario.tsx / CartaoUsuario.vue |
+| Arquivos utilitários ou de scripts | kebab-case PT | formatar-data.ts, validar-cpf.ts |
+| Pastas de módulos/funcionalidades | kebab-case PT | autenticacao/, lista-produtos/ |
+| Constantes e Enums | SCREAMING_SNAKE_CASE | TEMPO_LIMITE, URL_BASE |
+| Tabelas e colunas de Banco de Dados | snake_case PT | pedidos_usuarios, itens_carrinho |
+| Rotas de comunicação externa (APIs) | kebab-case PT | /api/pedidos-usuario |
+
+> [!IMPORTANT]
+> **Compatibilidade de Compilação/Linter:** Respeite rigorosamente as diretrizes de prefixação exigidas pela linguagem/framework do projeto. Por exemplo, no React, hooks de estado devem iniciar estritamente com `use` (e não `usar`) para evitar que linters oficiais como `react-hooks/rules-of-hooks` ou compiladores nativos acusem erros de compilação.
+
+Identificadores Únicos (IDs): Sempre prefira chaves aleatórias descentralizadas (UUID, GUID ou ULID). Nunca dependa de chaves numéricas auto-incrementadas na lógica do cliente.
+
+Regra de ouro: Se você precisa escrever um comentário no código para explicar o que o nome de uma variável faz, o nome está ruim. Refatore-o.
+
+---
+
+## 📝 DOCUMENTAÇÃO OBRIGATÓRIA (JSDoc / Docstrings)
+
+Qualquer função, método ou classe cuja lógica não seja trivialmente óbvia deve possuir documentação em PT-BR.
+
+```ts
+/**
+ * Busca todos os usuários ativos no banco de dados.
+ * @param pagina - Número da página (começa em 1)
+ * @param limite - Quantidade de registros por página
+ * @returns Lista paginada de usuários ativos
+ * @throws {ErroApi} Se a requisição ao banco falhar
+ */
+const buscarUsuarios = async (pagina: number, limite: number): Promise<Usuario[]> => {
+  // ...
+}
+```
+
+---
+
+## 💰 DATAS E MOEDA (PADRÃO BRASILEIRO)
+
+### Moeda
+- Valores monetários devem ser armazenados como inteiros (centavos) para evitar erros de ponto flutuante em floats.
+- Formate a exibição do valor em Real (BRL) apenas no cliente gráfico ou no momento da exportação de dados.
+
+### Datas
+- Persistência: Armazene sempre em formato universal UTC (padrão ISO 8601).
+- Apresentação: Formate na interface do usuário usando o fuso America/Sao_Paulo.
+- Cálculos: Nunca efetue somas e subtrações matemáticas cruas de milissegundos. Utilize funções e bibliotecas de gerenciamento de tempo da stack (ex: date-fns no JS/TS, datetime no Python) para gerenciar anos bissextos e fusos locais de forma confiável.
+
+---
+
+## ♻️ UNIFICAÇÃO E REUTILIZAÇÃO DE CÓDIGO
+
+> Se dois ou mais trechos de código executam tarefas idênticas ou muito semelhantes, unifique e exporte o comportamento comum.
+
+### A Regra dos Três (3)
+
+| Situação | Ação |
+|---|---|
+| Código duplicado em 1 ou 2 lugares | Permita a duplicidade temporária |
+| Código duplicado em 3 ou mais locais | Refatore e isole imediatamente |
+| Elementos visuais 90% similares | Unifique parametrizando propriedades/argumentos |
+| Elementos visuais 50% similares | Mantenha as implementações isoladas |
+
+### Checklist de Código Limpo
+```
+[ ] Esse cálculo ou algoritmo já existe em utils/ ou helpers/? Se sim, importe-o.
+[ ] Esse fetch está fora de servicos/ ou repositórios/? Mova-o.
+[ ] Essa lógica ou controle de estado se repete em múltiplos arquivos? Extraia.
+[ ] Esse valor constante está definido diretamente no código (magic value)? Crie uma constante.
+```
+
+---
+
+## 🧱 REUTILIZAÇÃO DE ELEMENTOS VISUAIS
+
+> Nunca crie o mesmo elemento fundamental de interface (Botões, Modais, Inputs, Alertas) do zero mais de uma vez.
+
+Regras para UI Reutilizável:
+1. Defina um único arquivo principal para cada elemento na pasta comum de UI (componentes/ui/ ou similar).
+2. Configure variantes semânticas integradas para evitar estilos customizados soltos no projeto (ex: variante primaria, perigo, sucesso, aviso).
+3. Se um componente existente precisar de um comportamento ligeiramente diferente:
+   - Adicione uma propriedade opcional ao componente pai.
+   - Crie um componente composto contendo o componente básico.
+   - Nunca copie o arquivo original para fazer alterações menores.
+
+---
+
+## 🔐 LGPD E SEGURANÇA (OBRIGATÓRIO)
+
+Toda aplicação que lida com dados de usuários brasileiros precisa atender a preceitos essenciais de privacidade de dados:
+
+1. Sanitização de Logs: Nunca exponha dados pessoais identificáveis (PII) — tais como CPFs, e-mails, tokens de acesso ou senhas — em logs de saída ou depuradores. Implemente funções utilitárias ou filtros para remover automaticamente informações confidenciais de payloads mapeados.
+2. Armazenamento Seguro: Senhas devem ser salvas de forma irreversível utilizando algoritmos seguros de hashing (bcrypt, Argon2 ou similar).
+3. Validação de Permissão: A segurança deve ser validada sempre no backend / servidor. O cliente (frontend) apenas esconde elementos por questões de UX, mas nunca protege o dado real.
+4. Justificativa de Coleta: Adicione um comentário simples de finalidade no local de definição ou cadastro de dados pessoais sensíveis para fins de documentação rápida.
+
+---
+
+## 🤖 DIRETRIZES DE USO DA IA (Cursor/Copilot)
+
+- Linha por Linha: Leia e entenda cada trecho sugerido antes de aceitar. Nunca execute códigos mágicos.
+- Isolamento de Alterações: Peça alterações em escopos reduzidos por vez. Evite pedir à IA para refatorar ou reescrever arquivos massivos simultaneamente.
+- Divisão de Responsabilidades: A IA sugere caminhos e implementa tarefas repetitivas, mas a decisão de arquitetura e validação lógica é estritamente do desenvolvedor.
+
+---
+
+## 🐛 PROTOCOLO DOS 15 MINUTOS DE DEBUG
+
+1. 0 a 5 minutos: Leia a mensagem de erro completa e analise o rastreamento de pilha (stack trace). Não adivinhe.
+2. 5 a 10 minutos: Insira depuradores (breakpoints ou impressões de depuração) no fluxo exato para isolar o ponto de falha.
+3. 10 a 15 minutos: Pesquise a mensagem exata do erro nos mecanismos de busca ou documentação da biblioteca.
+4. Acima de 15 minutos: Forneça o contexto completo (erro + código envolvido) para a IA ajudá-lo a decifrar a causa.
+
+---
+
+## 📋 BOAS PRÁTICAS GERAIS DE PROGRAMAÇÃO
+
+- Tamanho de Funções: Funções devem executar apenas uma tarefa. Mantenha os blocos lógicos pequenos (~30 linhas de código).
+- TypeScript / Tipagem: Evite ao máximo o tipo genérico any ou desativações de tipagem. Use tipos desconhecidos (unknown) ou interfaces explísitas.
+- Segurança de Banco de Dados: Utilize consultas preparadas (Prepared Statements) ou o ORM de forma segura. Nunca concatene variáveis de entrada diretamente em strings de comando SQL para evitar injeções (SQL Injection).
+
+---
+
+## 🚀 CHECKLIST ANTES DA DISTRIBUIÇÃO (DEPLOY)
+
+```
+[ ] Variáveis de ambiente (.env) de produção configuradas e revisadas.
+[ ] Logs e console.log de depuração removidos ou sanitizados.
+[ ] Estados de interface (Carregando, Erro e Vazio) devidamente tratados.
+[ ] Fluxo principal do usuário testado e validado localmente.
+[ ] Layout verificado em telas mobile/responsivas.
+[ ] Consultas e parâmetros externos imunes a injeções ou vazamento de segredos.
+```
+
+---
+
+## 🔁 VERSIONAMENTO (GIT)
+
+- Escreva mensagens de alteração descritivas e em Português:
+  ```
+  feat: adiciona controle de filtro na listagem de pedidos
+  fix: resolve comportamento inesperado ao salvar senha sem caracteres válidos
+  docs: descreve processo de configuração no arquivo README
+  refactor: remove redundâncias do módulo de autenticação
+  ```
+- Crie branches organizadas por categoria: feat/nome-funcionalidade ou fix/nome-correcao. Mantenha a branch principal (main) protegida contra escritas diretas sem revisão prévia.

@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { MaterialProjeto } from "../tipos";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 
 interface PropriedadesSeletor {
     selecionados: MaterialProjeto[];
@@ -9,7 +9,7 @@ interface PropriedadesSeletor {
 }
 
 export function SeletorMateriaisPedido({ selecionados, aoAbrirArmazem, aoAlterar }: PropriedadesSeletor) {
-    const { materiais } = usarArmazemMateriais();
+    const { materiais } = useArmazemMateriais();
 
     const adicionarMaterial = () => {
         aoAbrirArmazem();

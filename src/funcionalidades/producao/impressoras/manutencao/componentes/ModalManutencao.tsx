@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialogo } from "@/compartilhado/componentes";
 import { Impressora } from "../../tipos";
-import { usarManutencao } from "../hooks/usarManutencao";
+import { useManutencao } from "../hooks/useManutencao";
 import { MonitorPecas } from "./MonitorPecas";
 import { FormularioManutencao } from "./FormularioManutencao";
 import { History, Activity, Plus } from "lucide-react";
@@ -14,7 +14,7 @@ interface ModalManutencaoProps {
 }
 
 export function ModalManutencao({ aberto, aoFechar, impressora }: ModalManutencaoProps) {
-  const { pecas, manutencoes, registrarManutencao } = usarManutencao(impressora.id);
+  const { pecas, manutencoes, registrarManutencao } = useManutencao(impressora.id);
   const [abaAtiva, setAbaAtiva] = useState<"monitor" | "historico" | "novo">("monitor");
   const [formularioSujo, definirFormularioSujo] = useState(false);
   const [confirmarDescarte, definirConfirmarDescarte] = useState(false);

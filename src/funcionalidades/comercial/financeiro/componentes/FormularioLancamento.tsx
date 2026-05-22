@@ -9,7 +9,7 @@ import { AcoesDescarte } from "@/compartilhado/componentes";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
 import { CriarLancamentoInput, LancamentoFinanceiro } from "../tipos";
-import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
+import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { Combobox } from "@/compartilhado/componentes";
 import { Dialogo } from "@/compartilhado/componentes";
 import { toast } from "react-hot-toast";
@@ -33,7 +33,7 @@ interface FormularioLancamentoProps {
 }
 
 export function FormularioLancamento({ aberto, lancamentoEditando, aoSalvar, aoCancelar }: FormularioLancamentoProps) {
-  const { estado: estadoClientes, acoes: acoesClientes } = usarGerenciadorClientes();
+  const { estado: estadoClientes, acoes: acoesClientes } = useGerenciadorClientes();
   const [confirmarDescarte, setConfirmarDescarte] = useState(false);
 
   const {

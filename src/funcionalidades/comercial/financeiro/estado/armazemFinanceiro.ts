@@ -23,7 +23,7 @@ interface ArmazemFinanceiroState {
     inverterOrdem: () => void;
 }
 
-export const usarArmazemFinanceiro = create<ArmazemFinanceiroState>()(
+export const useArmazemFinanceiro = create<ArmazemFinanceiroState>()(
     devtools(
         (set) => ({
             lancamentos: [],

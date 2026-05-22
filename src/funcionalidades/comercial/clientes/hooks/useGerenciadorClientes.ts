@@ -1,9 +1,9 @@
-import { usarArmazemClientes } from "../estado/armazemClientes";
+import { useArmazemClientes } from "../estado/armazemClientes";
 import { Cliente } from "../tipos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { ErroValidacao, CodigoErro } from "@/compartilhado/utilitarios/excecoes";
 import { useMemo, useEffect, useCallback } from "react";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiClientes } from "../servicos/apiClientes";
 import { toast } from "react-hot-toast";
 
@@ -11,9 +11,9 @@ import { toast } from "react-hot-toast";
  * Hook de domínio para gerenciamento de clientes.
  * Encapsula lógica de CRUD e filtragem simples.
  */
-export function usarGerenciadorClientes() {
-  const estado = usarArmazemClientes();
-  const { usuario } = usarAutenticacao();
+export function useGerenciadorClientes() {
+  const estado = useArmazemClientes();
+  const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
 
   // 📥 Carregar dados do Banco

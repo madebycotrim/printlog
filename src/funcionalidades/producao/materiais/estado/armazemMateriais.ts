@@ -17,7 +17,7 @@ interface EstadoMateriais {
     reporEstoque: (id: string, quantidadeComprada: number, precoTotalNovaCompra: number) => void;
 }
 
-export const usarArmazemMateriais = create<EstadoMateriais>((set) => ({
+export const useArmazemMateriais = create<EstadoMateriais>((set) => ({
     materiais: [],
     carregando: false,
 

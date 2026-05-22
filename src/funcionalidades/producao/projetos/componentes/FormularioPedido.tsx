@@ -10,12 +10,12 @@ import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Dialogo } from "@/compartilhado/componentes";
 import { Combobox } from "@/compartilhado/componentes";
 import { CriarPedidoInput, Pedido } from "../tipos";
-import { usarGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/usarGerenciadorClientes";
+import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { SeletorInsumosSecundarios } from "./SeletorInsumosSecundarios";
 import { SeletorMateriaisPedido } from "./SeletorMateriaisPedido";
-import { usarArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
-import { usarArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
-import { usarArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { ModalListagemPremium } from "@/compartilhado/componentes";
 
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
@@ -54,16 +54,16 @@ interface PropriedadesFormularioPedido {
 }
 
 export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, ehPagina = false }: PropriedadesFormularioPedido) {
-    const { estado, acoes } = usarGerenciadorClientes();
+    const { estado, acoes } = useGerenciadorClientes();
     
     const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
     const [modalInsumosAberto, setModalInsumosAberto] = useState(false);
     const [buscaMaterial, setBuscaMaterial] = useState("");
     const [buscaInsumo, setBuscaInsumo] = useState("");
 
-    const { materiais } = usarArmazemMateriais();
-    const { insumos } = usarArmazemInsumos();
-    const { impressoras } = usarArmazemImpressoras();
+    const { materiais } = useArmazemMateriais();
+    const { insumos } = useArmazemInsumos();
+    const { impressoras } = useArmazemImpressoras();
 
     const {
         register,

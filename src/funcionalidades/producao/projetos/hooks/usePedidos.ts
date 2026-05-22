@@ -4,27 +4,27 @@ import { servicoPedidos } from "../servicos/servicoPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { toast } from "react-hot-toast";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { usarArmazemPedidos } from "../estado/armazemPedidos";
-import { usarAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemPedidos } from "../estado/armazemPedidos";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
-export function usarPedidos() {
-  const pedidos = usarArmazemPedidos((s) => s.pedidos);
-  const carregando = usarArmazemPedidos((s) => s.carregando);
-  const termoBusca = usarArmazemPedidos((s) => s.termoBusca);
-  const definirPedidos = usarArmazemPedidos((s) => s.definirPedidos);
-  const definirCarregando = usarArmazemPedidos((s) => s.definirCarregando);
-  const definirTermoBusca = usarArmazemPedidos((s) => s.definirTermoBusca);
-  const adicionarPedido = usarArmazemPedidos((s) => s.adicionarPedido);
-  const atualizarPedidoNoEstado = usarArmazemPedidos((s) => s.atualizarPedidoNoEstado);
-  const removerPedido = usarArmazemPedidos((s) => s.removerPedido);
-  const idsBloqueados = usarArmazemPedidos((s) => s.idsBloqueados);
-  const bloquearId = usarArmazemPedidos((s) => s.bloquearId);
-  const desbloquearId = usarArmazemPedidos((s) => s.desbloquearId);
+export function usePedidos() {
+  const pedidos = useArmazemPedidos((s) => s.pedidos);
+  const carregando = useArmazemPedidos((s) => s.carregando);
+  const termoBusca = useArmazemPedidos((s) => s.termoBusca);
+  const definirPedidos = useArmazemPedidos((s) => s.definirPedidos);
+  const definirCarregando = useArmazemPedidos((s) => s.definirCarregando);
+  const definirTermoBusca = useArmazemPedidos((s) => s.definirTermoBusca);
+  const adicionarPedido = useArmazemPedidos((s) => s.adicionarPedido);
+  const atualizarPedidoNoEstado = useArmazemPedidos((s) => s.atualizarPedidoNoEstado);
+  const removerPedido = useArmazemPedidos((s) => s.removerPedido);
+  const idsBloqueados = useArmazemPedidos((s) => s.idsBloqueados);
+  const bloquearId = useArmazemPedidos((s) => s.bloquearId);
+  const desbloquearId = useArmazemPedidos((s) => s.desbloquearId);
 
-  const jaCarregou = usarArmazemPedidos((s) => s.jaCarregou);
-  const definirJaCarregou = usarArmazemPedidos((s) => s.definirJaCarregou);
+  const jaCarregou = useArmazemPedidos((s) => s.jaCarregou);
+  const definirJaCarregou = useArmazemPedidos((s) => s.definirJaCarregou);
 
-  const { usuario } = usarAutenticacao();
+  const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
 
   const carregarPedidos = useCallback(async () => {
@@ -74,7 +74,7 @@ export function usarPedidos() {
 
   const moverPedido = async (id: string, novoStatus: StatusPedido) => {
     if (!usuarioId) return;
-    const todosPedidos = usarArmazemPedidos.getState().pedidos;
+    const todosPedidos = useArmazemPedidos.getState().pedidos;
     const pedidoEncontrado = todosPedidos.find((p) => p.id === id);
 
     if (!pedidoEncontrado) return;

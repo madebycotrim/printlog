@@ -5,7 +5,7 @@ import { ModalDetalhesTopico } from "./componentes/ModalDetalhesTopico";
 import { RodapeLGPD } from "./componentes/RodapeLGPD";
 import { ResultadosBusca } from "./componentes/ResultadosBusca";
 import { BannerExclusividade } from "./componentes/BannerExclusividade";
-import { usarCentralMaker } from "./hooks/usarCentralMaker";
+import { useCentralMaker } from "./hooks/useCentralMaker";
 
 /**
  * Central Maker - Hub de inteligência técnica e suporte estratégico.
@@ -22,7 +22,7 @@ export function PaginaAjuda() {
     wikiFiltrada,
     faqsFiltradas,
     todosTopicosEncontrados,
-  } = usarCentralMaker();
+  } = useCentralMaker();
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
