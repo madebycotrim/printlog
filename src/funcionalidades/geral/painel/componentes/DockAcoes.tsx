@@ -27,7 +27,7 @@ export function DockAcoes({
 
   const itens = [
     { label: "Novo Orçamento", icone: Calculator, cor: "amber", acao: () => aoNavegar("/calculadora") },
-    { label: "Ver Fila de Produção", icone: Clock, cor: "sky", acao: () => aoNavegar("/projetos") },
+    { label: "Ver Fila de Produção", icone: Clock, cor: "sky", acao: () => aoNavegar("/producao?aba=fila") },
     { label: "Cadastrar Cliente", icone: UserPlus, cor: "indigo", acao: () => aoAbrirModalCliente() },
     { label: "Repor Material (Filamento)", icone: Package, cor: "emerald", acao: () => aoAbrirModalSelecaoMat() },
     { label: "Repor Insumo (Resina/Peças)", icone: Box, cor: "teal", acao: () => aoAbrirModalSelecaoIns() },

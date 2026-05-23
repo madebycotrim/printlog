@@ -412,7 +412,7 @@ export function PaginaCalculadora() {
       setBuscaClienteSeletor("");
       
       // Redirecionar para a fila de projetos
-      navegar("/projetos");
+      navegar("/producao");
     } catch (erro) {
       console.warn("Erro ao salvar projeto:", erro);
       hook.salvarSnapshot(nomeProjeto || "Orçamento via Calculadora", nomeProjeto, descricaoProjeto, clienteProjetoId);

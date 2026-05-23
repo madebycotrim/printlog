@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/compartilhado/componentes";
 import { RotaProtegida } from "@/configuracoes/RotasProtegidas";
 import { ScrollParaTopo } from "@/compartilhado/utilitarios/ScrollParaTopo";
@@ -53,6 +53,11 @@ const PaginaDesperdicio = lazy(() =>
 );
 
 // 2. Produção
+const PaginaProducao = lazy(() =>
+  import("@/funcionalidades/producao/pagina").then((m) => ({
+    default: m.PaginaProducao,
+  })),
+);
 const PaginaProjetos = lazy(() =>
   import("@/funcionalidades/producao/projetos/pagina").then((m) => ({
     default: m.PaginaProjetos,
@@ -178,12 +183,13 @@ export function RoteadorPrincipal() {
                 />
 
                 {/* 2. PRODUÇÃO */}
+                <Route path="/projetos" element={<Navigate to="/producao" replace />} />
                 <Route
-                  path="/projetos"
+                  path="/producao"
                   element={
                     <RotaProtegida>
                       <Layout>
-                        <PaginaProjetos />
+                        <PaginaProducao />
                       </Layout>
                     </RotaProtegida>
                   }
@@ -238,16 +244,7 @@ export function RoteadorPrincipal() {
                     </RotaProtegida>
                   }
                 />
-                <Route
-                  path="/producao/fila"
-                  element={
-                    <RotaProtegida>
-                      <Layout>
-                        <PaginaFila />
-                      </Layout>
-                    </RotaProtegida>
-                  }
-                />
+                <Route path="/producao/fila" element={<Navigate to="/producao?aba=fila" replace />} />
 
                 {/* 3. COMERCIAL */}
                 <Route

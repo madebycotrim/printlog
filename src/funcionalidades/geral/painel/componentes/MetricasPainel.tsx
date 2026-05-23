@@ -87,7 +87,7 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
     >
       {/* LINHA 1: OPERACIONAL E IMEDIATO */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <CardMetrica variants={item} titulo="Produção Ativa" valor={pedidosAtivos} icone={Clock} cor="sky" aoClicar={() => navegar("/projetos")} />
+        <CardMetrica variants={item} titulo="Produção Ativa" valor={pedidosAtivos} icone={Clock} cor="sky" aoClicar={() => navegar("/producao")} />
         <CardMetrica variants={item} titulo="Taxa Sucesso" valor={`${taxaSucesso.toFixed(0)}%`} icone={Percent} cor="emerald" aoClicar={() => navegar("/impressoras")} />
         <CardMetrica variants={item} titulo="Alertas Estoque" valor={metricasInventario.itensEmAlerta} icone={Package} cor="rose" aoClicar={() => navegar("/insumos")} />
         <CardMetrica variants={item} titulo="Patrimônio" valor={centavosParaReais(metricasInventario.valorTotalEstoqueCentavos)} icone={Activity} cor="amber" aoClicar={() => navegar("/materiais")} />
@@ -101,7 +101,7 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
         <CardMetrica variants={item} titulo="Horas de Voo" valor={`${horasTotais}h`} icone={Timer} cor="violet" mini aoClicar={() => navegar("/impressoras")} />
         <CardMetrica variants={item} titulo="Consumo Total" valor={`${consumoTotalKg}kg`} icone={Weight} cor="cyan" mini aoClicar={() => navegar("/materiais")} />
         <CardMetrica variants={item} titulo="Base Clientes" valor={clientesUnicos} icone={Users} cor="fuchsia" mini aoClicar={() => navegar("/clientes")} />
-        <CardMetrica variants={item} titulo="Potencial" valor={centavosParaReais(potencialVendaCentavos)} icone={Target} cor="blue" mini aoClicar={() => navegar("/projetos")} />
+        <CardMetrica variants={item} titulo="Potencial" valor={centavosParaReais(potencialVendaCentavos)} icone={Target} cor="blue" mini aoClicar={() => navegar("/producao")} />
         <CardMetrica variants={item} titulo="ROI Estimado" valor={`${roiEstimado.toFixed(0)}%`} icone={BarChart3} cor="emerald" mini aoClicar={() => navegar("/financeiro")} />
       </div>
     </motion.div>

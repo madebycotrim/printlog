@@ -42,7 +42,7 @@ export function SecaoKPIs({
           unidade="pedidos" 
           icone={Clock} 
           cor="sky" 
-          aoClicar={() => aoNavegar("/projetos")}
+          aoClicar={() => aoNavegar("/producao")}
           textoAcao="Ver Fila"
         />
         <CardResumo
