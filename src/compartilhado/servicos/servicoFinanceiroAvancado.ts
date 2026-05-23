@@ -8,9 +8,14 @@ import { Centavos, TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelo
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
 import { LancamentoFinanceiro } from "@/funcionalidades/comercial/financeiro/tipos";
+import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 
 export interface DadosDRE {
   receitaBrutaCentavos: Centavos;
+  custoMaterialCentavos: Centavos;
+  custoInsumosCentavos: Centavos;
+  custoEnergiaCentavos: Centavos;
+  depreciacaoCentavos: Centavos;
   custosVariaveisCentavos: Centavos;
   margemContribuicaoCentavos: Centavos;
   despesasFixasCentavos: Centavos;
@@ -38,34 +43,61 @@ export const servicoFinanceiroAvancado = {
    * @param pedidos Lista de pedidos para calcular receita e custos variáveis.
    * @param lancamentos Lançamentos manuais (despesas fixas).
    * @param materiais Lista de materiais para estimar custo médio.
+   * @param impressoras Lista de impressoras para depreciação e potência de energia.
+   * @param configCustoEnergia Custo de energia por kWh (em centavos).
    */
-  gerarDRE: (pedidos: Pedido[], lancamentos: LancamentoFinanceiro[], materiais: Material[]): DadosDRE => {
+  gerarDRE: (
+    pedidos: Pedido[],
+    lancamentos: LancamentoFinanceiro[],
+    materiais: Material[],
+    impressoras: Impressora[],
+    configCustoEnergia: number
+  ): DadosDRE => {
     // 1. Receita Bruta (Pedidos Concluídos)
     const receitaBrutaCentavos = pedidos.filter((p) => p.dataConclusao).reduce((acc, p) => acc + p.valorCentavos, 0);
 
-    // 2. Custos Variáveis (Estima custo de material por grama + Insumos Secundários)
-    const custosVariaveisCentavos = pedidos
-      .filter((p) => p.dataConclusao)
-      .reduce((acc, p) => {
-        let custoPedido = 0;
+    // 2. Custos Variáveis
+    let custoMaterialCentavos = 0;
+    let custoInsumosCentavos = 0;
+    let custoEnergiaCentavos = 0;
+    let depreciacaoCentavos = 0;
 
+    pedidos
+      .filter((p) => p.dataConclusao)
+      .forEach((p) => {
         // Custo do material principal (filamento/resina)
         if (p.pesoGramas && p.material) {
           const materialRef = materiais.find((m) => m.nome === p.material);
           if (materialRef) {
             const custoPorGrama = materialRef.precoCentavos / materialRef.pesoGramas;
-            custoPedido += custoPorGrama * p.pesoGramas;
+            custoMaterialCentavos += custoPorGrama * p.pesoGramas;
           }
         }
 
         // Custo dos Insumos Secundários (v9.0)
         if (p.insumosSecundarios) {
           const custoInsumos = p.insumosSecundarios.reduce((sum, i) => sum + i.quantidade * i.custoUnitarioCentavos, 0);
-          custoPedido += custoInsumos;
+          custoInsumosCentavos += custoInsumos;
         }
 
-        return acc + custoPedido;
-      }, 0);
+        // Custo de Energia e Depreciação (se tiver impressora vinculada e tempo)
+        if (p.idImpressora && p.tempoMinutos) {
+          const imp = impressoras.find((i) => i.id === p.idImpressora);
+          if (imp) {
+            // Energia: Watts converted to kW * hours * energy rate
+            const kw = imp.potenciaWatts ? imp.potenciaWatts / 1000 : (imp.consumoKw || 0.35);
+            const horas = p.tempoMinutos / 60;
+            custoEnergiaCentavos += horas * kw * configCustoEnergia;
+
+            // Depreciação: (Tempo usado / 300,000 minutos de vida util estimada (5000h)) * Valor de Compra
+            if (imp.valorCompraCentavos) {
+              depreciacaoCentavos += (p.tempoMinutos / 300000) * imp.valorCompraCentavos;
+            }
+          }
+        }
+      });
+
+    const custosVariaveisCentavos = custoMaterialCentavos + custoInsumosCentavos + custoEnergiaCentavos + depreciacaoCentavos;
 
     // 3. Despesas Fixas (Saídas no financeiro que não são vinculadas a pedidos específicos)
     const despesasFixasCentavos = lancamentos
@@ -78,13 +110,23 @@ export const servicoFinanceiroAvancado = {
     const lucratividadePercentual =
       receitaBrutaCentavos > 0 ? Math.round((lucroLiquidoCentavos / receitaBrutaCentavos) * 100) : 0;
 
+    // Ponto de Equilíbrio (Break-Even) = Despesas Fixas / Margem de Contribuição %
+    const margemContribuicaoPercentual = receitaBrutaCentavos > 0 ? (margemContribuicaoCentavos / receitaBrutaCentavos) : 0;
+    const pontoEquilibrioCentavos = margemContribuicaoPercentual > 0 
+      ? Math.round(despesasFixasCentavos / margemContribuicaoPercentual) 
+      : 0;
+
     return {
       receitaBrutaCentavos,
+      custoMaterialCentavos: Math.round(custoMaterialCentavos),
+      custoInsumosCentavos: Math.round(custoInsumosCentavos),
+      custoEnergiaCentavos: Math.round(custoEnergiaCentavos),
+      depreciacaoCentavos: Math.round(depreciacaoCentavos),
       custosVariaveisCentavos: Math.round(custosVariaveisCentavos),
       margemContribuicaoCentavos: Math.round(margemContribuicaoCentavos),
       despesasFixasCentavos,
       lucroLiquidoCentavos: Math.round(lucroLiquidoCentavos),
-      pontoEquilibrioCentavos: 0, // Implementação futura
+      pontoEquilibrioCentavos,
       lucratividadePercentual,
     };
   },

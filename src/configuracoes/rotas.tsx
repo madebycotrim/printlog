@@ -83,6 +83,16 @@ const PaginaManutencaoPreditiva = lazy(() =>
     default: m.PaginaManutencaoPreditiva,
   })),
 );
+const PaginaFila = lazy(() =>
+  import("@/funcionalidades/producao/fila/pagina").then((m) => ({
+    default: m.PaginaFila,
+  })),
+);
+const PaginaRastreamento = lazy(() =>
+  import("@/funcionalidades/producao/projetos/PaginaRastreamento").then((m) => ({
+    default: m.PaginaRastreamento,
+  })),
+);
 
 // 3. Comercial
 const PaginaClientes = lazy(() =>
@@ -127,6 +137,7 @@ export function RoteadorPrincipal() {
                 <Route path="/seguranca-e-privacidade" element={<SegurancaPrivacidade />} />
                 <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
                 <Route path="/termos-de-servico" element={<TermosServico />} />
+                <Route path="/rastreamento/:idPedido" element={<PaginaRastreamento />} />
 
                 {/* Autenticação */}
                 <Route path="/login" element={<PaginaAcesso />} />
@@ -223,6 +234,16 @@ export function RoteadorPrincipal() {
                     <RotaProtegida>
                       <Layout>
                         <PaginaManutencaoPreditiva />
+                      </Layout>
+                    </RotaProtegida>
+                  }
+                />
+                <Route
+                  path="/producao/fila"
+                  element={
+                    <RotaProtegida>
+                      <Layout>
+                        <PaginaFila />
                       </Layout>
                     </RotaProtegida>
                   }

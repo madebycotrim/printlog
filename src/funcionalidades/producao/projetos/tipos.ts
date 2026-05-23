@@ -43,6 +43,10 @@ export interface Pedido {
   materiais?: MaterialProjeto[]; // Detalhado para abate de estoque
   posProcesso?: ItemPosProcesso[]; // Novo campo v10.0
   configuracoes?: any; // Baú técnico para restauração total da calculadora
+  dataInicioAgendada?: string;
+  posicaoFila?: number;
+  codigoRastreio?: string;
+  observacoesPublicas?: string;
 }
 
 export interface CriarPedidoInput {
@@ -59,6 +63,10 @@ export interface CriarPedidoInput {
   materiais?: MaterialProjeto[];
   posProcesso?: ItemPosProcesso[];
   configuracoes?: any;
+  dataInicioAgendada?: string;
+  posicaoFila?: number;
+  codigoRastreio?: string;
+  observacoesPublicas?: string;
 }
 
 export interface AtualizarPedidoInput extends Partial<CriarPedidoInput> {

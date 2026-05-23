@@ -1,6 +1,7 @@
 import { Pedido } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { criarPedidoSchema, atualizarPedidoSchema, CriarPedidoInput, AtualizarPedidoInput } from "../esquemas";
+import { useArmazemPedidos } from "../estado/armazemPedidos";
 
 /**
  * Serviço de comunicação com a API de Pedidos do Cloudflare.
@@ -77,7 +78,11 @@ export const apiPedidos = {
             ),
             configuracoes: extras.configuracoes || (typeof dados.configuracoes === 'string'
                 ? JSON.parse(dados.configuracoes)
-                : (dados.configuracoes ?? {}))
+                : (dados.configuracoes ?? {})),
+            dataInicioAgendada: extras.dataInicioAgendada || extras.data_inicio_agendada,
+            posicaoFila: extras.posicaoFila !== undefined ? extras.posicaoFila : extras.posicao_fila,
+            codigoRastreio: extras.codigoRastreio || extras.codigo_rastreio,
+            observacoesPublicas: extras.observacoesPublicas || extras.observacoes_publicas,
         };
     },
 
@@ -171,7 +176,11 @@ export const apiPedidos = {
             dados.materiais !== undefined || 
             dados.posProcesso !== undefined || 
             dados.configuracoes !== undefined ||
-            dados.observacoes !== undefined;
+            dados.observacoes !== undefined ||
+            dados.dataInicioAgendada !== undefined ||
+            dados.posicaoFila !== undefined ||
+            dados.codigoRastreio !== undefined ||
+            dados.observacoesPublicas !== undefined;
 
         if (temMetadados) {
             const dadosExtras = {
@@ -183,7 +192,11 @@ export const apiPedidos = {
                 prazoEntrega: mapeado.prazo_entrega,
                 observacoes: mapeado.observacoes,
                 pesoGramas: mapeado.peso_gramas,
-                tempoMinutos: mapeado.tempo_minutos
+                tempoMinutos: mapeado.tempo_minutos,
+                dataInicioAgendada: dados.dataInicioAgendada,
+                posicaoFila: dados.posicaoFila,
+                codigoRastreio: dados.codigoRastreio,
+                observacoesPublicas: dados.observacoesPublicas,
             };
             mapeado.dados_extras = JSON.stringify(dadosExtras);
         }
@@ -218,7 +231,24 @@ export const apiPedidos = {
      */
     atualizar: async (dados: AtualizarPedidoInput, _usuarioId: string): Promise<void> => {
         const dadosValidados = atualizarPedidoSchema.parse(dados);
-        const paraBanco = apiPedidos.mapearParaBanco(dadosValidados);
+        
+        // Carrega o estado atual para não perder dados_extras nas atualizações parciais
+        const pedidosExistentes = useArmazemPedidos.getState().pedidos;
+        const pedidoExistente = pedidosExistentes.find(p => p.id === dados.id);
+        
+        let dadosMesclados = { ...dadosValidados } as any;
+        if (pedidoExistente) {
+            dadosMesclados = {
+                ...pedidoExistente,
+                ...dadosValidados,
+                insumosSecundarios: dadosValidados.insumosSecundarios !== undefined ? dadosValidados.insumosSecundarios : pedidoExistente.insumosSecundarios,
+                materiais: dadosValidados.materiais !== undefined ? dadosValidados.materiais : pedidoExistente.materiais,
+                posProcesso: dadosValidados.posProcesso !== undefined ? dadosValidados.posProcesso : pedidoExistente.posProcesso,
+                configuracoes: dadosValidados.configuracoes !== undefined ? dadosValidados.configuracoes : pedidoExistente.configuracoes,
+            };
+        }
+
+        const paraBanco = apiPedidos.mapearParaBanco(dadosMesclados);
         
         await servicoBaseApi.requisicao("/api/pedidos", {
             method: "PATCH",

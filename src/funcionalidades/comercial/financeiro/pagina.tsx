@@ -11,9 +11,12 @@ import { FiltrosFinanceiro } from "./componentes/FiltrosFinanceiro";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { useFinanceiro } from "./hooks/useFinanceiro";
 import { Carregamento } from "@/compartilhado/componentes";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { servicoFinanceiroAvancado } from "@/compartilhado/servicos/servicoFinanceiroAvancado";
+import { ModalDREDetalhado } from "./componentes/ModalDREDetalhado";
 import { LancamentoFinanceiro } from "./tipos";
 
 export function PaginaFinanceiro() {
@@ -41,13 +44,16 @@ export function PaginaFinanceiro() {
   // Estados do Simulador Beta
   const [simulaAcrescimoMargem, setSimulaAcrescimoMargem] = useState(0);
   const [simulaBandeiraEnergia, setSimulaBandeiraEnergia] = useState(1);
+  const [dreAberto, setDreAberto] = useState(false);
 
   const materiais = useArmazemMateriais((s) => s.materiais);
   const { pedidos } = usePedidos();
+  const { impressoras } = useArmazemImpressoras();
+  const config = useArmazemConfiguracoes();
 
   const dre = useMemo(
-    () => servicoFinanceiroAvancado.gerarDRE(pedidos, lancamentos, materiais),
-    [pedidos, lancamentos, materiais],
+    () => servicoFinanceiroAvancado.gerarDRE(pedidos, lancamentos, materiais, impressoras, config.custoEnergia),
+    [pedidos, lancamentos, materiais, impressoras, config.custoEnergia],
   );
 
   const abrirNovoLancamento = () => {
@@ -139,6 +145,14 @@ export function PaginaFinanceiro() {
                       Este cálculo considera o preço médio de venda versus o consumo granular de filamento e custos operacionais ativos em configurações.
                     </span>
                   </p>
+                </div>
+                <div className="mt-4 pt-2 flex justify-start">
+                  <button
+                    onClick={() => setDreAberto(true)}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-white/10 cursor-pointer"
+                  >
+                    Ver DRE Completo
+                  </button>
                 </div>
               </div>
             </div>
@@ -263,6 +277,12 @@ export function PaginaFinanceiro() {
           setModalAberto(false);
           setLancamentoSendoEditado(null);
         }}
+      />
+
+      <ModalDREDetalhado
+        aberto={dreAberto}
+        aoFechar={() => setDreAberto(false)}
+        dre={dre}
       />
     </div>
   );

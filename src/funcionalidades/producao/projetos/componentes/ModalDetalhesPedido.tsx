@@ -10,10 +10,13 @@ import {
 
 import { centavosParaReais, formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/useGerenciadorMateriais";
+import { usePedidos } from "../hooks/usePedidos";
+import { toast } from "react-hot-toast";
+import { Link2, Globe } from "lucide-react";
 
 
 interface PropriedadesModalDetalhes {
@@ -27,6 +30,29 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
   const impressoras = estadoImpressoras.impressoras;
   const { estado: estadoClientes } = useGerenciadorClientes();
   const { estado: estadoMateriais } = useGerenciadorMateriais();
+  const { atualizarPedido } = usePedidos();
+
+  const [rastreioInput, setRastreioInput] = useState("");
+  const [obsPublicasInput, setObsPublicasInput] = useState("");
+  const [salvandoAcompanhamento, setSalvandoAcompanhamento] = useState(false);
+
+  useEffect(() => {
+    if (pedido) {
+      setRastreioInput(pedido.codigoRastreio || "");
+      setObsPublicasInput(pedido.observacoesPublicas || "");
+    }
+  }, [pedido]);
+
+  const nomeExibicaoCliente = useMemo(() => {
+    if (!pedido) return "";
+    const cliente = estadoClientes.clientes?.find(c => c.id === pedido.idCliente);
+    return cliente ? cliente.nome : (pedido.nomeCliente || "Consumidor Final");
+  }, [pedido, estadoClientes.clientes]);
+
+  const impressora = useMemo(() => {
+    if (!pedido || !impressoras) return null;
+    return impressoras.find(i => i.id === pedido.idImpressora) || null;
+  }, [pedido, impressoras]);
 
 
   const configStatus = useMemo(() => {
@@ -43,7 +69,7 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
       default:
         return { cor: "zinc", label: "Pendente", bg: "bg-zinc-500/10", text: "text-zinc-500", glow: "shadow-zinc-500/20" };
     }
-  }, [pedido?.status]);
+  }, [pedido]);
 
   // v9.0: Blindagem de visualização - calcula totais se os campos consolidados estiverem zerados
   const { pesoEfetivo, tempoEfetivo } = useMemo(() => {
@@ -146,6 +172,55 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                     <span className="text-[11px] font-bold text-zinc-400 tabular-nums">
                       {formatarDataCompleta(pedido.dataCriacao)}
                     </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rastreamento & Portal do Cliente */}
+              <div className="space-y-4 pt-6 border-t border-borda-sutil">
+                <div className="flex items-center gap-2">
+                  <Globe size={14} className="text-indigo-400" />
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Portal do Cliente</span>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Código de Rastreio</label>
+                    <input
+                      type="text"
+                      value={rastreioInput}
+                      onChange={(e) => setRastreioInput(e.target.value)}
+                      placeholder="Ex: BR123456789BR"
+                      className="w-full px-3 py-2 text-[11px] font-medium bg-zinc-100 dark:bg-zinc-850 border border-borda-sutil rounded-xl text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Observações Públicas</label>
+                    <textarea
+                      value={obsPublicasInput}
+                      onChange={(e) => setObsPublicasInput(e.target.value)}
+                      placeholder="Notas visíveis para o cliente..."
+                      rows={2}
+                      className="w-full px-3 py-2 text-[11px] font-medium bg-zinc-100 dark:bg-zinc-850 border border-borda-sutil rounded-xl text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none scrollbar-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={salvarAcompanhamento}
+                      disabled={salvandoAcompanhamento}
+                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-[9px] font-black uppercase tracking-wider rounded-xl transition-all active:scale-95 text-center"
+                    >
+                      {salvandoAcompanhamento ? "Salvando..." : "Salvar"}
+                    </button>
+                    <button
+                      onClick={copiarLinkPublico}
+                      className="px-3 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl transition-all active:scale-95 flex items-center justify-center border border-borda-sutil"
+                      title="Copiar Link de Rastreio"
+                    >
+                      <Link2 size={12} />
+                    </button>
                   </div>
                 </div>
               </div>

@@ -34,6 +34,10 @@ export const criarPedidoSchema = z.object({
   materiais: z.array(materialProjetoSchema).optional(),
   posProcesso: z.array(itemPosProcessoSchema).optional(),
   configuracoes: z.any().optional(),
+  dataInicioAgendada: z.string().optional(),
+  posicaoFila: z.number().optional(),
+  codigoRastreio: z.string().optional(),
+  observacoesPublicas: z.string().optional(),
 });
 
 export const atualizarPedidoSchema = criarPedidoSchema.partial().extend({
