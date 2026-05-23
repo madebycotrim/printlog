@@ -45,29 +45,56 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
         ) : (
           criticos.map(material => (
             <div key={material.id} className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.03] border border-borda-sutil group/item hover:border-sky-500/20 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-2xl shadow-sm overflow-hidden">
-                {material.tipo === 'SLA' ? (
-                  <GarrafaResina cor={material.cor || "#f97316"} porcentagem={material.percentual} tamanho={36} id={`widget-mat-${material.id}`} />
-                ) : (
-                  <Carretel cor={material.cor || "#0ea5e9"} porcentagem={material.percentual} tamanho={40} id={`widget-mat-${material.id}`} />
-                )}
+              {/* Gráfico circular ao redor do ícone */}
+              <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 56 56">
+                  {/* Círculo de fundo */}
+                  <circle
+                    cx="28"
+                    cy="28"
+                    r="24"
+                    className="stroke-zinc-200 dark:stroke-zinc-800"
+                    strokeWidth="3"
+                    fill="transparent"
+                  />
+                  {/* Círculo de progresso */}
+                  <circle
+                    cx="28"
+                    cy="28"
+                    r="24"
+                    stroke={material.cor || "#0ea5e9"}
+                    strokeWidth="3"
+                    fill="transparent"
+                    strokeDasharray={150.8}
+                    strokeDashoffset={150.8 * (1 - material.percentual / 100)}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000"
+                  />
+                </svg>
+                
+                {/* Ícone interno */}
+                <div className="w-10 h-10 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-xl shadow-inner z-10 overflow-hidden">
+                  {material.tipo === 'SLA' ? (
+                    <GarrafaResina cor={material.cor || "#f97316"} porcentagem={material.percentual} tamanho={28} id={`widget-mat-${material.id}`} />
+                  ) : (
+                    <Carretel cor={material.cor || "#0ea5e9"} porcentagem={material.percentual} tamanho={32} id={`widget-mat-${material.id}`} />
+                  )}
+                </div>
               </div>
+
               <div className="flex-1">
-                <div className="text-[11px] font-black text-primary uppercase tracking-tight truncate mb-2">
+                <div className="text-[11px] font-black text-primary dark:text-white uppercase tracking-tight truncate mb-1">
                   {material.nome}
                 </div>
-                <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full transition-all duration-1000"
-                    style={{ 
-                      width: `${material.percentual}%`, 
-                      backgroundColor: material.cor || '#0ea5e9',
-                      opacity: material.percentual < 15 ? 1 : 0.8
-                    }}
-                  />
+                <div className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="font-extrabold" style={{ color: material.cor || '#0ea5e9' }}>
+                    {Math.round(material.percentual)}%
+                  </span>
+                  <span>restante</span>
                 </div>
               </div>
-              <div className={`text-[11px] font-black tabular-nums ${material.percentual < 15 ? "text-rose-500 animate-pulse" : "text-zinc-500"}`}>
+
+              <div className={`text-[11px] font-black tabular-nums ${material.percentual < 15 ? "text-rose-500 animate-pulse" : "text-zinc-400"}`}>
                 {material.pesoRestanteGramas}{material.tipo === 'SLA' ? 'ml' : 'g'}
               </div>
             </div>
