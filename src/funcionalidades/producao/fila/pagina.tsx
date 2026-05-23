@@ -32,6 +32,11 @@ export function PaginaFila() {
     subtitulo: "Sequenciamento visual e planejamento de impressões por máquina",
   });
 
+  // Filtra apenas impressoras ativas e não arquivadas (não aposentadas)
+  const impressorasAtivas = useMemo(() => {
+    return impressoras.filter(imp => !imp.dataAposentadoria);
+  }, [impressoras]);
+
   // Filtra pedidos não concluídos/não arquivados
   const pedidosAtivos = useMemo(() => {
     return pedidos.filter(p => 
@@ -44,8 +49,8 @@ export function PaginaFila() {
   const filaPorImpressora = useMemo(() => {
     const mapa: Record<string, Pedido[]> = {};
     
-    // Inicializa arrays para todas as impressoras
-    impressoras.forEach(imp => {
+    // Inicializa arrays para todas as impressoras ativas
+    impressorasAtivas.forEach(imp => {
       mapa[imp.id] = [];
     });
     
@@ -70,7 +75,7 @@ export function PaginaFila() {
     });
 
     return mapa;
-  }, [pedidosAtivos, impressoras]);
+  }, [pedidosAtivos, impressorasAtivas]);
 
   // Pedidos sem impressora ou sem agendamento
   const pedidosPendentes = useMemo(() => {
@@ -162,11 +167,11 @@ export function PaginaFila() {
                     )}
                   </div>
 
-                  {impressoras.length > 0 && (
+                  {impressorasAtivas.length > 0 && (
                     <div className="pt-2 border-t border-borda-sutil/60 space-y-1.5">
                       <span className="text-[8px] font-black uppercase text-zinc-400 block">Alocar em:</span>
                       <div className="grid grid-cols-2 gap-1">
-                        {impressoras.map(imp => (
+                        {impressorasAtivas.map(imp => (
                           <button
                             key={imp.id}
                             onClick={() => lidarComAgendamento(pedido.id, imp.id)}
@@ -186,13 +191,13 @@ export function PaginaFila() {
 
         {/* Fila Gantt Principal */}
         <div className="xl:col-span-3 space-y-6">
-          {impressoras.length === 0 ? (
+          {impressorasAtivas.length === 0 ? (
             <div className="border border-dashed border-borda-sutil rounded-[2rem] p-16 text-center text-zinc-400 dark:text-zinc-600 text-sm">
               Cadastre impressoras no menu de Produção para gerenciar a fila.
             </div>
           ) : (
             <div className="space-y-6">
-              {impressoras.map(impressora => {
+              {impressorasAtivas.map(impressora => {
                 const fila = filaPorImpressora[impressora.id] || [];
                 return (
                   <div 
