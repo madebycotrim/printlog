@@ -36,9 +36,9 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
         </button>
       </div>
       
-      <div className="space-y-2 flex-1 overflow-y-auto max-h-[220px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
+      <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[220px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
         {criticos.length === 0 ? (
-          <div className="text-center py-8 flex flex-col items-center opacity-20">
+          <div className="col-span-2 text-center py-8 flex flex-col items-center opacity-20">
             <Carretel cor="#ccc" porcentagem={0} tamanho={24} id="empty-mat" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-2">Estoque em dia</span>
           </div>
