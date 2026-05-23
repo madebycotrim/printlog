@@ -13,7 +13,7 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
       ...m,
       percentual: Math.min(100, ((m.pesoRestanteGramas || 0) / (m.pesoGramas || 1000)) * 100)
     }))
-    .sort((a, b) => a.percentual - b.percentual)
+    .sort((a, b) => (a.pesoRestanteGramas || 0) - (b.pesoRestanteGramas || 0))
     .slice(0, 8);
 
   return (
