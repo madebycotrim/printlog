@@ -36,66 +36,76 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
         </button>
       </div>
       
-      <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[220px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
+      <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
         {criticos.length === 0 ? (
           <div className="col-span-2 text-center py-8 flex flex-col items-center opacity-20">
             <Carretel cor="#ccc" porcentagem={0} tamanho={24} id="empty-mat" />
             <span className="text-[10px] font-black uppercase tracking-widest mt-2">Estoque em dia</span>
           </div>
         ) : (
-          criticos.map(material => (
-            <div key={material.id} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-white/[0.03] border border-borda-sutil group/item hover:border-sky-500/20 transition-all">
-              {/* Gráfico circular compacto ao redor do ícone */}
-              <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
-                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 40 40">
+          criticos.map((material, idx) => (
+            <div key={material.id} className="flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-sky-500/30 transition-all hover:bg-white/[0.04] dark:hover:bg-white/[0.04] group/item shadow-sm hover:shadow-md text-center">
+              {/* Gráfico circular animado ao redor do ícone */}
+              <div className="relative w-14 h-14 flex items-center justify-center shrink-0 mb-3">
+                <style>{`
+                  @keyframes svg-gauge-fill-${idx} {
+                    from { stroke-dashoffset: 131.95; }
+                    to { stroke-dashoffset: ${131.95 * (1 - material.percentual / 100)}; }
+                  }
+                `}</style>
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
                   {/* Círculo de fundo */}
                   <circle
-                    cx="20"
-                    cy="20"
-                    r="17"
-                    className="stroke-zinc-200 dark:stroke-zinc-850"
-                    strokeWidth="2.5"
+                    cx="24"
+                    cy="24"
+                    r="21"
+                    className="stroke-zinc-200 dark:stroke-zinc-800/80"
+                    strokeWidth="3.5"
                     fill="transparent"
                   />
                   {/* Círculo de progresso */}
                   <circle
-                    cx="20"
-                    cy="20"
-                    r="17"
+                    cx="24"
+                    cy="24"
+                    r="21"
                     stroke={material.cor || "#0ea5e9"}
-                    strokeWidth="2.5"
+                    strokeWidth="3.5"
                     fill="transparent"
-                    strokeDasharray={106.8}
-                    strokeDashoffset={106.8 * (1 - material.percentual / 100)}
+                    strokeDasharray={131.95}
+                    style={{
+                      animation: `svg-gauge-fill-${idx} 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                      filter: `drop-shadow(0 0 4px ${material.cor || '#0ea5e9'}40)`
+                    }}
                     strokeLinecap="round"
-                    className="transition-all duration-1000"
                   />
                 </svg>
                 
-                {/* Ícone interno */}
-                <div className="w-7 h-7 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-lg shadow-inner z-10 overflow-hidden">
+                {/* Ícone interno (totalmente circular) */}
+                <div className="w-9 h-9 flex items-center justify-center bg-zinc-100 dark:bg-zinc-850 rounded-full shadow-inner z-10 overflow-hidden group-hover/item:scale-110 transition-transform duration-300">
                   {material.tipo === 'SLA' ? (
-                    <GarrafaResina cor={material.cor || "#f97316"} porcentagem={material.percentual} tamanho={20} id={`widget-mat-${material.id}`} />
+                    <GarrafaResina cor={material.cor || "#f97316"} porcentagem={material.percentual} tamanho={22} id={`widget-mat-${material.id}`} />
                   ) : (
-                    <Carretel cor={material.cor || "#0ea5e9"} porcentagem={material.percentual} tamanho={22} id={`widget-mat-${material.id}`} />
+                    <Carretel cor={material.cor || "#0ea5e9"} porcentagem={material.percentual} tamanho={24} id={`widget-mat-${material.id}`} />
                   )}
                 </div>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-black text-primary dark:text-white uppercase tracking-tight truncate mb-0.5">
+              {/* Informações organizadas de forma vertical e centralizada */}
+              <div className="space-y-1 w-full min-w-0">
+                <h5 className="text-[11px] font-black text-primary dark:text-zinc-200 uppercase tracking-wider truncate leading-tight group-hover/item:text-sky-400 transition-colors">
                   {material.nome}
-                </div>
-                <div className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-1">
+                </h5>
+                
+                {/* Peso e Porcentagem em uma única linha organizada */}
+                <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
                   <span className="font-extrabold" style={{ color: material.cor || '#0ea5e9' }}>
                     {Math.round(material.percentual)}%
                   </span>
-                  <span>restante</span>
+                  <span>•</span>
+                  <span className="tabular-nums font-medium">
+                    {material.pesoRestanteGramas}{material.tipo === 'SLA' ? 'ml' : 'g'}
+                  </span>
                 </div>
-              </div>
-
-              <div className={`text-[10px] font-black tabular-nums shrink-0 ${material.percentual < 15 ? "text-rose-500 animate-pulse" : "text-zinc-400"}`}>
-                {material.pesoRestanteGramas}{material.tipo === 'SLA' ? 'ml' : 'g'}
               </div>
             </div>
           ))
