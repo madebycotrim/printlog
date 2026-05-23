@@ -81,7 +81,7 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
                 </svg>
                 
                 {/* Ícone interno (totalmente circular) */}
-                <div className="w-9 h-9 flex items-center justify-center bg-zinc-100 dark:bg-zinc-850 rounded-full shadow-inner z-10 overflow-hidden group-hover/item:scale-110 transition-transform duration-300">
+                <div className="w-9 h-9 flex items-center justify-center rounded-full z-10 overflow-hidden group-hover/item:scale-110 transition-transform duration-300">
                   {material.tipo === 'SLA' ? (
                     <GarrafaResina cor={material.cor || "#f97316"} porcentagem={material.percentual} tamanho={22} id={`widget-mat-${material.id}`} />
                   ) : (
