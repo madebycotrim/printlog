@@ -76,7 +76,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
       titulo: "Produção",
       itens: [
         { nome: "Projetos", icone: FolderKanban, caminho: "/projetos" },
-        { nome: "Fila & Gantt", icone: Calendar, caminho: "/producao/fila" },
+        { nome: "Fila de Produção", icone: Calendar, caminho: "/producao/fila" },
         { nome: "Impressoras", icone: Printer, caminho: "/impressoras" },
         { nome: "Materiais", icone: Package, caminho: "/materiais" },
         { nome: "Insumos", icone: Layers, caminho: "/insumos" },
