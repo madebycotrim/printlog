@@ -43,6 +43,31 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
     }
   }, [pedido]);
 
+  const salvarAcompanhamento = async () => {
+    if (!pedido) return;
+    setSalvandoAcompanhamento(true);
+    try {
+      await atualizarPedido({
+        id: pedido.id,
+        codigoRastreio: rastreioInput,
+        observacoesPublicas: obsPublicasInput,
+      });
+      toast.success("Informações de acompanhamento salvas!");
+    } catch (erro) {
+      console.error("Erro ao salvar acompanhamento:", erro);
+      toast.error("Erro ao salvar informações.");
+    } finally {
+      setSalvandoAcompanhamento(false);
+    }
+  };
+
+  const copiarLinkPublico = () => {
+    if (!pedido) return;
+    const url = `${window.location.origin}/rastreamento/${pedido.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link de rastreamento copiado!");
+  };
+
   const nomeExibicaoCliente = useMemo(() => {
     if (!pedido) return "";
     const cliente = estadoClientes.clientes?.find(c => c.id === pedido.idCliente);
