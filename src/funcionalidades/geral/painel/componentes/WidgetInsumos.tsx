@@ -14,8 +14,8 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
         ? Math.min(100, (i.quantidadeAtual / (i.quantidadeMinima * 2)) * 100) 
         : 100
     }))
-    .sort((a, b) => a.percentual - b.percentual)
-    .slice(0, 2);
+    .sort((a, b) => (a.quantidadeAtual || 0) - (b.quantidadeAtual || 0))
+    .slice(0, 8);
 
   return (
     <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 h-full shadow-media flex flex-col group/widget relative overflow-hidden transition-all hover:bg-zinc-50 dark:hover:bg-white/[0.01]">
@@ -37,29 +37,80 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
         </button>
       </div>
       
-      <div className="space-y-4 flex-1 flex flex-col justify-center relative z-10">
+      <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
         {criticos.length === 0 ? (
-          <div className="text-center py-4 flex flex-col items-center opacity-20">
+          <div className="col-span-2 text-center py-8 flex flex-col items-center opacity-20">
             <Box size={24} className="mb-2" />
             <span className="text-[10px] font-black uppercase tracking-widest">Estoque em dia</span>
           </div>
         ) : (
-          criticos.map(insumo => (
-            <div key={insumo.id} className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.03] border border-borda-sutil group/item hover:border-sky-500/20 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-2xl text-zinc-400 group-hover/item:text-sky-500 transition-colors shadow-sm">
-                {insumo.nome.toLowerCase().includes('spray') || insumo.nome.toLowerCase().includes('cola') ? <SprayCan size={20} /> : <Box size={20} />}
-              </div>
-              <div className="flex-1">
-                <div className="text-[11px] font-black text-primary uppercase tracking-tight truncate mb-2">{insumo.nome}</div>
-                <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-1000 ${insumo.percentual < 20 ? "bg-rose-500 animate-pulse" : "bg-sky-500"}`}
-                    style={{ width: `${insumo.percentual}%` }}
+          criticos.map((insumo, idx) => (
+            <div key={insumo.id} className="flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-sky-500/30 transition-all hover:bg-white/[0.04] dark:hover:bg-white/[0.04] group/item shadow-sm hover:shadow-md text-center">
+              {/* Gráfico circular animado ao redor do ícone */}
+              <div className="relative w-14 h-14 flex items-center justify-center shrink-0 mb-3">
+                <style>{`
+                  @keyframes svg-insumo-gauge-fill-${idx} {
+                    from { stroke-dashoffset: 131.95; }
+                    to { stroke-dashoffset: ${131.95 * (1 - insumo.percentual / 100)}; }
+                  }
+                `}</style>
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
+                  {/* Círculo de fundo */}
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="21"
+                    className="stroke-zinc-200 dark:stroke-zinc-800/80"
+                    strokeWidth="3.5"
+                    fill="transparent"
                   />
+                  {/* Círculo de progresso */}
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="21"
+                    stroke={insumo.quantidadeAtual < insumo.quantidadeMinima ? "#f43f5e" : "#0ea5e9"}
+                    strokeWidth="3.5"
+                    fill="transparent"
+                    strokeDasharray={131.95}
+                    style={{
+                      animation: `svg-insumo-gauge-fill-${idx} 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                      filter: `drop-shadow(0 0 4px ${insumo.quantidadeAtual < insumo.quantidadeMinima ? "#f43f5e" : "#0ea5e9"}40)`
+                    }}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                
+                {/* Ícone interno (totalmente circular, sem fundo) */}
+                <div className={`w-9 h-9 flex items-center justify-center rounded-full z-10 transition-all duration-300 group-hover/item:scale-110 ${
+                  insumo.quantidadeAtual < insumo.quantidadeMinima 
+                    ? "text-rose-400 group-hover/item:text-rose-500" 
+                    : "text-zinc-400 group-hover/item:text-sky-500"
+                }`}>
+                  {insumo.nome.toLowerCase().includes('spray') || insumo.nome.toLowerCase().includes('cola') ? (
+                    <SprayCan size={20} />
+                  ) : (
+                    <Box size={20} />
+                  )}
                 </div>
               </div>
-              <div className={`text-[11px] font-black tabular-nums ${insumo.percentual < 20 ? "text-rose-500" : "text-zinc-500"}`}>
-                {Math.round(insumo.percentual)}%
+
+              {/* Informações organizadas de forma vertical e centralizada */}
+              <div className="space-y-1 w-full min-w-0">
+                <h5 className="text-[11px] font-black text-primary dark:text-zinc-200 uppercase tracking-wider truncate leading-tight group-hover/item:text-sky-400 transition-colors">
+                  {insumo.nome}
+                </h5>
+                
+                {/* Quantidade e Porcentagem em uma única linha organizada */}
+                <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
+                  <span className="font-extrabold" style={{ color: insumo.quantidadeAtual < insumo.quantidadeMinima ? "#f43f5e" : "#0ea5e9" }}>
+                    {Math.round(insumo.percentual)}%
+                  </span>
+                  <span>•</span>
+                  <span className="tabular-nums font-medium">
+                    {insumo.quantidadeAtual}{insumo.unidadeMedida || 'un'}
+                  </span>
+                </div>
               </div>
             </div>
           ))
@@ -68,4 +119,3 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
     </div>
   );
 }
-
