@@ -83,7 +83,13 @@ export const armazenamentoSeguro = {
     try {
       const chavesPreferencias = ["printlog_tema", "printlog_perfil_ativo", "printlog_config_ui", "printlog_ultima_impressora", "printlog_anos_vida_util"];
       if (chavesPreferencias.includes(chave)) {
-        if (!localStorage.getItem("printlog_consentimento_cookies")) return;
+        const consent = localStorage.getItem("printlog_consentimento_cookies");
+        if (!consent) return;
+
+        const consentimento = armazenamentoSeguro.obter<any>("printlog_consentimento_cookies", null);
+        if (consentimento && (consentimento.funcionais === false || consentimento.recusado === true)) {
+          return;
+        }
       }
 
       const stringValue = typeof valor === "string" ? valor : JSON.stringify(valor);

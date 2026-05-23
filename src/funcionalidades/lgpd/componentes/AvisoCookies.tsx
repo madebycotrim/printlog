@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, ShieldCheck, Check, Loader2, Shield } from "lucide-react";
+import { X, ShieldCheck, Check, Loader2, Shield, Ban } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
+import { toast } from "react-hot-toast";
 
 /**
  * Componente de Consentimento de Cookies (Banner LGPD).
@@ -21,27 +22,59 @@ export function AvisoCookies() {
     }
   }, []);
 
-  const salvarConsentimento = () => {
+  const aceitarConsentimento = () => {
     setCarregando(true);
     
     const escolhas = {
-      tipo: "ESSENCIAIS",
+      tipo: "TUDO",
       essenciais: true,
+      funcionais: true,
+      analiticos: true,
+      recusado: false,
       data: new Date().toISOString(),
       versao: "2026-05-14"
     };
 
     setTimeout(() => {
-      // Salva no localStorage para o frontend
       armazenamentoSeguro.definir("printlog_consentimento_cookies", escolhas);
-      
-      // Salva em Cookie para o backend (Middleware)
-      // Expira em 1 ano
       document.cookie = "printlog_consentimento=aceito; path=/; max-age=31536000; SameSite=Lax";
       
       setVisivel(false);
       setCarregando(false);
       window.dispatchEvent(new Event("cookies_aceitos_essenciais"));
+      toast.success("Preferências salvas com sucesso! 🚀", {
+        icon: "🛡️"
+      });
+    }, 800);
+  };
+
+  const recusarConsentimento = () => {
+    setCarregando(true);
+    
+    const escolhas = {
+      tipo: "ESSENCIAIS",
+      essenciais: true,
+      funcionais: false,
+      analiticos: false,
+      recusado: true,
+      data: new Date().toISOString(),
+      versao: "2026-05-14"
+    };
+
+    setTimeout(() => {
+      // Limpa dados de preferência locais
+      const chavesPreferencias = ["printlog_tema", "printlog_perfil_ativo", "printlog_config_ui", "printlog_ultima_impressora", "printlog_anos_vida_util"];
+      chavesPreferencias.forEach(k => armazenamentoSeguro.remover(k));
+
+      armazenamentoSeguro.definir("printlog_consentimento_cookies", escolhas);
+      document.cookie = "printlog_consentimento=recusado; path=/; max-age=31536000; SameSite=Lax";
+      
+      setVisivel(false);
+      setCarregando(false);
+      toast.error("Preferências de tema e impressora não serão salvas para respeitar sua privacidade.", {
+        duration: 5000,
+        icon: "🛡️"
+      });
     }, 800);
   };
 
@@ -83,20 +116,37 @@ export function AvisoCookies() {
                 O PrintLog utiliza apenas cookies <strong>estritamente necessários</strong> para autenticação, segurança e para lembrar suas preferências (como tema e impressora). Armazenamos seu IP apenas pelo prazo legal de 180 dias, conforme exigido pelo Marco Civil da Internet.
               </p>
 
-              <button
-                onClick={salvarConsentimento}
-                disabled={carregando}
-                className="w-full h-12 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-sky-50 hover:shadow-[0_0_20px_rgba(14,165,233,0.2)] transition-all active:scale-95 flex items-center justify-center gap-2"
-              >
-                {carregando ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <>
-                    <Check size={14} strokeWidth={3} /> 
-                    Entendido
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={aceitarConsentimento}
+                  disabled={carregando}
+                  className="w-full h-11 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-sky-50 hover:shadow-[0_0_20px_rgba(14,165,233,0.2)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {carregando ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Check size={14} strokeWidth={3} /> 
+                      Aceitar Preferências
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={recusarConsentimento}
+                  disabled={carregando}
+                  className="w-full h-11 bg-transparent hover:bg-white/5 border border-white/10 text-zinc-400 hover:text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {carregando ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Ban size={14} /> 
+                      Recusar Preferências
+                    </>
+                  )}
+                </button>
+              </div>
               
               <div className="mt-4 text-center">
                 <Link to="/politica-de-privacidade" className="text-[10px] text-zinc-600 hover:text-zinc-400 underline underline-offset-4">
