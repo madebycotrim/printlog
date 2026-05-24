@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes";
 import {
@@ -502,24 +502,31 @@ export function PaginaCalculadora() {
   const abrirModalInsumos = useCallback(() => setModalInsumosAberto(true), []);
   const abrirModalNovoInsumo = useCallback(() => abrirCriarInsumo(), [abrirCriarInsumo]);
   const abrirModalCanais = useCallback(() => setModalCanaisAberto(true), []);
-  const dadosCabecalho = {
+
+  const salvarRascunhoRef = useRef(() => {});
+  salvarRascunhoRef.current = () => {
+    const numeroUnico = Math.floor(1000 + Math.random() * 9000);
+    hook.salvarSnapshot(nomeProjeto || `Rascunho - #${numeroUnico}`, nomeProjeto, descricaoProjeto, clienteProjetoId);
+  };
+
+  const limparRef = useRef(() => {});
+  limparRef.current = limparTudo;
+
+  const dadosCabecalho = useMemo(() => ({
     titulo: idEdicao ? "Atualizar Inteligência" : "Precificação Inteligente",
     subtitulo: idEdicao ? `Editando: ${nomeProjeto}` : "Engenharia de custos e rentabilidade",
     ocultarBusca: true,
     elementoAcao: (
       <div className="flex items-center gap-1 p-1 bg-card/10 border border-borda-sutil rounded-2xl backdrop-blur-md">
         <button 
-          onClick={() => limparTudo()}
+          onClick={() => limparRef.current()}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all"
           title="Limpar Calculadora"
         >
           <RotateCcw size={18} />
         </button>
         <button 
-          onClick={() => {
-            const numeroUnico = Math.floor(1000 + Math.random() * 9000);
-            hook.salvarSnapshot(nomeProjeto || `Rascunho - #${numeroUnico}`, nomeProjeto, descricaoProjeto, clienteProjetoId);
-          }}
+          onClick={() => salvarRascunhoRef.current()}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all"
           title="Salvar no Histórico (Rascunho)"
         >
@@ -541,7 +548,7 @@ export function PaginaCalculadora() {
         </button>
       </div>
     )
-  };
+  }), [idEdicao, nomeProjeto]);
 
   useDefinirCabecalho(dadosCabecalho);
 
@@ -860,7 +867,7 @@ export function PaginaCalculadora() {
                     type="text"
                     placeholder="Ex: PrintPro Lab"
                     value={config.nomeEstudio}
-                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
+                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio, config.logoEstudio)}
                     className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
                   />
                 </div>
@@ -871,7 +878,18 @@ export function PaginaCalculadora() {
                     type="text"
                     placeholder="Ex: Impressão 3D de alta precisão"
                     value={config.sloganEstudio}
-                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value)}
+                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value, config.logoEstudio)}
+                    className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-sky-400/80">URL da Logo (Opcional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://exemplo.com/logo.png"
+                    value={config.logoEstudio}
+                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, config.sloganEstudio, e.target.value)}
                     className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
                   />
                 </div>
@@ -880,18 +898,25 @@ export function PaginaCalculadora() {
                   <span className="text-[9px] font-black uppercase text-sky-400/60 border-b border-dashed border-zinc-800/50 pb-2 mb-1 tracking-wider">
                     Pré-Visualização do Documento
                   </span>
-                  <span className="text-sm font-black text-white">
-                    {config.nomeEstudio || "Seu Estúdio"}
-                  </span>
-                  <span className="text-[10px] font-bold text-zinc-400/80 italic">
-                    {config.sloganEstudio || "Seu slogan aqui"}
-                  </span>
+                  <div className="flex items-center gap-3 mt-1">
+                    {config.logoEstudio && (
+                      <img src={config.logoEstudio} alt="Logo" className="max-h-8 w-auto object-contain rounded" />
+                    )}
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="text-sm font-black text-white truncate">
+                        {config.nomeEstudio || "Seu Estúdio"}
+                      </span>
+                      <span className="text-[10px] font-bold text-zinc-400/80 italic truncate">
+                        {config.sloganEstudio || "Seu slogan aqui"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2 mt-4">
                   <button
                     onClick={() => {
-                      hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, buscaClienteSeletor, nomeProjeto, idEdicao || undefined);
+                      hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, config.logoEstudio, buscaClienteSeletor, nomeProjeto, idEdicao || undefined);
                       setModalPdfAberto(false);
                     }}
                     className="w-full h-14 font-black uppercase tracking-[0.15em] text-xs rounded-2xl flex items-center justify-center gap-2 bg-sky-500 text-white hover:bg-sky-600 transition-all active:scale-95 shadow-[0_10px_20px_-5px_rgba(14,165,233,0.3)]"

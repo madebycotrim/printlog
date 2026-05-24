@@ -7,5 +7,6 @@ export const configuracoesSchema = z.object({
   margemLucro: z.number().int(),
   nomeEstudio: z.string().optional(),
   sloganEstudio: z.string().optional(),
+  logoEstudio: z.string().optional(),
   plano: z.enum(["FREE", "PRO", "FUNDADOR"]).optional(),
 });

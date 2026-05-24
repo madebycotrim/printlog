@@ -10,6 +10,7 @@ export interface ConfiguracoesSalvas {
   margemLucro: number;
   nomeEstudio?: string;
   sloganEstudio?: string;
+  logoEstudio?: string;
   plano?: PlanoUsuario;
   cicloPagamento?: string;
   vencimentoPlano?: string | null;

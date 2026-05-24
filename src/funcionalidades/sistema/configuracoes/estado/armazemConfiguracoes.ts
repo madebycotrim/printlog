@@ -16,6 +16,7 @@ interface ArmazemConfiguracoes {
   margemLucro: number;  // Pontos base (ex: 15000 = 150.00%)
   nomeEstudio: string;
   sloganEstudio: string;
+  logoEstudio: string;
   plano: PlanoUsuario;
   cicloPagamento?: string;
   vencimentoPlano?: string | null;
@@ -27,7 +28,7 @@ interface ArmazemConfiguracoes {
   definirHoraMaquina: (valor: number) => void;
   definirHoraOperador: (valor: number) => void;
   definirMargemLucro: (valor: number) => void;
-  definirIdentidadeEstudio: (nome: string, slogan: string) => void;
+  definirIdentidadeEstudio: (nome: string, slogan: string, logo: string) => void;
   definirPlano: (plano: PlanoUsuario) => void;
   salvarNoD1: (usuarioId: string) => Promise<void>;
 
@@ -42,6 +43,7 @@ export const VALORES_PADRAO = {
   margemLucro: 15000,
   nomeEstudio: "",
   sloganEstudio: "",
+  logoEstudio: "",
   plano: "FREE" as PlanoUsuario,
   cicloPagamento: "MENSAL",
   vencimentoPlano: null,
@@ -84,6 +86,7 @@ export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
         margemLucro: paraNumero(dados.margemLucro),
         nomeEstudio: dados.nomeEstudio || "",
         sloganEstudio: dados.sloganEstudio || "",
+        logoEstudio: dados.logoEstudio || "",
         plano: dados.plano || "PRO",
         cicloPagamento: dados.cicloPagamento || "MENSAL",
         vencimentoPlano: dados.vencimentoPlano || null,
@@ -100,7 +103,7 @@ export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
   definirHoraMaquina: (valor) => set({ horaMaquina: valor }),
   definirHoraOperador: (valor) => set({ horaOperador: valor }),
   definirMargemLucro: (valor) => set({ margemLucro: valor }),
-  definirIdentidadeEstudio: (nome, slogan) => set({ nomeEstudio: nome, sloganEstudio: slogan }),
+  definirIdentidadeEstudio: (nome, slogan, logo) => set({ nomeEstudio: nome, sloganEstudio: slogan, logoEstudio: logo }),
   definirPlano: (plano) => set({ plano }),
 
   /**
@@ -108,8 +111,8 @@ export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
    * Chamado quando o usuário clica em "Salvar" na página de Configurações.
    */
   salvarNoD1: async (usuarioId: string) => {
-    const { custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, plano } = get();
-    await apiConfiguracoes.salvar({ custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, plano }, usuarioId);
+    const { custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, logoEstudio, plano } = get();
+    await apiConfiguracoes.salvar({ custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, logoEstudio, plano }, usuarioId);
   },
 
   resetarParaPadrao: () => set(VALORES_PADRAO),

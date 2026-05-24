@@ -8,13 +8,13 @@ import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressora
 import { toast } from "react-hot-toast";
 import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { 
-  MaterialSelecionado, 
-  ItemPosProcesso, 
-  InsumoSelecionado, 
-  PerfilMarketplace, 
+import {
+  MaterialSelecionado,
+  ItemPosProcesso,
+  InsumoSelecionado,
+  PerfilMarketplace,
   VersaoCalculo,
-  CalculoResultado 
+  CalculoResultado
 } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 
@@ -27,10 +27,10 @@ export function useCalculadora() {
   const impressorasCadastradas = estadoImpressoras.impressoras;
 
   // --- ESTADOS BASE ---
-  const [materiaisSelecionados, setMateriaisSelecionados] = useState<MaterialSelecionado[]>(() => 
+  const [materiaisSelecionados, setMateriaisSelecionados] = useState<MaterialSelecionado[]>(() =>
     armazenamentoSeguro.obter("printlog_materiais_selecionados", [])
   );
-  const [tempo, setTempo] = useState<number>(() => 
+  const [tempo, setTempo] = useState<number>(() =>
     armazenamentoSeguro.obter("printlog_calculadora_tempo", 0) || armazenamentoSeguro.obter("printlog_tempo", 0)
   );
   const [potencia, setPotencia] = useState<number>(() => armazenamentoSeguro.obter("printlog_potencia", 0));
@@ -41,19 +41,19 @@ export function useCalculadora() {
   const [maoDeObra, setMaoDeObra] = useState<number>(() => armazenamentoSeguro.obter("printlog_mao_de_obra", config.horaOperador));
   const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => armazenamentoSeguro.obter("printlog_depreciacao_hora", config.horaMaquina));
   const [margem, setMargem] = useState<number>(() => armazenamentoSeguro.obter("printlog_margem", config.margemLucro));
-  
+
   const [quantidade, setQuantidade] = useState<number>(() => armazenamentoSeguro.obter("printlog_quantidade", 0));
   const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => armazenamentoSeguro.obter<'unitario' | 'lote'>("printlog_calculadora_modo_entrada", "lote"));
   const [tempoSetup, setTempoSetup] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_setup", 0));
   const [taxaFalha, setTaxaFalha] = useState<number>(() => armazenamentoSeguro.obter("printlog_taxa_falha", 0));
   const [materialPerdido, setMaterialPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_material_perdido", 0));
   const [tempoPerdido, setTempoPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_perdido", 0));
-  
+
   const [frete, setFrete] = useState<number>(() => armazenamentoSeguro.obter("printlog_frete", 0));
   const [insumosFixos, setInsumosFixos] = useState<number>(() => armazenamentoSeguro.obter("printlog_insumos_fixos", 0));
   const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>(() => armazenamentoSeguro.obter("printlog_insumos_selecionados", []));
   const [itensPosProcesso, setItensPosProcesso] = useState<ItemPosProcesso[]>(() => armazenamentoSeguro.obter("printlog_itens_pos_processo", []));
-  
+
   const [cobrarDesgaste, setCobrarDesgaste] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_desgaste", true));
   const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_mao_de_obra", true));
   const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_energia", true));
@@ -180,11 +180,11 @@ export function useCalculadora() {
     const custoInsumosFixosCentavos = cobrarInsumosFixos ? insumosFixos : 0;
     const custoFreteCentavos = cobrarLogistica ? frete : 0;
     const custoProducaoTotalCentavos = custoMaterialTotalCentavos + custoEnergiaCentavos + custoMaoDeObraCentavos + custoDepreciacaoCentavos + custoPosProcessoCentavos + custoInsumosDinamicosCentavos + custoInsumosFixosCentavos + custoFalhaRealCentavos;
-    
+
     const margemPercentual = margem / 10000;
     const taxaMktPercentual = cobrarLogistica ? taxaEcommerce / 10000 : 0;
     const taxaFixaVendaCentavos = cobrarLogistica ? taxaFixa : 0;
-    
+
     const precoBaseVendaCentavos = custoProducaoTotalCentavos + (custoProducaoTotalCentavos * margemPercentual) + custoFreteCentavos + taxaFixaVendaCentavos;
     const denominadorTaxas = 1 - taxaMktPercentual;
     const precoSugeridoCentavos = denominadorTaxas > 0.05 ? Math.round(precoBaseVendaCentavos / denominadorTaxas) : Math.round(precoBaseVendaCentavos * 1.5);
@@ -250,15 +250,15 @@ export function useCalculadora() {
     descricaoProjeto?: string,
     clienteProjetoId?: string
   ) => {
-    const novaVersao: VersaoCalculo = { 
-      id: crypto.randomUUID(), 
-      data: new Date().toISOString(), 
-      nome: nome || `Versão ${historico.length + 1}`, 
-      calculo, 
-      configuracoes: { 
-        materiaisSelecionados, tempo, perfilAtivo, margem, potencia, precoKwh, maoDeObra, depreciacaoHora, 
-        quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos, 
-        insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra, 
+    const novaVersao: VersaoCalculo = {
+      id: crypto.randomUUID(),
+      data: new Date().toISOString(),
+      nome: nome || `Versão ${historico.length + 1}`,
+      calculo,
+      configuracoes: {
+        materiaisSelecionados, tempo, perfilAtivo, margem, potencia, precoKwh, maoDeObra, depreciacaoHora,
+        quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos,
+        insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra,
         cobrarEnergia, cobrarInsumosFixos, cobrarLogistica,
         taxaEcommerce, taxaFixa,
         nomeProjeto,
@@ -267,9 +267,9 @@ export function useCalculadora() {
         impressoraSelecionadaId,
         modoEntrada,
         taxaFalha
-      } 
+      }
     };
-    
+
     // Atualiza a UI primeiro (Otimista)
     const novoHistorico = [novaVersao, ...historico];
     setHistorico(novoHistorico);
@@ -302,10 +302,10 @@ export function useCalculadora() {
         nome: "Rascunho Sincronizado",
         dados: {
           calculo,
-          configuracoes: { 
-            materiaisSelecionados, tempo, perfilAtivo, margem, potencia, precoKwh, maoDeObra, depreciacaoHora, 
-            quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos, 
-            insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra, 
+          configuracoes: {
+            materiaisSelecionados, tempo, perfilAtivo, margem, potencia, precoKwh, maoDeObra, depreciacaoHora,
+            quantidade, tempoSetup, materialPerdido, tempoPerdido, frete, insumosFixos,
+            insumosSelecionados, itensPosProcesso, cobrarDesgaste, cobrarMaoDeObra,
             cobrarEnergia, cobrarInsumosFixos, cobrarLogistica,
             taxaEcommerce, taxaFixa,
             nomeProjeto,
@@ -327,7 +327,7 @@ export function useCalculadora() {
   const carregarSnapshot = (versao: VersaoCalculo) => {
     const c = versao.configuracoes;
     if (!c) return;
-    
+
     if (c.materiaisSelecionados !== undefined) setMateriaisSelecionados(c.materiaisSelecionados || []);
     if (c.tempo !== undefined) setTempo(c.tempo || 0);
     if (c.perfilAtivo !== undefined) setPerfilAtivo(c.perfilAtivo || "");
@@ -345,7 +345,7 @@ export function useCalculadora() {
     if (c.insumosFixos !== undefined) setInsumosFixos(c.insumosFixos || 0);
     if (c.insumosSelecionados !== undefined) setInsumosSelecionados(c.insumosSelecionados || []);
     if (c.itensPosProcesso !== undefined) setItensPosProcesso(c.itensPosProcesso || []);
-    
+
     if (c.cobrarDesgaste !== undefined) setCobrarDesgaste(!!c.cobrarDesgaste);
     if (c.cobrarMaoDeObra !== undefined) setCobrarMaoDeObra(!!c.cobrarMaoDeObra);
     if (c.cobrarEnergia !== undefined) setCobrarEnergia(!!c.cobrarEnergia);
@@ -381,7 +381,7 @@ export function useCalculadora() {
     }[m] || m));
   };
 
-  const gerarPdf = useCallback((nomeEstudio?: string, slogan?: string, nomeCliente?: string, nomeProjeto?: string, idPedido?: string) => {
+  const gerarPdf = useCallback(async (nomeEstudio?: string, slogan?: string, logoUrl?: string, nomeCliente?: string, nomeProjeto?: string, idPedido?: string) => {
     // Sanitização de segurança para prevenir XSS no document.write
     const sEstudio = sanitizar(nomeEstudio || 'Meu Estúdio 3D');
     const sSlogan = sanitizar(slogan || 'Impressões 3D de alta qualidade e precisão');
@@ -400,36 +400,39 @@ export function useCalculadora() {
 
     const horas = Math.floor(tempo / 60);
     const minutos = Math.round(tempo % 60);
-    const tempoFormatado = horas > 0 
+    const tempoFormatado = horas > 0
       ? `${horas}h ${minutos > 0 ? `${minutos}min` : ''}`
       : `${minutos}min`;
 
-    const unitPrice = Math.round(calculo.precoSugerido / Math.max(1, quantidade));
+    const displayQuantidade = Math.max(1, quantidade);
+    const unitPrice = Math.round(calculo.precoSugerido / displayQuantidade);
 
-    // Logo: nome da loja todo em negrito, com barra de acento lateral
+    const sLogoUrl = logoUrl ? sanitizar(logoUrl) : null;
+
+    // Precarrega a imagem na janela principal para garantir que ela esteja no cache do navegador 
+    // antes de abrir a janela de impressão, evitando falhas de carregamento e problemas de CORS.
+    if (sLogoUrl) {
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = resolve; // Continua mesmo se der erro
+        img.src = sLogoUrl;
+      });
+    }
+
+    // Logo: nome da loja todo em negrito, com barra de acento lateral e imagem opcional
+    const imgHtml = sLogoUrl ? `<img src="${sLogoUrl}" alt="Logo" style="max-height: 40px; width: auto; object-fit: contain; border-radius: 4px;" />` : '';
+    
     const logoHtml = `
-      <div style="display:flex; align-items:stretch; gap:10px;">
-        <div style="width:3px; background:#0f172a; border-radius:2px; flex-shrink:0;"></div>
+      <div style="display:flex; align-items:${sLogoUrl ? 'center' : 'stretch'}; gap:10px;">
+        ${imgHtml}
+        <div style="width:3px; ${sLogoUrl ? 'height: 32px;' : ''} background:#0f172a; border-radius:2px; flex-shrink:0;"></div>
         <div style="display:flex; flex-direction:column; gap:2px;">
           <span style="font-size:18px; font-weight:900; text-transform:uppercase; letter-spacing:-0.04em; color:#0f172a; line-height:1;">${sEstudio}</span>
           <span style="font-size:7px; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:#64748b;">${sSlogan}</span>
         </div>
       </div>
     `;
-
-
-    // Renderizar lista de materiais minimalistas
-    const listaMateriaisHtml = materiaisSelecionados.length > 0 
-      ? materiaisSelecionados.map(m => `
-        <span class="spec-tag" style="background-color: #f8fafc;">
-          <span class="spec-color-dot" style="background-color: ${m.cor || '#0ea5e9'};"></span>
-          <strong>${sanitizar(m.nome)}</strong> 
-          <span style="color: #64748b; margin-left: 2px;">${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'} (${m.tipoMaterial || m.tipo})</span>
-        </span>
-      `).join('')
-      : '<span class="tech-empty">Material Padrão</span>';
-
-
 
     // Fator para distribuir o lucro proporcionalmente em cada item de custo
     // Isso faz os valores exibidos somarem ao preço final sem expor a margem
@@ -617,7 +620,7 @@ export function useCalculadora() {
               text-align: center;
             }
             .footer-title { font-size: 11px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-            .footer-text { font-size: 10px; color: #64748b; margin-bottom: 16px; line-height: 1.5; max-width: 80%; margin-left: auto; margin-right: auto; }
+            .footer-text { font-size: 10px; color: #64748b; margin-bottom: 48px; line-height: 1.5; max-width: 80%; margin-left: auto; margin-right: auto; }
             .footer-sign {
               display: flex;
               justify-content: center;
@@ -648,7 +651,7 @@ export function useCalculadora() {
             <div class="header">
               ${logoHtml}
               <div class="header-right">
-                <div class="badge-orcamento">Orçamento Oficial</div>
+                <div class="badge-orcamento">Orçamento Oficial ${sPedido}</div>
                 <div class="meta-val">Emitido em: <strong>${emissaoStr}</strong></div>
                 <div class="meta-val">Válido até: <strong>${validadeStr}</strong></div>
               </div>
@@ -664,7 +667,6 @@ export function useCalculadora() {
               <div style="text-align: right;">
                 <div class="info-label">Apresentado por</div>
                 <div class="info-title">${sEstudio}</div>
-                <div class="info-sub">Especialistas em Manufatura Aditiva</div>
               </div>
             </div>
 
@@ -682,21 +684,25 @@ export function useCalculadora() {
               <tbody>
                 <!-- Item Principal -->
                 <tr>
-                  <td>
+                  <td style="border-bottom: none; padding-bottom: 4px;">
                     <div class="item-nome">Serviço de Manufatura Aditiva 3D</div>
                     <div class="item-desc">
                       Produção técnica de alta qualidade, incluindo setup, impressão e remoção de suportes primários.
                     </div>
-                    <div>
-                      <span class="badge">Tempo est.: ${tempoFormatado}</span>
-                      ${materiaisSelecionados.length > 0 ? materiaisSelecionados.map(m => `<span class="badge">${m.tipoMaterial || m.tipo}</span>`).join('') : ''}
-                      ${itensPosProcesso.map(p => `<span class="badge">${sanitizar(p.nome)}</span>`).join('')}
-                      ${insumosSelecionados.map(i => `<span class="badge">${sanitizar(i.nome)} (${i.quantidade}x)</span>`).join('')}
+                  </td>
+                  <td class="c" style="font-weight: 700; border-bottom: none;">${displayQuantidade}x</td>
+                  <td class="r" style="font-weight: 600; border-bottom: none;">R$ ${(unitPrice / 100).toFixed(2).replace('.', ',')}</td>
+                  <td class="r" style="font-weight: 800; color: #0f172a; border-bottom: none;">R$ ${(calculo.precoSugerido / 100).toFixed(2).replace('.', ',')}</td>
+                </tr>
+                <tr>
+                  <td colspan="4" style="padding-top: 0; padding-bottom: 12px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      <span class="badge" style="margin: 0;">Tempo est.: ${tempoFormatado}</span>
+                      ${materiaisSelecionados.length > 0 ? materiaisSelecionados.map(m => `<span class="badge" style="margin: 0;">${sanitizar(m.nome)} (${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'})</span>`).join('') : ''}
+                      ${itensPosProcesso.map(p => `<span class="badge" style="margin: 0;">${sanitizar(p.nome)}</span>`).join('')}
+                      ${insumosSelecionados.map(i => `<span class="badge" style="margin: 0;">${sanitizar(i.nome)} (${i.quantidade}x)</span>`).join('')}
                     </div>
                   </td>
-                  <td class="c" style="font-weight: 700;">${quantidade}x</td>
-                  <td class="r" style="font-weight: 600;">R$ ${(unitPrice/100).toFixed(2).replace('.', ',')}</td>
-                  <td class="r" style="font-weight: 800; color: #0f172a;">R$ ${(calculo.precoSugerido/100).toFixed(2).replace('.', ',')}</td>
                 </tr>
 
                 <!-- Detalhamento Opcional / Transparência -->
@@ -707,8 +713,20 @@ export function useCalculadora() {
                 </tr>
 
                 <tr class="row-subitem">
-                  <td>Filamentos, Resinas e Matéria-Prima</td>
-                  <td class="c">${materiaisSelecionados.map(m => `${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'}`).join(' + ') || '—'}</td>
+                  <td>
+                    Filamentos, Resinas e Matéria-Prima
+                    ${materiaisSelecionados.length > 0 ? `
+                      <div style="margin-top: 6px; padding-left: 8px; border-left: 2px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 8.5px; color: #64748b;">
+                        ${materiaisSelecionados.map(m => `
+                          <div style="display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap;">
+                            <span>${sanitizar(m.nome)}</span>
+                            <span style="font-weight: 600; color: #475569;">${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                    ` : ''}
+                  </td>
+                  <td class="c">—</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${proporcionar(calculo.custoMaterial)}</td>
                 </tr>
@@ -775,21 +793,21 @@ export function useCalculadora() {
             <div class="total-box">
               <div>
                 <div class="total-label">Investimento Total</div>
-                <div class="total-valor">R$ ${((calculo.precoSugerido + frete)/100).toFixed(2).replace('.', ',')}</div>
+                <div class="total-valor">R$ ${((calculo.precoSugerido + frete) / 100).toFixed(2).replace('.', ',')}</div>
               </div>
               <div class="total-breakdown">
                 <div class="breakdown-row">
                   <span>Subtotal do Serviço:</span>
-                  <strong>R$ ${(calculo.precoSugerido/100).toFixed(2).replace('.', ',')}</strong>
+                  <strong>R$ ${(calculo.precoSugerido / 100).toFixed(2).replace('.', ',')}</strong>
                 </div>
                 ${frete > 0 ? `
                 <div class="breakdown-row">
                   <span>Frete e Logística:</span>
-                  <strong>R$ ${(frete/100).toFixed(2).replace('.', ',')}</strong>
+                  <strong>R$ ${(frete / 100).toFixed(2).replace('.', ',')}</strong>
                 </div>` : ''}
                 <div class="breakdown-div"></div>
                 <div style="font-size: 9px; color: #94a3b8; margin-top: 6px;">
-                  Pagamento à vista, Pix ou transferência.
+                  Formas de pagamento: Pix ou cartões de crédito e débito.
                 </div>
               </div>
             </div>
@@ -814,17 +832,50 @@ export function useCalculadora() {
           </div>
           
           <div class="powered-by">
-            Documento gerado digitalmente e de forma inteligente por <strong>PrintLog OS Pro</strong>
+            DOCUMENTO 100% DIGITAL. EVITE IMPRIMIR • <strong>www.printlog.com.br</strong>
           </div>
 
-          <script>window.onload = () => { setTimeout(() => window.print(), 500); }</script>
+          <script>
+            Promise.all(Array.from(document.images).map(img => {
+              if (img.complete) return Promise.resolve();
+              return new Promise(resolve => { img.onload = img.onerror = resolve; });
+            })).then(() => {
+              setTimeout(() => {
+                window.print();
+              }, 300);
+            });
+          </script>
         </body>
       </html>
     `;
 
-    const win = window.open("", "_blank");
-    win?.document.write(layout);
-    win?.document.close();
+    // Cria um iframe invisível para impressão, garantindo que a origem (Origin/Referer) 
+    // seja a mesma da aplicação, evitando bloqueios de CORS em imagens externas.
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const win = iframe.contentWindow;
+    if (win) {
+      win.document.open();
+      win.document.write(layout);
+      win.document.close();
+      
+      // Remove o iframe após a janela de impressão ser fechada
+      win.addEventListener('afterprint', () => {
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      });
+    } else {
+      document.body.removeChild(iframe);
+      toast.error('Erro ao abrir gerador de PDF');
+    }
   }, [calculo, materiaisSelecionados, tempo, quantidade, estimativaPrazo, itensPosProcesso, insumosSelecionados, frete, modoEntrada]);
 
   const limpar = useCallback((silencioso = false) => {
@@ -862,12 +913,12 @@ export function useCalculadora() {
       // 1. Lógica de "Inteligência"
       let novaMargem = margem;
       const precoAtualCentavos = calculo.precoSugerido;
-      
+
       // Regra A: Margem de Segurança (Mínimo 50% de margem real para projetos pequenos)
       if (precoAtualCentavos < 5000 && calculo.margemReal < 50) {
         novaMargem = Math.max(novaMargem, 20000); // Sobe para 200% de margem bruta
       }
-      
+
       // Regra B: Prêmio de Complexidade (Se houver pós-processo, o valor percebido é maior)
       if (itensPosProcesso.length > 0) {
         novaMargem += 3000; // +30% de margem
@@ -880,8 +931,8 @@ export function useCalculadora() {
       }
 
       setMargem(novaMargem);
-      
-      toast.success("Preço otimizado para máxima rentabilidade! ✨", { 
+
+      toast.success("Preço otimizado para máxima rentabilidade! ✨", {
         id: idToast,
         duration: 3000
       });

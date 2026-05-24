@@ -56,7 +56,18 @@ export function ModalConfiguracoes({
                     type="text"
                     placeholder="Ex: Impressão 3D de alta precisão"
                     value={config.sloganEstudio}
-                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value)}
+                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value, config.logoEstudio)}
+                    className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5 group">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 ml-1">URL da Logo (Opcional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://exemplo.com/logo.png"
+                    value={config.logoEstudio}
+                    onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, config.sloganEstudio, e.target.value)}
                     className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
                 </div>
@@ -69,12 +80,19 @@ export function ModalConfiguracoes({
                 <span className="text-[9px] font-black uppercase text-zinc-500 border-b border-borda-sutil pb-1.5 mb-1 tracking-wider">
                   Pré-Visualização
                 </span>
-                <span className="text-xs font-bold text-primary dark:text-zinc-200 truncate">
-                  {config.nomeEstudio || "Seu Estúdio"}
-                </span>
-                <span className="text-[10px] font-bold text-zinc-500 italic truncate">
-                  {config.sloganEstudio || "Seu slogan aqui"}
-                </span>
+                <div className="flex items-center gap-3 mt-1">
+                  {config.logoEstudio && (
+                    <img src={config.logoEstudio} alt="Logo" className="max-h-8 w-auto object-contain rounded" />
+                  )}
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-xs font-bold text-primary dark:text-zinc-200 truncate">
+                      {config.nomeEstudio || "Seu Estúdio"}
+                    </span>
+                    <span className="text-[10px] font-bold text-zinc-500 italic truncate">
+                      {config.sloganEstudio || "Seu slogan aqui"}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 
