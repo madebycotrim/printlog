@@ -15,6 +15,7 @@ import { CardAparencia } from "./componentes/CardAparencia";
 import { CardMetricas } from "./componentes/CardMetricas";
 import { CardPrivacidade } from "./componentes/CardPrivacidade";
 import { CardEstudio } from "./componentes/CardEstudio";
+import { CardIdentidade } from "./componentes/CardIdentidade";
 
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -42,6 +43,9 @@ export function PaginaConfiguracoes() {
   const [horaOperador, definirHoraOperador] = useState(config.horaOperador);
   const [margemLucro, definirMargemLucro] = useState(config.margemLucro);
   const [plano, definirPlano] = useState<PlanoUsuario>(config.plano);
+  const [nomeEstudio, definirNomeEstudio] = useState(config.nomeEstudio);
+  const [sloganEstudio, definirSloganEstudio] = useState(config.sloganEstudio);
+  const [logoEstudio, definirLogoEstudio] = useState(config.logoEstudio);
 
   // Estados de UI
   const [salvando, definirSalvando] = useState(false);
@@ -72,7 +76,10 @@ export function PaginaConfiguracoes() {
     definirHoraOperador(config.horaOperador);
     definirMargemLucro(config.margemLucro);
     definirPlano(config.plano);
-  }, [config.custoEnergia, config.horaMaquina, config.horaOperador, config.margemLucro, config.plano]);
+    definirNomeEstudio(config.nomeEstudio);
+    definirSloganEstudio(config.sloganEstudio);
+    definirLogoEstudio(config.logoEstudio);
+  }, [config.custoEnergia, config.horaMaquina, config.horaOperador, config.margemLucro, config.plano, config.nomeEstudio, config.sloganEstudio, config.logoEstudio]);
 
   // Redirecionamento de seção via URL
   useEffect(() => {
@@ -89,6 +96,14 @@ export function PaginaConfiguracoes() {
     }
   }, [search]);
 
+  const eProOuSuperior = (() => {
+    const p = ((usuario as any)?.plano || '').toUpperCase();
+    const r = ((usuario as any)?.role || (usuario as any)?.cargo || '').toUpperCase();
+    return ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(p) ||
+      ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(r) ||
+      p.includes('FUNDADOR') || r.includes('FUNDADOR');
+  })();
+
   // Detecção de Alterações Pendentes
   const perfilPendente = nome !== (usuario?.nome || "");
   const operacionalPendente =
@@ -97,6 +112,11 @@ export function PaginaConfiguracoes() {
     horaOperador !== config.horaOperador || 
     margemLucro !== config.margemLucro ||
     plano !== config.plano;
+
+  const identidadePendente =
+    nomeEstudio !== config.nomeEstudio ||
+    sloganEstudio !== config.sloganEstudio ||
+    logoEstudio !== config.logoEstudio;
 
   const aparenciaPendente =
     contextoTema.modoTema !== inicialAparencia.modo ||
@@ -112,7 +132,7 @@ export function PaginaConfiguracoes() {
     templateOrcamento !== beta.templateOrcamento ||
     limiteAlertaEstoque !== beta.limiteAlertaEstoque;
 
-  const totalAlteracoes = [perfilPendente, operacionalPendente, aparenciaPendente, estudioPendente].filter(
+  const totalAlteracoes = [perfilPendente, operacionalPendente, identidadePendente, aparenciaPendente, estudioPendente].filter(
     Boolean,
   ).length;
   const temAlteracoes = totalAlteracoes > 0;
@@ -145,6 +165,11 @@ export function PaginaConfiguracoes() {
     definirMargemLucro(config.margemLucro);
     definirPlano(config.plano);
 
+    // Reset Identidade
+    definirNomeEstudio(config.nomeEstudio);
+    definirSloganEstudio(config.sloganEstudio);
+    definirLogoEstudio(config.logoEstudio);
+
     // Reset Estudio
     definirParticiparPrototipos(beta.participarPrototipos);
     definirBetaMultiEstudio(beta.betaMultiEstudio);
@@ -176,6 +201,7 @@ export function PaginaConfiguracoes() {
       config.definirHoraOperador(horaOperador);
       config.definirMargemLucro(margemLucro);
       config.definirPlano(plano);
+      config.definirIdentidadeEstudio(nomeEstudio, sloganEstudio, logoEstudio);
       await config.salvarNoD1(usuario!.uid);
 
       // 3. Atualizar Estado Inicial de Aparência
@@ -272,6 +298,20 @@ export function PaginaConfiguracoes() {
               pendente={operacionalPendente}
             />
           </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.12 }}>
+            <CardIdentidade
+              nomeEstudio={nomeEstudio}
+              definirNomeEstudio={definirNomeEstudio}
+              sloganEstudio={sloganEstudio}
+              definirSloganEstudio={definirSloganEstudio}
+              logoEstudio={logoEstudio}
+              definirLogoEstudio={definirLogoEstudio}
+              eProOuSuperior={eProOuSuperior}
+              pendente={identidadePendente}
+            />
+          </motion.div>
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.16 }}>
             <CardAparencia pendente={aparenciaPendente} />
           </motion.div>

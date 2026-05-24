@@ -39,10 +39,10 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             if (!resultado) {
                 // Retorna valores padrão sem criar o registro ainda
                 return new Response(JSON.stringify({
-                    custoEnergia: "R$ 0,95",
-                    horaMaquina: "R$ 5,00",
-                    horaOperador: "R$ 20,00",
-                    margemLucro: "150,00%",
+                    custoEnergia: "R$ 0,00",
+                    horaMaquina: "R$ 0,00",
+                    horaOperador: "R$ 0,00",
+                    margemLucro: "0,00%",
                     nomeEstudio: "",
                     sloganEstudio: "",
                     logoEstudio: "",

@@ -37,10 +37,10 @@ interface ArmazemConfiguracoes {
 }
 
 export const VALORES_PADRAO = {
-  custoEnergia: 95,
-  horaMaquina: 500,
-  horaOperador: 2000,
-  margemLucro: 15000,
+  custoEnergia: 0,
+  horaMaquina: 0,
+  horaOperador: 0,
+  margemLucro: 0,
   nomeEstudio: "",
   sloganEstudio: "",
   logoEstudio: "",

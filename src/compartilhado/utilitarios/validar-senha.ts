@@ -35,48 +35,43 @@ export interface ResultadoValidacaoSenha {
  * @returns Resultado detalhado da validação com estado por regra
  */
 export function validarForcaSenha(senha: string): ResultadoValidacaoSenha {
+  // Apenas as regras que são ESTRITAMENTE OBRIGATÓRIAS segundo a política
   const regras: RegraValidacaoSenha[] = [
     {
       id: "comprimento",
-      descricao: "Mínimo de 12 caracteres",
-      atendida: senha.length >= 12,
-    },
-    {
-      id: "maiuscula",
-      descricao: "Pelo menos uma letra maiúscula",
-      atendida: /[A-Z]/.test(senha),
-    },
-    {
-      id: "minuscula",
-      descricao: "Pelo menos uma letra minúscula",
-      atendida: /[a-z]/.test(senha),
-    },
-    {
-      id: "numero",
-      descricao: "Pelo menos um número",
-      atendida: /[0-9]/.test(senha),
-    },
-    {
-      id: "especial",
-      descricao: "Pelo menos um caractere especial (!@#$%...)",
-      atendida: /[^A-Za-z0-9]/.test(senha),
-    },
+      descricao: "Entre 6 e 50 caracteres",
+      atendida: senha.length >= 6 && senha.length <= 50,
+    }
   ];
 
   const regrasAtendidas = regras.filter((r) => r.atendida).length;
-  const totalRegras = regras.length;
+  const valida = regrasAtendidas === regras.length;
 
+  // O cálculo da FORÇA é independente das regras obrigatórias
   let forca: "fraca" | "media" | "forte";
-  if (regrasAtendidas <= 2) {
+  const temMaiuscula = /[A-Z]/.test(senha);
+  const temNumero = /[0-9]/.test(senha);
+  const temEspecial = /[^A-Za-z0-9]/.test(senha);
+  
+  let score = 0;
+  if (senha.length >= 6) score += 1;
+  if (senha.length >= 10) score += 1;
+  if (temMaiuscula) score += 1;
+  if (temNumero) score += 1;
+  if (temEspecial) score += 1;
+
+  if (senha.length < 6) {
     forca = "fraca";
-  } else if (regrasAtendidas < totalRegras) {
+  } else if (score <= 2) {
+    forca = "fraca";
+  } else if (score <= 3) {
     forca = "media";
   } else {
     forca = "forte";
   }
 
   return {
-    valida: regrasAtendidas === totalRegras,
+    valida,
     regras,
     forca,
   };
