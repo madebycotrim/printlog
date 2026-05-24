@@ -27,7 +27,7 @@ interface CardProducaoProps {
 }
 
 export const CardProducao = memo(function CardProducao({
-  tempo, setTempo, modoEntrada, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
+  tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
   impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, aoDetectarTarifa
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
@@ -40,8 +40,6 @@ export const CardProducao = memo(function CardProducao({
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
   const [tempPotencia, setTempPotencia] = useState<string | undefined>(undefined);
-  const [tempKwh, setTempKwh] = useState<string | undefined>(undefined);
-  const [tempPos, setTempPos] = useState<Record<string, string>>({});
 
   const lidarComDeteccao = async () => {
     if (!aoDetectarTarifa) return;

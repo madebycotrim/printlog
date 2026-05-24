@@ -516,9 +516,13 @@ export function PaginaCalculadora() {
           <RotateCcw size={18} />
         </button>
         <button 
-          onClick={() => hook.salvarRascunhoNuvem(nomeProjeto, descricaoProjeto, clienteProjetoId)}
+          onClick={() => {
+            const dataAtual = new Date();
+            const horaAtual = dataAtual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            hook.salvarSnapshot(nomeProjeto || `Rascunho - ${horaAtual}`, nomeProjeto, descricaoProjeto, clienteProjetoId);
+          }}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all"
-          title="Salvar Rascunho na Nuvem"
+          title="Salvar no Histórico (Rascunho)"
         >
           <CloudUpload size={18} />
         </button>

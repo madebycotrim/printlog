@@ -455,13 +455,13 @@ export function useCalculadora() {
               line-height: 1.5;
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
-              padding: 12mm 14mm;
+              padding: 8mm 10mm;
             }
 
             .container {
               background: #ffffff;
               border-radius: 16px;
-              padding: 32px;
+              padding: 24px;
               border: 1px solid #f1f5f9;
               box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
             }
@@ -471,8 +471,8 @@ export function useCalculadora() {
               display: flex;
               justify-content: space-between;
               align-items: flex-start;
-              padding-bottom: 24px;
-              margin-bottom: 24px;
+              padding-bottom: 16px;
+              margin-bottom: 16px;
               border-bottom: 2px solid #f8fafc;
             }
             .header-right { text-align: right; }
@@ -495,11 +495,11 @@ export function useCalculadora() {
             .info-grid {
               display: grid;
               grid-template-columns: 1fr 1fr;
-              gap: 24px;
+              gap: 16px;
               background: #f8fafc;
-              padding: 24px;
+              padding: 16px;
               border-radius: 12px;
-              margin-bottom: 32px;
+              margin-bottom: 20px;
             }
             .info-label { font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
             .info-title { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 2px; }
@@ -527,14 +527,14 @@ export function useCalculadora() {
             }
 
             /* ── TABELA ── */
-            table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
             th {
               font-size: 9px;
               font-weight: 700;
               text-transform: uppercase;
               color: #94a3b8;
               letter-spacing: 0.06em;
-              padding: 12px 8px;
+              padding: 8px 6px;
               border-bottom: 2px solid #e2e8f0;
               text-align: left;
             }
@@ -543,7 +543,7 @@ export function useCalculadora() {
             td {
               font-size: 11px;
               color: #334155;
-              padding: 16px 8px;
+              padding: 10px 6px;
               border-bottom: 1px solid #f8fafc;
               vertical-align: top;
             }
@@ -568,7 +568,7 @@ export function useCalculadora() {
             .row-subitem td {
               font-size: 10px;
               color: #64748b;
-              padding: 8px 8px;
+              padding: 4px 6px;
               background: #f8fafc;
               border-bottom: 1px solid #f1f5f9;
             }
@@ -586,11 +586,11 @@ export function useCalculadora() {
               background: #0f172a;
               color: white;
               border-radius: 16px;
-              padding: 24px;
+              padding: 20px;
               display: flex;
               justify-content: space-between;
               align-items: center;
-              margin-bottom: 32px;
+              margin-bottom: 20px;
               box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
             }
             .total-label { font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -613,11 +613,11 @@ export function useCalculadora() {
               border: 1px solid #e2e8f0;
               background: #f8fafc;
               border-radius: 12px;
-              padding: 24px;
+              padding: 16px;
               text-align: center;
             }
             .footer-title { font-size: 11px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-            .footer-text { font-size: 10px; color: #64748b; margin-bottom: 24px; line-height: 1.5; max-width: 80%; margin-left: auto; margin-right: auto; }
+            .footer-text { font-size: 10px; color: #64748b; margin-bottom: 16px; line-height: 1.5; max-width: 80%; margin-left: auto; margin-right: auto; }
             .footer-sign {
               display: flex;
               justify-content: center;

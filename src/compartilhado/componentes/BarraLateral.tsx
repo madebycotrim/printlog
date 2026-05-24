@@ -18,7 +18,7 @@ import {
   ShieldCheck,
   Calendar,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
@@ -53,7 +53,13 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const { modoEfetivo } = useContextoTema();
   
   // Estado de colapso da Barra Lateral (Desktop)
-  const [colapsada, setColapsada] = useState(false);
+  const [colapsada, setColapsada] = useState(() => {
+    return localStorage.getItem("printlog_sidebar_colapsada") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("printlog_sidebar_colapsada", colapsada.toString());
+  }, [colapsada]);
 
   const lidarComSair = async () => {
     try {
