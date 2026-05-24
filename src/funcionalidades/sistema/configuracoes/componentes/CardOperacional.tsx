@@ -1,5 +1,5 @@
 import { Zap, Clock, Wrench, Percent, Settings } from "lucide-react";
-import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
+import { CabecalhoCard, CampoBancarioDashboard } from "./Compartilhados";
 import { formatarMoedaFinancas, formatarPorcentagem, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropsCardOperacional {
@@ -30,28 +30,28 @@ export function CardOperacional({
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
             <CabecalhoCard titulo="Operacional" descricao="Motores base de custeio" icone={Settings} corIcone="text-amber-500" pendente={pendente} />
             <div className="grid grid-cols-2 gap-4">
-                <CampoDashboard
+                <CampoBancarioDashboard
                     label="Energia (R$/kWh)"
-                    valor={formatarMoedaFinancas(custoEnergia / 100, 2)}
-                    aoMudar={(v) => definirCustoEnergia(Math.round(extrairValorNumerico(v) * 100))}
+                    valor={custoEnergia}
+                    aoMudar={(v) => definirCustoEnergia(v)}
                     icone={Zap}
                 />
-                <CampoDashboard
+                <CampoBancarioDashboard
                     label="Máquina (R$/h)"
-                    valor={formatarMoedaFinancas(horaMaquina / 100, 3)}
-                    aoMudar={(v) => definirHoraMaquina(Math.round(extrairValorNumerico(v) * 100))}
+                    valor={horaMaquina}
+                    aoMudar={(v) => definirHoraMaquina(v)}
                     icone={Clock}
                 />
-                <CampoDashboard
+                <CampoBancarioDashboard
                     label="Operador (R$/h)"
-                    valor={formatarMoedaFinancas(horaOperador / 100, 2)}
-                    aoMudar={(v) => definirHoraOperador(Math.round(extrairValorNumerico(v) * 100))}
+                    valor={horaOperador}
+                    aoMudar={(v) => definirHoraOperador(v)}
                     icone={Wrench}
                 />
-                <CampoDashboard
+                <CampoBancarioDashboard
                     label="Margem (%)"
-                    valor={formatarPorcentagem(String(margemLucro / 100))}
-                    aoMudar={(v) => definirMargemLucro(Math.round(extrairValorNumerico(v) * 100))}
+                    valor={margemLucro}
+                    aoMudar={(v) => definirMargemLucro(v)}
                     icone={Percent}
                 />
             </div>

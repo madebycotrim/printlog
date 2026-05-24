@@ -187,21 +187,22 @@ export const CardMateriais = memo(function CardMateriais({
         })}
         
         {materiais.length === 0 && (
-          <div className="w-full flex items-center justify-between p-4 px-5 rounded-2xl bg-muted/20 border border-dashed border-borda-sutil relative overflow-hidden group/empty">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 dark:text-zinc-600">
-                <Box size={16} />
+          <div className="col-span-full w-full flex flex-col md:flex-row items-center justify-between p-6 rounded-2xl bg-zinc-50 dark:bg-[#121214] border border-dashed border-zinc-200 dark:border-white/10 relative overflow-hidden group/empty shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/[0.03] to-transparent pointer-events-none" />
+            <div className="flex items-center gap-5 relative z-10 w-full md:w-auto mb-4 md:mb-0">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover/empty:scale-110 group-hover/empty:text-sky-500 transition-all duration-500">
+                <Box size={20} className="group-hover/empty:animate-bounce" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Estoque Vazio</span>
-                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase leading-tight">Cadastre materiais para começar</span>
+                <span className="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Estoque Vazio</span>
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase leading-relaxed mt-0.5">Nenhum material cadastrado ainda. Adicione agora para começar.</span>
               </div>
             </div>
             <button 
               onClick={abrirCriar}
-              className="relative z-10 px-4 h-8 bg-sky-500/80 hover:bg-sky-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 active:scale-95"
+              className="relative z-10 w-full md:w-auto px-6 h-10 bg-sky-500 hover:bg-sky-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_4px_20px_-5px_rgba(14,165,233,0.4)] hover:shadow-[0_6px_25px_-5px_rgba(14,165,233,0.6)] flex items-center justify-center gap-2 active:scale-95"
             >
-              <Plus size={12} strokeWidth={3} /> Cadastrar
+              <Plus size={14} strokeWidth={3} /> Cadastrar Material
             </button>
           </div>
         )}

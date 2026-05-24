@@ -44,7 +44,7 @@ export function ModalConfiguracoes({
                   <input
                     type="text"
                     placeholder="Ex: PrintPro Lab"
-                    value={config.nomeEstudio}
+                    value={config.nomeEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
                     className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
@@ -55,7 +55,7 @@ export function ModalConfiguracoes({
                   <input
                     type="text"
                     placeholder="Ex: Impressão 3D de alta precisão"
-                    value={config.sloganEstudio}
+                    value={config.sloganEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value, config.logoEstudio)}
                     className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
@@ -66,7 +66,7 @@ export function ModalConfiguracoes({
                   <input
                     type="url"
                     placeholder="https://exemplo.com/logo.png"
-                    value={config.logoEstudio}
+                    value={config.logoEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, config.sloganEstudio, e.target.value)}
                     className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />

@@ -39,6 +39,43 @@ export function CampoDashboard({ label, valor, aoMudar, placeholder, icone: Icon
     );
 }
 
+import { InputBancario } from "@/compartilhado/componentes/ui/InputBancario";
+
+export interface PropsCampoBancario {
+    label: string;
+    valor: number; // valor em centavos
+    aoMudar: (v: number) => void;
+    placeholder?: string;
+    icone: typeof User;
+    prefixo?: string;
+}
+
+export function CampoBancarioDashboard({ label, valor, aoMudar, placeholder, icone: Icone, prefixo }: PropsCampoBancario) {
+    return (
+        <div className="w-full">
+            <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                {label}
+            </label>
+            <div className="relative group">
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground opacity-60 group-focus-within:text-primary transition-colors duration-300">
+                    <Icone size={16} />
+                </span>
+                {prefixo && (
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
+                        {prefixo}
+                    </span>
+                )}
+                <InputBancario
+                    value={valor / 100}
+                    onChange={(e) => aoMudar(Math.round(parseFloat(e.target.value) * 100))}
+                    placeholder={placeholder}
+                    className={`h-11 w-full bg-transparent border-b-2 border-borda-sutil ${prefixo ? 'pl-14' : 'pl-8'} pr-3 text-sm font-bold text-primary outline-none focus:border-primary transition-all placeholder:text-muted-foreground/30`}
+                />
+            </div>
+        </div>
+    );
+}
+
 export interface PropsCabecalhoCard {
     titulo: string;
     descricao: string;
