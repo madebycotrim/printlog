@@ -1,5 +1,5 @@
 import { Crown, Settings, Zap, Percent, Wrench, Clock, X } from "lucide-react";
-import { Dialogo } from "@/compartilhado/componentes";
+import { Dialogo, InputBancario } from "@/compartilhado/componentes";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 /**
@@ -128,9 +128,8 @@ export function ModalConfiguracoes({
               </div>
               <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
                 <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
-                <input
-                  type="number"
-                  placeholder="0"
+                <InputBancario
+                  placeholder="0.00"
                   value={config.custoEnergia === 0 ? "" : (config.custoEnergia / 100)}
                   onChange={(e) => {
                     const v = Math.round(Number(e.target.value) * 100);
@@ -178,9 +177,8 @@ export function ModalConfiguracoes({
               </div>
               <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
                 <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
-                <input
-                  type="number"
-                  placeholder="0"
+                <InputBancario
+                  placeholder="0.00"
                   value={config.horaOperador === 0 ? "" : (config.horaOperador / 100)}
                   onChange={(e) => {
                     const v = Math.round(Number(e.target.value) * 100);
@@ -203,9 +201,8 @@ export function ModalConfiguracoes({
               </div>
               <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
                 <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
-                <input
-                  type="number"
-                  placeholder="0"
+                <InputBancario
+                  placeholder="0.00"
                   value={config.horaMaquina === 0 ? "" : (config.horaMaquina / 100)}
                   onChange={(e) => {
                     const v = Math.round(Number(e.target.value) * 100);

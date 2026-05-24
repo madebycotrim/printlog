@@ -1,7 +1,7 @@
 import { Zap, Plus, Trash2, Minus, Sparkles } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
 import { useState, memo } from "react";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { toast } from "react-hot-toast";
 import { centavosParaReais, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
@@ -113,7 +113,7 @@ export const CardProducao = memo(function CardProducao({
                   type="number" 
                   placeholder="1" 
                   min="1" 
-                  value={tempQuantidade !== undefined ? tempQuantidade : (quantidade === 0 ? "" : quantidade)} 
+                  value={tempQuantidade !== undefined ? tempQuantidade : (quantidade === 0 ? "" : (quantidade ?? ""))} 
                   onFocus={() => {}}
                   onBlur={() => setTempQuantidade(undefined)}
                   onChange={(e) => {
@@ -140,7 +140,7 @@ export const CardProducao = memo(function CardProducao({
                   <input 
                     type="number" 
                     placeholder="0" 
-                    value={tempHora !== undefined ? tempHora : (Math.floor(tempo / 60) === 0 ? "" : Math.floor(tempo / 60))} 
+                    value={tempHora !== undefined ? tempHora : (Math.floor(tempo / 60) === 0 ? "" : (Math.floor(tempo / 60) || ""))} 
                     onFocus={() => {}}
                     onBlur={() => setTempHora(undefined)}
                     onChange={(e) => {
@@ -157,7 +157,7 @@ export const CardProducao = memo(function CardProducao({
                   <input 
                     type="number" 
                     placeholder="0" 
-                    value={tempMinuto !== undefined ? tempMinuto : (tempo % 60 === 0 ? "" : tempo % 60)} 
+                    value={tempMinuto !== undefined ? tempMinuto : (tempo % 60 === 0 ? "" : (tempo % 60 || ""))} 
                     onFocus={() => {}}
                     onBlur={() => setTempMinuto(undefined)}
                     onChange={(e) => {
@@ -189,7 +189,7 @@ export const CardProducao = memo(function CardProducao({
                 >
                   <input
                     type="number"
-                    value={tempPotencia !== undefined ? tempPotencia : (potencia === 0 ? "" : potencia)}
+                    value={tempPotencia !== undefined ? tempPotencia : (potencia === 0 ? "" : (potencia ?? ""))}
                     onFocus={() => {}}
                     onBlur={() => setTempPotencia(undefined)}
                     onChange={(e) => {
@@ -236,16 +236,11 @@ export const CardProducao = memo(function CardProducao({
                 </button>
               </div>
               <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-indigo-500/40 transition-all shadow-inner overflow-hidden">
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="0" 
-                  value={tempKwh !== undefined ? tempKwh : (precoKwh === 0 ? "" : (precoKwh / 100).toFixed(2))} 
-                  onFocus={() => {}}
-                  onBlur={() => setTempKwh(undefined)}
+                <InputBancario 
+                  placeholder="0.00" 
+                  value={precoKwh === 0 ? "" : precoKwh / 100} 
                   onChange={(e) => {
                     const v = e.target.value;
-                    setTempKwh(v);
                     setPrecoKwh(v === "" ? 0 : Math.round(extrairValorNumerico(v) * 100));
                   }} 
                   className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-center" 
@@ -303,22 +298,11 @@ export const CardProducao = memo(function CardProducao({
 
                     <div className="flex items-center gap-2 w-20">
                       <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">R$</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="0,00"
-                        value={tempPos[item.id] !== undefined ? tempPos[item.id] : (item.valor === 0 ? "" : item.valor / 100)}
-                        onFocus={() => {}}
-                        onBlur={() => {
-                          setTempPos(prev => {
-                            const n = { ...prev };
-                            delete n[item.id];
-                            return n;
-                          });
-                        }}
+                      <InputBancario
+                        placeholder="0.00"
+                        value={item.valor === 0 ? "" : item.valor / 100}
                         onChange={(e) => {
                           const v = e.target.value;
-                          setTempPos(prev => ({ ...prev, [item.id]: v }));
                           const novaLista = [...posProcesso];
                           novaLista[index].valor = v === "" ? 0 : Math.round(Number(v) * 100);
                           setPosProcesso(novaLista);

@@ -1,5 +1,5 @@
 import { Settings, Check, X, Pencil, Trash } from "lucide-react";
-import { ModalListagemPremium } from "@/compartilhado/componentes";
+import { ModalListagemPremium, InputBancario } from "@/compartilhado/componentes";
 
 /**
  * Interface para as propriedades do ModalCanaisVenda.
@@ -146,8 +146,8 @@ export function ModalCanaisVenda({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Fixa (R$)</span>
-                      <input
-                        type="number"
+                      <InputBancario
+                        placeholder="0.00"
                         value={p.fixaCentavos !== undefined ? p.fixaCentavos / 100 : ""}
                         onChange={(e) => {
                           const novos = [...hook.perfisMarketplace];
@@ -160,8 +160,8 @@ export function ModalCanaisVenda({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter mb-1">Frete (R$)</span>
-                      <input
-                        type="number"
+                      <InputBancario
+                        placeholder="0.00"
                         value={p.freteCentavos !== undefined ? p.freteCentavos / 100 : 0}
                         onChange={(e) => {
                           const val = Math.round(Number(e.target.value) * 100);

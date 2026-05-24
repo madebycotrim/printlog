@@ -184,9 +184,25 @@ export function PaginaCalculadora() {
     hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, precoKgCentavos: Math.round(precoKg * 100) } : m));
   }, [hook.setMateriaisSelecionados]);
 
+  const atualizarTempoMaterial = useCallback((id: string, horas: number, minutos: number) => {
+    hook.setMateriaisSelecionados(prev => {
+      const newState = prev.map(m => m.id === id ? { ...m, tempoHoras: horas, tempoMinutos: minutos } : m);
+      const totalMinutos = newState.reduce((acc, m) => acc + (m.tempoHoras || 0) * 60 + (m.tempoMinutos || 0), 0);
+      hook.setTempo(totalMinutos);
+      return newState;
+    });
+  }, [hook.setMateriaisSelecionados, hook.setTempo]);
+
   const removerMaterial = useCallback((id: string) => {
-    hook.setMateriaisSelecionados(prev => prev.filter(m => m.id !== id));
-  }, [hook.setMateriaisSelecionados]);
+    hook.setMateriaisSelecionados(prev => {
+      const newState = prev.filter(m => m.id !== id);
+      const totalMinutos = newState.reduce((acc, m) => acc + (m.tempoHoras || 0) * 60 + (m.tempoMinutos || 0), 0);
+      if (totalMinutos > 0) {
+        hook.setTempo(totalMinutos);
+      }
+      return newState;
+    });
+  }, [hook.setMateriaisSelecionados, hook.setTempo]);
 
   // Lógica para carregar projeto existente (Edição)
   useEffect(() => {
@@ -603,6 +619,7 @@ export function PaginaCalculadora() {
               alternar={alternarMaterial}
               atualizarQtd={atualizarQtdMaterial}
               atualizarPreco={atualizarPrecoMaterial}
+              atualizarTempo={atualizarTempoMaterial}
               remover={removerMaterial}
               abrirArmazem={abrirModalArmazem}
               abrirCriar={abrirCriarMaterial}

@@ -11,3 +11,4 @@ export * from "./Avatar";
 export * from "./SeloPlano";
 export * from "./ToasterPremium";
 export * from "./ContadorAnimado";
+export * from "./InputBancario";

@@ -23,9 +23,7 @@ interface CardInsumosProps {
 export const CardInsumos = memo(function CardInsumos({
   insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, alternarFavorito, alternarPorLote, abrirGerenciar, abrirNovo, modoEntrada
 }: CardInsumosProps) {
-  const [pagina, setPagina] = useState(0);
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
-  const itensPorPagina = 4;
 
   // Ordenação Inteligente: Favoritos ou Mais Usados
   const insumosOrdenados = useMemo(() => {
@@ -48,19 +46,6 @@ export const CardInsumos = memo(function CardInsumos({
       }
     });
   }, [insumos, tipoOrdenacao]);
-
-  const totalPaginas = Math.ceil(insumosOrdenados.length / itensPorPagina);
-
-  // Resetar página se a busca mudar
-  useEffect(() => {
-    if (pagina >= totalPaginas && totalPaginas > 0) {
-      setPagina(totalPaginas - 1);
-    } else if (totalPaginas === 0) {
-      setPagina(0);
-    }
-  }, [insumosOrdenados.length, totalPaginas, pagina]);
-
-  const insumosExibidos = insumosOrdenados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
 
   return (
     <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
@@ -127,41 +112,16 @@ export const CardInsumos = memo(function CardInsumos({
             </button>
           </div>
         </div>
-
-        {totalPaginas > 1 && (
-          <div className="flex items-center gap-4">
-             <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil">
-               <button 
-                 onClick={() => setPagina(p => Math.max(0, p - 1))}
-                 disabled={pagina === 0}
-                 className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-teal-600 dark:hover:text-teal-400 disabled:opacity-20 transition-colors"
-               >
-                 <Plus className="w-3 h-3 rotate-45" />
-               </button>
-               <div className="w-[1px] h-3 bg-borda-sutil" />
-               <button 
-                 onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
-                 disabled={pagina === totalPaginas - 1}
-                 className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-teal-600 dark:hover:text-teal-400 disabled:opacity-20 transition-colors"
-               >
-                 <Plus className="w-3 h-3" />
-               </button>
-             </div>
-             <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-600 uppercase">
-              {pagina + 1}/{totalPaginas}
-            </span>
-          </div>
-        )}
       </div>
 
-      <div className="flex gap-3 overflow-x-hidden pb-4 -mx-2 px-2 min-h-[110px] items-stretch">
-        {insumosExibidos.length === 0 && insumos.length > 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center py-6 border border-dashed border-borda-sutil rounded-2xl bg-zinc-50 dark:bg-white/[0.01] relative overflow-hidden">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 overflow-y-auto max-h-[280px] scrollbar-thin pb-4 pr-2 min-h-[110px] items-stretch">
+        {insumosOrdenados.length === 0 && insumos.length > 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-6 border border-dashed border-borda-sutil rounded-2xl bg-zinc-50 dark:bg-white/[0.01] relative overflow-hidden">
              <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
              <Search className="w-4 h-4 mb-1.5 text-zinc-400 dark:text-zinc-700 relative z-10" />
              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600 relative z-10">Sem resultados</span>
           </div>
-        ) : insumosExibidos.map((i) => {
+        ) : insumosOrdenados.map((i) => {
           const sel = selecionados.some(s => s.id === i.id);
           return (
             <div 

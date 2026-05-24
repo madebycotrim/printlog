@@ -13,30 +13,39 @@ interface CampoMonetarioProps extends Omit<InputHTMLAttributes<HTMLInputElement>
  * Internamente converte vírgula → ponto para compatibilidade com parseFloat/valueAsNumber.
  * @lgpd Sem coleta de dados pessoais.
  */
-export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
-  ({ rotulo, erro, prefixo = "BRL", icone: Icone = DollarSign, className = "", onChange, value, onBlur, ...props }, ref) => {
-    const [valorTemporario, setValorTemporario] = useState<string | undefined>(undefined);
+  export const CampoMonetario = forwardRef<HTMLInputElement, CampoMonetarioProps>(
+    ({ rotulo, erro, prefixo = "BRL", icone: Icone = DollarSign, className = "", onChange, value, onBlur, ...props }, ref) => {
+      const [valorTemporario, setValorTemporario] = useState<string | undefined>(undefined);
+  
+      /**
+       * Intercepta o onChange para aplicar a máscara de centavos.
+       */
+      const lidarComMudanca = (e: ChangeEvent<HTMLInputElement>) => {
+        const apenasNumeros = e.target.value.replace(/\D/g, "");
+        const valorCentavos = apenasNumeros ? parseInt(apenasNumeros, 10) : 0;
+        const valorDecimal = (valorCentavos / 100).toFixed(2);
+  
+        e.target.value = valorDecimal; // Atualiza o valor no evento para o register capturar o número
+        setValorTemporario(valorDecimal);
+        onChange?.(e);
+      };
+  
+      const lidarComBlur = (e: any) => {
+        // NÃO limpamos o valorTemporario aqui para evitar o reset visual no uncontrolled mode
+        onBlur?.(e);
+      };
+  
+      // Prioridade: Valor que está sendo digitado > Valor controlado externo > Vazio
+      const formatarParaExibicao = (val: string | number | readonly string[] | undefined) => {
+          if (val === undefined || val === null || val === "") return "";
+          const numerico = typeof val === 'number' ? val : parseFloat(val as string);
+          if (isNaN(numerico)) return val as string;
+          return numerico.toFixed(2);
+      };
 
-    /**
-     * Intercepta o onChange para normalizar vírgula → ponto.
-     */
-    const lidarComMudanca = (e: ChangeEvent<HTMLInputElement>) => {
-      const v = e.target.value.replace(",", ".");
-      e.target.value = v; // Atualiza o valor no evento para o register capturar o ponto
-      setValorTemporario(v);
-      onChange?.(e);
-    };
-
-    const lidarComBlur = (e: any) => {
-
-      // NÃO limpamos o valorTemporario aqui para evitar o reset visual no uncontrolled mode
-      onBlur?.(e);
-    };
-
-    // Prioridade: Valor que está sendo digitado > Valor controlado externo > Vazio
-    const valorParaExibir = valorTemporario !== undefined 
-      ? valorTemporario 
-      : (value === undefined || value === null ? "" : value);
+      const valorParaExibir = valorTemporario !== undefined 
+        ? valorTemporario 
+        : formatarParaExibicao(value);
 
     return (
       <div className={`space-y-1.5 ${className}`}>

@@ -88,8 +88,16 @@ export function usePedidos() {
 
     const pedidoOriginal = { ...pedidoEncontrado };
 
+    const atualizacaoOtimista: Partial<any> = { status: novoStatus };
+    if (novoStatus === StatusPedido.CONCLUIDO && !pedidoEncontrado.dataConclusao) {
+      atualizacaoOtimista.dataConclusao = new Date();
+    } else if ((pedidoEncontrado.status === StatusPedido.CONCLUIDO || pedidoEncontrado.status === StatusPedido.ARQUIVADO) &&
+               novoStatus !== StatusPedido.CONCLUIDO && novoStatus !== StatusPedido.ARQUIVADO) {
+      atualizacaoOtimista.dataConclusao = undefined;
+    }
+
     // Atualiza o estado local imediatamente (otimista)
-    atualizarPedidoNoEstado(id, { status: novoStatus });
+    atualizarPedidoNoEstado(id, atualizacaoOtimista);
 
     try {
       bloquearId(id);

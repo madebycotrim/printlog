@@ -43,7 +43,7 @@ export const criarPedidoSchema = z.object({
 export const atualizarPedidoSchema = criarPedidoSchema.partial().extend({
   id: z.string().min(1),
   status: z.nativeEnum(StatusPedido).optional(),
-  dataConclusao: z.date().or(z.string().transform((val) => new Date(val))).optional(),
+  dataConclusao: z.date().or(z.string().transform((val) => new Date(val))).optional().nullable(),
 });
 
 export type CriarPedidoInput = z.infer<typeof criarPedidoSchema>;

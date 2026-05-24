@@ -12,18 +12,20 @@ import {
   AlertCircle,
   MoveRight,
   TrendingUp,
-  LayoutGrid
+  LayoutGrid,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { centavosParaReais, formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
-import { StatusPedido } from "@/compartilhado/tipos/modelos";
+import { StatusPedido, StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { toast } from "react-hot-toast";
 
 export function PaginaFila() {
-  const { impressoras } = useArmazemImpressoras();
+  const { estado: { impressoras }, acoes: { salvarImpressora } } = useGerenciadorImpressoras();
   const { pedidos, atualizarPedido } = usePedidos();
   const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split("T")[0]);
 
@@ -115,6 +117,69 @@ export function PaginaFila() {
       toast.success("Pedido removido da fila de produção.");
     } catch (e) {
       toast.error("Erro ao desalocar pedido.");
+    }
+  };
+
+  // Iniciar/Pausar impressora
+  const lidarComPlayPause = async (impressora: any, iniciar: boolean) => {
+    try {
+      const novaImpressora = {
+        ...impressora,
+        status: iniciar ? StatusImpressora.IMPRIMINDO : StatusImpressora.LIVRE
+      };
+      await salvarImpressora(novaImpressora);
+      toast.success(iniciar ? "Impressão iniciada!" : "Impressão pausada.");
+    } catch (e) {
+      toast.error("Erro ao alterar estado da impressora.");
+    }
+  };
+
+  // Concluir impressão e liberar impressora
+  const lidarComConclusao = async (pedido: Pedido, impressora: any) => {
+    try {
+      await atualizarPedido({
+        id: pedido.id,
+        status: StatusPedido.CONCLUIDO,
+        dataConclusao: new Date().toISOString()
+      });
+
+      const novaImpressora = {
+        ...impressora,
+        status: StatusImpressora.LIVRE
+      };
+      await salvarImpressora(novaImpressora);
+
+      toast.success("Projeto concluído! Impressora liberada.");
+    } catch (e) {
+      toast.error("Erro ao concluir projeto.");
+    }
+  };
+
+  // Reordenar a fila
+  const lidarComReordenacao = async (impressoraId: string, indexOriginal: number, direcao: 'subir' | 'descer') => {
+    const fila = filaPorImpressora[impressoraId] || [];
+    const indexDestino = direcao === 'subir' ? indexOriginal - 1 : indexOriginal + 1;
+    
+    if (indexDestino < 0 || indexDestino >= fila.length) return;
+
+    try {
+      const itemOriginal = fila[indexOriginal];
+      const itemDestino = fila[indexDestino];
+
+      await Promise.all([
+        atualizarPedido({
+          id: itemOriginal.id,
+          posicaoFila: indexDestino + 1
+        }),
+        atualizarPedido({
+          id: itemDestino.id,
+          posicaoFila: indexOriginal + 1
+        })
+      ]);
+
+      toast.success("Fila de produção reordenada!");
+    } catch (e) {
+      toast.error("Erro ao reordenar a fila.");
     }
   };
 
@@ -222,11 +287,17 @@ export function PaginaFila() {
 
                       <div className="flex items-center gap-2">
                         <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                          impressora.status === "impressora_imprimindo" || impressora.status === "ocupada"
+                          impressora.status === StatusImpressora.IMPRIMINDO
                             ? "bg-amber-500/10 text-amber-500" 
-                            : "bg-emerald-500/10 text-emerald-500"
+                            : impressora.status === StatusImpressora.MANUTENCAO
+                              ? "bg-rose-500/10 text-rose-500"
+                              : "bg-emerald-500/10 text-emerald-500"
                         }`}>
-                          {impressora.status === "impressora_imprimindo" || impressora.status === "ocupada" ? "Imprimindo" : "Livre"}
+                          {impressora.status === StatusImpressora.IMPRIMINDO 
+                            ? "Imprimindo" 
+                            : impressora.status === StatusImpressora.MANUTENCAO 
+                              ? "Manutenção" 
+                              : "Livre"}
                         </span>
                       </div>
                     </div>
@@ -249,9 +320,29 @@ export function PaginaFila() {
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-all relative flex flex-col justify-between"
                               >
-                                {/* Indicador de Ordem na Fila */}
-                                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-black text-zinc-500 dark:text-zinc-400">
-                                  #{index + 1}
+                                {/* Indicador de Ordem na Fila e controles de reordenação */}
+                                <div className="absolute top-2 right-2 flex items-center gap-1">
+                                  {index > 0 && (
+                                    <button
+                                      onClick={() => lidarComReordenacao(impressora.id, index, 'subir')}
+                                      className="p-0.5 rounded text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                      title="Mover para cima"
+                                    >
+                                      <ChevronUp size={12} />
+                                    </button>
+                                  )}
+                                  {index < fila.length - 1 && (
+                                    <button
+                                      onClick={() => lidarComReordenacao(impressora.id, index, 'descer')}
+                                      className="p-0.5 rounded text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                      title="Mover para baixo"
+                                    >
+                                      <ChevronDown size={12} />
+                                    </button>
+                                  )}
+                                  <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-black text-zinc-500 dark:text-zinc-400 shrink-0">
+                                    #{index + 1}
+                                  </div>
                                 </div>
 
                                 <div className="space-y-2 pr-6">
@@ -269,18 +360,54 @@ export function PaginaFila() {
                                   )}
                                 </div>
 
-                                <div className="mt-4 pt-3 border-t border-borda-sutil/60 flex items-center justify-between">
+                                <div className="mt-4 pt-3 border-t border-borda-sutil/60 flex items-center justify-between gap-2">
                                   <span className="text-[10px] font-black text-primaria tabular-nums">
                                     {pedido.tempoMinutos ? `${pedido.tempoMinutos} min` : "Tempo N/D"}
                                   </span>
                                   
-                                  <button
-                                    onClick={() => lidarComRemocaoFila(pedido.id)}
-                                    className="p-1 rounded text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
-                                    title="Remover da fila"
-                                  >
-                                    <Trash2 size={12} />
-                                  </button>
+                                  <div className="flex items-center gap-1">
+                                    {index === 0 && (
+                                      <>
+                                        {impressora.status === StatusImpressora.IMPRIMINDO ? (
+                                          <>
+                                            <button
+                                              onClick={() => lidarComPlayPause(impressora, false)}
+                                              className="p-1 rounded text-amber-500 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center justify-center"
+                                              title="Pausar Impressão"
+                                            >
+                                              <Pause size={12} />
+                                            </button>
+                                            <button
+                                              onClick={() => lidarComConclusao(pedido, impressora)}
+                                              className="p-1 rounded text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer flex items-center justify-center"
+                                              title="Concluir Projeto & Liberar"
+                                            >
+                                              <CheckCircle2 size={12} />
+                                            </button>
+                                          </>
+                                        ) : (
+                                          <button
+                                            onClick={() => lidarComPlayPause(impressora, true)}
+                                            className="p-1 rounded text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer flex items-center justify-center"
+                                            title="Iniciar Impressão"
+                                          >
+                                            <Play size={12} />
+                                          </button>
+                                        )}
+                                      </>
+                                    )}
+
+                                    {/* Só exibe botão de remover se não estiver imprimindo no momento */}
+                                    {(!(index === 0 && impressora.status === StatusImpressora.IMPRIMINDO)) && (
+                                      <button
+                                        onClick={() => lidarComRemocaoFila(pedido.id)}
+                                        className="p-1 rounded text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                                        title="Remover da fila"
+                                      >
+                                        <Trash2 size={12} />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </motion.div>
                             ))}

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Warehouse, Settings } from "lucide-react";
 import { PerfilMarketplace } from "../tipos";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 
 interface CardLogisticaProps {
   perfis: PerfilMarketplace[];
@@ -97,20 +97,18 @@ export const CardLogistica = memo(function CardLogistica({
         </div>
         <div>
           <label className="block text-xs font-black uppercase text-muted-foreground mb-2">Taxa Fixa (R$)</label>
-          <input 
-            type="number" 
-            placeholder="0" 
-            value={taxaFixa === 0 ? "" : (taxaFixa / 100).toFixed(2)} 
+          <InputBancario 
+            placeholder="0.00" 
+            value={taxaFixa === 0 ? "" : taxaFixa / 100} 
             onChange={(e) => setTaxaFixa(Math.round(Number(e.target.value) * 100))} 
             className={`w-full h-14 px-4 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />
         </div>
         <div>
           <label className="block text-xs font-black uppercase text-muted-foreground mb-2">Frete (R$)</label>
-          <input 
-            type="number" 
-            placeholder="0" 
-            value={frete === 0 ? "" : (frete / 100).toFixed(2)} 
+          <InputBancario 
+            placeholder="0.00" 
+            value={frete === 0 ? "" : frete / 100} 
             onChange={(e) => setFrete(Math.round(Number(e.target.value) * 100))} 
             className={`w-full h-14 px-4 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner text-center ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />

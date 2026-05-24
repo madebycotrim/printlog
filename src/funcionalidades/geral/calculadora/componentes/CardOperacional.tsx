@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { DollarSign, Activity } from "lucide-react";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardOperacionalProps {
@@ -90,11 +90,10 @@ export const CardOperacional = memo(function CardOperacional({
                   </div>
                   <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
                     <span className="absolute left-4 font-black text-xs text-muted-foreground select-none">R$</span>
-                    <input 
-                      type="number" 
-                      placeholder="0"
-                      value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : (maoDeObra / 100).toFixed(2)) : 0} 
-                      onChange={(e) => setMaoDeObra?.(Math.round(extrairValorNumerico(e.target.value) * 100))} 
+                      <InputBancario 
+                        placeholder="0.00"
+                        value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : (maoDeObra / 100 || "")) : 0} 
+                        onChange={(e) => setMaoDeObra?.(Math.round(extrairValorNumerico(e.target.value) * 100))} 
                       className="w-full h-12 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                     />
                   </div>
@@ -109,7 +108,7 @@ export const CardOperacional = memo(function CardOperacional({
                       <input 
                         type="number" 
                         placeholder="0"
-                        value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : Math.floor(tempoSetup / 60)) : ""} 
+                        value={cobrarMaoDeObra ? (Math.floor(tempoSetup / 60) === 0 ? "" : (Math.floor(tempoSetup / 60) || "")) : ""} 
                         onChange={(e) => setTempoSetup(Number(e.target.value) * 60 + (tempoSetup % 60))} 
                         className="w-full h-12 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                       />
@@ -120,7 +119,7 @@ export const CardOperacional = memo(function CardOperacional({
                       <input 
                         type="number" 
                         placeholder="0"
-                        value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : tempoSetup % 60) : ""} 
+                        value={cobrarMaoDeObra ? (tempoSetup % 60 === 0 ? "" : (tempoSetup % 60 || "")) : ""} 
                         onChange={(e) => setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Number(e.target.value))} 
                         className="w-full h-12 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
                       />
@@ -321,13 +320,13 @@ export const CardOperacional = memo(function CardOperacional({
               <div 
                 className={`absolute h-1.5 rounded-full pointer-events-none transition-all ease-out duration-75 ${
                   margemInterna === 0 ? "bg-zinc-500" :
-                  margemInterna <= 20 ? "bg-rose-500" :
-                  margemInterna <= 60 ? "bg-amber-500" :
-                  margemInterna <= 120 ? "bg-emerald-500" :
-                  margemInterna <= 250 ? "bg-sky-500" :
+                  margemInterna <= 2000 ? "bg-rose-500" :
+                  margemInterna <= 6000 ? "bg-amber-500" :
+                  margemInterna <= 12000 ? "bg-emerald-500" :
+                  margemInterna <= 25000 ? "bg-sky-500" :
                   "bg-violet-500"
                 }`}
-                style={{ width: `${Math.min(100, (margemInterna / 500) * 100)}%` }}
+                style={{ width: `${Math.min(100, margemInterna / 500)}%` }}
               />
               
               <input 
@@ -346,10 +345,10 @@ export const CardOperacional = memo(function CardOperacional({
                   [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 
                   hover:[&::-webkit-slider-thumb]:scale-125 ${
                     margemInterna === 0 ? "[&::-webkit-slider-thumb]:border-zinc-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(115,115,115,0.5)]" :
-                    margemInterna <= 20 ? "[&::-webkit-slider-thumb]:border-rose-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(244,63,94,0.5)]" :
-                    margemInterna <= 60 ? "[&::-webkit-slider-thumb]:border-amber-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(245,158,11,0.5)]" :
-                    margemInterna <= 120 ? "[&::-webkit-slider-thumb]:border-emerald-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(16,185,129,0.5)]" :
-                    margemInterna <= 250 ? "[&::-webkit-slider-thumb]:border-sky-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(14,165,233,0.5)]" :
+                    margemInterna <= 2000 ? "[&::-webkit-slider-thumb]:border-rose-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(244,63,94,0.5)]" :
+                    margemInterna <= 6000 ? "[&::-webkit-slider-thumb]:border-amber-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(245,158,11,0.5)]" :
+                    margemInterna <= 12000 ? "[&::-webkit-slider-thumb]:border-emerald-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(16,185,129,0.5)]" :
+                    margemInterna <= 25000 ? "[&::-webkit-slider-thumb]:border-sky-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(14,165,233,0.5)]" :
                     "[&::-webkit-slider-thumb]:border-violet-500 [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(139,92,246,0.5)]"
                   }`} 
               />

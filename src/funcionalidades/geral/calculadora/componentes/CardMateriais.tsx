@@ -3,7 +3,7 @@ import { Layers, Box, RefreshCcw, Check, Plus, Trash2, Star, Search } from "luci
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { motion, AnimatePresence } from "framer-motion";
 import { MaterialSelecionado } from "../tipos";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 
 interface CardMateriaisProps {
   materiais: any[];
@@ -14,6 +14,7 @@ interface CardMateriaisProps {
   alternar: (id: string) => void;
   atualizarQtd: (id: string, qtd: number) => void;
   atualizarPreco: (id: string, preco: number) => void;
+  atualizarTempo?: (id: string, horas: number, minutos: number) => void;
   remover: (id: string) => void;
   abrirArmazem: () => void;
   abrirCriar: () => void;
@@ -21,11 +22,9 @@ interface CardMateriaisProps {
 }
 
 export const CardMateriais = memo(function CardMateriais({
-  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, remover, abrirArmazem, abrirCriar, alternarFavorito
+  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, atualizarTempo, remover, abrirArmazem, abrirCriar, alternarFavorito
 }: CardMateriaisProps) {
-  const [pagina, setPagina] = useState(0);
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
-  const itensPorPagina = 4;
 
   // Ordenação Inteligente: Favoritos ou Mais Usados
   const materiaisOrdenados = useMemo(() => {
@@ -48,19 +47,6 @@ export const CardMateriais = memo(function CardMateriais({
       }
     });
   }, [materiais, tipoOrdenacao]);
-
-  const totalPaginas = Math.ceil(materiaisOrdenados.length / itensPorPagina);
-  
-  // Resetar página se a busca mudar e a página atual ficar vazia
-  useEffect(() => {
-    if (pagina >= totalPaginas && totalPaginas > 0) {
-      setPagina(totalPaginas - 1);
-    } else if (totalPaginas === 0) {
-      setPagina(0);
-    }
-  }, [materiaisOrdenados.length, totalPaginas, pagina]);
-
-  const materiaisExibidos = materiaisOrdenados.slice(pagina * itensPorPagina, (pagina + 1) * itensPorPagina);
 
   return (
     <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 premium-card premium-card-cyan">
@@ -127,41 +113,16 @@ export const CardMateriais = memo(function CardMateriais({
             </button>
           </div>
         </div>
-
-        {totalPaginas > 1 && (
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1 bg-muted/30 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil">
-              <button 
-                onClick={() => setPagina(p => Math.max(0, p - 1))}
-                disabled={pagina === 0}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-cyan-600 dark:hover:text-cyan-400 disabled:opacity-20 transition-colors"
-              >
-                <Plus className="w-3 h-3 rotate-45" />
-              </button>
-              <div className="w-[1px] h-3 bg-borda-sutil" />
-              <button 
-                onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
-                disabled={pagina === totalPaginas - 1}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-cyan-600 dark:hover:text-cyan-400 disabled:opacity-20 transition-colors"
-              >
-                <Plus className="w-3 h-3" />
-              </button>
-            </div>
-            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-600 uppercase">
-              {pagina + 1}/{totalPaginas}
-            </span>
-          </div>
-        )}
       </div>
 
-      <div className="flex gap-3 overflow-x-hidden pb-4 -mx-2 px-2 min-h-[110px] items-stretch">
-        {materiaisExibidos.length === 0 && materiais.length > 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center py-6 border border-dashed border-borda-sutil rounded-2xl bg-zinc-50 dark:bg-white/[0.01] relative overflow-hidden">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 overflow-y-auto max-h-[280px] scrollbar-thin pb-4 pr-2 min-h-[110px] items-stretch">
+        {materiaisOrdenados.length === 0 && materiais.length > 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-6 border border-dashed border-borda-sutil rounded-2xl bg-zinc-50 dark:bg-white/[0.01] relative overflow-hidden">
              <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
              <Search className="w-4 h-4 mb-1.5 text-zinc-400 dark:text-zinc-600 relative z-10" />
              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-500 relative z-10">Sem resultados</span>
           </div>
-        ) : materiaisExibidos.map((m) => {
+        ) : materiaisOrdenados.map((m) => {
           const selecionado = selecionados.some(s => s.id === m.id);
           return (
             <div
@@ -293,14 +254,14 @@ export const CardMateriais = memo(function CardMateriais({
                       )}
                     </div>
                   </div>
-                  <div className="flex-1 grid grid-cols-2 gap-4">
+                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1.5">
                         <div className="flex justify-between items-center h-4 mb-1">
                           <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">
                             Peso (<span className="lowercase">{item.tipo === "FDM" ? "g" : "ml"}</span>)
                           </label>
                         </div>
-                        <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : item.quantidade} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
+                        <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
                         
                         {/* Barra de Consumo */}
                         {(() => {
@@ -320,8 +281,16 @@ export const CardMateriais = memo(function CardMateriais({
                         })()}
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block">Preço/Kg</label>
-                        <input type="number" placeholder="0" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-sky-500/30 outline-none font-black text-xs text-primary dark:text-white" />
+                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Horas</label>
+                        <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Minutos</label>
+                        <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Preço/Kg</label>
+                        <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-sky-500/30 outline-none font-black text-xs text-primary dark:text-white" />
                       </div>
                     </div>
                   <button onClick={() => remover(item.id)} className="p-2 rounded-lg text-zinc-400 dark:text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">

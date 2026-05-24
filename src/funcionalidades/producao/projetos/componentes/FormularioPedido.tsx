@@ -7,7 +7,7 @@ import {
     Cpu, DollarSign, Box, Package, Settings, TrendingUp, MessageSquare, ChevronDown
 } from "lucide-react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { Dialogo } from "@/compartilhado/componentes";
+import { Dialogo, InputBancario } from "@/compartilhado/componentes";
 import { Combobox } from "@/compartilhado/componentes";
 import { CriarPedidoInput, Pedido } from "../tipos";
 import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
@@ -200,11 +200,11 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                                 <span className="text-[9px] font-black text-zinc-500 dark:text-zinc-600 uppercase tracking-widest">Valor de Mercado</span>
                                 <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-950/60 border border-borda-sutil rounded-2xl focus-within:border-emerald-500/40 transition-all">
                                     <DollarSign size={16} className="text-emerald-500" />
-                                    <input 
-                                        type="text" 
+                                    <InputBancario 
+                                        placeholder="0.00"
                                         className="bg-transparent text-xl font-black text-emerald-400 outline-none tabular-nums w-32 text-right"
-                                        onChange={(e) => setValue("valorCentavos", extrairValorNumerico(e.target.value), { shouldDirty: true })}
-                                        value={(watch("valorCentavos") || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        onChange={(e) => setValue("valorCentavos", Number(e.target.value), { shouldDirty: true })}
+                                        value={watch("valorCentavos") || ""}
                                     />
                                 </div>
                             </div>

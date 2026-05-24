@@ -173,7 +173,10 @@ export function PaginaInicial() {
         {/* COLUNA DIREITA: Status de Hardware */}
         <div className="col-span-12 lg:col-span-4">
           <div className="lg:h-[500px]">
-            <StatusTempoReal />
+            <WidgetAvisos 
+              impressoras={impressoras} 
+              aoAgendarManutencao={() => navegar("/producao/manutencao")} 
+            />
           </div>
         </div>
 
@@ -191,10 +194,7 @@ export function PaginaInicial() {
           />
         </div>
         <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
-          <WidgetAvisos 
-            impressoras={impressoras} 
-            aoAgendarManutencao={() => navegar("/producao/manutencao")} 
-          />
+          <StatusTempoReal />
         </div>
 
         {/* LINHA DE TENDÊNCIA: Gráfico de Consumo Full Width */}

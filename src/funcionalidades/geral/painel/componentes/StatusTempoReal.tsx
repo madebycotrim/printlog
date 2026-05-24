@@ -1,15 +1,18 @@
-import { ChevronRight, Printer } from "lucide-react";
+import { ArrowRight, Printer } from "lucide-react";
 
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { StatusImpressora, StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useNavigate } from "react-router-dom";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { motion } from "framer-motion";
+import { obterImagemImpressora } from "@/funcionalidades/producao/impressoras/utilitarios/obter-imagem-simplyprint";
+import { useState } from "react";
 
 export function StatusTempoReal() {
     const { impressoras } = useArmazemImpressoras();
     const { pedidos } = usePedidos();
     const navegar = useNavigate();
+    const [errosImagens, setErrosImagens] = useState<Record<string, boolean>>({});
 
     const maquinasAtivas = impressoras.filter(imp => !imp.dataAposentadoria);
     const resumoMaquinas = maquinasAtivas.slice(0, 3);
@@ -34,11 +37,11 @@ export function StatusTempoReal() {
         zinc: "bg-zinc-500/10 border-zinc-500/20 text-zinc-500",
     };
 
-    const classesBg: any = {
-        emerald: "bg-emerald-500",
-        amber: "bg-amber-500",
-        rose: "bg-rose-500",
-        zinc: "bg-zinc-500",
+    const classesCoresText: any = {
+        emerald: "text-emerald-500",
+        amber: "text-amber-500",
+        rose: "text-rose-500",
+        zinc: "text-zinc-500",
     };
 
     return (
@@ -46,55 +49,61 @@ export function StatusTempoReal() {
             {/* Grid Pattern Background - Subtil */}
             <div className="absolute inset-0 opacity-[0.015] pointer-events-none" 
                 style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 relative z-10">
                 <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                     <h3 className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">Live Monitor</h3>
                 </div>
                 <button 
                     onClick={() => navegar("/impressoras")}
-                    className="text-[10px] font-black text-sky-500 hover:underline tracking-widest uppercase"
+                    className="flex items-center gap-1 text-[10px] font-black text-sky-500 hover:text-sky-400 transition-colors tracking-widest uppercase group"
                 >
-                    FARM
+                    <span>FARM</span>
+                    <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                 </button>
             </div>
 
             {resumoMaquinas.length > 0 ? (
-                <div className="space-y-6 flex-1">
+                <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
                     {resumoMaquinas.map((imp) => {
                         const trabalho = buscarTrabalhoAtivo(imp.id);
                         const config = obterConfigStatus(imp.status);
+                        const urlImagem = obterImagemImpressora(imp.imagemUrl, imp.marca, imp.modeloBase);
+                        const erroNaImagem = errosImagens[imp.id] || !urlImagem;
                         
                         return (
                             <div 
                                 key={imp.id} 
                                 onClick={() => navegar("/impressoras")}
-                                className="relative group/item cursor-pointer"
+                                className="flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-sky-500/30 transition-all hover:bg-white/[0.04] dark:hover:bg-white/[0.04] group/item cursor-pointer shadow-sm hover:shadow-md text-center"
                             >
-                                <div className="flex justify-between items-end mb-2">
-                                    <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-primary uppercase truncate max-w-[150px] group-hover/item:text-sky-500 transition-colors">
-                                            {trabalho ? trabalho.descricao : imp.nome}
-                                        </span>
-                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                                            {imp.nome}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${classesCores[config.cor]} uppercase tracking-widest mb-1`}>
-                                            {config.label}
-                                        </span>
-                                        <span className="text-[10px] font-black text-primary tabular-nums">
+                                <div className="w-28 h-28 flex items-center justify-center rounded-2xl z-10 overflow-hidden group-hover/item:scale-110 transition-transform duration-300 mb-2 relative">
+                                    {!erroNaImagem ? (
+                                        <img 
+                                            src={urlImagem} 
+                                            alt={imp.nome} 
+                                            onError={() => setErrosImagens(prev => ({ ...prev, [imp.id]: true }))}
+                                            className={`w-full h-full object-contain ${imp.status === StatusImpressora.IMPRIMINDO ? 'animate-pulse' : ''}`}
+                                        />
+                                    ) : (
+                                        <Printer size={48} className={`${classesCoresText[config.cor]} ${imp.status === StatusImpressora.IMPRIMINDO ? 'animate-pulse' : ''}`} />
+                                    )}
+                                </div>
+
+                                <div className="space-y-1 w-full min-w-0">
+                                    <h5 className="text-[11px] font-black text-primary dark:text-zinc-200 uppercase tracking-wider truncate leading-tight group-hover/item:text-sky-400 transition-colors">
+                                        {trabalho ? trabalho.descricao : imp.nome}
+                                    </h5>
+                                    
+                                    <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
+                                        <span className={`font-extrabold ${classesCoresText[config.cor]}`}>
                                             {imp.status === StatusImpressora.LIVRE ? '100%' : '0%'}
                                         </span>
+                                        <span>•</span>
+                                        <span className="tabular-nums font-medium truncate">
+                                            {config.label}
+                                        </span>
                                     </div>
-                                </div>
-                                <div className="w-full h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                    <motion.div 
-                                        initial={{ width: 0 }}
-                                        animate={{ width: imp.status === StatusImpressora.LIVRE ? '100%' : '15%' }}
-                                        className={`h-full rounded-full ${classesBg[config.cor]} ${imp.status === StatusImpressora.IMPRIMINDO ? 'animate-pulse' : ''}`}
-                                    />
                                 </div>
                             </div>
                         );
@@ -107,13 +116,7 @@ export function StatusTempoReal() {
                 </div>
             )}
 
-            <button 
-                onClick={() => navegar("/impressoras")}
-                className="mt-8 group flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-borda-sutil hover:border-sky-500/30 transition-all"
-            >
-                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Ver Painel Completo</span>
-                <ChevronRight size={16} className="text-zinc-400 group-hover:translate-x-1 group-hover:text-sky-500 transition-all" />
-            </button>
+
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Wallet, Box } from "lucide-react";
+import { InputBancario } from "@/compartilhado/componentes/ui";
 
 /**
  * Interface para as propriedades do CardCustosFixos.
@@ -77,9 +78,7 @@ export function CardCustosFixos({
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor do Custo Fixo (R$)</label>
                 <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-fuchsia-500/40 shadow-inner">
                   <span className="absolute left-4 text-[10px] font-black text-muted-foreground">R$</span>
-                  <input
-                    type="number"
-                    min="0"
+                  <InputBancario
                     placeholder="0,00"
                     value={insumosFixos || ""}
                     onChange={(e) => setInsumosFixos(Number(e.target.value))}

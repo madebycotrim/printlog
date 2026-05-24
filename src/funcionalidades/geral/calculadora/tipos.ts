@@ -6,6 +6,8 @@ export interface MaterialSelecionado {
   tipoMaterial: string;
   quantidade: number;
   precoKgCentavos: number;
+  tempoHoras?: number;
+  tempoMinutos?: number;
   porLote?: boolean;
 }
 

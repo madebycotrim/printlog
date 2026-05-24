@@ -65,34 +65,57 @@ export const servicoFinanceiroAvancado = {
     pedidos
       .filter((p) => p.dataConclusao)
       .forEach((p) => {
-        // Custo do material principal (filamento/resina)
-        if (p.pesoGramas && p.material) {
+        // Custo do material (antigo ou array v9)
+        if (p.materiais && p.materiais.length > 0) {
+          p.materiais.forEach(mat => {
+             const materialRef = materiais.find(m => m.id === mat.idMaterial || m.id === (mat as any).id);
+             if (materialRef && materialRef.pesoGramas > 0) {
+                const custoPorGrama = materialRef.precoCentavos / materialRef.pesoGramas;
+                custoMaterialCentavos += custoPorGrama * (mat.quantidadeGasta || 0);
+             }
+          });
+        } else if (p.pesoGramas && p.material) {
           const materialRef = materiais.find((m) => m.nome === p.material);
-          if (materialRef) {
+          if (materialRef && materialRef.pesoGramas > 0) {
             const custoPorGrama = materialRef.precoCentavos / materialRef.pesoGramas;
             custoMaterialCentavos += custoPorGrama * p.pesoGramas;
           }
         }
 
         // Custo dos Insumos Secundários (v9.0)
-        if (p.insumosSecundarios) {
-          const custoInsumos = p.insumosSecundarios.reduce((sum, i) => sum + i.quantidade * i.custoUnitarioCentavos, 0);
+        if (p.insumosSecundarios && p.insumosSecundarios.length > 0) {
+          const custoInsumos = p.insumosSecundarios.reduce((sum, i) => sum + i.quantidade * (i.custoUnitarioCentavos || 0), 0);
           custoInsumosCentavos += custoInsumos;
         }
 
         // Custo de Energia e Depreciação (se tiver impressora vinculada e tempo)
-        if (p.idImpressora && p.tempoMinutos) {
-          const imp = impressoras.find((i) => i.id === p.idImpressora);
-          if (imp) {
-            // Energia: Watts converted to kW * hours * energy rate
-            const kw = imp.potenciaWatts ? imp.potenciaWatts / 1000 : (imp.consumoKw || 0.35);
-            const horas = p.tempoMinutos / 60;
-            custoEnergiaCentavos += horas * kw * configCustoEnergia;
+        const tempoEfetivo = p.tempoMinutos || (
+          p.configuracoes 
+            ? ((p.configuracoes.tempoHoras || 0) * 60 + (p.configuracoes.tempoMinutos || 0))
+            : 0
+        ) || 0;
 
-            // Depreciação: (Tempo usado / 300,000 minutos de vida util estimada (5000h)) * Valor de Compra
-            if (imp.valorCompraCentavos) {
-              depreciacaoCentavos += (p.tempoMinutos / 300000) * imp.valorCompraCentavos;
+        if (tempoEfetivo > 0) {
+          let potenciaWatts = p.configuracoes?.potenciaWatts || 0;
+          let precoKwh = p.configuracoes?.precoKwh || configCustoEnergia;
+          let valorCompraCentavos = 0;
+
+          if (p.idImpressora) {
+            const imp = impressoras.find((i) => i.id === p.idImpressora);
+            if (imp) {
+              if (!potenciaWatts) potenciaWatts = imp.potenciaWatts || (imp.consumoKw ? imp.consumoKw * 1000 : 350);
+              valorCompraCentavos = imp.valorCompraCentavos || 0;
             }
+          }
+
+          if (!potenciaWatts) potenciaWatts = 350; // Fallback para impressora média
+
+          const kw = potenciaWatts / 1000;
+          const horas = tempoEfetivo / 60;
+          custoEnergiaCentavos += horas * kw * precoKwh;
+
+          if (valorCompraCentavos > 0) {
+            depreciacaoCentavos += (tempoEfetivo / 300000) * valorCompraCentavos;
           }
         }
       });
