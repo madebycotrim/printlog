@@ -513,8 +513,8 @@ export function PaginaCalculadora() {
   limparRef.current = limparTudo;
 
   const dadosCabecalho = useMemo(() => ({
-    titulo: idEdicao ? "Atualizar Inteligência" : "Precificação Inteligente",
-    subtitulo: idEdicao ? `Editando: ${nomeProjeto}` : "Engenharia de custos e rentabilidade",
+    titulo: idEdicao ? "Atualizar Cálculo" : "Cálculo Inteligente",
+    subtitulo: idEdicao ? `Editando: ${nomeProjeto}` : "Encontre o preço perfeito com precisão total.",
     ocultarBusca: true,
     elementoAcao: (
       <div className="flex items-center gap-1 p-1 bg-card/10 border border-borda-sutil rounded-2xl backdrop-blur-md">

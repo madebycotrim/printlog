@@ -299,19 +299,6 @@ export function PaginaConfiguracoes() {
             />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.12 }}>
-            <CardIdentidade
-              nomeEstudio={nomeEstudio}
-              definirNomeEstudio={definirNomeEstudio}
-              sloganEstudio={sloganEstudio}
-              definirSloganEstudio={definirSloganEstudio}
-              logoEstudio={logoEstudio}
-              definirLogoEstudio={definirLogoEstudio}
-              eProOuSuperior={eProOuSuperior}
-              pendente={identidadePendente}
-            />
-          </motion.div>
-
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.16 }}>
             <CardAparencia pendente={aparenciaPendente} />
           </motion.div>
@@ -319,6 +306,19 @@ export function PaginaConfiguracoes() {
             <CardMetricas />
           </motion.div>
         </div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.12 }}>
+          <CardIdentidade
+            nomeEstudio={nomeEstudio}
+            definirNomeEstudio={definirNomeEstudio}
+            sloganEstudio={sloganEstudio}
+            definirSloganEstudio={definirSloganEstudio}
+            logoEstudio={logoEstudio}
+            definirLogoEstudio={definirLogoEstudio}
+            eProOuSuperior={eProOuSuperior}
+            pendente={identidadePendente}
+          />
+        </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.32 }}>
           <CardEstudio

@@ -1,5 +1,5 @@
-import { Store, Image, Type, Crown } from "lucide-react";
-import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
+import { Store, Image as ImageIcon, Type, Crown } from "lucide-react";
+import { CampoDashboard } from "./Compartilhados";
 
 interface PropsCardIdentidade {
     nomeEstudio: string;
@@ -23,54 +23,70 @@ export function CardIdentidade({
     pendente,
 }: PropsCardIdentidade) {
     return (
-        <div className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.03] to-indigo-500/[0.01] dark:from-indigo-500/[0.05] dark:to-indigo-500/[0.02] pointer-events-none" />
-            <CabecalhoCard titulo="Identidade Visual" descricao="Personalize a marca do seu estúdio" icone={Store} corIcone="text-indigo-500" pendente={pendente} />
+        <div className="rounded-xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-4 flex flex-col gap-4 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/[0.03] to-transparent pointer-events-none" />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
-                <CampoDashboard
-                    label="Nome do Estúdio"
-                    valor={nomeEstudio}
-                    aoMudar={definirNomeEstudio}
-                    icone={Type}
-                    placeholder="Ex: MalleVi 3D"
-                />
-                <CampoDashboard
-                    label="Slogan"
-                    valor={sloganEstudio}
-                    aoMudar={definirSloganEstudio}
-                    icone={Type}
-                    placeholder="Ex: Criando suas ideias"
-                />
-                <div className="md:col-span-2">
+            <div className="flex items-center gap-3 shrink-0 relative">
+                <span className="shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 p-2 text-indigo-500">
+                    <Store size={18} />
+                </span>
+                <div className="flex items-center gap-2">
+                    <h2 className="text-xs font-black uppercase tracking-widest text-primary">Identidade Visual</h2>
+                    <span className="text-xs text-muted-foreground opacity-60 font-medium hidden sm:inline-block">/ Personalize a marca do seu estúdio</span>
+                    {pendente && <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse ml-1" />}
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 relative items-end">
+                <div className="md:col-span-3">
                     <CampoDashboard
-                        label="URL da Logo (Opcional)"
+                        label="Nome do Estúdio"
+                        valor={nomeEstudio}
+                        aoMudar={definirNomeEstudio}
+                        icone={Type}
+                        placeholder="Ex: MalleVi 3D"
+                    />
+                </div>
+                <div className="md:col-span-4">
+                    <CampoDashboard
+                        label="Slogan"
+                        valor={sloganEstudio}
+                        aoMudar={definirSloganEstudio}
+                        icone={Type}
+                        placeholder="Ex: Criando suas ideias"
+                    />
+                </div>
+                <div className="md:col-span-4">
+                    <CampoDashboard
+                        label="URL da Logo"
                         valor={logoEstudio}
                         aoMudar={definirLogoEstudio}
-                        icone={Image}
-                        placeholder="Ex: https://i.imgur.com/sua-logo.png"
+                        icone={ImageIcon}
+                        placeholder="https://..."
                     />
                 </div>
 
+                <div className="md:col-span-1 h-11 w-full flex items-center justify-center">
+                    {eProOuSuperior && logoEstudio ? (
+                        <div className="h-11 w-full bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil rounded-lg flex items-center justify-center overflow-hidden p-1 tooltip-trigger" title="Preview da Logo">
+                            <img src={logoEstudio} alt="Logo" className="max-h-full w-auto object-contain" />
+                        </div>
+                    ) : (
+                        <div className="h-11 w-full bg-zinc-50/50 dark:bg-white/[0.01] border border-dashed border-borda-sutil rounded-lg flex items-center justify-center" title="Preview da Logo">
+                            <ImageIcon size={16} className="text-zinc-400 opacity-50" />
+                        </div>
+                    )}
+                </div>
+
                 {!eProOuSuperior && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-sm rounded-xl text-center gap-2">
-                        <Crown size={24} className="text-zinc-400 dark:text-zinc-500" />
-                        <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Exclusivo PRO</span>
-                            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
-                                Personalize seus orçamentos
-                            </span>
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-100/60 dark:bg-zinc-950/60 backdrop-blur-sm rounded-xl">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-full shadow-sm">
+                            <Crown size={14} className="text-amber-500" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Exclusivo PRO</span>
                         </div>
                     </div>
                 )}
             </div>
-
-            {eProOuSuperior && logoEstudio && (
-                <div className="mt-2 p-4 rounded-xl border border-borda-sutil bg-zinc-50 dark:bg-zinc-900 flex justify-center items-center gap-4">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Sua Logo:</span>
-                    <img src={logoEstudio} alt="Logo Preview" className="max-h-12 w-auto object-contain rounded" />
-                </div>
-            )}
         </div>
     );
 }
