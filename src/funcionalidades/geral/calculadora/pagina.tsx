@@ -502,7 +502,7 @@ export function PaginaCalculadora() {
   const abrirModalInsumos = useCallback(() => setModalInsumosAberto(true), []);
   const abrirModalNovoInsumo = useCallback(() => abrirCriarInsumo(), [abrirCriarInsumo]);
   const abrirModalCanais = useCallback(() => setModalCanaisAberto(true), []);
-  const dadosCabecalho = useMemo(() => ({
+  const dadosCabecalho = {
     titulo: idEdicao ? "Atualizar Inteligência" : "Precificação Inteligente",
     subtitulo: idEdicao ? `Editando: ${nomeProjeto}` : "Engenharia de custos e rentabilidade",
     ocultarBusca: true,
@@ -517,9 +517,8 @@ export function PaginaCalculadora() {
         </button>
         <button 
           onClick={() => {
-            const dataAtual = new Date();
-            const horaAtual = dataAtual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            hook.salvarSnapshot(nomeProjeto || `Rascunho - ${horaAtual}`, nomeProjeto, descricaoProjeto, clienteProjetoId);
+            const numeroUnico = Math.floor(1000 + Math.random() * 9000);
+            hook.salvarSnapshot(nomeProjeto || `Rascunho - #${numeroUnico}`, nomeProjeto, descricaoProjeto, clienteProjetoId);
           }}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all"
           title="Salvar no Histórico (Rascunho)"
@@ -542,7 +541,7 @@ export function PaginaCalculadora() {
         </button>
       </div>
     )
-  }), [idEdicao, nomeProjeto, hook.limpar]);
+  };
 
   useDefinirCabecalho(dadosCabecalho);
 
@@ -711,10 +710,10 @@ export function PaginaCalculadora() {
               aba={abaResultado} setAba={setAbaResultado}
               salvarProjeto={confirmarSalvarProjeto}
               gerarPdf={() => {
-                const clienteFinal = buscaClienteSeletor.trim() || "Consumidor Final";
+                const clienteFinal = (buscaClienteSeletor || "").trim() || "Consumidor Final";
                 if (!eProOuSuperior) {
                   hook.gerarPdf("", "", clienteFinal, nomeProjeto, idEdicao || undefined);
-                } else if (config.nomeEstudio.trim() !== "") {
+                } else if ((config.nomeEstudio || "").trim() !== "") {
                   hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, clienteFinal, nomeProjeto, idEdicao || undefined);
                 } else {
                   setModalPdfAberto(true);
