@@ -45,7 +45,7 @@ export function CardIdentificacaoProjeto({
   quantidade
 }: PropriedadesCardIdentificacaoProjeto) {
   return (
-    <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-sky ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
+    <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-blue ${abertoSeletorCliente ? 'z-50' : 'z-10'}`}>
       {/* Efeito Glow Azul de Fundo (Fixo) */}
       <motion.div 
         animate={{ 
@@ -53,12 +53,12 @@ export function CardIdentificacaoProjeto({
           right: modoEntrada === 'unitario' ? '-40px' : '40px',
           scale: modoEntrada === 'unitario' ? 1 : 1.2
         }}
-        className="absolute -top-10 w-80 h-80 bg-sky-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-1000" 
+        className="absolute -top-10 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-1000" 
       />
 
       <div className="relative z-10 flex items-center justify-between border-b border-borda-sutil pb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#00A3FF] border border-[#00A3FF]/30">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#3b82f6] border border-[#3b82f6]/30">
             <FolderKanban size={18} />
           </div>
           <div className="flex flex-col">
@@ -73,8 +73,8 @@ export function CardIdentificacaoProjeto({
         <div className="md:col-span-4 flex flex-col gap-2 relative">
           <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Cliente do Projeto</label>
 
-          <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
-            <div className="absolute left-4 text-zinc-400 dark:text-zinc-600 focus-within:text-sky-500">
+          <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+            <div className="absolute left-4 text-zinc-400 dark:text-zinc-600 focus-within:text-blue-500">
                <User size={16} />
             </div>
             <input
@@ -119,7 +119,7 @@ export function CardIdentificacaoProjeto({
                             setAbertoSeletorCliente(false);
                           }}
                           className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${clienteId === cli.id
-                            ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                             : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
                             }`}
                         >
@@ -157,7 +157,7 @@ export function CardIdentificacaoProjeto({
         <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Nome do Projeto</label>
-            <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+            <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
                <div className="absolute left-4 text-zinc-400 dark:text-zinc-600">
                   <PencilLine size={16} />
                </div>
@@ -173,7 +173,7 @@ export function CardIdentificacaoProjeto({
 
           <div className="flex flex-col gap-2">
             <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Observações Técnicas</label>
-            <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-sky-500/50 focus-within:bg-sky-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
+            <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
                <div className="absolute left-4 text-zinc-400 dark:text-zinc-600">
                   <MessageSquare size={16} />
                </div>
@@ -205,29 +205,29 @@ export function CardIdentificacaoProjeto({
             onClick={() => setModoEntrada('unitario')}
             className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
               modoEntrada === 'unitario' 
-              ? 'bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
-              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-sky-500/30'
+              ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
+              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-blue-500/30'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-              modoEntrada === 'unitario' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
+              modoEntrada === 'unitario' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
             }`}>
               <Box size={20} />
             </div>
             
             <div className="flex flex-col gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
-                modoEntrada === 'unitario' ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-500 dark:text-zinc-400'
+                modoEntrada === 'unitario' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Por Peça</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                O peso e tempo inseridos serão multiplicados por <span className={modoEntrada === 'unitario' ? 'text-sky-500' : ''}>{quantidade}x</span> automaticamente.
+                O peso e tempo inseridos serão multiplicados por <span className={modoEntrada === 'unitario' ? 'text-blue-500' : ''}>{quantidade}x</span> automaticamente.
               </p>
             </div>
 
             {modoEntrada === 'unitario' && (
               <motion.div 
                 layoutId="active-indicator"
-                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
               />
             )}
           </motion.button>
@@ -240,29 +240,29 @@ export function CardIdentificacaoProjeto({
             onClick={() => setModoEntrada('lote')}
             className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
               modoEntrada === 'lote' 
-              ? 'bg-sky-500/10 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
-              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-sky-500/30'
+              ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
+              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-blue-500/30'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-              modoEntrada === 'lote' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
+              modoEntrada === 'lote' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
             }`}>
               <LayoutGrid size={20} />
             </div>
             
             <div className="flex flex-col gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
-                modoEntrada === 'lote' ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-500 dark:text-zinc-400'
+                modoEntrada === 'lote' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Mesa Completa</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                Os valores inseridos já correspondem ao total produzido das <span className={modoEntrada === 'lote' ? 'text-sky-500' : ''}>{quantidade} peças</span>.
+                Os valores inseridos já correspondem ao total produzido das <span className={modoEntrada === 'lote' ? 'text-blue-500' : ''}>{quantidade} peças</span>.
               </p>
             </div>
 
             {modoEntrada === 'lote' && (
               <motion.div 
                 layoutId="active-indicator"
-                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
               />
             )}
           </motion.button>

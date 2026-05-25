@@ -27,13 +27,13 @@ export function CardCustosFixos({
 }: PropriedadesCardCustosFixos) {
   return (
     <div className="flex flex-col my-6">
-      <div className="p-4 rounded-xl bg-gradient-to-r from-fuchsia-500/10 via-fuchsia-500/5 to-transparent border border-fuchsia-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(217,70,239,0.15)] transition-all z-10 relative">
+      <div className="p-4 rounded-xl bg-gradient-to-r from-pink-500/10 via-pink-500/5 to-transparent border border-pink-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(217,70,239,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400 shadow-inner">
+          <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 shadow-inner">
             <Wallet size={16} className={`${insumosFixos > 0 ? "animate-pulse" : ""}`} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase tracking-wider text-fuchsia-600 dark:text-fuchsia-400">Deseja adicionar custos fixos extras?</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400">Deseja adicionar custos fixos extras?</span>
             <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Brindes, mimos, marketing ou custos de gestão e embalagem</span>
           </div>
         </div>
@@ -45,8 +45,8 @@ export function CardCustosFixos({
             setCobrarInsumosFixos(novoEstado);
           }}
           className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
-            ? "bg-fuchsia-500 text-white border-fuchsia-600 shadow-sm shadow-fuchsia-500/30 hover:bg-fuchsia-600"
-            : "bg-card text-muted-foreground hover:text-fuchsia-600 dark:hover:text-fuchsia-400 hover:border-fuchsia-500/40 border-borda-sutil shadow-sm"
+            ? "bg-pink-500 text-white border-pink-600 shadow-sm shadow-pink-500/30 hover:bg-pink-600"
+            : "bg-card text-muted-foreground hover:text-pink-600 dark:hover:text-pink-400 hover:border-pink-500/40 border-borda-sutil shadow-sm"
             }`}
         >
           {mostrar ? "Ocultar" : "Adicionar"}
@@ -68,15 +68,15 @@ export function CardCustosFixos({
 
             <div className="flex items-center justify-between pb-3 border-b border-borda-sutil">
               <div className="flex items-center gap-3">
-                <Box size={16} className="text-fuchsia-400" />
-                <h3 className="text-[10px] font-black uppercase tracking-wider text-fuchsia-500">Gestão de Custos Adicionais</h3>
+                <Box size={16} className="text-pink-400" />
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-pink-500">Gestão de Custos Adicionais</h3>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor do Custo Fixo (R$)</label>
-                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-fuchsia-500/40 shadow-inner">
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-pink-500/40 shadow-inner">
                   <span className="absolute left-4 text-[10px] font-black text-muted-foreground">R$</span>
                   <InputBancario
                     placeholder="0,00"

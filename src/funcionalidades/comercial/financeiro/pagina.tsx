@@ -81,7 +81,7 @@ export function PaginaFinanceiro() {
   return (
     <div className="space-y-10 min-h-[60vh] flex flex-col">
       <AnimatePresence mode="wait">
-        {carregando && lancamentos.length === 0 ? (
+        {carregando ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

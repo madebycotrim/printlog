@@ -26,13 +26,13 @@ export function CardPerdas({
 }: PropriedadesCardPerdas) {
   return (
     <div className="flex flex-col my-6">
-      <div className="p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent border border-rose-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
+      <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 shadow-inner">
+          <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 shadow-inner">
             <AlertTriangle size={16} className={`${materialPerdido > 0 || tempoPerdido > 0 ? "animate-pulse" : ""}`} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">Ocorreu alguma perda ou falha nessa impressão?</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400">Ocorreu alguma perda ou falha nessa impressão?</span>
             <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">O prejuízo será calculado e embutido no custo operacional</span>
           </div>
         </div>
@@ -40,8 +40,8 @@ export function CardPerdas({
           type="button"
           onClick={() => setMostrar(!mostrar)}
           className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
-            ? "bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/30 hover:bg-rose-600"
-            : "bg-card text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-500/40 border-borda-sutil shadow-sm"
+            ? "bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/30 hover:bg-red-600"
+            : "bg-card text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:border-red-500/40 border-borda-sutil shadow-sm"
             }`}
         >
           {mostrar ? "Ocultar" : "Reportar"}
@@ -61,13 +61,13 @@ export function CardPerdas({
             <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
             <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
             <div className="flex items-center gap-3 pb-3 border-b border-borda-sutil">
-              <AlertCircle size={16} className="text-rose-400" />
-              <h3 className="text-[10px] font-black uppercase tracking-wider text-rose-500">Registro de Desperdício</h3>
+              <AlertCircle size={16} className="text-red-400" />
+              <h3 className="text-[10px] font-black uppercase tracking-wider text-red-500">Registro de Desperdício</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Filamento Perdido</label>
-                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-rose-500/40 shadow-inner">
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
                   <input
                     type="number"
                     min="0"
@@ -81,7 +81,7 @@ export function CardPerdas({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo Perdido</label>
-                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-rose-500/40 shadow-inner">
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
                   <input
                     type="number"
                     min="0"

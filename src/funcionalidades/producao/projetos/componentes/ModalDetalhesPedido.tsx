@@ -5,7 +5,7 @@ import {
   TrendingUp, Zap, Percent, 
   Hammer, Activity, ShieldCheck,
   Truck, Calendar, Clock,
-  Warehouse, ShoppingBag
+  Warehouse, ShoppingBag, Package
 } from "lucide-react";
 
 import { centavosParaReais, formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
@@ -613,23 +613,27 @@ export function ModalDetalhesPedido({ aberto, aoFechar, pedido }: PropriedadesMo
                      {(pedido.configuracoes.cobrarLogistica || pedido.configuracoes.cobrarInsumosFixos) && (
                         <div className="space-y-4">
                            {pedido.configuracoes.cobrarLogistica && (
-                             <div className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil">
+                             <div className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-sky-500/30 transition-colors">
                                <div className="flex items-center gap-4">
-                                  <Truck size={16} className="text-orange-500" />
+                                  <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 shadow-[0_0_15px_-3px_rgba(14,165,233,0.3)]">
+                                    <Truck size={18} strokeWidth={2.5} />
+                                  </div>
                                   <div className="flex flex-col">
-                                     <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Logística e Frete</span>
-                                     <span className="text-xs font-bold text-zinc-300">R$ {pedido.configuracoes.frete?.toFixed(2) || "0.00"}</span>
+                                     <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Logística e Frete</span>
+                                     <span className="text-sm font-black text-primary dark:text-white tabular-nums">R$ {pedido.configuracoes.frete?.toFixed(2) || "0.00"}</span>
                                   </div>
                                </div>
                             </div>
                           )}
                            {pedido.configuracoes.cobrarInsumosFixos && (
-                             <div className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil">
+                             <div className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-amber-500/30 transition-colors">
                                <div className="flex items-center gap-4">
-                                  <Box size={16} className="text-orange-500" />
+                                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-[0_0_15px_-3px_rgba(245,158,11,0.3)]">
+                                    <Package size={18} strokeWidth={2.5} />
+                                  </div>
                                   <div className="flex flex-col">
-                                     <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Insumos Fixos (Embalagem, etc)</span>
-                                     <span className="text-xs font-bold text-zinc-300">R$ {pedido.configuracoes.insumosFixos?.toFixed(2) || "0.00"}</span>
+                                     <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Insumos Fixos (Embalagem, etc)</span>
+                                     <span className="text-sm font-black text-primary dark:text-white tabular-nums">R$ {pedido.configuracoes.insumosFixos?.toFixed(2) || "0.00"}</span>
                                   </div>
                                </div>
                             </div>

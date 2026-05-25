@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, ElementType, ChangeEvent, useState } from "react";
+import { InputHTMLAttributes, forwardRef, ElementType, ChangeEvent, useState, useEffect } from "react";
 import { DollarSign } from "lucide-react";
 
 interface CampoMonetarioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
@@ -42,6 +42,16 @@ interface CampoMonetarioProps extends Omit<InputHTMLAttributes<HTMLInputElement>
           if (isNaN(numerico)) return val as string;
           return numerico.toFixed(2);
       };
+
+      // Sincroniza mudanças externas (ex: setValue do react-hook-form ou cálculos manuais)
+      useEffect(() => {
+        if (value !== undefined && value !== null) {
+          const novoValor = formatarParaExibicao(value);
+          if (novoValor !== valorTemporario) {
+            setValorTemporario(novoValor);
+          }
+        }
+      }, [value]);
 
       const valorParaExibir = valorTemporario !== undefined 
         ? valorTemporario 

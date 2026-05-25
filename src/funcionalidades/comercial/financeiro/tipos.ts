@@ -33,6 +33,7 @@ export type OrdenacaoFinanceiro = "DATA" | "VALOR" | "DESCRICAO";
 export const CATEGORIAS_FINANCEIRO = [
   "Limpeza",
   "Embalagem",
+  "Embrulho",
   "Fixação",
   "Eletrônica",
   "Acabamento",

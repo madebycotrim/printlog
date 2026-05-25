@@ -11,6 +11,7 @@ import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
+import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 
 // Serviços e Utilitários
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
@@ -175,6 +176,7 @@ export function PaginaInicial() {
           <div className="lg:h-[500px]">
             <WidgetAvisos 
               impressoras={impressoras} 
+              notificacoes={useArmazemNotificacoes((s) => s.notificacoes)}
               aoAgendarManutencao={() => navegar("/producao/manutencao")} 
             />
           </div>

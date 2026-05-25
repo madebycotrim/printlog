@@ -15,9 +15,9 @@ interface PropriedadesCombobox {
   placeholder?: string;
   titulo?: string; // Label do campo
   className?: string;
-  permitirNovo?: boolean; // Se true, funciona como um input com sugestões
-  icone?: ElementType; // Novo prop para ícone
-  aoCriarNovo?: (termo: string) => Promise<string | void>; // Callback de criação
+  permitirNovo?: boolean; // Se true, funciona como um input com sugestï¿½es
+  icone?: ElementType; // Novo prop para ï¿½cone
+  aoCriarNovo?: (termo: string) => Promise<string | void>; // Callback de criaï¿½ï¿½o
   erro?: string; // Mensagem de erro para paridade com CampoTexto
 }
 
@@ -111,7 +111,7 @@ export function Combobox({
       )}
 
       <div className="relative group">
-        {/* ÍCONE À ESQUERDA (Posicionamento absoluto para paridade com CampoTexto) */}
+        {/* ï¿½CONE ï¿½ ESQUERDA (Posicionamento absoluto para paridade com CampoTexto) */}
         {Icone && (
           <Icone
             size={16}
@@ -195,21 +195,31 @@ export function Combobox({
               className="z-[9999] bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300 dark:scrollbar-thumb-zinc-700"
             >
               {opcoesFiltradas.length > 0 ? (
-                opcoesFiltradas.map((opcao) => (
-                  <button
-                    key={opcao.valor}
-                    type="button"
-                    onClick={() => selecionarOpcao(opcao.valor)}
-                    className={`
+                opcoesFiltradas.map((opcao, index) => {
+                  const heEstrela = opcao.rotulo.startsWith('â‹† ');
+                  const proximoNaoEstrela = index < opcoesFiltradas.length - 1 && !opcoesFiltradas[index + 1].rotulo.startsWith('â‹† ');
+                  const renderDivisor = heEstrela && proximoNaoEstrela;
+
+                  return (
+                    <div key={`${opcao.valor}-${index}`}>
+                      <button
+                        type="button"
+                        onClick={() => selecionarOpcao(opcao.valor)}
+                        className={`
                                           w-full text-left px-3 py-2 text-sm flex items-center justify-between
                                           hover:bg-gray-50 dark:hover:bg-white/5 transition-colors
                                           ${valor === opcao.valor ? "text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-zinc-800" : "text-gray-700 dark:text-zinc-300"}
                                       `}
-                  >
-                    <span>{opcao.rotulo}</span>
-                    {valor === opcao.valor && <Check size={14} />}
-                  </button>
-                ))
+                      >
+                        <span>{opcao.rotulo}</span>
+                        {valor === opcao.valor && <Check size={14} />}
+                      </button>
+                      {renderDivisor && (
+                        <div className="h-px w-full bg-gray-200 dark:bg-white/10 my-1 shadow-sm" />
+                      )}
+                    </div>
+                  );
+                })
               ) : (
                 <div className="px-3 py-3 text-xs text-zinc-500 text-center">
                   {permitirNovo

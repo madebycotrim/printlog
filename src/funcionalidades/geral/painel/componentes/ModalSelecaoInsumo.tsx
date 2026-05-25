@@ -87,6 +87,7 @@ export function ModalSelecaoInsumo({
                 { id: 'TODOS', label: 'TUDO' },
                 { id: 'Limpeza', label: 'LIMPEZA' },
                 { id: 'Embalagem', label: 'EMBALAGEM' },
+                { id: 'Embrulho', label: 'EMBRULHO' },
                 { id: 'Fixação', label: 'FIXAÇÃO' },
                 { id: 'Eletrônica', label: 'ELETRÔNICA' },
                 { id: 'Acabamento', label: 'ACABAMENTO' },

@@ -1,6 +1,6 @@
 import { Zap, Clock, Wrench, Percent, Settings } from "lucide-react";
-import { CabecalhoCard, CampoBancarioDashboard, CampoDashboard } from "./Compartilhados";
-import { formatarMoedaFinancas, formatarPorcentagem, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropsCardOperacional {
     custoEnergia: number;

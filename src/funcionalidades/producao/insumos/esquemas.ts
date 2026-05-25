@@ -15,7 +15,7 @@ export const insumoSchema = z.object({
   id: z.string().optional(),
   nome: z.string().min(1),
   descricao: z.string().optional().nullable(),
-  categoria: z.enum(["Geral", "Embalagem", "Fixação", "Eletrônica", "Acabamento", "Limpeza", "Outros"]),
+  categoria: z.enum(["Geral", "Embalagem", "Embrulho", "Fixação", "Eletrônica", "Acabamento", "Limpeza", "Proteção", "Outros"]),
   unidadeMedida: z.enum(["un", "ml", "L", "g", "kg", "Rolo", "Caixa", "Par"]),
   quantidadeAtual: z.number().min(0),
   quantidadeMinima: z.number().min(0),

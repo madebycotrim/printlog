@@ -1,5 +1,6 @@
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useClimaLocal } from "@/compartilhado/hooks/useClimaLocal";
 
 export type FiltroTipoMaterial = "TODOS" | "FDM" | "SLA";
 export type OrdenacaoMaterial = "NOME" | "MAIOR_PRECO" | "MENOR_ESTOQUE";
@@ -23,6 +24,8 @@ export function FiltrosMaterial({
 }: PropriedadesFiltrosMaterial) {
   const [seletorAberto, definirSeletorAberto] = useState(false);
   const referenciaSeletor = useRef<HTMLDivElement>(null);
+
+  const clima = useClimaLocal();
 
   const opcoesOrdenacao: { valor: OrdenacaoMaterial; rotulo: string }[] = [
     { valor: "NOME", rotulo: "Ordem Alfabética" },
@@ -84,7 +87,7 @@ export function FiltrosMaterial({
         {/* Pílula de Ambiente (Temperatura e Umidade) */}
         <div
           className="flex items-center gap-4 px-4 h-10 bg-transparent border border-gray-200 dark:border-white/10 rounded-xl shadow-sm cursor-help hover:border-gray-300 dark:hover:border-white/20 transition-colors"
-          title="Condições do Ambiente de Impressão"
+          title={clima.erro ? "Erro ao carregar clima local" : `Condições do Ambiente de Impressão (${clima.cidade || 'Buscando...'})`}
         >
           <div className="flex items-center gap-1.5">
             <svg
@@ -97,13 +100,13 @@ export function FiltrosMaterial({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-orange-500 dark:text-orange-400"
+              className={clima.carregando || clima.erro ? "text-gray-400 dark:text-zinc-500" : "text-orange-500 dark:text-orange-400"}
             >
               <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
               <path d="M12 7v4" />
             </svg>
-            <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight">
-              24°C
+            <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight w-10 text-center">
+              {clima.carregando ? "..." : clima.erro ? "--" : `${clima.temperatura}°C`}
             </span>
           </div>
           <div className="w-[1px] h-4 bg-gray-200 dark:bg-white/10" />
@@ -118,12 +121,12 @@ export function FiltrosMaterial({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-sky-500 dark:text-sky-400"
+              className={clima.carregando || clima.erro ? "text-gray-400 dark:text-zinc-500" : (clima.umidade && clima.umidade > 60) ? "text-amber-500 dark:text-amber-400" : "text-sky-500 dark:text-sky-400"}
             >
               <path d="M12 22a5 5 0 0 0 5-5c0-2-2.5-7-5-12-2.5 5-5 10-5 12a5 5 0 0 0 5 5z" />
             </svg>
-            <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight">
-              45%
+            <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight w-8 text-center">
+              {clima.carregando ? "..." : clima.erro ? "--" : `${clima.umidade}%`}
             </span>
           </div>
         </div>

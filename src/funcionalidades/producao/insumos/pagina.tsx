@@ -47,7 +47,7 @@ export function PaginaInsumos() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {estado.carregando && estado.insumos.length === 0 ? (
+        {estado.carregando ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

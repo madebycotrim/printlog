@@ -1,8 +1,9 @@
-import { memo, useState, useEffect, useMemo } from "react";
+import { memo, useState, useMemo } from "react";
 import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, LayoutGrid } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { CATEGORIAS } from "@/funcionalidades/producao/insumos/constantes";
 
 interface CardInsumosProps {
   insumos: any[];
@@ -46,6 +47,18 @@ export const CardInsumos = memo(function CardInsumos({
       }
     });
   }, [insumos, tipoOrdenacao]);
+
+  const CORES_AURA: Record<string, string> = {
+    Limpeza: "#0ea5e9", // sky-500
+    Embalagem: "#f59e0b", // amber-500
+    Embrulho: "#ec4899", // pink-500
+    Fixação: "#ef4444", // red-500
+    Eletrônica: "#8b5cf6", // violet-500
+    Acabamento: "#10b981", // emerald-500
+    Proteção: "#14b8a6", // teal-500
+    Geral: "#71717a", // zinc-500
+    Outros: "#78716c", // stone-500
+  };
 
   return (
     <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500">
@@ -123,6 +136,10 @@ export const CardInsumos = memo(function CardInsumos({
           </div>
         ) : insumosOrdenados.map((i) => {
           const sel = selecionados.some(s => s.id === i.id);
+          const corHex = CORES_AURA[i.categoria] || "#84cc16"; // fallback lime-500
+          const categoriaInfo = CATEGORIAS.find(c => c.id.toLowerCase() === i.categoria?.toLowerCase());
+          const IconeCategoria = categoriaInfo?.icone || Box;
+
           return (
             <div 
               key={i.id} 
@@ -137,13 +154,26 @@ export const CardInsumos = memo(function CardInsumos({
               }}
               className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                 ${sel 
-                  ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
-                  : "bg-zinc-50 dark:bg-white/5 border-borda-sutil hover:border-indigo-500/30"}
+                  ? "shadow-md" 
+                  : "bg-zinc-50 dark:bg-white/5 border-borda-sutil"}
               `}
+              style={{
+                borderColor: sel ? corHex : undefined,
+                backgroundColor: sel ? `${corHex}15` : undefined
+              }}
+              onMouseEnter={(e) => {
+                if (!sel) e.currentTarget.style.borderColor = `${corHex}50`;
+              }}
+              onMouseLeave={(e) => {
+                if (!sel) e.currentTarget.style.borderColor = '';
+              }}
             >
               <div className="shrink-0">
-                <div className={`p-2.5 rounded-xl transition-all duration-300 ${sel ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30" : "bg-white dark:bg-white/5 text-zinc-400 group-hover:text-indigo-500"}`}>
-                  <Box size={18} />
+                <div 
+                  className={`p-2.5 rounded-xl transition-all duration-300 ${!sel && 'bg-white dark:bg-white/5 text-zinc-400 group-hover:text-current'}`}
+                  style={sel ? { backgroundColor: corHex, color: '#fff', boxShadow: `0 4px 14px ${corHex}40` } : { color: corHex }}
+                >
+                  <IconeCategoria size={18} />
                 </div>
               </div>
 
@@ -153,14 +183,24 @@ export const CardInsumos = memo(function CardInsumos({
                   <p className="text-[9px] font-bold text-zinc-500 dark:text-gray-400 uppercase whitespace-nowrap">
                     {i.categoria || 'Geral'} • <ContadorAnimado valor={i.custoMedioUnidade / 100} />
                   </p>
-                  <span className={`text-[8px] font-black uppercase mt-0.5 ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500' : 'text-indigo-500'}`}>
-                    {i.quantidadeAtual} <span className="lowercase">{i.unidadeMedida}</span> em estoque
-                  </span>
+                  <div className="flex items-center justify-between mt-1 pt-0.5">
+                    <span className="text-[7px] font-black uppercase text-zinc-400 tracking-widest">
+                      Estoque
+                    </span>
+                    <span 
+                      className={`text-[9px] font-black uppercase tabular-nums ${i.quantidadeAtual <= i.quantidadeMinima ? 'text-rose-500 animate-pulse' : 'text-zinc-500 dark:text-zinc-400'}`}
+                    >
+                      {i.quantidadeAtual} <span className="lowercase text-[8px] opacity-70">{i.unidadeMedida}</span>
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {sel && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
+                <div 
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20"
+                  style={{ backgroundColor: corHex }}
+                >
                   <Check className="w-2.5 h-2.5" />
                 </div>
               )}
@@ -229,6 +269,10 @@ export const CardInsumos = memo(function CardInsumos({
               {selecionados.map((item) => {
                 const alerta = alertas.find(a => a.insumoId === item.id);
                 const original = insumos.find(i => i.id === item.id);
+                const corHex = original ? (CORES_AURA[original.categoria] || "#84cc16") : "#84cc16";
+                const categoriaInfo = original ? CATEGORIAS.find(c => c.id.toLowerCase() === original.categoria?.toLowerCase()) : null;
+                const IconeCategoria = categoriaInfo?.icone || Package;
+
                 return (
                   <motion.div
                     key={item.id}
@@ -242,12 +286,15 @@ export const CardInsumos = memo(function CardInsumos({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
-                          <Package size={16} />
+                        <div 
+                          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: `${corHex}15`, color: corHex }}
+                        >
+                          <IconeCategoria size={16} />
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-black uppercase tracking-tight truncate text-primary dark:text-zinc-100">{item.nome}</span>
-                          <span className="text-[9px] font-bold text-zinc-500 dark:text-gray-400 uppercase mt-0.5">Insumo</span>
+                          <span className="text-[9px] font-bold text-zinc-500 dark:text-gray-400 uppercase mt-0.5">{original?.categoria || 'Insumo'}</span>
                         </div>
                       </div>
                       
@@ -263,13 +310,13 @@ export const CardInsumos = memo(function CardInsumos({
                           {modoEntrada === 'unitario' && (
                             <button
                               onClick={(e) => { e.stopPropagation(); alternarPorLote(item.id); }}
-                              className={`px-2.5 h-7 rounded-lg text-[7px] font-black uppercase transition-all border flex items-center gap-1.5 shrink-0 ${
-                                item.porLote 
-                                  ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.1)]" 
-                                  : "bg-zinc-100 dark:bg-white/5 text-zinc-500 border-borda-sutil hover:border-indigo-500/30"
-                              }`}
+                              className={`px-2.5 h-7 rounded-lg text-[7px] font-black uppercase transition-all border flex items-center gap-1.5 shrink-0`}
+                              style={item.porLote 
+                                ? { backgroundColor: `${corHex}15`, color: corHex, borderColor: `${corHex}50`, boxShadow: `0 0 10px ${corHex}20` }
+                                : { backgroundColor: "var(--bg-muted)", color: "#71717a", borderColor: "var(--borda-sutil)" }
+                              }
                             >
-                              <div className={item.porLote ? "text-indigo-500" : "text-zinc-500"}>
+                              <div style={{ color: item.porLote ? corHex : "#71717a" }}>
                                 {item.porLote ? <LayoutGrid size={10} /> : <Box size={10} />}
                               </div>
                               {item.porLote ? "Mesa Completa" : "Por Peça"}
@@ -284,11 +331,11 @@ export const CardInsumos = memo(function CardInsumos({
                         <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-gray-400 tracking-widest leading-none">
                           Qtd ({original?.unidadeMedida || 'un'})
                         </label>
-                        <div className="flex items-center h-9 rounded-lg bg-zinc-100 dark:bg-black/40 overflow-hidden border border-borda-sutil focus-within:border-indigo-500/30 transition-all">
+                        <div className="flex items-center h-9 rounded-lg bg-zinc-100 dark:bg-black/40 overflow-hidden border border-borda-sutil focus-within:border-lime-500/30 transition-all">
                           <button 
                             type="button"
                             onClick={() => atualizarQtd(item.id, Math.max(0, (item.quantidade || 0) - 1))}
-                            className="h-full px-2 text-zinc-500 hover:text-indigo-500 hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border-r border-borda-sutil"
+                            className="h-full px-2 text-zinc-500 hover:text-lime-500 hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border-r border-borda-sutil"
                           >
                             <Minus size={10} strokeWidth={3} />
                           </button>
@@ -302,7 +349,7 @@ export const CardInsumos = memo(function CardInsumos({
                           <button 
                             type="button"
                             onClick={() => atualizarQtd(item.id, (item.quantidade || 0) + 1)}
-                            className="h-full px-2 text-zinc-500 hover:text-indigo-500 hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border-l border-borda-sutil"
+                            className="h-full px-2 text-zinc-500 hover:text-lime-500 hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border-l border-borda-sutil"
                           >
                             <Plus size={10} strokeWidth={3} />
                           </button>
@@ -314,7 +361,7 @@ export const CardInsumos = memo(function CardInsumos({
                           Custo Un.
                         </label>
                         <div className="w-full h-9 px-3 rounded-lg bg-zinc-100 dark:bg-black/40 flex items-center justify-center border border-borda-sutil">
-                          <span className="font-black text-xs text-indigo-500 text-center">
+                          <span className="font-black text-xs text-lime-500 text-center">
                             <ContadorAnimado valor={item.custoCentavos / 100} prefixo="R$ " />
                           </span>
                         </div>

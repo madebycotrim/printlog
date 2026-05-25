@@ -11,6 +11,8 @@ import { CampoMonetario } from "@/compartilhado/componentes";
 import { AcoesDescarte } from "@/compartilhado/componentes";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { FABRICANTES, MATERIAIS_FDM, MATERIAIS_SLA, CORES_PREDEFINIDAS } from "../constantes";
+import { useArmazemMateriais } from "../estado/armazemMateriais";
+import { ordenarOpcoesPorFrequencia } from "@/compartilhado/utilitarios/classificacao";
 
 // --- ESQUEMA DE VALIDAÇÃO (ZOD) ---
 const esquemaMaterial = z.object({
@@ -37,6 +39,7 @@ interface PropriedadesFormularioMaterial {
 
 export function FormularioMaterial({ aberto, aoSalvar, aoCancelar }: PropriedadesFormularioMaterial) {
   const [confirmarDescarte, definirConfirmarDescarte] = useState(false);
+  const { materiais } = useArmazemMateriais();
 
   const {
     register,
@@ -76,8 +79,16 @@ export function FormularioMaterial({ aberto, aoSalvar, aoCancelar }: Propriedade
       definirConfirmarDescarte(false);
     }
   }, [aberto, reset]);
+  const opcoesFabricanteInteligente = useMemo(() => {
+    const historico = materiais.map(m => m.fabricante || "");
+    return ordenarOpcoesPorFrequencia(FABRICANTES, historico, 3);
+  }, [materiais]);
 
-  const opcoesMaterialAtual = useMemo(() => (tipoSelecionado === "FDM" ? MATERIAIS_FDM : MATERIAIS_SLA), [tipoSelecionado]);
+  const opcoesMaterialInteligente = useMemo(() => {
+    const opcoesBase = tipoSelecionado === "FDM" ? MATERIAIS_FDM : MATERIAIS_SLA;
+    const historico = materiais.filter(m => m.tipo === tipoSelecionado).map(m => m.tipoMaterial || "");
+    return ordenarOpcoesPorFrequencia(opcoesBase, historico, 3);
+  }, [tipoSelecionado, materiais]);
 
   const lidarComEnvioRHF = async (dados: FormValues) => {
     try {
@@ -141,11 +152,11 @@ export function FormularioMaterial({ aberto, aoSalvar, aoCancelar }: Propriedade
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                          <label className="text-[10px] font-black uppercase text-zinc-500 ml-1">Fabricante</label>
-                         <Combobox opcoes={FABRICANTES} valor={fabricanteSelecionado} aoAlterar={(val) => setValue("fabricante", val, { shouldDirty: true })} permitirNovo={true} icone={Building2} />
+                         <Combobox opcoes={opcoesFabricanteInteligente} valor={fabricanteSelecionado} aoAlterar={(val) => setValue("fabricante", val, { shouldDirty: true })} permitirNovo={true} icone={Building2} />
                       </div>
                       <div className="space-y-2">
                          <label className="text-[10px] font-black uppercase text-zinc-500 ml-1">Tipo de Material</label>
-                         <Combobox opcoes={opcoesMaterialAtual} valor={tipoMaterialSelecionado} aoAlterar={(val) => setValue("tipoMaterial", val, { shouldDirty: true })} permitirNovo={true} icone={Layers} />
+                         <Combobox opcoes={opcoesMaterialInteligente} valor={tipoMaterialSelecionado} aoAlterar={(val) => setValue("tipoMaterial", val, { shouldDirty: true })} permitirNovo={true} icone={Layers} />
                       </div>
                       <div className="md:col-span-2">
                         <CampoTexto 

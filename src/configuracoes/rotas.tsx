@@ -46,6 +46,11 @@ const PaginaCalculadora = lazy(() =>
     default: m.PaginaCalculadora,
   })),
 );
+const PaginaOrcamentoPublico = lazy(() =>
+  import("@/funcionalidades/geral/calculadora/PaginaOrcamentoPublico").then((m) => ({
+    default: m.PaginaOrcamentoPublico,
+  })),
+);
 const PaginaDesperdicio = lazy(() =>
   import("@/funcionalidades/geral/desperdicio/pagina").then((m) => ({
     default: m.PaginaDesperdicio,
@@ -143,6 +148,7 @@ export function RoteadorPrincipal() {
                 <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
                 <Route path="/termos-de-servico" element={<TermosServico />} />
                 <Route path="/rastreamento/:idPedido" element={<PaginaRastreamento />} />
+                <Route path="/orcamento" element={<PaginaOrcamentoPublico />} />
 
                 {/* Autenticação */}
                 <Route path="/login" element={<PaginaAcesso />} />

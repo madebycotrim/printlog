@@ -53,4 +53,7 @@ export interface CalculoResultado {
   custoTotalOperacional: number;
   margemReal: number;
   custoFalha: number;
+  custoModelagem: number;
+  valorDesconto: number;
+  percentualDesconto: number;
 }

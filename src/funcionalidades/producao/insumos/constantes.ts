@@ -1,13 +1,15 @@
-import { Box, Layers, Package, Link2, Zap, Hammer, FlaskConical } from "lucide-react";
+import { Package, Gift, Shapes, Wrench, Cpu, Paintbrush, Droplet, Puzzle, Shield } from "lucide-react";
 
 export const CATEGORIAS = [
-  { id: "Geral", rotulo: "GERAL", icone: Layers, corTema: "zinc-500" },
+  { id: "Geral", rotulo: "GERAL", icone: Shapes, corTema: "zinc-500" },
   { id: "Embalagem", rotulo: "EMBALAGEM", icone: Package, corTema: "amber-500" },
-  { id: "Fixação", rotulo: "FIXAÇÃO", icone: Link2, corTema: "orange-500" },
-  { id: "Eletrônica", rotulo: "ELETRÔNICA", icone: Zap, corTema: "violet-500" },
-  { id: "Acabamento", rotulo: "ACABAMENTO", icone: Hammer, corTema: "emerald-500" },
-  { id: "Limpeza", rotulo: "LIMPEZA/QUÍMICA", icone: FlaskConical, corTema: "sky-500" },
-  { id: "Outros", rotulo: "OUTROS", icone: Box, corTema: "zinc-500" },
+  { id: "Embrulho", rotulo: "EMBRULHO", icone: Gift, corTema: "pink-500" },
+  { id: "Fixação", rotulo: "FIXAÇÃO", icone: Wrench, corTema: "red-500" },
+  { id: "Eletrônica", rotulo: "ELETRÔNICA", icone: Cpu, corTema: "violet-500" },
+  { id: "Acabamento", rotulo: "ACABAMENTO", icone: Paintbrush, corTema: "emerald-500" },
+  { id: "Limpeza", rotulo: "LIMPEZA", icone: Droplet, corTema: "sky-500" },
+  { id: "Proteção", rotulo: "PROTEÇÃO", icone: Shield, corTema: "teal-500" },
+  { id: "Outros", rotulo: "OUTROS", icone: Puzzle, corTema: "stone-500" },
 ];
 
 export const UNIDADES = [

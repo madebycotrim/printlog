@@ -35,7 +35,7 @@ export function PaginaMateriais() {
 
   useDefinirCabecalho({
     titulo: "Meus Materiais",
-    subtitulo: "Gestão inteligente de filamentos, resinas e patrimônio técnico",
+    subtitulo: "Gestão de filamentos, resinas e patrimônio técnico",
     placeholderBusca: "Buscar fabricante, cor ou tipo de material...",
     aoBuscar: acoes.definirTermoBusca,
     acao: {
@@ -51,7 +51,7 @@ export function PaginaMateriais() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {estado.carregando && estado.materiais.length === 0 ? (
+        {estado.carregando ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

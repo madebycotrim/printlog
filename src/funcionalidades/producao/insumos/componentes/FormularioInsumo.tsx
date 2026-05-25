@@ -36,6 +36,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
     unidadeMedidaAtiva,
     itemFracionavelAtivo,
     unidadeConsumoAtiva,
+    quantidadeAtualAtiva,
     custoEfetivo,
     lidarComTentativaFechamento,
     fecharModalRealmente,
@@ -86,7 +87,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
                 register={register}
                 errors={errors}
                 categoriaAtiva={categoriaAtiva || "Geral"}
-                aoMudarCategoria={(cat) => setValue("categoria", cat, { shouldDirty: true })}
+                aoMudarCategoria={(cat) => setValue("categoria", cat, { shouldDirty: true, shouldValidate: true, shouldTouch: true })}
               />
             )}
 
@@ -97,6 +98,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
                 control={control}
                 setValue={setValue}
                 unidadeMedidaAtiva={unidadeMedidaAtiva}
+                quantidadeAtual={quantidadeAtualAtiva}
               />
             )}
 
@@ -105,6 +107,7 @@ export function FormularioInsumo({ aberto, insumoEditando, aoCancelar, aoSalvar 
                 register={register}
                 errors={errors}
                 setValue={setValue}
+                control={control}
                 itemFracionavelAtivo={itemFracionavelAtivo || false}
                 unidadeConsumoAtiva={unidadeConsumoAtiva || ""}
                 custoEfetivo={custoEfetivo}

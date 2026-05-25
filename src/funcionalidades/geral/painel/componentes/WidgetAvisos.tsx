@@ -1,19 +1,30 @@
-import { AlertTriangle, Plus, Wrench } from "lucide-react";
+import { AlertTriangle, Plus, Wrench, CheckCircle2 } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { obterStatusManutencao } from "@/funcionalidades/producao/impressoras/utilitarios/utilitariosManutencao";
+import { Notificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
+import { useNavigate } from "react-router-dom";
+import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 
 interface PropriedadesWidgetAvisos {
   impressoras: Impressora[];
+  notificacoes?: Notificacao[];
   aoAgendarManutencao: () => void;
 }
 
-export function WidgetAvisos({ impressoras, aoAgendarManutencao }: PropriedadesWidgetAvisos) {
+export function WidgetAvisos({ impressoras, notificacoes = [], aoAgendarManutencao }: PropriedadesWidgetAvisos) {
+  const navegar = useNavigate();
+  const { marcarComoLida } = useArmazemNotificacoes();
+
   const impressorasCriticas = impressoras
     .map((i) => ({
       ...i,
       statusManutencao: obterStatusManutencao(i.horimetroTotalMinutos || 0, i.intervaloRevisaoMinutos || 0),
     }))
     .filter((i) => i.statusManutencao !== "normal");
+
+  const notificacoesAprovacao = notificacoes.filter(n => n.categoria === CategoriaNotificacao.PEDIDOS && n.titulo.includes("Aprovado") && !n.lida);
+
+  const temAvisos = impressorasCriticas.length > 0 || notificacoesAprovacao.length > 0;
 
   return (
     <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 h-full shadow-media flex flex-col group/widget relative overflow-hidden transition-all hover:bg-zinc-50 dark:hover:bg-white/[0.01]">
@@ -29,39 +40,68 @@ export function WidgetAvisos({ impressoras, aoAgendarManutencao }: PropriedadesW
       </div>
 
       <div className="space-y-4 flex-1 overflow-y-auto pr-1 custom-scrollbar relative z-10">
-        {impressorasCriticas.length === 0 ? (
+        {!temAvisos ? (
           <div className="flex flex-col items-center justify-center h-full opacity-20 text-center py-6">
             <AlertTriangle size={32} className="mb-3" />
             <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">
               Tudo sob controle.
               <br />
-              Nenhum aviso crítico.
+              Nenhum aviso no quadro.
             </p>
           </div>
         ) : (
-          impressorasCriticas.map((imp) => (
-            <div 
-              key={imp.id}
-              onClick={aoAgendarManutencao}
-              className="flex gap-4 p-5 rounded-2xl bg-rose-500/5 border border-rose-500/10 group/aviso hover:bg-rose-500/10 transition-all cursor-pointer shadow-lg shadow-rose-500/5"
-            >
-              <div className="min-w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20 mt-0.5 group-hover/aviso:scale-110 transition-transform">
-                <Wrench className="w-5 h-5 text-rose-400" />
-              </div>
-              <div>
-                <div className="text-[11px] font-black text-primary mb-1 group-hover/aviso:text-rose-500 transition-colors uppercase tracking-tight">
-                  Manutenção Necessária
+          <>
+            {notificacoesAprovacao.map((notificacao) => (
+              <div 
+                key={notificacao.id}
+                onClick={() => {
+                  marcarComoLida(notificacao.id);
+                  if (notificacao.link) navegar(notificacao.link);
+                }}
+                className="flex gap-4 p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 group/aviso hover:bg-emerald-500/10 transition-all cursor-pointer shadow-lg shadow-emerald-500/5"
+              >
+                <div className="min-w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 mt-0.5 group-hover/aviso:scale-110 transition-transform">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 </div>
-                <div className="text-[10px] text-secondary leading-relaxed font-black uppercase tracking-tight">
-                  A impressora <span className="text-primary font-black">{imp.nome}</span> atingiu o limite de uso contínuo recomendado.
+                <div>
+                  <div className="text-[11px] font-black text-primary mb-1 group-hover/aviso:text-emerald-500 transition-colors uppercase tracking-tight">
+                    {notificacao.titulo}
+                  </div>
+                  <div className="text-[10px] text-secondary leading-relaxed font-black uppercase tracking-tight">
+                    {notificacao.mensagem}
+                  </div>
+                  <button className="mt-3 text-[9px] font-black text-emerald-500 uppercase tracking-[0.15em] hover:text-emerald-400 transition-colors flex items-center gap-1">
+                    VERIFICAR AGORA
+                    <div className="w-4 h-px bg-emerald-500/50" />
+                  </button>
                 </div>
-                <button className="mt-3 text-[9px] font-black text-rose-400 uppercase tracking-[0.15em] hover:text-rose-300 transition-colors flex items-center gap-1">
-                  AGENDAR AGORA
-                  <div className="w-4 h-px bg-rose-400/50" />
-                </button>
               </div>
-            </div>
-          ))
+            ))}
+
+            {impressorasCriticas.map((imp) => (
+              <div 
+                key={imp.id}
+                onClick={aoAgendarManutencao}
+                className="flex gap-4 p-5 rounded-2xl bg-rose-500/5 border border-rose-500/10 group/aviso hover:bg-rose-500/10 transition-all cursor-pointer shadow-lg shadow-rose-500/5"
+              >
+                <div className="min-w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20 mt-0.5 group-hover/aviso:scale-110 transition-transform">
+                  <Wrench className="w-5 h-5 text-rose-400" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-black text-primary mb-1 group-hover/aviso:text-rose-500 transition-colors uppercase tracking-tight">
+                    Manutenção Necessária
+                  </div>
+                  <div className="text-[10px] text-secondary leading-relaxed font-black uppercase tracking-tight">
+                    A impressora <span className="text-primary font-black">{imp.nome}</span> atingiu o limite de uso contínuo recomendado.
+                  </div>
+                  <button className="mt-3 text-[9px] font-black text-rose-400 uppercase tracking-[0.15em] hover:text-rose-300 transition-colors flex items-center gap-1">
+                    AGENDAR AGORA
+                    <div className="w-4 h-px bg-rose-400/50" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
 

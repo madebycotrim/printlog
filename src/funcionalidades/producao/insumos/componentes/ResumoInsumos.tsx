@@ -26,7 +26,7 @@ export function ResumoInsumos({ materiais, insumos, totalItensUnicos, valorInves
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8"
     >
-      <CardResumo titulo="Insumos Cadastrados" valor={totalItensUnicos} unidade="tipos" icone={Box} cor="sky" />
+      <CardResumo titulo="Insumos Cadastrados" valor={totalItensUnicos} unidade="itens" icone={Box} cor="amber" />
 
       <CardResumo
         titulo="Valor Distribuído"

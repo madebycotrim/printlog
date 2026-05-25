@@ -32,6 +32,7 @@ export function AbaConfiguracaoInsumo({
     unidadeMedidaAtiva,
     itemFracionavelAtivo,
     unidadeConsumoAtiva,
+    quantidadeAtualAtiva,
     custoEfetivo,
     confirmarDescarte,
     definirConfirmarDescarte,
@@ -55,7 +56,7 @@ export function AbaConfiguracaoInsumo({
             register={register}
             errors={errors}
             categoriaAtiva={categoriaAtiva || "Geral"}
-            aoMudarCategoria={(cat) => setValue("categoria", cat, { shouldDirty: true })}
+            aoMudarCategoria={(cat) => setValue("categoria", cat, { shouldDirty: true, shouldValidate: true, shouldTouch: true })}
           />
         </div>
 
@@ -69,6 +70,8 @@ export function AbaConfiguracaoInsumo({
             errors={errors}
             setValue={setValue}
             unidadeMedidaAtiva={unidadeMedidaAtiva}
+            quantidadeAtual={quantidadeAtualAtiva}
+            corTema={corTema}
           />
         </div>
 
@@ -78,11 +81,13 @@ export function AbaConfiguracaoInsumo({
         <div className="space-y-8">
           <SecaoRendimentoFracionado 
             register={register}
+            control={control}
             errors={errors}
             setValue={setValue}
             itemFracionavelAtivo={itemFracionavelAtivo || false}
             unidadeConsumoAtiva={unidadeConsumoAtiva || ""}
             custoEfetivo={custoEfetivo}
+            corTema={corTema}
           />
         </div>
 
@@ -101,7 +106,7 @@ export function AbaConfiguracaoInsumo({
                    type="submit"
                    className={`h-12 px-10 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl bg-${corTema} hover:brightness-110 shadow-${corTema}/20`}
                  >
-                   Cadastrar Filamento
+                   Cadastrar Insumos 
                  </button>
               </div>
            ) : (

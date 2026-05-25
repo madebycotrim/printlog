@@ -11,6 +11,7 @@ interface InterfaceTopico {
   categoria?: string;
   cor?: string;
   level?: string;
+  validadoEngenharia?: boolean;
 }
 
 interface Propriedades {
@@ -52,6 +53,14 @@ export function ModalDetalhesTopico({ topico, aoFechar }: Propriedades) {
                 <span className={`text-[10px] font-black ${topico.cor || "text-sky-500"} uppercase tracking-widest`}>
                   ID: {topico.id}
                 </span>
+                {topico.validadoEngenharia && (
+                  <>
+                    <div className="w-1 h-1 rounded-full bg-zinc-700" />
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                      Validado pela Engenharia
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>

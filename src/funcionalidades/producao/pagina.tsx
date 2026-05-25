@@ -48,7 +48,7 @@ export function PaginaProducao() {
               onClick={() => mudarAba(aba.id as any)}
               className={`relative py-4 px-6 flex items-center gap-2.5 text-[11px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer ${
                 ativo 
-                  ? "text-sky-500 font-extrabold" 
+                  ? "text-primary font-extrabold" 
                   : "text-zinc-400 hover:text-primary dark:hover:text-zinc-300"
               }`}
             >
@@ -57,7 +57,7 @@ export function PaginaProducao() {
               {ativo && (
                 <motion.div 
                   layoutId="aba-ativa-producao-principal" 
-                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-sky-500" 
+                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary" 
                 />
               )}
             </button>

@@ -182,6 +182,9 @@ export function useGerenciadorInsumos() {
         custoMedioUnidade: dados.custoMedioUnidade || 0,
         linkCompra: dados.linkCompra || "",
         marca: dados.marca || "",
+        itemFracionavel: dados.itemFracionavel || false,
+        rendimentoTotal: dados.rendimentoTotal,
+        unidadeConsumo: dados.unidadeConsumo,
         historico:
           dados.historico ||
           (eEdicao

@@ -23,11 +23,13 @@ import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hoo
 import { Dialogo } from "@/compartilhado/componentes";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
+import { codificarLinkMagico } from "@/compartilhado/utilitarios/link-magico";
 
 // Hook e Componentes Refatorados
 import { useCalculadora } from "./hooks/useCalculadora";
 import { CardMateriais } from "./componentes/CardMateriais";
 import { CardProducao } from "./componentes/CardProducao";
+import { CardModelagem } from "./componentes/CardModelagem";
 import { CardOperacional } from "./componentes/CardOperacional";
 import { CardInsumos } from "./componentes/CardInsumos";
 import { CardLogistica } from "./componentes/CardLogistica";
@@ -440,6 +442,31 @@ export function PaginaCalculadora() {
     }
   };
 
+  const obterUrlLinkMagico = () => {
+    const hash = codificarLinkMagico({
+      pr: hook.calculo.precoSugerido,
+      np: nomeProjeto || "Projeto 3D",
+      t: hook.tempo,
+      m: hook.materiaisSelecionados.map(m => m.nome),
+      e: config.nomeEstudio || "",
+      s: config.sloganEstudio || "",
+      w: (usuario as any)?.telefone || "",
+      id: idEdicao || undefined,
+      cli: buscaClienteSeletor || undefined,
+      obs: descricaoProjeto || undefined
+    });
+    return `${window.location.origin}/orcamento?q=${hash}`;
+  };
+
+  const gerarLinkMagico = () => {
+    const url = obterUrlLinkMagico();
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success("Link Mágico copiado! Envie para seu cliente.");
+    }).catch(() => {
+      toast.error("Erro ao copiar o link mágico.");
+    });
+  };
+
   // Sincronizar potência e depreciação ao carregar ou mudar impressora
   useEffect(() => {
     if (impressoraSelecionada?.potenciaWatts) {
@@ -684,6 +711,13 @@ export function PaginaCalculadora() {
               aoDetectarTarifa={hook.detectarTarifa}
             />
 
+            <CardModelagem
+              tempoModelagem={hook.tempoModelagem}
+              setTempoModelagem={hook.setTempoModelagem}
+              valorHoraModelagem={hook.valorHoraModelagem}
+              setValorHoraModelagem={hook.setValorHoraModelagem}
+            />
+
             <CardOperacional
               maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(v); }}
               margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(v); }}
@@ -726,6 +760,8 @@ export function PaginaCalculadora() {
                   setModalPdfAberto(true);
                 }
               }}
+              gerarLinkMagico={gerarLinkMagico}
+              obterUrlLinkMagico={obterUrlLinkMagico}
               carregandoPdf={false}
               materiais={hook.materiaisSelecionados}
               insumos={hook.insumosSelecionados}
@@ -737,6 +773,8 @@ export function PaginaCalculadora() {
               frete={hook.frete}
               taxaFixa={hook.taxaFixa}
               aoSugerirPrecoIA={hook.sugerirPrecoIA}
+              descontoVolume={hook.descontoVolume}
+              setDescontoVolume={hook.setDescontoVolume}
             />
           </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { History, Settings, Package, Database } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Insumo } from "../tipos";
@@ -23,21 +23,25 @@ interface PropriedadesModalGerenciamento {
 const MAPA_CORES_CATEGORIA: Record<CategoriaInsumo, string> = {
   Limpeza: "sky-500",
   Embalagem: "amber-500",
-  Fixação: "orange-500",
+  Embrulho: "pink-500",
+  Fixação: "red-500",
   Eletrônica: "violet-500",
   Acabamento: "emerald-500",
+  Proteção: "teal-500",
   Geral: "zinc-500",
-  Outros: "zinc-500",
+  Outros: "stone-500",
 };
 
 const MAPA_CORES_HEX: Record<CategoriaInsumo, string> = {
-  Limpeza: "#0ea5e9",
-  Embalagem: "#f59e0b",
-  Fixação: "#f97316",
-  Eletrônica: "#8b5cf6",
-  Acabamento: "#10b981",
-  Geral: "#71717a",
-  Outros: "#71717a",
+  Limpeza: "#0ea5e9", // sky-500
+  Embalagem: "#f59e0b", // amber-500
+  Embrulho: "#ec4899", // pink-500
+  Fixação: "#ef4444", // red-500
+  Eletrônica: "#8b5cf6", // violet-500
+  Acabamento: "#10b981", // emerald-500
+  Proteção: "#14b8a6", // teal-500
+  Geral: "#71717a", // zinc-500
+  Outros: "#78716c", // stone-500
 };
 
 export function ModalGerenciamentoInsumo({
@@ -49,18 +53,18 @@ export function ModalGerenciamentoInsumo({
   aoRepor,
   abaInicial = "estoque"
 }: PropriedadesModalGerenciamento) {
-  const insumoPadrao: Insumo = {
+  const insumoPadrao: Insumo = useMemo(() => ({
     id: "",
-    nome: "Novo Insumo",
+    nome: "",
     categoria: "Geral",
     unidadeMedida: "un",
-    quantidadeAtual: 0,
-    quantidadeMinima: 0,
-    custoMedioUnidade: 0,
+    quantidadeAtual: "" as unknown as number,
+    quantidadeMinima: "" as unknown as number,
+    custoMedioUnidade: "" as unknown as number,
     historico: [],
     dataCriacao: new Date(),
     dataAtualizacao: new Date(),
-  };
+  }), []);
 
   const insumoEfetivo = insumo || insumoPadrao;
 
@@ -103,7 +107,7 @@ export function ModalGerenciamentoInsumo({
 
         {/* Cabeçalho Premium Unificado */}
         <CabecalhoModalPremium 
-          titulo={insumoEfetivo.nome}
+          titulo={insumoEfetivo.nome || "Novo Insumo"}
           aoFechar={aoFechar}
           corTema={corTema}
           icone={<Package size={28} className={`text-${corTema} transition-colors duration-500`} strokeWidth={2.5} />}
@@ -139,27 +143,39 @@ export function ModalGerenciamentoInsumo({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="flex-1 flex flex-col p-8"
+              className="flex-1 flex flex-col"
             >
               {abaAtiva === "estoque" && (
-                <AbaOperacoesInsumo 
-                  insumo={insumoEfetivo} 
-                  aoBaixar={() => aoBaixar(insumoEfetivo)}
-                  aoRepor={() => aoRepor(insumoEfetivo)}
-                  corTema={corTema}
-                />
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <AbaOperacoesInsumo 
+                    insumo={insumoEfetivo} 
+                    aoBaixar={() => {
+                      aoFechar();
+                      setTimeout(() => aoBaixar(insumoEfetivo), 100);
+                    }}
+                    aoRepor={() => {
+                      aoFechar();
+                      setTimeout(() => aoRepor(insumoEfetivo), 100);
+                    }}
+                    corTema={corTema}
+                  />
+                </div>
               )}
               {abaAtiva === "historico" && (
-                <AbaHistoricoInsumo insumo={insumoEfetivo} />
+                <div className="p-8">
+                  <AbaHistoricoInsumo insumo={insumoEfetivo} />
+                </div>
               )}
               {abaAtiva === "config" && (
-                <AbaConfiguracaoInsumo 
-                  insumo={insumoEfetivo} 
-                  aoSalvar={aoSalvar}
-                  aoCancelar={aoFechar}
-                  corTema={corTema}
-                  aoMudarCategoriaInterna={setCategoriaTemp}
-                />
+                <div className="p-8">
+                  <AbaConfiguracaoInsumo 
+                    insumo={insumoEfetivo} 
+                    aoSalvar={aoSalvar}
+                    aoCancelar={aoFechar}
+                    corTema={corTema}
+                    aoMudarCategoriaInterna={setCategoriaTemp}
+                  />
+                </div>
               )}
             </motion.div>
           </AnimatePresence>

@@ -6,6 +6,8 @@ import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Impressora, PerfilImpressoraCatalogo } from "../tipos";
 import { StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { LISTA_IMPRESSORAS } from "../constantes/impressoras";
+import { useGerenciadorImpressoras } from "./useGerenciadorImpressoras";
+import { ordenarOpcoesPorFrequencia } from "@/compartilhado/utilitarios/classificacao";
 
 const esquemaImpressora = z.object({
   nome: z.string().min(2, "O apelido deve ter pelo menos 2 caracteres"),
@@ -34,6 +36,8 @@ export function useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, 
   const estaEditando = Boolean(impressoraEditando);
   const [confirmarDescarte, definirConfirmarDescarte] = useState(false);
   const [catalogo, definirCatalogo] = useState<PerfilImpressoraCatalogo[]>([]);
+  
+  const { estado: estadoImpressoras } = useGerenciadorImpressoras();
 
   const {
     register,
@@ -54,7 +58,7 @@ export function useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, 
       imagemUrl: "",
       potenciaWatts: "" as unknown as number,
       valorCompraCentavos: "" as unknown as number,
-      taxaHoraCentavos: 15,
+      taxaHoraCentavos: "" as unknown as number,
       horimetroTotalMinutos: 0,
       intervaloRevisaoMinutos: 300,
     },
@@ -91,8 +95,8 @@ export function useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, 
           modeloBase: impressoraEditando.modeloBase || "",
           imagemUrl: impressoraEditando.imagemUrl || "",
           potenciaWatts: impressoraEditando.potenciaWatts,
-          valorCompraCentavos: (impressoraEditando.valorCompraCentavos || 0) / 100,
-          taxaHoraCentavos: (impressoraEditando.taxaHoraCentavos || 1500) / 100,
+          valorCompraCentavos: impressoraEditando.valorCompraCentavos ? impressoraEditando.valorCompraCentavos / 100 : ("" as unknown as number),
+          taxaHoraCentavos: impressoraEditando.taxaHoraCentavos ? impressoraEditando.taxaHoraCentavos / 100 : ("" as unknown as number),
           horimetroTotalMinutos: Math.floor((impressoraEditando.horimetroTotalMinutos || 0) / 60),
           intervaloRevisaoMinutos: Math.floor((impressoraEditando.intervaloRevisaoMinutos || 18000) / 60),
           consumoKw: impressoraEditando.consumoKw,
@@ -101,7 +105,7 @@ export function useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, 
         reset({
           nome: "", tecnologia: "FDM", marca: "", modeloBase: "", imagemUrl: "",
           potenciaWatts: "" as unknown as number, valorCompraCentavos: "" as unknown as number,
-          taxaHoraCentavos: 15, horimetroTotalMinutos: 0, intervaloRevisaoMinutos: 300,
+          taxaHoraCentavos: "" as unknown as number, horimetroTotalMinutos: 0, intervaloRevisaoMinutos: 300,
         });
       }
       definirConfirmarDescarte(false);
@@ -119,8 +123,10 @@ export function useFormularioImpressora({ aberto, impressoraEditando, aoSalvar, 
 
   const opcoesFabricante = useMemo(() => {
     const marcas = [...new Set(catalogoFiltrado.map((p) => p.marca))].sort();
-    return marcas.map((m) => ({ valor: m, rotulo: m }));
-  }, [catalogoFiltrado]);
+    const opcoesBase = marcas.map((m) => ({ valor: m, rotulo: m }));
+    const historicoMarcas = (estadoImpressoras.impressorasFiltradas || []).map(i => i.marca || "");
+    return ordenarOpcoesPorFrequencia(opcoesBase, historicoMarcas, 3);
+  }, [catalogoFiltrado, estadoImpressoras.impressorasFiltradas]);
 
   const opcoesModelo = useMemo(() => {
     const termoMarca = (marcaAtiva || "").toLowerCase().trim();

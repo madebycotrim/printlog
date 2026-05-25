@@ -16,9 +16,11 @@ const TABS_CATEGORIA: { valor: CategoriaInsumo | "Todas"; rotulo: string }[] = [
     { valor: "Todas", rotulo: "Todos" },
     { valor: "Limpeza", rotulo: "Limpeza" },
     { valor: "Embalagem", rotulo: "Embalagem" },
+    { valor: "Embrulho", rotulo: "Embrulho" },
     { valor: "Fixação", rotulo: "Fixação" },
     { valor: "Eletrônica", rotulo: "Eletrônica" },
     { valor: "Acabamento", rotulo: "Acabamento" },
+    { valor: "Proteção", rotulo: "Proteção" },
     { valor: "Geral", rotulo: "Geral" },
     { valor: "Outros", rotulo: "Outros" },
 ];

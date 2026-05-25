@@ -4,6 +4,7 @@ interface CampoTextoProps extends InputHTMLAttributes<HTMLInputElement> {
   rotulo?: string;
   icone?: ElementType;
   erro?: string;
+  sufixo?: string;
 }
 
 /**
@@ -11,7 +12,7 @@ interface CampoTextoProps extends InputHTMLAttributes<HTMLInputElement> {
  * tanto vírgula (,) quanto ponto (.) como separador decimal.
  */
 export const CampoTexto = forwardRef<HTMLInputElement, CampoTextoProps>(
-  ({ rotulo, icone: Icone, erro, className = "", type, onChange, ...props }, ref) => {
+  ({ rotulo, icone: Icone, erro, sufixo, className = "", type, onChange, ...props }, ref) => {
 
     /** Se é campo numérico, converte vírgula → ponto no onChange */
     const ehNumerico = type === "number";
@@ -57,13 +58,18 @@ export const CampoTexto = forwardRef<HTMLInputElement, CampoTextoProps>(
             {...props}
             onChange={lidarComMudanca}
             className={`w-full h-10 bg-transparent border-0 border-b-2 border-gray-100 dark:border-[var(--border-subtle)] outline-none transition-all duration-300 placeholder:text-gray-400/50 dark:placeholder:text-zinc-700 font-normal text-sm text-gray-900 dark:text-white 
-                            ${Icone ? "pl-8" : "pl-1"} 
+                            ${Icone ? "pl-8" : "pl-1"} ${sufixo ? "pr-12" : "pr-1"}
                             ${
                               erro
                                 ? "border-red-500 focus:border-red-600"
                                 : "focus:border-gray-400 dark:focus:border-white"
                             }`}
           />
+          {sufixo && (
+            <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 dark:text-zinc-600 pointer-events-none uppercase">
+              {sufixo}
+            </span>
+          )}
         </div>
         {erro && (
           <span className="text-[10px] font-bold text-red-500 mt-1 block animate-in fade-in slide-in-from-top-1">

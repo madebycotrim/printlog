@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import { DollarSign, Activity } from "lucide-react";
+import { DollarSign, Activity, Check, AlertTriangle } from "lucide-react";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
@@ -26,6 +26,13 @@ export const CardOperacional = memo(function CardOperacional({
   anosVidaUtil = 5, setAnosVidaUtil, tempo, quantidade, tempoSetup, setTempoSetup
 }: CardOperacionalProps) {
   const [margemInterna, setMargemInterna] = useState(margem);
+  const [microTasks, setMicroTasks] = useState<Record<string, boolean>>({});
+
+  const lidarMicroTask = (chave: string, tempo: number, checked: boolean) => {
+    setMicroTasks(prev => ({ ...prev, [chave]: checked }));
+    if (checked) setTempoSetup(tempoSetup + tempo);
+    else setTempoSetup(Math.max(0, tempoSetup - tempo));
+  };
 
   useEffect(() => {
     setMargemInterna(margem);
@@ -42,26 +49,39 @@ export const CardOperacional = memo(function CardOperacional({
   }, [margemInterna, margem, setMargem]);
 
   const msgMargem = margemInterna === 0 
-    ? { texto: "Sem margem adicionada", cor: "text-zinc-500", corHex: "#71717a" }
+    ? { texto: "Sem margem adicionada", cor: "text-zinc-500", corBase: "zinc", corHex: "#71717a" }
     : margemInterna <= 2000 
-    ? { texto: "Margem de Risco (Lucro muito baixo)", cor: "text-rose-500", corHex: "#f43f5e" }
+    ? { texto: "Margem de Risco (Lucro muito baixo)", cor: "text-rose-500", corBase: "rose", corHex: "#f43f5e" }
     : margemInterna <= 6000 
-    ? { texto: "Margem Competitiva (Ideal para volume)", cor: "text-amber-500", corHex: "#f59e0b" }
+    ? { texto: "Margem Competitiva (Ideal para volume)", cor: "text-amber-500", corBase: "amber", corHex: "#f59e0b" }
     : margemInterna <= 12000 
-    ? { texto: "Margem Saudável (Equilíbrio ideal)", cor: "text-emerald-500", corHex: "#10b981" }
+    ? { texto: "Margem Saudável (Equilíbrio ideal)", cor: "text-emerald-500", corBase: "emerald", corHex: "#10b981" }
     : margemInterna <= 25000 
-    ? { texto: "Margem Premium (Alta lucratividade)", cor: "text-sky-500", corHex: "#0ea5e9" }
-    : { texto: "Margem de Luxo (Valor agregado alto)", cor: "text-violet-500", corHex: "#8b5cf6" };
+    ? { texto: "Margem Premium (Alta lucratividade)", cor: "text-sky-500", corBase: "sky", corHex: "#0ea5e9" }
+    : { texto: "Margem de Luxo (Valor agregado alto)", cor: "text-violet-500", corBase: "violet", corHex: "#8b5cf6" };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-emerald ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
-          {/* Efeito Glow Esmeralda de Fundo */}
-          <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
+    <div className="flex flex-col gap-4">
+      {tempo > 1440 && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3 shadow-lg shadow-amber-500/5 animate-in fade-in zoom-in slide-in-from-top-4">
+          <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500">
+            <AlertTriangle size={20} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-black uppercase text-amber-600 dark:text-amber-500 tracking-wider">Custo de Oportunidade (Gargalo)</span>
+            <span className="text-[11px] font-bold text-amber-700/70 dark:text-amber-500/70 mt-1 leading-snug">
+              Esta peça vai monopolizar sua impressora por <b>mais de {(tempo / 60 / 24).toFixed(1)} dias</b>. Sugerimos subir a margem de risco para compensar a perda de outros trabalhos rápidos neste período.
+            </span>
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-violet ${!cobrarMaoDeObra ? "opacity-40 grayscale" : ""}`}>
+          {/* Efeito Glow Violeta de Fundo */}
+          <div className="absolute -top-24 -left-20 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-500/30">
                 <DollarSign size={18} />
               </div>
               <div className="flex flex-col">
@@ -73,7 +93,7 @@ export const CardOperacional = memo(function CardOperacional({
               type="button"
               onClick={() => setCobrarMaoDeObra(!cobrarMaoDeObra)}
               className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-                cobrarMaoDeObra ? 'bg-emerald-500' : 'bg-muted dark:bg-zinc-700'
+                cobrarMaoDeObra ? 'bg-violet-500' : 'bg-muted dark:bg-zinc-700'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-300 ${
@@ -88,7 +108,7 @@ export const CardOperacional = memo(function CardOperacional({
                   <div className="flex items-center mb-2">
                     <label className="block text-xs font-black uppercase text-gray-400">Custo da Hora</label>
                   </div>
-                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
+                  <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-violet-500/40'}`}>
                     <span className="absolute left-4 font-black text-xs text-muted-foreground select-none">R$</span>
                       <InputBancario 
                         placeholder="0.00"
@@ -104,7 +124,7 @@ export const CardOperacional = memo(function CardOperacional({
                     <label className="block text-xs font-black uppercase text-muted-foreground">Setup p/ Projeto</label>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
+                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-violet-500/40'}`}>
                       <input 
                         type="number" 
                         placeholder="0"
@@ -115,7 +135,7 @@ export const CardOperacional = memo(function CardOperacional({
                       <span className="absolute right-3 font-black text-[10px] text-muted-foreground uppercase tracking-wider select-none">h</span>
                     </div>
 
-                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-emerald-500/40'}`}>
+                    <div className={`relative flex items-center rounded-xl transition-all shadow-inner border ${!cobrarMaoDeObra ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-violet-500/40'}`}>
                       <input 
                         type="number" 
                         placeholder="0"
@@ -129,16 +149,38 @@ export const CardOperacional = memo(function CardOperacional({
                 </div>
               </div>
               {cobrarMaoDeObra && (
-                <p className="text-[9px] font-bold text-muted-foreground mt-1 text-right uppercase tracking-wider pr-1">
-                  💡 Fórmula: (Tempo Setup / 60) * R$/h Operador
-                </p>
+                <div className="mt-4 flex flex-col gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Micro-tarefas de Setup</span>
+                  {[
+                    { key: "mat", label: "Troca de Material / Cor (+15 min)", time: 15 },
+                    { key: "limp", label: "Limpeza da Cuba / Resina (+20 min)", time: 20 },
+                    { key: "sup", label: "Remoção de Suportes Complexos (+30 min)", time: 30 },
+                  ].map((task) => (
+                    <label key={task.key} className="flex items-center gap-3 cursor-pointer group p-2.5 rounded-xl bg-muted/20 hover:bg-violet-500/5 border border-transparent hover:border-violet-500/20 transition-all shadow-sm">
+                      <div className="relative flex items-center justify-center">
+                        <input 
+                          type="checkbox" 
+                          className="peer sr-only"
+                          checked={!!microTasks[task.key]}
+                          onChange={(e) => lidarMicroTask(task.key, task.time, e.target.checked)}
+                        />
+                        <div className="w-5 h-5 border-2 border-borda-sutil rounded-[6px] bg-card peer-checked:bg-violet-500 peer-checked:border-violet-500 transition-all shadow-inner" />
+                        <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-all scale-50 peer-checked:scale-100" />
+                      </div>
+                      <span className="text-[11px] font-bold text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors select-none">{task.label}</span>
+                    </label>
+                  ))}
+                  <p className="text-[9px] font-bold text-muted-foreground mt-2 text-right uppercase tracking-wider pr-1">
+                    💡 Fórmula: (Tempo Setup / 60) * R$/h Operador
+                  </p>
+                </div>
               )}
             </div>
             
-            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex flex-col gap-2 relative overflow-hidden">
+            <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-2 relative overflow-hidden">
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-black uppercase text-emerald-600 dark:text-emerald-500">Custo Total Setup:</span>
-                <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground'}`}>
+                <span className="text-[11px] font-black uppercase text-violet-600 dark:text-violet-500">Custo Total Setup:</span>
+                <span className={`text-sm font-black ${cobrarMaoDeObra ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
                   <ContadorAnimado valor={cobrarMaoDeObra ? (tempoSetup / 60) * (maoDeObra / 100) : 0} />
                 </span>
               </div>
@@ -146,12 +188,12 @@ export const CardOperacional = memo(function CardOperacional({
           </div>
       </div>
 
-        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-violet ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
+        <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col h-full shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-stone ${!cobrarDesgaste ? "opacity-40 grayscale" : ""}`}>
           {/* Efeito Glow Violeta de Fundo */}
-          <div className="absolute -top-24 -right-20 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
+          <div className="absolute -top-24 -right-20 w-80 h-80 bg-stone-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
           <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-500/30">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-stone-600 dark:text-stone-400 border border-stone-500/30">
                 <Activity size={18} />
               </div>
               <div className="flex flex-col">
@@ -164,7 +206,7 @@ export const CardOperacional = memo(function CardOperacional({
               type="button"
               onClick={() => setCobrarDesgaste(!cobrarDesgaste)}
               className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 ${
-                cobrarDesgaste ? 'bg-violet-500' : 'bg-muted dark:bg-zinc-700'
+                cobrarDesgaste ? 'bg-stone-500' : 'bg-muted dark:bg-zinc-700'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-300 ${
@@ -186,7 +228,7 @@ export const CardOperacional = memo(function CardOperacional({
                     else setAnosVidaUtil(5);
                   }}
                   className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all hover:scale-105 active:scale-95 ${
-                    anosVidaUtil === 5 ? 'text-violet-600 bg-violet-500/10 border-violet-500/20' :
+                    anosVidaUtil === 5 ? 'text-stone-600 bg-stone-500/10 border-stone-500/20' :
                     anosVidaUtil === 3 ? 'text-amber-600 bg-amber-500/10 border-amber-500/20' :
                     'text-rose-600 bg-rose-500/10 border-rose-500/20'
                   }`}
@@ -198,7 +240,7 @@ export const CardOperacional = memo(function CardOperacional({
               </div>
               <div className={`w-full h-12 px-4 rounded-xl flex items-center justify-between border transition-all ${!cobrarDesgaste ? 'bg-transparent border-transparent' : 'bg-muted/40 dark:bg-zinc-800/50 border-borda-sutil'} select-none relative group`}>
                 <span className="text-muted-foreground font-black text-xs mr-2 select-none">R$</span>
-                <span className="font-black text-sm text-violet-600 dark:text-violet-500 w-full text-center">
+                <span className="font-black text-sm text-stone-600 dark:text-stone-500 w-full text-center">
                   <ContadorAnimado valor={cobrarDesgaste ? (depreciacao / 100) || 0 : 0} />
                 </span>
                 {cobrarDesgaste && (
@@ -212,17 +254,17 @@ export const CardOperacional = memo(function CardOperacional({
               )}
             </div>
 
-            <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-2 relative overflow-hidden">
+            <div className="p-4 rounded-xl bg-stone-500/5 border border-stone-500/10 flex flex-col gap-2 relative overflow-hidden">
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-black uppercase text-violet-600 dark:text-violet-500">Custo Desgaste:</span>
-                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
+                <span className="text-[11px] font-black uppercase text-stone-600 dark:text-stone-500">Custo Desgaste:</span>
+                <span className={`text-sm font-black ${cobrarDesgaste ? 'text-stone-600 dark:text-stone-500' : 'text-muted-foreground'}`}>
                   <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * (depreciacao / 100) : 0} />
                 </span>
               </div>
               {quantidade > 1 && (
-                <div className="flex justify-between items-center pt-2 border-t border-violet-500/10">
+                <div className="flex justify-between items-center pt-2 border-t border-stone-500/10">
                   <span className="text-[11px] font-black uppercase text-muted-foreground">Total do Lote ({quantidade}x):</span>
-                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-violet-600 dark:text-violet-500' : 'text-muted-foreground'}`}>
+                  <span className={`text-sm font-black ${cobrarDesgaste ? 'text-stone-600 dark:text-stone-500' : 'text-muted-foreground'}`}>
                     <ContadorAnimado valor={cobrarDesgaste ? (tempo / 60) * (depreciacao / 100) * quantidade : 0} />
                   </span>
                 </div>
@@ -232,9 +274,12 @@ export const CardOperacional = memo(function CardOperacional({
         </div>
       </div>
 
-      <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden">
-        {/* Efeito Glow Esmeralda de Fundo */}
-        <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
+      <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative shadow-2xl backdrop-blur-3xl group transition-all duration-500 w-full overflow-hidden premium-card premium-card-${msgMargem.corBase}`}>
+        {/* Efeito Glow Dinâmico de Fundo */}
+        <div 
+          className="absolute -top-24 -left-20 w-80 h-80 rounded-full blur-[100px] pointer-events-none transition-all duration-700 opacity-10"
+          style={{ backgroundColor: msgMargem.corHex }}
+        />
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: O Display do Valor e Status */}

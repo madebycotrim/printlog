@@ -1,6 +1,5 @@
 import { Crown, Settings, Zap, Percent, Wrench, Clock, X } from "lucide-react";
 import { Dialogo, InputBancario } from "@/compartilhado/componentes";
-import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 /**
  * Interface para as propriedades do ModalConfiguracoes.

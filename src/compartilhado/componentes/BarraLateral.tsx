@@ -16,7 +16,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
-  Calendar,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -123,7 +122,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
         border-r border-borda-sutil
         transition-all duration-300 ease-in-out md:translate-x-0
         ${abertaMobile ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
-        md:static md:shadow-none
+        md:relative md:shadow-none
         ${colapsada ? "w-20" : "w-64"}
     `;
 
@@ -132,6 +131,15 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
       {abertaMobile && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={aoFechar} />}
 
       <aside className={classesContainer}>
+        {/* Botão flutuante na borda para Desktop */}
+        <button 
+          onClick={() => setColapsada(!colapsada)} 
+          className="hidden md:flex absolute -right-3 top-8 h-6 w-6 items-center justify-center rounded-full bg-card border border-borda-sutil shadow-sm text-zinc-400 hover:text-primaria hover:border-primaria/50 transition-all z-50"
+          title={colapsada ? "Expandir menu" : "Recolher menu"}
+        >
+          {colapsada ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
         {/* Grade de Design (Background) */}
         <div
           className="absolute inset-0 pointer-events-none z-[1] opacity-[0.03] dark:opacity-[0.1]"
@@ -164,17 +172,9 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
               </div>
             )}
 
-            {aoFechar ? (
+            {aoFechar && (
               <button onClick={aoFechar} className="md:hidden ml-auto p-2 text-muted-foreground hover:text-rose-500 transition-colors">
                 <X size={20} />
-              </button>
-            ) : (
-              <button 
-                onClick={() => setColapsada(!colapsada)} 
-                className={`hidden md:flex p-1.5 rounded-lg text-zinc-400 hover:text-primaria hover:bg-muted dark:hover:bg-white/[0.04] transition-all ml-auto ${colapsada ? "mt-2 ml-0" : ""}`}
-                title={colapsada ? "Expandir menu" : "Recolher menu"}
-              >
-                {colapsada ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
               </button>
             )}
           </div>
@@ -272,13 +272,25 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
             <div className={`absolute top-0 h-[1px] bg-gradient-to-r from-transparent via-borda-sutil to-transparent ${colapsada ? "left-2 right-2" : "left-6 right-6"}`} />
             
             <div className={`flex items-center gap-3 p-2 rounded-xl bg-muted/40 dark:bg-white/[0.02] transition-all group overflow-hidden ${colapsada ? "justify-center p-1.5 bg-transparent" : "hover:bg-muted/60 dark:hover:bg-white/[0.04]"}`}>
-              <div title={colapsada ? "Sair da plataforma" : undefined} onClick={colapsada ? lidarComSair : undefined} className={colapsada ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}>
-                 <Avatar 
-                   nome={usuario?.nome} 
-                   fotoUrl={usuario?.fotoUrl} 
-                   tamanho={colapsada ? "h-10 w-10" : "h-9 w-9"}
-                   pro={usuario?.plano === "PRO" || usuario?.plano === "FUNDADOR"}
-                 />
+              <div 
+                title={colapsada ? "Sair da plataforma" : undefined} 
+                onClick={colapsada ? lidarComSair : undefined} 
+                className={`relative group/avatar ${colapsada ? "cursor-pointer" : ""}`}
+              >
+                 <div className={colapsada ? "transition-all duration-300 group-hover/avatar:opacity-10 group-hover/avatar:blur-[2px] group-hover/avatar:scale-95" : ""}>
+                   <Avatar 
+                     nome={usuario?.nome} 
+                     fotoUrl={usuario?.fotoUrl} 
+                     tamanho={colapsada ? "h-10 w-10" : "h-9 w-9"}
+                     pro={usuario?.plano === "PRO" || usuario?.plano === "FUNDADOR"}
+                   />
+                 </div>
+                 
+                 {colapsada && (
+                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 scale-75 group-hover/avatar:scale-100">
+                     <LogOut size={20} className="text-red-500 drop-shadow-md" />
+                   </div>
+                 )}
               </div>
               
               {!colapsada && (

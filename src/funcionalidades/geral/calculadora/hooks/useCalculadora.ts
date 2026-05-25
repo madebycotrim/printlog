@@ -63,6 +63,10 @@ export function useCalculadora() {
   const [taxaEcommerce, setTaxaEcommerce] = useState<number>(0);
   const [taxaFixa, setTaxaFixa] = useState<number>(0);
 
+  const [tempoModelagem, setTempoModelagem] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_modelagem", 0));
+  const [valorHoraModelagem, setValorHoraModelagem] = useState<number>(() => armazenamentoSeguro.obter("printlog_valor_hora_modelagem", 8000));
+  const [descontoVolume, setDescontoVolume] = useState<number>(() => armazenamentoSeguro.obter("printlog_desconto_volume", 0));
+
 
 
   // Efeitos de persistência segura
@@ -89,6 +93,9 @@ export function useCalculadora() {
   useEffect(() => { armazenamentoSeguro.definir("printlog_insumos_fixos", insumosFixos); }, [insumosFixos]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_insumos_selecionados", insumosSelecionados); }, [insumosSelecionados]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_itens_pos_processo", itensPosProcesso); }, [itensPosProcesso]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_modelagem", tempoModelagem); }, [tempoModelagem]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_valor_hora_modelagem", valorHoraModelagem); }, [valorHoraModelagem]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_desconto_volume", descontoVolume); }, [descontoVolume]);
 
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";
@@ -179,17 +186,23 @@ export function useCalculadora() {
     const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor), 0) * (modoEntrada === 'lote' ? 1 : quantidade);
     const custoInsumosFixosCentavos = cobrarInsumosFixos ? insumosFixos : 0;
     const custoFreteCentavos = cobrarLogistica ? frete : 0;
+    const custoModelagemCentavos = Math.round((tempoModelagem / 60) * valorHoraModelagem);
+    
     const custoProducaoTotalCentavos = custoMaterialTotalCentavos + custoEnergiaCentavos + custoMaoDeObraCentavos + custoDepreciacaoCentavos + custoPosProcessoCentavos + custoInsumosDinamicosCentavos + custoInsumosFixosCentavos + custoFalhaRealCentavos;
 
     const margemPercentual = margem / 10000;
     const taxaMktPercentual = cobrarLogistica ? taxaEcommerce / 10000 : 0;
     const taxaFixaVendaCentavos = cobrarLogistica ? taxaFixa : 0;
 
-    const precoBaseVendaCentavos = custoProducaoTotalCentavos + (custoProducaoTotalCentavos * margemPercentual) + custoFreteCentavos + taxaFixaVendaCentavos;
+    const precoBaseVendaCentavos = custoProducaoTotalCentavos + (custoProducaoTotalCentavos * margemPercentual) + custoFreteCentavos + taxaFixaVendaCentavos + custoModelagemCentavos;
     const denominadorTaxas = 1 - taxaMktPercentual;
-    const precoSugeridoCentavos = denominadorTaxas > 0.05 ? Math.round(precoBaseVendaCentavos / denominadorTaxas) : Math.round(precoBaseVendaCentavos * 1.5);
+    
+    const precoSugeridoBrutoCentavos = denominadorTaxas > 0.05 ? Math.round(precoBaseVendaCentavos / denominadorTaxas) : Math.round(precoBaseVendaCentavos * 1.5);
+    const valorDescontoCentavos = Math.round(precoSugeridoBrutoCentavos * (descontoVolume / 100));
+    const precoSugeridoCentavos = precoSugeridoBrutoCentavos - valorDescontoCentavos;
+    
     const taxaMktTotalCentavos = Math.round(precoSugeridoCentavos * taxaMktPercentual + taxaFixaVendaCentavos);
-    const lucroLiquidoCentavos = precoSugeridoCentavos - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos;
+    const lucroLiquidoCentavos = precoSugeridoCentavos - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos - custoModelagemCentavos;
     return {
       custoMaterial: Math.round(custoMaterialTotalCentavos),
       custoEnergia: custoEnergiaCentavos,
@@ -202,9 +215,12 @@ export function useCalculadora() {
       lucroLiquido: lucroLiquidoCentavos,
       custoTotalOperacional: custoProducaoTotalCentavos,
       margemReal: precoSugeridoCentavos > 0 ? (lucroLiquidoCentavos / precoSugeridoCentavos) * 100 : 0,
-      custoFalha: custoFalhaRealCentavos
+      custoFalha: custoFalhaRealCentavos,
+      custoModelagem: custoModelagemCentavos,
+      valorDesconto: valorDescontoCentavos,
+      percentualDesconto: descontoVolume
     };
-  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, quantidade, tempoSetup, materialPerdido, tempoPerdido, modoEntrada]);
+  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, quantidade, tempoSetup, materialPerdido, tempoPerdido, modoEntrada, tempoModelagem, valorHoraModelagem, descontoVolume]);
 
   // Alertas de Estoque
   const alertasEstoque = useMemo(() => {
@@ -266,7 +282,10 @@ export function useCalculadora() {
         clienteProjetoId,
         impressoraSelecionadaId,
         modoEntrada,
-        taxaFalha
+        taxaFalha,
+        tempoModelagem,
+        valorHoraModelagem,
+        descontoVolume
       }
     };
 
@@ -313,7 +332,10 @@ export function useCalculadora() {
             clienteProjetoId,
             impressoraSelecionadaId,
             modoEntrada,
-            taxaFalha
+            taxaFalha,
+            tempoModelagem,
+            valorHoraModelagem,
+            descontoVolume
           }
         }
       });
@@ -356,6 +378,9 @@ export function useCalculadora() {
     if (c.taxaFixa !== undefined) setTaxaFixa(c.taxaFixa || 0);
     if (c.modoEntrada !== undefined) setModoEntrada(c.modoEntrada || "simples");
     if (c.impressoraSelecionadaId !== undefined) setImpressoraSelecionadaId(c.impressoraSelecionadaId || "");
+    if (c.tempoModelagem !== undefined) setTempoModelagem(c.tempoModelagem || 0);
+    if (c.valorHoraModelagem !== undefined) setValorHoraModelagem(c.valorHoraModelagem || 0);
+    if (c.descontoVolume !== undefined) setDescontoVolume(c.descontoVolume || 0);
 
     toast.success(`Carregado: ${versao.nome}`);
   };
@@ -963,6 +988,9 @@ export function useCalculadora() {
     insumosSelecionados, setInsumosSelecionados,
     itensPosProcesso, setItensPosProcesso,
     perfilAtivo, setPerfilAtivo,
+    tempoModelagem, setTempoModelagem,
+    valorHoraModelagem, setValorHoraModelagem,
+    descontoVolume, setDescontoVolume,
     taxaEcommerce, setTaxaEcommerce,
     taxaFixa, setTaxaFixa,
     perfisMarketplace, setPerfisMarketplace,

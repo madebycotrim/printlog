@@ -138,8 +138,8 @@ export const CardMateriais = memo(function CardMateriais({
               }}
               className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                 ${selecionado 
-                  ? "border-sky-500 bg-sky-500/10 shadow-[0_0_20px_rgba(14,165,233,0.15)]" 
-                  : "border-borda-sutil bg-zinc-50 dark:bg-white/5 hover:border-sky-500/30"}
+                  ? "border-teal-500 bg-teal-500/10 shadow-[0_0_20px_rgba(14,165,233,0.15)]" 
+                  : "border-borda-sutil bg-zinc-50 dark:bg-white/5 hover:border-teal-500/30"}
               `}
             >
               <div className="shrink-0">
@@ -156,14 +156,14 @@ export const CardMateriais = memo(function CardMateriais({
                   <p className="text-[9px] font-bold text-zinc-500 dark:text-gray-400 uppercase whitespace-nowrap">
                     {m.tipoMaterial || m.tipo} • <ContadorAnimado valor={(m.precoCentavos / m.pesoGramas) * 10} />/kg
                   </p>
-                  <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-sky-500'}`}>
+                  <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-teal-500'}`}>
                     {((m.estoque * m.pesoGramas) + m.pesoRestanteGramas)}<span className="lowercase">{m.tipo === "FDM" ? "g" : "ml"}</span> disponíveis
                   </span>
                 </div>
               </div>
 
               {selecionado && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
                   <Check className="w-2.5 h-2.5" />
                 </div>
               )}
@@ -188,9 +188,9 @@ export const CardMateriais = memo(function CardMateriais({
         
         {materiais.length === 0 && (
           <div className="col-span-full w-full flex flex-col md:flex-row items-center justify-between p-6 rounded-2xl bg-zinc-50 dark:bg-[#121214] border border-dashed border-zinc-200 dark:border-white/10 relative overflow-hidden group/empty shadow-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/[0.03] to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/[0.03] to-transparent pointer-events-none" />
             <div className="flex items-center gap-5 relative z-10 w-full md:w-auto mb-4 md:mb-0">
-              <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover/empty:scale-110 group-hover/empty:text-sky-500 transition-all duration-500">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover/empty:scale-110 group-hover/empty:text-teal-500 transition-all duration-500">
                 <Box size={20} className="group-hover/empty:animate-bounce" />
               </div>
               <div className="flex flex-col">
@@ -200,7 +200,7 @@ export const CardMateriais = memo(function CardMateriais({
             </div>
             <button 
               onClick={abrirCriar}
-              className="relative z-10 w-full md:w-auto px-6 h-10 bg-sky-500 hover:bg-sky-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_4px_20px_-5px_rgba(14,165,233,0.4)] hover:shadow-[0_6px_25px_-5px_rgba(14,165,233,0.6)] flex items-center justify-center gap-2 active:scale-95"
+              className="relative z-10 w-full md:w-auto px-6 h-10 bg-teal-500 hover:bg-teal-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_4px_20px_-5px_rgba(14,165,233,0.4)] hover:shadow-[0_6px_25px_-5px_rgba(14,165,233,0.6)] flex items-center justify-center gap-2 active:scale-95"
             >
               <Plus size={14} strokeWidth={3} /> Cadastrar Material
             </button>
@@ -262,7 +262,7 @@ export const CardMateriais = memo(function CardMateriais({
                             Peso (<span className="lowercase">{item.tipo === "FDM" ? "g" : "ml"}</span>)
                           </label>
                         </div>
-                        <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
+                        <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
                         
                         {/* Barra de Consumo */}
                         {(() => {
@@ -275,7 +275,7 @@ export const CardMateriais = memo(function CardMateriais({
                               <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${porcentagem}%` }}
-                                className={`h-full ${alerta ? 'bg-rose-500' : 'bg-sky-500'}`}
+                                className={`h-full ${alerta ? 'bg-rose-500' : 'bg-teal-500'}`}
                               />
                             </div>
                           );
@@ -283,15 +283,15 @@ export const CardMateriais = memo(function CardMateriais({
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Horas</label>
-                        <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white" />
+                        <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Minutos</label>
-                        <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-sky-500/30 transition-all text-primary dark:text-white" />
+                        <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Preço/Kg</label>
-                        <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-sky-500/30 outline-none font-black text-xs text-primary dark:text-white" />
+                        <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-teal-500/30 outline-none font-black text-xs text-primary dark:text-white" />
                       </div>
                     </div>
                   <button onClick={() => remover(item.id)} className="p-2 rounded-lg text-zinc-400 dark:text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">

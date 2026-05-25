@@ -12,11 +12,39 @@ import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 const CORES_CATEGORIA: Record<CategoriaInsumo, string> = {
   Limpeza: "bg-sky-500",
   Embalagem: "bg-amber-500",
-  Fixação: "bg-orange-500",
+  Embrulho: "bg-pink-500",
+  Fixação: "bg-red-500",
   Eletrônica: "bg-violet-500",
   Acabamento: "bg-emerald-500",
-  Geral: "bg-muted-foreground/40",
-  Outros: "bg-muted-foreground/40",
+  Proteção: "bg-teal-500",
+  Geral: "bg-zinc-500",
+  Outros: "bg-stone-500",
+};
+
+/** Variações de cor para os botões primários (Repor) */
+const CORES_BOTAO_PRIMARIO: Record<CategoriaInsumo, string> = {
+  Limpeza: "text-sky-500 border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20",
+  Embalagem: "text-amber-500 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20",
+  Embrulho: "text-pink-500 border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20",
+  Fixação: "text-red-500 border-red-500/30 bg-red-500/10 hover:bg-red-500/20",
+  Eletrônica: "text-violet-500 border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20",
+  Acabamento: "text-emerald-500 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20",
+  Proteção: "text-teal-500 border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20",
+  Geral: "text-zinc-500 border-zinc-500/30 bg-zinc-500/10 hover:bg-zinc-500/20",
+  Outros: "text-stone-500 border-stone-500/30 bg-stone-500/10 hover:bg-stone-500/20",
+};
+
+/** Variações mais suaves para botões secundários (Baixar) */
+const CORES_BOTAO_SECUNDARIO: Record<CategoriaInsumo, string> = {
+  Limpeza: "text-sky-500 border-sky-500/20 bg-transparent hover:bg-sky-500/5",
+  Embalagem: "text-amber-500 border-amber-500/20 bg-transparent hover:bg-amber-500/5",
+  Embrulho: "text-pink-500 border-pink-500/20 bg-transparent hover:bg-pink-500/5",
+  Fixação: "text-red-500 border-red-500/20 bg-transparent hover:bg-red-500/5",
+  Eletrônica: "text-violet-500 border-violet-500/20 bg-transparent hover:bg-violet-500/5",
+  Acabamento: "text-emerald-500 border-emerald-500/20 bg-transparent hover:bg-emerald-500/5",
+  Proteção: "text-teal-500 border-teal-500/20 bg-transparent hover:bg-teal-500/5",
+  Geral: "text-zinc-500 border-zinc-500/20 bg-transparent hover:bg-zinc-500/5",
+  Outros: "text-stone-500 border-stone-500/20 bg-transparent hover:bg-stone-500/5",
 };
 
 interface PropriedadesCardInsumo {
@@ -40,15 +68,21 @@ export function CardInsumo({
   const corDaCategoria = CORES_CATEGORIA[insumo.categoria] || "bg-muted-foreground/40";
   
   const CORES_AURA: Record<CategoriaInsumo, string> = {
-    Limpeza: "#0ea5e9",
-    Embalagem: "#f59e0b",
-    Fixação: "#f97316",
-    Eletrônica: "#8b5cf6",
-    Acabamento: "#10b981",
-    Geral: "#71717a",
-    Outros: "#71717a",
+    Limpeza: "#0ea5e9", // sky-500
+    Embalagem: "#f59e0b", // amber-500
+    Embrulho: "#ec4899", // pink-500
+    Fixação: "#ef4444", // red-500
+    Eletrônica: "#8b5cf6", // violet-500
+    Acabamento: "#10b981", // emerald-500
+    Proteção: "#14b8a6", // teal-500
+    Geral: "#71717a", // zinc-500
+    Outros: "#78716c", // stone-500
   };
   const corAura = CORES_AURA[insumo.categoria] || "#71717a";
+
+  const custoEfetivo = insumo.itemFracionavel && insumo.rendimentoTotal 
+    ? insumo.custoMedioUnidade / insumo.rendimentoTotal 
+    : null;
 
   return (
     <div className="group relative bg-card rounded-xl border border-borda-sutil p-4 transition-all duration-300 hover:bg-muted/30 overflow-hidden">
@@ -78,24 +112,56 @@ export function CardInsumo({
                     {insumo.marca}
                   </span>
                 )}
+                {insumo.itemFracionavel && insumo.rendimentoTotal && (
+                  <span className="text-[9px] font-bold text-sky-500 uppercase tracking-widest border border-sky-500/20 px-1.5 rounded bg-sky-500/5">
+                    Rende {insumo.rendimentoTotal}{insumo.unidadeConsumo}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           {/* DADOS FINANCEIROS */}
-          <div className="flex flex-col items-end gap-0.5 mt-1">
-              <div className="flex items-baseline gap-1">
-                <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">UN:</span>
-                <span className="text-[13px] font-black text-primary tabular-nums">
-                  {centavosParaReais(insumo.custoMedioUnidade)}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">VALOR:</span>
-                <span className="text-[9px] font-bold text-muted-foreground tabular-nums">
-                  {centavosParaReais(insumo.quantidadeAtual * insumo.custoMedioUnidade)}
-                </span>
-              </div>
+          <div className="flex flex-col items-end gap-1 mt-1">
+              {custoEfetivo !== null ? (
+                // Se é fracionado, o maior destaque é o custo efetivo!
+                <div className="flex flex-col items-end">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[13px] font-black text-sky-500 tabular-nums">
+                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(custoEfetivo / 100)}
+                    </span>
+                    <span className="text-[8px] font-black text-sky-500/70 uppercase tracking-widest">
+                      / {insumo.unidadeConsumo}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 opacity-60">
+                    <span className="text-[9px] font-bold text-muted-foreground tabular-nums">
+                      {centavosParaReais(insumo.custoMedioUnidade)}
+                    </span>
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                      / {insumo.unidadeMedida || "UN"}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                // Se não é fracionado, mostra o custo base normal
+                <div className="flex flex-col items-end gap-0.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[13px] font-black text-primary tabular-nums">
+                      {centavosParaReais(insumo.custoMedioUnidade)}
+                    </span>
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[40px]" title={insumo.unidadeMedida || "UN"}>
+                      / {insumo.unidadeMedida || "UN"}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">ESTOQUE:</span>
+                    <span className="text-[9px] font-bold text-muted-foreground tabular-nums">
+                      {centavosParaReais(insumo.quantidadeAtual * insumo.custoMedioUnidade)}
+                    </span>
+                  </div>
+                </div>
+              )}
           </div>
 
           {/* ESTOQUE MONITOR */}
@@ -104,7 +170,9 @@ export function CardInsumo({
               <span className={`text-3xl font-black tabular-nums tracking-tighter ${estaComEstoqueBaixo ? 'text-rose-500' : 'text-primary'}`}>
                 {insumo.quantidadeAtual}
               </span>
-              <span className="text-[9px] font-black text-muted-foreground uppercase italic">{insumo.unidadeMedida}</span>
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">
+                {insumo.unidadeMedida || "UN"}
+              </span>
             </div>
             <div className={`mt-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] border ${
               estaComEstoqueBaixo 
@@ -116,14 +184,14 @@ export function CardInsumo({
           </div>
         </div>
 
-        {/* LINHA INFERIOR: BOTÕES + FERRAMENTAS */}
+          {/* LINHA INFERIOR: BOTÕES + FERRAMENTAS */}
         <div className="flex items-center gap-4">
            <div className="flex items-center gap-2">
               <button
                 onClick={() => aoBaixar(insumo)}
-                className="h-10 px-5 bg-amber-500/5 hover:bg-amber-500/10 text-amber-500 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border border-amber-500/20"
+                className={`h-10 px-5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border ${CORES_BOTAO_SECUNDARIO[insumo.categoria] || CORES_BOTAO_SECUNDARIO.Geral}`}
               >
-                <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center bg-current/10">
                   <ArrowDownCircle size={12} strokeWidth={3} />
                 </div>
                 Baixar
@@ -131,9 +199,9 @@ export function CardInsumo({
               
               <button
                 onClick={() => aoRepor(insumo)}
-                className="h-10 px-5 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border border-emerald-500/20"
+                className={`h-10 px-5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border ${CORES_BOTAO_PRIMARIO[insumo.categoria] || CORES_BOTAO_PRIMARIO.Geral}`}
               >
-                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center bg-current/10">
                   <ArrowUpCircle size={12} strokeWidth={3} />
                 </div>
                 Repor

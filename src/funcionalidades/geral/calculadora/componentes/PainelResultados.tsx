@@ -1,9 +1,9 @@
-import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle } from "lucide-react";
+import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
-import { memo } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
@@ -14,7 +14,9 @@ interface PainelResultadosProps {
   setAba: (v: 'orcamento' | 'metricas') => void;
   salvarProjeto: () => void;
   gerarPdf: () => void;
-  carregandoPdf: boolean;
+  gerarLinkMagico?: () => void;
+  obterUrlLinkMagico?: () => string;
+  carregandoPdf?: boolean;
   materiais?: MaterialSelecionado[];
   insumos?: InsumoSelecionado[];
   posProcesso?: ItemPosProcesso[];
@@ -25,20 +27,47 @@ interface PainelResultadosProps {
   frete?: number;
   taxaFixa?: number;
   aoSugerirPrecoIA?: () => void;
+  descontoVolume?: number;
+  setDescontoVolume?: (v: number) => void;
 }
 
 export const PainelResultados = memo(function PainelResultados({
-  calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, carregandoPdf,
+  calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
-  tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA
+  tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA,
+  descontoVolume = 0, setDescontoVolume
 }: PainelResultadosProps) {
   const { usuario } = useAutenticacao();
 
-  const compartilharWhatsApp = () => {
+  const [menuWppAberto, setMenuWppAberto] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuWppAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const compartilharWhatsApp = (incluirLink: boolean) => {
+    setMenuWppAberto(false);
     const nomeEstudio = "Meu Estúdio 3D";
     const valorFormatado = centavosParaReais(calculo.precoSugerido);
     
-    const baseTemplate = "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀";
+    let baseTemplate = "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._";
+    
+    if (incluirLink && obterUrlLinkMagico) {
+      const url = obterUrlLinkMagico();
+      baseTemplate += `\n\nVocê pode conferir os detalhes e *assinar digitalmente* o orçamento acessando este link seguro:\n${url}`;
+    } else {
+      baseTemplate += "\n\nO *PDF* com todos os detalhes está em anexo!";
+      gerarPdf();
+    }
+
+    baseTemplate += "\n\nFico à disposição para fecharmos! 🚀";
     
     const mensagem = baseTemplate
       .replace(/{estudio}/g, nomeEstudio)
@@ -47,6 +76,73 @@ export const PainelResultados = memo(function PainelResultados({
     const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   };
+
+  const corLucro = calculo.lucroLiquido <= 0 
+    ? "zinc" 
+    : calculo.margemReal <= 16 ? "rose"
+    : calculo.margemReal <= 37 ? "amber"
+    : calculo.margemReal <= 54 ? "emerald"
+    : calculo.margemReal <= 71 ? "sky"
+    : "violet";
+
+  const corLucroClasses = {
+    zinc: {
+      bg: "bg-zinc-500/5",
+      border: "border-zinc-500/15",
+      shadow: "shadow-lg shadow-zinc-500/10",
+      textPrimary: "text-zinc-600 dark:text-zinc-500",
+      textSecondary: "text-zinc-600 dark:text-zinc-500/80",
+      iconBg: "bg-zinc-500/10",
+      icone: Ban
+    },
+    rose: {
+      bg: "bg-rose-500/5",
+      border: "border-rose-500/15",
+      shadow: "shadow-lg shadow-rose-500/10",
+      textPrimary: "text-rose-600 dark:text-rose-500",
+      textSecondary: "text-rose-600 dark:text-rose-500/80",
+      iconBg: "bg-rose-500/10",
+      icone: TrendingDown
+    },
+    amber: {
+      bg: "bg-amber-500/5",
+      border: "border-amber-500/15",
+      shadow: "shadow-lg shadow-amber-500/10",
+      textPrimary: "text-amber-600 dark:text-amber-500",
+      textSecondary: "text-amber-600 dark:text-amber-500/80",
+      iconBg: "bg-amber-500/10",
+      icone: TrendingUp
+    },
+    emerald: {
+      bg: "bg-emerald-500/5",
+      border: "border-emerald-500/15",
+      shadow: "shadow-[0_8px_30px_-10px_rgba(16,185,129,0.15)]",
+      textPrimary: "text-emerald-600 dark:text-emerald-500",
+      textSecondary: "text-emerald-600 dark:text-emerald-500/80",
+      iconBg: "bg-emerald-500/10",
+      icone: ShieldCheck
+    },
+    sky: {
+      bg: "bg-sky-500/5",
+      border: "border-sky-500/15",
+      shadow: "shadow-lg shadow-sky-500/10",
+      textPrimary: "text-sky-600 dark:text-sky-500",
+      textSecondary: "text-sky-600 dark:text-sky-500/80",
+      iconBg: "bg-sky-500/10",
+      icone: Rocket
+    },
+    violet: {
+      bg: "bg-violet-500/5",
+      border: "border-violet-500/15",
+      shadow: "shadow-lg shadow-violet-500/10",
+      textPrimary: "text-violet-600 dark:text-violet-500",
+      textSecondary: "text-violet-600 dark:text-violet-500/80",
+      iconBg: "bg-violet-500/10",
+      icone: Crown
+    }
+  };
+
+  const cl = corLucroClasses[corLucro];
 
 
 
@@ -71,7 +167,24 @@ export const PainelResultados = memo(function PainelResultados({
           <h2 className="text-4xl font-black text-primary tracking-tighter leading-none mb-4 text-center">
             <ContadorAnimado valor={calculo.precoSugerido / 100} />
           </h2>
-          <div className="flex flex-col gap-2 items-center">
+          <div className="flex flex-col gap-3 items-center">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-muted/30 focus-within:border-sky-500/50 transition-colors shadow-inner">
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Desconto Lote:</span>
+              <input 
+                type="number"
+                min="0"
+                max="100"
+                value={descontoVolume === 0 ? "" : descontoVolume}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setDescontoVolume?.(v === "" ? 0 : Number(v));
+                }}
+                className="w-8 bg-transparent text-[11px] font-black text-primary dark:text-white text-center outline-none border-b border-borda-sutil focus:border-sky-500 transition-colors"
+                placeholder="0"
+              />
+              <span className="text-[10px] font-black text-muted-foreground">%</span>
+            </div>
+
             <div className="flex gap-2 justify-center">
               <div className={`
                 px-2.5 py-1 rounded-full border backdrop-blur-md transition-all duration-500 flex items-center gap-1.5 shadow-lg
@@ -102,6 +215,7 @@ export const PainelResultados = memo(function PainelResultados({
         {aba === 'orcamento' && (() => {
           const itens = [
             { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400' },
+            { label: 'Modelagem 3D', valor: calculo.custoModelagem || 0, icone: PenTool, cor: 'text-rose-400' },
             { label: 'Perdas & Falhas', valor: calculo.custoFalha || 0, icone: AlertTriangle, cor: 'text-rose-500' },
             { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-indigo-400' },
             { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
@@ -109,6 +223,7 @@ export const PainelResultados = memo(function PainelResultados({
             { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400' },
             { label: 'Taxas', valor: calculo.taxaMarketplace, icone: DollarSign, cor: 'text-violet-400' },
             { label: 'Frete e Logística', valor: (modoEntrada === 'lote' ? frete * 100 : frete * 100 * quantidade) + (taxaFixa * 100), icone: Package, cor: 'text-orange-400' },
+            { label: 'Desconto Aplicado', valor: -(calculo.valorDesconto || 0), icone: DollarSign, cor: 'text-emerald-500' },
           ].filter(i => i.valor > 0);
 
           const estaVazio = itens.length === 0;
@@ -275,11 +390,11 @@ export const PainelResultados = memo(function PainelResultados({
 
         <div className="h-px bg-borda-sutil/50 my-4 w-full" />
 
-        <div className="flex items-center justify-between p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/15 w-full shadow-[0_8px_30px_-10px_rgba(16,185,129,0.15)]">
+        <div className={`flex items-center justify-between p-4 rounded-2xl border w-full transition-all duration-500 ${cl.bg} ${cl.border} ${cl.shadow}`}>
           <div className="flex flex-col items-start flex-1">
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-500 mb-2">
-              <div className="p-1.5 rounded-lg bg-emerald-500/10">
-                <ShieldCheck size={16} />
+            <div className={`flex items-center gap-2 mb-2 transition-colors duration-500 ${cl.textPrimary}`}>
+              <div className={`p-1.5 rounded-lg transition-colors duration-500 ${cl.iconBg}`}>
+                <cl.icone size={16} className="transition-transform duration-500 animate-in zoom-in-50" />
               </div>
               <span className="text-[11px] font-black uppercase tracking-[0.2em]">Lucro Líquido</span>
             </div>
@@ -287,7 +402,13 @@ export const PainelResultados = memo(function PainelResultados({
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-2">
                 <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Rentabilidade:</span>
-                <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-500/80">
+                <span className={`text-[10px] font-black transition-colors duration-500 ${cl.textSecondary}`}>
+                  <ContadorAnimado valor={calculo.custoTotalOperacional > 0 ? (calculo.lucroLiquido / calculo.custoTotalOperacional) * 100 : 0} prefixo="" sufixo="%" casasDecimais={1} />
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Margem Real:</span>
+                <span className={`text-[10px] font-black transition-colors duration-500 ${cl.textSecondary}`}>
                   <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
                 </span>
               </div>
@@ -301,7 +422,7 @@ export const PainelResultados = memo(function PainelResultados({
           </div>
           
           <div className="flex flex-col items-center flex-1 border-l border-borda-sutil/50">
-            <span className="text-3xl font-black text-emerald-600 dark:text-emerald-500 block tracking-tighter leading-none">
+            <span className={`text-3xl font-black block tracking-tighter leading-none transition-colors duration-500 ${cl.textPrimary}`}>
               <ContadorAnimado valor={calculo.lucroLiquido / 100} />
             </span>
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1 block">Saldo Livre</span>
@@ -329,18 +450,73 @@ export const PainelResultados = memo(function PainelResultados({
             <span>Exportar PDF</span>
           </button>
 
-          <button 
-            onClick={compartilharWhatsApp}
-            disabled={calculo.precoSugerido <= 0}
-            title="Enviar no WhatsApp"
-            className="w-12 h-12 flex items-center justify-center transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
-          >
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/960px-WhatsApp.svg.png" 
-              alt="WhatsApp" 
-              className="w-8 h-8" 
-            />
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button 
+              onClick={() => setMenuWppAberto(!menuWppAberto)}
+              disabled={calculo.precoSugerido <= 0}
+              title="Opções do WhatsApp"
+              className="w-12 h-12 flex items-center justify-center transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
+            >
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/960px-WhatsApp.svg.png" 
+                alt="WhatsApp" 
+                className="w-8 h-8" 
+              />
+            </button>
+            
+            <AnimatePresence>
+              {menuWppAberto && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute bottom-full mb-2 right-0 w-48 bg-white dark:bg-zinc-800 rounded-xl shadow-xl border border-borda-sutil overflow-hidden z-50 origin-bottom-right"
+                >
+                  <div className="flex flex-col">
+                    <button 
+                      onClick={() => compartilharWhatsApp(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
+                        <FileText size={14} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Enviar PDF</span>
+                        <span className="text-[8px] text-zinc-500">Gera anexo automático</span>
+                      </div>
+                    </button>
+                    
+                    <div className="h-px bg-borda-sutil mx-2" />
+                    
+                    <button 
+                      onClick={() => compartilharWhatsApp(true)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500 shrink-0">
+                        <LinkIcon size={14} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Assinatura</span>
+                        <span className="text-[8px] text-zinc-500">Enviar Link Mágico</span>
+                      </div>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          {gerarLinkMagico && (
+            <button 
+              onClick={gerarLinkMagico}
+              disabled={calculo.precoSugerido <= 0}
+              title="Copiar Link Mágico"
+              className="w-12 h-12 flex items-center justify-center bg-violet-500/10 text-violet-500 hover:bg-violet-500 hover:text-white rounded-2xl transition-all active:scale-95 disabled:opacity-30 border border-violet-500/20 shadow-lg shadow-violet-500/5"
+            >
+              <LinkIcon size={18} />
+            </button>
+          )}
         </div>
       </div>
     </div>

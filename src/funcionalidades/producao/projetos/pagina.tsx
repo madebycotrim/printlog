@@ -43,7 +43,7 @@ export function PaginaProjetos() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {carregando && pedidos.length === 0 ? (
+        {carregando ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

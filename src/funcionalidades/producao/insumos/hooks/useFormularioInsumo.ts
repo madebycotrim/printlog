@@ -46,12 +46,22 @@ export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancel
   const custoMedioAtivo = watch("custoMedioUnidade") || 0;
   const rendimentoAtivo = watch("rendimentoTotal") || 0;
   const unidadeConsumoAtiva = watch("unidadeConsumo") || "";
+  const quantidadeAtualAtiva = watch("quantidadeAtual") || "";
 
-  // Cálculo de custo efetivo (unidade de consumo)
-  const custoEfetivo =
-    itemFracionavelAtivo && rendimentoAtivo > 0
-      ? ((custoMedioAtivo / 100) / rendimentoAtivo).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-      : "R$ 0,00";
+  // Cálculo de custo efetivo (unidade de consumo) com precisão extra para valores pequenos
+  const calcularCustoEfetivo = () => {
+    if (!itemFracionavelAtivo || rendimentoAtivo <= 0) return "R$ 0,00";
+    const valorCalculado = (custoMedioAtivo / 100) / rendimentoAtivo;
+    
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    }).format(valorCalculado);
+  };
+  
+  const custoEfetivo = calcularCustoEfetivo();
 
   // Efeito para scroll automático quando habilita fracionamento
   useEffect(() => {
@@ -142,6 +152,7 @@ export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancel
     custoMedioAtivo,
     rendimentoAtivo,
     unidadeConsumoAtiva,
+    quantidadeAtualAtiva,
     custoEfetivo,
     lidarComTentativaFechamento,
     fecharModalRealmente,

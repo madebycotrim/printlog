@@ -10,6 +10,7 @@ interface InterfaceTopico {
     categoria?: string;
     cor?: string;
     level?: string;
+    validadoEngenharia?: boolean;
 }
 
 interface InterfaceCategoria {
@@ -95,13 +96,23 @@ export function GridWiki({ categorias, aoSelecionarTopico }: Propriedades) {
                                                     <span className="text-sm font-black text-gray-900 dark:text-zinc-100 block tracking-tight leading-none mb-1.5 uppercase">
                                                         {topico.titulo}
                                                     </span>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 mt-1">
                                                         <span className={`text-[8px] font-black uppercase tracking-[0.15em] ${config.cor}`}>
                                                             {nivelKey}
                                                         </span>
                                                         <span className="text-[8px] font-bold text-gray-400 dark:text-zinc-700 uppercase tracking-widest">
                                                             • {topico.atualizado}
                                                         </span>
+                                                        {topico.validadoEngenharia && (
+                                                            <>
+                                                                <span className="text-[8px] font-bold text-gray-400 dark:text-zinc-700 uppercase tracking-widest">
+                                                                    •
+                                                                </span>
+                                                                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                                                                    <Shield size={10} /> Validado p/ Eng.
+                                                                </span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

@@ -35,11 +35,11 @@ export function CardEquipamento({
   return (
     <div className={`h-full p-5 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-4 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden ${abertoSeletor ? 'z-40' : 'z-10'}`}>
       {/* Efeito Glow Âmbar de Fundo */}
-      <div className="absolute -top-24 -right-20 w-80 h-80 bg-amber-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
+      <div className="absolute -top-24 -right-20 w-80 h-80 bg-zinc-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
 
       <div className="relative z-10 flex items-center justify-between border-b border-borda-sutil pb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-amber-500 border border-amber-500/30">
+          <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-zinc-500 border border-zinc-500/30">
             <Cpu size={18} />
           </div>
           <div className="flex flex-col">
@@ -55,7 +55,7 @@ export function CardEquipamento({
           {selecionada ? (
             exibirImagem ? (
               <div className="relative w-full h-full max-h-[220px] group/img">
-                 <div className="absolute inset-0 bg-amber-500/5 blur-2xl rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity duration-700" />
+                 <div className="absolute inset-0 bg-zinc-500/5 blur-2xl rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity duration-700" />
                  <img 
                    src={urlImagem} 
                    alt={selecionada.nome}
@@ -64,19 +64,19 @@ export function CardEquipamento({
                  />
               </div>
             ) : (
-              <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/[0.02] flex flex-col items-center justify-center gap-3">
-                 <div className="w-12 h-12 rounded-full bg-card border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-inner animate-pulse">
+              <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-zinc-500/30 bg-zinc-500/[0.02] flex flex-col items-center justify-center gap-3">
+                 <div className="w-12 h-12 rounded-full bg-card border border-zinc-500/30 flex items-center justify-center text-zinc-500 shadow-inner animate-pulse">
                    <Cpu size={24} strokeWidth={1} />
                  </div>
                  <div className="flex flex-col items-center gap-1">
-                   <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em]">{selecionada.nome}</span>
+                   <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{selecionada.nome}</span>
                    <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">{selecionada.marca} {selecionada.modeloBase}</span>
                  </div>
               </div>
             )
           ) : (
             <div className="w-full h-full min-h-[160px] rounded-2xl border border-dashed border-borda-sutil bg-muted/20 dark:bg-white/[0.02] flex flex-col items-center justify-center gap-3 group/empty">
-               <div className="w-12 h-12 rounded-full bg-card border border-borda-sutil flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover/empty:text-amber-500/50 transition-colors shadow-inner">
+               <div className="w-12 h-12 rounded-full bg-card border border-borda-sutil flex items-center justify-center text-zinc-300 dark:text-zinc-700 group-hover/empty:text-zinc-500/50 transition-colors shadow-inner">
                  <Cpu size={24} strokeWidth={1} />
                </div>
                <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-700 uppercase tracking-[0.2em]">Aguardando Máquina</span>
@@ -91,7 +91,7 @@ export function CardEquipamento({
           <button
             type="button"
             onClick={() => setAbertoSeletor(!abertoSeletor)}
-            className="flex items-center justify-between bg-muted/40 dark:bg-zinc-950/60 border border-borda-sutil hover:border-amber-500/30 rounded-xl px-4 h-12 transition-all group/btn shadow-inner"
+            className="flex items-center justify-between bg-muted/40 dark:bg-zinc-950/60 border border-borda-sutil hover:border-zinc-500/30 rounded-xl px-4 h-12 transition-all group/btn shadow-inner"
           >
             <div className="flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${selecionada ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
@@ -106,7 +106,7 @@ export function CardEquipamento({
                 )}
               </div>
             </div>
-            <ChevronDown size={16} className={`text-zinc-400 dark:text-zinc-500 group-hover/btn:text-amber-500 transition-transform ${abertoSeletor ? 'rotate-180' : ''}`} />
+            <ChevronDown size={16} className={`text-zinc-400 dark:text-zinc-500 group-hover/btn:text-zinc-500 transition-transform ${abertoSeletor ? 'rotate-180' : ''}`} />
           </button>
 
           {abertoSeletor && (
@@ -125,7 +125,7 @@ export function CardEquipamento({
                         setAbertoSeletor(false);
                       }}
                       className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${impressoraSelecionadaId === imp.id
-                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+                        ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-500'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-muted dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
                         }`}
                     >

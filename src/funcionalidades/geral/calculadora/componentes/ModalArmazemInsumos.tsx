@@ -60,6 +60,19 @@ export function ModalArmazemInsumos({
         {insumosFiltrados.map(i => {
           const isSelecionado = selecionados.some(s => s.id === i.id);
           const custoUnitario = i.custoMedioUnidade || 0;
+          
+          const CORES_AURA: Record<string, string> = {
+            Limpeza: "#0ea5e9", // sky-500
+            Embalagem: "#f59e0b", // amber-500
+            Embrulho: "#ec4899", // pink-500
+            Fixação: "#ef4444", // red-500
+            Eletrônica: "#8b5cf6", // violet-500
+            Acabamento: "#10b981", // emerald-500
+            Proteção: "#14b8a6", // teal-500
+            Geral: "#71717a", // zinc-500
+            Outros: "#78716c", // stone-500
+          };
+          const corHex = CORES_AURA[i.categoria] || "#14b8a6";
 
           return (
             <div
@@ -75,12 +88,13 @@ export function ModalArmazemInsumos({
               }}
               className={`p-3 rounded-2xl border-2 transition-all text-left flex items-center gap-4 relative overflow-hidden h-24 bg-card cursor-pointer ${isSelecionado ? "shadow-md" : "hover:shadow-lg"}`}
               style={{
-                borderColor: isSelecionado ? '#14b8a6' : '#14b8a622',
-                backgroundColor: isSelecionado ? '#14b8a611' : undefined
+                borderColor: isSelecionado ? corHex : `${corHex}22`,
+                backgroundColor: isSelecionado ? `${corHex}11` : undefined
               }}
             >
               <div
-                className="absolute left-0 top-0 bottom-0 w-1 opacity-40 bg-teal-500"
+                className="absolute left-0 top-0 bottom-0 w-1 opacity-40"
+                style={{ backgroundColor: corHex }}
               />
 
               <div className="shrink-0 w-14 flex items-center justify-center">
@@ -113,7 +127,10 @@ export function ModalArmazemInsumos({
                       <Star size={10} fill={i.favorito ? "currentColor" : "none"} />
                     </button>
                     {isSelecionado && (
-                      <div className="w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center text-white shadow-lg z-10">
+                      <div 
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                        style={{ backgroundColor: corHex }}
+                      >
                         <Check size={12} />
                       </div>
                     )}
@@ -128,7 +145,10 @@ export function ModalArmazemInsumos({
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] font-black text-emerald-500 tracking-tighter tabular-nums">
+                    <span 
+                      className="text-[10px] font-black tracking-tighter tabular-nums"
+                      style={{ color: corHex }}
+                    >
                       {centavosParaReais(custoUnitario)}
                     </span>
                   </div>

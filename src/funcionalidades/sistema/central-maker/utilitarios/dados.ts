@@ -8,6 +8,7 @@ export interface InterfaceTopico {
   atualizado: string;
   categoria?: string;
   cor?: string;
+  validadoEngenharia?: boolean;
 }
 
 export interface InterfaceCategoria {
@@ -42,6 +43,7 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "O segredo está na resistência do papel. O bico deve 'beliscar' o papel sem travar. Para sensores como BLTouch/CRTouch, calibre o Z-Offset com precisão de 0.01mm. Mesa mal nivelada é a causa de 90% das falhas de adesão.",
         nivel: "Essencial",
         atualizado: "REV 2026.04",
+        validadoEngenharia: true,
       },
       {
         id: "set2",
@@ -49,6 +51,7 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "Sincronize o motor da extrusora com o fluxo real. Se você pede 100mm e a máquina puxa 95mm, suas peças serão frágeis. Calibrar os passos do motor garante que a extrusão seja volumétricamente exata.",
         nivel: "Técnico",
         atualizado: "REV 2026.04",
+        validadoEngenharia: true,
       },
       {
         id: "set3",
@@ -56,6 +59,7 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "Não confie no rótulo do filamento. Imprima uma torre de temperatura para cada marca nova. Sintonize o PID (M303) para evitar oscilações na mesa e no bico que causam texturas indesejadas.",
         nivel: "Avançado",
         atualizado: "REV 2026.04",
+        validadoEngenharia: true,
       },
     ],
   },
@@ -227,6 +231,7 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "O Klipper processa os movimentos externamente em um Pi, permitindo dobrar a velocidade sem perder detalhes finos. Vital para farms de alta produtividade.",
         nivel: "Veterano",
         atualizado: "REV 2026.04",
+        validadoEngenharia: true,
       },
       {
         id: "t2",
@@ -234,6 +239,7 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "Compense as vibrações mecânicas da impressora para eliminar o 'Ghosting'. Ajuste a pressão no bico para ter quinas sharp e extrusão uniforme em altas velocidades.",
         nivel: "Avançado",
         atualizado: "REV 2026.04",
+        validadoEngenharia: true,
       },
     ],
   },
@@ -259,6 +265,7 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
         conteudo: "Verifique conectores de alta corrente (Mesa/Placa). Instale sensores de fumaça acima das máquinas. Segurança operacional vem antes do lucro imediato.",
         nivel: "Crítico",
         atualizado: "REV 2026.04",
+        validadoEngenharia: true,
       },
     ],
   },
@@ -305,8 +312,20 @@ export const WIKI_EXTENDIDA: InterfaceCategoria[] = [
 
 export const FAQS: InterfaceFAQ[] = [
   {
-    pergunta: "Como garantir que a precificação cobre custos invisíveis de impressão?",
-    resposta: "O PrintLog considera não apenas o material, mas a depreciação de componentes (bicos, correias) e o consumo elétrico médio da sua máquina. Recomendamos adicionar uma 'Taxa de Risco' nas configurações para cobrir falhas inesperadas em peças de longa duração.",
+    pergunta: "Eu preciso instalar algum programa no meu computador para usar?",
+    resposta: "Não! O PrintLog é 100% em nuvem (Web-based). Você acessa direto do seu navegador, seja no Windows, Mac, Linux ou até mesmo no tablet, sem precisar baixar ou atualizar nada. Seus dados ficam salvos em tempo real.",
+  },
+  {
+    pergunta: "Posso acessar e enviar orçamentos pelo meu celular?",
+    resposta: "Com certeza. Toda a plataforma foi desenhada de forma responsiva. Você pode estar longe do estúdio e ainda sim calcular preços, cadastrar clientes e disparar orçamentos perfeitos pela tela do celular.",
+  },
+  {
+    pergunta: "Posso gerenciar o estoque de mais de uma impressora 3D?",
+    resposta: "Sim! Você pode cadastrar quantas impressoras quiser. Cada máquina terá seu próprio perfil de depreciação, vida útil e consumo elétrico, permitindo que você precifique uma peça na sua Ender 3 e outra na sua Bambu Lab com precisão absoluta.",
+  },
+  {
+    pergunta: "Como exatamente o sistema calcula o custo de energia elétrica?",
+    resposta: "Nós utilizamos o valor do kW/h da sua fatura de luz (que você cadastra nas Configurações) cruzado com a potência média de consumo de cada impressora da sua frota e o tempo exato de fatiamento da peça. O cálculo é minucioso e automático.",
   },
   {
     pergunta: "Como garantir que a precificação cobre todos os custos invisíveis?",
@@ -317,7 +336,15 @@ export const FAQS: InterfaceFAQ[] = [
     resposta: "Sim. O módulo financeiro mostra margem bruta e líquida por pedido, cliente, material e período. Dashboards com ticket médio, custo por hora de impressão e ROI por máquina. Exporte para Excel ou integre via API com seu sistema contábil.",
   },
   {
-    pergunta: "Como o PrintLog protege meus dados de faturamento e clientes?",
-    resposta: "Operamos sob arquitetura 'Privacy by Design'. Todos os dados de clientes e orçamentos são criptografados e seguem rigorosamente a LGPD. Você tem autonomia total para exportar bases de dados ou solicitar o apagamento definitivo ('Direito ao Esquecimento') a qualquer momento.",
+    pergunta: "Como o PrintLog protege meus dados perante a LGPD?",
+    resposta: "Operamos sob a arquitetura 'Privacy by Design'. Todos os dados de clientes e orçamentos são protegidos por camadas de segurança e seguem rigorosamente a Lei Geral de Proteção de Dados (LGPD). Suas informações são sigilosas e nunca são comercializadas ou compartilhadas com terceiros.",
+  },
+  {
+    pergunta: "Como posso exportar ou salvar um backup dos meus dados?",
+    resposta: "Em conformidade com o direito à portabilidade (Art. 18 da LGPD), você pode baixar seus dados a qualquer instante. Acesse 'Configurações > Segurança e Privacidade' e clique em 'Exportar Dados' para receber todo o seu histórico de clientes, materiais e faturamentos em formato aberto.",
+  },
+  {
+    pergunta: "Como faço para excluir minha conta e apagar meus registros?",
+    resposta: "Garantimos o seu 'Direito ao Esquecimento'. Na seção de Segurança das configurações, você encontra a opção de exclusão definitiva. Essa ação expurga de forma irreversível todas as suas informações pessoais, orçamentos e cadastros dos nossos servidores principais, sem retenção indevida.",
   },
 ];
