@@ -15,6 +15,7 @@ import { AvisoCookies } from "@/funcionalidades/lgpd/componentes/AvisoCookies";
 const PaginaLanding = lazy(() => import("@/funcionalidades/landing_page/PaginaLanding"));
 const SegurancaPrivacidade = lazy(() => import("@/funcionalidades/landing_page/seguranca-e-privacidade"));
 const PoliticaPrivacidade = lazy(() => import("@/funcionalidades/lgpd/PaginaPoliticaPrivacidade"));
+const PoliticaCookies = lazy(() => import("@/funcionalidades/lgpd/PaginaPoliticaCookies"));
 const TermosServico = lazy(() => import("@/funcionalidades/lgpd/PaginaTermosUso"));
 const PaginaGestaoDados = lazy(() => import("@/funcionalidades/lgpd/PaginaGestaoDados"));
 
@@ -146,6 +147,7 @@ export function RoteadorPrincipal() {
                 <Route path="/" element={<PaginaLanding />} />
                 <Route path="/seguranca-e-privacidade" element={<SegurancaPrivacidade />} />
                 <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
+                <Route path="/politica-de-cookies" element={<PoliticaCookies />} />
                 <Route path="/termos-de-servico" element={<TermosServico />} />
                 <Route path="/rastreamento/:idPedido" element={<PaginaRastreamento />} />
                 <Route path="/orcamento" element={<PaginaOrcamentoPublico />} />

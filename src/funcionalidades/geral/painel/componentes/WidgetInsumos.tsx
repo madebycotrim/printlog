@@ -47,8 +47,8 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
   const criticos = [...insumos]
     .map(i => ({
       ...i,
-      percentual: i.quantidadeMinima && i.quantidadeAtual 
-        ? Math.min(100, (i.quantidadeAtual / (i.quantidadeMinima * 2)) * 100) 
+      percentual: i.quantidadeMinima && i.quantidadeAtual
+        ? Math.min(100, (i.quantidadeAtual / (i.quantidadeMinima * 2)) * 100)
         : 100
     }))
     .sort((a, b) => (a.quantidadeAtual || 0) - (b.quantidadeAtual || 0))
@@ -57,15 +57,15 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
   return (
     <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 h-full shadow-media flex flex-col group/widget relative overflow-hidden transition-all hover:bg-zinc-50 dark:hover:bg-white/[0.01]">
       {/* Grid Pattern Background - Subtil */}
-      <div className="absolute inset-0 opacity-[0.015] pointer-events-none" 
-           style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
+        style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
 
       <div className="flex justify-between items-center mb-8 relative z-10">
         <div className="flex flex-col">
           <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">Insumos Críticos</h4>
           <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Monitor de Reposição</span>
         </div>
-        <button 
+        <button
           onClick={aoVerTodos}
           className="group/btn flex items-center gap-2 text-[10px] text-sky-500 font-black hover:opacity-80 transition-all tracking-widest uppercase"
         >
@@ -73,7 +73,7 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
           <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-borda-sutil pr-1 relative z-10">
         {criticos.length === 0 ? (
           <div className="col-span-2 text-center py-8 flex flex-col items-center opacity-20">
@@ -87,7 +87,7 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
             const textoHover = TEXTOS_HOVER[insumo.categoria] || "group-hover/item:text-amber-500";
             const categoriaInfo = CATEGORIAS.find(c => c.id.toLowerCase() === insumo.categoria?.toLowerCase());
             const IconeCategoria = categoriaInfo?.icone || Box;
-            
+
             return (
               <div key={insumo.id} className={`flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil ${bordaHover} transition-all hover:bg-white/[0.04] dark:hover:bg-white/[0.04] group/item shadow-sm hover:shadow-md text-center`}>
                 {/* Gráfico circular animado ao redor do ícone */}
@@ -124,13 +124,12 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
                       strokeLinecap="round"
                     />
                   </svg>
-                  
+
                   {/* Ícone interno (totalmente circular, sem fundo) */}
-                  <div className={`w-9 h-9 flex items-center justify-center rounded-full z-10 transition-all duration-300 group-hover/item:scale-110 ${
-                    insumo.quantidadeAtual < insumo.quantidadeMinima 
-                      ? "text-rose-400 group-hover/item:text-rose-500" 
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-full z-10 transition-all duration-300 group-hover/item:scale-110 ${insumo.quantidadeAtual < insumo.quantidadeMinima
+                      ? "text-rose-400 group-hover/item:text-rose-500"
                       : `text-zinc-400 ${textoHover}`
-                  }`}>
+                    }`}>
                     <IconeCategoria size={20} />
                   </div>
                 </div>
@@ -140,7 +139,7 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
                   <h5 className={`text-[11px] font-black text-primary dark:text-zinc-200 uppercase tracking-wider truncate leading-tight transition-colors ${textoHover}`}>
                     {insumo.nome}
                   </h5>
-                  
+
                   {/* Quantidade e Porcentagem em uma única linha organizada */}
                   <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
                     <span className="font-extrabold" style={{ color: insumo.quantidadeAtual < insumo.quantidadeMinima ? "#f43f5e" : categoriaCor }}>

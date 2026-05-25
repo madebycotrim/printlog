@@ -73,6 +73,12 @@ export function Rodape() {
                   Política de Privacidade
                 </Link>
                 <Link
+                  to="/politica-de-cookies"
+                  className="hover:text-sky-400 transition-colors duration-300"
+                >
+                  Política de Cookies
+                </Link>
+                <Link
                   to="/termos-de-servico"
                   className="hover:text-sky-400 transition-colors duration-300"
                 >

@@ -43,6 +43,7 @@ export function useCalculadora() {
   const [margem, setMargem] = useState<number>(() => armazenamentoSeguro.obter("printlog_margem", config.margemLucro));
 
   const [quantidade, setQuantidade] = useState<number>(() => armazenamentoSeguro.obter("printlog_quantidade", 0));
+  const [pecasPorMesa, setPecasPorMesa] = useState<number>(() => armazenamentoSeguro.obter("printlog_pecas_por_mesa", 0));
   const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => armazenamentoSeguro.obter<'unitario' | 'lote'>("printlog_calculadora_modo_entrada", "lote"));
   const [tempoSetup, setTempoSetup] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_setup", 0));
   const [taxaFalha, setTaxaFalha] = useState<number>(() => armazenamentoSeguro.obter("printlog_taxa_falha", 0));
@@ -66,6 +67,7 @@ export function useCalculadora() {
   const [tempoModelagem, setTempoModelagem] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_modelagem", 0));
   const [valorHoraModelagem, setValorHoraModelagem] = useState<number>(() => armazenamentoSeguro.obter("printlog_valor_hora_modelagem", 8000));
   const [descontoVolume, setDescontoVolume] = useState<number>(() => armazenamentoSeguro.obter("printlog_desconto_volume", 0));
+  const [precoAlvoCentavos, setPrecoAlvoCentavos] = useState<number>(() => armazenamentoSeguro.obter("printlog_preco_alvo", 0));
 
 
 
@@ -85,6 +87,7 @@ export function useCalculadora() {
   useEffect(() => { armazenamentoSeguro.definir("printlog_depreciacao_hora", depreciacaoHora); }, [depreciacaoHora]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_margem", margem); }, [margem]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_quantidade", quantidade); }, [quantidade]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_pecas_por_mesa", pecasPorMesa); }, [pecasPorMesa]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_setup", tempoSetup); }, [tempoSetup]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_taxa_falha", taxaFalha); }, [taxaFalha]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_material_perdido", materialPerdido); }, [materialPerdido]);
@@ -96,6 +99,7 @@ export function useCalculadora() {
   useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_modelagem", tempoModelagem); }, [tempoModelagem]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_valor_hora_modelagem", valorHoraModelagem); }, [valorHoraModelagem]);
   useEffect(() => { armazenamentoSeguro.definir("printlog_desconto_volume", descontoVolume); }, [descontoVolume]);
+  useEffect(() => { armazenamentoSeguro.definir("printlog_preco_alvo", precoAlvoCentavos); }, [precoAlvoCentavos]);
 
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";
@@ -182,7 +186,8 @@ export function useCalculadora() {
     const custoFilamentoPerdidoCentavos = materiaisSelecionados.reduce((acc, m) => acc + (materialPerdido / 1000) * m.precoKgCentavos, 0);
     const custoTempoPerdidoCentavos = ((tempoPerdido / 60) * depreciacaoHora) + (cobrarEnergia ? Math.round((potencia / 1000) * (tempoPerdido / 60) * precoKwh) : 0);
     const custoFalhaRealCentavos = Math.round(custoFilamentoPerdidoCentavos + custoTempoPerdidoCentavos);
-    const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round((tempoSetup / 60) * maoDeObra) : 0;
+    const numeroDeLotes = modoEntrada === 'lote' && pecasPorMesa > 0 ? Math.ceil(quantidade / pecasPorMesa) : 1;
+    const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round(((tempoSetup * numeroDeLotes) / 60) * maoDeObra) : 0;
     const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor), 0) * (modoEntrada === 'lote' ? 1 : quantidade);
     const custoInsumosFixosCentavos = cobrarInsumosFixos ? insumosFixos : 0;
     const custoFreteCentavos = cobrarLogistica ? frete : 0;
@@ -201,8 +206,10 @@ export function useCalculadora() {
     const valorDescontoCentavos = Math.round(precoSugeridoBrutoCentavos * (descontoVolume / 100));
     const precoSugeridoCentavos = precoSugeridoBrutoCentavos - valorDescontoCentavos;
     
-    const taxaMktTotalCentavos = Math.round(precoSugeridoCentavos * taxaMktPercentual + taxaFixaVendaCentavos);
-    const lucroLiquidoCentavos = precoSugeridoCentavos - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos - custoModelagemCentavos;
+    const precoFinalBaseCalculo = precoAlvoCentavos > 0 ? precoAlvoCentavos : precoSugeridoCentavos;
+
+    const taxaMktTotalCentavos = Math.round(precoFinalBaseCalculo * taxaMktPercentual + taxaFixaVendaCentavos);
+    const lucroLiquidoCentavos = precoFinalBaseCalculo - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos - custoModelagemCentavos;
     return {
       custoMaterial: Math.round(custoMaterialTotalCentavos),
       custoEnergia: custoEnergiaCentavos,
@@ -211,24 +218,33 @@ export function useCalculadora() {
       custoPosProcesso: custoPosProcessoCentavos,
       custoInsumos: custoInsumosDinamicosCentavos + custoInsumosFixosCentavos,
       taxaMarketplace: taxaMktTotalCentavos,
-      precoSugerido: precoSugeridoCentavos,
+      precoSugerido: precoFinalBaseCalculo,
+      precoSugeridoOriginal: precoSugeridoCentavos,
+      precoAlvo: precoAlvoCentavos > 0 ? precoAlvoCentavos : 0,
       lucroLiquido: lucroLiquidoCentavos,
       custoTotalOperacional: custoProducaoTotalCentavos,
-      margemReal: precoSugeridoCentavos > 0 ? (lucroLiquidoCentavos / precoSugeridoCentavos) * 100 : 0,
+      margemReal: precoFinalBaseCalculo > 0 ? (lucroLiquidoCentavos / precoFinalBaseCalculo) * 100 : 0,
       custoFalha: custoFalhaRealCentavos,
       custoModelagem: custoModelagemCentavos,
       valorDesconto: valorDescontoCentavos,
       percentualDesconto: descontoVolume
     };
-  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, quantidade, tempoSetup, materialPerdido, tempoPerdido, modoEntrada, tempoModelagem, valorHoraModelagem, descontoVolume]);
+  }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, quantidade, pecasPorMesa, tempoSetup, materialPerdido, tempoPerdido, modoEntrada, tempoModelagem, valorHoraModelagem, descontoVolume, precoAlvoCentavos]);
 
   // Alertas de Estoque
   const alertasEstoque = useMemo(() => {
-    return materiaisSelecionados.map(sel => {
-      const real = materiais.find(m => m.id === sel.id);
+    const somaPorMaterial = materiaisSelecionados.reduce((acc, sel) => {
+      acc[sel.id] = (acc[sel.id] || 0) + sel.quantidade;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(somaPorMaterial).map(([id, totalSelecionado]) => {
+      const real = materiais.find(m => m.id === id);
       if (!real) return null;
       const totalDisponivel = (real.estoque * real.pesoGramas) + real.pesoRestanteGramas;
-      if (sel.quantidade > totalDisponivel) return { materialId: sel.id, nome: sel.nome, falta: sel.quantidade - totalDisponivel, disponivel: totalDisponivel };
+      if (totalSelecionado > totalDisponivel) {
+        return { materialId: id, nome: real.nome, falta: totalSelecionado - totalDisponivel, disponivel: totalDisponivel };
+      }
       return null;
     }).filter(a => a !== null);
   }, [materiaisSelecionados, materiais]);
@@ -446,15 +462,15 @@ export function useCalculadora() {
     }
 
     // Logo: nome da loja todo em negrito, com barra de acento lateral e imagem opcional
-    const imgHtml = sLogoUrl ? `<img src="${sLogoUrl}" alt="Logo" style="max-height: 40px; width: auto; object-fit: contain; border-radius: 4px;" />` : '';
+    const imgHtml = sLogoUrl ? `<img src="${sLogoUrl}" alt="Logo" style="max-height: 48px; width: auto; object-fit: contain; border-radius: 6px;" />` : '';
     
     const logoHtml = `
-      <div style="display:flex; align-items:${sLogoUrl ? 'center' : 'stretch'}; gap:10px;">
+      <div style="display:flex; align-items:center; gap:16px;">
         ${imgHtml}
-        <div style="width:3px; ${sLogoUrl ? 'height: 32px;' : ''} background:#0f172a; border-radius:2px; flex-shrink:0;"></div>
-        <div style="display:flex; flex-direction:column; gap:2px;">
-          <span style="font-size:18px; font-weight:900; text-transform:uppercase; letter-spacing:-0.04em; color:#0f172a; line-height:1;">${sEstudio}</span>
-          <span style="font-size:7px; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:#64748b;">${sSlogan}</span>
+        ${sLogoUrl ? '<div style="width:2px; height: 36px; background:#e2e8f0; border-radius:2px; flex-shrink:0;"></div>' : ''}
+        <div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">
+          <span style="font-size:22px; font-weight:900; text-transform:uppercase; letter-spacing:-0.02em; color:#0f172a; line-height:1;">${sEstudio}</span>
+          <span style="font-size:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#64748b; line-height:1;">${sSlogan}</span>
         </div>
       </div>
     `;
@@ -498,25 +514,32 @@ export function useCalculadora() {
             .header {
               display: flex;
               justify-content: space-between;
-              align-items: flex-start;
-              padding-bottom: 16px;
-              margin-bottom: 16px;
-              border-bottom: 2px solid #f8fafc;
+              align-items: center;
+              padding-bottom: 20px;
+              margin-bottom: 24px;
+              border-bottom: 1px solid #e2e8f0;
             }
-            .header-right { text-align: right; }
+            .header-right { 
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              gap: 4px;
+            }
             .badge-orcamento {
-              display: inline-block;
-              background: #f0fdf4;
-              color: #16a34a;
+              display: inline-flex;
+              align-items: center;
+              background: #f8fafc;
+              color: #0f172a;
+              border: 1px solid #e2e8f0;
               font-weight: 800;
               text-transform: uppercase;
-              letter-spacing: 0.1em;
+              letter-spacing: 0.05em;
               padding: 6px 12px;
-              border-radius: 100px;
-              font-size: 10px;
-              margin-bottom: 12px;
+              border-radius: 8px;
+              font-size: 9px;
+              margin-bottom: 4px;
             }
-            .meta-val { font-size: 10px; font-weight: 500; color: #64748b; margin-top: 4px; }
+            .meta-val { font-size: 10px; font-weight: 500; color: #64748b; }
             .meta-val strong { color: #0f172a; font-weight: 700; }
 
             /* ── PROJETO E CLIENTE ── */
@@ -857,7 +880,7 @@ export function useCalculadora() {
           </div>
           
           <div class="powered-by">
-            DOCUMENTO 100% DIGITAL. EVITE IMPRIMIR • <strong>www.printlog.com.br</strong>
+                  🌱 Documento 100% Digital. Economize papel e preserve o meio ambiente. Acesse sempre online em printlog.com.br.
           </div>
 
           <script>
@@ -995,6 +1018,8 @@ export function useCalculadora() {
     taxaFixa, setTaxaFixa,
     perfisMarketplace, setPerfisMarketplace,
     impressoraSelecionadaId, setImpressoraSelecionadaId,
+    pecasPorMesa, setPecasPorMesa,
+    precoAlvoCentavos, setPrecoAlvoCentavos,
     historico,
     calculo,
     alertasEstoque,
@@ -1008,6 +1033,24 @@ export function useCalculadora() {
     limpar,
     detectarTarifa,
     sugerirPrecoIA,
-    salvarRascunhoNuvem
+    salvarRascunhoNuvem,
+    aplicarTemplate: (tipo: 'action-figure' | 'peca-tecnica' | 'expresso') => {
+      if (tipo === 'action-figure') {
+        setMargem(30000);
+        setTaxaFalha(10);
+        setMaterialPerdido(30);
+        setValorHoraModelagem(8000);
+      } else if (tipo === 'peca-tecnica') {
+        setMargem(15000);
+        setTaxaFalha(5);
+        setMaterialPerdido(10);
+        setValorHoraModelagem(12000);
+      } else if (tipo === 'expresso') {
+        setMargem(5000);
+        setTaxaFalha(0);
+        setMaterialPerdido(0);
+      }
+      toast.success("Template aplicado!");
+    }
   };
 }

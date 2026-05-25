@@ -6,7 +6,7 @@
 import { Bell, CheckCircle2, AlertTriangle, AlertCircle, Info, Trash2, ExternalLink } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useArmazemNotificacoes } from "../estado/armazemNotificacoes";
@@ -122,7 +122,7 @@ export function MenuNotificacoes() {
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="text-xs font-black uppercase tracking-tight truncate">{n.titulo}</h4>
                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
-                          {formatDistanceToNow(n.data, { addSuffix: true, locale: ptBR })}
+                          {format(n.data, "dd/MM 'às' HH:mm", { locale: ptBR })}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-zinc-400 leading-relaxed line-clamp-2">

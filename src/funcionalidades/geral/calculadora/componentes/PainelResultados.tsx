@@ -29,23 +29,25 @@ interface PainelResultadosProps {
   aoSugerirPrecoIA?: () => void;
   descontoVolume?: number;
   setDescontoVolume?: (v: number) => void;
+  precoAlvoCentavos?: number;
+  setPrecoAlvoCentavos?: (v: number) => void;
 }
 
 export const PainelResultados = memo(function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
   tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA,
-  descontoVolume = 0, setDescontoVolume
+  descontoVolume = 0, setDescontoVolume, precoAlvoCentavos = 0, setPrecoAlvoCentavos
 }: PainelResultadosProps) {
   const { usuario } = useAutenticacao();
 
-  const [menuWppAberto, setMenuWppAberto] = useState(false);
+  const [menuExportarAberto, setMenuExportarAberto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuWppAberto(false);
+        setMenuExportarAberto(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -53,7 +55,7 @@ export const PainelResultados = memo(function PainelResultados({
   }, []);
 
   const compartilharWhatsApp = (incluirLink: boolean) => {
-    setMenuWppAberto(false);
+    setMenuExportarAberto(false);
     const nomeEstudio = "Meu Estúdio 3D";
     const valorFormatado = centavosParaReais(calculo.precoSugerido);
     
@@ -164,46 +166,43 @@ export const PainelResultados = memo(function PainelResultados({
         </div>
 
         <div className="mt-2 mb-4">
-          <h2 className="text-4xl font-black text-primary tracking-tighter leading-none mb-4 text-center">
+          <h2 className={`text-4xl font-black tracking-tighter leading-none mb-4 text-center ${precoAlvoCentavos && precoAlvoCentavos > 0 ? "text-violet-500" : "text-primary"}`}>
             <ContadorAnimado valor={calculo.precoSugerido / 100} />
           </h2>
           <div className="flex flex-col gap-3 items-center">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-muted/30 focus-within:border-sky-500/50 transition-colors shadow-inner">
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Desconto Lote:</span>
-              <input 
-                type="number"
-                min="0"
-                max="100"
-                value={descontoVolume === 0 ? "" : descontoVolume}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setDescontoVolume?.(v === "" ? 0 : Number(v));
-                }}
-                className="w-8 bg-transparent text-[11px] font-black text-primary dark:text-white text-center outline-none border-b border-borda-sutil focus:border-sky-500 transition-colors"
-                placeholder="0"
-              />
-              <span className="text-[10px] font-black text-muted-foreground">%</span>
-            </div>
+            <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-muted/30 focus-within:border-sky-500/50 transition-colors shadow-inner">
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Desconto Lote:</span>
+                <input 
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={descontoVolume === 0 ? "" : descontoVolume}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setDescontoVolume?.(v === "" ? 0 : Number(v));
+                  }}
+                  className="w-8 bg-transparent text-[11px] font-black text-primary dark:text-white text-center outline-none border-b border-borda-sutil focus:border-sky-500 transition-colors"
+                  placeholder="0"
+                />
+                <span className="text-[10px] font-black text-muted-foreground">%</span>
+              </div>
 
-            <div className="flex gap-2 justify-center">
-              <div className={`
-                px-2.5 py-1 rounded-full border backdrop-blur-md transition-all duration-500 flex items-center gap-1.5 shadow-lg
-                ${calculo.margemReal >= 50 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-emerald-500/10' 
-                  : calculo.margemReal >= 20
-                    ? 'bg-sky-500/10 border-sky-500/20 text-sky-400 shadow-sky-500/10'
-                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-rose-500/10'
-                }
-              `}>
-                <div className={`w-1 h-1 rounded-full animate-pulse ${
-                  calculo.margemReal >= 50 ? 'bg-emerald-400' : calculo.margemReal >= 20 ? 'bg-sky-400' : 'bg-rose-400'
-                }`} />
-                <span className="text-[9px] font-black uppercase tracking-wider leading-none">
-                  Margem Real: <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
-                </span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-violet-500/5 focus-within:border-violet-500/50 transition-colors shadow-inner" title="Matemática Reversa: Calcule o lucro com base no preço final pago pelo cliente">
+                <span className="text-[9px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-500">Preço Alvo: R$</span>
+                <input 
+                  type="number"
+                  min="0"
+                  value={precoAlvoCentavos === 0 ? "" : (precoAlvoCentavos || 0) / 100}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setPrecoAlvoCentavos?.(v === "" ? 0 : Math.round(Number(v) * 100));
+                  }}
+                  className="w-16 bg-transparent text-[11px] font-black text-violet-600 dark:text-violet-500 text-center outline-none border-b border-borda-sutil focus:border-violet-500 transition-colors"
+                  placeholder="0.00"
+                />
               </div>
             </div>
-
           </div>
         </div>
         
@@ -440,83 +439,99 @@ export const PainelResultados = memo(function PainelResultados({
             <span>Salvar Projeto</span>
           </button>
 
-          <button 
-            onClick={gerarPdf} 
-            className="flex-1 h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-2 bg-muted/40 dark:bg-zinc-800 hover:bg-muted/80 dark:hover:bg-zinc-700/80 hover:text-primary dark:hover:text-white text-muted-foreground dark:text-zinc-300 border border-borda-sutil transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none" 
-            disabled={calculo.precoSugerido <= 0 || carregandoPdf}
-            title="Gerar PDF"
-          >
-            {carregandoPdf ? <Activity className="animate-spin" size={18} /> : <Download size={18} />}
-            <span>Exportar PDF</span>
-          </button>
-
-          <div className="relative" ref={menuRef}>
+          <div className="relative flex-1" ref={menuRef}>
             <button 
-              onClick={() => setMenuWppAberto(!menuWppAberto)}
+              onClick={() => setMenuExportarAberto(!menuExportarAberto)}
+              className="w-full h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-2 bg-muted/40 dark:bg-zinc-800 hover:bg-muted/80 dark:hover:bg-zinc-700/80 hover:text-primary dark:hover:text-white text-muted-foreground dark:text-zinc-300 border border-borda-sutil transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none" 
               disabled={calculo.precoSugerido <= 0}
-              title="Opções do WhatsApp"
-              className="w-12 h-12 flex items-center justify-center transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
+              title="Opções de Exportação"
             >
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/960px-WhatsApp.svg.png" 
-                alt="WhatsApp" 
-                className="w-8 h-8" 
-              />
+              {carregandoPdf ? <Activity className="animate-spin" size={18} /> : <Download size={18} />}
+              <span>Exportar</span>
             </button>
             
             <AnimatePresence>
-              {menuWppAberto && (
+              {menuExportarAberto && (
                 <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute bottom-full mb-2 right-0 w-48 bg-white dark:bg-zinc-800 rounded-xl shadow-xl border border-borda-sutil overflow-hidden z-50 origin-bottom-right"
+                  className="absolute bottom-full mb-2 right-0 w-[220px] bg-white dark:bg-zinc-800 rounded-xl shadow-xl border border-borda-sutil overflow-hidden z-50 origin-bottom-right"
                 >
                   <div className="flex flex-col">
                     <button 
-                      onClick={() => compartilharWhatsApp(false)}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                      onClick={() => {
+                        setMenuExportarAberto(false);
+                        gerarPdf();
+                      }}
+                      disabled={carregandoPdf}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left disabled:opacity-50"
                     >
                       <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
-                        <FileText size={14} />
+                        {carregandoPdf ? <Activity className="animate-spin" size={14} /> : <FileText size={14} />}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Enviar PDF</span>
-                        <span className="text-[8px] text-zinc-500">Gera anexo automático</span>
+                        <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Exportar PDF</span>
+                        <span className="text-[8px] text-zinc-500">Baixar arquivo local</span>
                       </div>
                     </button>
                     
                     <div className="h-px bg-borda-sutil mx-2" />
-                    
+
                     <button 
-                      onClick={() => compartilharWhatsApp(true)}
+                      onClick={() => compartilharWhatsApp(false)}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
                     >
-                      <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500 shrink-0">
-                        <LinkIcon size={14} />
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                        <MessageCircle size={14} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Assinatura</span>
-                        <span className="text-[8px] text-zinc-500">Enviar Link Mágico</span>
+                        <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">WhatsApp (PDF)</span>
+                        <span className="text-[8px] text-zinc-500">Enviar com anexo</span>
                       </div>
                     </button>
+
+                    {gerarLinkMagico && (
+                      <>
+                        <div className="h-px bg-borda-sutil mx-2" />
+                        <button 
+                          onClick={() => compartilharWhatsApp(true)}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                            <MessageCircle size={14} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">WhatsApp (Link)</span>
+                            <span className="text-[8px] text-zinc-500">Enviar para assinatura</span>
+                          </div>
+                        </button>
+                        
+                        <div className="h-px bg-borda-sutil mx-2" />
+                        
+                        <button 
+                          onClick={() => {
+                            setMenuExportarAberto(false);
+                            gerarLinkMagico();
+                          }}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500 shrink-0">
+                            <LinkIcon size={14} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Link Mágico</span>
+                            <span className="text-[8px] text-zinc-500">Copiar link de assinatura</span>
+                          </div>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          
-          {gerarLinkMagico && (
-            <button 
-              onClick={gerarLinkMagico}
-              disabled={calculo.precoSugerido <= 0}
-              title="Copiar Link Mágico"
-              className="w-12 h-12 flex items-center justify-center bg-violet-500/10 text-violet-500 hover:bg-violet-500 hover:text-white rounded-2xl transition-all active:scale-95 disabled:opacity-30 border border-violet-500/20 shadow-lg shadow-violet-500/5"
-            >
-              <LinkIcon size={18} />
-            </button>
-          )}
         </div>
       </div>
     </div>

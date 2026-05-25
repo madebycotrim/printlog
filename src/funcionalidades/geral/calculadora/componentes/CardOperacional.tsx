@@ -19,11 +19,12 @@ interface CardOperacionalProps {
   quantidade: number;
   tempoSetup: number;
   setTempoSetup: (v: number) => void;
+  aplicarTemplate?: (tipo: 'action-figure' | 'peca-tecnica' | 'expresso') => void;
 }
 
 export const CardOperacional = memo(function CardOperacional({
   maoDeObra, setMaoDeObra, margem, setMargem, depreciacao, cobrarDesgaste, setCobrarDesgaste, cobrarMaoDeObra, setCobrarMaoDeObra, 
-  anosVidaUtil = 5, setAnosVidaUtil, tempo, quantidade, tempoSetup, setTempoSetup
+  anosVidaUtil = 5, setAnosVidaUtil, tempo, quantidade, tempoSetup, setTempoSetup, aplicarTemplate
 }: CardOperacionalProps) {
   const [margemInterna, setMargemInterna] = useState(margem);
   const [microTasks, setMicroTasks] = useState<Record<string, boolean>>({});
@@ -280,6 +281,21 @@ export const CardOperacional = memo(function CardOperacional({
           className="absolute -top-24 -left-20 w-80 h-80 rounded-full blur-[100px] pointer-events-none transition-all duration-700 opacity-10"
           style={{ backgroundColor: msgMargem.corHex }}
         />
+
+        {aplicarTemplate && (
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-borda-sutil pb-4">
+            <div className="flex flex-col">
+              <span className="text-xs font-black uppercase tracking-wider text-primary">Templates Rápidos</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Configurações pré-definidas para tipos de projeto</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={() => aplicarTemplate('action-figure')} className="px-3 py-1.5 rounded-xl border border-borda-sutil hover:border-violet-500 hover:bg-violet-500/10 text-[10px] font-black text-muted-foreground hover:text-violet-500 transition-all uppercase tracking-widest active:scale-95">Action Figure</button>
+              <button onClick={() => aplicarTemplate('peca-tecnica')} className="px-3 py-1.5 rounded-xl border border-borda-sutil hover:border-amber-500 hover:bg-amber-500/10 text-[10px] font-black text-muted-foreground hover:text-amber-500 transition-all uppercase tracking-widest active:scale-95">Peça Técnica</button>
+              <button onClick={() => aplicarTemplate('expresso')} className="px-3 py-1.5 rounded-xl border border-borda-sutil hover:border-sky-500 hover:bg-sky-500/10 text-[10px] font-black text-muted-foreground hover:text-sky-500 transition-all uppercase tracking-widest active:scale-95">Protótipo (Rápido)</button>
+            </div>
+          </div>
+        )}
+
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: O Display do Valor e Status */}

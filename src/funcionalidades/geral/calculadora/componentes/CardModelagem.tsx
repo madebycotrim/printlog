@@ -16,17 +16,17 @@ export const CardModelagem = memo(function CardModelagem({
   valorHoraModelagem,
   setValorHoraModelagem
 }: CardModelagemProps) {
-  const temValor = tempoModelagem > 0 || valorHoraModelagem > 0;
+  const temValor = tempoModelagem > 0;
   const [mostrar, setMostrar] = useState(temValor);
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
 
   // Mantém o painel aberto caso haja valor configurado via load/snapshot
   useEffect(() => {
-    if (tempoModelagem > 0 || valorHoraModelagem > 0) {
+    if (tempoModelagem > 0) {
       setMostrar(true);
     }
-  }, [tempoModelagem, valorHoraModelagem]);
+  }, [tempoModelagem]);
 
   return (
     <div className="flex flex-col my-6">

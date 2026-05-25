@@ -148,9 +148,12 @@ export function AvisoCookies() {
                 </button>
               </div>
               
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center flex flex-col gap-1">
                 <Link to="/politica-de-privacidade" className="text-[10px] text-zinc-600 hover:text-zinc-400 underline underline-offset-4">
                   Saber mais sobre nossa política de dados
+                </Link>
+                <Link to="/politica-de-cookies" className="text-[10px] text-zinc-600 hover:text-zinc-400 underline underline-offset-4">
+                  Nossa Política de Cookies
                 </Link>
               </div>
             </div>

@@ -1,38 +1,38 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FolderKanban, Calendar } from "lucide-react";
+import { FolderKanban, Calendar, History } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaginaProjetos } from "./projetos/pagina";
 import { PaginaFila } from "./fila/pagina";
+import { PaginaLinhaDoTempo } from "./historico/PaginaLinhaDoTempo";
 
 export function PaginaProducao() {
   const [params, setParams] = useSearchParams();
   const abaUrl = params.get("aba");
   
-  const [abaAtiva, setAbaAtiva] = useState<"fluxo" | "fila">(
-    abaUrl === "fila" ? "fila" : "fluxo"
+  const [abaAtiva, setAbaAtiva] = useState<"fluxo" | "fila" | "timeline">(
+    (abaUrl as any) || "fluxo"
   );
 
   useEffect(() => {
-    if (abaUrl === "fila" && abaAtiva !== "fila") {
-      setAbaAtiva("fila");
-    } else if (abaUrl !== "fila" && abaAtiva !== "fluxo") {
-      setAbaAtiva("fluxo");
+    if (abaUrl && abaUrl !== abaAtiva) {
+      setAbaAtiva(abaUrl as any);
     }
   }, [abaUrl, abaAtiva]);
 
-  const mudarAba = (aba: "fluxo" | "fila") => {
+  const mudarAba = (aba: "fluxo" | "fila" | "timeline") => {
     setAbaAtiva(aba);
-    if (aba === "fila") {
-      setParams({ aba: "fila" });
-    } else {
+    if (aba === "fluxo") {
       setParams({});
+    } else {
+      setParams({ aba });
     }
   };
 
   const abas = [
     { id: "fluxo", rotulo: "Fluxo Kanban", icone: FolderKanban },
     { id: "fila", rotulo: "Fila de Impressão", icone: Calendar },
+    { id: "timeline", rotulo: "Linha do Tempo", icone: History },
   ];
 
   return (
@@ -75,7 +75,9 @@ export function PaginaProducao() {
             transition={{ duration: 0.2 }}
             className="flex-1 flex flex-col min-h-0"
           >
-            {abaAtiva === "fluxo" ? <PaginaProjetos /> : <PaginaFila />}
+            {abaAtiva === "fluxo" && <PaginaProjetos />}
+            {abaAtiva === "fila" && <PaginaFila />}
+            {abaAtiva === "timeline" && <PaginaLinhaDoTempo />}
           </motion.div>
         </AnimatePresence>
       </div>

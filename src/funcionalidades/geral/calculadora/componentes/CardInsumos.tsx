@@ -4,6 +4,7 @@ import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { CATEGORIAS } from "@/funcionalidades/producao/insumos/constantes";
+import { useDragScroll } from "@/compartilhado/hooks/useDragScroll";
 
 interface CardInsumosProps {
   insumos: any[];
@@ -25,10 +26,22 @@ export const CardInsumos = memo(function CardInsumos({
   insumos, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, remover, alternarFavorito, alternarPorLote, abrirGerenciar, abrirNovo, modoEntrada
 }: CardInsumosProps) {
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
+  const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
+  const dragScroll = useDragScroll<HTMLDivElement>();
+
+  const tiposDisponiveis = useMemo(() => {
+    const tipos = insumos.map(i => i.categoria).filter(Boolean);
+    return Array.from(new Set(tipos)).sort();
+  }, [insumos]);
 
   // Ordenação Inteligente: Favoritos ou Mais Usados
   const insumosOrdenados = useMemo(() => {
-    return [...insumos].sort((a, b) => {
+    let filtrados = insumos;
+    if (filtroTipo) {
+      filtrados = insumos.filter(i => i.categoria === filtroTipo);
+    }
+
+    return [...filtrados].sort((a, b) => {
       if (tipoOrdenacao === 'favoritos') {
         if (a.favorito === b.favorito) {
            // Se empatar no favorito, usa o uso como desempate (tamanho do histórico)
@@ -46,7 +59,7 @@ export const CardInsumos = memo(function CardInsumos({
         return usoB - usoA;
       }
     });
-  }, [insumos, tipoOrdenacao]);
+  }, [insumos, tipoOrdenacao, filtroTipo]);
 
   const CORES_AURA: Record<string, string> = {
     Limpeza: "#0ea5e9", // sky-500
@@ -86,11 +99,11 @@ export const CardInsumos = memo(function CardInsumos({
       </div>
 
       <div className="space-y-4 pt-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Package className="w-3 h-3 text-teal-500" />
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-gray-400">Estoque de Insumos</span>
-            <div className="flex items-center gap-1 ml-3 bg-zinc-100 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Package className="w-3 h-3 text-teal-500 hidden sm:block" />
+            <span className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-gray-400 hidden sm:block">Estoque de Insumos</span>
+            <div className="flex items-center gap-1 sm:ml-3 bg-zinc-100 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil">
               <button 
                 onClick={() => setTipoOrdenacao('favoritos')}
                 className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'favoritos' ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
@@ -106,6 +119,33 @@ export const CardInsumos = memo(function CardInsumos({
                 Mais Usados
               </button>
             </div>
+
+            {tiposDisponiveis.length > 0 && (
+              <>
+                <div className="hidden sm:block w-[1px] h-3 bg-borda-sutil mx-1" />
+                <div 
+                  ref={dragScroll.ref}
+                  {...dragScroll.events}
+                  className={`flex items-center gap-1 bg-zinc-100 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil overflow-x-auto scrollbar-none ${dragScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab md:cursor-default'}`}
+                >
+                  <button 
+                    onClick={(e) => { if (dragScroll.hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(null) }}
+                    className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === null ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
+                  >
+                    Todas
+                  </button>
+                  {tiposDisponiveis.map(tipo => (
+                    <button 
+                      key={tipo}
+                      onClick={(e) => { if (dragScroll.hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(tipo) }}
+                      className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === tipo ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
+                    >
+                      {tipo}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

@@ -92,3 +92,13 @@ export const useArmazemNotificacoes = create<ArmazemNotificacoesState>()(
     { name: "ArmazemNotificacoes" },
   ),
 );
+
+// Sincronização multi-abas "Ao Vivo" sem loops de polling (setInterval)
+// O evento 'storage' é disparado nativamente pelo navegador apenas nas abas que NÃO realizaram a alteração
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key === "printlog:notificacoes") {
+      useArmazemNotificacoes.persist.rehydrate();
+    }
+  });
+}

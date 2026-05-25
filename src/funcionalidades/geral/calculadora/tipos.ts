@@ -1,5 +1,7 @@
 export interface MaterialSelecionado {
   id: string;
+  instanceId?: string;
+  nomePeca?: string;
   nome: string;
   cor: string;
   tipo: "FDM" | "SLA";
@@ -49,6 +51,8 @@ export interface CalculoResultado {
   custoInsumos: number;
   taxaMarketplace: number;
   precoSugerido: number;
+  precoSugeridoOriginal?: number;
+  precoAlvo?: number;
   lucroLiquido: number;
   custoTotalOperacional: number;
   margemReal: number;

@@ -4,6 +4,7 @@ import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { motion, AnimatePresence } from "framer-motion";
 import { MaterialSelecionado } from "../tipos";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
+import { useDragScroll } from "@/compartilhado/hooks/useDragScroll";
 
 interface CardMateriaisProps {
   materiais: any[];
@@ -15,6 +16,7 @@ interface CardMateriaisProps {
   atualizarQtd: (id: string, qtd: number) => void;
   atualizarPreco: (id: string, preco: number) => void;
   atualizarTempo?: (id: string, horas: number, minutos: number) => void;
+  atualizarNomePeca?: (id: string, nome: string) => void;
   remover: (id: string) => void;
   abrirArmazem: () => void;
   abrirCriar: () => void;
@@ -22,13 +24,25 @@ interface CardMateriaisProps {
 }
 
 export const CardMateriais = memo(function CardMateriais({
-  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, atualizarTempo, remover, abrirArmazem, abrirCriar, alternarFavorito
+  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, atualizarTempo, atualizarNomePeca, remover, abrirArmazem, abrirCriar, alternarFavorito
 }: CardMateriaisProps) {
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
+  const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
+  const dragScroll = useDragScroll<HTMLDivElement>();
+
+  const tiposDisponiveis = useMemo(() => {
+    const tipos = materiais.map(m => m.tipoMaterial || m.tipo).filter(Boolean);
+    return Array.from(new Set(tipos)).sort();
+  }, [materiais]);
 
   // Ordenação Inteligente: Favoritos ou Mais Usados
   const materiaisOrdenados = useMemo(() => {
-    return [...materiais].sort((a, b) => {
+    let filtrados = materiais;
+    if (filtroTipo) {
+      filtrados = materiais.filter(m => (m.tipoMaterial || m.tipo) === filtroTipo);
+    }
+    
+    return [...filtrados].sort((a, b) => {
       if (tipoOrdenacao === 'favoritos') {
         if (a.favorito === b.favorito) {
            // Se empatar no favorito, usa o uso como desempate
@@ -46,7 +60,7 @@ export const CardMateriais = memo(function CardMateriais({
         return usoB - usoA;
       }
     });
-  }, [materiais, tipoOrdenacao]);
+  }, [materiais, tipoOrdenacao, filtroTipo]);
 
   return (
     <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 premium-card premium-card-cyan">
@@ -74,11 +88,11 @@ export const CardMateriais = memo(function CardMateriais({
       </div>
 
       <div className="space-y-4 pt-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Box className="w-3 h-3 text-cyan-500" />
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-500 dark:text-gray-400">Seu Inventário</span>
-            <div className="flex items-center gap-1 ml-3 bg-muted/30 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Box className="w-3 h-3 text-cyan-500 hidden sm:block" />
+            <span className="text-xs font-black uppercase tracking-widest text-zinc-500 dark:text-gray-400 hidden sm:block">Seu Inventário</span>
+            <div className="flex items-center gap-1 sm:ml-3 bg-muted/30 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil">
               <button 
                 onClick={() => setTipoOrdenacao('favoritos')}
                 className={`px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${tipoOrdenacao === 'favoritos' ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
@@ -94,6 +108,33 @@ export const CardMateriais = memo(function CardMateriais({
                 Mais Usados
               </button>
             </div>
+
+            {tiposDisponiveis.length > 0 && (
+              <>
+                <div className="hidden sm:block w-[1px] h-3 bg-borda-sutil mx-1" />
+                <div 
+                  ref={dragScroll.ref}
+                  {...dragScroll.events}
+                  className={`flex items-center gap-1 bg-muted/30 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil overflow-x-auto scrollbar-none ${dragScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab md:cursor-default'}`}
+                >
+                  <button 
+                    onClick={(e) => { if (dragScroll.hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(null) }}
+                    className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === null ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
+                  >
+                    Todos
+                  </button>
+                  {tiposDisponiveis.map(tipo => (
+                    <button 
+                      key={tipo}
+                      onClick={(e) => { if (dragScroll.hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(tipo) }}
+                      className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === tipo ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
+                    >
+                      {tipo}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -208,11 +249,11 @@ export const CardMateriais = memo(function CardMateriais({
         )}
       </div>
 
-      <div className="space-y-4">
-        <AnimatePresence mode="popLayout">
+      <div className="space-y-4 flex flex-col">
+        <AnimatePresence>
           {selecionados.length === 0 ? (
             <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="py-16 border-2 border-dashed border-borda-sutil bg-muted/20 rounded-2xl flex flex-col items-center justify-center gap-4 relative overflow-hidden"
             >
               <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
@@ -222,81 +263,133 @@ export const CardMateriais = memo(function CardMateriais({
               <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-[0.2em] relative z-10">Selecione itens para calcular</p>
             </motion.div>
           ) : (
-            selecionados.map((item) => {
-              const alerta = alertas.find(a => a.materialId === item.id);
+            Object.values(selecionados.reduce((acc, curr) => {
+              if (!acc[curr.id]) acc[curr.id] = [];
+              acc[curr.id].push(curr);
+              return acc;
+            }, {} as Record<string, typeof selecionados>)).map((grupo) => {
+              const primeiroItem = grupo[0];
+              const alerta = alertas.find(a => a.materialId === primeiroItem.id);
+              const totalConsumo = grupo.reduce((acc, curr) => acc + (curr.quantidade || 0), 0);
+              
               return (
                 <motion.div
-                  key={item.id}
+                  key={primeiroItem.id}
                   layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className={`p-5 rounded-2xl border flex flex-wrap md:flex-nowrap items-center gap-6 group transition-all
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                  className={`p-5 rounded-2xl border flex flex-col md:flex-row items-start gap-6 group transition-all
                     ${alerta 
                       ? "bg-rose-500/5 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]" 
                       : "bg-zinc-50 dark:bg-white/[0.03] border-borda-sutil"}
                   `}
                 >
-                  <div className="flex items-center gap-4 min-w-[180px]">
-                    <div className="shrink-0">
-                      {item.tipo === "FDM" ? (
-                        <Carretel cor={item.cor} tamanho={40} className="-ml-1" />
-                      ) : (
-                        <GarrafaResina cor={item.cor} tamanho={40} className="-ml-1" />
-                      )}
+                  <div className="flex flex-col gap-3 min-w-[180px] w-full md:w-auto self-start mt-1">
+                    <div className="flex items-center gap-4">
+                      <div className="shrink-0">
+                        {primeiroItem.tipo === "FDM" ? (
+                          <Carretel cor={primeiroItem.cor} tamanho={40} className="-ml-1" />
+                        ) : (
+                          <GarrafaResina cor={primeiroItem.cor} tamanho={40} className="-ml-1" />
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-black uppercase tracking-tight text-primary dark:text-white">{primeiroItem.nome}</span>
+                        <span className="text-[10px] font-bold text-zinc-500 dark:text-gray-400 uppercase">{primeiroItem.tipoMaterial || primeiroItem.tipo}</span>
+                        {alerta && (
+                          <span className="text-[9px] font-black text-rose-500 uppercase mt-1 flex items-center gap-1">
+                            <RefreshCcw size={8} /> ESTOQUE CRÍTICO
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-black uppercase tracking-tight text-primary dark:text-white">{item.nome}</span>
-                      <span className="text-[10px] font-bold text-zinc-500 dark:text-gray-400 uppercase">{item.tipoMaterial || item.tipo}</span>
-                      {alerta && (
-                        <span className="text-[9px] font-black text-rose-500 uppercase mt-1 flex items-center gap-1">
-                          <RefreshCcw size={8} /> ESTOQUE CRÍTICO
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center h-4 mb-1">
-                          <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">
-                            Peso (<span className="lowercase">{item.tipo === "FDM" ? "g" : "ml"}</span>)
-                          </label>
+                    {(() => {
+                      const real = materiais.find(m => m.id === primeiroItem.id);
+                      if (!real) return null;
+                      const totalDisponivel = (real.estoque * real.pesoGramas) + real.pesoRestanteGramas;
+                      const porcentagem = Math.min(100, (totalConsumo / totalDisponivel) * 100);
+                      return (
+                        <div className="w-full flex flex-col gap-1">
+                          <div className="flex justify-between items-center text-[9px] font-black text-zinc-400 uppercase">
+                            <span>Consumo</span>
+                            <span className={alerta ? 'text-rose-500' : 'text-teal-500'}>{totalConsumo} / {totalDisponivel}</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${porcentagem}%` }}
+                              className={`h-full ${alerta ? 'bg-rose-500' : 'bg-teal-500'}`}
+                            />
+                          </div>
                         </div>
-                        <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.id, Number(e.target.value))} className={`w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
-                        
-                        {/* Barra de Consumo */}
-                        {(() => {
-                          const real = materiais.find(m => m.id === item.id);
-                          if (!real) return null;
-                          const total = (real.estoque * real.pesoGramas) + real.pesoRestanteGramas;
-                          const porcentagem = Math.min(100, (item.quantidade / total) * 100);
-                          return (
-                            <div className="w-full h-1 bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden mt-2">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${porcentagem}%` }}
-                                className={`h-full ${alerta ? 'bg-rose-500' : 'bg-teal-500'}`}
-                              />
-                            </div>
-                          );
-                        })()}
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Horas</label>
-                        <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Minutos</label>
-                        <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest block h-4 mb-1">Preço/Kg</label>
-                        <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.id, Number(e.target.value))} className="w-full h-10 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-teal-500/30 outline-none font-black text-xs text-primary dark:text-white" />
-                      </div>
+                      );
+                    })()}
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col w-full gap-3 md:gap-2">
+                    {/* Cabeçalho visível apenas no desktop */}
+                    <div className="hidden md:flex w-full items-end gap-3 mb-0.5 px-1">
+                       <div className="flex-1 grid grid-cols-[1fr_repeat(4,1fr)] gap-3">
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest truncate">Peça (Opcional)</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Peso (<span className="lowercase">{primeiroItem.tipo === "FDM" ? "g" : "ml"}</span>)</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Horas</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Minutos</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Preço/Kg</label>
+                       </div>
+                       <div className="w-[60px]"></div>
                     </div>
-                  <button onClick={() => remover(item.id)} className="p-2 rounded-lg text-zinc-400 dark:text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">
-                    <Trash2 size={16} />
-                  </button>
+
+                    <AnimatePresence initial={false}>
+                      {grupo.map((item, index) => (
+                        <motion.div 
+                          key={item.instanceId || item.id} 
+                          layout
+                          initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                          animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                          exit={{ opacity: 0, height: 0, overflow: 'hidden', margin: 0, padding: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="flex flex-col gap-3 md:gap-2"
+                        >
+                          {index > 0 && <div className="w-full h-px bg-zinc-200 dark:bg-white/5" />}
+                          
+                          <div className="flex w-full items-end md:items-center gap-3 relative group/row pb-1">
+                            <div className="flex-1 grid grid-cols-2 md:grid-cols-[1fr_repeat(4,1fr)] gap-2 md:gap-3">
+                              <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
+                                <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Peça</label>
+                                <input type="text" placeholder="Ex: Base..." value={item.nomePeca || ""} onChange={(e) => atualizarNomePeca && atualizarNomePeca(item.instanceId || item.id, e.target.value)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
+                              </div>
+                              <div className="flex flex-col gap-1.5">
+                                <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Peso</label>
+                                <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.instanceId || item.id, Number(e.target.value))} className={`w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
+                              </div>
+                              <div className="flex flex-col gap-1.5">
+                                <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Horas</label>
+                                <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
+                              </div>
+                              <div className="flex flex-col gap-1.5">
+                                <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Minutos</label>
+                                <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
+                              </div>
+                              <div className="flex flex-col gap-1.5">
+                                <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Preço/Kg</label>
+                                <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.instanceId || item.id, Number(e.target.value))} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-teal-500/30 outline-none font-black text-xs text-primary dark:text-white" />
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-all w-[60px] justify-end md:self-center self-end md:pb-0">
+                              <button onClick={() => alternar(item.id)} className="p-1.5 rounded-md text-zinc-400 dark:text-gray-500 hover:text-teal-500 hover:bg-teal-500/10 transition-all" title="Adicionar outra mesa desta cor">
+                                <Plus size={15} />
+                              </button>
+                              <button onClick={() => remover(item.instanceId || item.id)} className="p-1.5 rounded-md text-zinc-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-500/10 transition-all" title="Remover esta mesa">
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               );
             })

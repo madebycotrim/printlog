@@ -159,45 +159,45 @@ export function PaginaCalculadora() {
   );
 
   const alternarMaterial = useCallback((id: string) => {
-    const jaSelecionado = hook.materiaisSelecionados.find(m => m.id === id);
-    if (jaSelecionado) {
-      hook.setMateriaisSelecionados(prev => prev.filter(m => m.id !== id));
-    } else {
-      const matOriginal = materiais.find(m => m.id === id);
-      if (matOriginal) {
-        hook.setMateriaisSelecionados(prev => [...prev, {
-          id: matOriginal.id,
-          nome: matOriginal.nome,
-          cor: matOriginal.cor,
-          tipo: matOriginal.tipo,
-          tipoMaterial: matOriginal.tipoMaterial || '',
-          quantidade: 0,
-          precoKgCentavos: Math.round((matOriginal.precoCentavos / matOriginal.pesoGramas) * 1000)
-        }]);
-      }
+    const matOriginal = materiais.find(m => m.id === id);
+    if (matOriginal) {
+      hook.setMateriaisSelecionados(prev => [...prev, {
+        id: matOriginal.id,
+        instanceId: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+        nome: matOriginal.nome,
+        cor: matOriginal.cor,
+        tipo: matOriginal.tipo,
+        tipoMaterial: matOriginal.tipoMaterial || '',
+        quantidade: 0,
+        precoKgCentavos: Math.round((matOriginal.precoCentavos / matOriginal.pesoGramas) * 1000)
+      }]);
     }
   }, [hook.materiaisSelecionados, materiais, hook.setMateriaisSelecionados]);
 
-  const atualizarQtdMaterial = useCallback((id: string, qtd: number) => {
-    hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, quantidade: qtd } : m));
+  const atualizarQtdMaterial = useCallback((uid: string, qtd: number) => {
+    hook.setMateriaisSelecionados(prev => prev.map(m => (m.instanceId || m.id) === uid ? { ...m, quantidade: qtd } : m));
   }, [hook.setMateriaisSelecionados]);
 
-  const atualizarPrecoMaterial = useCallback((id: string, precoKg: number) => {
-    hook.setMateriaisSelecionados(prev => prev.map(m => m.id === id ? { ...m, precoKgCentavos: Math.round(precoKg * 100) } : m));
+  const atualizarPrecoMaterial = useCallback((uid: string, precoKg: number) => {
+    hook.setMateriaisSelecionados(prev => prev.map(m => (m.instanceId || m.id) === uid ? { ...m, precoKgCentavos: Math.round(precoKg * 100) } : m));
   }, [hook.setMateriaisSelecionados]);
 
-  const atualizarTempoMaterial = useCallback((id: string, horas: number, minutos: number) => {
+  const atualizarTempoMaterial = useCallback((uid: string, horas: number, minutos: number) => {
     hook.setMateriaisSelecionados(prev => {
-      const newState = prev.map(m => m.id === id ? { ...m, tempoHoras: horas, tempoMinutos: minutos } : m);
+      const newState = prev.map(m => (m.instanceId || m.id) === uid ? { ...m, tempoHoras: horas, tempoMinutos: minutos } : m);
       const totalMinutos = newState.reduce((acc, m) => acc + (m.tempoHoras || 0) * 60 + (m.tempoMinutos || 0), 0);
       hook.setTempo(totalMinutos);
       return newState;
     });
   }, [hook.setMateriaisSelecionados, hook.setTempo]);
 
-  const removerMaterial = useCallback((id: string) => {
+  const atualizarNomePecaMaterial = useCallback((uid: string, nome: string) => {
+    hook.setMateriaisSelecionados(prev => prev.map(m => (m.instanceId || m.id) === uid ? { ...m, nomePeca: nome } : m));
+  }, [hook.setMateriaisSelecionados]);
+
+  const removerMaterial = useCallback((uid: string) => {
     hook.setMateriaisSelecionados(prev => {
-      const newState = prev.filter(m => m.id !== id);
+      const newState = prev.filter(m => (m.instanceId || m.id) !== uid);
       const totalMinutos = newState.reduce((acc, m) => acc + (m.tempoHoras || 0) * 60 + (m.tempoMinutos || 0), 0);
       if (totalMinutos > 0) {
         hook.setTempo(totalMinutos);
@@ -232,6 +232,7 @@ export function PaginaCalculadora() {
             const original = materiais.find(mat => mat.id === m.idMaterial);
             return {
               id: m.idMaterial,
+              instanceId: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
               nome: m.nome,
               quantidade: m.quantidadeGasta,
               precoKgCentavos: original ? Math.round((original.precoCentavos / original.pesoGramas) * 1000) : 0,
@@ -447,13 +448,22 @@ export function PaginaCalculadora() {
       pr: hook.calculo.precoSugerido,
       np: nomeProjeto || "Projeto 3D",
       t: hook.tempo,
-      m: hook.materiaisSelecionados.map(m => m.nome),
+      m: hook.materiaisSelecionados.map(m => ({
+        n: m.nome,
+        q: Math.round(m.quantidade * (hook.modoEntrada === 'lote' ? 1 : hook.quantidade)),
+        p: Math.round((m.quantidade / 1000) * m.precoKgCentavos * (hook.modoEntrada === 'lote' ? 1 : hook.quantidade))
+      })),
       e: config.nomeEstudio || "",
       s: config.sloganEstudio || "",
+      l: config.logoEstudio || undefined,
       w: (usuario as any)?.telefone || "",
       id: idEdicao || undefined,
       cli: buscaClienteSeletor || undefined,
-      obs: descricaoProjeto || undefined
+      obs: descricaoProjeto || undefined,
+      cm: hook.calculo.custoDepreciacao + hook.calculo.custoEnergia,
+      ce: hook.calculo.custoEnergia,
+      cd: hook.calculo.custoDepreciacao,
+      cmo: hook.calculo.custoMaoDeObra
     });
     return `${window.location.origin}/orcamento?q=${hash}`;
   };
@@ -657,6 +667,7 @@ export function PaginaCalculadora() {
               atualizarQtd={atualizarQtdMaterial}
               atualizarPreco={atualizarPrecoMaterial}
               atualizarTempo={atualizarTempoMaterial}
+              atualizarNomePeca={atualizarNomePecaMaterial}
               remover={removerMaterial}
               abrirArmazem={abrirModalArmazem}
               abrirCriar={abrirCriarMaterial}
@@ -698,6 +709,7 @@ export function PaginaCalculadora() {
 
             <CardProducao
               quantidade={hook.quantidade} setQuantidade={hook.setQuantidade}
+              pecasPorMesa={hook.pecasPorMesa} setPecasPorMesa={hook.setPecasPorMesa}
               tempo={hook.tempo} setTempo={hook.setTempo}
               modoEntrada={hook.modoEntrada}
               potencia={hook.potencia} setPotencia={hook.setPotencia}
@@ -729,6 +741,7 @@ export function PaginaCalculadora() {
               quantidade={hook.quantidade}
               tempoSetup={hook.tempoSetup} 
               setTempoSetup={hook.setTempoSetup}
+              aplicarTemplate={hook.aplicarTemplate}
             />
 
             <CardLogistica
@@ -751,14 +764,34 @@ export function PaginaCalculadora() {
               aba={abaResultado} setAba={setAbaResultado}
               salvarProjeto={confirmarSalvarProjeto}
               gerarPdf={() => {
-                const clienteFinal = (buscaClienteSeletor || "").trim() || "Consumidor Final";
-                if (!eProOuSuperior) {
-                  hook.gerarPdf("", "", clienteFinal, nomeProjeto, idEdicao || undefined);
-                } else if ((config.nomeEstudio || "").trim() !== "") {
-                  hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, clienteFinal, nomeProjeto, idEdicao || undefined);
-                } else {
+                if (eProOuSuperior && (config.nomeEstudio || "").trim() === "") {
                   setModalPdfAberto(true);
+                  return;
                 }
+                
+                const toastId = toast.loading("Gerando PDF...");
+                const url = obterUrlLinkMagico() + "&p=1";
+                
+                const oldIframe = document.getElementById('print-iframe');
+                if (oldIframe) oldIframe.remove();
+
+                const iframe = document.createElement('iframe');
+                iframe.id = 'print-iframe';
+                // Usando dimensões reais fora da tela para não quebrar o layout responsivo no PDF
+                iframe.style.position = 'fixed';
+                iframe.style.left = '-9999px';
+                iframe.style.top = '0';
+                iframe.style.width = '1024px'; // Forçar largura desktop para media queries
+                iframe.style.height = '100vh';
+                iframe.style.opacity = '0';
+                iframe.style.border = 'none';
+                iframe.src = url;
+                
+                iframe.onload = () => {
+                  toast.dismiss(toastId);
+                };
+                
+                document.body.appendChild(iframe);
               }}
               gerarLinkMagico={gerarLinkMagico}
               obterUrlLinkMagico={obterUrlLinkMagico}
@@ -775,6 +808,8 @@ export function PaginaCalculadora() {
               aoSugerirPrecoIA={hook.sugerirPrecoIA}
               descontoVolume={hook.descontoVolume}
               setDescontoVolume={hook.setDescontoVolume}
+              precoAlvoCentavos={hook.precoAlvoCentavos}
+              setPrecoAlvoCentavos={hook.setPrecoAlvoCentavos}
             />
           </div>
 
@@ -954,7 +989,8 @@ export function PaginaCalculadora() {
                 <div className="flex flex-col gap-2 mt-4">
                   <button
                     onClick={() => {
-                      hook.gerarPdf(config.nomeEstudio, config.sloganEstudio, config.logoEstudio, buscaClienteSeletor, nomeProjeto, idEdicao || undefined);
+                      const url = obterUrlLinkMagico() + "&p=1";
+                      window.open(url, "_blank");
                       setModalPdfAberto(false);
                     }}
                     className="w-full h-14 font-black uppercase tracking-[0.15em] text-xs rounded-2xl flex items-center justify-center gap-2 bg-sky-500 text-white hover:bg-sky-600 transition-all active:scale-95 shadow-[0_10px_20px_-5px_rgba(14,165,233,0.3)]"
