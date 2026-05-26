@@ -7,6 +7,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   GoogleAuthProvider,
+  GithubAuthProvider,
   signInWithRedirect,
   signInWithPopup,
   getRedirectResult,
@@ -14,6 +15,8 @@ import {
   setPersistence,
   browserLocalPersistence,
   deleteUser,
+  linkWithCredential,
+  signInWithCredential,
 } from "firebase/auth";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
@@ -29,6 +32,7 @@ interface ContextoAutenticacaoProps {
   sair: () => Promise<void>;
   recuperarSenha: (email: string) => Promise<void>;
   loginGoogle: () => Promise<void>;
+  loginGithub: () => Promise<void>;
   atualizarPerfil: (dados: { nome?: string; fotoUrl?: string }) => Promise<void>;
   excluirConta: () => Promise<void>;
   exportarDadosPessoais: () => Promise<void>;
@@ -118,6 +122,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
 
       if (user) {
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
+        const ehGithub = user.providerData.some((provedor) => provedor.providerId === "github.com");
         const plano = useArmazemConfiguracoes.getState().plano;
         
         definirUsuario({
@@ -126,6 +131,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           nome: user.displayName,
           fotoUrl: user.photoURL,
           provedorGoogle: ehGoogle,
+          provedorGithub: ehGithub,
           plano: plano,
           dataAceiteTermos: new Date().toISOString(), // Idealmente buscar do banco D1
           versaoTermos: "2026-05-14",
@@ -179,6 +185,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         throw new Error("Email ou senha incorretos.");
       case "auth/wrong-password":
         throw new Error("Senha incorreta.");
+      case "auth/account-exists-with-different-credential":
+        throw new Error("Já existe uma conta associada a este e-mail usando outro provedor (ex: Google). Por favor, acesse pelo método original.");
       default:
         throw new Error("Ocorreu um erro inesperado. Tente novamente mais tarde.");
     }
@@ -272,26 +280,101 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     const provedor = new GoogleAuthProvider();
 
     try {
-      // Em desenvolvimento ou ambientes que permitem popups, tentamos o Popup primeiro
-      // Isso evita o iframe de redirect que costuma disparar o erro 404 do init.json
       registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando tentativa de login via Google Popup...");
-      
-      try {
-        await signInWithPopup(autenticacao, provedor);
-        registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Login via Popup concluído com sucesso.");
-      } catch (erroPopup: any) {
-        // Se o popup for bloqueado ou cancelado, tentamos o Redirect como fallback
-        if (erroPopup.code === "auth/popup-blocked" || erroPopup.code === "auth/cancelled-popup-request") {
-          registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "Popup bloqueado ou fechado, tentando Redirect...");
-          await signInWithRedirect(autenticacao, provedor);
-        } else {
-          throw erroPopup;
+      await signInWithPopup(autenticacao, provedor);
+      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Login via Popup concluído com sucesso.");
+    } catch (erro: any) {
+      if (erro.code === "auth/account-exists-with-different-credential") {
+        registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "E-mail já cadastrado com outro provedor. Tentando vincular...");
+        try {
+          const credencialPendente = GoogleAuthProvider.credentialFromError(erro);
+          if (credencialPendente) {
+            const provedorGithub = new GithubAuthProvider();
+            registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Solicitando login com GitHub para fins de vinculação...");
+            const resultadoGithub = await signInWithPopup(autenticacao, provedorGithub);
+            try {
+              await linkWithCredential(resultadoGithub.user, credencialPendente);
+              registrar.info({ rastreioId: resultadoGithub.user.uid, servico: "Autenticacao" }, "Conta do Google vinculada com sucesso à conta GitHub.");
+            } catch (erroVinculo: any) {
+              if (erroVinculo.code === "auth/email-already-in-use") {
+                registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "Google já está vinculado a outra conta. Efetuando login direto...");
+                await signInWithCredential(autenticacao, credencialPendente);
+                return;
+              }
+              throw erroVinculo;
+            }
+            return;
+          }
+        } catch (erroGeralVinculo: any) {
+          registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha geral ao vincular Google ao GitHub", erroGeralVinculo);
+          traduzirErroFirebase(erroGeralVinculo);
         }
       }
-    } catch (erro: any) {
+
+      if (erro.code === "auth/popup-blocked" || erro.code === "auth/cancelled-popup-request") {
+        registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "Popup bloqueado ou fechado, tentando Redirect...");
+        await signInWithRedirect(autenticacao, provedor);
+        return;
+      }
+      
       registrar.error(
         { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
         "Falha ao realizar login com Google",
+        erro
+      );
+      traduzirErroFirebase(erro);
+    }
+  };
+
+  /**
+   * Realiza login utilizando o GitHub.
+   * Em localhost, prioriza Popup para melhor experiência.
+   * Em produção ou se o popup falhar, usa Redirect.
+   */
+  const loginGithub = async () => {
+    const provedor = new GithubAuthProvider();
+
+    try {
+      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando tentativa de login via GitHub Popup...");
+      await signInWithPopup(autenticacao, provedor);
+      registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Login via Popup concluído com sucesso.");
+    } catch (erro: any) {
+      if (erro.code === "auth/account-exists-with-different-credential") {
+        registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "E-mail já cadastrado com outro provedor. Tentando vincular...");
+        try {
+          const credencialPendente = GithubAuthProvider.credentialFromError(erro);
+          if (credencialPendente) {
+            const provedorGoogle = new GoogleAuthProvider();
+            registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Solicitando login com Google para fins de vinculação...");
+            const resultadoGoogle = await signInWithPopup(autenticacao, provedorGoogle);
+            try {
+              await linkWithCredential(resultadoGoogle.user, credencialPendente);
+              registrar.info({ rastreioId: resultadoGoogle.user.uid, servico: "Autenticacao" }, "Conta do GitHub vinculada com sucesso à conta Google.");
+            } catch (erroVinculo: any) {
+              if (erroVinculo.code === "auth/email-already-in-use") {
+                registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "GitHub já está vinculado a outra conta. Efetuando login direto...");
+                await signInWithCredential(autenticacao, credencialPendente);
+                return;
+              }
+              throw erroVinculo;
+            }
+            return;
+          }
+        } catch (erroGeralVinculo: any) {
+          registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha geral ao vincular GitHub ao Google", erroGeralVinculo);
+          traduzirErroFirebase(erroGeralVinculo);
+        }
+      }
+
+      if (erro.code === "auth/popup-blocked" || erro.code === "auth/cancelled-popup-request") {
+        registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, "Popup bloqueado ou fechado, tentando Redirect...");
+        await signInWithRedirect(autenticacao, provedor);
+        return;
+      }
+
+      registrar.error(
+        { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
+        "Falha ao realizar login com GitHub",
         erro
       );
       traduzirErroFirebase(erro);
@@ -392,7 +475,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           uid: usuario.uid,
           nome: usuario.nome || "Não informado",
           email: usuario.email || "Não informado",
-          provedorMetodo: usuario.provedorGoogle ? "Google" : "Email/Senha",
+          provedorMetodo: usuario.provedorGoogle ? "Google" : usuario.provedorGithub ? "GitHub" : "Email/Senha",
           dataCriacaoConta: metadadosFirebase?.creationTime || "Não disponível",
           ultimoLogin: metadadosFirebase?.lastSignInTime || "Não disponível",
         },
@@ -432,6 +515,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     sair,
     recuperarSenha,
     loginGoogle,
+    loginGithub,
     atualizarPerfil,
     excluirConta,
     exportarDadosPessoais,

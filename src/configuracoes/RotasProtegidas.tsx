@@ -14,7 +14,7 @@ export function RotaProtegida({ children }: RotaProtegidaProps) {
   }
 
   if (!usuario) {
-    return <Navigate to="/login" state={{ from: window.location.pathname + window.location.search }} replace />;
+    return <Navigate to="/autenticacao" state={{ from: window.location.pathname + window.location.search }} replace />;
   }
 
   return <>{children}</>;

@@ -66,6 +66,7 @@ export interface Usuario {
   nome: string | null;
   fotoUrl: string | null;
   provedorGoogle: boolean;
+  provedorGithub?: boolean;
   plano?: PlanoUsuario;
   dataAceiteTermos?: string; // ISO 8601 UTC
   versaoTermos?: string; // Ex: "2026-05-14"

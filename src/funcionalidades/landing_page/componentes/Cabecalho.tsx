@@ -76,13 +76,13 @@ export function Cabecalho() {
             ) : (
               <>
                 <Link
-                  to="/login"
+                  to="/autenticacao"
                   className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-white transition-colors mr-4"
                 >
                   Entrar
                 </Link>
                 <Link
-                  to="/cadastro"
+                  to="/autenticacao"
                   className="relative px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-black rounded-lg text-xs transition-all duration-300 shadow-lg shadow-sky-500/20 uppercase tracking-[0.15em] transform hover:-translate-y-0.5"
                 >
                   Criar Conta
@@ -143,14 +143,14 @@ export function Cabecalho() {
             style={{ transitionDelay: "200ms" }}
           >
             <Link
-              to="/cadastro"
+              to="/autenticacao"
               onClick={() => definirMenuMobileAberto(false)}
               className="w-full text-center px-8 py-4 bg-sky-500 text-white font-black rounded-lg text-xs uppercase tracking-widest shadow-lg shadow-sky-500/20"
             >
               Criar Conta
             </Link>
             <Link
-              to="/login"
+              to="/autenticacao"
               onClick={() => definirMenuMobileAberto(false)}
               className="w-full text-center px-8 py-4 border border-white/10 text-white font-black rounded-lg text-xs uppercase tracking-widest"
             >

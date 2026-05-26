@@ -24,16 +24,6 @@ const PaginaAcesso = lazy(() =>
     default: m.PaginaAcesso,
   })),
 );
-const PaginaCadastro = lazy(() =>
-  import("@/funcionalidades/autenticacao/PaginaCadastro").then((m) => ({
-    default: m.PaginaCadastro,
-  })),
-);
-const PaginaRecuperacaoSenha = lazy(() =>
-  import("@/funcionalidades/autenticacao/PaginaRecuperacaoSenha").then((m) => ({
-    default: m.PaginaRecuperacaoSenha,
-  })),
-);
 
 // 1. Geral
 const PaginaInicial = lazy(() =>
@@ -151,9 +141,10 @@ export function RoteadorPrincipal() {
                 <Route path="/orcamento" element={<PaginaOrcamentoPublico />} />
 
                 {/* Autenticação */}
-                <Route path="/login" element={<PaginaAcesso />} />
-                <Route path="/cadastro" element={<PaginaCadastro />} />
-                <Route path="/recuperar-senha" element={<PaginaRecuperacaoSenha />} />
+                <Route path="/autenticacao" element={<PaginaAcesso />} />
+                <Route path="/login" element={<Navigate to="/autenticacao" replace />} />
+                <Route path="/cadastro" element={<Navigate to="/autenticacao" replace />} />
+                <Route path="/recuperar-senha" element={<Navigate to="/autenticacao" replace />} />
 
                 {/* Aplicação Interna Protegida */}
                 {/* 1. GERAL */}
