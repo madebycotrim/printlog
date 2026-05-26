@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, Download, ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, UserX, Database, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -12,6 +12,17 @@ export default function PaginaGestaoDados() {
   const { exportarDadosPessoais, excluirConta, usuario } = useAutenticacao();
   const [etapa, setEtapa] = useState<"escolha" | "confirmacao_exclusao" | "processando" | "sucesso">("escolha");
   const [carregando, setCarregando] = useState(false);
+
+  // Injeção de metatag robots: noindex para evitar punição de conteúdo duplicado no Google
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex";
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
 
   const lidarComExportacao = async () => {
     setCarregando(true);
@@ -63,7 +74,7 @@ export default function PaginaGestaoDados() {
             Privacidade do Titular
           </div>
           <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Gestão de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">Dados</span></h1>
-          <p className="text-zinc-500 leading-relaxed">
+          <p className="text-zinc-400 leading-relaxed">
             Exerça seus direitos garantidos pela LGPD. Você tem total controle sobre suas informações no PrintLog.
           </p>
         </header>
@@ -82,7 +93,7 @@ export default function PaginaGestaoDados() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold mb-1">Direito à Portabilidade</h3>
-                    <p className="text-xs text-zinc-500">Baixe um arquivo JSON com seus metadados de cadastro (Art. 18, V).</p>
+                    <p className="text-xs text-zinc-400">Baixe um arquivo JSON com seus metadados de cadastro (Art. 18, V).</p>
                   </div>
                   <ArrowRight size={20} className="ml-auto text-zinc-700 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
                 </div>
@@ -98,7 +109,7 @@ export default function PaginaGestaoDados() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold mb-1">Direito ao Esquecimento</h3>
-                    <p className="text-xs text-zinc-500">Exclua sua conta e todos os seus dados permanentemente (Art. 18, VI).</p>
+                    <p className="text-xs text-zinc-400">Exclua sua conta e todos os seus dados permanentemente (Art. 18, VI).</p>
                   </div>
                   <ArrowRight size={20} className="ml-auto text-zinc-700 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
                 </div>
@@ -116,8 +127,11 @@ export default function PaginaGestaoDados() {
                 <AlertTriangle size={32} />
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Tem certeza absoluta?</h2>
-              <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
-                Esta ação é irreversível. Todas as suas impressoras, materiais e projetos serão destruídos imediatamente conforme manda a LGPD.
+              <p className="text-zinc-400 text-sm mb-4 leading-relaxed">
+                Esta ação é irreversível. Todas as suas impressoras, materiais, custos e projetos cadastrados serão excluídos permanentemente de nossos servidores ativos e backups em conformidade com a LGPD (Art. 18, VI).
+              </p>
+              <p className="text-amber-500 text-xs font-semibold mb-8 border border-amber-500/30 rounded-xl p-4 bg-amber-500/5 leading-relaxed text-left">
+                ⚠️ ATENÇÃO: O PrintLog fornece a plataforma no estado em que se encontra ("as is") e não mantém backups residuais após a exclusão. A exportação e cópia de segurança de qualquer dado de negócio relevante é de sua inteira responsabilidade e deve ser efetuada ANTES desta exclusão definitiva.
               </p>
               <div className="flex flex-col gap-3">
                 <button
@@ -139,7 +153,7 @@ export default function PaginaGestaoDados() {
           {etapa === "processando" && (
             <div className="py-20 text-center">
               <Loader2 size={48} className="mx-auto text-emerald-500 animate-spin mb-4" />
-              <p className="text-zinc-500">Processando solicitação de exclusão...</p>
+              <p className="text-zinc-400">Processando solicitação de exclusão...</p>
             </div>
           )}
 
@@ -168,7 +182,7 @@ export default function PaginaGestaoDados() {
         </div>
 
         <footer className="mt-16 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
-          <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+          <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
             <div className="flex items-center gap-2">
               <Database size={12} className="text-emerald-500/50" />
               Base Legal: Art. 18 LGPD
@@ -178,6 +192,9 @@ export default function PaginaGestaoDados() {
               Eliminação de Dados Pessoais
             </div>
           </div>
+          <p className="text-[10px] text-zinc-500 font-mono mt-2">
+            Dúvidas ou suporte de compliance: suporte@printlog.com.br · PrintLog © {new Date().getFullYear()}
+          </p>
         </footer>
       </div>
     </div>

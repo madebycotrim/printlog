@@ -444,6 +444,9 @@ export function PaginaOrcamentoPublico() {
           )}
         </AnimatePresence>
 
+        <div className="text-center text-[9px] font-medium text-slate-400/80 max-w-md mx-auto mb-2 leading-relaxed select-none">
+          Estimativa baseada em parâmetros manuais. O PrintLog não se responsabiliza por prejuízos ou variações de mercado.
+        </div>
         <div className="text-center text-[10px] font-medium text-slate-400 mt-8 mb-4">
           ♻️ Pense antes de imprimir. Documento digital disponível em printlog.com.br.
         </div>

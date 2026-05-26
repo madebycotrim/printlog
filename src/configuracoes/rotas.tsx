@@ -9,7 +9,6 @@ import { ProvedorEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/
 import { ProvedorBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { ToasterPremium } from "@/compartilhado/componentes";
 import { WidgetFeedbackBeta } from "@/funcionalidades/beta/componentes/WidgetFeedbackBeta";
-import { AvisoCookies } from "@/funcionalidades/lgpd/componentes/AvisoCookies";
 
 // Landing Page Publica
 const PaginaLanding = lazy(() => import("@/funcionalidades/landing_page/PaginaLanding"));
@@ -141,7 +140,6 @@ export function RoteadorPrincipal() {
             <ToasterPremium />
             <WidgetFeedbackBeta />
             <ScrollParaTopo />
-            {/* <AvisoCookies /> - Desativado em favor da integração com AdOpt */}
             <Suspense fallback={<Carregamento />}>
               <Routes>
                 <Route path="/" element={<PaginaLanding />} />

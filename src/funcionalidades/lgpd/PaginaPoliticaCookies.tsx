@@ -1,22 +1,53 @@
+import { useEffect } from "react";
 import { ArrowLeft, Cookie } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "@/compartilhado/estilos/documentos-abnt.css";
 
 /**
- * Política de Cookies - Versão 2.0 (Conformidade Integral LGPD)
- * Estrutura baseada nas diretrizes da ANPD e normas ABNT de documentação.
+ * Política de Cookies - SaaS PrintLog
+ * Versão Solo Founder: Focada exclusivamente em transparência de cookies funcionais e de infraestrutura.
+ * Sem dependências de links externos e sem necessidade de banners intrusivos.
  */
 export default function PaginaPoliticaCookies() {
   const navegar = useNavigate();
-  const dataAtualizacao = "14 de maio de 2026";
+
+  // Injeção de metatag robots: noindex para evitar punição de conteúdo duplicado no Google
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex";
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+
+  // Automatiza a formatação da data para o padrão local (ex: "25 de maio de 2026")
+  const dataAtualizacao = new Intl.DateTimeFormat('pt-BR', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  }).format(new Date('2026-05-25'));
 
   return (
-    <div className="bg-[#f8f9fa] min-h-screen py-12 px-4 font-serif selection:bg-sky-500/30">
-      {/* Botão de Retorno */}
+    <div className="bg-[#f8f9fa] min-h-screen py-12 px-4 font-serif selection:bg-sky-500/30 relative overflow-x-hidden">
+      
+      {/* Premium Grid Background */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none" 
+        style={{
+          backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 75%)'
+        }}
+      />
+
+      <div className="relative z-10">
+        {/* Botão de Retorno */}
       <div className="max-w-[210mm] mx-auto mb-8 no-print">
         <button
           onClick={() => navegar(-1)}
-          className="flex items-center gap-2 text-zinc-500 hover:text-sky-600 transition-all font-sans text-xs font-black uppercase tracking-widest"
+          className="flex items-center gap-2 text-zinc-600 hover:text-sky-600 transition-all font-sans text-xs font-black uppercase tracking-widest"
         >
           <ArrowLeft size={14} /> Voltar ao Sistema
         </button>
@@ -26,87 +57,121 @@ export default function PaginaPoliticaCookies() {
       <article className="max-w-[210mm] mx-auto bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] p-[20mm] md:p-[30mm] text-zinc-800 leading-relaxed text-justify relative overflow-hidden">
         
         {/* Selo de Autenticidade (Marca d'água discreta) */}
-        <div className="absolute top-10 right-10 opacity-[0.03] pointer-events-none">
+        <div className="absolute top-10 right-10 opacity-[0.03] pointer-events-none text-zinc-900">
           <Cookie size={200} />
         </div>
 
         <header className="mb-12 border-b-2 border-zinc-100 pb-8">
           <h1 className="text-2xl font-black text-zinc-900 mb-2 uppercase tracking-tight">
-            Política de Cookies
+            Declaração de Cookies Essenciais
           </h1>
-          <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
-            Documento Interno: PL-COOK-2026-V2 · Atualizado em: {dataAtualizacao}
+          <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
+            Documento Ref: PL-COOK-2026-V3 · Vigência: {dataAtualizacao}
           </p>
         </header>
 
         <section className="space-y-8 text-sm">
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. O QUE SÃO COOKIES?</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. O que são Cookies?</h2>
             <p className="mb-4">
-              Esta Política de Cookies explica o que são cookies e como os usamos, os tipos de cookies que usamos, ou seja, as informações que coletamos usando cookies e como essas informações são usadas, e como gerenciar as configurações de cookies.
+              Cookies são pequenos arquivos de texto ou fragmentos de dados armazenados localmente no seu navegador ou dispositivo quando você acessa uma plataforma digital. Eles auxiliam na segurança, na autenticação de identidade e na manutenção de suas preferências de interface ativas.
             </p>
-            <p className="mb-4">
-              Os cookies são pequenos arquivos de texto usados para armazenar pequenas informações. Eles são armazenados no seu dispositivo quando o site é carregado no seu navegador. Estes cookies ajudam-nos a fazer com que o site funcione corretamente, torná-lo mais seguro, proporcionar uma melhor experiência ao usuário e compreender o desempenho do site e analisar o que funciona e onde precisa de ser melhorado.
-            </p>
-            <div className="p-4 bg-sky-50 rounded-lg border-l-4 border-sky-500 font-sans italic text-zinc-600">
-              <strong>Em resumo:</strong> Usamos pequenos arquivos de texto para fazer o sistema funcionar corretamente e lembrar de você na próxima vez.
+            <div className="p-4 bg-sky-50 rounded-lg border-l-4 border-sky-500 font-sans italic text-zinc-700">
+              <strong>Em resumo:</strong> O PrintLog utiliza cookies exclusivamente para que o sistema funcione com segurança, rapidez e para lembrar se você já realizou o login.
             </div>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. COMO USAMOS COOKIES?</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. Filosofia de Uso no PrintLog</h2>
             <p className="mb-4">
-              Como a maioria dos serviços on-line, nosso site usa cookies próprios e de terceiros para diversas finalidades. Os cookies primários são principalmente necessários para que o site funcione corretamente e não coletam nenhum dos seus dados de identificação pessoal.
+              Visando o respeito integral à sua privacidade e uma experiência limpa de navegação (UX), o PrintLog adota uma política restritiva: **não utilizamos cookies de rastreamento comportamental de terceiros para fins publicitários** (como redes de anúncios ou pixels de remarketing).
             </p>
             <p className="mb-4">
-              Os cookies de terceiros usados em nosso site são principalmente para entender o desempenho do site e como você interage com ele, mantendo nossos serviços seguros, fornecendo anúncios que sejam relevantes para você e, em suma, proporcionando-lhe uma experiência de usuário cada vez melhor e ajudando a acelerar suas futuras interações com nossa plataforma.
+              Por operarmos unicamente com cookies técnicos, funcionais e de segurança, a plataforma está legalmente dispensada da necessidade de exibição de banners intrusivos de consentimento, mantendo sua tela livre de interrupções.
             </p>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. TABELA DE COOKIES E AUDITORIA</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. Inventário de Cookies Utilizados</h2>
             <p className="mb-4">
-              Abaixo encontra-se a relação detalhada de todos os cookies utilizados, sua finalidade, categoria e duração.
+              Abaixo encontra-se a relação transparente e auditada de todos os registros mantidos no seu dispositivo para viabilizar a operação técnica do SaaS:
             </p>
             <div className="overflow-x-auto mb-4 border border-zinc-200 rounded-lg">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full text-left border-collapse text-xs font-sans">
                 <thead>
                   <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-700">
-                    <th className="p-3 font-bold uppercase">Nome</th>
-                    <th className="p-3 font-bold uppercase">Fornecedor</th>
-                    <th className="p-3 font-bold uppercase">Duração</th>
-                    <th className="p-3 font-bold uppercase">Categoria</th>
-                    <th className="p-3 font-bold uppercase">Descrição</th>
+                    <th className="p-3 font-bold uppercase">Chave / Nome</th>
+                    <th className="p-3 font-bold uppercase">Provedor</th>
+                    <th className="p-3 font-bold uppercase">Tipo / Duração</th>
+                    <th className="p-3 font-bold uppercase">Finalidade Técnica</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 text-zinc-600">
                   <tr>
-                    <td className="p-3 font-mono text-xs">cf_clearance</td>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">cf_clearance</td>
                     <td className="p-3">Cloudflare</td>
-                    <td className="p-3">365 dias</td>
-                    <td className="p-3">Funcionais</td>
-                    <td className="p-3">Cookie para a Platform Challenge da Cloudflare. Armazena a prova de que passou pelo desafio com sucesso.</td>
+                    <td className="p-3">Cookie (365 dias)</td>
+                    <td className="p-3">Segurança. Validação antibot na camada de firewall e rede.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono text-xs">cf.turnstile.u</td>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">cf.turnstile.u</td>
                     <td className="p-3">Cloudflare</td>
                     <td className="p-3">Local Storage</td>
-                    <td className="p-3">Funcionais</td>
-                    <td className="p-3">Gerado pelo Cloudflare Turnstile. Finalidade de verificar se o usuário é humano e não um robô.</td>
+                    <td className="p-3">Segurança. Turnstile antibot para proteção contra acessos automatizados.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono text-xs">printlog:estudios</td>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">firebase:authUser:...</td>
+                    <td className="p-3">Google Firebase</td>
+                    <td className="p-3">IndexedDB / Storage</td>
+                    <td className="p-3">Autenticação. Mantém a sessão do usuário ativa e conectada de forma segura.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog:tema</td>
                     <td className="p-3">printlog.com.br</td>
                     <td className="p-3">Local Storage</td>
-                    <td className="p-3">Necessários</td>
-                    <td className="p-3">Armazena dados essenciais do estúdio para funcionamento offline e cache rápido.</td>
+                    <td className="p-3">Preferência. Armazena o modo visual (tema, cores e fontes) escolhido pelo usuário.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono text-xs">printlog:tema</td>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog:estudios</td>
                     <td className="p-3">printlog.com.br</td>
                     <td className="p-3">Local Storage</td>
-                    <td className="p-3">Necessários</td>
-                    <td className="p-3">Salva a preferência de tema visual escolhida pelo usuário no dispositivo.</td>
+                    <td className="p-3">Funcional. Mantém a lista de estúdios locais criados pelo usuário.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog:id_estudio_ativo</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Funcional. Registra qual estúdio/ambiente de gerenciamento está ativo.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog_anos_vida_util</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Preferência. Armazena as configurações de vida útil dos equipamentos.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog_ultima_impressora</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Preferência. Lembra o ID do último equipamento selecionado no simulador.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog_sidebar_colapsada</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Layout. Salva o estado de abertura/colapso da barra lateral do menu.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog:beta_preferencias</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Funcional. Lembra as preferências e flags de participação em recursos beta do sistema.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog_consentimento_cookies</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Preferência. Armazena as escolhas e aceites do usuário referentes a cookies.</td>
                   </tr>
                 </tbody>
               </table>
@@ -114,25 +179,26 @@ export default function PaginaPoliticaCookies() {
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. COMO REMOVER OS COOKIES</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. Gerenciamento e Revogação</h2>
             <p className="mb-4">
-              O Titular dos dados pode alterar as configurações do seu navegador para recusar cookies a qualquer momento. Para instruções detalhadas sobre como remover cookies do seu navegador, por favor, <a href="https://goadopt.io/blog/como-limpar-os-cookies-do-navegador/" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:text-sky-800 underline underline-offset-4 font-bold">acesse este tutorial detalhado fornecido pela AdOpt</a>.
+              Qualquer usuário possui autonomia para limpar, bloquear ou remover esses registros diretamente nas configurações nativas do seu próprio navegador de internet (geralmente localizadas nos menus de "Privacidade e Segurança").
             </p>
-            <div className="mt-4 p-4 bg-zinc-50 rounded-lg font-sans text-xs text-zinc-500">
-              <strong>Nota Técnica:</strong> Observe que ao bloquear os Cookies Essenciais, partes importantes do sistema PrintLog não funcionarão corretamente (ex: salvar tema ou manter o login ativo).
+            <div className="mt-4 p-4 bg-amber-50 rounded-lg border-l-4 border-amber-500 font-sans text-xs text-zinc-700">
+              <strong>⚠️ Alerta Técnico de Operação:</strong> A desativação ou bloqueio dos registros listados na Seção 3 impedirá o funcionamento correto do ecossistema do PrintLog, quebrando funções de persistência de login e segurança de autenticação.
             </div>
           </div>
         </section>
 
-        <footer className="mt-20 pt-12 border-t border-zinc-100 text-[10px] text-zinc-400 font-mono text-center">
-          <p>ESTE DOCUMENTO POSSUI VALIDADE JURÍDICA E TÉCNICA · PRINTLOG © 2026</p>
-          <p className="mt-1">REPRODUÇÃO PROIBIDA · EM CONFORMIDADE COM A LEI 13.709/2018</p>
+        <footer className="mt-20 pt-12 border-t border-zinc-100 text-[10px] text-zinc-600 font-mono text-center space-y-1">
+          <p>DECLARAÇÃO TÉCNICA REVISADA · PRINTLOG © {new Date().getFullYear()}</p>
+          <p>EM TOTAL CONFORMIDADE COM AS DIRETRIZES DE COOKIES DA LGPD (LEI Nº 13.709/2018)</p>
+          <p className="text-[9px] text-zinc-600 mt-2">Última atualização: {dataAtualizacao}</p>
         </footer>
       </article>
 
-      {/* Rodapé Adicional */}
-      <div className="max-w-[210mm] mx-auto mt-8 text-center text-[10px] text-zinc-400 font-sans uppercase tracking-[0.2em] no-print">
-        Fim do Documento · Página 1 de 1
+      <div className="max-w-[210mm] mx-auto mt-8 text-center text-[10px] text-zinc-600 font-sans uppercase tracking-[0.2em] no-print">
+        Fim do Documento
+      </div>
       </div>
     </div>
   );

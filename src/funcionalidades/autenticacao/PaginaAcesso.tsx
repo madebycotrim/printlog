@@ -1,25 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Mail, Lock, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { LayoutAutenticacao } from "./componentes/LayoutAutenticacao";
 import { PainelBranding } from "./componentes/PainelBranding";
-import { InputAuth } from "./componentes/InputAuth";
 import { useAutenticacao } from "./contextos/ContextoAutenticacao";
-import { ComponenteTurnstile } from "./componentes/ComponenteTurnstile";
 import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaAcesso() {
   const navegar = useNavigate();
   const localizacao = useLocation();
-  const { login, loginGoogle, usuario, carregando } = useAutenticacao();
-  const [email, definirEmail] = useState("");
-  const [senha, definirSenha] = useState("");
+  const { loginGoogle, usuario, carregando } = useAutenticacao();
   const [erro, definirErro] = useState("");
-  const [carregandoLogin, definirCarregandoLogin] = useState(false);
-  const [tokenCaptcha, definirTokenCaptcha] = useState<string | null>(null);
 
-  // Se viermos da Home ("/") ou não houver estado, o padrão é sempre o Dashboard.
-  // Isso evita que o login redirecione para a Landing Page indesejadamente.
   const deOndeVimOriginal = (localizacao.state as any)?.from || "/dashboard";
   const deOndeVim = deOndeVimOriginal === "/" ? "/dashboard" : deOndeVimOriginal;
 
@@ -29,41 +21,13 @@ export function PaginaAcesso() {
     }
   }, [usuario, carregando, navegar, deOndeVim]);
 
-  const realizarAcesso = async (e: React.FormEvent) => {
-    e.preventDefault();
-    definirErro("");
-
-    if (!email || !senha) {
-      definirErro("Por favor, preencha todos os campos.");
-      return;
-    }
-
-    if (!tokenCaptcha) {
-      definirErro("Por favor, resolva o desafio de segurança.");
-      return;
-    }
-
-    try {
-      definirCarregandoLogin(true);
-      await login(email, senha);
-      // O useEffect acima cuidará do redirecionamento assim que o usuário for detectado
-    } catch (err: any) {
-      definirErro(err.message);
-    } finally {
-      definirCarregandoLogin(false);
-    }
-  };
-
   const entrarComGoogle = async () => {
     try {
       await loginGoogle();
-      // O useEffect acima cuidará do redirecionamento
     } catch (err: any) {
       definirErro(err.message);
     }
   };
-
-
 
   if (carregando || usuario) {
     return (
@@ -77,7 +41,6 @@ export function PaginaAcesso() {
 
   return (
     <LayoutAutenticacao variante="sky">
-      {/* ESQUERDA - BRANDING (Componente Padronizado) */}
       <PainelBranding
         titulo={
           <>
@@ -119,9 +82,7 @@ export function PaginaAcesso() {
         }
       />
 
-      {/* DIREITA - LOGIN FORM (DARK) */}
       <div className="w-full lg:w-1/2 p-8 lg:p-14 flex flex-col justify-center relative bg-black/20">
-        {/* Mobile Logo */}
         <div className="lg:hidden flex items-center gap-2 mb-8">
           <img src="/logo-azul.png" alt="Logo" className="w-10 h-10 object-contain" />
           <span className="text-white font-black tracking-tighter text-xl">PRINTLOG</span>
@@ -129,7 +90,7 @@ export function PaginaAcesso() {
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white mb-2">Acesse sua conta</h2>
-          <p className="text-zinc-500 text-sm">Bem-vindo de volta! Insira seus dados para continuar.</p>
+          <p className="text-zinc-400 text-sm">O PrintLog utiliza a autenticação segura do Google OAuth para o controle e a proteção total de sua identidade e dados.</p>
         </div>
 
         {erro && (
@@ -139,67 +100,10 @@ export function PaginaAcesso() {
           </div>
         )}
 
-        <form onSubmit={realizarAcesso} className="space-y-5">
-          <InputAuth
-            label="E-mail"
-            type="email"
-            value={email}
-            onChange={(e) => definirEmail(e.target.value)}
-            placeholder="seu@email.com"
-            icone={Mail}
-          />
-
-          <InputAuth
-            label="Senha"
-            type="password"
-            value={senha}
-            onChange={(e) => definirSenha(e.target.value)}
-            placeholder="••••••••"
-            icone={Lock}
-            labelDireita={
-              <a
-                href="/recuperar-senha"
-                className="text-xs font-medium text-[#0ea5e9] hover:text-[#0284c7] hover:underline transition-colors"
-              >
-                Esqueceu a senha?
-              </a>
-            }
-          />
-
-          <ComponenteTurnstile aoValidar={definirTokenCaptcha} aoExpirar={() => definirTokenCaptcha(null)} />
-
-          <button
-            type="submit"
-            disabled={carregandoLogin || !tokenCaptcha}
-            className="w-full bg-gradient-to-r from-[#0ea5e9] to-blue-600 hover:to-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_20px_-5px_rgba(14,165,233,0.4)] hover:shadow-[0_6px_25px_-5px_rgba(14,165,233,0.6)] active:transform active:scale-[0.98] flex items-center justify-center gap-2 mt-2 border border-blue-400/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {carregandoLogin ? (
-              <span className="animate-pulse">Entrando...</span>
-            ) : (
-              <>
-                <span>Acessar Minha Conta</span>
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Divider & Social */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/5"></div>
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="px-2 bg-transparent text-zinc-600 font-medium uppercase tracking-wider backdrop-blur-xl">
-              ou
-            </span>
-          </div>
-        </div>
-
         <button
           type="button"
           onClick={entrarComGoogle}
-          className="w-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-zinc-300 font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-3 text-sm backdrop-blur-sm"
+          className="w-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-zinc-300 font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-sm backdrop-blur-sm shadow-[0_4px_20px_-5px_rgba(255,255,255,0.05)]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -222,11 +126,10 @@ export function PaginaAcesso() {
           Entrar com Google
         </button>
 
-
         <p className="mt-8 text-center text-sm text-zinc-500">
           Não tem uma conta?{" "}
           <a href="/cadastro" className="font-bold text-[#0ea5e9] hover:underline hover:text-[#0284c7]">
-            Cadastre-se grátis
+            Cadastre-se grátis com o Google
           </a>
         </p>
       </div>
