@@ -141,7 +141,7 @@ export function RoteadorPrincipal() {
             <ToasterPremium />
             <WidgetFeedbackBeta />
             <ScrollParaTopo />
-            <AvisoCookies />
+            {/* <AvisoCookies /> - Desativado em favor da integração com AdOpt */}
             <Suspense fallback={<Carregamento />}>
               <Routes>
                 <Route path="/" element={<PaginaLanding />} />
