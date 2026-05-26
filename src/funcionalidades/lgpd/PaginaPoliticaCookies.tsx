@@ -41,9 +41,12 @@ export default function PaginaPoliticaCookies() {
 
         <section className="space-y-8 text-sm">
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. DISPOSIÇÕES GERAIS</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. O QUE SÃO COOKIES?</h2>
             <p className="mb-4">
-              Esta Política de Cookies explica como o <strong>PrintLog</strong> utiliza cookies e tecnologias semelhantes para reconhecê-lo quando você visita nosso sistema. Ela explica o que são essas tecnologias e por que as usamos, bem como seus direitos de controlar o uso que fazemos delas, em conformidade com a Lei Geral de Proteção de Dados (LGPD).
+              Esta Política de Cookies explica o que são cookies e como os usamos, os tipos de cookies que usamos, ou seja, as informações que coletamos usando cookies e como essas informações são usadas, e como gerenciar as configurações de cookies.
+            </p>
+            <p className="mb-4">
+              Os cookies são pequenos arquivos de texto usados para armazenar pequenas informações. Eles são armazenados no seu dispositivo quando o site é carregado no seu navegador. Estes cookies ajudam-nos a fazer com que o site funcione corretamente, torná-lo mais seguro, proporcionar uma melhor experiência ao usuário e compreender o desempenho do site e analisar o que funciona e onde precisa de ser melhorado.
             </p>
             <div className="p-4 bg-sky-50 rounded-lg border-l-4 border-sky-500 font-sans italic text-zinc-600">
               <strong>Em resumo:</strong> Usamos pequenos arquivos de texto para fazer o sistema funcionar corretamente e lembrar de você na próxima vez.
@@ -51,39 +54,73 @@ export default function PaginaPoliticaCookies() {
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. O QUE SÃO COOKIES?</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. COMO USAMOS COOKIES?</h2>
             <p className="mb-4">
-              Cookies são pequenos arquivos de dados colocados em seu computador ou dispositivo móvel quando você visita um site. Eles são amplamente utilizados para fazer os sites funcionarem, ou funcionarem de forma mais eficiente, bem como para fornecer informações de relatórios.
+              Como a maioria dos serviços on-line, nosso site usa cookies próprios e de terceiros para diversas finalidades. Os cookies primários são principalmente necessários para que o site funcione corretamente e não coletam nenhum dos seus dados de identificação pessoal.
+            </p>
+            <p className="mb-4">
+              Os cookies de terceiros usados em nosso site são principalmente para entender o desempenho do site e como você interage com ele, mantendo nossos serviços seguros, fornecendo anúncios que sejam relevantes para você e, em suma, proporcionando-lhe uma experiência de usuário cada vez melhor e ajudando a acelerar suas futuras interações com nossa plataforma.
             </p>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. COMO UTILIZAMOS OS COOKIES</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. TABELA DE COOKIES E AUDITORIA</h2>
             <p className="mb-4">
-              O PrintLog utiliza cookies estritamente necessários para garantir a operação e a segurança da plataforma.
+              Abaixo encontra-se a relação detalhada de todos os cookies utilizados, sua finalidade, categoria e duração.
             </p>
-            <ul className="list-disc pl-6 space-y-2 mb-4">
-              <li><strong>Cookies Essenciais:</strong> Necessários para que o sistema funcione, incluindo manter o estado da sua sessão e autenticação de segurança.</li>
-              <li><strong>Cookies de Preferência:</strong> Armazenam informações sobre o comportamento ou aparência do sistema, como suas preferências de idioma ou tema visual.</li>
-              <li><strong>Cookies Analíticos:</strong> Utilizamos para entender como a plataforma é utilizada de forma agregada, sem identificar pessoalmente o usuário.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. CONTROLE DOS COOKIES</h2>
-            <p className="mb-4">
-              O Titular dos dados pode alterar as configurações do seu navegador para recusar cookies. Contudo, observe que ao bloquear os <strong>Cookies Essenciais</strong>, partes essenciais do sistema PrintLog não funcionarão corretamente, especialmente os mecanismos de autenticação (login).
-            </p>
-            <div className="mt-4 p-4 bg-zinc-50 rounded-lg font-sans text-xs text-zinc-500">
-              <strong>Nota Técnica:</strong> Nós fornecemos um painel de gerenciamento de consentimento na sua primeira visita para que você controle as preferências de rastreamento.
+            <div className="overflow-x-auto mb-4 border border-zinc-200 rounded-lg">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-700">
+                    <th className="p-3 font-bold uppercase">Nome</th>
+                    <th className="p-3 font-bold uppercase">Fornecedor</th>
+                    <th className="p-3 font-bold uppercase">Duração</th>
+                    <th className="p-3 font-bold uppercase">Categoria</th>
+                    <th className="p-3 font-bold uppercase">Descrição</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 text-zinc-600">
+                  <tr>
+                    <td className="p-3 font-mono text-xs">cf_clearance</td>
+                    <td className="p-3">Cloudflare</td>
+                    <td className="p-3">365 dias</td>
+                    <td className="p-3">Funcionais</td>
+                    <td className="p-3">Cookie para a Platform Challenge da Cloudflare. Armazena a prova de que passou pelo desafio com sucesso.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs">cf.turnstile.u</td>
+                    <td className="p-3">Cloudflare</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Funcionais</td>
+                    <td className="p-3">Gerado pelo Cloudflare Turnstile. Finalidade de verificar se o usuário é humano e não um robô.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs">printlog:estudios</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Necessários</td>
+                    <td className="p-3">Armazena dados essenciais do estúdio para funcionamento offline e cache rápido.</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono text-xs">printlog:tema</td>
+                    <td className="p-3">printlog.com.br</td>
+                    <td className="p-3">Local Storage</td>
+                    <td className="p-3">Necessários</td>
+                    <td className="p-3">Salva a preferência de tema visual escolhida pelo usuário no dispositivo.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">5. DISPOSIÇÕES FINAIS</h2>
-            <p>
-              Podemos atualizar esta Política de Cookies periodicamente para refletir mudanças operacionais ou legais. Recomendamos revisitar esta página para as informações mais recentes.
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. COMO REMOVER OS COOKIES</h2>
+            <p className="mb-4">
+              O Titular dos dados pode alterar as configurações do seu navegador para recusar cookies a qualquer momento. Para instruções detalhadas sobre como remover cookies do seu navegador, por favor, <a href="https://goadopt.io/blog/como-limpar-os-cookies-do-navegador/" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:text-sky-800 underline underline-offset-4 font-bold">acesse este tutorial detalhado fornecido pela AdOpt</a>.
             </p>
+            <div className="mt-4 p-4 bg-zinc-50 rounded-lg font-sans text-xs text-zinc-500">
+              <strong>Nota Técnica:</strong> Observe que ao bloquear os Cookies Essenciais, partes importantes do sistema PrintLog não funcionarão corretamente (ex: salvar tema ou manter o login ativo).
+            </div>
           </div>
         </section>
 

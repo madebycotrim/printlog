@@ -51,9 +51,10 @@ export default function PaginaPoliticaPrivacidade() {
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. AGENTES DE TRATAMENTO</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. AGENTES DE TRATAMENTO E CONTATO</h2>
             <p className="mb-2 text-left">
               <strong>Controlador:</strong> PrintLog (Desenvolvedor Solo).<br />
+              <strong>Endereço:</strong> SGAS 915 Sul, Distrito Federal 70.390-150, Brasil.<br />
               <strong>Encarregado (DPO):</strong> Responsável pela Privacidade PrintLog (privacidade@printlog.com.br).<br />
               <strong>Operadores:</strong> Cloudflare, Inc. (Infraestrutura) e Google LLC (Autenticação).
             </p>
@@ -72,7 +73,22 @@ export default function PaginaPoliticaPrivacidade() {
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. DIREITOS DO TITULAR (ART. 18 LGPD)</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. COMPARTILHAMENTO DE INFORMAÇÕES</h2>
+            <p className="mb-4">
+              Não transferiremos suas informações pessoais para terceiros sem o seu consentimento explícito, exceto em circunstâncias estritamente limitadas e legais:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 mb-4">
+              <li>Para cumprir a lei aplicável, regulamentação, ordem judicial ou outro processo legal;</li>
+              <li>Para fazer cumprir nossos acordos, incluindo esta Política de Privacidade;</li>
+              <li>Se o PrintLog for fundido ou adquirido por outra empresa, suas informações serão transferidas para o novo proprietário de forma segura.</li>
+            </ul>
+            <p className="mb-4">
+              Exigimos que terceiros (nossos Operadores) utilizem as informações pessoais apenas para o propósito para o qual foram transferidas e não as mantenham por mais tempo do que é necessário para cumprir o referido propósito.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">6. DIREITOS DO TITULAR (ART. 18 LGPD)</h2>
             <p className="mb-4">
               O Titular dos dados possui o direito de solicitar a qualquer momento:
             </p>
@@ -84,28 +100,34 @@ export default function PaginaPoliticaPrivacidade() {
               <li>Eliminação definitiva dos dados (Direito ao Esquecimento).</li>
             </ol>
             <div className="mt-4 p-4 bg-zinc-50 rounded-lg font-sans text-xs text-zinc-500">
-              <strong>Nota Técnica:</strong> As solicitações podem ser feitas diretamente pelo painel de configurações ou via e-mail para o DPO.
+              <strong>Nota Técnica:</strong> Para exercer esses direitos ou optar por não receber comunicações, escreva diretamente para privacidade@printlog.com.br.
             </div>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">5. SEGURANÇA E ARMAZENAMENTO</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. SEGURANÇA E ARMAZENAMENTO</h2>
             <p className="mb-4">
-              O Controlador adota medidas técnicas de segurança, incluindo criptografia <strong>AES-256</strong> (em repouso) e <strong>TLS 1.3</strong> (em trânsito). Os dados residem em servidores da Cloudflare e Google, localizados nos Estados Unidos e Europa, garantindo proteção física de alto nível.
+              O Controlador adota medidas técnicas de segurança, incluindo criptografia <strong>AES-256</strong> (em repouso) e <strong>TLS 1.3</strong> (em trânsito). No entanto, dados os riscos inerentes à internet, não podemos garantir segurança absoluta contra violações altamente sofisticadas.
             </p>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">6. RETENÇÃO E EXCLUSÃO</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">8. RETENÇÃO E EXCLUSÃO</h2>
             <p className="mb-4">
-              Dados pessoais e de negócio são retidos enquanto a conta do Titular permanecer ativa. Após a solicitação de exclusão, ocorre a <strong>purga definitiva</strong> de todos os dados de negócio. Registros de acesso (IP) são mantidos por 180 dias para cumprimento de obrigação legal.
+              Dados pessoais e de negócio são retidos enquanto a conta do Titular permanecer ativa. Manteremos suas informações pessoais conosco por <strong>90 dias a 2 anos</strong> após a conta do usuário permanecer inativa, a fim de realizar limpeza de dados obsoletos.
+            </p>
+            <p className="mb-4">
+              Após a solicitação de exclusão, ocorre a <strong>purga definitiva</strong> de todos os dados. Registros de acesso (IP) são mantidos por no mínimo 180 dias para cumprimento de obrigação legal. Informações anonimizadas que não identificam o usuário poderão ser armazenadas indefinidamente.
             </p>
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. DISPOSIÇÕES FINAIS</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">9. DISPOSIÇÕES FINAIS E COOKIES</h2>
+            <p className="mb-4">
+              Para saber mais sobre como utilizamos tecnologias de rastreamento, consulte nossa <a href="/politica-de-cookies" className="text-sky-600 hover:underline">Política de Cookies</a>.
+            </p>
             <p>
-              Esta política pode ser atualizada periodicamente. Alterações significativas serão notificadas por e-mail ou via sistema. Para qualquer controvérsia, elege-se o foro da comarca de domicílio do Controlador.
+              Esta política pode ser atualizada periodicamente sem aviso prévio, passando a vigorar 30 dias após sua publicação. Recomendamos revisar esta página regularmente. Para qualquer controvérsia, elege-se o foro da comarca de domicílio do Controlador.
             </p>
           </div>
         </section>

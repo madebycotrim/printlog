@@ -41,9 +41,12 @@ export default function PaginaTermosUso() {
 
         <section className="space-y-8 text-sm">
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. OBJETO DO CONTRATO</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. OBJETO DO CONTRATO E CONTATOS</h2>
             <p className="mb-4">
               O presente instrumento regula a licença de uso, não exclusiva e intransferível, da plataforma <strong>PrintLog</strong>, uma ferramenta SaaS (Software as a Service) voltada à gestão técnica e precificação para estúdios de manufatura aditiva (Impressão 3D).
+            </p>
+            <p className="mb-4">
+              Para suporte ou questões legais, você pode nos contatar pelo telefone (61) 99255-1904 ou pelo e-mail privacidade@printlog.com.br.
             </p>
             <div className="p-4 bg-zinc-50 rounded-lg border-l-4 border-zinc-300 font-sans italic text-zinc-600">
               <strong>Em resumo:</strong> Ao usar o PrintLog, você está aceitando as regras de como o software funciona. Ele é uma ferramenta de auxílio, não um substituto para a sua gestão financeira.
@@ -58,10 +61,19 @@ export default function PaginaTermosUso() {
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. PROPRIEDADE INTELECTUAL</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. PROPRIEDADE INTELECTUAL E ATIVIDADES PROIBIDAS</h2>
             <p className="mb-4">
               Todo o código-fonte, algoritmos de cálculo, design de interface e marcas associadas ao PrintLog são de propriedade intelectual exclusiva do Controlador. É vedada qualquer prática de engenharia reversa, descompilação ou reprodução sem autorização prévia por escrito.
             </p>
+            <p className="mb-4">
+              Como usuário dos Serviços, você concorda expressamente em <strong>não</strong>:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 mb-4">
+              <li>Recuperar sistematicamente dados do sistema por meios automatizados (bots, scrapers, aranhas, etc.);</li>
+              <li>Contornar, desabilitar ou interferir com recursos de segurança;</li>
+              <li>Fazer uso inadequado dos serviços de suporte ou enviar relatórios falsos;</li>
+              <li>Usar os Serviços como parte de qualquer esforço para competir conosco fazendo engenharia reversa de nossos algoritmos.</li>
+            </ul>
           </div>
 
           <div>
@@ -84,6 +96,18 @@ export default function PaginaTermosUso() {
             <p className="mb-4">
               A licença de uso pode ser gratuita ou paga (Planos Pro/Master). Planos pagos são processados via gateways de pagamento parceiros. O inadimplemento poderá resultar na suspensão do acesso às funcionalidades premium até a regularização.
             </p>
+            
+            {/* INATIVO: MÓDULO DE ASSINATURAS PREPARADO (Ref: AdOpt Compras e Pagamentos)
+            <div className="mt-4 p-4 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-600">
+              <h3 className="font-bold text-zinc-800 mb-2 uppercase text-xs">5.1. Regras de Assinatura e Período de Teste (Trial)</h3>
+              <ul className="list-disc pl-6 space-y-2 text-xs">
+                <li><strong>Renovação Automática:</strong> As assinaturas pagas são renovadas automaticamente na frequência escolhida pelo usuário.</li>
+                <li><strong>Período de Teste Gratuito:</strong> Oferecemos um período de teste (trial) gratuito de 30 dias.</li>
+                <li><strong>Fim do Teste Gratuito:</strong> No final do período de teste, a conta <strong>não será cobrada</strong>. A assinatura será suspensa e as funcionalidades premium bloqueadas até que o usuário ativamente faça o upgrade para uma versão paga.</li>
+                <li><strong>Cancelamento:</strong> O cancelamento da assinatura pode ser feito a qualquer momento, diretamente pelo usuário, fazendo login em sua conta e acessando o painel de faturamento.</li>
+              </ul>
+            </div>
+            */}
           </div>
 
           <div>
@@ -94,9 +118,15 @@ export default function PaginaTermosUso() {
           </div>
 
           <div>
-            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. FORO E LEGISLAÇÃO APLICÁVEL</h2>
+            <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. COMUNICAÇÕES ELETRÔNICAS E DISPOSIÇÕES FINAIS</h2>
+            <p className="mb-4">
+              O uso do sistema e o envio de e-mails constituem comunicações eletrônicas. Você concorda expressamente com o uso de assinaturas eletrônicas, contratos, pedidos e com a entrega eletrônica de registros de transações iniciadas na plataforma.
+            </p>
+            <p className="mb-4">
+              Reservamos o direito de alterar, revisar, atualizar, suspender ou descontinuar os Serviços a qualquer momento por qualquer motivo, não possuindo responsabilidade por qualquer perda de dados decorrente de inatividade.
+            </p>
             <p>
-              Este contrato é regido pelas leis da República Federativa do Brasil. As partes elegem o foro de domicílio do Controlador para dirimir quaisquer dúvidas oriundas deste instrumento.
+              Este contrato é regido pelas leis da República Federativa do Brasil. As partes elegem o foro de domicílio do Controlador (Brasília - DF) para dirimir quaisquer dúvidas oriundas deste instrumento.
             </p>
           </div>
         </section>
