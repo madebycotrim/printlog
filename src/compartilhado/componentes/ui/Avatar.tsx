@@ -1,6 +1,6 @@
-import { HTMLAttributes, useState, useEffect } from "react";
+import { HTMLAttributes, useState } from "react";
 import { gerarIniciais, gerarCorPorNome } from "@/compartilhado/utilitarios/avatar";
-import { PlanoUsuario } from "../tipos/modelos";
+import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 
 interface PropriedadesAvatar extends HTMLAttributes<HTMLDivElement> {
   /** Nome do usuário para gerar iniciais e cor */

@@ -1,4 +1,4 @@
-import { X, TrendingUp, DollarSign, Activity, Percent } from "lucide-react";
+import { X, DollarSign, Activity, Percent } from "lucide-react";
 import { motion } from "framer-motion";
 import { DadosDRE } from "@/compartilhado/servicos/servicoFinanceiroAvancado";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";

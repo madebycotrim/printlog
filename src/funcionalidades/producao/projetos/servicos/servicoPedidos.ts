@@ -149,7 +149,6 @@ class ServicoPedidos {
     const erros: string[] = [];
 
     // v9.0: Blindagem de segurança - se o peso/tempo vierem zerados (erro de mapeamento), tenta somar dos itens
-    const pesoEfetivo = pedido.pesoGramas || (pedido.materiais?.reduce((acc: number, m: any) => acc + (m.quantidadeGasta || 0), 0)) || 0;
     const tempoEfetivo = pedido.tempoMinutos || (
       pedido.configuracoes 
         ? ((pedido.configuracoes.tempoHoras || 0) * 60 + (pedido.configuracoes.tempoMinutos || 0))

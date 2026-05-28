@@ -10,6 +10,7 @@ export interface LancamentoFinanceiro {
   categoria?: string;
   idReferencia?: string; // ID de um pedido, compra de insumo, etc.
   idCliente?: string; // ID do cliente vinculado
+  idPedido?: string;
 }
 
 export interface CriarLancamentoInput {

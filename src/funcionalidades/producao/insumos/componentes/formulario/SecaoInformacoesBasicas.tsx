@@ -2,7 +2,7 @@ import { Box, Tag } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes";
 import { CATEGORIAS } from "../../constantes";
 import { CategoriaInsumo } from "../../tipos";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 interface PropriedadesSecaoBasica {
   register: any;

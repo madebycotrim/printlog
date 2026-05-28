@@ -1,16 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { 
-  Package, 
-  Clock, 
-  CheckCircle2, 
   Truck, 
-  MapPin, 
-  FileText,
   Activity,
   AlertCircle,
-  HelpCircle,
   Link2
 } from "lucide-react";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";

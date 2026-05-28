@@ -32,7 +32,6 @@ export function ordenarOpcoesPorFrequencia(
 
   // 3. Pegar apenas o Top N
   const topOpcoes = opcoesUsadas.slice(0, limite);
-  const valoresTop = new Set(topOpcoes.map(o => o.valor));
 
   // 4. Se não houve nada usado do catálogo padrão, retorna o catálogo como está
   if (topOpcoes.length === 0) return opcoes;

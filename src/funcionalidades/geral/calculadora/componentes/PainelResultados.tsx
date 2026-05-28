@@ -243,16 +243,37 @@ export const PainelResultados = memo(function PainelResultados({
                     let subitens: { nome: React.ReactNode; valor: number }[] = [];
                     
                     if (item.label === 'Materiais' && materiais.length > 0) {
-                      subitens = materiais.map(m => {
-                        const unid = <span className="lowercase">{m.tipo === 'FDM' ? 'g' : 'ml'}</span>;
+                      const agrupadosMap = new Map<string, {
+                        nome: string;
+                        tipo: string;
+                        pesoAcumulado: number;
+                        valorAcumulado: number;
+                      }>();
+
+                      materiais.forEach(m => {
+                        const chave = m.id || m.nome;
                         const pesoFinal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * quantidade;
-                        
+                        const valorItem = Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : quantidade));
+
+                        const existente = agrupadosMap.get(chave);
+                        if (existente) {
+                          existente.pesoAcumulado += pesoFinal;
+                          existente.valorAcumulado += valorItem;
+                        } else {
+                          agrupadosMap.set(chave, {
+                            nome: m.nome,
+                            tipo: m.tipo,
+                            pesoAcumulado: pesoFinal,
+                            valorAcumulado: valorItem
+                          });
+                        }
+                      });
+
+                      subitens = Array.from(agrupadosMap.values()).map(agrupado => {
+                        const unid = <span className="lowercase">{agrupado.tipo === 'FDM' ? 'g' : 'ml'}</span>;
                         return {
-                          nome: <>{m.nome} ({modoEntrada === 'unitario' 
-                            ? <>{m.quantidade}{unid} x {quantidade} = {pesoFinal}{unid}</>
-                            : <>{pesoFinal}{unid}</>
-                          })</>,
-                          valor: Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : quantidade))
+                          nome: <>{agrupado.nome} ({agrupado.pesoAcumulado}{unid})</>,
+                          valor: agrupado.valorAcumulado
                         };
                       });
                     } else if (item.label === 'Insumos & Extras') {

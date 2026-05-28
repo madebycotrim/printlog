@@ -20,7 +20,6 @@ import {
   Box,
   SprayCan,
   Wrench,
-  AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes";

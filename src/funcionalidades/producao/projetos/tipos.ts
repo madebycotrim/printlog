@@ -72,4 +72,5 @@ export interface CriarPedidoInput {
 export interface AtualizarPedidoInput extends Partial<CriarPedidoInput> {
   id: string;
   status?: StatusPedido;
+  dataConclusao?: Date | string | null;
 }

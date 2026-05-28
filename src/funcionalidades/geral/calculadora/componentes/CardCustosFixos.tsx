@@ -22,7 +22,7 @@ export function CardCustosFixos({
   setMostrar,
   insumosFixos,
   setInsumosFixos,
-  cobrarInsumosFixos,
+  cobrarInsumosFixos: _cobrarInsumosFixos,
   setCobrarInsumosFixos
 }: PropriedadesCardCustosFixos) {
   return (

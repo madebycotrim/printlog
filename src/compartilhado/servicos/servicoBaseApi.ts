@@ -55,7 +55,6 @@ export const servicoBaseApi = {
     const url = `${URL_API_BASE}${caminho}`;
     
     // Busca o token de forma resiliente
-    const usuario = autenticacao.currentUser;
     const token = await obterTokenSeguro();
 
     const headers = new Headers(opcoes.headers);

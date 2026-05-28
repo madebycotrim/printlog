@@ -18,7 +18,7 @@ import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { ModalListagemPremium } from "@/compartilhado/componentes";
 
-import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+
 
 const esquemaPedido = z.object({
     idCliente: z.string().min(1, "Selecione um cliente"),

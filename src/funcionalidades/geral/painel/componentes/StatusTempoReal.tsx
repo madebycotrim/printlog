@@ -4,7 +4,6 @@ import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/es
 import { StatusImpressora, StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useNavigate } from "react-router-dom";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
-import { motion } from "framer-motion";
 import { obterImagemImpressora } from "@/funcionalidades/producao/impressoras/utilitarios/obter-imagem-simplyprint";
 import { useState } from "react";
 
@@ -30,12 +29,7 @@ export function StatusTempoReal() {
         }
     };
 
-    const classesCores: any = {
-        emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-        amber: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-        rose: "bg-rose-500/10 border-rose-500/20 text-rose-500",
-        zinc: "bg-zinc-500/10 border-zinc-500/20 text-zinc-500",
-    };
+
 
     const classesCoresText: any = {
         emerald: "text-emerald-500",

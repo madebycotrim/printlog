@@ -42,7 +42,6 @@ export function FormularioLancamento({ aberto, lancamentoEditando, aoSalvar, aoC
     watch,
     reset,
     setValue,
-    control,
     formState: { errors, isDirty },
   } = useForm<LancamentoFormData>({
     resolver: zodResolver(esquemaLancamento),
@@ -231,7 +230,7 @@ export function FormularioLancamento({ aberto, lancamentoEditando, aoSalvar, aoC
                   rotulo="Data"
                   icone={Calendar}
                   type="date"
-                  erro={errors.data?.message}
+                  erro={errors.data?.message ? String(errors.data.message) : undefined}
                   {...register("data")}
                 />
               </div>

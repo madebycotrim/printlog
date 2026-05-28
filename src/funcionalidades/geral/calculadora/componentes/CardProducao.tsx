@@ -30,7 +30,7 @@ interface CardProducaoProps {
 
 export const CardProducao = memo(function CardProducao({
   tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
-  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, pecasPorMesa, setPecasPorMesa, modoEntrada, aoDetectarTarifa
+  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, modoEntrada, aoDetectarTarifa
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
   
@@ -39,7 +39,6 @@ export const CardProducao = memo(function CardProducao({
 
   // Buffers de digitação para garantir que o campo fique vazio ao focar
   const [tempQuantidade, setTempQuantidade] = useState<string | undefined>(undefined);
-  const [tempPecasPorMesa, setTempPecasPorMesa] = useState<string | undefined>(undefined);
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
   const [tempPotencia, setTempPotencia] = useState<string | undefined>(undefined);
@@ -134,110 +133,47 @@ export const CardProducao = memo(function CardProducao({
               </div>
             </div>
 
-            {modoEntrada === 'lote' ? (
-              <div>
-                <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2 flex justify-between">Peças/Mesa <span className="text-[8px] text-zinc-400 lowercase">{Math.ceil(quantidade / Math.max(1, pecasPorMesa || 1))} ciclo(s)</span></label>
-                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner overflow-hidden">
+            <div>
+              <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">
+                {modoEntrada === 'lote' ? "Tempo de Produção (Lote)" : "Tempo de Produção (Peça)"}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
-                    placeholder="Tudo" 
-                    min="1" 
-                    value={tempPecasPorMesa !== undefined ? tempPecasPorMesa : (pecasPorMesa === 0 ? "" : (pecasPorMesa ?? ""))} 
+                    placeholder="0" 
+                    value={tempHora !== undefined ? tempHora : (Math.floor(tempo / 60) === 0 ? "" : (Math.floor(tempo / 60) || ""))} 
                     onFocus={() => {}}
-                    onBlur={() => setTempPecasPorMesa(undefined)}
+                    onBlur={() => setTempHora(undefined)}
                     onChange={(e) => {
                       const v = e.target.value;
-                      setTempPecasPorMesa(v);
-                      setPecasPorMesa && setPecasPorMesa(v === "" ? 0 : Number(v));
+                      setTempHora(v);
+                      setTempo((v === "" ? 0 : Number(v)) * 60 + (tempo % 60));
                     }} 
-                    className="w-full h-full bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                    className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                   />
+                  <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">Tempo de Produção</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
-                    <input 
-                      type="number" 
-                      placeholder="0" 
-                      value={tempHora !== undefined ? tempHora : (Math.floor(tempo / 60) === 0 ? "" : (Math.floor(tempo / 60) || ""))} 
-                      onFocus={() => {}}
-                      onBlur={() => setTempHora(undefined)}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setTempHora(v);
-                        setTempo((v === "" ? 0 : Number(v)) * 60 + (tempo % 60));
-                      }} 
-                      className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
-                    />
-                    <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
-                  </div>
 
-                  <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
-                    <input 
-                      type="number" 
-                      placeholder="0" 
-                      value={tempMinuto !== undefined ? tempMinuto : (tempo % 60 === 0 ? "" : (tempo % 60 || ""))} 
-                      onFocus={() => {}}
-                      onBlur={() => setTempMinuto(undefined)}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setTempMinuto(v);
-                        setTempo(Math.floor(tempo / 60) * 60 + (v === "" ? 0 : Number(v)));
-                      }} 
-                      className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
-                    />
-                    <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {modoEntrada === 'lote' && (
-            <div className="grid grid-cols-1">
-              <div>
-                <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">Tempo de Produção (do Lote inteiro)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
-                    <input 
-                      type="number" 
-                      placeholder="0" 
-                      value={tempHora !== undefined ? tempHora : (Math.floor(tempo / 60) === 0 ? "" : (Math.floor(tempo / 60) || ""))} 
-                      onFocus={() => {}}
-                      onBlur={() => setTempHora(undefined)}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setTempHora(v);
-                        setTempo((v === "" ? 0 : Number(v)) * 60 + (tempo % 60));
-                      }} 
-                      className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
-                    />
-                    <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
-                  </div>
-
-                  <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
-                    <input 
-                      type="number" 
-                      placeholder="0" 
-                      value={tempMinuto !== undefined ? tempMinuto : (tempo % 60 === 0 ? "" : (tempo % 60 || ""))} 
-                      onFocus={() => {}}
-                      onBlur={() => setTempMinuto(undefined)}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setTempMinuto(v);
-                        setTempo(Math.floor(tempo / 60) * 60 + (v === "" ? 0 : Number(v)));
-                      }} 
-                      className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
-                    />
-                    <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
-                  </div>
+                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
+                  <input 
+                    type="number" 
+                    placeholder="0" 
+                    value={tempMinuto !== undefined ? tempMinuto : (tempo % 60 === 0 ? "" : (tempo % 60 || ""))} 
+                    onFocus={() => {}}
+                    onBlur={() => setTempMinuto(undefined)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setTempMinuto(v);
+                      setTempo(Math.floor(tempo / 60) * 60 + (v === "" ? 0 : Number(v)));
+                    }} 
+                    className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
+                  />
+                  <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col group">

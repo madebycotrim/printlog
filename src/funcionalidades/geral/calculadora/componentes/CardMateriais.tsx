@@ -28,7 +28,7 @@ export const CardMateriais = memo(function CardMateriais({
 }: CardMateriaisProps) {
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
   const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
-  const dragScroll = useDragScroll<HTMLDivElement>();
+  const { ref: dragRef, isDragging, hasDragged, events: dragEvents } = useDragScroll<HTMLDivElement>();
 
   const tiposDisponiveis = useMemo(() => {
     const tipos = materiais.map(m => m.tipoMaterial || m.tipo).filter(Boolean);
@@ -113,21 +113,21 @@ export const CardMateriais = memo(function CardMateriais({
               <>
                 <div className="hidden sm:block w-[1px] h-3 bg-borda-sutil mx-1" />
                 <div 
-                  ref={dragScroll.ref}
-                  {...dragScroll.events}
-                  className={`flex items-center gap-1 bg-muted/30 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil overflow-x-auto scrollbar-none ${dragScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab md:cursor-default'}`}
+                  ref={dragRef}
+                  {...dragEvents}
+                  className={`flex items-center gap-1 bg-muted/30 dark:bg-zinc-950/40 p-0.5 rounded-lg border border-borda-sutil overflow-x-auto scrollbar-none ${isDragging ? 'cursor-grabbing select-none' : 'cursor-grab md:cursor-default'}`}
                 >
                   <button 
-                    onClick={(e) => { if (dragScroll.hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(null) }}
-                    className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === null ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
+                    onClick={(e) => { if (hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(null) }}
+                    className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === null ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
                   >
                     Todos
                   </button>
                   {tiposDisponiveis.map(tipo => (
                     <button 
                       key={tipo}
-                      onClick={(e) => { if (dragScroll.hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(tipo) }}
-                      className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === tipo ? 'bg-teal-500/20 text-teal-600 dark:text-teal-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
+                      onClick={(e) => { if (hasDragged.current) { e.preventDefault(); return; } setFiltroTipo(tipo) }}
+                      className={`shrink-0 px-2 py-1 text-[8px] font-black uppercase tracking-tighter rounded-md transition-all ${filtroTipo === tipo ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-600 dark:hover:text-zinc-400'}`}
                     >
                       {tipo}
                     </button>
@@ -179,8 +179,8 @@ export const CardMateriais = memo(function CardMateriais({
               }}
               className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                 ${selecionado 
-                  ? "border-teal-500 bg-teal-500/10 shadow-[0_0_20px_rgba(14,165,233,0.15)]" 
-                  : "border-borda-sutil bg-zinc-50 dark:bg-white/5 hover:border-teal-500/30"}
+                  ? "border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.15)]" 
+                  : "border-borda-sutil bg-zinc-50 dark:bg-white/5 hover:border-cyan-500/30"}
               `}
             >
               <div className="shrink-0">
@@ -197,14 +197,14 @@ export const CardMateriais = memo(function CardMateriais({
                   <p className="text-[9px] font-bold text-zinc-500 dark:text-gray-400 uppercase whitespace-nowrap">
                     {m.tipoMaterial || m.tipo} • <ContadorAnimado valor={(m.precoCentavos / m.pesoGramas) * 10} />/kg
                   </p>
-                  <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-teal-500'}`}>
+                  <span className={`text-[8px] font-black uppercase mt-0.5 ${((m.estoque * m.pesoGramas) + m.pesoRestanteGramas) < 100 ? 'text-rose-500' : 'text-cyan-500'}`}>
                     {((m.estoque * m.pesoGramas) + m.pesoRestanteGramas)}<span className="lowercase">{m.tipo === "FDM" ? "g" : "ml"}</span> disponíveis
                   </span>
                 </div>
               </div>
 
               {selecionado && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center text-white animate-in zoom-in duration-300 shadow-lg z-20">
                   <Check className="w-2.5 h-2.5" />
                 </div>
               )}
@@ -229,9 +229,9 @@ export const CardMateriais = memo(function CardMateriais({
         
         {materiais.length === 0 && (
           <div className="col-span-full w-full flex flex-col md:flex-row items-center justify-between p-6 rounded-2xl bg-zinc-50 dark:bg-[#121214] border border-dashed border-zinc-200 dark:border-white/10 relative overflow-hidden group/empty shadow-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/[0.03] to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] to-transparent pointer-events-none" />
             <div className="flex items-center gap-5 relative z-10 w-full md:w-auto mb-4 md:mb-0">
-              <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover/empty:scale-110 group-hover/empty:text-teal-500 transition-all duration-500">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-white/5 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover/empty:scale-110 group-hover/empty:text-cyan-500 transition-all duration-500">
                 <Box size={20} className="group-hover/empty:animate-bounce" />
               </div>
               <div className="flex flex-col">
@@ -241,7 +241,7 @@ export const CardMateriais = memo(function CardMateriais({
             </div>
             <button 
               onClick={abrirCriar}
-              className="relative z-10 w-full md:w-auto px-6 h-10 bg-teal-500 hover:bg-teal-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_4px_20px_-5px_rgba(14,165,233,0.4)] hover:shadow-[0_6px_25px_-5px_rgba(14,165,233,0.6)] flex items-center justify-center gap-2 active:scale-95"
+              className="relative z-10 w-full md:w-auto px-6 h-10 bg-cyan-500 hover:bg-cyan-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_4px_20px_-5px_rgba(6,182,212,0.4)] hover:shadow-[0_6px_25px_-5px_rgba(6,182,212,0.6)] flex items-center justify-center gap-2 active:scale-95"
             >
               <Plus size={14} strokeWidth={3} /> Cadastrar Material
             </button>
@@ -313,13 +313,13 @@ export const CardMateriais = memo(function CardMateriais({
                         <div className="w-full flex flex-col gap-1">
                           <div className="flex justify-between items-center text-[9px] font-black text-zinc-400 uppercase">
                             <span>Consumo</span>
-                            <span className={alerta ? 'text-rose-500' : 'text-teal-500'}>{totalConsumo} / {totalDisponivel}</span>
+                            <span className={alerta ? 'text-rose-500' : 'text-cyan-500'}>{totalConsumo} / {totalDisponivel}</span>
                           </div>
                           <div className="w-full h-1.5 bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${porcentagem}%` }}
-                              className={`h-full ${alerta ? 'bg-rose-500' : 'bg-teal-500'}`}
+                              className={`h-full ${alerta ? 'bg-rose-500' : 'bg-cyan-500'}`}
                             />
                           </div>
                         </div>
@@ -330,12 +330,12 @@ export const CardMateriais = memo(function CardMateriais({
                   <div className="flex-1 flex flex-col w-full gap-3 md:gap-2">
                     {/* Cabeçalho visível apenas no desktop */}
                     <div className="hidden md:flex w-full items-end gap-3 mb-0.5 px-1">
-                       <div className="flex-1 grid grid-cols-[1fr_repeat(4,1fr)] gap-3">
+                       <div className="flex-1 grid grid-cols-[1fr_80px_64px_64px_110px] gap-3">
                           <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest truncate">Peça (Opcional)</label>
-                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Peso (<span className="lowercase">{primeiroItem.tipo === "FDM" ? "g" : "ml"}</span>)</label>
-                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Horas</label>
-                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Minutos</label>
-                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest">Preço/Kg</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest text-center">Peso (<span className="lowercase">{primeiroItem.tipo === "FDM" ? "g" : "ml"}</span>)</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest text-center">Horas</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest text-center">Minutos</label>
+                          <label className="text-[9px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest text-center">Preço/Kg</label>
                        </div>
                        <div className="w-[60px]"></div>
                     </div>
@@ -354,31 +354,31 @@ export const CardMateriais = memo(function CardMateriais({
                           {index > 0 && <div className="w-full h-px bg-zinc-200 dark:bg-white/5" />}
                           
                           <div className="flex w-full items-end md:items-center gap-3 relative group/row pb-1">
-                            <div className="flex-1 grid grid-cols-2 md:grid-cols-[1fr_repeat(4,1fr)] gap-2 md:gap-3">
+                            <div className="flex-1 grid grid-cols-2 md:grid-cols-[1fr_80px_64px_64px_110px] gap-2 md:gap-3">
                               <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
                                 <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Peça</label>
-                                <input type="text" placeholder="Ex: Base..." value={item.nomePeca || ""} onChange={(e) => atualizarNomePeca && atualizarNomePeca(item.instanceId || item.id, e.target.value)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
+                                <input type="text" placeholder="Ex: Base..." value={item.nomePeca || ""} onChange={(e) => atualizarNomePeca && atualizarNomePeca(item.instanceId || item.id, e.target.value)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border border-transparent focus:border-cyan-500/30 transition-all text-primary dark:text-white" />
                               </div>
                               <div className="flex flex-col gap-1.5">
                                 <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Peso</label>
-                                <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.instanceId || item.id, Number(e.target.value))} className={`w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white ${alerta ? "text-rose-500" : ""}`} />
+                                <input type="number" placeholder="0" value={item.quantidade === 0 ? "" : (item.quantidade ?? "")} onChange={(e) => atualizarQtd(item.instanceId || item.id, Number(e.target.value))} className={`w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border border-transparent focus:border-cyan-500/30 transition-all text-primary dark:text-white text-center ${alerta ? "text-rose-500" : ""}`} />
                               </div>
                               <div className="flex flex-col gap-1.5">
                                 <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Horas</label>
-                                <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
+                                <input type="number" placeholder="0" value={item.tempoHoras === 0 ? "" : (item.tempoHoras ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, Number(e.target.value) || 0, item.tempoMinutos || 0)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border border-transparent focus:border-cyan-500/30 transition-all text-primary dark:text-white text-center" />
                               </div>
                               <div className="flex flex-col gap-1.5">
                                 <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Minutos</label>
-                                <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border-transparent focus:border-teal-500/30 transition-all text-primary dark:text-white" />
+                                <input type="number" placeholder="0" value={item.tempoMinutos === 0 ? "" : (item.tempoMinutos ?? "")} onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, item.tempoHoras || 0, Number(e.target.value) || 0)} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 outline-none font-black text-xs border border-transparent focus:border-cyan-500/30 transition-all text-primary dark:text-white text-center" />
                               </div>
                               <div className="flex flex-col gap-1.5">
                                 <label className="md:hidden text-[9px] font-black uppercase text-zinc-400 tracking-widest">Preço/Kg</label>
-                                <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.instanceId || item.id, Number(e.target.value))} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-teal-500/30 outline-none font-black text-xs text-primary dark:text-white" />
+                                <InputBancario placeholder="0.00" value={(item.precoKgCentavos / 100) === 0 ? "" : (item.precoKgCentavos / 100)} onChange={(e) => atualizarPreco(item.instanceId || item.id, Number(e.target.value))} className="w-full h-9 px-3 rounded-lg bg-muted/40 dark:bg-black/40 border border-transparent focus:border-cyan-500/30 outline-none font-black text-xs text-primary dark:text-white text-center" />
                               </div>
                             </div>
                             
                             <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-all w-[60px] justify-end md:self-center self-end md:pb-0">
-                              <button onClick={() => alternar(item.id)} className="p-1.5 rounded-md text-zinc-400 dark:text-gray-500 hover:text-teal-500 hover:bg-teal-500/10 transition-all" title="Adicionar outra mesa desta cor">
+                              <button onClick={() => alternar(item.id)} className="p-1.5 rounded-md text-zinc-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-cyan-500/10 transition-all" title="Adicionar outra mesa desta cor">
                                 <Plus size={15} />
                               </button>
                               <button onClick={() => remover(item.instanceId || item.id)} className="p-1.5 rounded-md text-zinc-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-500/10 transition-all" title="Remover esta mesa">

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 
 interface ContextoBetaProps {
@@ -66,7 +66,7 @@ export function ProvedorBeta({ children }: { children: ReactNode }) {
   });
 
   const atualizar = (novas: Partial<typeof preferencias>) => {
-    setPreferencias((prev) => {
+    setPreferencias((prev: typeof preferencias) => {
       const atualizado = { ...prev, ...novas };
       localStorage.setItem(CHAVE_BETA, JSON.stringify(atualizado));
       return atualizado;

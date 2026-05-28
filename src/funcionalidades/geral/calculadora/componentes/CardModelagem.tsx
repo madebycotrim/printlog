@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { PenTool, DollarSign } from "lucide-react";
+import { PenTool } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 import { InputBancario } from "@/compartilhado/componentes/ui";
 

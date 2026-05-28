@@ -1,6 +1,18 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
+const variaveisObrigatorias = [
+  "VITE_FIREBASE_API_KEY",
+  "VITE_FIREBASE_AUTH_DOMAIN",
+  "VITE_FIREBASE_PROJECT_ID",
+];
+
+variaveisObrigatorias.forEach((variavel) => {
+  if (!import.meta.env[variavel]) {
+    throw new Error(`Variável de ambiente obrigatória não definida: ${variavel}`);
+  }
+});
+
 const configuracaoFirebase = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

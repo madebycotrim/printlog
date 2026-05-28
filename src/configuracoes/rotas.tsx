@@ -53,11 +53,7 @@ const PaginaProducao = lazy(() =>
     default: m.PaginaProducao,
   })),
 );
-const PaginaProjetos = lazy(() =>
-  import("@/funcionalidades/producao/projetos/pagina").then((m) => ({
-    default: m.PaginaProjetos,
-  })),
-);
+
 const PaginaImpressoras = lazy(() =>
   import("@/funcionalidades/producao/impressoras/pagina").then((m) => ({
     default: m.PaginaImpressoras,
@@ -83,11 +79,7 @@ const PaginaManutencaoPreditiva = lazy(() =>
     default: m.PaginaManutencaoPreditiva,
   })),
 );
-const PaginaFila = lazy(() =>
-  import("@/funcionalidades/producao/fila/pagina").then((m) => ({
-    default: m.PaginaFila,
-  })),
-);
+
 const PaginaRastreamento = lazy(() =>
   import("@/funcionalidades/producao/projetos/PaginaRastreamento").then((m) => ({
     default: m.PaginaRastreamento,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Printer, 
@@ -7,11 +7,7 @@ import {
   Play, 
   Pause, 
   CheckCircle2, 
-  Plus, 
   Trash2, 
-  AlertCircle,
-  MoveRight,
-  TrendingUp,
   LayoutGrid,
   ChevronUp,
   ChevronDown
@@ -27,7 +23,7 @@ import { toast } from "react-hot-toast";
 export function PaginaFila() {
   const { estado: { impressoras }, acoes: { salvarImpressora } } = useGerenciadorImpressoras();
   const { pedidos, atualizarPedido } = usePedidos();
-  const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split("T")[0]);
+
 
   useDefinirCabecalho({
     titulo: "Fila de Produção",
