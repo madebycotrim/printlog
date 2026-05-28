@@ -112,7 +112,7 @@ export function PaginaDesperdicio() {
             </div>
           </div>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={historico}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
@@ -163,7 +163,7 @@ export function PaginaDesperdicio() {
             </div>
           </div>
           <div className="h-[300px] w-full flex items-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <RePieChart>
                 <Pie data={dadosPizza} innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value">
                   {dadosPizza.map((_, index) => (

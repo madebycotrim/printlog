@@ -359,7 +359,7 @@ export const PainelResultados = memo(function PainelResultados({
               <>
                 {/* FEATURE 5: Gráfico de Pizza */}
                 <div className="h-36 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <RePieChart>
                       <Pie
                         data={dadosPizza}

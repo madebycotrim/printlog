@@ -75,7 +75,7 @@ export function GraficoConsumo() {
 
             <div className="h-[280px] w-full relative z-10">
                 {isMounted && (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={dadosGrafico} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorConsumo" x1="0" y1="0" x2="0" y2="1">
