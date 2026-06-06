@@ -22,6 +22,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
 
     try {
+        // Migração automática (garante que a coluna de criptografia existe no SQLite local)
+        await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN dados_extras TEXT DEFAULT NULL`).run().catch(() => {});
+
         // ── GET - Listar (Com Descriptografia) ──
         if (metodo === "GET") {
             const { results: pedidos } = await env.DB.prepare(
@@ -164,7 +167,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
         console.error("[pedidos] Erro Protegido:", erro);
-        return new Response(JSON.stringify({ sucesso: false, mensagem: "Erro ao processar dados protegidos." }), { 
+        return new Response(JSON.stringify({ sucesso: false, mensagem: String(erro?.stack || erro?.message || JSON.stringify(erro) || "Erro Desconhecido") }), { 
             status: 500, headers: { "Content-Type": "application/json" } 
         });
     }
