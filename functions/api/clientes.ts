@@ -22,6 +22,11 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
 
     try {
+        // Migração automática (garante que as colunas existem no SQLite local)
+        await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN ltv_centavos INTEGER DEFAULT 0`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN total_produtos INTEGER DEFAULT 0`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN historico TEXT DEFAULT '[]'`).run().catch(() => {});
+        
         // ── BUSCAR (Com Descriptografia On-the-fly) ──
         if (metodo === "GET") {
             const { results } = await env.DB.prepare(
