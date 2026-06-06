@@ -691,7 +691,8 @@ export function PaginaCalculadora() {
                       const novo = await acoesClientes.salvarCliente({ nome });
                       if (novo && novo.id) {
                         setClienteProjetoId(novo.id);
-                        setBuscaClienteSeletor(novo.nome);
+                        setBuscaClienteSeletor(nome); // Usa o nome fornecido em vez do retorno da API
+                        setAbertoSeletorCliente(false);
                       }
                     } catch (e) {
                       toast.error("Erro ao criar contato.");

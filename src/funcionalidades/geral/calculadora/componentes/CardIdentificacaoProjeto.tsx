@@ -129,11 +129,11 @@ export function CardIdentificacaoProjeto({
                         </button>
                       ))}
 
-                      {buscaCliente.trim() !== '' && !clienteExato && (
+                      {(buscaCliente || "").trim() !== '' && !clienteExato && (
                         <button
                           type="button"
                           disabled={criandoNovoCliente}
-                          onClick={() => aoCriarNovoCliente(buscaCliente.trim())}
+                          onClick={() => aoCriarNovoCliente((buscaCliente || "").trim())}
                           className="w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-500 dark:hover:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-500/10 transition-colors flex items-center gap-2 border border-dashed border-borda-sutil dark:border-zinc-500/20"
                         >
                           <Plus size={14} />
@@ -141,7 +141,7 @@ export function CardIdentificacaoProjeto({
                         </button>
                       )}
 
-                      {filtrados.length === 0 && buscaCliente.trim() === '' && (
+                      {filtrados.length === 0 && (buscaCliente || "").trim() === '' && (
                         <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider text-center py-2">
                           Nenhum cliente cadastrado
                         </span>
