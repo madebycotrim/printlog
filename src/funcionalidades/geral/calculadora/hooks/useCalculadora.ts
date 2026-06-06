@@ -231,7 +231,8 @@ export function useCalculadora() {
       custoFalha: custoFalhaRealCentavos,
       custoModelagem: custoModelagemCentavos,
       valorDesconto: valorDescontoCentavos,
-      percentualDesconto: descontoVolume
+      percentualDesconto: descontoVolume,
+      modoEntrada: modoEntrada
     };
   }, [materiaisSelecionados, insumosSelecionados, tempo, potencia, precoKwh, margem, maoDeObra, depreciacaoHora, cobrarDesgaste, cobrarMaoDeObra, cobrarEnergia, cobrarInsumosFixos, cobrarLogistica, itensPosProcesso, insumosFixos, frete, taxaEcommerce, taxaFixa, quantidade, pecasPorMesa, tempoSetup, materialPerdido, tempoPerdido, modoEntrada, tempoModelagem, valorHoraModelagem, descontoVolume, precoAlvoCentavos]);
 
@@ -703,7 +704,7 @@ export function useCalculadora() {
             <div class="header">
               ${logoHtml}
               <div class="header-right">
-                <div class="badge-orcamento">Orçamento Oficial ${sPedido}</div>
+                <div class="badge-orcamento">Orçamento ${sPedido}</div>
                 <div class="meta-val">Emitido em: <strong>${emissaoStr}</strong></div>
                 <div class="meta-val">Válido até: <strong>${validadeStr}</strong></div>
               </div>
@@ -901,9 +902,16 @@ export function useCalculadora() {
       </html>
     `;
 
+    // Evita múltiplas instâncias de impressão abertas simultaneamente
+    if (document.getElementById('printlog-print-frame')) {
+      toast.error('Uma janela de impressão já está aberta.');
+      return;
+    }
+
     // Cria um iframe invisível para impressão, garantindo que a origem (Origin/Referer) 
     // seja a mesma da aplicação, evitando bloqueios de CORS em imagens externas.
     const iframe = document.createElement('iframe');
+    iframe.id = 'printlog-print-frame';
     iframe.style.position = 'fixed';
     iframe.style.right = '0';
     iframe.style.bottom = '0';

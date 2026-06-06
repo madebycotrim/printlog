@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { decodificarLinkMagico } from "@/compartilhado/utilitarios/link-magico";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -16,6 +16,7 @@ export function PaginaOrcamentoPublico() {
   const isPrintMode = searchParams.get("p") === "1";
 
   const [statusAprovacao, setStatusAprovacao] = useState<'pendente' | 'aprovado' | 'recusado'>('pendente');
+  const impressaoIniciada = useRef(false);
 
   const dados = useMemo(() => {
     if (!hash) return null;
@@ -23,7 +24,8 @@ export function PaginaOrcamentoPublico() {
   }, [hash]);
 
   useEffect(() => {
-    if (isPrintMode && dados) {
+    if (isPrintMode && dados && !impressaoIniciada.current) {
+      impressaoIniciada.current = true;
       // Forçar carregamento da fonte inserindo no head
       const link = document.createElement('link');
       link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap';
@@ -118,17 +120,19 @@ export function PaginaOrcamentoPublico() {
   const linkWhats = w ? `https://wa.me/55${w.replace(/\D/g, '')}?text=${encodeURIComponent(mensagemWhatsBase)}` : null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 font-sans text-slate-800 selection:bg-sky-500/30 sm:py-12 overflow-x-hidden relative">
+    <div className={`min-h-screen flex flex-col bg-slate-100 font-sans text-slate-800 selection:bg-sky-500/30 overflow-x-hidden relative ${isPrintMode ? 'bg-white p-0 m-0' : 'sm:py-12'}`}>
       
       {/* Premium Grid Background */}
-      <div 
-        className="absolute inset-0 z-0 pointer-events-none" 
-        style={{
-          backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-          maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)'
-        }}
-      />
+      {!isPrintMode && (
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none" 
+          style={{
+            backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+            maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)'
+          }}
+        />
+      )}
 
       <main className="flex-1 w-full flex flex-col items-center relative z-10">
         
@@ -140,7 +144,7 @@ export function PaginaOrcamentoPublico() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4 }}
-              className={`bg-white w-full max-w-[794px] sm:rounded-sm text-[#1e293b] flex flex-col ${isPrintMode ? 'min-h-0 p-8 shadow-none' : 'min-h-[1123px] shadow-2xl p-8 sm:px-16 sm:py-16'}`}
+              className={`bg-white w-full max-w-[794px] sm:rounded-sm text-[#1e293b] flex flex-col ${isPrintMode ? 'min-h-0 p-6 sm:p-8 shadow-none h-[100vh] max-h-[100vh] overflow-hidden justify-between' : 'min-h-[1123px] shadow-2xl p-8 sm:px-16 sm:py-16'}`}
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               {/* HEADER IDÊNTICO AO PDF */}
@@ -159,7 +163,7 @@ export function PaginaOrcamentoPublico() {
                 
                 <div className="flex flex-col items-start sm:items-end gap-1">
                   <div className="inline-flex items-center bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-[800] uppercase tracking-[0.05em] px-3 py-1.5 rounded-lg text-[9px] mb-1">
-                    Orçamento Oficial PROP-{numeroProposta}
+                    Orçamento PROP-{numeroProposta}
                   </div>
                   <div className="text-[10px] font-[500] text-[#64748b]">
                     Emitido em: <strong className="text-[#0f172a] font-[700]">{formatarData(hoje)}</strong>
@@ -206,7 +210,7 @@ export function PaginaOrcamentoPublico() {
                         <div className="font-[800] text-[#0f172a] text-[13px] mb-1">Impressão 3D e Manufatura Especializada</div>
                         <div className="text-[10px] text-[#64748b] leading-relaxed mb-2 max-w-sm">Serviço de produção sob demanda contemplando parametrização técnica, operação de maquinário e acabamento preliminar da peça.</div>
                         <div className="flex flex-wrap gap-1">
-                          <span className="inline-block text-[9px] font-[600] text-[#475569] bg-[#f1f5f9] px-2 py-1 rounded-md border border-[#e2e8f0]">Tempo est.: {t}min</span>
+                          <span className="inline-block text-[9px] font-[600] text-[#475569] bg-[#f1f5f9] px-2 py-1 rounded-md border border-[#e2e8f0]">Tempo est.: {t ? `${Math.floor(t/60)}h ${Math.round(t%60)}m` : '—'}</span>
                         </div>
                       </td>
                       <td className="py-2.5 px-1.5 border-b border-[#f8fafc] align-top text-center text-[11px] text-[#334155] pt-3">1x</td>
@@ -244,35 +248,41 @@ export function PaginaOrcamentoPublico() {
                             <td className="py-2 px-1.5 pl-6 relative text-[10px] font-medium text-[#64748b]">
                               <span className="absolute left-2 text-[#cbd5e1]">↳</span> Tempo de Máquina (Energia, Desgaste e Depreciação)
                             </td>
-                            <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">{t ? `${Math.floor(t/60)}h ${t%60}m` : '—'}</td>
+                            <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">{t ? `${Math.floor(t/60)}h ${Math.round(t%60)}m` : '—'}</td>
                             <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
                             <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cm ? `R$ ${proporcionar(cm)}` : 'R$ 0,00'}</td>
                           </tr>
                           
                           {m.length > 0 ? (
                             <>
-                              <tr>
-                                <td className="py-2 px-1.5 pl-6 relative text-[10px] text-[#475569] font-[700]" colSpan={4}>
-                                  <span className="absolute left-2 text-[#cbd5e1]">↳</span> Filamentos, Resinas e Matéria-Prima
+                              <tr className="border-b border-[#f1f5f9]">
+                                <td className="py-2.5 px-1.5 pl-6 relative text-[10px] text-[#475569]" colSpan={4}>
+                                  <span className="absolute left-2 text-[#cbd5e1]">↳</span> <span className="font-[700]">Filamentos, Resinas e Matéria-Prima</span>
+                                  <div className="flex flex-wrap gap-2.5 mt-2.5 ml-4 mb-1.5">
+                                    {m.map((mat: any, idx: number) => {
+                                      const isObj = typeof mat === 'object' && mat !== null;
+                                      const nome = isObj ? mat.n : mat;
+                                      const tipo = isObj && mat.t ? mat.t : '';
+                                      const pesoFormatado = isObj && typeof mat.q === 'number' ? `${mat.q}g` : '—';
+                                      const precoFormatado = isObj && typeof mat.p === 'number' && mat.p > 0 ? `R$ ${proporcionar(mat.p)}` : '';
+                                      
+                                      return (
+                                        <div key={idx} className={`bg-white border border-[#e2e8f0] rounded-md px-2.5 py-1.5 flex items-center gap-2 ${isPrintMode ? 'shadow-none' : 'shadow-sm'}`}>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                          {tipo && (
+                                            <span className="text-[8px] font-[800] uppercase tracking-wider bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-sm">
+                                              {tipo}
+                                            </span>
+                                          )}
+                                          <span className="font-[600] text-[#0f172a]">{nome}</span>
+                                          <span className="text-[#64748b] font-medium">{pesoFormatado}</span>
+                                          {precoFormatado && <span className="text-[#475569] font-bold ml-1">{precoFormatado}</span>}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
                                 </td>
                               </tr>
-                              {m.map((mat: any, idx: number) => {
-                                const isObj = typeof mat === 'object' && mat !== null;
-                                const nome = isObj ? mat.n : mat;
-                                const pesoFormatado = isObj && typeof mat.q === 'number' ? `${mat.q}g` : '—';
-                                const precoFormatado = isObj && typeof mat.p === 'number' ? `R$ ${proporcionar(mat.p)}` : 'Incluso';
-                                
-                                return (
-                                  <tr key={idx} className="border-b border-[#f1f5f9] last:border-0 hover:bg-slate-50 transition-colors">
-                                    <td className="py-2 px-1.5 pl-10 text-[10px] font-medium text-[#64748b]">
-                                      • {nome}
-                                    </td>
-                                    <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">{pesoFormatado}</td>
-                                    <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
-                                    <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{precoFormatado}</td>
-                                  </tr>
-                                );
-                              })}
                             </>
                           ) : (
                             <tr className="border-b border-[#f1f5f9] hover:bg-slate-50 transition-colors">
@@ -300,7 +310,7 @@ export function PaginaOrcamentoPublico() {
               </div>
 
               {/* TOTAL BOX IDÊNTICO AO PDF */}
-              <div className={`bg-[#0f172a] text-white rounded-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 shadow-xl shadow-slate-900/10 ${isPrintMode ? 'p-4 mb-4' : 'p-6 mb-8'}`}>
+              <div className={`bg-[#0f172a] text-white rounded-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 ${isPrintMode ? 'p-5 mb-4 shadow-none' : 'p-6 mb-8 shadow-xl shadow-slate-900/10'}`}>
                 <div className="flex flex-col gap-1">
                   <div className="text-[11px] font-[600] text-[#94a3b8] flex items-center gap-1.5 uppercase tracking-[0.05em]">
                     <Receipt size={14} className="text-slate-400" />
@@ -332,8 +342,13 @@ export function PaginaOrcamentoPublico() {
                 <style>
                   {`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
                     @media print {
-                      @page { margin: 10mm; }
-                      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @page { margin: 0mm; size: A4 portrait; }
+                      html, body { 
+                        margin: 0; padding: 0; 
+                        height: 100%; overflow: hidden; 
+                        -webkit-print-color-adjust: exact; print-color-adjust: exact; 
+                      }
+                      * { page-break-inside: avoid; }
                     }
                   `}
                 </style>

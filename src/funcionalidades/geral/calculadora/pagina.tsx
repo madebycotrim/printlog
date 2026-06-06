@@ -473,15 +473,33 @@ export function PaginaCalculadora() {
   };
 
   const obterUrlLinkMagico = () => {
+    const qtdeMultiplicador = hook.modoEntrada === 'lote' ? 1 : (hook.quantidade || 1);
+    
+    const materiaisAgrupados = hook.materiaisSelecionados.reduce((acc, m) => {
+      const chave = `${m.nome}-${m.tipoMaterial}`;
+      const q = m.quantidade * qtdeMultiplicador;
+      const p = (m.quantidade / 1000) * m.precoKgCentavos * qtdeMultiplicador;
+      
+      if (!acc[chave]) {
+        acc[chave] = { n: m.nome, t: m.tipoMaterial, q: 0, p: 0 };
+      }
+      acc[chave].q += q;
+      acc[chave].p += p;
+      return acc;
+    }, {} as Record<string, { n: string, t: string, q: number, p: number }>);
+
+    const materiaisMagicos = Object.values(materiaisAgrupados).map(mat => ({
+      n: mat.n,
+      t: mat.t,
+      q: Math.round(mat.q),
+      p: Math.round(mat.p)
+    }));
+
     const hash = codificarLinkMagico({
       pr: hook.calculo.precoSugerido,
       np: nomeProjeto || "Projeto 3D",
       t: hook.tempo,
-      m: hook.materiaisSelecionados.map(m => ({
-        n: m.nome,
-        q: Math.round(m.quantidade * (hook.modoEntrada === 'lote' ? 1 : hook.quantidade)),
-        p: Math.round((m.quantidade / 1000) * m.precoKgCentavos * (hook.modoEntrada === 'lote' ? 1 : hook.quantidade))
-      })),
+      m: materiaisMagicos,
       e: config.nomeEstudio || "",
       s: config.sloganEstudio || "",
       l: config.logoEstudio || undefined,
@@ -851,6 +869,9 @@ export function PaginaCalculadora() {
               aba={abaResultado} setAba={setAbaResultado}
               salvarProjeto={confirmarSalvarProjeto}
               gerarPdf={() => {
+                const toastId = toast.loading("Gerando visualização de impressão...");
+                const url = obterUrlLinkMagico() + "&p=1";
+
                 const oldIframe = document.getElementById('print-iframe');
                 if (oldIframe) oldIframe.remove();
 

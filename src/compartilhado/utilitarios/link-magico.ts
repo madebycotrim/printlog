@@ -2,6 +2,7 @@ export interface MaterialMagico {
   n: string; // nome do filamento
   q?: number; // quantidade em gramas (peso)
   p?: number; // preço total do filamento no projeto (centavos)
+  t?: string; // tipo do material (ex: PLA, PETG)
 }
 
 export interface PayloadLinkMagico {
