@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, Check, X } from "lucide-react";
+
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
@@ -159,36 +159,6 @@ export function PaginaConfiguracoes() {
     }
   };
 
-  const lidarComDescartar = () => {
-    // Reset Perfil
-    definirNome(usuario?.nome || "");
-
-    // Reset Operacional (Voltando para os valores salvos no armazém)
-    definirCustoEnergia(config.custoEnergia);
-    definirHoraMaquina(config.horaMaquina);
-    definirHoraOperador(config.horaOperador);
-    definirMargemLucro(config.margemLucro);
-    definirPlano(config.plano);
-
-    // Reset Identidade
-    definirNomeEstudio(config.nomeEstudio);
-    definirSloganEstudio(config.sloganEstudio);
-    definirLogoEstudio(config.logoEstudio);
-
-    // Reset Estudio
-    definirParticiparPrototipos(beta.participarPrototipos);
-    definirBetaMultiEstudio(beta.betaMultiEstudio);
-    definirBetaOrcamentosMagicos(beta.betaOrcamentosMagicos);
-    definirBetaEstoqueInteligente(beta.betaEstoqueInteligente);
-    definirBetaSimuladorMargem(beta.betaSimuladorMargem);
-    definirTemplateOrcamento(beta.templateOrcamento);
-    definirLimiteAlertaEstoque(beta.limiteAlertaEstoque);
-
-    // Reset Aparencia (Usando os valores capturados no mount)
-    contextoTema.definirModoTema(inicialAparencia.modo);
-    contextoTema.definirCorPrimaria(inicialAparencia.cor);
-    contextoTema.definirFonte(inicialAparencia.fonte);
-  };
 
   // Efeito de Auto-save
   useEffect(() => {

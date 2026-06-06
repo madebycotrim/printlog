@@ -1,5 +1,5 @@
 import { memo, useState, useMemo } from "react";
-import { Layers, Box, RefreshCcw, Check, Plus, Trash2, Star, Search, Copy } from "lucide-react";
+import { Layers, Box, RefreshCcw, Check, Plus, Trash2, Star, Search } from "lucide-react";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { motion, AnimatePresence } from "framer-motion";
 import { MaterialSelecionado } from "../tipos";
@@ -21,6 +21,7 @@ interface CardMateriaisProps {
   abrirCriar: () => void;
   alternarFavorito: (id: string) => void;
   adicionarPeca?: (id: string) => void;
+  remover?: (id: string) => void;
 }
 
 export const CardMateriais = memo(function CardMateriais({
