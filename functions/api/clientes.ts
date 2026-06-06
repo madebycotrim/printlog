@@ -86,8 +86,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             
             // Prepara dados para atualização seletiva com criptografia
             const nomeCripto = dados.nome ? await criptografar(dados.nome, chaveMestra) : undefined;
-            const emailCripto = dados.email ? await criptografar(dados.email, chaveMestra) : undefined;
-            const telCripto = dados.telefone ? await criptografar(dados.telefone, chaveMestra) : undefined;
+            const emailCripto = dados.email !== undefined ? await criptografar(dados.email, chaveMestra) : undefined;
+            const telCripto = dados.telefone !== undefined ? await criptografar(dados.telefone, chaveMestra) : undefined;
             const notasCripto = dados.observacoesCRM !== undefined ? await criptografar(dados.observacoesCRM, chaveMestra) : undefined;
 
             let historicoStr = null;
@@ -137,7 +137,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         console.error("[Clientes API Error]:", erro);
         return new Response(JSON.stringify({ 
             sucesso: false,
-            mensagem: erro?.message || "Erro ao processar dados protegidos." 
+            mensagem: String(erro?.stack || erro?.message || JSON.stringify(erro) || "Erro Desconhecido")
         }), { 
             status: 500,
             headers: { "Content-Type": "application/json" }
