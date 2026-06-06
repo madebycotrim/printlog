@@ -4,12 +4,14 @@ interface PropsCardPlanoPremium {
     plano: string;
     cicloPagamento?: string;
     vencimentoPlano?: string | null;
+    emailVerificado?: boolean;
 }
 
 export function CardPlanoPremium({
     plano,
     cicloPagamento,
     vencimentoPlano,
+    emailVerificado = false,
 }: PropsCardPlanoPremium) {
     const obterDiasRestantes = () => {
         if (cicloPagamento === "VITALICIO" || plano === "FUNDADOR") return "Vitalício";
@@ -56,10 +58,12 @@ export function CardPlanoPremium({
                         </h3>
                     </div>
                 </div>
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase ${ehFundador ? 'bg-sky-500/5 text-sky-600/70 border border-sky-500/10' : 'bg-indigo-500/5 text-indigo-600/70 border border-indigo-500/10'}`}>
-                    <Shield size={10} />
-                    Conta Verificada
-                </div>
+                {emailVerificado && (
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase ${ehFundador ? 'bg-sky-500/5 text-sky-600/70 border border-sky-500/10' : 'bg-indigo-500/5 text-indigo-600/70 border border-indigo-500/10'}`}>
+                        <Shield size={10} />
+                        Conta Verificada
+                    </div>
+                )}
             </div>
 
             {/* Divisor vertical em telas grandes */}
@@ -67,27 +71,31 @@ export function CardPlanoPremium({
 
             {/* Coluna Direita: Métricas de Assinatura */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 z-10 w-full flex-1">
-                <div className="flex flex-col gap-1 items-center md:items-start">
-                    <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                        <RotateCcw size={14} className="text-gray-400 dark:text-zinc-600" />
-                        Faturamento
-                    </div>
-                    <span className="text-xl font-black text-gray-800 dark:text-zinc-200 mt-1 uppercase tracking-tight">
-                        {cicloPagamento || "MENSAL"}
-                    </span>
-                </div>
+                {!ehFundador && (
+                    <>
+                        <div className="flex flex-col gap-1 items-center md:items-start">
+                            <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                                <RotateCcw size={14} className="text-gray-400 dark:text-zinc-600" />
+                                Faturamento
+                            </div>
+                            <span className="text-xl font-black text-gray-800 dark:text-zinc-200 mt-1 uppercase tracking-tight">
+                                {cicloPagamento || "MENSAL"}
+                            </span>
+                        </div>
 
-                <div className="flex flex-col gap-1 items-center md:items-start">
-                    <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                        <Calendar size={14} className="text-gray-400 dark:text-zinc-600" />
-                        Renovação
-                    </div>
-                    <span className="text-xl font-black text-gray-800 dark:text-zinc-200 mt-1 tracking-tight">
-                        {obterDataVencimentoFormatada()}
-                    </span>
-                </div>
+                        <div className="flex flex-col gap-1 items-center md:items-start">
+                            <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                                <Calendar size={14} className="text-gray-400 dark:text-zinc-600" />
+                                Renovação
+                            </div>
+                            <span className="text-xl font-black text-gray-800 dark:text-zinc-200 mt-1 tracking-tight">
+                                {obterDataVencimentoFormatada()}
+                            </span>
+                        </div>
+                    </>
+                )}
 
-                <div className="flex flex-col gap-1 items-center md:items-start">
+                <div className={`flex flex-col gap-1 items-center md:items-start ${ehFundador ? 'sm:col-start-3' : ''}`}>
                     <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
                         <Sparkles size={14} className="text-gray-400 dark:text-zinc-600" />
                         Tempo Restante

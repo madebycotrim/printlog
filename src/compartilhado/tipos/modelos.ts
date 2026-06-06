@@ -70,6 +70,7 @@ export interface Usuario {
   plano?: PlanoUsuario;
   dataAceiteTermos?: string; // ISO 8601 UTC
   versaoTermos?: string; // Ex: "2026-05-14"
+  emailVerified?: boolean;
 }
 
 /**

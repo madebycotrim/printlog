@@ -15,9 +15,16 @@
   --color-subtle: var(--border-subtle);
 
   /* Sombras Customizadas Premium */
-  --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.08), 0 10px 20px -10px rgba(0, 0, 0, 0.04);
-  --shadow-flat: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
-  --shadow-glow: 0 0 20px -5px var(--cor-primaria);
+  --shadow-premium: var(--sombra-forte);
+  --shadow-flat: var(--sombra-suave);
+  --shadow-glow: var(--sombra-primaria);
+  
+  /* Sobrescrevendo as sombras padrão do Tailwind para garantir Premium Aesthetics em todo o App */
+  --shadow-sm: var(--sombra-suave);
+  --shadow-md: var(--sombra-media);
+  --shadow-lg: var(--sombra-media);
+  --shadow-xl: var(--sombra-forte);
+  --shadow-2xl: var(--sombra-forte);
 }
 
 /* Fontsource - Inter & JetBrains Mono */
@@ -210,8 +217,14 @@ body {
 .bg-grid-printlog {
   background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+
+.dark .bg-grid-printlog {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
 .bg-grid-sidebar {

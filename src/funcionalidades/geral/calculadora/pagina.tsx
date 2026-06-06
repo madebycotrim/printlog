@@ -7,7 +7,8 @@ import {
   RotateCcw, 
   History as HistoryIcon, 
   Settings,
-  CloudUpload
+  CloudUpload,
+  Save
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -107,10 +108,22 @@ export function PaginaCalculadora() {
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
 
-  // Resetar a calculadora ao sair da página (Sidebar, Navegação, etc)
+  const [salvamentoAutomatico, setSalvamentoAutomatico] = useState<boolean>(() => {
+    return localStorage.getItem("printlog_calculadora_salvamento_automatico") === "true";
+  });
+
+  const salvamentoAutomaticoRef = useRef(salvamentoAutomatico);
+  useEffect(() => {
+    salvamentoAutomaticoRef.current = salvamentoAutomatico;
+    localStorage.setItem("printlog_calculadora_salvamento_automatico", salvamentoAutomatico.toString());
+  }, [salvamentoAutomatico]);
+
+  // Resetar a calculadora ao sair da página (Sidebar, Navegação, etc) se não tiver salvamento automático
   useEffect(() => {
     return () => {
-      hook.limpar(true);
+      if (!salvamentoAutomaticoRef.current) {
+        hook.limpar(true);
+      }
     };
   }, [hook.limpar]);
 
@@ -192,10 +205,10 @@ export function PaginaCalculadora() {
     hook.setMateriaisSelecionados(prev => prev.map(m => (m.instanceId || m.id) === uid ? { ...m, precoKgCentavos: Math.round(precoKg * 100) } : m));
   }, [hook.setMateriaisSelecionados]);
 
-  const atualizarTempoMaterial = useCallback((uid: string, horas: number, minutos: number) => {
+  const atualizarTempoMaterial = useCallback((uid: string, horas: number, minutos: number, segundos: number = 0) => {
     hook.setMateriaisSelecionados(prev => {
-      const newState = prev.map(m => (m.instanceId || m.id) === uid ? { ...m, tempoHoras: horas, tempoMinutos: minutos } : m);
-      const totalMinutos = newState.reduce((acc, m) => acc + (m.tempoHoras || 0) * 60 + (m.tempoMinutos || 0), 0);
+      const newState = prev.map(m => (m.instanceId || m.id) === uid ? { ...m, tempoHoras: horas, tempoMinutos: minutos, tempoSegundos: segundos } : m);
+      const totalMinutos = newState.reduce((acc, m) => acc + (m.tempoHoras || 0) * 60 + (m.tempoMinutos || 0) + (m.tempoSegundos || 0) / 60, 0);
       hook.setTempo(totalMinutos);
       return newState;
     });
@@ -215,6 +228,28 @@ export function PaginaCalculadora() {
       return newState;
     });
   }, [hook.setMateriaisSelecionados, hook.setTempo]);
+
+  const adicionarPecaMaterial = useCallback((idMaterial: string) => {
+    hook.setMateriaisSelecionados(prev => {
+      const matOriginal = materiais.find(m => m.id === idMaterial);
+      if (matOriginal) {
+        return [...prev, {
+          id: matOriginal.id,
+          instanceId: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+          nome: matOriginal.nome,
+          cor: matOriginal.cor,
+          tipo: matOriginal.tipo,
+          tipoMaterial: matOriginal.tipoMaterial || '',
+          quantidade: 0,
+          tempoHoras: 0,
+          tempoMinutos: 0,
+          tempoSegundos: 0,
+          precoKgCentavos: Math.round((matOriginal.precoCentavos / matOriginal.pesoGramas) * 1000)
+        }];
+      }
+      return prev;
+    });
+  }, [hook.setMateriaisSelecionados, materiais]);
 
   // Lógica para carregar projeto existente (Edição)
   useEffect(() => {
@@ -565,6 +600,17 @@ export function PaginaCalculadora() {
           <RotateCcw size={18} />
         </button>
         <button 
+          onClick={() => setSalvamentoAutomatico(!salvamentoAutomatico)}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+            salvamentoAutomatico 
+              ? 'text-cyan-500 bg-cyan-500/10' 
+              : 'text-zinc-400 hover:text-cyan-500 hover:bg-cyan-500/10'
+          }`}
+          title={salvamentoAutomatico ? "Desativar Salvamento Automático" : "Ativar Salvamento Automático"}
+        >
+          <Save size={18} />
+        </button>
+        <button 
           onClick={() => salvarRascunhoRef.current()}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all"
           title="Salvar no Histórico (Rascunho)"
@@ -618,9 +664,9 @@ export function PaginaCalculadora() {
               }
             }
           }}
-          className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-hidden px-6 md:px-12"
+          className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-y-auto xl:overflow-hidden px-4 sm:px-6 md:px-12 pb-24 xl:pb-0"
         >
-          <motion.div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
+          <motion.div className="xl:col-span-8 space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pt-8 pb-10 xl:pb-20 scrollbar-hide">
 
             <motion.div 
               variants={{
@@ -690,6 +736,7 @@ export function PaginaCalculadora() {
                 abrirArmazem={abrirModalArmazem}
                 abrirCriar={abrirCriarMaterial}
                 alternarFavorito={acoesMateriais.alternarFavorito}
+                adicionarPeca={adicionarPecaMaterial}
               />
             </motion.div>
 
@@ -795,13 +842,13 @@ export function PaginaCalculadora() {
               hidden: { opacity: 0, x: 20 },
               visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30, delay: 0.2 } }
             }}
-            className="xl:col-span-4 h-full xl:sticky xl:top-0 flex flex-col justify-center items-center py-8 overflow-y-auto scrollbar-hide"
+            className="xl:col-span-4 h-auto xl:h-full xl:sticky xl:top-0 flex flex-col justify-start xl:justify-center items-center py-8 overflow-y-visible xl:overflow-y-auto scrollbar-hide"
           >
             <PainelResultados
               calculo={hook.calculo}
               dadosPizza={hook.dadosGraficoPizza}
               aba={abaResultado} setAba={setAbaResultado}
-              salvarProjeto={salvarProjetoOuOrcamento}
+              salvarProjeto={confirmarSalvarProjeto}
               gerarPdf={() => {
                 const oldIframe = document.getElementById('print-iframe');
                 if (oldIframe) oldIframe.remove();
@@ -977,7 +1024,7 @@ export function PaginaCalculadora() {
                     placeholder="Ex: PrintPro Lab"
                     value={config.nomeEstudio}
                     onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio, config.logoEstudio)}
-                    className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
+                    className="w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-borda-sutil dark:border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-zinc-900 dark:text-white transition-all shadow-inner placeholder:text-zinc-500 dark:placeholder:text-zinc-700"
                   />
                 </div>
 
@@ -988,7 +1035,7 @@ export function PaginaCalculadora() {
                     placeholder="Ex: Impressão 3D de alta precisão"
                     value={config.sloganEstudio}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value, config.logoEstudio)}
-                    className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
+                    className="w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-borda-sutil dark:border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-zinc-900 dark:text-white transition-all shadow-inner placeholder:text-zinc-500 dark:placeholder:text-zinc-700"
                   />
                 </div>
 
@@ -999,11 +1046,11 @@ export function PaginaCalculadora() {
                     placeholder="https://exemplo.com/logo.png"
                     value={config.logoEstudio}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, config.sloganEstudio, e.target.value)}
-                    className="w-full h-14 px-4 rounded-xl bg-zinc-900/50 border border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-white transition-all shadow-inner placeholder:text-zinc-700"
+                    className="w-full h-14 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-900/50 border border-borda-sutil dark:border-white/5 focus:border-sky-500/40 outline-none font-black text-xs text-zinc-900 dark:text-white transition-all shadow-inner placeholder:text-zinc-500 dark:placeholder:text-zinc-700"
                   />
                 </div>
 
-                <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col gap-1.5 mt-2">
+                <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-950/60 border border-borda-sutil dark:border-zinc-800/50 flex flex-col gap-1.5 mt-2">
                   <span className="text-[9px] font-black uppercase text-sky-400/60 border-b border-dashed border-zinc-800/50 pb-2 mb-1 tracking-wider">
                     Pré-Visualização do Documento
                   </span>

@@ -8,7 +8,7 @@ import { centavosParaReais, extrairValorNumerico } from "@/compartilhado/utilita
 interface CardProducaoProps {
   tempo: number;
   setTempo: (v: number) => void;
-  modoEntrada: 'unitario' | 'lote';
+  modoEntrada: 'unitario' | 'lote' | 'projeto';
   potencia: number;
   setPotencia: (v: number) => void;
   precoKwh: number;
@@ -41,6 +41,7 @@ export const CardProducao = memo(function CardProducao({
   const [tempQuantidade, setTempQuantidade] = useState<string | undefined>(undefined);
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
+  const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
   const [tempPotencia, setTempPotencia] = useState<string | undefined>(undefined);
 
   const lidarComDeteccao = async () => {
@@ -98,9 +99,11 @@ export const CardProducao = memo(function CardProducao({
         <div className="flex flex-col md:flex-row gap-8 md:gap-0">
         {/* Coluna Esquerda: Tempo e Energia */}
         <div className="flex-1 space-y-4 md:pr-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3 sm:gap-4">
             <div>
-              <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">Quantas peças?</label>
+              <label className="block h-4 text-[10px] font-black uppercase text-muted-foreground mb-2">
+                {modoEntrada === 'projeto' ? 'Quantos Projetos?' : 'Quantas Peças?'}
+              </label>
               <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner overflow-hidden">
                 <button 
                   type="button"
@@ -135,10 +138,10 @@ export const CardProducao = memo(function CardProducao({
 
             <div>
               <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">
-                {modoEntrada === 'lote' ? "Tempo de Produção (Lote)" : "Tempo de Produção (Peça)"}
+                {modoEntrada === 'lote' ? "Tempo de Produção (Lote)" : modoEntrada === 'projeto' ? "Tempo de Produção (Projeto)" : "Tempo de Produção (Peça)"}
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
+              <div className="flex items-center gap-1.5">
+                <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
                     placeholder="0" 
@@ -148,28 +151,49 @@ export const CardProducao = memo(function CardProducao({
                     onChange={(e) => {
                       const v = e.target.value;
                       setTempHora(v);
-                      setTempo((v === "" ? 0 : Number(v)) * 60 + (tempo % 60));
+                      setTempo((v === "" ? 0 : Number(v)) * 60 + Math.floor(tempo % 60) + (tempo % 1));
                     }} 
-                    className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                    className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                   />
-                  <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
+                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                 </div>
 
-                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
+                <span className="text-zinc-400 font-bold">:</span>
+
+                <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
                   <input 
                     type="number" 
                     placeholder="0" 
-                    value={tempMinuto !== undefined ? tempMinuto : (tempo % 60 === 0 ? "" : (tempo % 60 || ""))} 
+                    value={tempMinuto !== undefined ? tempMinuto : (Math.floor(tempo % 60) === 0 ? "" : (Math.floor(tempo % 60) || ""))} 
                     onFocus={() => {}}
                     onBlur={() => setTempMinuto(undefined)}
                     onChange={(e) => {
                       const v = e.target.value;
                       setTempMinuto(v);
-                      setTempo(Math.floor(tempo / 60) * 60 + (v === "" ? 0 : Number(v)));
+                      setTempo(Math.floor(tempo / 60) * 60 + (v === "" ? 0 : Number(v)) + (tempo % 1));
                     }} 
-                    className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
+                    className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                   />
-                  <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
+                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">m</span>
+                </div>
+
+                <span className="text-zinc-400 font-bold">:</span>
+
+                <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
+                  <input 
+                    type="number" 
+                    placeholder="0" 
+                    value={tempSegundo !== undefined ? tempSegundo : (Math.round((tempo % 1) * 60) === 0 ? "" : (Math.round((tempo % 1) * 60) || ""))} 
+                    onFocus={() => {}}
+                    onBlur={() => setTempSegundo(undefined)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setTempSegundo(v);
+                      setTempo(Math.floor(tempo / 60) * 60 + Math.floor(tempo % 60) + ((v === "" ? 0 : Number(v)) / 60));
+                    }} 
+                    className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                  />
+                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">s</span>
                 </div>
               </div>
             </div>

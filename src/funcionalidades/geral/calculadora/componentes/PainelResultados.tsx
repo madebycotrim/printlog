@@ -24,7 +24,7 @@ interface PainelResultadosProps {
   quantidade?: number;
   insumosFixos?: number;
   tempo?: number;
-  modoEntrada?: 'unitario' | 'lote';
+  modoEntrada?: 'unitario' | 'lote' | 'projeto';
   frete?: number;
   taxaFixa?: number;
   aoSugerirPrecoIA?: () => void;
@@ -37,7 +37,7 @@ interface PainelResultadosProps {
 export const PainelResultados = memo(function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
-  tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA,
+  tempo = 0, modoEntrada = 'projeto', frete = 0, taxaFixa = 0, aoSugerirPrecoIA,
   descontoVolume = 0, setDescontoVolume, precoAlvoCentavos = 0, setPrecoAlvoCentavos
 }: PainelResultadosProps) {
   const { usuario } = useAutenticacao();
@@ -167,9 +167,26 @@ export const PainelResultados = memo(function PainelResultados({
         </div>
 
         <div className="mt-2 mb-4">
-          <h2 className={`text-4xl font-black tracking-tighter leading-none mb-4 text-center ${precoAlvoCentavos && precoAlvoCentavos > 0 ? "text-violet-500" : "text-primary"}`}>
+          <h2 className={`text-4xl font-black tracking-tighter leading-none mb-3 text-center ${precoAlvoCentavos && precoAlvoCentavos > 0 ? "text-violet-500" : "text-primary"}`}>
             <ContadorAnimado valor={calculo.precoSugerido / 100} />
           </h2>
+
+          {(() => {
+            const pesoAcumulado = materiais.reduce((acc, m) => acc + (modoEntrada === 'lote' ? m.quantidade : m.quantidade * Math.max(1, quantidade)), 0);
+            const tempoCalculado = modoEntrada === 'lote' ? tempo : tempo * Math.max(1, quantidade);
+            const h = Math.floor(tempoCalculado / 60);
+            const m = Math.round(tempoCalculado % 60);
+            const tempoStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            
+            return (pesoAcumulado > 0 || tempoCalculado > 0) ? (
+              <div className="flex items-center justify-center gap-3 mb-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                {pesoAcumulado > 0 && <span>{pesoAcumulado.toFixed(1)}g total</span>}
+                {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
+                {tempoCalculado > 0 && <span>{tempoStr}</span>}
+              </div>
+            ) : null;
+          })()}
+
           <div className="flex flex-col gap-3 items-center">
             <div className="flex flex-wrap justify-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-muted/30 focus-within:border-sky-500/50 transition-colors shadow-inner">
@@ -178,7 +195,7 @@ export const PainelResultados = memo(function PainelResultados({
                   type="number"
                   min="0"
                   max="100"
-                  value={descontoVolume === 0 ? "" : descontoVolume}
+                  value={!descontoVolume || descontoVolume === 0 ? "" : descontoVolume}
                   onChange={(e) => {
                     const v = e.target.value;
                     setDescontoVolume?.(v === "" ? 0 : Number(v));
@@ -194,7 +211,7 @@ export const PainelResultados = memo(function PainelResultados({
                 <input 
                   type="number"
                   min="0"
-                  value={precoAlvoCentavos === 0 ? "" : (precoAlvoCentavos || 0) / 100}
+                  value={!precoAlvoCentavos || precoAlvoCentavos === 0 ? "" : (precoAlvoCentavos || 0) / 100}
                   onChange={(e) => {
                     const v = e.target.value;
                     setPrecoAlvoCentavos?.(v === "" ? 0 : Math.round(Number(v) * 100));
@@ -224,7 +241,7 @@ export const PainelResultados = memo(function PainelResultados({
             { label: 'Taxas', valor: calculo.taxaMarketplace, icone: DollarSign, cor: 'text-violet-400' },
             { label: 'Frete e Logística', valor: (modoEntrada === 'lote' ? frete * 100 : frete * 100 * quantidade) + (taxaFixa * 100), icone: Package, cor: 'text-orange-400' },
             { label: 'Desconto Aplicado', valor: -(calculo.valorDesconto || 0), icone: DollarSign, cor: 'text-emerald-500' },
-          ].filter(i => i.valor > 0);
+          ].filter(i => i.valor !== 0);
 
           const estaVazio = itens.length === 0;
 
@@ -253,8 +270,9 @@ export const PainelResultados = memo(function PainelResultados({
 
                       materiais.forEach(m => {
                         const chave = m.id || m.nome;
-                        const pesoFinal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * quantidade;
-                        const valorItem = Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : quantidade));
+                        const qtdReal = Math.max(1, quantidade);
+                        const pesoFinal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * qtdReal;
+                        const valorItem = Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : qtdReal));
 
                         const existente = agrupadosMap.get(chave);
                         if (existente) {
@@ -278,13 +296,14 @@ export const PainelResultados = memo(function PainelResultados({
                         };
                       });
                     } else if (item.label === 'Insumos & Extras') {
+                      const qtdReal = Math.max(1, quantidade);
                       const subInsumos = insumos.map(i => ({
-                        nome: <>{i.nome} ({modoEntrada === 'lote' || i.porLote ? i.quantidade : i.quantidade * quantidade}<span className="lowercase">x</span>)</>,
-                        valor: (modoEntrada === 'lote' || i.porLote) ? i.quantidade * i.custoCentavos : i.quantidade * i.custoCentavos * quantidade
+                        nome: <>{i.nome} ({modoEntrada === 'lote' || i.porLote ? i.quantidade : i.quantidade * qtdReal}<span className="lowercase">x</span>)</>,
+                        valor: (modoEntrada === 'lote' || i.porLote) ? i.quantidade * i.custoCentavos : i.quantidade * i.custoCentavos * qtdReal
                       }));
                       const subPos = posProcesso.map(p => ({
-                        nome: modoEntrada === 'unitario' ? <>{p.nome} (<span className="lowercase">x</span>{quantidade})</> : p.nome,
-                        valor: p.valor * (modoEntrada === 'lote' ? 1 : quantidade)
+                        nome: (modoEntrada === 'unitario' || modoEntrada === 'projeto') ? <>{p.nome} (<span className="lowercase">x</span>{qtdReal})</> : p.nome,
+                        valor: p.valor * (modoEntrada === 'lote' ? 1 : qtdReal)
                       }));
                       subitens = [...subInsumos, ...subPos];
 
@@ -295,7 +314,8 @@ export const PainelResultados = memo(function PainelResultados({
                         });
                       }
                     } else if (item.label === 'Depreciação') {
-                      const horasTotais = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * quantidade;
+                      const qtdReal = Math.max(1, quantidade);
+                      const horasTotais = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * qtdReal;
                       subitens = [{
                         nome: <>Uso da Máquina ({horasTotais < 1 
                           ? <>{Math.round(horasTotais * 60)}<span className="lowercase">min</span></> 

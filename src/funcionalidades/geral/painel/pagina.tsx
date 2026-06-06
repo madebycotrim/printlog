@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 
+import { autenticacao } from "@/compartilhado/servicos/firebase";
 // Hooks e Estado
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -119,8 +120,19 @@ export function PaginaInicial() {
 
   const realizarUpgradeGratis = async () => {
     if (!usuario?.uid) return;
+
     definirCarregandoUpgrade(true);
+    
     try {
+      if (autenticacao.currentUser) {
+        await autenticacao.currentUser.reload();
+        if (!autenticacao.currentUser.emailVerified) {
+          toast.error("Você precisa verificar seu e-mail no Perfil antes de ativar este plano.");
+          definirCarregandoUpgrade(false);
+          return;
+        }
+      }
+
       definirPlano("FUNDADOR");
       await salvarConfiguracoes(usuario.uid);
       toast.success("Parabéns! Agora você é um MAKER FUNDADOR vitalício ✨");

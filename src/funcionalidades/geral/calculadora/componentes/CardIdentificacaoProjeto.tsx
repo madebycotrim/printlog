@@ -1,4 +1,4 @@
-import { FolderKanban, ChevronDown, Check, Plus, Box, LayoutGrid, User, PencilLine, MessageSquare } from "lucide-react";
+import { FolderKanban, ChevronDown, Check, Plus, Box, LayoutGrid, Blocks, User, PencilLine, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 
 /**
@@ -18,8 +18,8 @@ interface PropriedadesCardIdentificacaoProjeto {
   setNomeProjeto: (v: string) => void;
   descricaoProjeto: string;
   setDescricaoProjeto: (v: string) => void;
-  modoEntrada: 'unitario' | 'lote';
-  setModoEntrada: (v: 'unitario' | 'lote') => void;
+  modoEntrada: 'unitario' | 'lote' | 'projeto';
+  setModoEntrada: (v: 'unitario' | 'lote' | 'projeto') => void;
   quantidade: number;
 }
 
@@ -196,7 +196,7 @@ export function CardIdentificacaoProjeto({
           <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Selecione como a inteligência deve processar os dados</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card: Por Peça */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -218,9 +218,9 @@ export function CardIdentificacaoProjeto({
             <div className="flex flex-col gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
                 modoEntrada === 'unitario' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
-              }`}>Por Peça</span>
+              }`}>Peça Única</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                O peso e tempo inseridos serão multiplicados por <span className={modoEntrada === 'unitario' ? 'text-blue-500' : ''}>{quantidade}x</span> automaticamente.
+                Valores equivalem a 1 peça isolada. O total será multiplicado por <span className={modoEntrada === 'unitario' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
               </p>
             </div>
 
@@ -253,13 +253,48 @@ export function CardIdentificacaoProjeto({
             <div className="flex flex-col gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
                 modoEntrada === 'lote' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
-              }`}>Mesa Completa</span>
+              }`}>Mesa / Lote</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                Os valores inseridos já correspondem ao total produzido das <span className={modoEntrada === 'lote' ? 'text-blue-500' : ''}>{quantidade} peças</span>.
+                Valores equivalem a impressão de todas as <span className={modoEntrada === 'lote' ? 'text-blue-500' : ''}>{quantidade || 'X'} {quantidade === 1 ? 'peça' : 'peças'}</span> de uma única vez.
               </p>
             </div>
 
             {modoEntrada === 'lote' && (
+              <motion.div 
+                layoutId="active-indicator"
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+              />
+            )}
+          </motion.button>
+
+          {/* Card: Projeto/Montagem */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="button"
+            onClick={() => setModoEntrada('projeto')}
+            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
+              modoEntrada === 'projeto' 
+              ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
+              : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-blue-500/30'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              modoEntrada === 'projeto' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-zinc-900 text-zinc-300 dark:text-zinc-600 border border-borda-sutil'
+            }`}>
+              <Blocks size={20} />
+            </div>
+            
+            <div className="flex flex-col gap-1">
+              <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+                modoEntrada === 'projeto' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
+              }`}>Projeto Multipeças</span>
+              <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
+                Valores equivalem a soma de várias partes de 1 projeto. O total será multiplicado por <span className={modoEntrada === 'projeto' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
+              </p>
+            </div>
+
+            {modoEntrada === 'projeto' && (
               <motion.div 
                 layoutId="active-indicator"
                 className="absolute top-3 right-3 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"

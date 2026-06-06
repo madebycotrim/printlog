@@ -10,6 +10,7 @@ export interface MaterialSelecionado {
   precoKgCentavos: number;
   tempoHoras?: number;
   tempoMinutos?: number;
+  tempoSegundos?: number;
   porLote?: boolean;
 }
 
@@ -44,6 +45,7 @@ export interface VersaoCalculo {
 
 export interface CalculoResultado {
   custoMaterial: number;
+  modoEntrada: 'unitario' | 'lote' | 'projeto';
   custoEnergia: number;
   custoMaoDeObra: number;
   custoDepreciacao: number;

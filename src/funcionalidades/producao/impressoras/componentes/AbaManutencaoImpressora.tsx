@@ -31,7 +31,7 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
       
       {/* 1. Dashboard de Saúde & Investimento */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 p-8 rounded-3xl bg-zinc-900 dark:bg-zinc-950 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-2 p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_30%,rgba(56,189,248,0.05),transparent)] pointer-events-none" />
            
            <div className="flex flex-col gap-1 text-center md:text-left relative z-10">

@@ -137,7 +137,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         console.error("[Clientes API Error]:", erro);
         return new Response(JSON.stringify({ 
             sucesso: false,
-            mensagem: "Erro ao processar dados protegidos." 
+            mensagem: erro?.message || "Erro ao processar dados protegidos." 
         }), { 
             status: 500,
             headers: { "Content-Type": "application/json" }

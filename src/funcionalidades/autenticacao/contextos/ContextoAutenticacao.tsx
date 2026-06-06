@@ -12,6 +12,7 @@ import {
   signInWithPopup,
   getRedirectResult,
   AuthError,
+
   setPersistence,
   browserLocalPersistence,
   deleteUser,
@@ -20,6 +21,7 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  sendEmailVerification,
 } from "firebase/auth";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
@@ -42,6 +44,8 @@ interface ContextoAutenticacaoProps {
   exportarDadosPessoais: () => Promise<void>;
   buscarToken: () => Promise<string | null>;
   enviarLinkMagicoLogin: (email: string) => Promise<void>;
+  enviarEmailVerificacao: () => Promise<void>;
+  recarregarUsuario: () => Promise<void>;
 }
 
 const ContextoAutenticacao = createContext<ContextoAutenticacaoProps>({} as ContextoAutenticacaoProps);
@@ -171,6 +175,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           plano: plano,
           dataAceiteTermos: new Date().toISOString(), // Idealmente buscar do banco D1
           versaoTermos: "2026-05-14",
+          emailVerified: user.emailVerified,
         };
         
         definirUsuario(novoUsuario);
@@ -347,6 +352,43 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       await sendPasswordResetEmail(autenticacao, email);
     } catch (erro: unknown) {
       traduzirErroFirebase(erro);
+    }
+  };
+
+  /**
+   * Recarrega os dados do usuário atual (útil para atualizar emailVerified).
+   */
+  const recarregarUsuario = async () => {
+    if (autenticacao.currentUser) {
+      await autenticacao.currentUser.reload();
+      // Força a atualização do estado local criando um novo objeto
+      definirUsuario((prev) => prev ? { ...prev, emailVerified: autenticacao.currentUser?.emailVerified } : null);
+    }
+  };
+
+  /**
+   * Envia um e-mail de verificação para o usuário atual.
+   */
+  const enviarEmailVerificacao = async () => {
+    try {
+      definirCarregando(true);
+      if (!autenticacao.currentUser) throw new Error("Usuário não autenticado");
+      
+      await autenticacao.currentUser.reload();
+      if (autenticacao.currentUser.emailVerified) {
+        definirUsuario((prev) => prev ? { ...prev, emailVerified: true } : null);
+        toast.success("Seu e-mail já está verificado!");
+        return;
+      }
+      
+      await sendEmailVerification(autenticacao.currentUser);
+      toast.success("E-mail de verificação enviado! Verifique sua caixa de entrada e spam.");
+    } catch (erro: any) {
+      registrar.error({ rastreioId: "auth", servico: "Autenticacao" }, "Erro ao enviar verificacao", erro);
+      toast.error("Falha ao enviar e-mail de verificação. Tente novamente mais tarde.");
+      throw erro;
+    } finally {
+      definirCarregando(false);
     }
   };
 
@@ -600,6 +642,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     exportarDadosPessoais,
     buscarToken,
     enviarLinkMagicoLogin,
+    enviarEmailVerificacao,
+    recarregarUsuario,
   };
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;

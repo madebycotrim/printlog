@@ -68,10 +68,10 @@ export function ModalEnviarEmailOrcamento({
 
   return (
     <Dialogo aberto={aberto} aoMudarAberto={(v) => !v && aoFechar()}>
-      <div className="p-6 md:p-8 max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl relative shadow-2xl">
+      <div className="p-6 md:p-8 max-w-md w-full bg-white dark:bg-slate-900 border border-borda-sutil dark:border-slate-800 rounded-2xl relative shadow-2xl">
         <button
           onClick={aoFechar}
-          className="absolute right-4 top-4 text-zinc-500 hover:text-zinc-300 bg-zinc-800/50 hover:bg-zinc-800 p-2 rounded-full transition-colors"
+          className="absolute right-4 top-4 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 bg-zinc-100/50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors"
         >
           <X size={18} />
         </button>
@@ -82,8 +82,8 @@ export function ModalEnviarEmailOrcamento({
               <Mail size={24} />
             </div>
             
-            <h2 className="text-xl font-bold text-white mb-2">Enviar Orçamento</h2>
-            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Enviar Orçamento</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">
               Vamos enviar um e-mail profissional com o Link Mágico do orçamento diretamente para o seu cliente.
             </p>
 
@@ -97,7 +97,7 @@ export function ModalEnviarEmailOrcamento({
                   value={nomeCliente}
                   onChange={(e) => setNomeCliente(e.target.value)}
                   placeholder="Ex: João Silva"
-                  className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-50 dark:bg-black/20 border border-borda-sutil dark:border-white/5 rounded-xl px-4 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
               </div>
 
@@ -111,7 +111,7 @@ export function ModalEnviarEmailOrcamento({
                   onChange={(e) => setEmailCliente(e.target.value)}
                   placeholder="cliente@email.com"
                   required
-                  className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-zinc-600"
+                  className="w-full bg-zinc-50 dark:bg-black/20 border border-borda-sutil dark:border-white/5 rounded-xl px-4 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
               </div>
 
@@ -134,13 +134,13 @@ export function ModalEnviarEmailOrcamento({
             <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-emerald-500/20">
               <Mail size={32} />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">E-mail Enviado!</h2>
-            <p className="text-sm text-zinc-400 mb-8 max-w-[250px] mx-auto">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">E-mail Enviado!</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8 max-w-[250px] mx-auto">
               O orçamento foi enviado para <strong>{emailCliente}</strong> com sucesso.
             </p>
             <button
               onClick={aoFechar}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/5 text-white font-bold py-3 rounded-xl transition-all"
+              className="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 border border-borda-sutil dark:border-white/5 text-zinc-900 dark:text-white font-bold py-3 rounded-xl transition-all"
             >
               Fechar
             </button>

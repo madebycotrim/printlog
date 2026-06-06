@@ -27,7 +27,6 @@ export function PaginaMateriais() {
   const { estado, acoes } = useGerenciadorMateriais();
   const { insumos, definirInsumos } = useArmazemInsumos();
   const { usuario } = useAutenticacao();
-  const { betaEstoqueInteligente } = useBeta();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
 
   const tentarNovoMaterial = () => {

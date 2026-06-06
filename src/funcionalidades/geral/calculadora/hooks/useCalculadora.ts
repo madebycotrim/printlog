@@ -44,7 +44,7 @@ export function useCalculadora() {
 
   const [quantidade, setQuantidade] = useState<number>(() => armazenamentoSeguro.obter("printlog_quantidade", 0));
   const [pecasPorMesa, setPecasPorMesa] = useState<number>(() => armazenamentoSeguro.obter("printlog_pecas_por_mesa", 0));
-  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote'>(() => armazenamentoSeguro.obter<'unitario' | 'lote'>("printlog_calculadora_modo_entrada", "lote"));
+  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote' | 'projeto'>(() => armazenamentoSeguro.obter<'unitario' | 'lote' | 'projeto'>("printlog_calculadora_modo_entrada", "lote"));
   const [tempoSetup, setTempoSetup] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_setup", 0));
   const [taxaFalha, setTaxaFalha] = useState<number>(() => armazenamentoSeguro.obter("printlog_taxa_falha", 0));
   const [materialPerdido, setMaterialPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_material_perdido", 0));
@@ -172,23 +172,27 @@ export function useCalculadora() {
 
   // Cálculo de Resultados
   const calculo = useMemo((): CalculoResultado => {
+    const qtdReal = Math.max(1, quantidade);
+
     const custoMaterialTotalCentavos = materiaisSelecionados.reduce((acc, m) => {
-      const pesoTotal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * quantidade;
+      const pesoTotal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * qtdReal;
       return acc + (pesoTotal / 1000) * m.precoKgCentavos;
     }, 0);
     const custoInsumosDinamicosCentavos = insumosSelecionados.reduce((acc, i) => {
       const valorBase = i.quantidade * i.custoCentavos;
-      return acc + (i.porLote ? valorBase : valorBase * quantidade);
+      return acc + (i.porLote ? valorBase : valorBase * qtdReal);
     }, 0);
-    const horasDecimaisMaquina = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * quantidade;
+    const horasDecimaisMaquina = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * qtdReal;
     const custoEnergiaCentavos = cobrarEnergia ? Math.round((potencia / 1000) * horasDecimaisMaquina * precoKwh) : 0;
     const custoDepreciacaoCentavos = cobrarDesgaste ? Math.round(horasDecimaisMaquina * depreciacaoHora) : 0;
     const custoFilamentoPerdidoCentavos = materiaisSelecionados.reduce((acc, m) => acc + (materialPerdido / 1000) * m.precoKgCentavos, 0);
     const custoTempoPerdidoCentavos = ((tempoPerdido / 60) * depreciacaoHora) + (cobrarEnergia ? Math.round((potencia / 1000) * (tempoPerdido / 60) * precoKwh) : 0);
     const custoFalhaRealCentavos = Math.round(custoFilamentoPerdidoCentavos + custoTempoPerdidoCentavos);
-    const numeroDeLotes = modoEntrada === 'lote' && pecasPorMesa > 0 ? Math.ceil(quantidade / pecasPorMesa) : 1;
+    
+    const numeroDeLotes = modoEntrada === 'lote' && pecasPorMesa > 0 ? Math.ceil(qtdReal / pecasPorMesa) : 1;
     const custoMaoDeObraCentavos = cobrarMaoDeObra ? Math.round(((tempoSetup * numeroDeLotes) / 60) * maoDeObra) : 0;
-    const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor), 0) * (modoEntrada === 'lote' ? 1 : quantidade);
+    
+    const custoPosProcessoCentavos = itensPosProcesso.reduce((t, i) => t + (i.valor), 0) * (modoEntrada === 'lote' ? 1 : qtdReal);
     const custoInsumosFixosCentavos = cobrarInsumosFixos ? insumosFixos : 0;
     const custoFreteCentavos = cobrarLogistica ? frete : 0;
     const custoModelagemCentavos = Math.round((tempoModelagem / 60) * valorHoraModelagem);

@@ -18,7 +18,7 @@ interface CardInsumosProps {
   alternarPorLote: (id: string) => void;
   abrirGerenciar: () => void;
   abrirNovo: () => void;
-  modoEntrada: 'unitario' | 'lote';
+  modoEntrada: 'unitario' | 'lote' | 'projeto';
   alternarFavorito: (id: string) => void;
 }
 
@@ -333,8 +333,8 @@ export const CardInsumos = memo(function CardInsumos({
                     </div>
 
                     <div className="flex-1 w-full flex flex-col sm:flex-row sm:items-center justify-end gap-4">
-                      {/* Cobrança Mode Toggle (only visible if modoEntrada === 'unitario') */}
-                      {modoEntrada === 'unitario' && (
+                      {/* Cobrança Mode Toggle (only visible if modoEntrada === 'unitario' || 'projeto') */}
+                      {(modoEntrada === 'unitario' || modoEntrada === 'projeto') && (
                         <div className="flex flex-col gap-1.5 shrink-0">
                           <label className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest leading-none">Tipo Cobrança</label>
                           <button

@@ -1,9 +1,9 @@
 import { memo, useState, useMemo } from "react";
-import { Layers, Box, RefreshCcw, Check, Plus, Trash2, Star, Search } from "lucide-react";
+import { Layers, Box, RefreshCcw, Check, Plus, Trash2, Star, Search, Copy } from "lucide-react";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { motion, AnimatePresence } from "framer-motion";
 import { MaterialSelecionado } from "../tipos";
-import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { useDragScroll } from "@/compartilhado/hooks/useDragScroll";
 
 interface CardMateriaisProps {
@@ -15,16 +15,16 @@ interface CardMateriaisProps {
   alternar: (id: string) => void;
   atualizarQtd: (id: string, qtd: number) => void;
   atualizarPreco: (id: string, preco: number) => void;
-  atualizarTempo?: (id: string, horas: number, minutos: number) => void;
+  atualizarTempo?: (id: string, horas: number, minutos: number, segundos: number) => void;
   atualizarNomePeca?: (id: string, nome: string) => void;
-  remover: (id: string) => void;
   abrirArmazem: () => void;
   abrirCriar: () => void;
   alternarFavorito: (id: string) => void;
+  adicionarPeca?: (id: string) => void;
 }
 
 export const CardMateriais = memo(function CardMateriais({
-  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarPreco, atualizarTempo, atualizarNomePeca, remover, abrirArmazem, abrirCriar, alternarFavorito
+  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarTempo, remover, abrirArmazem, abrirCriar, alternarFavorito, adicionarPeca
 }: CardMateriaisProps) {
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
   const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
@@ -263,104 +263,180 @@ export const CardMateriais = memo(function CardMateriais({
               <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-[0.2em] relative z-10">Selecione itens para calcular</p>
             </motion.div>
           ) : (
-            selecionados.map((item) => {
-              const alerta = alertas.find(a => a.materialId === item.id);
-              const real = materiais.find(m => m.id === item.id);
+            Object.values(
+              selecionados.reduce((acc, item) => {
+                if (!acc[item.id]) acc[item.id] = [];
+                acc[item.id].push(item);
+                return acc;
+              }, {} as Record<string, typeof selecionados>)
+            ).map((grupo) => {
+              const materialBase = grupo[0];
+              const alerta = alertas.find(a => a.materialId === materialBase.id);
+              const materialOriginal = materiais.find(m => m.id === materialBase.id);
+              
+              const quantidadeTotal = grupo.reduce((sum, item) => sum + (item.quantidade || 0), 0);
+              const estoque = materialOriginal?.pesoGramas || 0;
+              const percentualUso = estoque > 0 ? (quantidadeTotal / estoque) * 100 : 0;
+              const vaiFaltar = quantidadeTotal > estoque;
               
               return (
                 <motion.div
-                  key={item.instanceId || item.id}
+                  key={materialBase.id}
                   layout="position"
                   initial={{ opacity: 0, x: -30 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 30, transition: { duration: 0.15 } }}
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  className={`p-4 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors overflow-hidden
+                  className={`p-4 rounded-2xl border flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 transition-colors overflow-hidden
                     ${alerta 
                       ? "bg-rose-500/5 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]" 
                       : "bg-zinc-50 dark:bg-white/[0.03] border-borda-sutil"}
                   `}
                 >
-                  <div className="flex items-center gap-3 min-w-[200px] shrink-0">
+                  <div className="flex items-center gap-3 min-w-[200px] shrink-0 self-start lg:self-center">
                     <div className="shrink-0">
-                      {item.tipo === "FDM" ? (
-                        <Carretel cor={item.cor} tamanho={36} className="-ml-1" />
+                      {materialBase.tipo === "FDM" ? (
+                        <Carretel cor={materialBase.cor} tamanho={36} className="-ml-1" />
                       ) : (
-                        <GarrafaResina cor={item.cor} tamanho={36} className="-ml-1" />
+                        <GarrafaResina cor={materialBase.cor} tamanho={36} className="-ml-1" />
                       )}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-black uppercase tracking-tight truncate text-primary dark:text-white">{item.nome}</span>
-                      <span className="text-[9px] font-bold text-zinc-500 dark:text-gray-400 uppercase mt-0.5">{item.tipoMaterial || item.tipo}</span>
-                      {alerta && (
-                        <span className="text-[9px] font-black text-rose-500 uppercase mt-1 flex items-center gap-1">
-                          <RefreshCcw size={8} /> ESTOQUE CRÍTICO
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-xs sm:text-sm font-black uppercase tracking-tight truncate text-primary dark:text-white leading-none">
+                          {materialBase.nome}
                         </span>
+                        <span className="px-1 py-0.5 rounded-sm text-[7px] font-black uppercase tracking-widest bg-zinc-200/50 dark:bg-white/10 text-zinc-600 dark:text-zinc-400 border border-borda-sutil leading-none mt-[-2px]">
+                          {materialBase.tipoMaterial || materialBase.tipo}
+                        </span>
+                        {alerta && (
+                          <span className="px-1 py-0.5 rounded-sm text-[7px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center gap-1 leading-none mt-[-2px]">
+                            <RefreshCcw size={6} /> CRÍTICO
+                          </span>
+                        )}
+                      </div>
+                      
+                      {materialOriginal && (
+                        <div className="mt-3 w-[160px] shrink-0 flex flex-col gap-1">
+                          <div className="text-[9px] font-black tracking-wider">
+                            <span className="text-zinc-500 uppercase">Uso Estimado</span>
+                          </div>
+                          <div className="h-2 w-full bg-zinc-200/50 dark:bg-white/5 rounded-full overflow-hidden shadow-inner">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-500 ease-out ${vaiFaltar ? "bg-gradient-to-r from-rose-600 to-rose-400" : "bg-gradient-to-r from-cyan-600 to-cyan-400"}`}
+                              style={{ width: `${Math.min(percentualUso, 100)}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-end text-[9px] font-black tracking-wider mt-0.5">
+                            <span className={vaiFaltar ? "text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "text-cyan-500"}>
+                              {Number(quantidadeTotal.toFixed(1))}{materialOriginal.tipo === "FDM" ? "g" : "ml"} <span className="text-zinc-500 mx-0.5">/</span> <span className="text-zinc-400 dark:text-zinc-500">{estoque}{materialOriginal.tipo === "FDM" ? "g" : "ml"}</span>
+                            </span>
+                          </div>
+                        </div>
                       )}
+
                     </div>
                   </div>
-                  <div className="flex-1 w-full flex flex-col sm:flex-row sm:items-center justify-end gap-4">
-                    {/* Peso Input */}
-                    <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
-                      <label className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest leading-none">
-                        Peso ({item.tipo === "FDM" ? "g" : "ml"})
-                      </label>
-                      <input 
-                        type="number" 
-                        placeholder="0" 
-                        value={item.quantidade === 0 ? "" : item.quantidade} 
-                        onChange={(e) => atualizarPeso(item.instanceId || item.id, Number(e.target.value))} 
-                        className={`h-9 px-3 rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner ${alerta ? 'text-rose-500' : 'text-primary dark:text-white'}`} 
-                      />
-                    </div>
+                  
+                  <div className="flex-1 w-full flex flex-col gap-3">
+                    {grupo.map((item, index) => (
+                      <div key={item.instanceId || item.id} className="flex flex-col sm:flex-row sm:items-end justify-end gap-4 w-full">
+                        {/* Peso Input */}
+                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
+                          {index === 0 && (
+                            <label className="text-[8px] font-black uppercase tracking-widest leading-none text-zinc-400 dark:text-zinc-500">
+                              Peso ({item.tipo === "FDM" ? "g" : "ml"})
+                            </label>
+                          )}
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={item.quantidade === 0 ? "" : item.quantidade} 
+                            onChange={(e) => atualizarQtd(item.instanceId || item.id, Number(e.target.value))} 
+                            className={`h-9 px-3 rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner ${alerta ? 'text-rose-500' : 'text-primary dark:text-white'}`} 
+                          />
+                        </div>
 
-                    {/* Tempo: Horas e Minutos */}
-                    <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
-                      <label className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest leading-none">
-                        Tempo de Impressão
-                      </label>
-                      <div className="flex items-center gap-1 h-9">
-                        <input 
-                          type="number" 
-                          placeholder="h" 
-                          value={item.tempoHoras === 0 ? "" : item.tempoHoras} 
-                          onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, Number(e.target.value), item.tempoMinutos || 0)} 
-                          className="w-full sm:w-16 h-full rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner text-primary dark:text-white" 
-                        />
-                        <span className="text-zinc-400 font-bold">:</span>
-                        <input 
-                          type="number" 
-                          placeholder="m" 
-                          value={item.tempoMinutos === 0 ? "" : item.tempoMinutos} 
-                          onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, item.tempoHoras || 0, Number(e.target.value))} 
-                          className="w-full sm:w-16 h-full rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner text-primary dark:text-white" 
-                        />
+                        {/* Tempo: Horas e Minutos */}
+                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
+                          {index === 0 && (
+                            <label className="text-[8px] font-black uppercase tracking-widest leading-none text-zinc-400 dark:text-zinc-500">
+                              Tempo de Impressão
+                            </label>
+                          )}
+                          <div className="flex items-center gap-1 h-9">
+                            <input 
+                              type="number" 
+                              placeholder="h" 
+                              value={item.tempoHoras === 0 ? "" : item.tempoHoras} 
+                              onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, Number(e.target.value), item.tempoMinutos || 0, item.tempoSegundos || 0)} 
+                              className="w-full sm:w-16 h-full rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner text-primary dark:text-white" 
+                            />
+                            <span className="text-zinc-400 font-bold">:</span>
+                            <input 
+                              type="number" 
+                              placeholder="m" 
+                              value={item.tempoMinutos === 0 ? "" : item.tempoMinutos} 
+                              onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, item.tempoHoras || 0, Number(e.target.value), item.tempoSegundos || 0)} 
+                              className="w-full sm:w-16 h-full rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner text-primary dark:text-white" 
+                            />
+                            {(!item.tempoHoras || item.tempoHoras === 0) && (
+                              <>
+                                <span className="text-zinc-400 font-bold">:</span>
+                                <input 
+                                  type="number" 
+                                  placeholder="s" 
+                                  value={item.tempoSegundos === 0 ? "" : item.tempoSegundos} 
+                                  onChange={(e) => atualizarTempo && atualizarTempo(item.instanceId || item.id, item.tempoHoras || 0, item.tempoMinutos || 0, Number(e.target.value))} 
+                                  className="w-full sm:w-16 h-full rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-center tabular-nums border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner text-primary dark:text-white animate-in fade-in slide-in-from-left-2 duration-300" 
+                                />
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Custo Total do Item */}
+                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
+                          {index === 0 && (
+                            <label className="text-[8px] font-black uppercase tracking-widest leading-none text-zinc-400 dark:text-zinc-500">
+                              Custo Estimado
+                            </label>
+                          )}
+                          <div className="h-9 px-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center min-w-[100px]">
+                            <span className="font-black text-xs text-cyan-500">
+                              <ContadorAnimado valor={((item.quantidade * item.precoKgCentavos) / 1000) / 100} prefixo="R$ " />
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex flex-col gap-1.5 self-end shrink-0">
+                          {index === 0 && (
+                            <label className="text-[8px] font-black uppercase text-transparent tracking-widest leading-none hidden sm:block select-none">
+                              Ações
+                            </label>
+                          )}
+                          <div className="flex items-center gap-1">
+                            {adicionarPeca && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); adicionarPeca(materialBase.id); }} 
+                                className="h-9 w-9 flex items-center justify-center text-zinc-400 dark:text-gray-400 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-xl transition-all border border-transparent hover:border-cyan-500/20"
+                                title="Adicionar nova peça (linha zerada)"
+                              >
+                                <Plus size={16} strokeWidth={2.5} />
+                              </button>
+                            )}
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); remover(item.instanceId || item.id); }} 
+                              className="h-9 w-9 flex items-center justify-center text-zinc-400 dark:text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all border border-transparent hover:border-rose-500/20"
+                              title="Remover esta peça"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Custo Total do Item */}
-                    <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
-                      <label className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest leading-none">
-                        Custo Estimado
-                      </label>
-                      <div className="h-9 px-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center min-w-[100px]">
-                        <span className="font-black text-xs text-cyan-500">
-                          <ContadorAnimado valor={((item.quantidade * item.precoKgCentavos) / 1000) / 100} prefixo="R$ " />
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Remover */}
-                    <div className="flex flex-col gap-1.5 self-end sm:self-center shrink-0">
-                      <span className="hidden sm:block text-[8px] font-black uppercase text-transparent select-none leading-none">Ações</span>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); removerItem(item.instanceId || item.id); }} 
-                        className="h-9 w-9 flex items-center justify-center text-zinc-400 dark:text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all border border-transparent hover:border-rose-500/20"
-                        title="Remover este material"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    ))}
                   </div>
                 </motion.div>
               );

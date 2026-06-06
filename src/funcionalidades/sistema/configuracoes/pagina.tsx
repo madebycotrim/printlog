@@ -24,7 +24,7 @@ import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 
 export function PaginaConfiguracoes() {
-  const { usuario, atualizarPerfil, recuperarSenha } = useAutenticacao();
+  const { usuario, atualizarPerfil, recuperarSenha, enviarEmailVerificacao } = useAutenticacao();
   const contextoTema = useContextoTema();
   const beta = useBeta();
   const config = useArmazemConfiguracoes();
@@ -150,6 +150,15 @@ export function PaginaConfiguracoes() {
     }
   };
 
+  const lidarComVerificacaoEmail = async () => {
+    try {
+      await enviarEmailVerificacao();
+      toast.success("E-mail de verificação enviado!");
+    } catch (erro) {
+      toast.error("Erro ao enviar e-mail de verificação.");
+    }
+  };
+
   const lidarComDescartar = () => {
     // Reset Perfil
     definirNome(usuario?.nome || "");
@@ -180,6 +189,14 @@ export function PaginaConfiguracoes() {
     contextoTema.definirCorPrimaria(inicialAparencia.cor);
     contextoTema.definirFonte(inicialAparencia.fonte);
   };
+
+  // Efeito de Auto-save
+  useEffect(() => {
+    if (temAlteracoes) {
+      // Dispara o salvamento no background silenciosamente
+      lidarComSalvar();
+    }
+  }, [temAlteracoes]);
 
   const lidarComSalvar = async () => {
     definirSalvando(true);
@@ -217,10 +234,10 @@ export function PaginaConfiguracoes() {
       beta.definirLimiteAlertaEstoque(limiteAlertaEstoque);
 
       definirSucesso(true);
-      toast.success("Suas preferências foram atualizadas com sucesso.");
+      // Removido o toast.success para não poluir a tela a cada auto-save
       setTimeout(() => {
         definirSucesso(false);
-      }, 4000);
+      }, 3000);
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "Configuracoes" }, "Erro ao salvar configurações", erro);
       toast.error("Falha ao salvar configurações.");
@@ -231,30 +248,18 @@ export function PaginaConfiguracoes() {
 
   useDefinirCabecalho({
     titulo: "Configurações",
-    subtitulo: temAlteracoes
-      ? `Você possui ${totalAlteracoes} ${totalAlteracoes === 1 ? "seção com alterações pendentes" : "seções com alterações pendentes"}`
-      : "Gestão operacional e proteção de dados (LGPD)",
+    subtitulo: salvando 
+      ? "Salvando alterações em background..." 
+      : sucesso 
+        ? "Todas as alterações foram salvas automaticamente" 
+        : "Gestão operacional e proteção de dados (LGPD)",
     ocultarBusca: true,
-    acao: {
-      texto: salvando ? "Salvando..." : sucesso ? "Salvo!" : temAlteracoes ? `Salvar(${totalAlteracoes})` : "Salvar",
-      icone: sucesso ? Check : Save,
-      aoClicar: lidarComSalvar,
-      desabilitado: salvando || !temAlteracoes,
-    },
-    segundaAcao: temAlteracoes
-      ? {
-          texto: "Descartar",
-          icone: X,
-          aoClicar: lidarComDescartar,
-          desabilitado: salvando,
-        }
-      : undefined,
   });
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
-      {(salvando || enviandoEmail) && (
-        <Carregamento texto={salvando ? "Salvando Alterações..." : "Enviando E-mail de Segurança..."} />
+      {enviandoEmail && (
+        <Carregamento texto={"Enviando E-mail de Segurança..."} />
       )}
       <div className="relative mx-auto w-full max-w-6xl space-y-6">
         {config.plano !== "FREE" && (
@@ -263,6 +268,7 @@ export function PaginaConfiguracoes() {
               plano={config.plano}
               cicloPagamento={config.cicloPagamento}
               vencimentoPlano={config.vencimentoPlano}
+              emailVerificado={usuario?.emailVerified || false}
             />
           </motion.div>
         )}
@@ -275,6 +281,7 @@ export function PaginaConfiguracoes() {
               definirNome={definirNome}
               sucessoEmail={sucessoLink}
               lidarComTrocaSenha={lidarComTrocaSenha}
+              lidarComVerificacaoEmail={lidarComVerificacaoEmail}
               pendente={perfilPendente}
               esconderFerramentasAdmin={!ehAdmin(usuario?.email)}
               planoSelecionado={plano}

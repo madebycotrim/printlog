@@ -51,6 +51,12 @@ export interface PropsCampoBancario {
 }
 
 export function CampoBancarioDashboard({ label, valor, aoMudar, placeholder, icone: Icone, prefixo }: PropsCampoBancario) {
+    const [valorLocal, setValorLocal] = useState(valor);
+
+    useEffect(() => {
+        setValorLocal(valor);
+    }, [valor]);
+
     return (
         <div className="w-full">
             <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
@@ -66,8 +72,13 @@ export function CampoBancarioDashboard({ label, valor, aoMudar, placeholder, ico
                     </span>
                 )}
                 <InputBancario
-                    value={valor / 100}
-                    onChange={(e) => aoMudar(Math.round(parseFloat(e.target.value) * 100))}
+                    value={valorLocal / 100}
+                    onChange={(e) => {
+                        const strVal = e.target.value.replace(/[^0-9.,]/g, '');
+                        if (!strVal) return setValorLocal(0);
+                        setValorLocal(Math.round(parseFloat(strVal.replace(',', '.')) * 100));
+                    }}
+                    onBlur={() => aoMudar(valorLocal)}
                     placeholder={placeholder}
                     className={`h-11 w-full bg-transparent border-b-2 border-borda-sutil ${prefixo ? 'pl-14' : 'pl-8'} pr-3 text-sm font-bold text-primary outline-none focus:border-primary transition-all placeholder:text-muted-foreground/30`}
                 />

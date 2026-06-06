@@ -126,7 +126,7 @@ export function FiltrosMaterial({
               <path d="M12 22a5 5 0 0 0 5-5c0-2-2.5-7-5-12-2.5 5-5 10-5 12a5 5 0 0 0 5 5z" />
             </svg>
             <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight w-8 text-center">
-              {clima.carregando ? "..." : clima.erro ? "--" : `${clima.umidade}%`}
+              {clima.carregando ? "..." : (clima.erro || clima.umidade === null || clima.umidade === undefined) ? "--" : `${clima.umidade}%`}
             </span>
           </div>
         </div>

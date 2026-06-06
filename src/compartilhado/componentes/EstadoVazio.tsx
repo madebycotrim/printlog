@@ -51,7 +51,7 @@ export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoCli
           />
           
           <div 
-            className="relative w-28 h-28 rounded-[2rem] bg-zinc-900/50 dark:bg-black/50 border border-white/10 dark:border-white/5 flex items-center justify-center shadow-2xl backdrop-blur-xl transition-colors duration-500"
+            className="relative w-28 h-28 rounded-[2rem] bg-zinc-100/50 dark:bg-black/50 border border-borda-sutil dark:border-white/5 flex items-center justify-center shadow-2xl backdrop-blur-xl transition-colors duration-500"
             style={{ 
               borderColor: "var(--cor-primaria)",
               boxShadow: "0 0 0 1px rgba(var(--cor-primaria-rgb), 0.3) inset"

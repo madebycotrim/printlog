@@ -18,6 +18,8 @@ interface PropsCardPerfil {
     sucessoEmail: boolean;
     /** Função para disparar o processo de troca de senha */
     lidarComTrocaSenha: () => void;
+    /** Função para disparar o envio de email de verificação */
+    lidarComVerificacaoEmail?: () => void;
     /** Indica se há uma operação pendente (carregando) */
     pendente?: boolean;
     /** Oculta ferramentas administrativas */
@@ -39,7 +41,8 @@ export function CardPerfil({
     nome, 
     definirNome, 
     sucessoEmail, 
-    lidarComTrocaSenha, 
+    lidarComTrocaSenha,
+    lidarComVerificacaoEmail,
     pendente,
     esconderFerramentasAdmin = true,
     planoSelecionado,
@@ -93,6 +96,14 @@ export function CardPerfil({
                                     <path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.01 24.01 0 0 0 0 21.56l7.98-6.19z" />
                                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                                 </svg>
+                            )}
+                            {(!usuario?.emailVerified && lidarComVerificacaoEmail) && (
+                                <button 
+                                    onClick={lidarComVerificacaoEmail} 
+                                    className="shrink-0 text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 hover:text-orange-700 dark:hover:text-orange-400 border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 px-2 py-1.5 rounded-lg transition-all"
+                                >
+                                    Verificar
+                                </button>
                             )}
                         </div>
                     </div>

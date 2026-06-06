@@ -240,7 +240,7 @@ export function ModalConfiguracoes({
           <div className="mt-6">
             <button
               onClick={aoSalvar}
-              className="w-full h-12 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white font-bold uppercase text-[10px] tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 shadow hover:bg-zinc-800 dark:hover:bg-zinc-200"
+              className="w-full h-12 bg-zinc-900 text-white font-bold uppercase text-[10px] tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 shadow hover:bg-zinc-800"
             >
               <Settings size={14} /> Salvar & Sincronizar
             </button>
