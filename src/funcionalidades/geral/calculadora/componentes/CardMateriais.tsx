@@ -428,7 +428,7 @@ export const CardMateriais = memo(function CardMateriais({
                               </button>
                             )}
                             <button 
-                              onClick={(e) => { e.stopPropagation(); remover(item.instanceId || item.id); }} 
+                              onClick={(e) => { e.stopPropagation(); remover?.(item.instanceId || item.id); }} 
                               className="h-9 w-9 flex items-center justify-center text-zinc-400 dark:text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all border border-transparent hover:border-rose-500/20"
                               title="Remover esta peça"
                             >
