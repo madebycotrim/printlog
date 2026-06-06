@@ -42,7 +42,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           <span>SEU PLANO PRO ESTÁ EXPIRADO. ENTRE EM CONTATO COM O SUPORTE PARA RENOVAR E EVITAR O BLOQUEIO DA CONTA.</span>
         </div>
       )}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-6 md:px-12 h-20 md:h-24 bg-white/80 dark:bg-zinc-950/90 backdrop-blur-2xl border-b border-borda-sutil transition-all duration-300 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.02)]">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-6 md:px-12 py-3 md:py-4 bg-white/80 dark:bg-zinc-950/90 backdrop-blur-2xl border-b border-borda-sutil transition-all duration-300 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.02)]">
         {/* Esquerda: Menu Mobile + Título */}
         <div className="flex items-center gap-4 flex-1">
           <button

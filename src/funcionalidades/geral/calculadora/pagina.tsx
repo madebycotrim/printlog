@@ -44,8 +44,10 @@ import { CardPerdas } from "./componentes/CardPerdas";
 import { CardCustosFixos } from "./componentes/CardCustosFixos";
 import { ModalConfiguracoes } from "./componentes/ModalConfiguracoes";
 import { ModalCanaisVenda } from "./componentes/ModalCanaisVenda";
+import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
 import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
+import { ModalEnviarEmailOrcamento } from "./componentes/ModalEnviarEmailOrcamento";
 
 export function PaginaCalculadora() {
   const { usuario } = useAutenticacao();
@@ -77,6 +79,10 @@ export function PaginaCalculadora() {
   const [modalArmazemAberto, setModalArmazemAberto] = useState(false);
   const [modalInsumosAberto, setModalInsumosAberto] = useState(false);
   const [modalCanaisAberto, setModalCanaisAberto] = useState(false);
+  const [modalPdfAberto, setModalPdfAberto] = useState(false);
+  const [modalEmailAberto, setModalEmailAberto] = useState(false);
+  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+  const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
   const [nomeProjeto, setNomeProjeto] = useState('');
   const [descricaoProjeto, setDescricaoProjeto] = useState('');
   const [clienteProjetoId, setClienteProjetoId] = useState('');
@@ -96,7 +102,6 @@ export function PaginaCalculadora() {
   const [nomeCanalTemporario, setNomeCanalTemporario] = useState('');
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
-  const [modalPdfAberto, setModalPdfAberto] = useState(false);
 
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
@@ -159,18 +164,23 @@ export function PaginaCalculadora() {
   );
 
   const alternarMaterial = useCallback((id: string) => {
-    const matOriginal = materiais.find(m => m.id === id);
-    if (matOriginal) {
-      hook.setMateriaisSelecionados(prev => [...prev, {
-        id: matOriginal.id,
-        instanceId: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
-        nome: matOriginal.nome,
-        cor: matOriginal.cor,
-        tipo: matOriginal.tipo,
-        tipoMaterial: matOriginal.tipoMaterial || '',
-        quantidade: 0,
-        precoKgCentavos: Math.round((matOriginal.precoCentavos / matOriginal.pesoGramas) * 1000)
-      }]);
+    const existe = hook.materiaisSelecionados.some(m => m.id === id);
+    if (existe) {
+      hook.setMateriaisSelecionados(prev => prev.filter(m => m.id !== id));
+    } else {
+      const matOriginal = materiais.find(m => m.id === id);
+      if (matOriginal) {
+        hook.setMateriaisSelecionados(prev => [...prev, {
+          id: matOriginal.id,
+          instanceId: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+          nome: matOriginal.nome,
+          cor: matOriginal.cor,
+          tipo: matOriginal.tipo,
+          tipoMaterial: matOriginal.tipoMaterial || '',
+          quantidade: 0,
+          precoKgCentavos: Math.round((matOriginal.precoCentavos / matOriginal.pesoGramas) * 1000)
+        }]);
+      }
     }
   }, [hook.materiaisSelecionados, materiais, hook.setMateriaisSelecionados]);
 
@@ -264,37 +274,21 @@ export function PaginaCalculadora() {
           if (p.configuracoes) {
             const cfg = p.configuracoes;
             
-            // Helper de migração: se o valor for pequeno (padrão antigo float), converte para centavos
-            const migrarParaCentavos = (v: any, threshold: number = 200) => {
-              if (v === undefined || v === null) return 0;
-              const num = Number(v);
-              if (num > 0 && num < threshold) return Math.round(num * 100);
-              return num;
-            };
-
-            const migrarMargem = (v: any) => {
-              if (v === undefined || v === null) return 0;
-              const num = Number(v);
-              // Antigamente margem era 150 (150%), agora é 15000
-              if (num > 0 && num < 1000) return Math.round(num * 100);
-              return num;
-            };
-
             if (cfg.potencia !== undefined) hook.setPotencia(cfg.potencia);
-            if (cfg.precoKwh !== undefined) hook.setPrecoKwh(migrarParaCentavos(cfg.precoKwh));
-            if (cfg.maoDeObra !== undefined) hook.setMaoDeObra(migrarParaCentavos(cfg.maoDeObra, 1000));
-            if (cfg.depreciacaoHora !== undefined) hook.setDepreciacaoHora(migrarParaCentavos(cfg.depreciacaoHora));
-            if (cfg.margem !== undefined) hook.setMargem(migrarMargem(cfg.margem));
+            if (cfg.precoKwh !== undefined) hook.setPrecoKwh(cfg.precoKwh);
+            if (cfg.maoDeObra !== undefined) hook.setMaoDeObra(cfg.maoDeObra);
+            if (cfg.depreciacaoHora !== undefined) hook.setDepreciacaoHora(cfg.depreciacaoHora);
+            if (cfg.margem !== undefined) hook.setMargem(cfg.margem);
             if (cfg.quantidade !== undefined) hook.setQuantidade(cfg.quantidade);
             if (cfg.modoEntrada !== undefined) hook.setModoEntrada(cfg.modoEntrada);
             if (cfg.tempoSetup !== undefined) hook.setTempoSetup(cfg.tempoSetup);
-            if (cfg.taxaFalha !== undefined) hook.setTaxaFalha(migrarMargem(cfg.taxaFalha));
+            if (cfg.taxaFalha !== undefined) hook.setTaxaFalha(cfg.taxaFalha);
             if (cfg.materialPerdido !== undefined) hook.setMaterialPerdido(cfg.materialPerdido);
             if (cfg.tempoPerdido !== undefined) hook.setTempoPerdido(cfg.tempoPerdido);
-            if (cfg.frete !== undefined) hook.setFrete(migrarParaCentavos(cfg.frete, 500));
-            if (cfg.insumosFixos !== undefined) hook.setInsumosFixos(migrarParaCentavos(cfg.insumosFixos, 500));
-            if (cfg.taxaEcommerce !== undefined) hook.setTaxaEcommerce(migrarMargem(cfg.taxaEcommerce));
-            if (cfg.taxaFixa !== undefined) hook.setTaxaFixa(migrarParaCentavos(cfg.taxaFixa, 100));
+            if (cfg.frete !== undefined) hook.setFrete(cfg.frete);
+            if (cfg.insumosFixos !== undefined) hook.setInsumosFixos(cfg.insumosFixos);
+            if (cfg.taxaEcommerce !== undefined) hook.setTaxaEcommerce(cfg.taxaEcommerce);
+            if (cfg.taxaFixa !== undefined) hook.setTaxaFixa(cfg.taxaFixa);
           
           // Toggles de Cobrança
           if (cfg.cobrarDesgaste !== undefined) hook.setCobrarDesgaste(cfg.cobrarDesgaste);
@@ -469,10 +463,18 @@ export function PaginaCalculadora() {
   };
 
   const gerarLinkMagico = () => {
+    if (!eProOuSuperior) {
+      setRecursoPaywall("Link Mágico Interativo");
+      setModalPaywallAberto(true);
+      return;
+    }
     const url = obterUrlLinkMagico();
+    const toastId = toast.loading("Gerando link mágico...");
     navigator.clipboard.writeText(url).then(() => {
+      toast.dismiss(toastId);
       toast.success("Link Mágico copiado! Envie para seu cliente.");
     }).catch(() => {
+      toast.dismiss(toastId);
       toast.error("Erro ao copiar o link mágico.");
     });
   };
@@ -604,14 +606,29 @@ export function PaginaCalculadora() {
       ) : (
         <motion.div
           key="conteudo"
-          initial={{ opacity: 0, scale: 0.99 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.06,
+                delayChildren: 0.1,
+              }
+            }
+          }}
           className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-hidden px-6 md:px-12"
         >
-          <div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
+          <motion.div className="xl:col-span-8 space-y-6 h-full overflow-y-auto pt-8 pb-20 scrollbar-hide">
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 30, scale: 0.98 },
+                visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } }
+              }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch"
+            >
               <div className="lg:col-span-8 h-full">
                 <CardIdentificacaoProjeto
                   buscaCliente={buscaClienteSeletor}
@@ -655,123 +672,137 @@ export function PaginaCalculadora() {
                   setAbertoSeletor={setAbertoSeletorImpressora}
                 />
               </div>
-            </div>
+            </motion.div>
 
-            <CardMateriais
-              materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
-              selecionados={hook.materiaisSelecionados}
-              alertas={hook.alertasEstoque}
-              busca={buscaMaterial}
-              setBusca={setBuscaMaterial}
-              alternar={alternarMaterial}
-              atualizarQtd={atualizarQtdMaterial}
-              atualizarPreco={atualizarPrecoMaterial}
-              atualizarTempo={atualizarTempoMaterial}
-              atualizarNomePeca={atualizarNomePecaMaterial}
-              remover={removerMaterial}
-              abrirArmazem={abrirModalArmazem}
-              abrirCriar={abrirCriarMaterial}
-              alternarFavorito={acoesMateriais.alternarFavorito}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardMateriais
+                materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
+                selecionados={hook.materiaisSelecionados}
+                alertas={hook.alertasEstoque}
+                busca={buscaMaterial}
+                setBusca={setBuscaMaterial}
+                alternar={alternarMaterial}
+                atualizarQtd={atualizarQtdMaterial}
+                atualizarPreco={atualizarPrecoMaterial}
+                atualizarTempo={atualizarTempoMaterial}
+                atualizarNomePeca={atualizarNomePecaMaterial}
+                remover={removerMaterial}
+                abrirArmazem={abrirModalArmazem}
+                abrirCriar={abrirCriarMaterial}
+                alternarFavorito={acoesMateriais.alternarFavorito}
+              />
+            </motion.div>
 
-            <CardPerdas
-              mostrar={mostrarPerdas}
-              setMostrar={setMostrarPerdas}
-              materialPerdido={hook.materialPerdido}
-              setMaterialPerdido={hook.setMaterialPerdido}
-              tempoPerdido={hook.tempoPerdido}
-              setTempoPerdido={hook.setTempoPerdido}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardPerdas
+                mostrar={mostrarPerdas}
+                setMostrar={setMostrarPerdas}
+                materialPerdido={hook.materialPerdido}
+                setMaterialPerdido={hook.setMaterialPerdido}
+                tempoPerdido={hook.tempoPerdido}
+                setTempoPerdido={hook.setTempoPerdido}
+              />
+            </motion.div>
 
-            <CardInsumos
-              insumos={insumosFiltrados}
-              selecionados={hook.insumosSelecionados}
-              alertas={hook.alertasInsumos}
-              busca={buscaInsumo} setBusca={setBuscaInsumo}
-              alternar={alternarInsumo}
-              atualizarQtd={atualizarQtdInsumo}
-              remover={removerInsumo}
-              alternarPorLote={alternarPorLoteInsumo}
-              abrirGerenciar={abrirModalInsumos}
-              abrirNovo={abrirModalNovoInsumo}
-              modoEntrada={hook.modoEntrada}
-              alternarFavorito={acoesInsumos.alternarFavorito}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardInsumos
+                insumos={insumosFiltrados}
+                selecionados={hook.insumosSelecionados}
+                alertas={hook.alertasInsumos}
+                busca={buscaInsumo} setBusca={setBuscaInsumo}
+                alternar={alternarInsumo}
+                atualizarQtd={atualizarQtdInsumo}
+                remover={removerInsumo}
+                alternarPorLote={alternarPorLoteInsumo}
+                abrirGerenciar={abrirModalInsumos}
+                abrirNovo={abrirModalNovoInsumo}
+                modoEntrada={hook.modoEntrada}
+                alternarFavorito={acoesInsumos.alternarFavorito}
+              />
+            </motion.div>
 
-            <CardCustosFixos
-              mostrar={mostrarCustosFixos}
-              setMostrar={setMostrarCustosFixos}
-              insumosFixos={hook.insumosFixos}
-              setInsumosFixos={hook.setInsumosFixos}
-              cobrarInsumosFixos={hook.cobrarInsumosFixos}
-              setCobrarInsumosFixos={hook.setCobrarInsumosFixos}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardCustosFixos
+                mostrar={mostrarCustosFixos}
+                setMostrar={setMostrarCustosFixos}
+                insumosFixos={hook.insumosFixos}
+                setInsumosFixos={hook.setInsumosFixos}
+                cobrarInsumosFixos={hook.cobrarInsumosFixos}
+                setCobrarInsumosFixos={hook.setCobrarInsumosFixos}
+              />
+            </motion.div>
 
-            <CardProducao
-              quantidade={hook.quantidade} setQuantidade={hook.setQuantidade}
-              pecasPorMesa={hook.pecasPorMesa} setPecasPorMesa={hook.setPecasPorMesa}
-              tempo={hook.tempo} setTempo={hook.setTempo}
-              modoEntrada={hook.modoEntrada}
-              potencia={hook.potencia} setPotencia={hook.setPotencia}
-              precoKwh={hook.precoKwh} setPrecoKwh={(v) => { hook.setPrecoKwh(v); config.definirCustoEnergia(v); }}
-              custoEnergia={hook.calculo.custoEnergia / 100}
-              cobrarEnergia={hook.cobrarEnergia} setCobrarEnergia={hook.setCobrarEnergia}
-              posProcesso={hook.itensPosProcesso} setPosProcesso={hook.setItensPosProcesso}
-              impressoras={impressoras}
-              idImpressoraSelecionada={hook.impressoraSelecionadaId}
-              aoSelecionarImpressora={aoSelecionarImpressora}
-              aoDetectarTarifa={hook.detectarTarifa}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardProducao
+                quantidade={hook.quantidade} setQuantidade={hook.setQuantidade}
+                pecasPorMesa={hook.pecasPorMesa} setPecasPorMesa={hook.setPecasPorMesa}
+                tempo={hook.tempo} setTempo={hook.setTempo}
+                modoEntrada={hook.modoEntrada}
+                potencia={hook.potencia} setPotencia={hook.setPotencia}
+                precoKwh={hook.precoKwh} setPrecoKwh={(v) => { hook.setPrecoKwh(v); config.definirCustoEnergia(v); }}
+                custoEnergia={hook.calculo.custoEnergia / 100}
+                cobrarEnergia={hook.cobrarEnergia} setCobrarEnergia={hook.setCobrarEnergia}
+                posProcesso={hook.itensPosProcesso} setPosProcesso={hook.setItensPosProcesso}
+                impressoras={impressoras}
+                idImpressoraSelecionada={hook.impressoraSelecionadaId}
+                aoSelecionarImpressora={aoSelecionarImpressora}
+                aoDetectarTarifa={hook.detectarTarifa}
+              />
+            </motion.div>
 
-            <CardModelagem
-              tempoModelagem={hook.tempoModelagem}
-              setTempoModelagem={hook.setTempoModelagem}
-              valorHoraModelagem={hook.valorHoraModelagem}
-              setValorHoraModelagem={hook.setValorHoraModelagem}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardModelagem
+                tempoModelagem={hook.tempoModelagem}
+                setTempoModelagem={hook.setTempoModelagem}
+                valorHoraModelagem={hook.valorHoraModelagem}
+                setValorHoraModelagem={hook.setValorHoraModelagem}
+              />
+            </motion.div>
 
-            <CardOperacional
-              maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(v); }}
-              margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(v); }}
-              depreciacao={hook.depreciacaoHora}
-              cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
-              cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
-              anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
-              tempo={hook.tempo}
-              quantidade={hook.quantidade}
-              tempoSetup={hook.tempoSetup} 
-              setTempoSetup={hook.setTempoSetup}
-              aplicarTemplate={hook.aplicarTemplate}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardOperacional
+                maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(v); }}
+                margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(v); }}
+                depreciacao={hook.depreciacaoHora}
+                cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
+                cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
+                anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
+                tempo={hook.tempo}
+                quantidade={hook.quantidade}
+                tempoSetup={hook.tempoSetup} 
+                setTempoSetup={hook.setTempoSetup}
+                aplicarTemplate={hook.aplicarTemplate}
+              />
+            </motion.div>
 
-            <CardLogistica
-              perfis={hook.perfisMarketplace} perfilAtivo={hook.perfilAtivo} setPerfilAtivo={hook.setPerfilAtivo}
-              taxaEcommerce={hook.taxaEcommerce} setTaxaEcommerce={hook.setTaxaEcommerce}
-              taxaFixa={hook.taxaFixa} setTaxaFixa={hook.setTaxaFixa}
-              frete={hook.frete} setFrete={hook.setFrete}
-              abrirPerfis={abrirModalCanais}
-              cobrarLogistica={hook.cobrarLogistica}
-              setCobrarLogistica={hook.setCobrarLogistica}
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, scale: 0.98 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } } }}>
+              <CardLogistica
+                perfis={hook.perfisMarketplace} perfilAtivo={hook.perfilAtivo} setPerfilAtivo={hook.setPerfilAtivo}
+                taxaEcommerce={hook.taxaEcommerce} setTaxaEcommerce={hook.setTaxaEcommerce}
+                taxaFixa={hook.taxaFixa} setTaxaFixa={hook.setTaxaFixa}
+                frete={hook.frete} setFrete={hook.setFrete}
+                abrirPerfis={abrirModalCanais}
+                cobrarLogistica={hook.cobrarLogistica}
+                setCobrarLogistica={hook.setCobrarLogistica}
+              />
+            </motion.div>
 
 
-          </div>
+          </motion.div>
 
-          <div className="xl:col-span-4 h-full xl:sticky xl:top-0 flex flex-col justify-center items-center py-8 overflow-y-auto scrollbar-hide">
+          <motion.div 
+            variants={{
+              hidden: { opacity: 0, x: 20 },
+              visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30, delay: 0.2 } }
+            }}
+            className="xl:col-span-4 h-full xl:sticky xl:top-0 flex flex-col justify-center items-center py-8 overflow-y-auto scrollbar-hide"
+          >
             <PainelResultados
               calculo={hook.calculo}
               dadosPizza={hook.dadosGraficoPizza}
               aba={abaResultado} setAba={setAbaResultado}
-              salvarProjeto={confirmarSalvarProjeto}
+              salvarProjeto={salvarProjetoOuOrcamento}
               gerarPdf={() => {
-                if (eProOuSuperior && (config.nomeEstudio || "").trim() === "") {
-                  setModalPdfAberto(true);
-                  return;
-                }
-                
-                const toastId = toast.loading("Gerando PDF...");
-                const url = obterUrlLinkMagico() + "&p=1";
-                
                 const oldIframe = document.getElementById('print-iframe');
                 if (oldIframe) oldIframe.remove();
 
@@ -811,7 +842,7 @@ export function PaginaCalculadora() {
               precoAlvoCentavos={hook.precoAlvoCentavos}
               setPrecoAlvoCentavos={hook.setPrecoAlvoCentavos}
             />
-          </div>
+          </motion.div>
 
           {/* Modais Refatorados */}
           <ModalConfiguracoes
@@ -830,6 +861,11 @@ export function PaginaCalculadora() {
                 setModalConfigAberto(false);
                 toast.success("Motores de custeio sincronizados!");
               }
+            }}
+            aoClicarPaywall={() => {
+              setRecursoPaywall("Orçamento PDF White-label");
+              setModalConfigAberto(false);
+              setModalPaywallAberto(true);
             }}
           />
 
@@ -1007,6 +1043,23 @@ export function PaginaCalculadora() {
               </div>
             </div>
           </Dialogo>
+
+          <ModalEnviarEmailOrcamento
+            aberto={modalEmailAberto}
+            aoFechar={() => setModalEmailAberto(false)}
+            linkMagico={hook.urlLinkMagicoGerado}
+            nomeProjeto={nomeProjeto || "Peça 3D"}
+            valorTotal={hook.resultados?.venda.totalCotacaoFormatado || "R$ 0,00"}
+          />
+
+          <ModalUpgradePaywall
+            aberto={modalPaywallAberto}
+            aoFechar={() => setModalPaywallAberto(false)}
+            recurso={recursoPaywall}
+            aoFazerUpgrade={() => {
+              window.location.href = "/dashboard";
+            }}
+          />
         </motion.div>
       )}
     </AnimatePresence>

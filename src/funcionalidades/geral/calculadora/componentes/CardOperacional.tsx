@@ -160,8 +160,7 @@ export const CardOperacional = memo(function CardOperacional({
                       </div>
                     </div>
                     {/* Botões rápidos de tempo */}
-                    {cobrarMaoDeObra && (
-                      <div className="flex gap-1 w-full flex-nowrap">
+                    <div className="flex gap-1 w-full flex-nowrap">
                         <button
                           type="button"
                           onClick={() => setTempoSetup(Math.max(0, tempoSetup - 60))}
@@ -213,13 +212,11 @@ export const CardOperacional = memo(function CardOperacional({
                           Zerar
                         </button>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {cobrarMaoDeObra && (
-                <div className="space-y-3 mt-4">
+              <div className="space-y-3 mt-4">
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Micro-tarefas de Setup</span>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                     {[
@@ -273,18 +270,15 @@ export const CardOperacional = memo(function CardOperacional({
                     })}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
             
             <div className="mt-6 flex flex-col gap-2">
-              {cobrarMaoDeObra && (
-                <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground justify-center bg-zinc-900/20 py-1.5 px-3 rounded-lg border border-white/[0.02]">
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground justify-center bg-zinc-900/20 py-1.5 px-3 rounded-lg border border-white/[0.02]">
                   <Clock size={10} className="text-violet-500" />
                   <span>
                     FÓRMULA: ({tempoSetup} min / 60) * R$ {(maoDeObra / 100).toFixed(2)} = R$ {((tempoSetup / 60) * (maoDeObra / 100)).toFixed(2).replace('.', ',')}
                   </span>
-                </div>
-              )}
+              </div>
               
               <div className="p-4 rounded-2xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-1 relative overflow-hidden mt-1">
                 <div className="flex justify-between items-center z-10">
@@ -338,9 +332,9 @@ export const CardOperacional = memo(function CardOperacional({
                 <label className="block text-[9px] font-black uppercase text-muted-foreground tracking-wider mb-2">Perfil de Vida Útil</label>
                 <div className="flex bg-muted/30 dark:bg-zinc-900/60 p-0.5 rounded-xl border border-borda-sutil">
                   {([
-                    { value: 5, label: "Padrão", anos: "2 anos" },
+                    { value: 5, label: "Padrão", anos: "5 anos" },
                     { value: 3, label: "Severo", anos: "3 anos" },
-                    { value: 2, label: "Extremo", anos: "5 anos" }
+                    { value: 2, label: "Extremo", anos: "2 anos" }
                   ] as const).map((opcao) => (
                     <button
                       key={opcao.value}
@@ -379,22 +373,18 @@ export const CardOperacional = memo(function CardOperacional({
                   
                   <span className="text-[9px] font-medium text-muted-foreground/50 leading-none">Depreciação operacional da impressora</span>
                   
-                  {cobrarDesgaste && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-stone-500/30 to-transparent" />
-                  )}
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-stone-500/30 to-transparent" />
                 </div>
               </div>
             </div>
 
             <div className="mt-6 flex flex-col gap-2">
-              {cobrarDesgaste && (
-                <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground justify-center bg-zinc-900/20 py-1.5 px-3 rounded-lg border border-white/[0.02]">
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground justify-center bg-zinc-900/20 py-1.5 px-3 rounded-lg border border-white/[0.02]">
                   <Clock size={10} className="text-stone-500" />
                   <span>
                     FÓRMULA: (Valor Máquina / {anosVidaUtil} Anos) / 12 Meses / 240h
                   </span>
-                </div>
-              )}
+              </div>
 
               <div className="p-4 rounded-2xl bg-stone-500/5 border border-stone-500/10 flex flex-col gap-1.5 relative overflow-hidden mt-1">
                 <div className="flex justify-between items-center z-10">

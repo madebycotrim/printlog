@@ -21,8 +21,9 @@ export function ToasterPremium() {
     >
       {(t) => (
         <div
+          onClick={() => toast.dismiss(t.id)}
           className={`
-            flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md border 
+            flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md border cursor-pointer
             transition-all duration-300 transform
             ${t.visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95"}
             ${

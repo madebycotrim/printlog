@@ -8,6 +8,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { toast } from "react-hot-toast";
 
 /** Tempo de inatividade antes do logout automático: 30 minutos */
 const TEMPO_INATIVIDADE_MS = 30 * 60 * 1000;
@@ -37,7 +38,8 @@ export function useAutoLogout() {
     );
 
     try {
-      await sair();
+      toast("Sua sessão expirou por inatividade (30 min).", { icon: "💤", duration: Infinity, id: "auto-logout" });
+      await sair(false);
     } catch (erro) {
       registrar.error(
         { rastreioId: "sistema", servico: "Seguranca" },

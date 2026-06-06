@@ -50,6 +50,10 @@ import { Dialogo } from "@/compartilhado/componentes";
  */
 import { motion } from "framer-motion";
 
+import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
+
+// ... [outras importações]
+
 export function PaginaInicial() {
   const { usuario } = useAutenticacao();
   const { pedidos } = usePedidos();
@@ -135,8 +139,9 @@ export function PaginaInicial() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={variantesContainerLista}
+      initial="inicial"
+      animate="animar"
       className="space-y-8 pb-10 relative"
     >
       {/* BACKGROUND PATTERN DISCRETO */}
@@ -144,35 +149,39 @@ export function PaginaInicial() {
 
       {/* BANNER DE UPGRADE - Oculto para Founders */}
       {plano !== "FUNDADOR" && (
-        <BannerPro 
-          plano={plano} 
-          aoRealizarUpgrade={realizarUpgradeGratis} 
-          carregandoUpgrade={carregandoUpgrade} 
-        />
+        <motion.div variants={variantesItemLista}>
+          <BannerPro 
+            plano={plano} 
+            aoRealizarUpgrade={realizarUpgradeGratis} 
+            carregandoUpgrade={carregandoUpgrade} 
+          />
+        </motion.div>
       )}
 
       {/* MÉTRICAS DE ALTO IMPACTO */}
-      <MetricasPainel 
-        pedidos={pedidos} 
-        impressoras={impressoras} 
-        pedidosAtivos={pedidosAtivos}
-        metricasInventario={metricasInventario}
-      />
+      <motion.div variants={variantesItemLista}>
+        <MetricasPainel 
+          pedidos={pedidos} 
+          impressoras={impressoras} 
+          pedidosAtivos={pedidosAtivos}
+          metricasInventario={metricasInventario}
+        />
+      </motion.div>
 
       {/* GRADE OPERACIONAL PRINCIPAL */}
       <div className="grid grid-cols-12 gap-6 items-start">
         {/* COLUNA ESQUERDA: Atividade Comercial */}
-        <div className="col-span-12 lg:col-span-8 space-y-6">
+        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-8 space-y-6">
           <div className="lg:h-[500px]">
             <WidgetOrcamentos 
               pedidos={pedidos} 
               aoVerTodos={() => navegar("/producao")} 
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* COLUNA DIREITA: Status de Hardware */}
-        <div className="col-span-12 lg:col-span-4">
+        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4">
           <div className="lg:h-[500px]">
             <WidgetAvisos 
               impressoras={impressoras} 
@@ -180,31 +189,31 @@ export function PaginaInicial() {
               aoAgendarManutencao={() => navegar("/producao/manutencao")} 
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* LINHA DE UTILITÁRIOS: 3 CARDS ALINHADOS */}
-        <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4 lg:h-[300px]">
           <WidgetInsumos 
             insumos={insumos} 
             aoVerTodos={() => navegar("/insumos")} 
           />
-        </div>
-        <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+        </motion.div>
+        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4 lg:h-[300px]">
           <WidgetMateriais 
             materiais={materiais} 
             aoVerTodos={() => navegar("/materiais")} 
           />
-        </div>
-        <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+        </motion.div>
+        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4 lg:h-[300px]">
           <StatusTempoReal />
-        </div>
+        </motion.div>
 
         {/* LINHA DE TENDÊNCIA: Gráfico de Consumo Full Width */}
-        <div className="col-span-12">
+        <motion.div variants={variantesItemLista} className="col-span-12">
           <div className="lg:h-[400px]">
             <GraficoConsumo />
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* MODAIS GLOBAIS */}

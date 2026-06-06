@@ -10,9 +10,23 @@ import { ModalHistoricoCliente } from "./componentes/ModalHistoricoCliente";
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
+import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
+import { useState } from "react";
 
 export function PaginaClientes() {
   const { estado, acoes } = useGerenciadorClientes();
+  const { usuario } = useAutenticacao();
+  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const tentarNovoCliente = () => {
+    if (atingiuLimite("CLIENTES", estado.clientes.length, usuario?.plano)) {
+      setModalPaywallAberto(true);
+    } else {
+      acoes.abrirEditar();
+    }
+  };
 
   useDefinirCabecalho({
     titulo: "Ecossistema de Clientes",
@@ -21,7 +35,7 @@ export function PaginaClientes() {
     acao: {
       texto: "Novo Cadastro",
       icone: Plus,
-      aoClicar: () => acoes.abrirEditar(),
+      aoClicar: tentarNovoCliente,
     },
     aoBuscar: acoes.pesquisar,
   });
@@ -52,7 +66,7 @@ export function PaginaClientes() {
               descricao="Sua base de clientes está vazia. Comece cadastrando um cliente VIP para iniciar seu ecossistema."
               icone={Users}
               textoBotao="Novo Cadastro Manual"
-              aoClicarBotao={() => acoes.abrirEditar()}
+              aoClicarBotao={tentarNovoCliente}
             />
           </motion.div>
         ) : (
@@ -121,6 +135,15 @@ export function PaginaClientes() {
         aberto={estado.modalHistoricoAberto}
         cliente={estado.clienteSendoHistorico}
         aoFechar={acoes.fecharHistorico}
+      />
+
+      <ModalUpgradePaywall
+        aberto={modalPaywallAberto}
+        aoFechar={() => setModalPaywallAberto(false)}
+        recurso="Clientes (CRM)"
+        aoFazerUpgrade={() => {
+          window.location.href = "/dashboard";
+        }}
       />
     </div>
   );

@@ -11,9 +11,24 @@ import { ModalAposentarImpressora } from "./componentes/ModalAposentarImpressora
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
+import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
+import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
+import { useState } from "react";
 
 export function PaginaImpressoras() {
   const { estado, acoes } = useGerenciadorImpressoras();
+  const { usuario } = useAutenticacao();
+  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const tentarNovaMaquina = () => {
+    if (atingiuLimite("IMPRESSORAS", estado.totais.total, usuario?.plano)) {
+      setModalPaywallAberto(true);
+    } else {
+      acoes.abrirEditar();
+    }
+  };
 
   useDefinirCabecalho({
     titulo: "Minhas Impressoras",
@@ -22,7 +37,7 @@ export function PaginaImpressoras() {
     acao: {
       texto: "Nova Máquina",
       icone: Plus,
-      aoClicar: () => acoes.abrirEditar(),
+      aoClicar: tentarNovaMaquina,
     },
     aoBuscar: acoes.pesquisar,
   });
@@ -53,7 +68,7 @@ export function PaginaImpressoras() {
               descricao="Adicione sua primeira impressora 3D ou reative uma máquina arquivada para começar a produzir."
               icone={Printer}
               textoBotao="Cadastrar Máquina"
-              aoClicarBotao={() => acoes.abrirEditar()}
+              aoClicarBotao={tentarNovaMaquina}
             />
           </motion.div>
         ) : (
@@ -143,16 +158,22 @@ export function PaginaImpressoras() {
                         <div className="flex-1 h-px bg-borda-sutil/40" />
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                        {lista.map((impressora) => (
-                          <CardImpressora
-                            key={impressora.id}
-                            impressora={impressora}
-                            aoAposentar={acoes.abrirAposentar}
-                            aoGerenciamento={acoes.abrirGerenciamento}
-                          />
-                        ))}
-                      </div>
+                        <motion.div 
+                          variants={variantesContainerLista}
+                          initial="inicial"
+                          animate="animar"
+                          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
+                        >
+                          {lista.map((impressora) => (
+                            <motion.div key={impressora.id} variants={variantesItemLista} layout>
+                              <CardImpressora
+                                impressora={impressora}
+                                aoAposentar={acoes.abrirAposentar}
+                                aoGerenciamento={acoes.abrirGerenciamento}
+                              />
+                            </motion.div>
+                          ))}
+                        </motion.div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -184,6 +205,18 @@ export function PaginaImpressoras() {
         impressora={estado.impressoraParaAposentar}
         aoFechar={acoes.fecharAposentar}
         aoConfirmar={acoes.confirmarAposentadoria}
+      />
+
+      <ModalUpgradePaywall
+        aberto={modalPaywallAberto}
+        aoFechar={() => setModalPaywallAberto(false)}
+        recurso="Impressoras"
+        aoFazerUpgrade={() => {
+          // TODO: Direcionar para checkout real. 
+          // Por enquanto simulamos chamando algo ou apenas fechando,
+          // o BannerPro no Dashboard também faz isso.
+          window.location.href = "/dashboard";
+        }}
       />
     </div>
   );

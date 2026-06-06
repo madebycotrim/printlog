@@ -17,10 +17,14 @@ import {
   deleteUser,
   linkWithCredential,
   signInWithCredential,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
 } from "firebase/auth";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { toast } from "react-hot-toast";
 
 import { Usuario } from "@/compartilhado/tipos/modelos";
 
@@ -29,7 +33,7 @@ interface ContextoAutenticacaoProps {
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
   cadastro: (email: string, senha: string, nome: string) => Promise<void>;
-  sair: () => Promise<void>;
+  sair: (mostrarToast?: boolean) => Promise<void>;
   recuperarSenha: (email: string) => Promise<void>;
   loginGoogle: () => Promise<void>;
   loginGithub: () => Promise<void>;
@@ -37,6 +41,7 @@ interface ContextoAutenticacaoProps {
   excluirConta: () => Promise<void>;
   exportarDadosPessoais: () => Promise<void>;
   buscarToken: () => Promise<string | null>;
+  enviarLinkMagicoLogin: (email: string) => Promise<void>;
 }
 
 const ContextoAutenticacao = createContext<ContextoAutenticacaoProps>({} as ContextoAutenticacaoProps);
@@ -87,6 +92,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const [usuario, definirUsuario] = useState<Usuario | null>(null);
   const [carregando, definirCarregando] = useState(true);
   const inicializadoRef = useRef(false);
+  const logoutIntencionalRef = useRef(false);
+  const usuarioAnteriorRef = useRef<Usuario | null>(null);
   const carregarConfiguracoes = useArmazemConfiguracoes((s) => s.carregarDoD1);
 
   useEffect(() => {
@@ -95,6 +102,35 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando verificação de persistência...");
         await setPersistence(autenticacao, browserLocalPersistence);
         
+        // Processa Login com Magic Link se existir
+        if (isSignInWithEmailLink(autenticacao, window.location.href)) {
+          let emailForSignIn = window.localStorage.getItem("emailForSignIn");
+          
+          if (!emailForSignIn) {
+            // Se o e-mail não estiver no localStorage (usuário abriu o link em outro dispositivo)
+            // Pedimos para ele confirmar o e-mail. Usaremos um window.prompt como fallback seguro.
+            emailForSignIn = window.prompt("Por favor, digite seu e-mail para confirmação de segurança:");
+          }
+          
+          if (emailForSignIn) {
+            try {
+              registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Processando Link Mágico...");
+              await signInWithEmailLink(autenticacao, emailForSignIn, window.location.href);
+              window.localStorage.removeItem("emailForSignIn");
+              
+              // Limpa a URL removendo os parâmetros do Firebase sem recarregar a página
+              if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+              }
+              
+              toast.success("Login com Link Mágico realizado com sucesso!");
+            } catch (err) {
+              registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha ao logar com Link Mágico", err);
+              toast.error("O link é inválido ou já expirou. Tente gerar um novo.");
+            }
+          }
+        }
+
         // Processa o redirecionamento
         registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Verificando resultado de redirecionamento do Google...");
         const resultado = await getRedirectResult(autenticacao);
@@ -125,7 +161,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         const ehGithub = user.providerData.some((provedor) => provedor.providerId === "github.com");
         const plano = useArmazemConfiguracoes.getState().plano;
         
-        definirUsuario({
+        const novoUsuario = {
           uid: user.uid,
           email: user.email,
           nome: user.displayName,
@@ -135,10 +171,19 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           plano: plano,
           dataAceiteTermos: new Date().toISOString(), // Idealmente buscar do banco D1
           versaoTermos: "2026-05-14",
-        });
+        };
+        
+        definirUsuario(novoUsuario);
+        usuarioAnteriorRef.current = novoUsuario;
+        logoutIntencionalRef.current = false;
         carregarConfiguracoes(user.uid);
       } else {
+        if (usuarioAnteriorRef.current && !logoutIntencionalRef.current) {
+          // Se o usuário foi desconectado pelo Firebase (sessão expirada, etc) sem chamar sair()
+          toast.error("Sua sessão expirou por segurança. Faça login novamente.", { duration: Infinity, id: "sessao-expirada" });
+        }
         definirUsuario(null);
+        usuarioAnteriorRef.current = null;
       }
 
       // Finaliza o estado de carregamento global após a primeira resposta real
@@ -189,6 +234,33 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         throw new Error("Já existe uma conta associada a este e-mail usando outro provedor (ex: Google). Por favor, acesse pelo método original.");
       default:
         throw new Error("Ocorreu um erro inesperado. Tente novamente mais tarde.");
+    }
+  };
+
+  /**
+   * Envia link de login sem senha para o e-mail informado.
+   */
+  const enviarLinkMagicoLogin = async (email: string) => {
+    try {
+      const actionCodeSettings = {
+        // A URL que o usuário será redirecionado após clicar no link.
+        // Vamos usar a mesma página onde ele estava.
+        url: window.location.origin + "/autenticacao",
+        handleCodeInApp: true,
+      };
+
+      await sendSignInLinkToEmail(autenticacao, email, actionCodeSettings);
+      
+      // Salva o email no localStorage para completar o login sem o usuário ter que digitar de novo
+      window.localStorage.setItem("emailForSignIn", email);
+      
+      registrar.info(
+        { rastreioId: "anônimo", servico: "Autenticacao", evento: "LINK_MAGICO_ENVIADO" },
+        `Link mágico enviado para: ${mascararDadoPessoal(email, "email")}`
+      );
+    } catch (erro: unknown) {
+      registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha ao enviar Link Mágico", erro);
+      traduzirErroFirebase(erro);
     }
   };
 
@@ -247,16 +319,23 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   /**
    * Encerra a sessão do usuário.
    */
-  const sair = async () => {
+  const sair = async (mostrarToast = true) => {
     const uid = usuario?.uid || "desconhecido";
     try {
+      logoutIntencionalRef.current = true;
       await signOut(autenticacao);
       registrar.info(
         { rastreioId: uid, servico: "Autenticacao", evento: "LOGOUT" },
         "Sessão encerrada pelo usuário"
       );
+      if (mostrarToast) {
+        toast.success("Você foi deslogado com sucesso.");
+      }
     } catch (erro: unknown) {
       registrar.error({ rastreioId: uid, servico: "Autenticacao", evento: "LOGOUT_FALHA" }, "Erro ao sair", erro);
+      if (mostrarToast) {
+        toast.error("Ocorreu um erro ao tentar deslogar.");
+      }
     }
   };
 
@@ -520,6 +599,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     excluirConta,
     exportarDadosPessoais,
     buscarToken,
+    enviarLinkMagicoLogin,
   };
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;

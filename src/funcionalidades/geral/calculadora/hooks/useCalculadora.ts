@@ -946,46 +946,71 @@ export function useCalculadora() {
 
   useEffect(() => { if (precoKwh === 0) detectarTarifa(); }, []);
 
-  const sugerirPrecoIA = useCallback(() => {
-    const idToast = toast.loading("IA analisando custos e complexidade...", {
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-        fontSize: '12px',
-        fontWeight: 'bold'
-      },
+  const sugerirPrecoIA = useCallback(async () => {
+    const idToast = toast.loading("Conectando à IA da Cloudflare...", {
+      style: { borderRadius: '10px', background: '#333', color: '#fff', fontSize: '12px', fontWeight: 'bold' }
     });
 
-    setTimeout(() => {
-      // 1. Lógica de "Inteligência"
+    try {
+      // Tenta chamar a IA Real
+      const res = await fetch("/api/ia-sugerir-preco", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          custoMaterial: calculo.custoMaterial / 100,
+          custoEnergia: calculo.custoEnergia / 100,
+          custoTrabalho: calculo.custoMaoDeObra / 100,
+          custoDepreciacao: calculo.custoDepreciacao / 100,
+          lucroDesejadoPercentual: margem / 100
+        })
+      });
+
+      if (!res.ok) throw new Error("Falha na API da IA");
+      
+      const dados = await res.json();
+      const precoAlvoReais = dados?.recomendado?.valor;
+      const dicaIA = dados?.recomendado?.justificativa || dados?.dica;
+
+      if (precoAlvoReais && precoAlvoReais > 0) {
+        const precoAlvoCentavos = Math.round(precoAlvoReais * 100);
+        
+        // Vamos forçar o valor alvo para o usuário ter exatamente o preço da IA
+        setPrecoAlvoCentavos(precoAlvoCentavos);
+
+        toast.success(`IA: ${dicaIA || "Preço otimizado com sucesso!"}`, {
+          id: idToast,
+          duration: 5000
+        });
+        return;
+      } else {
+        throw new Error("Resposta inválida da IA");
+      }
+    } catch (erro) {
+      console.warn("Fallback IA Matemática ativado:", erro);
+      
+      // Fallback: Lógica Matemática Antiga
       let novaMargem = margem;
       const precoAtualCentavos = calculo.precoSugerido;
 
-      // Regra A: Margem de Segurança (Mínimo 50% de margem real para projetos pequenos)
       if (precoAtualCentavos < 5000 && calculo.margemReal < 50) {
-        novaMargem = Math.max(novaMargem, 20000); // Sobe para 200% de margem bruta
+        novaMargem = Math.max(novaMargem, 20000); 
       }
-
-      // Regra B: Prêmio de Complexidade (Se houver pós-processo, o valor percebido é maior)
       if (itensPosProcesso.length > 0) {
-        novaMargem += 3000; // +30% de margem
+        novaMargem += 3000; 
       }
-
-      // Regra C: Arredondamento Psicológico
-      // (Isso é feito via ajuste de margem, mas aqui vamos apenas simular o ajuste estratégico)
       if (calculo.margemReal < 30) {
-        novaMargem = Math.max(novaMargem, 12000); // Garante pelo menos 120%
+        novaMargem = Math.max(novaMargem, 12000); 
       }
 
+      setPrecoAlvoCentavos(0); // Reseta alvo se tiver
       setMargem(novaMargem);
 
-      toast.success("Preço otimizado para máxima rentabilidade! ✨", {
+      toast.success("Preço otimizado para rentabilidade (Modo Offline) ✨", {
         id: idToast,
         duration: 3000
       });
-    }, 1500);
-  }, [calculo, margem, itensPosProcesso, setMargem]);
+    }
+  }, [calculo, margem, itensPosProcesso, setMargem, setPrecoAlvoCentavos]);
 
   return {
     materiaisSelecionados, setMateriaisSelecionados,

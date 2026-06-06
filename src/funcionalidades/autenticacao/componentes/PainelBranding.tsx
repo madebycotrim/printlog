@@ -42,19 +42,19 @@ export function PainelBranding({
       </div>
 
       {/* Content */}
-      <div className="relative z-10 my-auto">
-        <div className="text-4xl font-bold leading-relaxed mb-6 text-white drop-shadow-sm">
+      <div className="relative z-10 my-auto py-8">
+        <div className="text-5xl font-bold leading-[1.15] mb-8 text-white drop-shadow-sm">
           {titulo}
         </div>
-        <p className="text-zinc-400 text-base leading-relaxed mb-8 max-w-sm">
+        <p className="text-zinc-400 text-base leading-relaxed mb-12 max-w-md">
           {descricao}
         </p>
 
-        {beneficios && <div className="space-y-4">{beneficios}</div>}
+        {beneficios && <div className="space-y-6">{beneficios}</div>}
       </div>
 
       {/* Footer - Legal */}
-      <div className="relative z-10 flex gap-6 text-[10px] uppercase tracking-widest text-zinc-600 font-bold">
+      <div className="relative z-10 flex gap-6 text-[10px] uppercase tracking-widest text-zinc-600 font-bold mt-12">
         <a
           href="/seguranca-e-privacidade"
           className="hover:text-zinc-400 transition-colors"

@@ -96,13 +96,9 @@ export function PaginaConfiguracoes() {
     }
   }, [search]);
 
-  const eProOuSuperior = (() => {
-    const p = ((usuario as any)?.plano || '').toUpperCase();
-    const r = ((usuario as any)?.role || (usuario as any)?.cargo || '').toUpperCase();
-    return ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(p) ||
-      ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(r) ||
-      p.includes('FUNDADOR') || r.includes('FUNDADOR');
-  })();
+  // Lê o plano diretamente do armazém (fonte de verdade: Cloudflare D1)
+  const eProOuSuperior = config.plano === "PRO" || config.plano === "FUNDADOR";
+
 
   // Detecção de Alterações Pendentes
   const perfilPendente = nome !== (usuario?.nome || "");

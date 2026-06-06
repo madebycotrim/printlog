@@ -12,16 +12,29 @@ import { FiltrosInsumo } from "./componentes/FiltrosInsumo";
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
+import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
 import { useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
+import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
+import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
+import { useState } from "react";
 
 export function PaginaInsumos() {
   const { estado, acoes } = useGerenciadorInsumos();
   const { materiais, definirMateriais } = useArmazemMateriais();
   const { usuario } = useAutenticacao();
+  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const tentarNovoInsumo = () => {
+    if (atingiuLimite("INSUMOS", estado.insumos.length, usuario?.plano)) {
+      setModalPaywallAberto(true);
+    } else {
+      acoes.abrirEditar();
+    }
+  };
 
   // 🔄 SINCRONIZAÇÃO DE MATERIAIS PARA CÁLCULO CONSOLIDADO
   useEffect(() => {
@@ -37,7 +50,7 @@ export function PaginaInsumos() {
     acao: {
       texto: "Novo Insumo",
       icone: Plus,
-      aoClicar: () => acoes.abrirEditar(),
+      aoClicar: tentarNovoInsumo,
     },
     aoBuscar: acoes.definirFiltroPesquisa,
   });
@@ -70,7 +83,7 @@ export function PaginaInsumos() {
               descricao="Adicione o seu primeiro insumo para gerenciar o seu estoque de apoio logístico."
               icone={Box}
               textoBotao="Cadastrar Insumo"
-              aoClicarBotao={() => acoes.abrirEditar()}
+              aoClicarBotao={tentarNovoInsumo}
             />
           </motion.div>
         ) : (
@@ -130,19 +143,25 @@ export function PaginaInsumos() {
                         <div className="flex-1 h-px bg-borda-sutil/40" />
                       </div>
 
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                      <motion.div 
+                        variants={variantesContainerLista}
+                        initial="inicial"
+                        animate="animar"
+                        className="grid grid-cols-1 xl:grid-cols-2 gap-4"
+                      >
                         {lista.map((ins) => (
-                          <CardInsumo
-                            key={ins.id}
-                            insumo={ins}
-                            aoEditar={acoes.abrirEditar}
-                            aoBaixar={acoes.abrirBaixa}
-                            aoExcluir={acoes.abrirArquivamento}
-                            aoRepor={acoes.abrirReposicao}
-                            aoVerHistorico={acoes.abrirHistorico}
-                          />
+                          <motion.div key={ins.id} variants={variantesItemLista} layout>
+                            <CardInsumo
+                              insumo={ins}
+                              aoEditar={acoes.abrirEditar}
+                              aoBaixar={acoes.abrirBaixa}
+                              aoExcluir={acoes.abrirArquivamento}
+                              aoRepor={acoes.abrirReposicao}
+                              aoVerHistorico={acoes.abrirHistorico}
+                            />
+                          </motion.div>
                         ))}
-                      </div>
+                      </motion.div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -196,6 +215,15 @@ export function PaginaInsumos() {
         insumo={estado.insumoArquivamento}
         aoFechar={acoes.fecharArquivamento}
         aoConfirmar={acoes.confirmarArquivamento}
+      />
+
+      <ModalUpgradePaywall
+        aberto={modalPaywallAberto}
+        aoFechar={() => setModalPaywallAberto(false)}
+        recurso="Insumos"
+        aoFazerUpgrade={() => {
+          window.location.href = "/dashboard";
+        }}
       />
     </div>
   );

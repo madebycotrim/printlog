@@ -19,12 +19,24 @@ import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/arm
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/constantesNegocio";
+import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
+import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
+import { useState } from "react";
 
 export function PaginaMateriais() {
   const { estado, acoes } = useGerenciadorMateriais();
   const { insumos, definirInsumos } = useArmazemInsumos();
   const { usuario } = useAutenticacao();
   const { betaEstoqueInteligente } = useBeta();
+  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const tentarNovoMaterial = () => {
+    if (atingiuLimite("MATERIAIS", estado.materiais.length, usuario?.plano)) {
+      setModalPaywallAberto(true);
+    } else {
+      acoes.abrirEditar(null as unknown as Material);
+    }
+  };
 
   // 🔄 SINCRONIZAÇÃO DE INSUMOS PARA CÁLCULO CONSOLIDADO
   useEffect(() => {
@@ -41,7 +53,7 @@ export function PaginaMateriais() {
     acao: {
       texto: "Novo Material",
       icone: Plus,
-      aoClicar: () => acoes.abrirEditar(null as unknown as Material),
+      aoClicar: tentarNovoMaterial,
     },
   });
 
@@ -74,7 +86,7 @@ export function PaginaMateriais() {
               descricao="Adicione o seu primeiro material para gerenciar o seu estoque de matéria prima."
               icone={PackageSearch}
               textoBotao="Cadastrar Material"
-              aoClicarBotao={() => acoes.abrirEditar(null as unknown as Material)}
+              aoClicarBotao={tentarNovoMaterial}
             />
           </motion.div>
         ) : (
@@ -93,7 +105,7 @@ export function PaginaMateriais() {
               alertasBaixoEstoque={metricasConsolidadas.itensEmAlerta}
             />
 
-            {betaEstoqueInteligente && estado.metricas.alertasBaixoEstoque > 0 && (
+            {(usuario?.plano === "PRO" || usuario?.plano === "FUNDADOR") && estado.metricas.alertasBaixoEstoque > 0 && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -175,6 +187,15 @@ export function PaginaMateriais() {
         material={estado.materialParaRepor}
         aoFechar={acoes.fecharRepor}
         aoConfirmar={acoes.confirmarReposicaoMaterial}
+      />
+
+      <ModalUpgradePaywall
+        aberto={modalPaywallAberto}
+        aoFechar={() => setModalPaywallAberto(false)}
+        recurso="Materiais"
+        aoFazerUpgrade={() => {
+          window.location.href = "/dashboard";
+        }}
       />
     </div>
   );

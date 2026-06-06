@@ -11,6 +11,7 @@ interface PropriedadesModalConfiguracoes {
   config: any;
   hook: any;
   aoSalvar: () => Promise<void>;
+  aoClicarPaywall?: () => void;
 }
 
 /**
@@ -22,7 +23,8 @@ export function ModalConfiguracoes({
   eProOuSuperior,
   config,
   hook,
-  aoSalvar
+  aoSalvar,
+  aoClicarPaywall
 }: PropriedadesModalConfiguracoes) {
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho={true}>
@@ -96,7 +98,10 @@ export function ModalConfiguracoes({
             )}
 
             {!eProOuSuperior && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-sm rounded-xl text-center gap-2">
+              <div 
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-sm rounded-xl text-center gap-2 cursor-pointer"
+                onClick={aoClicarPaywall}
+              >
                 <Crown size={24} className="text-zinc-400 dark:text-zinc-500" />
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Exclusivo PRO</span>

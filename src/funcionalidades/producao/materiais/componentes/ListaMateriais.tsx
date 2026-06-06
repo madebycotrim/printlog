@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
 import { Search } from "lucide-react";
 import { CardMaterial } from "./CardMaterial";
 import { Material } from "../tipos";
@@ -62,19 +63,25 @@ export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistor
               <div className="flex-1 h-px bg-borda-sutil/40" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-6">
+                        <motion.div 
+              variants={variantesContainerLista}
+              initial="inicial"
+              animate="animar"
+              className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-6"
+            >
               {lista.map((mat) => (
-                <CardMaterial
-                  key={mat.id}
-                  material={mat}
-                  aoEditar={aoEditar}
-                  aoHistorico={aoHistorico}
-                  aoExcluir={aoExcluir}
-                  aoAlternarFavorito={aoAlternarFavorito}
-                  esconderFavorito={true}
-                />
+                <motion.div key={mat.id} variants={variantesItemLista} layout>
+                  <CardMaterial
+                    material={mat}
+                    aoEditar={aoEditar}
+                    aoHistorico={aoHistorico}
+                    aoExcluir={aoExcluir}
+                    aoAlternarFavorito={aoAlternarFavorito}
+                    esconderFavorito={true}
+                  />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </motion.div>
         ))}
       </AnimatePresence>

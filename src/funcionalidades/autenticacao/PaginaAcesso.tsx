@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { AlertCircle, CheckCircle2, Github } from "lucide-react";
+import { AlertCircle, CheckCircle2, Github, Mail, ArrowRight } from "lucide-react";
 import { LayoutAutenticacao } from "./componentes/LayoutAutenticacao";
 import { PainelBranding } from "./componentes/PainelBranding";
 import { useAutenticacao } from "./contextos/ContextoAutenticacao";
@@ -9,8 +9,13 @@ import { Carregamento } from "@/compartilhado/componentes";
 export function PaginaAcesso() {
   const navegar = useNavigate();
   const localizacao = useLocation();
-  const { loginGoogle, loginGithub, usuario, carregando } = useAutenticacao();
-  const [erro, definirErro] = useState("");
+  const { loginGoogle, loginGithub, enviarLinkMagicoLogin, usuario, carregando } = useAutenticacao();
+  const [erro, definirErro] = useState<string | null>(null);
+  
+  // States do Magic Link
+  const [email, definirEmail] = useState("");
+  const [carregandoMagic, definirCarregandoMagic] = useState(false);
+  const [enviado, definirEnviado] = useState(false);
 
   const deOndeVimOriginal = (localizacao.state as any)?.from || "/dashboard";
   const deOndeVim = deOndeVimOriginal === "/" ? "/dashboard" : deOndeVimOriginal;
@@ -34,6 +39,22 @@ export function PaginaAcesso() {
       await loginGithub();
     } catch (err: any) {
       definirErro(err.message);
+    }
+  };
+
+  const lidarComLinkMagico = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    definirCarregandoMagic(true);
+    definirErro(null);
+    try {
+      await enviarLinkMagicoLogin(email);
+      definirEnviado(true);
+    } catch (err: any) {
+      definirErro(err.message);
+    } finally {
+      definirCarregandoMagic(false);
     }
   };
 
@@ -143,6 +164,53 @@ export function PaginaAcesso() {
             <Github size={18} />
             Continuar com GitHub
           </button>
+
+          <div className="flex items-center my-2">
+            <div className="flex-1 border-t border-white/5"></div>
+            <span className="px-3 text-xs text-zinc-500 font-medium">ou</span>
+            <div className="flex-1 border-t border-white/5"></div>
+          </div>
+
+          {!enviado ? (
+            <form onSubmit={lidarComLinkMagico} className="flex flex-col gap-3">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail size={18} className="text-zinc-500" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => definirEmail(e.target.value)}
+                  placeholder="Seu melhor e-mail corporativo"
+                  className="w-full bg-black/20 border border-white/10 text-white text-sm rounded-xl pl-11 pr-4 py-4 focus:outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] transition-all placeholder:text-zinc-600"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={carregandoMagic}
+                className="w-full bg-[#0ea5e9] hover:bg-[#0284c7] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-[#0ea5e9]/20"
+              >
+                {carregandoMagic ? (
+                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    Continuar com E-mail
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 text-center animate-in fade-in zoom-in duration-300">
+              <Mail size={32} className="text-emerald-400 mx-auto mb-3" />
+              <h3 className="text-white font-bold mb-1">Verifique seu E-mail</h3>
+              <p className="text-sm text-zinc-400">
+                Enviamos um link mágico seguro para <br/>
+                <strong className="text-zinc-200">{email}</strong>
+              </p>
+            </div>
+          )}
         </div>
 
         <p className="mt-8 text-center text-xs text-zinc-500 leading-relaxed max-w-sm mx-auto">

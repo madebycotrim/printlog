@@ -1,4 +1,4 @@
-import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText } from "lucide-react";
+import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -15,7 +15,8 @@ interface PainelResultadosProps {
   salvarProjeto: () => void;
   gerarPdf: () => void;
   gerarLinkMagico?: () => void;
-  obterUrlLinkMagico?: () => string;
+  abrirModalEmail?: () => void;
+  obterUrlLinkMagico?: () => string | null;
   carregandoPdf?: boolean;
   materiais?: MaterialSelecionado[];
   insumos?: InsumoSelecionado[];
@@ -34,7 +35,7 @@ interface PainelResultadosProps {
 }
 
 export const PainelResultados = memo(function PainelResultados({
-  calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, obterUrlLinkMagico, carregandoPdf,
+  calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
   tempo = 0, modoEntrada = 'unitario', frete = 0, taxaFixa = 0, aoSugerirPrecoIA,
   descontoVolume = 0, setDescontoVolume, precoAlvoCentavos = 0, setPrecoAlvoCentavos
@@ -546,6 +547,27 @@ export const PainelResultados = memo(function PainelResultados({
                             <span className="text-[8px] text-zinc-500">Copiar link de assinatura</span>
                           </div>
                         </button>
+
+                        {abrirModalEmail && (
+                          <>
+                            <div className="h-px bg-borda-sutil mx-2" />
+                            <button 
+                              onClick={() => {
+                                setMenuExportarAberto(false);
+                                abrirModalEmail();
+                              }}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                                <Mail size={14} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">E-mail</span>
+                                <span className="text-[8px] text-zinc-500">Enviar orçamento por e-mail</span>
+                              </div>
+                            </button>
+                          </>
+                        )}
                       </>
                     )}
                   </div>

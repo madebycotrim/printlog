@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { transicaoMolaSuave } from "@/compartilhado/utilitarios/animacoes";
 
 interface PropsLayout {
   children: ReactNode;
@@ -68,11 +70,14 @@ export function LayoutAutenticacao({
       </div>
 
       {/* Card Principal */}
-      <div
-        className={`w-full ${larguraMaxima} min-h-[450px] bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex overflow-hidden relative z-10 animate-fade-in-up`}
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={transicaoMolaSuave}
+        className={`w-full ${larguraMaxima} min-h-[450px] bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex overflow-hidden relative z-10`}
       >
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 }

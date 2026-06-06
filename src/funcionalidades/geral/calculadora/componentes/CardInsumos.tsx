@@ -310,11 +310,12 @@ export const CardInsumos = memo(function CardInsumos({
                 return (
                   <motion.div
                     key={item.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className={`p-4 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all
+                    layout="position"
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 30, transition: { duration: 0.15 } }}
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    className={`p-4 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors
                       ${alerta ? "bg-rose-500/5 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]" : "bg-zinc-50 dark:bg-white/[0.02] border-borda-sutil"}
                     `}
                   >
