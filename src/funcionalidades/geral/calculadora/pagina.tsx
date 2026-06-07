@@ -84,9 +84,9 @@ export function PaginaCalculadora() {
   const [modalEmailAberto, setModalEmailAberto] = useState(false);
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
   const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
-  const [nomeProjeto, setNomeProjeto] = useState('');
-  const [descricaoProjeto, setDescricaoProjeto] = useState('');
-  const [clienteProjetoId, setClienteProjetoId] = useState('');
+  const [nomeProjeto, setNomeProjeto] = useState(() => localStorage.getItem("printlog_calculadora_nome_projeto") || '');
+  const [descricaoProjeto, setDescricaoProjeto] = useState(() => localStorage.getItem("printlog_calculadora_descricao_projeto") || '');
+  const [clienteProjetoId, setClienteProjetoId] = useState(() => localStorage.getItem("printlog_calculadora_cliente_id") || '');
   const [buscaClienteSeletor, setBuscaClienteSeletor] = useState('');
   const [abertoSeletorCliente, setAbertoSeletorCliente] = useState(false);
   const [abertoSeletorImpressora, setAbertoSeletorImpressora] = useState(false);
@@ -118,11 +118,22 @@ export function PaginaCalculadora() {
     localStorage.setItem("printlog_calculadora_salvamento_automatico", salvamentoAutomatico.toString());
   }, [salvamentoAutomatico]);
 
+  useEffect(() => {
+    if (salvamentoAutomatico) {
+      localStorage.setItem("printlog_calculadora_nome_projeto", nomeProjeto);
+      localStorage.setItem("printlog_calculadora_descricao_projeto", descricaoProjeto);
+      localStorage.setItem("printlog_calculadora_cliente_id", clienteProjetoId);
+    }
+  }, [nomeProjeto, descricaoProjeto, clienteProjetoId, salvamentoAutomatico]);
+
   // Resetar a calculadora ao sair da página (Sidebar, Navegação, etc) se não tiver salvamento automático
   useEffect(() => {
     return () => {
       if (!salvamentoAutomaticoRef.current) {
         hook.limpar(true);
+        localStorage.removeItem("printlog_calculadora_nome_projeto");
+        localStorage.removeItem("printlog_calculadora_descricao_projeto");
+        localStorage.removeItem("printlog_calculadora_cliente_id");
       }
     };
   }, [hook.limpar]);
@@ -132,6 +143,10 @@ export function PaginaCalculadora() {
     hook.limpar();
     setNomeProjeto('');
     setDescricaoProjeto('');
+    setClienteProjetoId('');
+    localStorage.removeItem("printlog_calculadora_nome_projeto");
+    localStorage.removeItem("printlog_calculadora_descricao_projeto");
+    localStorage.removeItem("printlog_calculadora_cliente_id");
     setClienteProjetoId('');
     setBuscaClienteSeletor('');
     hook.setImpressoraSelecionadaId('');

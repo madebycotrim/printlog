@@ -995,21 +995,14 @@ export function useCalculadora() {
 
     try {
       // Tenta chamar a IA Real
-      const res = await fetch("/api/ia-sugerir-preco", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          custoMaterial: calculo.custoMaterial / 100,
-          custoEnergia: calculo.custoEnergia / 100,
-          custoTrabalho: calculo.custoMaoDeObra / 100,
-          custoDepreciacao: calculo.custoDepreciacao / 100,
-          lucroDesejadoPercentual: margem / 100
-        })
+      const dados = await servicoBaseApi.post<any>("/api/ia-sugerir-preco", {
+        custoMaterial: calculo.custoMaterial / 100,
+        custoEnergia: calculo.custoEnergia / 100,
+        custoTrabalho: calculo.custoMaoDeObra / 100,
+        custoDepreciacao: calculo.custoDepreciacao / 100,
+        lucroDesejadoPercentual: margem / 100
       });
-
-      if (!res.ok) throw new Error("Falha na API da IA");
       
-      const dados = await res.json();
       const precoAlvoReais = dados?.recomendado?.valor;
       const dicaIA = dados?.recomendado?.justificativa || dados?.dica;
 
