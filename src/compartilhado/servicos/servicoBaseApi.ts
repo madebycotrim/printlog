@@ -87,7 +87,7 @@ export const servicoBaseApi = {
         const contentType = resposta.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const erroJson = (await resposta.json().catch(() => ({}))) as Record<string, string>;
-          mensagem = erroJson.mensagem || mensagem;
+          mensagem = erroJson.erro || erroJson.mensagem || mensagem;
           codigo = erroJson.codigo;
         }
 
