@@ -144,7 +144,7 @@ export function PaginaOrcamentoPublico() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4 }}
-              className={`bg-white w-full max-w-[794px] sm:rounded-sm text-[#1e293b] flex flex-col ${isPrintMode ? 'min-h-0 p-6 sm:p-8 shadow-none h-[100vh] max-h-[100vh] overflow-hidden justify-between' : 'min-h-[1123px] shadow-2xl p-8 sm:px-16 sm:py-16'}`}
+              className={`bg-white w-full max-w-[794px] sm:rounded-sm text-[#1e293b] flex flex-col ${isPrintMode ? 'min-h-0 p-6 sm:p-8 shadow-none h-[100vh] max-h-[100vh] overflow-hidden justify-between' : 'min-h-[1123px] shadow-lg shadow-slate-900/5 p-8 sm:px-16 sm:py-16'}`}
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               {/* HEADER IDÊNTICO AO PDF */}
@@ -229,9 +229,34 @@ export function PaginaOrcamentoPublico() {
 
                     {(() => {
                       const custoMateriais = m.reduce((acc: number, mat: any) => acc + (typeof mat === 'object' && mat.p ? mat.p : 0), 0);
-                      const custoBase = (cm || 0) + (cmo || 0) + custoMateriais || 1;
-                      const fatorProporcional = pr / custoBase;
-                      const proporcionar = (centavos: number) => ((centavos * fatorProporcional) / 100).toFixed(2).replace('.', ',');
+                      const custoMaquina = cm || 0;
+                      const custoMaoDeObra = cmo || 0;
+                      const somaCustos = custoMaquina + custoMaoDeObra + custoMateriais;
+                      const lucroLiquidoDistribuir = pr - somaCustos;
+
+                      const pesos = {
+                        material: 5,
+                        maquina: 0.4,
+                        maodeobra: 1.5
+                      };
+
+                      const basePonderada = 
+                        (custoMateriais * pesos.material) + 
+                        (custoMaquina * pesos.maquina) + 
+                        (custoMaoDeObra * pesos.maodeobra);
+
+                      const extra = (custo: number, peso: number) => {
+                        if (lucroLiquidoDistribuir <= 0 || basePonderada <= 0) {
+                          const fator = pr / (somaCustos || 1);
+                          return custo * fator - custo;
+                        }
+                        return lucroLiquidoDistribuir * ((custo * peso) / basePonderada);
+                      };
+
+                      const exibirProporcional = (custo: number, peso: number) => {
+                        const valorFinal = custo + extra(custo, peso);
+                        return (valorFinal / 100).toFixed(2).replace('.', ',');
+                      };
 
                       return (
                         <>
@@ -241,7 +266,7 @@ export function PaginaOrcamentoPublico() {
                             </td>
                             <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">—</td>
                             <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
-                            <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cmo ? `R$ ${proporcionar(cmo)}` : 'R$ 0,00'}</td>
+                            <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cmo ? `R$ ${exibirProporcional(cmo, pesos.maodeobra)}` : 'R$ 0,00'}</td>
                           </tr>
 
                           <tr className="border-b border-[#f1f5f9] hover:bg-slate-50 transition-colors">
@@ -250,7 +275,7 @@ export function PaginaOrcamentoPublico() {
                             </td>
                             <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">{t ? `${Math.floor(t/60)}h ${Math.round(t%60)}m` : '—'}</td>
                             <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
-                            <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cm ? `R$ ${proporcionar(cm)}` : 'R$ 0,00'}</td>
+                            <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cm ? `R$ ${exibirProporcional(cm, pesos.maquina)}` : 'R$ 0,00'}</td>
                           </tr>
                           
                           {m.length > 0 ? (
@@ -264,7 +289,7 @@ export function PaginaOrcamentoPublico() {
                                       const nome = isObj ? mat.n : mat;
                                       const tipo = isObj && mat.t ? mat.t : '';
                                       const pesoFormatado = isObj && typeof mat.q === 'number' ? `${mat.q}g` : '—';
-                                      const precoFormatado = isObj && typeof mat.p === 'number' && mat.p > 0 ? `R$ ${proporcionar(mat.p)}` : '';
+                                      const precoFormatado = isObj && typeof mat.p === 'number' && mat.p > 0 ? `R$ ${exibirProporcional(mat.p, pesos.material)}` : '';
                                       
                                       return (
                                         <div key={idx} className={`bg-white border border-[#e2e8f0] rounded-md px-2.5 py-1.5 flex items-center gap-2 ${isPrintMode ? 'shadow-none' : 'shadow-sm'}`}>
@@ -310,7 +335,7 @@ export function PaginaOrcamentoPublico() {
               </div>
 
               {/* TOTAL BOX IDÊNTICO AO PDF */}
-              <div className={`bg-[#0f172a] text-white rounded-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 ${isPrintMode ? 'p-5 mb-4 shadow-none' : 'p-6 mb-8 shadow-xl shadow-slate-900/10'}`}>
+              <div className={`bg-[#0f172a] text-white rounded-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 ${isPrintMode ? 'p-5 mb-4 shadow-none' : 'p-6 mb-8 shadow-md shadow-slate-900/5'}`}>
                 <div className="flex flex-col gap-1">
                   <div className="text-[11px] font-[600] text-[#94a3b8] flex items-center gap-1.5 uppercase tracking-[0.05em]">
                     <Receipt size={14} className="text-slate-400" />
@@ -398,6 +423,15 @@ export function PaginaOrcamentoPublico() {
                     <div className="text-[9px] font-[500] text-[#94a3b8]">Aceite / Cliente</div>
                   </div>
                 </div>
+                
+                <div className="mt-12 pt-6 border-t border-slate-100">
+                  <div className="text-center text-[9px] font-medium text-slate-400/80 max-w-md mx-auto mb-2 leading-relaxed select-none">
+                    Estimativa baseada em parâmetros manuais. O PrintLog não se responsabiliza por prejuízos ou variações de mercado.
+                  </div>
+                  <div className="text-center text-[10px] font-medium text-slate-400 mt-4 mb-2">
+                    ♻️ Pense antes de imprimir. Documento digital disponível em printlog.com.br.
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -459,12 +493,6 @@ export function PaginaOrcamentoPublico() {
           )}
         </AnimatePresence>
 
-        <div className="text-center text-[9px] font-medium text-slate-400/80 max-w-md mx-auto mb-2 leading-relaxed select-none">
-          Estimativa baseada em parâmetros manuais. O PrintLog não se responsabiliza por prejuízos ou variações de mercado.
-        </div>
-        <div className="text-center text-[10px] font-medium text-slate-400 mt-8 mb-4">
-          ♻️ Pense antes de imprimir. Documento digital disponível em printlog.com.br.
-        </div>
       </main>
     </div>
   );

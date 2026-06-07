@@ -13,8 +13,6 @@ import {
   getRedirectResult,
   AuthError,
 
-  setPersistence,
-  browserLocalPersistence,
   deleteUser,
   linkWithCredential,
   signInWithCredential,
@@ -103,8 +101,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   useEffect(() => {
     const inicializarApp = async () => {
       try {
-        registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando verificação de persistência...");
-        await setPersistence(autenticacao, browserLocalPersistence);
+        registrar.info({ rastreioId: "sistema", servico: "Autenticacao" }, "Iniciando Autenticação...");
         
         // Processa Login com Magic Link se existir
         if (isSignInWithEmailLink(autenticacao, window.location.href)) {
@@ -185,7 +182,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       } else {
         if (usuarioAnteriorRef.current && !logoutIntencionalRef.current) {
           // Se o usuário foi desconectado pelo Firebase (sessão expirada, etc) sem chamar sair()
-          toast.error("Sua sessão expirou por segurança. Faça login novamente.", { duration: Infinity, id: "sessao-expirada" });
+          toast.error("Sua sessão expirou por segurança. Faça login novamente.", { id: "sessao-expirada" });
         }
         definirUsuario(null);
         usuarioAnteriorRef.current = null;

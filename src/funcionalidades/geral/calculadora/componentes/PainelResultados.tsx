@@ -396,6 +396,7 @@ export const PainelResultados = memo(function PainelResultados({
                         ))}
                       </Pie>
                       <Tooltip 
+                        formatter={(value: number) => `R$ ${(value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                         contentStyle={{ 
                           backgroundColor: 'var(--bg-card)', 
                           border: '1px solid var(--border-subtle)', 

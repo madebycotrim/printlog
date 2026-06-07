@@ -480,11 +480,41 @@ export function useCalculadora() {
       </div>
     `;
 
-    // Fator para distribuir o lucro proporcionalmente em cada item de custo
-    // Isso faz os valores exibidos somarem ao preço final sem expor a margem
-    const custoBase = calculo.custoTotalOperacional > 0 ? calculo.custoTotalOperacional : 1;
-    const fatorProporcional = calculo.precoSugerido / custoBase;
-    const proporcionar = (centavos: number) => ((centavos * fatorProporcional) / 100).toFixed(2).replace('.', ',');
+    // Fator para distribuir o lucro com pesos (mais peso no material, menos na máquina)
+    const somaCustosOperacionais = calculo.custoMaterial + calculo.custoEnergia + calculo.custoDepreciacao + calculo.custoMaoDeObra + calculo.custoPosProcesso + calculo.custoInsumos + calculo.custoFalha;
+    const lucroLiquidoDistribuir = calculo.precoSugerido - somaCustosOperacionais - calculo.taxaMarketplace;
+
+    const pesos = {
+      material: 5,
+      energia: 0.4,
+      depreciacao: 0.4,
+      maodeobra: 1.5,
+      posprocesso: 1,
+      insumos: 1,
+      falha: 0.5
+    };
+
+    const basePonderada = 
+      (calculo.custoMaterial * pesos.material) + 
+      (calculo.custoEnergia * pesos.energia) + 
+      (calculo.custoDepreciacao * pesos.depreciacao) + 
+      (calculo.custoMaoDeObra * pesos.maodeobra) + 
+      (calculo.custoPosProcesso * pesos.posprocesso) + 
+      (calculo.custoInsumos * pesos.insumos) + 
+      (calculo.custoFalha * pesos.falha);
+
+    const extra = (custo: number, peso: number) => {
+      if (lucroLiquidoDistribuir <= 0 || basePonderada <= 0) {
+        const fator = (calculo.precoSugerido - calculo.taxaMarketplace) / (somaCustosOperacionais || 1);
+        return custo * fator - custo;
+      }
+      return lucroLiquidoDistribuir * ((custo * peso) / basePonderada);
+    };
+
+    const exibirProporcional = (custo: number, peso: number) => {
+      const valorFinal = custo + extra(custo, peso);
+      return (valorFinal / 100).toFixed(2).replace('.', ',');
+    };
 
     const layout = `
       <!DOCTYPE html>
@@ -781,7 +811,7 @@ export function useCalculadora() {
                   </td>
                   <td class="c">—</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoMaterial)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoMaterial, pesos.material)}</td>
                 </tr>
 
                 ${calculo.custoEnergia > 0 ? `
@@ -789,7 +819,7 @@ export function useCalculadora() {
                   <td>Energia Elétrica (Consumo Operacional)</td>
                   <td class="c">${tempoFormatado}</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoEnergia)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoEnergia, pesos.energia)}</td>
                 </tr>` : ''}
 
                 ${calculo.custoDepreciacao > 0 ? `
@@ -797,7 +827,7 @@ export function useCalculadora() {
                   <td>Desgaste de Máquina e Manutenção Preventiva</td>
                   <td class="c">${tempoFormatado}</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoDepreciacao)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoDepreciacao, pesos.depreciacao)}</td>
                 </tr>` : ''}
 
                 ${calculo.custoMaoDeObra > 0 ? `
@@ -805,7 +835,7 @@ export function useCalculadora() {
                   <td>Tempo de Operador (Setup, Fatiamento e Acompanhamento)</td>
                   <td class="c">—</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoMaoDeObra)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoMaoDeObra, pesos.maodeobra)}</td>
                 </tr>` : ''}
 
                 ${calculo.custoPosProcesso > 0 ? `
@@ -813,7 +843,7 @@ export function useCalculadora() {
                   <td>Pós-Processamento e Acabamento Especial</td>
                   <td class="c">${itensPosProcesso.length} etapa(s)</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoPosProcesso)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoPosProcesso, pesos.posprocesso)}</td>
                 </tr>` : ''}
 
                 ${calculo.custoInsumos > 0 ? `
@@ -821,7 +851,7 @@ export function useCalculadora() {
                   <td>Peças Extras e Insumos Adicionais</td>
                   <td class="c">${insumosSelecionados.length} item(s)</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoInsumos)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoInsumos, pesos.insumos)}</td>
                 </tr>` : ''}
 
                 ${calculo.custoFalha > 0 ? `
@@ -829,7 +859,7 @@ export function useCalculadora() {
                   <td>Taxa de Segurança e Mitigação de Falhas</td>
                   <td class="c">—</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.custoFalha)}</td>
+                  <td class="r val">R$ ${exibirProporcional(calculo.custoFalha, pesos.falha)}</td>
                 </tr>` : ''}
 
                 ${calculo.taxaMarketplace > 0 ? `
@@ -837,7 +867,7 @@ export function useCalculadora() {
                   <td>Taxas de Plataforma ou Intermediação</td>
                   <td class="c">—</td>
                   <td class="r">—</td>
-                  <td class="r val">R$ ${proporcionar(calculo.taxaMarketplace)}</td>
+                  <td class="r val">R$ ${(calculo.taxaMarketplace / 100).toFixed(2).replace('.', ',')}</td>
                 </tr>` : ''}
               </tbody>
             </table>
