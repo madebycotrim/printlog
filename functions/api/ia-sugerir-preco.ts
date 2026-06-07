@@ -82,7 +82,7 @@ Estrutura EXATA do JSON:
 - Margem de Lucro Alvo: ${dados.lucroDesejadoPercentual}%
 - Nome do Arquivo/Peça: ${dados.nomePeca || 'Peça 3D'}`;
 
-        const aiResult = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
+        const aiResult = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
             messages: [
                 { role: 'system', content: promptSistema },
                 { role: 'user', content: promptUsuario }
