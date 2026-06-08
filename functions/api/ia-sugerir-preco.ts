@@ -82,7 +82,7 @@ Estrutura EXATA do JSON:
 - Margem de Lucro Alvo: ${dados.lucroDesejadoPercentual}%
 - Nome do Arquivo/Peça: ${dados.nomePeca || 'Peça 3D'}`;
 
-        const aiResult = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+        const aiResult = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
             messages: [
                 { role: 'system', content: promptSistema },
                 { role: 'user', content: promptUsuario }
@@ -128,8 +128,11 @@ Estrutura EXATA do JSON:
             temperature: 0.7
         });
 
-        // O Workers AI com JSON Mode retorna o JSON como uma string dentro de aiResult.response
-        const respostaFinal = aiResult.response;
+        // O Workers AI com JSON Mode pode retornar o JSON como string ou como objeto, dependendo da versão
+        let respostaFinal = aiResult.response;
+        if (typeof respostaFinal !== "string") {
+            respostaFinal = JSON.stringify(respostaFinal);
+        }
 
         // 4. SALVA NO CACHE PARA PRÓXIMAS CONSULTAS (Background)
         context.waitUntil(
