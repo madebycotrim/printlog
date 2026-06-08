@@ -87,7 +87,43 @@ Estrutura EXATA do JSON:
                 { role: 'system', content: promptSistema },
                 { role: 'user', content: promptUsuario }
             ],
-            response_format: { type: 'json_object' },
+            response_format: {
+                type: 'json_schema',
+                json_schema: {
+                    name: 'precificacao',
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            piso: {
+                                type: 'object',
+                                properties: {
+                                    valor: { type: 'number' },
+                                    justificativa: { type: 'string' }
+                                },
+                                required: ['valor', 'justificativa']
+                            },
+                            recomendado: {
+                                type: 'object',
+                                properties: {
+                                    valor: { type: 'number' },
+                                    justificativa: { type: 'string' }
+                                },
+                                required: ['valor', 'justificativa']
+                            },
+                            premium: {
+                                type: 'object',
+                                properties: {
+                                    valor: { type: 'number' },
+                                    justificativa: { type: 'string' }
+                                },
+                                required: ['valor', 'justificativa']
+                            },
+                            dica: { type: 'string' }
+                        },
+                        required: ['piso', 'recomendado', 'premium', 'dica']
+                    }
+                }
+            },
             max_tokens: 600,
             temperature: 0.7
         });
