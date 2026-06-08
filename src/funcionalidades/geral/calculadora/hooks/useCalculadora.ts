@@ -18,7 +18,7 @@ import {
 } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 
-export function useCalculadora() {
+export function useCalculadora(salvamentoAutomatico = true) {
   const config = useArmazemConfiguracoes();
   const { materiais } = useArmazemMateriais();
   const { insumos: insumosEstoque } = useArmazemInsumos();
@@ -28,78 +28,79 @@ export function useCalculadora() {
 
   // --- ESTADOS BASE ---
   const [materiaisSelecionados, setMateriaisSelecionados] = useState<MaterialSelecionado[]>(() =>
-    armazenamentoSeguro.obter("printlog_materiais_selecionados", [])
+    salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_materiais_selecionados", []) : []
   );
   const [tempo, setTempo] = useState<number>(() =>
-    armazenamentoSeguro.obter("printlog_calculadora_tempo", 0) || armazenamentoSeguro.obter("printlog_tempo", 0)
+    salvamentoAutomatico ? (armazenamentoSeguro.obter("printlog_calculadora_tempo", 0) || armazenamentoSeguro.obter("printlog_tempo", 0)) : 0
   );
-  const [potencia, setPotencia] = useState<number>(() => armazenamentoSeguro.obter("printlog_potencia", 0));
+  const [potencia, setPotencia] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_potencia", 0) : 0);
   const [precoKwh, setPrecoKwh] = useState<number>(() => {
+    if (!salvamentoAutomatico) return config.custoEnergia;
     const salvo = armazenamentoSeguro.obter<number | null>("printlog_preco_kwh", null);
     return (salvo !== null && salvo !== 0) ? salvo : config.custoEnergia;
   });
-  const [maoDeObra, setMaoDeObra] = useState<number>(() => armazenamentoSeguro.obter("printlog_mao_de_obra", config.horaOperador));
-  const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => armazenamentoSeguro.obter("printlog_depreciacao_hora", config.horaMaquina));
-  const [margem, setMargem] = useState<number>(() => armazenamentoSeguro.obter("printlog_margem", config.margemLucro));
+  const [maoDeObra, setMaoDeObra] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_mao_de_obra", config.horaOperador) : config.horaOperador);
+  const [depreciacaoHora, setDepreciacaoHora] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_depreciacao_hora", config.horaMaquina) : config.horaMaquina);
+  const [margem, setMargem] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_margem", config.margemLucro) : config.margemLucro);
 
-  const [quantidade, setQuantidade] = useState<number>(() => armazenamentoSeguro.obter("printlog_quantidade", 0));
-  const [pecasPorMesa, setPecasPorMesa] = useState<number>(() => armazenamentoSeguro.obter("printlog_pecas_por_mesa", 0));
-  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote' | 'projeto'>(() => armazenamentoSeguro.obter<'unitario' | 'lote' | 'projeto'>("printlog_calculadora_modo_entrada", "lote"));
-  const [tempoSetup, setTempoSetup] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_setup", 0));
-  const [taxaFalha, setTaxaFalha] = useState<number>(() => armazenamentoSeguro.obter("printlog_taxa_falha", 0));
-  const [materialPerdido, setMaterialPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_material_perdido", 0));
-  const [tempoPerdido, setTempoPerdido] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_perdido", 0));
+  const [quantidade, setQuantidade] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_quantidade", 0) : 0);
+  const [pecasPorMesa, setPecasPorMesa] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_pecas_por_mesa", 0) : 0);
+  const [modoEntrada, setModoEntrada] = useState<'unitario' | 'lote' | 'projeto'>(() => salvamentoAutomatico ? armazenamentoSeguro.obter<'unitario' | 'lote' | 'projeto'>("printlog_calculadora_modo_entrada", "lote") : "lote");
+  const [tempoSetup, setTempoSetup] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_tempo_setup", 0) : 0);
+  const [taxaFalha, setTaxaFalha] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_taxa_falha", 0) : 0);
+  const [materialPerdido, setMaterialPerdido] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_material_perdido", 0) : 0);
+  const [tempoPerdido, setTempoPerdido] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_tempo_perdido", 0) : 0);
 
-  const [frete, setFrete] = useState<number>(() => armazenamentoSeguro.obter("printlog_frete", 0));
-  const [insumosFixos, setInsumosFixos] = useState<number>(() => armazenamentoSeguro.obter("printlog_insumos_fixos", 0));
-  const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>(() => armazenamentoSeguro.obter("printlog_insumos_selecionados", []));
-  const [itensPosProcesso, setItensPosProcesso] = useState<ItemPosProcesso[]>(() => armazenamentoSeguro.obter("printlog_itens_pos_processo", []));
+  const [frete, setFrete] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_frete", 0) : 0);
+  const [insumosFixos, setInsumosFixos] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_insumos_fixos", 0) : 0);
+  const [insumosSelecionados, setInsumosSelecionados] = useState<InsumoSelecionado[]>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_insumos_selecionados", []) : []);
+  const [itensPosProcesso, setItensPosProcesso] = useState<ItemPosProcesso[]>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_itens_pos_processo", []) : []);
 
-  const [cobrarDesgaste, setCobrarDesgaste] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_desgaste", true));
-  const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_mao_de_obra", true));
-  const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_energia", true));
-  const [cobrarInsumosFixos, setCobrarInsumosFixos] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_insumos_fixos", true));
-  const [cobrarLogistica, setCobrarLogistica] = useState<boolean>(() => armazenamentoSeguro.obter("printlog_cobrar_logistica", true));
-  const [perfilAtivo, setPerfilAtivo] = useState(() => armazenamentoSeguro.obter("printlog_perfil_ativo", "Direto"));
+  const [cobrarDesgaste, setCobrarDesgaste] = useState<boolean>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_cobrar_desgaste", true) : true);
+  const [cobrarMaoDeObra, setCobrarMaoDeObra] = useState<boolean>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_cobrar_mao_de_obra", true) : true);
+  const [cobrarEnergia, setCobrarEnergia] = useState<boolean>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_cobrar_energia", true) : true);
+  const [cobrarInsumosFixos, setCobrarInsumosFixos] = useState<boolean>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_cobrar_insumos_fixos", true) : true);
+  const [cobrarLogistica, setCobrarLogistica] = useState<boolean>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_cobrar_logistica", true) : true);
+  const [perfilAtivo, setPerfilAtivo] = useState(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_perfil_ativo", "Direto") : "Direto");
   const [taxaEcommerce, setTaxaEcommerce] = useState<number>(0);
   const [taxaFixa, setTaxaFixa] = useState<number>(0);
 
-  const [tempoModelagem, setTempoModelagem] = useState<number>(() => armazenamentoSeguro.obter("printlog_tempo_modelagem", 0));
-  const [valorHoraModelagem, setValorHoraModelagem] = useState<number>(() => armazenamentoSeguro.obter("printlog_valor_hora_modelagem", 8000));
-  const [descontoVolume, setDescontoVolume] = useState<number>(() => armazenamentoSeguro.obter("printlog_desconto_volume", 0));
-  const [precoAlvoCentavos, setPrecoAlvoCentavos] = useState<number>(() => armazenamentoSeguro.obter("printlog_preco_alvo", 0));
+  const [tempoModelagem, setTempoModelagem] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_tempo_modelagem", 0) : 0);
+  const [valorHoraModelagem, setValorHoraModelagem] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_valor_hora_modelagem", 8000) : 8000);
+  const [descontoVolume, setDescontoVolume] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_desconto_volume", 0) : 0);
+  const [precoAlvoCentavos, setPrecoAlvoCentavos] = useState<number>(() => salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_preco_alvo", 0) : 0);
 
 
 
   // Efeitos de persistência segura
-  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_desgaste", cobrarDesgaste); }, [cobrarDesgaste]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_mao_de_obra", cobrarMaoDeObra); }, [cobrarMaoDeObra]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_energia", cobrarEnergia); }, [cobrarEnergia]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_insumos_fixos", cobrarInsumosFixos); }, [cobrarInsumosFixos]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_cobrar_logistica", cobrarLogistica); }, [cobrarLogistica]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_perfil_ativo", perfilAtivo); }, [perfilAtivo]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_materiais_selecionados", materiaisSelecionados); }, [materiaisSelecionados]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_calculadora_tempo", tempo); }, [tempo]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_calculadora_modo_entrada", modoEntrada); }, [modoEntrada]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_potencia", potencia); }, [potencia]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_preco_kwh", precoKwh); }, [precoKwh]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_mao_de_obra", maoDeObra); }, [maoDeObra]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_depreciacao_hora", depreciacaoHora); }, [depreciacaoHora]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_margem", margem); }, [margem]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_quantidade", quantidade); }, [quantidade]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_pecas_por_mesa", pecasPorMesa); }, [pecasPorMesa]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_setup", tempoSetup); }, [tempoSetup]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_taxa_falha", taxaFalha); }, [taxaFalha]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_material_perdido", materialPerdido); }, [materialPerdido]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_perdido", tempoPerdido); }, [tempoPerdido]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_frete", frete); }, [frete]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_insumos_fixos", insumosFixos); }, [insumosFixos]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_insumos_selecionados", insumosSelecionados); }, [insumosSelecionados]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_itens_pos_processo", itensPosProcesso); }, [itensPosProcesso]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_tempo_modelagem", tempoModelagem); }, [tempoModelagem]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_valor_hora_modelagem", valorHoraModelagem); }, [valorHoraModelagem]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_desconto_volume", descontoVolume); }, [descontoVolume]);
-  useEffect(() => { armazenamentoSeguro.definir("printlog_preco_alvo", precoAlvoCentavos); }, [precoAlvoCentavos]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_desgaste", cobrarDesgaste); }, [cobrarDesgaste, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_mao_de_obra", cobrarMaoDeObra); }, [cobrarMaoDeObra, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_energia", cobrarEnergia); }, [cobrarEnergia, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_insumos_fixos", cobrarInsumosFixos); }, [cobrarInsumosFixos, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_logistica", cobrarLogistica); }, [cobrarLogistica, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_perfil_ativo", perfilAtivo); }, [perfilAtivo, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_materiais_selecionados", materiaisSelecionados); }, [materiaisSelecionados, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_calculadora_tempo", tempo); }, [tempo, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_calculadora_modo_entrada", modoEntrada); }, [modoEntrada, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_potencia", potencia); }, [potencia, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_preco_kwh", precoKwh); }, [precoKwh, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_mao_de_obra", maoDeObra); }, [maoDeObra, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_depreciacao_hora", depreciacaoHora); }, [depreciacaoHora, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_margem", margem); }, [margem, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_quantidade", quantidade); }, [quantidade, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_pecas_por_mesa", pecasPorMesa); }, [pecasPorMesa, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_tempo_setup", tempoSetup); }, [tempoSetup, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_taxa_falha", taxaFalha); }, [taxaFalha, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_material_perdido", materialPerdido); }, [materialPerdido, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_tempo_perdido", tempoPerdido); }, [tempoPerdido, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_frete", frete); }, [frete, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) almacenamientoSeguro.definir("printlog_insumos_fixos", insumosFixos); }, [insumosFixos, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_insumos_selecionados", insumosSelecionados); }, [insumosSelecionados, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_itens_pos_processo", itensPosProcesso); }, [itensPosProcesso, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_tempo_modelagem", tempoModelagem); }, [tempoModelagem, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_valor_hora_modelagem", valorHoraModelagem); }, [valorHoraModelagem, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_desconto_volume", descontoVolume); }, [descontoVolume, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_preco_alvo", precoAlvoCentavos); }, [precoAlvoCentavos, salvamentoAutomatico]);
 
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";

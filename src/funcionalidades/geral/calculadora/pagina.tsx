@@ -70,8 +70,12 @@ export function PaginaCalculadora() {
   const { estado: estadoMateriais, acoes: acoesMateriais } = useGerenciadorMateriais();
   const { acoes: acoesInsumos } = useGerenciadorInsumos();
 
+  const [salvamentoAutomatico, setSalvamentoAutomatico] = useState<boolean>(() => {
+    return localStorage.getItem("printlog_calculadora_salvamento_automatico") === "true";
+  });
+
   // Hook Central de Inteligência
-  const hook = useCalculadora();
+  const hook = useCalculadora(salvamentoAutomatico);
   const [searchParams] = useSearchParams();
   const idEdicao = searchParams.get("id") || searchParams.get("edicao");
   const { pedidos, criarPedido, atualizarPedido } = usePedidos();
@@ -108,14 +112,47 @@ export function PaginaCalculadora() {
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
 
-  const [salvamentoAutomatico, setSalvamentoAutomatico] = useState<boolean>(() => {
-    return localStorage.getItem("printlog_calculadora_salvamento_automatico") === "true";
-  });
-
   const salvamentoAutomaticoRef = useRef(salvamentoAutomatico);
   useEffect(() => {
     salvamentoAutomaticoRef.current = salvamentoAutomatico;
     localStorage.setItem("printlog_calculadora_salvamento_automatico", salvamentoAutomatico.toString());
+
+    if (!salvamentoAutomatico) {
+      // Limpa os dados gerais da identificação do projeto do localStorage
+      localStorage.removeItem("printlog_calculadora_nome_projeto");
+      localStorage.removeItem("printlog_calculadora_descricao_projeto");
+      localStorage.removeItem("printlog_calculadora_cliente_id");
+
+      // Limpa os dados do useCalculadora do localStorage
+      localStorage.removeItem("printlog_materiais_selecionados");
+      localStorage.removeItem("printlog_calculadora_tempo");
+      localStorage.removeItem("printlog_tempo");
+      localStorage.removeItem("printlog_potencia");
+      localStorage.removeItem("printlog_preco_kwh");
+      localStorage.removeItem("printlog_mao_de_obra");
+      localStorage.removeItem("printlog_depreciacao_hora");
+      localStorage.removeItem("printlog_margem");
+      localStorage.removeItem("printlog_quantidade");
+      localStorage.removeItem("printlog_pecas_por_mesa");
+      localStorage.removeItem("printlog_tempo_setup");
+      localStorage.removeItem("printlog_taxa_falha");
+      localStorage.removeItem("printlog_material_perdido");
+      localStorage.removeItem("printlog_tempo_perdido");
+      localStorage.removeItem("printlog_frete");
+      localStorage.removeItem("printlog_insumos_fixos");
+      localStorage.removeItem("printlog_insumos_selecionados");
+      localStorage.removeItem("printlog_itens_pos_processo");
+      localStorage.removeItem("printlog_tempo_modelagem");
+      localStorage.removeItem("printlog_valor_hora_modelagem");
+      localStorage.removeItem("printlog_desconto_volume");
+      localStorage.removeItem("printlog_preco_alvo");
+      localStorage.removeItem("printlog_cobrar_desgaste");
+      localStorage.removeItem("printlog_cobrar_mao_de_obra");
+      localStorage.removeItem("printlog_cobrar_energia");
+      localStorage.removeItem("printlog_cobrar_insumos_fixos");
+      localStorage.removeItem("printlog_cobrar_logistica");
+      localStorage.removeItem("printlog_perfil_ativo");
+    }
   }, [salvamentoAutomatico]);
 
   useEffect(() => {
