@@ -192,6 +192,7 @@ export const CardInsumos = memo(function CardInsumos({
                   alternar(i);
                 }
               }}
+              title={i.nome}
               className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                 ${sel 
                   ? "shadow-md" 

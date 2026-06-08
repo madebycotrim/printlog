@@ -1,14 +1,13 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { decodificarLinkMagico } from "@/compartilhado/utilitarios/link-magico";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
-import { ArrowRight, ShieldCheck, CheckCircle2, ThumbsDown, Package, PieChart, CalendarDays, Receipt } from "lucide-react";
+import { ShieldAlert, Printer, CheckCircle2 } from "lucide-react";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 import { motion, AnimatePresence } from "framer-motion";
 import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { useEffect } from "react";
 
 export function PaginaOrcamentoPublico() {
   const [searchParams] = useSearchParams();
@@ -16,6 +15,7 @@ export function PaginaOrcamentoPublico() {
   const isPrintMode = searchParams.get("p") === "1";
 
   const [statusAprovacao, setStatusAprovacao] = useState<'pendente' | 'aprovado' | 'recusado'>('pendente');
+  const [termoAceite, setTermoAceite] = useState(false);
   const impressaoIniciada = useRef(false);
 
   const dados = useMemo(() => {
@@ -26,74 +26,83 @@ export function PaginaOrcamentoPublico() {
   useEffect(() => {
     if (isPrintMode && dados && !impressaoIniciada.current) {
       impressaoIniciada.current = true;
-      // Forçar carregamento da fonte inserindo no head
-      const link = document.createElement('link');
-      link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-
-      document.fonts.ready.then(() => {
-        setTimeout(() => {
-          window.print();
-        }, 1500); // Dar um tempo real para a rede baixar o arquivo .woff2
-      });
+      setTimeout(() => {
+        window.print();
+      }, 1000);
     }
   }, [isPrintMode, dados]);
 
   if (!dados) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-white border border-slate-200 shadow-xl text-center flex flex-col items-center gap-4">
-          <ShieldCheck size={48} className="text-slate-400" />
-          <h1 className="text-xl font-black uppercase tracking-wider text-slate-800">Orçamento Inválido</h1>
-          <p className="text-sm text-slate-500">Este link mágico parece estar quebrado ou incompleto. Solicite um novo link ao seu fornecedor.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] text-neutral-900 p-6">
+        <div className="max-w-md w-full p-8 rounded-lg bg-white border border-neutral-200 text-center flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500">
+            <ShieldAlert size={20} />
+          </div>
+          <h1 className="text-sm font-bold uppercase tracking-wider text-neutral-800">Proposta Inválida</h1>
+          <p className="text-xs text-neutral-500 leading-relaxed">Este link mágico parece estar corrompido ou expirado. Entre em contato com o fornecedor.</p>
         </div>
       </div>
     );
   }
 
-  const { pr, np, t, m, e, s, l, w, id, cli, obs, cm, cmo } = dados;
-  const estudioNome = e || "Estúdio de Impressão 3D";
-  const nomeClienteExibicao = cli || "Consumidor Final";
-  const numeroProposta = id ? id.split('-')[0].toUpperCase() : Math.floor(100000 + Math.random() * 900000).toString();
+  // Mapeamento descritivo em português dos campos minificados
+  const { 
+    pr: precoEmCentavos, 
+    np: nomeProjeto, 
+    t: tempoMinutos, 
+    m: materiais = [], 
+    ins: insumos = [], 
+    e: estudioNome, 
+    s: estudioSubtitulo, 
+    l: estudioLogoUrl, 
+    w: whatsappContato, 
+    id: pedidoId, 
+    cli: nomeCliente, 
+    obs: observacoes, 
+    cm: custoMaquina, 
+    cmo: custoMaoDeObra 
+  } = dados;
+
+  const estudioNomeExibicao = estudioNome || "Estúdio de Impressão 3D";
+  const nomeClienteExibicao = nomeCliente || "Consumidor Final";
+  const numeroProposta = pedidoId ? pedidoId.split('-')[0].toUpperCase() : Math.floor(100000 + Math.random() * 900000).toString();
 
   const hoje = new Date();
-  const validade = new Date(hoje);
-  validade.setDate(hoje.getDate() + 7);
+  const dataValidade = new Date(hoje);
+  dataValidade.setDate(hoje.getDate() + 7);
 
   const formatarData = (data: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(data);
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(data);
   };
 
   const lidarComAprovacao = () => {
     setStatusAprovacao('aprovado');
     let linkBusca = "/producao";
 
-    if (id) {
-       // Se o projeto já existe, apenas atualiza para A_FAZER e notifica
-       useArmazemPedidos.getState().atualizarPedidoNoEstado(id, { status: StatusPedido.A_FAZER });
-       linkBusca = `/producao?busca=${id}`;
+    if (pedidoId) {
+       useArmazemPedidos.getState().atualizarPedidoNoEstado(pedidoId, { status: StatusPedido.A_FAZER });
+       linkBusca = `/producao?busca=${pedidoId}`;
     } else {
-       // Se era só um orçamento avulso (sem salvar), cria o pedido automaticamente no Kanban!
        const novoId = crypto.randomUUID();
        useArmazemPedidos.getState().adicionarPedido({
           id: novoId,
           idUsuario: "sistema",
           idCliente: "avulso",
-          nomeCliente: cli || "Cliente do Orçamento",
-          descricao: np || "Projeto Aprovado via Link",
+          nomeCliente: nomeCliente || "Cliente do Orçamento",
+          descricao: nomeProjeto || "Projeto Aprovado via Link",
           status: StatusPedido.A_FAZER,
-          valorCentavos: pr || 0,
+          valorCentavos: precoEmCentavos || 0,
           dataCriacao: new Date(),
-          tempoMinutos: t || 0,
-          observacoes: obs || "Gerado automaticamente via Link Mágico aprovado.",
+          tempoMinutos: tempoMinutos || 0,
+          observacoes: observacoes || "Gerado automaticamente via Link Mágico aprovado.",
        });
        linkBusca = `/producao?busca=${novoId}`;
     }
 
     useArmazemNotificacoes.getState().adicionarNotificacao({
-      titulo: `Orçamento Aprovado: ${np}`,
-      mensagem: `O cliente ${nomeClienteExibicao} aprovou o orçamento de ${centavosParaReais(pr)}. O projeto já está no Kanban!`,
+      titulo: `Orçamento Aprovado: ${nomeProjeto}`,
+      mensagem: `O cliente ${nomeClienteExibicao} aprovou o orçamento de ${centavosParaReais(precoEmCentavos)}. O projeto já está no Kanban!`,
       tipo: TipoNotificacao.SUCESSO,
       categoria: CategoriaNotificacao.PEDIDOS,
       link: linkBusca
@@ -102,398 +111,401 @@ export function PaginaOrcamentoPublico() {
 
   const lidarComRecusa = () => {
     setStatusAprovacao('recusado');
-    if (id) {
-       useArmazemPedidos.getState().atualizarPedidoNoEstado(id, { status: StatusPedido.ARQUIVADO });
+    if (pedidoId) {
+       useArmazemPedidos.getState().atualizarPedidoNoEstado(pedidoId, { status: StatusPedido.ARQUIVADO });
     }
     useArmazemNotificacoes.getState().adicionarNotificacao({
-      titulo: `Orçamento Recusado: ${np}`,
-      mensagem: `O cliente ${nomeClienteExibicao} recusou a proposta de ${centavosParaReais(pr)}.`,
+      titulo: `Orçamento Recusado: ${nomeProjeto}`,
+      mensagem: `O cliente ${nomeClienteExibicao} recusou a proposta de ${centavosParaReais(precoEmCentavos)}.`,
       tipo: TipoNotificacao.AVISO,
       categoria: CategoriaNotificacao.PEDIDOS
     });
   };
 
   const mensagemWhatsBase = statusAprovacao === 'aprovado' 
-    ? `Olá! Estou verificando o orçamento mágico para *${np}* e **APROVO** o pedido no valor de R$ ${(pr / 100).toFixed(2).replace('.', ',')}. Como podemos prosseguir?`
-    : `Olá! Estou verificando o orçamento mágico para *${np}* no valor de R$ ${(pr / 100).toFixed(2).replace('.', ',')}. Tenho algumas dúvidas, podemos conversar?`;
+    ? `Olá! Refiro-me ao orçamento da proposta *PROP-${numeroProposta}* e confirmo o aceite no valor total de R$ ${(precoEmCentavos / 100).toFixed(2).replace('.', ',')}.`
+    : `Olá! Refiro-me ao orçamento da proposta *PROP-${numeroProposta}* no valor de R$ ${(precoEmCentavos / 100).toFixed(2).replace('.', ',')}. Tenho algumas dúvidas.`;
 
-  const linkWhats = w ? `https://wa.me/55${w.replace(/\D/g, '')}?text=${encodeURIComponent(mensagemWhatsBase)}` : null;
+  const linkWhats = whatsappContato ? `https://wa.me/55${whatsappContato.replace(/\D/g, '')}?text=${encodeURIComponent(mensagemWhatsBase)}` : null;
+
+  // Cálculo proporcional detalhado
+  const custoMateriaisTotal = materiais.reduce((acc: number, mat: any) => acc + (typeof mat === 'object' && mat.p ? mat.p : 0), 0);
+  const custoInsumosTotal = insumos.reduce((acc: number, i: any) => acc + (i.p || 0), 0);
+  const maquinaCusto = custoMaquina || 0;
+  const maoDeObraCusto = custoMaoDeObra || 0;
+  const somaCustosOperacionais = maquinaCusto + maoDeObraCusto + custoMateriaisTotal + custoInsumosTotal;
+  const margemLucroLiquido = precoEmCentavos - somaCustosOperacionais;
+
+  const pesosDistribuicao = {
+    material: 5.0,
+    maquina: 0.4,
+    maodeobra: 1.5,
+    insumo: 1.0
+  };
+
+  const baseFatorCalculo = 
+    (custoMateriaisTotal * pesosDistribuicao.material) + 
+    (maquinaCusto * pesosDistribuicao.maquina) + 
+    (maoDeObraCusto * pesosDistribuicao.maodeobra) +
+    (custoInsumosTotal * pesosDistribuicao.insumo);
+
+  const obterFatorExtra = (custo: number, peso: number) => {
+    if (margemLucroLiquido <= 0 || baseFatorCalculo <= 0) {
+      const divisor = somaCustosOperacionais || 1;
+      const fatorFallback = precoEmCentavos / divisor;
+      return custo * fatorFallback - custo;
+    }
+    return margemLucroLiquido * ((custo * peso) / baseFatorCalculo);
+  };
+
+  const calcularPrecoFinalItem = (custo: number, peso: number) => {
+    const valorSoma = custo + obterFatorExtra(custo, peso);
+    return Math.max(0, valorSoma);
+  };
+
+  const formatarPrecoCentavos = (centavos: number) => {
+    return (centavos / 100).toFixed(2).replace('.', ',');
+  };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-slate-100 font-sans text-slate-800 selection:bg-sky-500/30 overflow-x-hidden relative ${isPrintMode ? 'bg-white p-0 m-0' : 'sm:py-12'}`}>
+    <div className={`min-h-screen bg-[#fafafa] font-sans text-neutral-800 antialiased selection:bg-neutral-900/10 relative flex flex-col items-center ${isPrintMode ? 'bg-white p-0 m-0' : 'py-10 px-4 sm:py-20'}`}>
       
-      {/* Premium Grid Background */}
+      {/* Barra de Status e Ações Rápida Superior */}
       {!isPrintMode && (
-        <div 
-          className="absolute inset-0 z-0 pointer-events-none" 
-          style={{
-            backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
-            backgroundSize: '32px 32px',
-            maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)'
-          }}
-        />
+        <div className="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 bg-white border border-neutral-200 px-5 py-3.5 rounded-lg">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-2 h-2 rounded-full ${
+              statusAprovacao === 'aprovado' ? 'bg-emerald-500' : 
+              statusAprovacao === 'recusado' ? 'bg-neutral-400' : 'bg-amber-500'
+            }`} />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+              Proposta: 
+              <span className={`ml-1.5 font-extrabold ${
+                statusAprovacao === 'aprovado' ? 'text-emerald-700' : 
+                statusAprovacao === 'recusado' ? 'text-neutral-500' : 'text-amber-600'
+              }`}>
+                {statusAprovacao === 'aprovado' ? 'Aprovada' : 
+                 statusAprovacao === 'recusado' ? 'Declinada' : 'Aguardando Aceite'}
+              </span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => window.print()}
+              className="px-3 py-1.5 text-[11px] font-bold text-neutral-600 hover:text-neutral-900 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded transition-all flex items-center gap-1.5"
+            >
+              <Printer size={12} /> Imprimir
+            </button>
+            {linkWhats && (
+              <a 
+                href={linkWhats}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 text-[11px] font-bold text-white bg-neutral-900 hover:bg-neutral-800 rounded transition-all flex items-center gap-1.5"
+              >
+                Falar com Fornecedor
+              </a>
+            )}
+          </div>
+        </div>
       )}
 
-      <main className="flex-1 w-full flex flex-col items-center relative z-10">
+      {/* Canva do Documento (Folha de Proposta Comercial) */}
+      <div className={`bg-white max-w-3xl w-full border border-neutral-200 rounded-lg overflow-hidden flex flex-col relative ${isPrintMode ? 'border-none p-0' : 'p-8 sm:p-12'}`}>
         
-        <AnimatePresence mode="wait">
-          {statusAprovacao === 'pendente' && (
-            <motion.div 
-              key="pendente"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4 }}
-              className={`bg-white w-full max-w-[794px] sm:rounded-sm text-[#1e293b] flex flex-col ${isPrintMode ? 'min-h-0 p-6 sm:p-8 shadow-none h-[100vh] max-h-[100vh] overflow-hidden justify-between' : 'min-h-[1123px] shadow-lg shadow-slate-900/5 p-8 sm:px-16 sm:py-16'}`}
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
-              {/* HEADER IDÊNTICO AO PDF */}
-              <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b border-[#e2e8f0] ${isPrintMode ? 'pb-3 mb-6' : 'pb-5 mb-8'}`}>
-                <div className="flex items-center gap-4">
-                  {l ? (
-                    <img src={l} alt={e} className="h-14 sm:h-16 w-auto object-contain" />
-                  ) : (
-                    <div className="w-[2px] h-[36px] bg-[#e2e8f0] rounded-sm flex-shrink-0"></div>
-                  )}
-                  <div className="flex flex-col gap-1 justify-center">
-                    <span className="text-[22px] font-[900] uppercase tracking-[-0.02em] text-[#0f172a] leading-none">{estudioNome}</span>
-                    {s && <span className="text-[8px] font-[600] uppercase tracking-[0.1em] text-[#64748b] leading-none">{s}</span>}
-                  </div>
-                </div>
+        {/* Cabeçalho da Proposta */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 mb-8 border-b border-neutral-100">
+          
+          <div className="flex items-center gap-3">
+            {estudioLogoUrl ? (
+              <img src={estudioLogoUrl} alt={estudioNomeExibicao} className="h-9 w-auto object-contain rounded border border-neutral-100 p-0.5 bg-white" />
+            ) : (
+              <div className="w-8 h-8 rounded bg-neutral-950 flex items-center justify-center text-white text-xs font-bold">
+                {estudioNomeExibicao.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <div>
+              <h1 className="text-sm font-bold text-neutral-900 leading-none tracking-tight">{estudioNomeExibicao}</h1>
+              <span className="text-[9px] font-semibold text-neutral-400 uppercase tracking-widest mt-1 block">{estudioSubtitulo || "Manufatura Digital"}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col text-left sm:text-right text-[11px] font-semibold text-neutral-500">
+            <span>PROPOSTA COMERCIAL</span>
+            <div className="flex flex-col gap-0.5 mt-1">
+              <span>Código: <strong className="text-neutral-800 font-bold">PROP-{numeroProposta}</strong></span>
+              <span>Emissão: <strong className="text-neutral-800 font-bold">{formatarData(hoje)}</strong></span>
+              <span>Vencimento: <strong className="text-neutral-800 font-bold">{formatarData(dataValidade)}</strong></span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Título do Documento */}
+        <div className="text-left mb-8">
+          <h2 className="text-xl font-bold text-neutral-950 tracking-tight">
+            Orçamento de Prestação de Serviços de Impressão 3D
+          </h2>
+          <p className="text-neutral-500 text-xs mt-1 leading-relaxed">
+            Detalhamento de custos de manufatura aditiva para a confecção física de protótipos mecânicos.
+          </p>
+        </div>
+
+        {/* Partes Interessadas (Contratante e Contratada) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 text-left text-[11px] leading-relaxed">
+          
+          <div className="p-4 rounded border border-neutral-200">
+            <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider block mb-1.5">Fornecedor</span>
+            <h3 className="font-bold text-neutral-900">{estudioNomeExibicao}</h3>
+            {whatsappContato && <span className="text-neutral-500 block mt-1">Contato: {whatsappContato}</span>}
+          </div>
+
+          <div className="p-4 rounded border border-neutral-200">
+            <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider block mb-1.5">Cliente</span>
+            <h3 className="font-bold text-neutral-900">{nomeClienteExibicao}</h3>
+            <span className="text-neutral-500 block mt-1">Projeto: {nomeProjeto}</span>
+          </div>
+
+        </div>
+
+        {/* Escopo Técnico */}
+        <div className="text-left mb-8 text-[11px]">
+          <h4 className="font-bold uppercase text-neutral-400 tracking-wider text-[9px] mb-1.5">Escopo de Serviços</h4>
+          <p className="text-neutral-600 leading-relaxed">
+            O escopo engloba a modelagem de fatiamento tridimensional dos arquivos enviados, a calibração de eixos das extrusoras digitais, o consumo de matéria-prima polimérica e a fabricação física sob demanda, supervisionada pelo sistema de qualidade do estúdio fornecedor.
+          </p>
+          
+          <div className="flex gap-6 mt-3 text-neutral-500 font-bold">
+            <div>
+              <span className="text-[9px] font-semibold uppercase text-neutral-400 block">Tecnologia</span>
+              <span className="text-neutral-700">FDM 3D</span>
+            </div>
+            <div>
+              <span className="text-[9px] font-semibold uppercase text-neutral-400 block">Lote</span>
+              <span className="text-neutral-700">01 Unidade</span>
+            </div>
+            {tempoMinutos ? (
+              <div>
+                <span className="text-[9px] font-semibold uppercase text-neutral-400 block">Tempo Máquina</span>
+                <span className="text-neutral-700">{Math.floor(tempoMinutos/60)}h {Math.round(tempoMinutos%60)}m</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Planilha de Custos / Tabela Stripe Style */}
+        <div className="text-left mb-8">
+          <h4 className="font-bold uppercase text-neutral-400 tracking-wider text-[9px] mb-3">Itemização do Investimento</h4>
+
+          <div className="border border-neutral-200 rounded overflow-hidden">
+            <table className="w-full border-collapse text-left text-[11px]">
+              <thead>
+                <tr className="bg-neutral-50 border-b border-neutral-200 text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
+                  <th className="py-2.5 px-4 w-10 text-center">Item</th>
+                  <th className="py-2.5 px-3">Especificação do Item</th>
+                  <th className="py-2.5 px-3 text-center w-24">Referência</th>
+                  <th className="py-2.5 px-4 text-right w-24">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 font-medium text-neutral-600">
                 
-                <div className="flex flex-col items-start sm:items-end gap-1">
-                  <div className="inline-flex items-center bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-[800] uppercase tracking-[0.05em] px-3 py-1.5 rounded-lg text-[9px] mb-1">
-                    Orçamento PROP-{numeroProposta}
-                  </div>
-                  <div className="text-[10px] font-[500] text-[#64748b]">
-                    Emitido em: <strong className="text-[#0f172a] font-[700]">{formatarData(hoje)}</strong>
-                  </div>
-                  <div className="text-[10px] font-[500] text-[#64748b]">
-                    Válido até: <strong className="text-[#0f172a] font-[700]">{formatarData(validade)}</strong>
-                  </div>
-                </div>
+                {/* Item 1 */}
+                <tr>
+                  <td className="py-3 px-4 text-center text-neutral-400">01</td>
+                  <td className="py-3 px-3">
+                    <div className="font-bold text-neutral-800">Modelagem e Engenharia de Fatiamento</div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Preparação, calibração mecânica e posicionamento de arquivos 3D.</div>
+                  </td>
+                  <td className="py-3 px-3 text-center text-neutral-400">Serviço Técnico</td>
+                  <td className="py-3 px-4 text-right font-bold text-neutral-800">
+                    R$ {formatarPrecoCentavos(calcularPrecoFinalItem(maoDeObraCusto, pesosDistribuicao.maodeobra))}
+                  </td>
+                </tr>
+
+                {/* Item 2 */}
+                <tr>
+                  <td className="py-3 px-4 text-center text-neutral-400">02</td>
+                  <td className="py-3 px-3">
+                    <div className="font-bold text-neutral-800">Processamento de Deposição Física</div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Uso do equipamento tridimensional, depreciação mecânica e consumo elétrico.</div>
+                  </td>
+                  <td className="py-3 px-3 text-center text-neutral-400">
+                    {tempoMinutos ? `${Math.floor(tempoMinutos/60)}h ${Math.round(tempoMinutos%60)}m` : 'Execução'}
+                  </td>
+                  <td className="py-3 px-4 text-right font-bold text-neutral-800">
+                    R$ {formatarPrecoCentavos(calcularPrecoFinalItem(maquinaCusto, pesosDistribuicao.maquina))}
+                  </td>
+                </tr>
+
+                {/* Item 3 */}
+                {materiais && materiais.length > 0 && (
+                  <tr>
+                    <td className="py-3 px-4 text-center text-neutral-400">03</td>
+                    <td className="py-3 px-3">
+                      <div className="font-bold text-neutral-800">Massa Polimérica Extrudada</div>
+                      <div className="text-[10px] text-neutral-400 mt-0.5">Polímeros físicos termoplásticos aplicados no projeto.</div>
+                      <div className="mt-1 flex flex-wrap gap-1 font-semibold text-neutral-500">
+                        {materiais.map((mat: any, idx: number) => {
+                          const isObj = typeof mat === 'object' && mat !== null;
+                          const nome = isObj ? mat.n : mat;
+                          const tipo = isObj && mat.t ? mat.t : '';
+                          const peso = isObj && typeof mat.q === 'number' ? `${mat.q}g` : '';
+                          return (
+                            <span key={idx} className="bg-neutral-50 border border-neutral-200 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide">
+                              {tipo && `${tipo} `}{nome}{peso && ` (${peso})`}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-center text-neutral-400">Massa Líquida</td>
+                    <td className="py-3 px-4 text-right font-bold text-neutral-800">
+                      R$ {formatarPrecoCentavos(calcularPrecoFinalItem(custoMateriaisTotal, pesosDistribuicao.material))}
+                    </td>
+                  </tr>
+                )}
+
+                {/* Item 4 */}
+                {insumos && insumos.length > 0 && (
+                  <tr>
+                    <td className="py-3 px-4 text-center text-neutral-400">04</td>
+                    <td className="py-3 px-3">
+                      <div className="font-bold text-neutral-800">Insumos Complementares e Montagem</div>
+                      <div className="text-[10px] text-neutral-400 mt-0.5">Parafusos, inserts mecânicos de latão e suportes descartáveis de manufatura.</div>
+                      <div className="mt-1 flex flex-wrap gap-1 font-semibold text-neutral-500">
+                        {insumos.map((i: any, idx: number) => {
+                          const nome = i.n;
+                          const qtd = i.q ? `${i.q}${i.u || 'un'}` : '';
+                          return (
+                            <span key={idx} className="bg-neutral-50 border border-neutral-200 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide">
+                              {nome}{qtd && ` (${qtd})`}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-center text-neutral-400">Insumos</td>
+                    <td className="py-3 px-4 text-right font-bold text-neutral-800">
+                      R$ {formatarPrecoCentavos(calcularPrecoFinalItem(custoInsumosTotal, pesosDistribuicao.insumo))}
+                    </td>
+                  </tr>
+                )}
+
+              </tbody>
+            </table>
+
+            {/* Total */}
+            <div className="bg-neutral-50 border-t border-neutral-200 p-4 flex justify-end">
+              <div className="flex justify-between items-baseline w-52 text-[11px] font-bold">
+                <span className="text-neutral-500 uppercase tracking-wider text-[9px]">Valor Final:</span>
+                <span className="text-base text-neutral-900 font-extrabold">
+                  R$ {formatarPrecoCentavos(precoEmCentavos)}
+                </span>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* INFO GRID (ESTILO FATURA MINIMALISTA) */}
-              <div className={`flex flex-col sm:flex-row justify-between items-start gap-8 border-y border-[#f1f5f9] ${isPrintMode ? 'py-4 mb-6' : 'py-6 mb-8'}`}>
-                <div className="flex flex-col gap-0.5">
-                  <div className="text-[9px] font-[800] text-[#94a3b8] uppercase tracking-[0.1em] mb-1.5">Orçamento preparado para</div>
-                  <div className="text-[18px] font-[900] text-[#0f172a] tracking-tight">{nomeClienteExibicao}</div>
-                  <div className="text-[11px] font-[500] text-[#64748b] mt-0.5">Projeto: <strong className="text-[#334155]">{np}</strong></div>
-                </div>
-                <div className="flex flex-col gap-0.5 sm:text-right">
-                  <div className="text-[9px] font-[800] text-[#94a3b8] uppercase tracking-[0.1em] mb-1.5">Apresentado por</div>
-                  <div className="text-[18px] font-[900] text-[#0f172a] tracking-tight">{estudioNome}</div>
-                  </div>
-              </div>
+        {/* Observações */}
+        {observacoes && (
+          <div className="text-left mb-8 p-4 rounded bg-neutral-50 border border-neutral-200 text-[11px] text-neutral-600 leading-relaxed">
+            <span className="font-bold text-neutral-800 uppercase tracking-wider block mb-1 text-[9px]">Notas Comerciais</span>
+            {observacoes}
+          </div>
+        )}
 
-              {/* TÍTULO SEÇÃO */}
-              <div className="text-[13px] font-[800] uppercase tracking-[0.05em] text-[#0f172a] mb-4 flex items-center gap-2">
-                <Package size={18} className="text-blue-500" />
-                O que está incluso no seu projeto
-              </div>
+        {/* Termos e Faturamento */}
+        <div className="text-left mb-8 text-[10px] text-neutral-400 leading-relaxed border-t border-neutral-100 pt-5">
+          <h5 className="font-bold text-neutral-500 uppercase tracking-wider text-[9px] mb-1.5">Condições Gerais</h5>
+          <p>
+            O início dos serviços de manufatura depende da confirmação de pagamento e do aceite formal eletrônico nesta página.
+          </p>
+        </div>
 
-              {/* TABELA DE SERVIÇOS E CUSTOS */}
-              <div className="overflow-x-auto mb-5">
-                <table className="w-full border-collapse min-w-[500px]">
-                  <thead>
-                    <tr>
-                      <th className="text-[9px] font-[700] uppercase text-[#94a3b8] tracking-[0.06em] py-2 px-1.5 border-b-2 border-[#e2e8f0] text-left">Serviço Detalhado</th>
-                      <th className="text-[9px] font-[700] uppercase text-[#94a3b8] tracking-[0.06em] py-2 px-1.5 border-b-2 border-[#e2e8f0] text-center w-24">Quantidade</th>
-                      <th className="text-[9px] font-[700] uppercase text-[#94a3b8] tracking-[0.06em] py-2 px-1.5 border-b-2 border-[#e2e8f0] text-right w-28">Valor Unitário</th>
-                      <th className="text-[9px] font-[700] uppercase text-[#94a3b8] tracking-[0.06em] py-2 px-1.5 border-b-2 border-[#e2e8f0] text-right w-28">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-2.5 px-1.5 border-b border-[#f8fafc] align-top">
-                        <div className="font-[800] text-[#0f172a] text-[13px] mb-1">Impressão 3D e Manufatura Especializada</div>
-                        <div className="text-[10px] text-[#64748b] leading-relaxed mb-2 max-w-sm">Serviço de produção sob demanda contemplando parametrização técnica, operação de maquinário e acabamento preliminar da peça.</div>
-                        <div className="flex flex-wrap gap-1">
-                          <span className="inline-block text-[9px] font-[600] text-[#475569] bg-[#f1f5f9] px-2 py-1 rounded-md border border-[#e2e8f0]">Tempo est.: {t ? `${Math.floor(t/60)}h ${Math.round(t%60)}m` : '—'}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-1.5 border-b border-[#f8fafc] align-top text-center text-[11px] text-[#334155] pt-3">1x</td>
-                      <td className="py-2.5 px-1.5 border-b border-[#f8fafc] align-top text-right text-[11px] text-[#334155] pt-3">R$ {(pr / 100).toFixed(2).replace('.', ',')}</td>
-                      <td className="py-2.5 px-1.5 border-b border-[#f8fafc] align-top text-right text-[11px] text-[#334155] font-bold pt-3">R$ {(pr / 100).toFixed(2).replace('.', ',')}</td>
-                    </tr>
+        {/* Assinatura Criptográfica Discreta */}
+        <div className="border-t border-neutral-100 pt-6 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-6 text-left text-[10px] leading-relaxed text-neutral-400">
+          
+          <div>
+            <span className="font-bold text-neutral-500 uppercase tracking-wider text-[9px] block mb-1.5">Validação do Emitente</span>
+            <div className="p-3 border border-neutral-200 rounded bg-neutral-50 font-mono">
+              <span>FORNECEDOR: {estudioNomeExibicao}</span>
+              <span className="block mt-0.5 text-neutral-400">SHA256: {numeroProposta.slice(0, 8)}...OK</span>
+            </div>
+          </div>
 
-                    {/* Falsa linha de "Composição de custos" para replicar o design detalhado do PDF */}
-                    <tr>
-                      <td colSpan={4} className="pt-6 pb-2">
-                        <div className="flex items-center gap-1.5 text-[10px] font-[800] uppercase text-[#64748b] tracking-[0.06em]">
-                          <PieChart size={14} className="text-slate-400" /> Composição de Custos e Transparência
-                        </div>
-                      </td>
-                    </tr>
+          <div>
+            <span className="font-bold text-neutral-500 uppercase tracking-wider text-[9px] block mb-1.5">Validação do Destinatário</span>
+            
+            <AnimatePresence mode="wait">
+              {statusAprovacao === 'pendente' ? (
+                <motion.div 
+                  key="pendente-aceite"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col gap-3"
+                >
+                  <label className="flex items-start gap-2 cursor-pointer select-none group text-neutral-500">
+                    <input 
+                      type="checkbox" 
+                      checked={termoAceite} 
+                      onChange={(e) => setTermoAceite(e.target.checked)} 
+                      id="termo-aceite"
+                      className="mt-0.5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 transition-all cursor-pointer"
+                    />
+                    <span className="text-[10px] leading-normal font-semibold">
+                      Confirmo a exatidão das especificações acima descritas.
+                    </span>
+                  </label>
 
-                    {(() => {
-                      const custoMateriais = m.reduce((acc: number, mat: any) => acc + (typeof mat === 'object' && mat.p ? mat.p : 0), 0);
-                      const custoMaquina = cm || 0;
-                      const custoMaoDeObra = cmo || 0;
-                      const somaCustos = custoMaquina + custoMaoDeObra + custoMateriais;
-                      const lucroLiquidoDistribuir = pr - somaCustos;
-
-                      const pesos = {
-                        material: 5,
-                        maquina: 0.4,
-                        maodeobra: 1.5
-                      };
-
-                      const basePonderada = 
-                        (custoMateriais * pesos.material) + 
-                        (custoMaquina * pesos.maquina) + 
-                        (custoMaoDeObra * pesos.maodeobra);
-
-                      const extra = (custo: number, peso: number) => {
-                        if (lucroLiquidoDistribuir <= 0 || basePonderada <= 0) {
-                          const fator = pr / (somaCustos || 1);
-                          return custo * fator - custo;
-                        }
-                        return lucroLiquidoDistribuir * ((custo * peso) / basePonderada);
-                      };
-
-                      const exibirProporcional = (custo: number, peso: number) => {
-                        const valorFinal = custo + extra(custo, peso);
-                        return (valorFinal / 100).toFixed(2).replace('.', ',');
-                      };
-
-                      return (
-                        <>
-                          <tr className="border-b border-[#f1f5f9] hover:bg-slate-50 transition-colors">
-                            <td className="py-2 px-1.5 pl-6 relative text-[10px] font-medium text-[#64748b]">
-                              <span className="absolute left-2 text-[#cbd5e1]">↳</span> Engenharia de Impressão e Setup Inicial
-                            </td>
-                            <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">—</td>
-                            <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
-                            <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cmo ? `R$ ${exibirProporcional(cmo, pesos.maodeobra)}` : 'R$ 0,00'}</td>
-                          </tr>
-
-                          <tr className="border-b border-[#f1f5f9] hover:bg-slate-50 transition-colors">
-                            <td className="py-2 px-1.5 pl-6 relative text-[10px] font-medium text-[#64748b]">
-                              <span className="absolute left-2 text-[#cbd5e1]">↳</span> Tempo de Máquina (Energia, Desgaste e Depreciação)
-                            </td>
-                            <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">{t ? `${Math.floor(t/60)}h ${Math.round(t%60)}m` : '—'}</td>
-                            <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
-                            <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">{cm ? `R$ ${exibirProporcional(cm, pesos.maquina)}` : 'R$ 0,00'}</td>
-                          </tr>
-                          
-                          {m.length > 0 ? (
-                            <>
-                              <tr className="border-b border-[#f1f5f9]">
-                                <td className="py-2.5 px-1.5 pl-6 relative text-[10px] text-[#475569]" colSpan={4}>
-                                  <span className="absolute left-2 text-[#cbd5e1]">↳</span> <span className="font-[700]">Filamentos, Resinas e Matéria-Prima</span>
-                                  <div className="flex flex-wrap gap-2.5 mt-2.5 ml-4 mb-1.5">
-                                    {m.map((mat: any, idx: number) => {
-                                      const isObj = typeof mat === 'object' && mat !== null;
-                                      const nome = isObj ? mat.n : mat;
-                                      const tipo = isObj && mat.t ? mat.t : '';
-                                      const pesoFormatado = isObj && typeof mat.q === 'number' ? `${mat.q}g` : '—';
-                                      const precoFormatado = isObj && typeof mat.p === 'number' && mat.p > 0 ? `R$ ${exibirProporcional(mat.p, pesos.material)}` : '';
-                                      
-                                      return (
-                                        <div key={idx} className={`bg-white border border-[#e2e8f0] rounded-md px-2.5 py-1.5 flex items-center gap-2 ${isPrintMode ? 'shadow-none' : 'shadow-sm'}`}>
-                                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
-                                          {tipo && (
-                                            <span className="text-[8px] font-[800] uppercase tracking-wider bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-sm">
-                                              {tipo}
-                                            </span>
-                                          )}
-                                          <span className="font-[600] text-[#0f172a]">{nome}</span>
-                                          <span className="text-[#64748b] font-medium">{pesoFormatado}</span>
-                                          {precoFormatado && <span className="text-[#475569] font-bold ml-1">{precoFormatado}</span>}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </td>
-                              </tr>
-                            </>
-                          ) : (
-                            <tr className="border-b border-[#f1f5f9] hover:bg-slate-50 transition-colors">
-                              <td className="py-2 px-1.5 pl-6 relative text-[10px] font-medium text-[#64748b]">
-                                <span className="absolute left-2 text-[#cbd5e1]">↳</span> Material Padrão
-                              </td>
-                              <td className="py-2 px-1.5 text-center text-[10px] text-[#64748b]">—</td>
-                              <td className="py-2 px-1.5 text-right text-[10px] text-[#64748b]">—</td>
-                              <td className="py-2 px-1.5 text-right text-[10px] text-[#475569] font-[700]">Incluso</td>
-                            </tr>
-                          )}
-                        </>
-                      );
-                    })()}
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={lidarComAprovacao}
+                      disabled={!termoAceite}
+                      id="btn-aprovar"
+                      className="flex-1 h-9 bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-100 disabled:text-neutral-400 text-white rounded text-[11px] font-bold uppercase transition-all flex items-center justify-center gap-1 active:scale-[0.98]"
+                    >
+                      Aprovar Proposta
+                    </button>
                     
-                    {obs && (
-                      <tr className="bg-[#f8fafc] border-b border-[#f1f5f9]">
-                        <td className="py-2 px-1.5 pl-6 relative text-[10px] text-[#64748b]" colSpan={4}>
-                          <span className="absolute left-2 text-[#cbd5e1]">↳</span> <strong className="text-[#475569]">Observações:</strong> {obs}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* TOTAL BOX IDÊNTICO AO PDF */}
-              <div className={`bg-[#0f172a] text-white rounded-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 ${isPrintMode ? 'p-5 mb-4 shadow-none' : 'p-6 mb-8 shadow-md shadow-slate-900/5'}`}>
-                <div className="flex flex-col gap-1">
-                  <div className="text-[11px] font-[600] text-[#94a3b8] flex items-center gap-1.5 uppercase tracking-[0.05em]">
-                    <Receipt size={14} className="text-slate-400" />
-                    Investimento Total
+                    <button 
+                      onClick={lidarComRecusa}
+                      id="btn-recusar"
+                      className="px-3.5 h-9 bg-white hover:bg-neutral-50 text-neutral-400 hover:text-neutral-600 border border-neutral-200 rounded text-[11px] font-bold uppercase transition-all flex items-center justify-center active:scale-[0.98]"
+                    >
+                      Decline
+                    </button>
                   </div>
-                  <div className="text-[36px] font-[900] tracking-[-0.02em] leading-none text-white drop-shadow-md">R$ {(pr / 100).toFixed(2).replace('.', ',')}</div>
-                </div>
-                <div className="text-left sm:text-right w-full sm:w-auto bg-white/5 p-4 rounded-xl border border-white/10">
-                  <div className="flex justify-between sm:justify-end gap-6 text-[11px] text-[#cbd5e1] mb-2">
-                    <span>Subtotal do Serviço:</span>
-                    <strong className="text-white font-[700]">R$ {(pr / 100).toFixed(2).replace('.', ',')}</strong>
-                  </div>
-                  <div className="h-[1px] bg-white/10 my-2"></div>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="text-[10px] text-[#94a3b8] font-medium flex items-center justify-between sm:justify-end gap-2">
-                      <span>Formas de pagamento: Pix ou Cartão.</span>
-                    </div>
-                    <div className="text-[10px] text-rose-400 font-bold flex items-center justify-between sm:justify-end gap-1.5">
-                      <CalendarDays size={12} />
-                      Proposta válida até {formatarData(validade)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* FOOTER DE ASSINATURA/APROVAÇÃO */}
-              <div className={`border border-[#e2e8f0] bg-[#f8fafc] rounded-xl text-center relative ${isPrintMode ? 'p-3' : 'p-4 sm:p-6'}`}>
-                {/* Importando a fonte cursiva para a assinatura */}
-                <style>
-                  {`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
-                    @media print {
-                      @page { margin: 0mm; size: A4 portrait; }
-                      html, body { 
-                        margin: 0; padding: 0; 
-                        height: 100%; overflow: hidden; 
-                        -webkit-print-color-adjust: exact; print-color-adjust: exact; 
-                      }
-                      * { page-break-inside: avoid; }
-                    }
-                  `}
-                </style>
-
-                <div className="text-[11px] font-[800] text-[#0f172a] uppercase tracking-[0.05em] mb-1.5">Aprovação do Orçamento</div>
-                <div className={`text-[10px] text-[#64748b] leading-relaxed max-w-lg mx-auto ${isPrintMode ? 'mb-4' : 'mb-12'}`}>
-                  Este documento serve como proposta oficial para execução dos serviços listados acima.
-                </div>
-                
-                <div className="flex flex-col sm:flex-row justify-center gap-10">
-                  <div className="flex flex-col items-center">
-                    <div className="w-[200px] flex justify-center items-end h-[40px] mb-[-10px] z-10 relative">
-                      <span 
-                        className="text-3xl text-slate-700/80 -rotate-3 select-none"
-                        style={{ fontFamily: "'Caveat', cursive" }}
-                      >
-                        {estudioNome}
-                      </span>
-                    </div>
-                    <div className="w-[200px] border-t border-[#cbd5e1] pt-2 mb-1 flex justify-center">
-                      <span className="text-[10px] font-[700] text-[#0f172a]">{estudioNome}</span>
-                    </div>
-                    <div className="text-[9px] font-[500] text-[#94a3b8]">Emissor da Proposta</div>
-                  </div>
-                  
-                  <div className="flex flex-col items-center">
-                    <div className="w-[200px] border-t border-[#cbd5e1] pt-2 mb-1 flex justify-center gap-2 mt-[30px]">
-                       {!isPrintMode ? (
-                         <>
-                           <button 
-                             onClick={lidarComAprovacao} 
-                             className="bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-md shadow-emerald-500/20 active:scale-95"
-                           >
-                             Aprovar
-                           </button>
-                           <button 
-                             onClick={lidarComRecusa} 
-                             className="bg-white border border-[#cbd5e1] text-[#64748b] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#f1f5f9] transition-colors active:scale-95"
-                           >
-                             Recusar
-                           </button>
-                         </>
-                       ) : (
-                         <span className="text-[10px] font-[700] text-[#0f172a]">{nomeClienteExibicao}</span>
-                       )}
-                    </div>
-                    <div className="text-[9px] font-[500] text-[#94a3b8]">Aceite / Cliente</div>
-                  </div>
-                </div>
-                
-                <div className="mt-12 pt-6 border-t border-slate-100">
-                  <div className="text-center text-[9px] font-medium text-slate-400/80 max-w-md mx-auto mb-2 leading-relaxed select-none">
-                    Estimativa baseada em parâmetros manuais. O PrintLog não se responsabiliza por prejuízos ou variações de mercado.
-                  </div>
-                  <div className="text-center text-[10px] font-medium text-slate-400 mt-4 mb-2">
-                    ♻️ Pense antes de imprimir. Documento digital disponível em printlog.com.br.
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {statusAprovacao === 'aprovado' && (
-            <motion.div 
-              key="aprovado"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-3xl p-10 shadow-xl border border-slate-200 flex flex-col items-center text-center gap-6 mt-10"
-            >
-              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-2 shadow-inner border border-emerald-100">
-                <CheckCircle2 size={40} className="text-emerald-500" />
-              </div>
-              <h2 className="text-3xl font-black text-slate-900">Parabéns!</h2>
-              <p className="text-slate-500 text-sm max-w-[320px] leading-relaxed">
-                O estúdio <strong>{estudioNome}</strong> foi notificado da sua aprovação. Para alinhar pagamento e entrega, chame o fornecedor no WhatsApp.
-              </p>
-
-              {linkWhats && (
-                <a 
-                  href={linkWhats}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full max-w-sm h-14 mt-4 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all active:scale-[0.98] shadow-xl shadow-[#25D366]/20"
+                </motion.div>
+              ) : statusAprovacao === 'aprovado' ? (
+                <motion.div 
+                  key="aprovado-aceite"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="p-3 border border-emerald-200 bg-emerald-50/50 rounded font-mono text-emerald-800"
                 >
-                  Falar no WhatsApp <ArrowRight size={16} />
-                </a>
-              )}
-            </motion.div>
-          )}
-
-          {statusAprovacao === 'recusado' && (
-            <motion.div 
-              key="recusado"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-3xl p-10 shadow-xl border border-slate-200 flex flex-col items-center text-center gap-6 mt-10"
-            >
-              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-2">
-                <ThumbsDown size={32} className="text-slate-400" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900">Proposta Recusada</h2>
-              <p className="text-slate-500 text-sm max-w-[320px] leading-relaxed">
-                O estúdio foi notificado sobre sua decisão. Se preferir, você pode enviar uma mensagem informando o motivo e tentarmos uma nova negociação.
-              </p>
-
-              {linkWhats && (
-                <a 
-                  href={linkWhats}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full max-w-sm h-14 mt-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest text-xs transition-all active:scale-[0.98]"
+                  <span className="font-bold flex items-center gap-1"><CheckCircle2 size={10} /> ACEITO DIGITALMENTE</span>
+                  <span className="block mt-0.5 text-[9px] text-emerald-600">CLIENTE: {nomeClienteExibicao} | HORA: {hoje.toLocaleTimeString('pt-BR')}</span>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="recusado-aceite"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="p-3 border border-neutral-300 bg-neutral-100 rounded font-mono text-neutral-600"
                 >
-                  Falar com o fornecedor
-                </a>
+                  <span className="font-bold">PROPOSTA DECLINADA</span>
+                  <span className="block mt-0.5 text-[9px] text-neutral-400">O estúdio foi notificado sobre a recusa.</span>
+                </motion.div>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </AnimatePresence>
 
-      </main>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

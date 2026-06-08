@@ -178,6 +178,7 @@ export const CardMateriais = memo(function CardMateriais({
                   alternar(m.id);
                 }
               }}
+              title={m.nome}
               className={`flex-shrink-0 min-w-[180px] p-3 rounded-2xl border-2 transition-all text-left relative group flex items-center gap-3 cursor-pointer
                 ${selecionado 
                   ? "border-cyan-500 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.15)]" 

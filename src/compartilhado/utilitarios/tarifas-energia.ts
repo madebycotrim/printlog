@@ -39,10 +39,10 @@ export const TARIFAS_KWH_POR_ESTADO: Record<string, number> = {
 export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; tarifa: number } | null> => {
   try {
     // Usando um serviço gratuito de GeoIP (ip-api.com não precisa de chave para uso básico)
-    const resposta = await fetch('http://ip-api.com/json/?fields=status,region');
+    const resposta = await fetch('/api/detectar-regiao');
     const dados = await resposta.json();
 
-    if (dados.status === 'success' && dados.region) {
+    if (dados.region) {
       const estado = dados.region; // Retorna a UF (ex: SP, RJ...)
       const tarifa = TARIFAS_KWH_POR_ESTADO[estado];
       
@@ -53,7 +53,7 @@ export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; t
     
     return null;
   } catch (erro) {
-    console.error('[detectarTarifaKwh]', erro);
+    console.error('[detectarTarifaKwh] Falha ao detectar tarifa por IP:', erro);
     return null;
   }
 };

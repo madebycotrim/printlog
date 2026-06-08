@@ -563,11 +563,26 @@ export function PaginaCalculadora() {
       p: Math.round(mat.p)
     }));
 
+    const insumosMagicos = hook.insumosSelecionados.map(i => {
+      const original = insumosFiltrados.find((orig: any) => orig.id === i.id);
+      const unidade = original?.unidadeMedida || 'un';
+      const isLote = hook.modoEntrada === 'lote' || i.porLote;
+      const q = isLote ? i.quantidade : i.quantidade * (hook.quantidade || 1);
+      const p = isLote ? (i.quantidade * i.custoCentavos) : (i.quantidade * i.custoCentavos * (hook.quantidade || 1));
+      return {
+        n: i.nome,
+        q: Math.round(q),
+        p: Math.round(p),
+        u: unidade
+      };
+    });
+
     const hash = codificarLinkMagico({
       pr: hook.calculo.precoSugerido,
       np: nomeProjeto || "Projeto 3D",
       t: hook.tempo,
       m: materiaisMagicos,
+      ins: insumosMagicos,
       e: config.nomeEstudio || "",
       s: config.sloganEstudio || "",
       l: config.logoEstudio || undefined,
@@ -952,7 +967,7 @@ export function PaginaCalculadora() {
               hidden: { opacity: 0, x: 20 },
               visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30, delay: 0.2 } }
             }}
-            className="xl:col-span-4 h-auto xl:h-full xl:sticky xl:top-0 flex flex-col justify-start xl:justify-center items-center py-8 overflow-y-visible xl:overflow-y-auto scrollbar-hide"
+            className="xl:col-span-4 h-auto xl:sticky xl:top-24 flex flex-col justify-start items-center py-4 overflow-y-visible scrollbar-hide"
           >
             <PainelResultados
               calculo={hook.calculo}

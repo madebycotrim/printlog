@@ -5,11 +5,19 @@ export interface MaterialMagico {
   t?: string; // tipo do material (ex: PLA, PETG)
 }
 
+export interface InsumoMagico {
+  n: string; // nome do insumo
+  q: number; // quantidade
+  p: number; // preço total do insumo no projeto (centavos)
+  u?: string; // unidade de medida (un, m, etc)
+}
+
 export interface PayloadLinkMagico {
   pr: number; // preco (centavos)
   np: string; // nomeProjeto
   t: number;  // tempo (minutos)
   m: (string | MaterialMagico)[]; // nomes dos materiais (string para legado) ou detalhes
+  ins?: InsumoMagico[]; // insumos e adicionais do projeto
   e: string; // estudio
   s: string; // slogan
   l?: string; // logoUrl do estúdio

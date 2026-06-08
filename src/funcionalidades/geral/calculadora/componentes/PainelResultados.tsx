@@ -152,9 +152,9 @@ export const PainelResultados = memo(function PainelResultados({
 
 
   return (
-    <div className={`pt-4 pb-6 px-6 rounded-2xl bg-card border border-borda-sutil shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] flex flex-col items-center text-center overflow-hidden relative h-fit w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl premium-card premium-card-sky`}>
+    <div className={`pt-4 pb-6 px-6 rounded-2xl bg-card border border-borda-sutil shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] flex flex-col items-center text-center overflow-hidden relative h-fit max-h-[calc(100vh-7rem)] w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl premium-card premium-card-sky`}>
       <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-sky-500/20 to-transparent blur-3xl" />
-      <div className="relative z-10 w-full">
+      <div className="relative z-10 w-full flex flex-col flex-1 min-h-0 overflow-hidden">
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400">Preço Sugerido</span>
           {(usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
@@ -248,7 +248,7 @@ export const PainelResultados = memo(function PainelResultados({
           const estaVazio = itens.length === 0;
 
           return (
-            <div className={`space-y-4 w-full text-left relative animate-in fade-in slide-in-from-right-4 duration-500 min-h-[160px] flex flex-col ${estaVazio ? 'justify-center' : 'justify-start'}`}>
+            <div className={`space-y-4 w-full text-left relative animate-in fade-in slide-in-from-right-4 duration-500 min-h-[160px] flex flex-col flex-1 min-h-0 overflow-hidden ${estaVazio ? 'justify-center' : 'justify-start'}`}>
               {estaVazio ? (
                 <div className="flex flex-col items-center justify-center text-muted-foreground w-full py-8">
                   <Sparkles size={24} className="opacity-40 text-sky-500 dark:text-sky-400 animate-pulse mb-2" />
@@ -256,7 +256,7 @@ export const PainelResultados = memo(function PainelResultados({
                   <span className="text-[9px] font-bold text-muted-foreground/60 text-center tracking-tight uppercase">Insira pesos e tempos nos cards ao lado</span>
                 </div>
               ) : (
-                <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-fino space-y-4">
+                <div className="flex-1 overflow-y-auto pr-2 scrollbar-fino space-y-4 min-h-0">
                   <AnimatePresence>
                   {itens.map((item) => {
                     // Calcular subitens
@@ -371,7 +371,7 @@ export const PainelResultados = memo(function PainelResultados({
         })()}
         
         {aba === 'metricas' && (
-          <div className="space-y-6 w-full text-left animate-in fade-in slide-in-from-left-4 duration-500 min-h-[160px] flex flex-col justify-center">
+          <div className="space-y-6 w-full text-left animate-in fade-in slide-in-from-left-4 duration-500 min-h-[160px] flex flex-col flex-1 min-h-0 overflow-hidden justify-center">
             {dadosPizza.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-muted-foreground">
                 <PieChart size={24} className="opacity-40 text-indigo-400 animate-pulse" />
@@ -398,7 +398,11 @@ export const PainelResultados = memo(function PainelResultados({
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: number) => `R$ ${(value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        formatter={(value: number | undefined) => 
+                          value !== undefined
+                            ? `R$ ${(value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                            : ''
+                        }
                         contentStyle={{ 
                           backgroundColor: 'var(--bg-card)', 
                           border: '1px solid var(--border-subtle)', 
