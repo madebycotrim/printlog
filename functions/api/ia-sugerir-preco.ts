@@ -42,11 +42,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 "SELECT resposta_json FROM cache_ia_precificacao WHERE chave_cache = ?"
             ).bind(cacheKey).first<{ resposta_json: string }>();
 
-            if (cacheExistente) {
-                console.log("[IA] Cache Hit! Economizando Neurons.");
-                return new Response(cacheExistente.resposta_json, {
-                    headers: { "Content-Type": "application/json", "X-Cache": "HIT" }
-                });
+            if (cacheExistente && cacheExistente.resposta_json) {
+                try {
+                    const dadosValidados = JSON.parse(cacheExistente.resposta_json);
+                    if (dadosValidados && typeof dadosValidados === "object" && dadosValidados.recomendado) {
+                        console.log("[IA] Cache Hit! Economizando Neurons.");
+                        return new Response(cacheExistente.resposta_json, {
+                            headers: { "Content-Type": "application/json", "X-Cache": "HIT" }
+                        });
+                    }
+                } catch (err) {
+                    console.warn("[IA] Cache corrompido detectado. Ignorando cache.");
+                }
             }
         } catch (e) {
             // Se a tabela não existir, apenas ignoramos o cache e seguimos para a IA

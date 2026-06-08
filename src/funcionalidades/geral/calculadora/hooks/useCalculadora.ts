@@ -94,13 +94,86 @@ export function useCalculadora(salvamentoAutomatico = true) {
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_material_perdido", materialPerdido); }, [materialPerdido, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_tempo_perdido", tempoPerdido); }, [tempoPerdido, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_frete", frete); }, [frete, salvamentoAutomatico]);
-  useEffect(() => { if (salvamentoAutomatico) almacenamientoSeguro.definir("printlog_insumos_fixos", insumosFixos); }, [insumosFixos, salvamentoAutomatico]);
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_insumos_fixos", insumosFixos); }, [insumosFixos, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_insumos_selecionados", insumosSelecionados); }, [insumosSelecionados, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_itens_pos_processo", itensPosProcesso); }, [itensPosProcesso, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_tempo_modelagem", tempoModelagem); }, [tempoModelagem, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_valor_hora_modelagem", valorHoraModelagem); }, [valorHoraModelagem, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_desconto_volume", descontoVolume); }, [descontoVolume, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_preco_alvo", precoAlvoCentavos); }, [precoAlvoCentavos, salvamentoAutomatico]);
+
+  // Carrega dinamicamente os valores salvos no localStorage quando o salvamento automático for ativado
+  useEffect(() => {
+    if (salvamentoAutomatico) {
+      const mats = armazenamentoSeguro.obter<MaterialSelecionado[]>("printlog_materiais_selecionados", []);
+      setMateriaisSelecionados(mats);
+
+      const t = armazenamentoSeguro.obter<number>("printlog_calculadora_tempo", 0) || armazenamentoSeguro.obter<number>("printlog_tempo", 0);
+      setTempo(t);
+
+      const pot = armazenamentoSeguro.obter<number>("printlog_potencia", 0);
+      setPotencia(pot);
+
+      const kwhSalvo = armazenamentoSeguro.obter<number | null>("printlog_preco_kwh", null);
+      if (kwhSalvo !== null && kwhSalvo !== 0) setPrecoKwh(kwhSalvo);
+
+      const cMao = armazenamentoSeguro.obter<number>("printlog_mao_de_obra", config.horaOperador);
+      setMaoDeObra(cMao);
+
+      const cDep = armazenamentoSeguro.obter<number>("printlog_depreciacao_hora", config.horaMaquina);
+      setDepreciacaoHora(cDep);
+
+      const m = armazenamentoSeguro.obter<number>("printlog_margem", config.margemLucro);
+      setMargem(m);
+
+      const q = armazenamentoSeguro.obter<number>("printlog_quantidade", 0);
+      setQuantidade(q);
+
+      const pMesa = armazenamentoSeguro.obter<number>("printlog_pecas_por_mesa", 0);
+      setPecasPorMesa(pMesa);
+
+      const mEntrada = armazenamentoSeguro.obter<'unitario' | 'lote' | 'projeto'>("printlog_calculadora_modo_entrada", "lote");
+      setModoEntrada(mEntrada);
+
+      const tSetup = armazenamentoSeguro.obter<number>("printlog_tempo_setup", 0);
+      setTempoSetup(tSetup);
+
+      const tFalha = armazenamentoSeguro.obter<number>("printlog_taxa_falha", 0);
+      setTaxaFalha(tFalha);
+
+      const mPerdido = armazenamentoSeguro.obter<number>("printlog_material_perdido", 0);
+      setMaterialPerdido(mPerdido);
+
+      const tPerdido = armazenamentoSeguro.obter<number>("printlog_tempo_perdido", 0);
+      setTempoPerdido(tPerdido);
+
+      const f = armazenamentoSeguro.obter<number>("printlog_frete", 0);
+      setFrete(f);
+
+      const iFixos = armazenamentoSeguro.obter<number>("printlog_insumos_fixos", 0);
+      setInsumosFixos(iFixos);
+
+      const insSelecionados = armazenamentoSeguro.obter<InsumoSelecionado[]>("printlog_insumos_selecionados", []);
+      setInsumosSelecionados(insSelecionados);
+
+      const pProcesso = armazenamentoSeguro.obter<ItemPosProcesso[]>("printlog_itens_pos_processo", []);
+      setItensPosProcesso(pProcesso);
+
+      setCobrarDesgaste(!!armazenamentoSeguro.obter("printlog_cobrar_desgaste", true));
+      setCobrarMaoDeObra(!!armazenamentoSeguro.obter("printlog_cobrar_mao_de_obra", true));
+      setCobrarEnergia(!!armazenamentoSeguro.obter("printlog_cobrar_energia", true));
+      setCobrarInsumosFixos(!!armazenamentoSeguro.obter("printlog_cobrar_insumos_fixos", true));
+      setCobrarLogistica(!!armazenamentoSeguro.obter("printlog_cobrar_logistica", true));
+
+      const perf = armazenamentoSeguro.obter<string>("printlog_perfil_ativo", "Direto");
+      setPerfilAtivo(perf);
+
+      setTempoModelagem(armazenamentoSeguro.obter<number>("printlog_tempo_modelagem", 0));
+      setValorHoraModelagem(armazenamentoSeguro.obter<number>("printlog_valor_hora_modelagem", 8000));
+      setDescontoVolume(armazenamentoSeguro.obter<number>("printlog_desconto_volume", 0));
+      setPrecoAlvoCentavos(armazenamentoSeguro.obter<number>("printlog_preco_alvo", 0));
+    }
+  }, [salvamentoAutomatico, config.horaOperador, config.horaMaquina, config.margemLucro]);
 
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState<string>(() => {
     return localStorage.getItem("printlog_ultima_impressora") || "";
