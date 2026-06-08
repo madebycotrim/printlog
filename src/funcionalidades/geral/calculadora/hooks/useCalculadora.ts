@@ -1075,17 +1075,29 @@ export function useCalculadora(salvamentoAutomatico = true) {
     });
 
     try {
-      // Tenta chamar a IA Real
+      const custoTotalReais = (calculo.custoTotalOperacional || 0) / 100;
+
+      // Envia todos os componentes de custos reais para a inteligência artificial
       const dados = await servicoBaseApi.post<any>("/api/ia-sugerir-preco", {
         custoMaterial: calculo.custoMaterial / 100,
         custoEnergia: calculo.custoEnergia / 100,
         custoTrabalho: calculo.custoMaoDeObra / 100,
         custoDepreciacao: calculo.custoDepreciacao / 100,
+        custoInsumos: (calculo.custoInsumos + calculo.custoPosProcesso) / 100,
+        custoFalha: (calculo.custoFalha || 0) / 100,
+        custoModelagem: (calculo.custoModelagem || 0) / 100,
+        custoTotalOperacional: custoTotalReais,
         lucroDesejadoPercentual: margem / 100
       });
       
-      const precoAlvoReais = dados?.recomendado?.valor;
+      let precoAlvoReais = dados?.recomendado?.valor;
       const dicaIA = dados?.recomendado?.justificativa || dados?.dica;
+
+      // Salvaguarda: O preço sugerido pela IA nunca pode ser inferior ao custo operacional acrescido de 30% de margem
+      const precoMinimoSeguranca = custoTotalReais * 1.3;
+      if (precoAlvoReais && precoAlvoReais < precoMinimoSeguranca) {
+        precoAlvoReais = precoMinimoSeguranca;
+      }
 
       if (precoAlvoReais && precoAlvoReais > 0) {
         const precoAlvoCentavos = Math.round(precoAlvoReais * 100);

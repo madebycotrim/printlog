@@ -46,7 +46,7 @@ export function ModalConfiguracoes({
                     type="text"
                     placeholder="Ex: PrintPro Lab"
                     value={config.nomeEstudio || ""}
-                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio)}
+                    onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio, config.logoEstudio)}
                     className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
                 </div>

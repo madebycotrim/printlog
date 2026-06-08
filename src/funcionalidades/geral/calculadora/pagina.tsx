@@ -179,7 +179,11 @@ export function PaginaCalculadora() {
     }
   }, [salvamentoAutomatico, estadoClientes.clientes]);
 
-  // Resetar a calculadora ao sair da página (Sidebar, Navegação, etc) se não tiver salvamento automático
+  // Resetar a calculadora ao- [ ] Atualizar os termos na proposta pública (PaginaOrcamentoPublico.tsx)
+  // - [ ] Implementar a seção de Highlights rápidos no topo do documento público
+  // - [ ] Atualizar o bloco de Insumos/Acessórios com o novo título
+  // - [ ] Sincronizar nomenclaturas no PainelResultados.tsx para manter consistência
+  // - [ ] Validar compilação e deploy localegação, etc) se não tiver salvamento automático
   useEffect(() => {
     return () => {
       if (!salvamentoAutomaticoRef.current) {
@@ -604,15 +608,39 @@ export function PaginaCalculadora() {
       setModalPaywallAberto(true);
       return;
     }
-    const url = obterUrlLinkMagico();
-    const toastId = toast.loading("Gerando link mágico...");
-    navigator.clipboard.writeText(url).then(() => {
-      toast.dismiss(toastId);
-      toast.success("Link Mágico copiado! Envie para seu cliente.");
-    }).catch(() => {
-      toast.dismiss(toastId);
-      toast.error("Erro ao copiar o link mágico.");
-    });
+    const urlLongo = obterUrlLinkMagico();
+    const toastId = toast.loading("Gerando link compacto...");
+    
+    // Tenta encurtar o link usando a API pública e gratuita do TinyURL
+    fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(urlLongo)}`, {
+      method: 'GET',
+      mode: 'cors'
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Erro na resposta do encurtador");
+        return res.text();
+      })
+      .then(urlCurto => {
+        if (urlCurto && urlCurto.startsWith("http")) {
+          navigator.clipboard.writeText(urlCurto).then(() => {
+            toast.dismiss(toastId);
+            toast.success("Link Mágico compacto copiado com sucesso!");
+          });
+        } else {
+          throw new Error("Formato inválido do encurtador");
+        }
+      })
+      .catch((erro) => {
+        console.warn("[calculadora] Não foi possível encurtar o link mágico, usando fallback longo.", erro);
+        // Fallback: copia o link original compactado localmente
+        navigator.clipboard.writeText(urlLongo).then(() => {
+          toast.dismiss(toastId);
+          toast.success("Link Mágico copiado! Envie para seu cliente.");
+        }).catch(() => {
+          toast.dismiss(toastId);
+          toast.error("Erro ao copiar o link mágico.");
+        });
+      });
   };
 
   // Sincronizar potência e depreciação ao carregar ou mudar impressora
@@ -967,7 +995,7 @@ export function PaginaCalculadora() {
               hidden: { opacity: 0, x: 20 },
               visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30, delay: 0.2 } }
             }}
-            className="xl:col-span-4 h-auto xl:sticky xl:top-24 flex flex-col justify-start items-center py-4 overflow-y-visible scrollbar-hide"
+            className="xl:col-span-4 xl:h-full flex flex-col justify-center items-center overflow-y-visible scrollbar-hide"
           >
             <PainelResultados
               calculo={hook.calculo}
