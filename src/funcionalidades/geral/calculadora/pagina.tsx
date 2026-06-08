@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Carregamento } from "@/compartilhado/componentes";
+import { Carregamento, Dica } from "@/compartilhado/componentes";
 import {
   Download, 
   Crown,
@@ -152,6 +152,7 @@ export function PaginaCalculadora() {
       localStorage.removeItem("printlog_cobrar_insumos_fixos");
       localStorage.removeItem("printlog_cobrar_logistica");
       localStorage.removeItem("printlog_perfil_ativo");
+      localStorage.removeItem("printlog_explicacao_ia");
     }
   }, [salvamentoAutomatico]);
 
@@ -677,63 +678,68 @@ export function PaginaCalculadora() {
     ocultarBusca: true,
     elementoAcao: (
       <div className="flex items-center gap-1 p-1 bg-card/10 border border-borda-sutil rounded-2xl backdrop-blur-md">
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => limparRef.current()}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all cursor-pointer"
-          title="Limpar Calculadora"
-        >
-          <RotateCcw size={18} />
-        </motion.button>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => {
-            const novoEstado = !salvamentoAutomatico;
-            setSalvamentoAutomatico(novoEstado);
-            if (novoEstado) {
-              toast.success("Salvamento automático ativado! 💾");
-            } else {
-              toast.success("Salvamento automático desativado! ❌");
-            }
-          }}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-            salvamentoAutomatico 
-              ? 'text-cyan-500 bg-cyan-500/10' 
-              : 'text-zinc-400 hover:text-cyan-500 hover:bg-cyan-500/10'
-          }`}
-          title={salvamentoAutomatico ? "Desativar Salvamento Automático" : "Ativar Salvamento Automático"}
-        >
-          <Save size={18} />
-        </motion.button>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => salvarRascunhoRef.current()}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all cursor-pointer"
-          title="Salvar no Histórico (Rascunho)"
-        >
-          <CloudUpload size={18} />
-        </motion.button>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setModalHistoricoAberto(true)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all cursor-pointer"
-          title="Ver Histórico"
-        >
-          <HistoryIcon size={18} />
-        </motion.button>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setModalConfigAberto(true)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all cursor-pointer"
-          title="Configurações da Máquina"
-        >
-          <Settings size={18} />
-        </motion.button>
+        <Dica texto="Limpar Calculadora" posicao="baixo">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => limparRef.current()}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all cursor-pointer"
+          >
+            <RotateCcw size={18} />
+          </motion.button>
+        </Dica>
+        <Dica texto={salvamentoAutomatico ? "Desativar Salvamento" : "Ativar Salvamento"} posicao="baixo">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              const novoEstado = !salvamentoAutomatico;
+              setSalvamentoAutomatico(novoEstado);
+              if (novoEstado) {
+                toast.success("Salvamento automático ativado! 💾");
+              } else {
+                toast.success("Salvamento automático desativado! ❌");
+              }
+            }}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+              salvamentoAutomatico 
+                ? 'text-cyan-500 bg-cyan-500/10' 
+                : 'text-zinc-400 hover:text-cyan-500 hover:bg-cyan-500/10'
+            }`}
+          >
+            <Save size={18} />
+          </motion.button>
+        </Dica>
+        <Dica texto="Salvar no Histórico (Rascunho)" posicao="baixo">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => salvarRascunhoRef.current()}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-sky-500 hover:bg-sky-500/10 transition-all cursor-pointer"
+          >
+            <CloudUpload size={18} />
+          </motion.button>
+        </Dica>
+        <Dica texto="Ver Histórico" posicao="baixo">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setModalHistoricoAberto(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all cursor-pointer"
+          >
+            <HistoryIcon size={18} />
+          </motion.button>
+        </Dica>
+        <Dica texto="Configurações da Máquina" posicao="baixo">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setModalConfigAberto(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-card/20 transition-all cursor-pointer"
+          >
+            <Settings size={18} />
+          </motion.button>
+        </Dica>
       </div>
     )
   }), [idEdicao, nomeProjeto, salvamentoAutomatico]);
@@ -995,6 +1001,7 @@ export function PaginaCalculadora() {
               setDescontoVolume={hook.setDescontoVolume}
               precoAlvoCentavos={hook.precoAlvoCentavos}
               setPrecoAlvoCentavos={hook.setPrecoAlvoCentavos}
+              explicacaoIA={hook.explicacaoIA}
             />
           </motion.div>
 

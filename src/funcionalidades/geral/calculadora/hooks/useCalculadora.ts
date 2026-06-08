@@ -72,7 +72,12 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
 
 
+  const [explicacaoIA, setExplicacaoIA] = useState<string>(() => 
+    salvamentoAutomatico ? armazenamentoSeguro.obter("printlog_explicacao_ia", "") : ""
+  );
+
   // Efeitos de persistência segura
+  useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_explicacao_ia", explicacaoIA); }, [explicacaoIA, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_desgaste", cobrarDesgaste); }, [cobrarDesgaste, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_mao_de_obra", cobrarMaoDeObra); }, [cobrarMaoDeObra, salvamentoAutomatico]);
   useEffect(() => { if (salvamentoAutomatico) armazenamentoSeguro.definir("printlog_cobrar_energia", cobrarEnergia); }, [cobrarEnergia, salvamentoAutomatico]);
@@ -172,6 +177,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
       setValorHoraModelagem(armazenamentoSeguro.obter<number>("printlog_valor_hora_modelagem", 8000));
       setDescontoVolume(armazenamentoSeguro.obter<number>("printlog_desconto_volume", 0));
       setPrecoAlvoCentavos(armazenamentoSeguro.obter<number>("printlog_preco_alvo", 0));
+      setExplicacaoIA(armazenamentoSeguro.obter<string>("printlog_explicacao_ia", ""));
     }
   }, [salvamentoAutomatico, config.horaOperador, config.horaMaquina, config.margemLucro]);
 
@@ -1048,6 +1054,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
     setQuantidade(0);
     setInsumosSelecionados([]);
     setItensPosProcesso([]);
+    setExplicacaoIA("");
     if (!silencioso) toast.success("Resetado!");
   }, []);
 
@@ -1085,12 +1092,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
         
         // Vamos forçar o valor alvo para o usuário ter exatamente o preço da IA
         setPrecoAlvoCentavos(precoAlvoCentavos);
-
-        toast.success(`IA: ${dicaIA || "Preço otimizado com sucesso!"}`, {
-          id: idToast,
-          duration: 5000
-        });
-        return;
+        setExplicacaoIA(dicaIA || "Preço sugerido baseado na análise dos custos e margens pela inteligência artificial.");
       } else {
         throw new Error("Resposta inválida da IA");
       }
@@ -1112,6 +1114,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
       }
 
       setPrecoAlvoCentavos(0); // Reseta alvo se tiver
+      setExplicacaoIA(""); // Reseta a justificativa
       setMargem(novaMargem);
 
       toast.success("Preço otimizado para rentabilidade (Modo Offline) ✨", {
@@ -1154,6 +1157,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
     impressoraSelecionadaId, setImpressoraSelecionadaId,
     pecasPorMesa, setPecasPorMesa,
     precoAlvoCentavos, setPrecoAlvoCentavos,
+    explicacaoIA, setExplicacaoIA,
     historico,
     calculo,
     alertasEstoque,
