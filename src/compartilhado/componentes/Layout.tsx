@@ -3,12 +3,12 @@ import { BarraLateral } from "./BarraLateral";
 import { Cabecalho } from "./Cabecalho";
 import { ProvedorCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutoLogout } from "@/compartilhado/hooks/useAutoLogout";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { variantesPagina } from "@/compartilhado/utilitarios/animacoes";
 
 type PropriedadesLayout = {
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 export function Layout({ children }: PropriedadesLayout) {
@@ -44,7 +44,7 @@ export function Layout({ children }: PropriedadesLayout) {
                 exit="sair"
                 className="flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-8 lg:p-10 flex flex-col"
               >
-                {children}
+                {children || <Outlet />}
               </motion.div>
             </AnimatePresence>
           </main>

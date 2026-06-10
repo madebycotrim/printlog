@@ -42,7 +42,7 @@ export function ModalRemocaoCliente({ aberto, aoFechar, aoConfirmar, cliente }: 
                 {cliente.nome}
               </span>
               <span className="text-[11px] text-gray-500 dark:text-zinc-400 font-bold uppercase tracking-wider truncate">
-                {cliente.email}
+                {cliente.email || cliente.telefone || "Sem dados de contato"}
               </span>
             </div>
           </div>

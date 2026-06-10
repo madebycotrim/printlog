@@ -42,7 +42,7 @@ const SUBSTITUICOES = [
 function encurtarTexto(texto: string): string {
   let resultado = texto;
   for (const sub of SUBSTITUICOES) {
-    resultado = resultado.replaceAll(sub.padrao, sub.token);
+    resultado = resultado.split(sub.padrao).join(sub.token);
   }
   return resultado;
 }
@@ -50,7 +50,7 @@ function encurtarTexto(texto: string): string {
 function restaurarTexto(texto: string): string {
   let resultado = texto;
   for (const sub of SUBSTITUICOES) {
-    resultado = resultado.replaceAll(sub.token, sub.padrao);
+    resultado = resultado.split(sub.token).join(sub.padrao);
   }
   return resultado;
 }

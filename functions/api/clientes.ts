@@ -26,6 +26,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN ltv_centavos INTEGER DEFAULT 0`).run().catch(() => {});
         await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN total_produtos INTEGER DEFAULT 0`).run().catch(() => {});
         await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN historico TEXT DEFAULT '[]'`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN tipo TEXT DEFAULT 'B2C'`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE clientes ADD COLUMN fiel INTEGER DEFAULT 0`).run().catch(() => {});
         
         // ── BUSCAR (Com Descriptografia On-the-fly) ──
         if (metodo === "GET") {
@@ -37,6 +39,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const clientesProtegidos = await Promise.all(results.map(async (c: any) => {
                 return {
                     ...c,
+                    tipo: c.tipo || "B2C",
+                    fiel: c.fiel === 1,
                     nome: await descriptografar(c.nome, chaveMestra) || c.nome,
                     email: c.email ? await descriptografar(c.email, chaveMestra) : null,
                     telefone: c.telefone ? await descriptografar(c.telefone, chaveMestra) : null,
@@ -67,8 +71,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
             await env.DB.prepare(`
                 INSERT INTO clientes (
-                    id, id_usuario, nome, email, telefone, observacoes_crm, arquivado, data_criacao, ltv_centavos, total_produtos, historico
-                ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 0, 0, '[]')
+                    id, id_usuario, nome, email, telefone, observacoes_crm, arquivado, data_criacao, ltv_centavos, total_produtos, historico, tipo, fiel
+                ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 0, 0, '[]', ?, ?)
             `).bind(
                 novoId, 
                 usuarioId, 
@@ -76,7 +80,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 emailCripto, 
                 telCripto,
                 notasCripto,
-                new Date().toISOString()
+                new Date().toISOString(),
+                dados.tipo || 'B2C',
+                dados.fiel ? 1 : 0
             ).run();
 
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { 
@@ -108,7 +114,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     observacoes_crm = COALESCE(?, observacoes_crm),
                     ltv_centavos = COALESCE(?, ltv_centavos),
                     total_produtos = COALESCE(?, total_produtos),
-                    historico = COALESCE(?, historico)
+                    historico = COALESCE(?, historico),
+                    tipo = COALESCE(?, tipo),
+                    fiel = COALESCE(?, fiel)
                 WHERE id = ? AND id_usuario = ?
             `).bind(
                 nomeCripto ?? null, 
@@ -118,6 +126,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 dados.ltvCentavos ?? null,
                 dados.totalProdutos ?? null,
                 historicoStr ?? null,
+                dados.tipo ?? null,
+                dados.fiel !== undefined ? (dados.fiel ? 1 : 0) : null,
                 dados.id ?? null, 
                 usuarioId ?? null
             ).run();

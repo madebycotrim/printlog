@@ -84,7 +84,9 @@ export function ModalHistoricoCliente({ aberto, aoFechar, cliente }: ModalHistor
                 </div>
               </div>
               <p className="text-xs font-bold text-gray-500 dark:text-zinc-500 truncate tracking-wide">
-                {cliente.email} • {cliente.telefone}
+                {cliente.email && cliente.telefone 
+                  ? `${cliente.email} • ${cliente.telefone}` 
+                  : (cliente.email || cliente.telefone || "Sem dados de contato")}
               </p>
             </div>
           </div>

@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, PackageSearch, Sparkles } from "lucide-react";
 import { useEffect } from "react";
-import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { Carregamento } from "@/compartilhado/componentes";
@@ -28,6 +27,16 @@ export function PaginaMateriais() {
   const { insumos, definirInsumos } = useArmazemInsumos();
   const { usuario } = useAutenticacao();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!estado.carregando) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [estado.carregando]);
+
+  const exibindoLoading = !primeiroCarregamento || estado.carregando;
 
   const tentarNovoMaterial = () => {
     if (atingiuLimite("MATERIAIS", estado.materiais.length, usuario?.plano)) {
@@ -62,7 +71,7 @@ export function PaginaMateriais() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {estado.carregando ? (
+        {exibindoLoading ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

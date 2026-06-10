@@ -15,12 +15,22 @@ import { variantesContainerLista, variantesItemLista } from "@/compartilhado/uti
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
 import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function PaginaImpressoras() {
   const { estado, acoes } = useGerenciadorImpressoras();
   const { usuario } = useAutenticacao();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!estado.carregando) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [estado.carregando]);
+
+  const exibindoLoading = !primeiroCarregamento || estado.carregando;
 
   const tentarNovaMaquina = () => {
     if (atingiuLimite("IMPRESSORAS", estado.totais.total, usuario?.plano)) {
@@ -45,7 +55,7 @@ export function PaginaImpressoras() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {estado.carregando ? (
+        {exibindoLoading ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

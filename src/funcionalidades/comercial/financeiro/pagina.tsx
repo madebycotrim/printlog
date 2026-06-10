@@ -1,5 +1,5 @@
 import { Plus, ReceiptText, Search, FileBarChart, Sliders, TrendingUp, Zap as ZapIcon } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -39,6 +39,17 @@ export function PaginaFinanceiro() {
     inverterOrdem,
     pesquisar,
   } = useFinanceiro();
+
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!carregando) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [carregando]);
+
+  const exibindoLoading = !primeiroCarregamento || carregando;
+
   const { betaSimuladorMargem } = useBeta();
 
   // Estados do Simulador Beta
@@ -81,7 +92,7 @@ export function PaginaFinanceiro() {
   return (
     <div className="space-y-10 min-h-[60vh] flex flex-col">
       <AnimatePresence mode="wait">
-        {carregando ? (
+        {exibindoLoading ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

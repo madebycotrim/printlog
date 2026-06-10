@@ -458,7 +458,13 @@ export const CardOperacional = memo(function CardOperacional({
               />
             </div>
 
-            <div className="flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-muted/30 dark:bg-white/5 border border-borda-sutil">
+            {/* Exibição Dinâmica do Fator Markup */}
+            <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 mt-2 flex items-center gap-1 bg-zinc-100 dark:bg-white/5 py-1 px-2.5 rounded-lg border border-borda-sutil" title="Fator multiplicador aplicado ao custo total para chegar ao preço de venda">
+              <span className="uppercase tracking-wider">Markup:</span>
+              <span className="text-xs font-black text-primary dark:text-white">{(1 + margemInterna / 10000).toFixed(1)}x</span>
+            </div>
+
+            <div className="flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-muted/30 dark:bg-white/5 border border-borda-sutil">
               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${msgMargem.cor.replace('text-', 'bg-')}`} />
               <p className={`text-[10px] font-black uppercase tracking-widest transition-colors ${msgMargem.cor}`}>
                 {msgMargem.texto}
@@ -472,9 +478,15 @@ export const CardOperacional = memo(function CardOperacional({
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Presets rápidos</span>
               
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                {/* Presets Inteligentes */}
-                {[30, 50, 100, 150, 200].map((p) => {
-                  const preset = p * 100;
+                {/* Presets Inteligentes com B2B e B2C explicitamente identificados */}
+                {[
+                  { valor: 5000, rotulo: "50%" },
+                  { valor: 10000, rotulo: "100%" },
+                  { valor: 20000, rotulo: "B2B (3x)" },
+                  { valor: 30000, rotulo: "300%" },
+                  { valor: 40000, rotulo: "B2C (5x)" }
+                ].map((p) => {
+                  const preset = p.valor;
                   return (
                     <button
                       key={preset}
@@ -483,19 +495,19 @@ export const CardOperacional = memo(function CardOperacional({
                         setMargemInterna(preset);
                         setMargem(preset);
                       }}
-                      className={`text-[10px] font-black px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                      className={`text-[10px] font-black px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer ${
                         margemInterna === preset 
                           ? 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/30 shadow-sm shadow-emerald-500/5' 
                           : 'text-muted-foreground hover:text-primary dark:hover:text-white bg-muted/40 dark:bg-white/5 border-transparent'
                       }`}
                     >
-                      {p}%
+                      {p.rotulo}
                     </button>
                   );
                 })}
 
                 {/* Input Direto */}
-                <div className="flex items-center bg-muted/40 dark:bg-white/5 border border-borda-sutil rounded-xl px-2 w-24 h-8">
+                <div className="flex items-center bg-muted/40 dark:bg-white/5 border border-borda-sutil rounded-xl px-2 w-20 h-8">
                   <input 
                     type="number" 
                     value={margemInterna === 0 ? "" : (margemInterna / 100)} 

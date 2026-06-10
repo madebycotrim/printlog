@@ -8,8 +8,8 @@ import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 export const esquemaCliente = z.object({
   id: z.string().optional(),
   nome: z.string().min(1, "O nome é obrigatório"),
-  email: z.string().email("E-mail inválido"),
-  telefone: z.string().min(1, "O telefone é obrigatório"),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
+  telefone: z.string().optional().or(z.literal("")),
   ltvCentavos: z.number().int().min(0).optional(),
   totalProdutos: z.number().int().min(0).optional(),
   fiel: z.boolean().optional(),
@@ -19,6 +19,7 @@ export const esquemaCliente = z.object({
   baseLegal: z.nativeEnum(BaseLegalLGPD),
   finalidadeColeta: z.string().min(1, "A finalidade é obrigatória"),
   prazoRetencaoMeses: z.number().int().min(1),
+  tipo: z.enum(["B2B", "B2C"]),
   anonimizado: z.boolean().optional(),
   historico: z.array(z.any()).optional(),
 });

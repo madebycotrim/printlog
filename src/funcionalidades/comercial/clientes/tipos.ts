@@ -39,6 +39,7 @@ export interface Cliente {
   prazoRetencaoMeses: number;
   anonimizado: boolean;
   dataAnonimizacao?: Date;
+  tipo?: "B2B" | "B2C";
 }
 
 /** Opções de ordenação para a listagem */

@@ -25,6 +25,7 @@ import { Dialogo } from "@/compartilhado/componentes";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
 import { codificarLinkMagico } from "@/compartilhado/utilitarios/link-magico";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 // Hook e Componentes Refatorados
 import { useCalculadora } from "./hooks/useCalculadora";
@@ -103,6 +104,23 @@ export function PaginaCalculadora() {
   useEffect(() => {
     localStorage.setItem("printlog_anos_vida_util", String(anosVidaUtil));
   }, [anosVidaUtil]);
+
+  // Aplica automaticamente o Markup (margem) baseado no perfil comercial do cliente (B2B = Markup 3.0x, B2C = Markup 5.0x)
+  useEffect(() => {
+    if (clienteProjetoId && estadoClientes.clientes.length > 0) {
+      const cliente = estadoClientes.clientes.find(c => c.id === clienteProjetoId);
+      if (cliente) {
+        const margemDesejada = cliente.tipo === "B2B" ? 20000 : 40000;
+        if (hook.margem !== margemDesejada) {
+          hook.setMargem(margemDesejada);
+          const markupTexto = cliente.tipo === "B2B" ? "3.0x" : "5.0x";
+          const pctTexto = cliente.tipo === "B2B" ? "200%" : "400%";
+          toast.success(`Perfil ${cliente.tipo}: Markup de ${markupTexto} aplicado (${pctTexto} de margem)`);
+        }
+      }
+    }
+  }, [clienteProjetoId, estadoClientes.clientes, hook.margem, hook.setMargem]);
+
   const [indiceCanalSendoEditado, setIndiceCanalSendoEditado] = useState<number | null>(null);
   const [nomeCanalTemporario, setNomeCanalTemporario] = useState('');
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
@@ -210,7 +228,19 @@ export function PaginaCalculadora() {
   }, [hook.limpar, hook.setImpressoraSelecionadaId]);
 
 
-  const carregandoDados = estado.carregando || estadoMateriais.carregando;
+  const [primeiroCarregamentoRealizado, setPrimeiroCarregamentoRealizado] = useState(false);
+
+  useEffect(() => {
+    if (!estado.carregando && !estadoMateriais.carregando && !estadoClientes.carregando) {
+      const temporizador = setTimeout(() => {
+        setPrimeiroCarregamentoRealizado(true);
+      }, 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [estado.carregando, estadoMateriais.carregando, estadoClientes.carregando]);
+
+  const carregandoDados = estado.carregando || estadoMateriais.carregando || estadoClientes.carregando;
+  const exibindoLoading = !primeiroCarregamentoRealizado || carregandoDados;
 
   const [buscaMaterial, setBuscaMaterial] = useState("");
   const [buscaMaterialArmazem, setBuscaMaterialArmazem] = useState("");
@@ -611,27 +641,31 @@ export function PaginaCalculadora() {
     const urlLongo = obterUrlLinkMagico();
     const toastId = toast.loading("Gerando link compacto...");
     
-    // Tenta encurtar o link usando a API pública e gratuita do TinyURL
-    fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(urlLongo)}`, {
-      method: 'GET',
-      mode: 'cors'
+    // Tenta encurtar o link usando o encurtador próprio (Cloudflare D1)
+    fetch(`/api/publico/encurtador`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: urlLongo })
     })
       .then(res => {
         if (!res.ok) throw new Error("Erro na resposta do encurtador");
-        return res.text();
+        return res.json();
       })
-      .then(urlCurto => {
-        if (urlCurto && urlCurto.startsWith("http")) {
+      .then(dados => {
+        if (dados.id) {
+          const urlCurto = `${window.location.origin}/o/${dados.id}`;
           navigator.clipboard.writeText(urlCurto).then(() => {
             toast.dismiss(toastId);
-            toast.success("Link Mágico compacto copiado com sucesso!");
+            toast.success("Link Mágico personalizado copiado com sucesso!");
           });
         } else {
-          throw new Error("Formato inválido do encurtador");
+          throw new Error("ID do encurtador inválido");
         }
       })
       .catch((erro) => {
-        console.warn("[calculadora] Não foi possível encurtar o link mágico, usando fallback longo.", erro);
+        console.warn("[calculadora] Não foi possível encurtar o link mágico próprio, usando fallback longo.", erro);
         // Fallback: copia o link original compactado localmente
         navigator.clipboard.writeText(urlLongo).then(() => {
           toast.dismiss(toastId);
@@ -791,7 +825,7 @@ export function PaginaCalculadora() {
 
   return (
     <AnimatePresence mode="wait">
-      {carregandoDados ? (
+      {exibindoLoading ? (
         <motion.div
           key="carregando"
           initial={{ opacity: 0 }}
@@ -1251,9 +1285,9 @@ export function PaginaCalculadora() {
           <ModalEnviarEmailOrcamento
             aberto={modalEmailAberto}
             aoFechar={() => setModalEmailAberto(false)}
-            linkMagico={hook.urlLinkMagicoGerado}
+            linkMagico={obterUrlLinkMagico()}
             nomeProjeto={nomeProjeto || "Peça 3D"}
-            valorTotal={hook.resultados?.venda.totalCotacaoFormatado || "R$ 0,00"}
+            valorTotal={centavosParaReais(hook.calculo.precoSugerido)}
           />
 
           <ModalUpgradePaywall

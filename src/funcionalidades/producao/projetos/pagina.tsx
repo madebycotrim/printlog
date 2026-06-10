@@ -1,5 +1,5 @@
 import { FolderKanban, Plus, Archive } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
@@ -20,6 +20,16 @@ export function PaginaProjetos() {
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
   const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido } = usePedidos();
+
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!carregando) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [carregando]);
+
+  const exibindoLoading = !primeiroCarregamento || carregando;
 
   useDefinirCabecalho({
     titulo: "Fluxo de Produção",
@@ -43,7 +53,7 @@ export function PaginaProjetos() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {carregando ? (
+        {exibindoLoading ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

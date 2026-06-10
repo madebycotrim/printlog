@@ -20,10 +20,13 @@ export function useGerenciadorClientes() {
   const carregarClientes = useCallback(async () => {
     if (!usuarioId) return;
     try {
+      estado.definirCarregando(true);
       const dados = await apiClientes.buscarTodos(usuarioId);
       estado.definirClientes(dados);
     } catch (erro) {
       toast.error("Erro ao carregar clientes.");
+    } finally {
+      estado.definirCarregando(false);
     }
   }, [usuarioId]);
 

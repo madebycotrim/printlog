@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Printer, 
@@ -19,10 +19,21 @@ import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { centavosParaReais, formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido, StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { toast } from "react-hot-toast";
+import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaFila() {
-  const { estado: { impressoras }, acoes: { salvarImpressora } } = useGerenciadorImpressoras();
-  const { pedidos, atualizarPedido } = usePedidos();
+  const { estado: { impressoras, carregando: carregandoImpressoras }, acoes: { salvarImpressora } } = useGerenciadorImpressoras();
+  const { pedidos, carregando: carregandoPedidos, atualizarPedido } = usePedidos();
+
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!carregandoImpressoras && !carregandoPedidos) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [carregandoImpressoras, carregandoPedidos]);
+
+  const exibindoLoading = !primeiroCarregamento || carregandoImpressoras || carregandoPedidos;
 
 
   useDefinirCabecalho({
@@ -180,245 +191,266 @@ export function PaginaFila() {
   };
 
   return (
-    <div className="space-y-10 min-h-[70vh]">
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-        
-        {/* Painel Lateral: Pedidos a Alocar */}
-        <div className="xl:col-span-1 space-y-6 bg-card border border-borda-sutil rounded-[2rem] p-6 shadow-sm relative overflow-hidden">
-          <div className="flex items-center gap-2 mb-4">
-            <LayoutGrid size={16} className="text-primaria" />
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">
-              Backlog de Projetos
-            </h3>
-            <span className="ml-auto bg-primaria/10 text-primaria text-[10px] font-black px-2 py-0.5 rounded-full">
-              {pedidosPendentes.length}
-            </span>
-          </div>
-
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {pedidosPendentes.length === 0 ? (
-              <div className="py-12 text-center text-zinc-400 dark:text-zinc-600 text-xs">
-                Nenhum projeto pendente de alocação.
+    <AnimatePresence mode="wait">
+      {exibindoLoading ? (
+        <motion.div
+          key="carregando"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex-1 flex flex-col items-center justify-center py-40"
+        >
+          <Carregamento tipo="ponto" mensagem="Sincronizando fila de produção..." />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="conteudo"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="space-y-10 min-h-[70vh]"
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+            
+            {/* Painel Lateral: Pedidos a Alocar */}
+            <div className="xl:col-span-1 space-y-6 bg-card border border-borda-sutil rounded-[2rem] p-6 shadow-sm relative overflow-hidden">
+              <div className="flex items-center gap-2 mb-4">
+                <LayoutGrid size={16} className="text-primaria" />
+                <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">
+                  Backlog de Projetos
+                </h3>
+                <span className="ml-auto bg-primaria/10 text-primaria text-[10px] font-black px-2 py-0.5 rounded-full">
+                  {pedidosPendentes.length}
+                </span>
               </div>
-            ) : (
-              pedidosPendentes.map(pedido => (
-                <motion.div
-                  key={pedido.id}
-                  layoutId={`pedido-${pedido.id}`}
-                  className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] hover:border-zinc-300 dark:hover:border-white/10 transition-all space-y-3"
-                >
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">
-                      {pedido.material || "Filamento"}
-                    </span>
-                    <h4 className="text-xs font-bold text-primary dark:text-zinc-200 line-clamp-1">
-                      {pedido.descricao}
-                    </h4>
+
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {pedidosPendentes.length === 0 ? (
+                  <div className="py-12 text-center text-zinc-400 dark:text-zinc-600 text-xs">
+                    Nenhum projeto pendente de alocação.
                   </div>
-
-                  <div className="flex items-center justify-between text-[10px] text-zinc-500">
-                    <span className="font-bold tabular-nums">
-                      {centavosParaReais(pedido.valorCentavos)}
-                    </span>
-                    {pedido.tempoMinutos && (
-                      <span className="flex items-center gap-1 font-semibold">
-                        <Clock size={10} />
-                        {pedido.tempoMinutos}m
-                      </span>
-                    )}
-                  </div>
-
-                  {impressorasAtivas.length > 0 && (
-                    <div className="pt-2 border-t border-borda-sutil/60 space-y-1.5">
-                      <span className="text-[8px] font-black uppercase text-zinc-400 block">Alocar em:</span>
-                      <div className="grid grid-cols-2 gap-1">
-                        {impressorasAtivas.map(imp => (
-                          <button
-                            key={imp.id}
-                            onClick={() => lidarComAgendamento(pedido.id, imp.id)}
-                            className="px-2 py-1 text-left text-[9px] font-bold border border-borda-sutil hover:border-primaria rounded bg-white dark:bg-zinc-900 truncate text-zinc-600 dark:text-zinc-400 hover:text-primaria transition-colors cursor-pointer"
-                          >
-                            {imp.nome}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Fila Gantt Principal */}
-        <div className="xl:col-span-3 space-y-6">
-          {impressorasAtivas.length === 0 ? (
-            <div className="border border-dashed border-borda-sutil rounded-[2rem] p-16 text-center text-zinc-400 dark:text-zinc-600 text-sm">
-              Cadastre impressoras no menu de Produção para gerenciar a fila.
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {impressorasAtivas.map(impressora => {
-                const fila = filaPorImpressora[impressora.id] || [];
-                return (
-                  <div 
-                    key={impressora.id} 
-                    className="bg-card border border-borda-sutil rounded-[2rem] p-6 shadow-sm hover:shadow-premium transition-all duration-300 space-y-6"
-                  >
-                    {/* Cabeçalho da Impressora */}
-                    <div className="flex items-center justify-between pb-4 border-b border-borda-sutil">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-zinc-100 dark:bg-white/5 rounded-xl text-zinc-600 dark:text-zinc-400">
-                          <Printer size={20} />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-black text-primary dark:text-white uppercase tracking-wider">
-                            {impressora.nome}
-                          </h3>
-                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                            {impressora.marca} {impressora.modeloBase} • {impressora.tecnologia}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                          impressora.status === StatusImpressora.IMPRIMINDO
-                            ? "bg-amber-500/10 text-amber-500" 
-                            : impressora.status === StatusImpressora.MANUTENCAO
-                              ? "bg-rose-500/10 text-rose-500"
-                              : "bg-emerald-500/10 text-emerald-500"
-                        }`}>
-                          {impressora.status === StatusImpressora.IMPRIMINDO 
-                            ? "Imprimindo" 
-                            : impressora.status === StatusImpressora.MANUTENCAO 
-                              ? "Manutenção" 
-                              : "Livre"}
+                ) : (
+                  pedidosPendentes.map(pedido => (
+                    <motion.div
+                      key={pedido.id}
+                      layoutId={`pedido-${pedido.id}`}
+                      className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] hover:border-zinc-300 dark:hover:border-white/10 transition-all space-y-3"
+                    >
+                      <div>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">
+                          {pedido.material || "Filamento"}
                         </span>
+                        <h4 className="text-xs font-bold text-primary dark:text-zinc-200 line-clamp-1">
+                          {pedido.descricao}
+                        </h4>
                       </div>
-                    </div>
 
-                    {/* Timeline Horizontal / Fila */}
-                    <div className="relative">
-                      {fila.length === 0 ? (
-                        <div className="py-8 text-center text-zinc-400 dark:text-zinc-600 text-xs">
-                          Fila vazia. Arraste ou aloque um projeto do backlog.
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                          <AnimatePresence>
-                            {fila.map((pedido, index) => (
-                              <motion.div
-                                key={pedido.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-all relative flex flex-col justify-between"
+                      <div className="flex items-center justify-between text-[10px] text-zinc-500">
+                        <span className="font-bold tabular-nums">
+                          {centavosParaReais(pedido.valorCentavos)}
+                        </span>
+                        {pedido.tempoMinutos && (
+                          <span className="flex items-center gap-1 font-semibold">
+                            <Clock size={10} />
+                            {pedido.tempoMinutos}m
+                          </span>
+                        )}
+                      </div>
+
+                      {impressorasAtivas.length > 0 && (
+                        <div className="pt-2 border-t border-borda-sutil/60 space-y-1.5">
+                          <span className="text-[8px] font-black uppercase text-zinc-400 block">Alocar em:</span>
+                          <div className="grid grid-cols-2 gap-1">
+                            {impressorasAtivas.map(imp => (
+                              <button
+                                key={imp.id}
+                                onClick={() => lidarComAgendamento(pedido.id, imp.id)}
+                                className="px-2 py-1 text-left text-[9px] font-bold border border-borda-sutil hover:border-primaria rounded bg-white dark:bg-zinc-900 truncate text-zinc-600 dark:text-zinc-400 hover:text-primaria transition-colors cursor-pointer"
                               >
-                                {/* Indicador de Ordem na Fila e controles de reordenação */}
-                                <div className="absolute top-2 right-2 flex items-center gap-1">
-                                  {index > 0 && (
-                                    <button
-                                      onClick={() => lidarComReordenacao(impressora.id, index, 'subir')}
-                                      className="p-0.5 rounded text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-                                      title="Mover para cima"
-                                    >
-                                      <ChevronUp size={12} />
-                                    </button>
-                                  )}
-                                  {index < fila.length - 1 && (
-                                    <button
-                                      onClick={() => lidarComReordenacao(impressora.id, index, 'descer')}
-                                      className="p-0.5 rounded text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-                                      title="Mover para baixo"
-                                    >
-                                      <ChevronDown size={12} />
-                                    </button>
-                                  )}
-                                  <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-black text-zinc-500 dark:text-zinc-400 shrink-0">
-                                    #{index + 1}
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2 pr-6">
-                                  <span className="text-[7px] font-black uppercase tracking-widest text-zinc-400 block">
-                                    {pedido.material || "PLA"}
-                                  </span>
-                                  <h4 className="text-xs font-bold text-primary dark:text-zinc-200 line-clamp-1">
-                                    {pedido.descricao}
-                                  </h4>
-                                  {pedido.dataInicioAgendada && (
-                                    <div className="flex items-center gap-1 text-[9px] text-zinc-400">
-                                      <CalendarIcon size={10} />
-                                      <span>Início: {formatarDataCurta(new Date(pedido.dataInicioAgendada))}</span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="mt-4 pt-3 border-t border-borda-sutil/60 flex items-center justify-between gap-2">
-                                  <span className="text-[10px] font-black text-primaria tabular-nums">
-                                    {pedido.tempoMinutos ? `${pedido.tempoMinutos} min` : "Tempo N/D"}
-                                  </span>
-                                  
-                                  <div className="flex items-center gap-1">
-                                    {index === 0 && (
-                                      <>
-                                        {impressora.status === StatusImpressora.IMPRIMINDO ? (
-                                          <>
-                                            <button
-                                              onClick={() => lidarComPlayPause(impressora, false)}
-                                              className="p-1 rounded text-amber-500 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center justify-center"
-                                              title="Pausar Impressão"
-                                            >
-                                              <Pause size={12} />
-                                            </button>
-                                            <button
-                                              onClick={() => lidarComConclusao(pedido, impressora)}
-                                              className="p-1 rounded text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer flex items-center justify-center"
-                                              title="Concluir Projeto & Liberar"
-                                            >
-                                              <CheckCircle2 size={12} />
-                                            </button>
-                                          </>
-                                        ) : (
-                                          <button
-                                            onClick={() => lidarComPlayPause(impressora, true)}
-                                            className="p-1 rounded text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer flex items-center justify-center"
-                                            title="Iniciar Impressão"
-                                          >
-                                            <Play size={12} />
-                                          </button>
-                                        )}
-                                      </>
-                                    )}
-
-                                    {/* Só exibe botão de remover se não estiver imprimindo no momento */}
-                                    {(!(index === 0 && impressora.status === StatusImpressora.IMPRIMINDO)) && (
-                                      <button
-                                        onClick={() => lidarComRemocaoFila(pedido.id)}
-                                        className="p-1 rounded text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
-                                        title="Remover da fila"
-                                      >
-                                        <Trash2 size={12} />
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              </motion.div>
+                                {imp.nome}
+                              </button>
                             ))}
-                          </AnimatePresence>
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
-                );
-              })}
+                    </motion.div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
-        </div>
 
-      </div>
-    </div>
+            {/* Fila Gantt Principal */}
+            <div className="xl:col-span-3 space-y-6">
+              {impressorasAtivas.length === 0 ? (
+                <div className="border border-dashed border-borda-sutil rounded-[2rem] p-16 text-center text-zinc-400 dark:text-zinc-600 text-sm">
+                  Cadastre impressoras no menu de Produção para gerenciar a fila.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {impressorasAtivas.map(impressora => {
+                    const fila = filaPorImpressora[impressora.id] || [];
+                    return (
+                      <div 
+                        key={impressora.id} 
+                        className="bg-card border border-borda-sutil rounded-[2rem] p-6 shadow-sm hover:shadow-premium transition-all duration-300 space-y-6"
+                      >
+                        {/* Cabeçalho da Impressora */}
+                        <div className="flex items-center justify-between pb-4 border-b border-borda-sutil">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-zinc-100 dark:bg-white/5 rounded-xl text-zinc-600 dark:text-zinc-400">
+                              <Printer size={20} />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-black text-primary dark:text-white uppercase tracking-wider">
+                                {impressora.nome}
+                              </h3>
+                              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                {impressora.marca} {impressora.modeloBase} • {impressora.tecnologia}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                              impressora.status === StatusImpressora.IMPRIMINDO
+                                ? "bg-amber-500/10 text-amber-500" 
+                                : impressora.status === StatusImpressora.MANUTENCAO
+                                  ? "bg-rose-500/10 text-rose-500"
+                                  : "bg-emerald-500/10 text-emerald-500"
+                            }`}>
+                              {impressora.status === StatusImpressora.IMPRIMINDO 
+                                ? "Imprimindo" 
+                                : impressora.status === StatusImpressora.MANUTENCAO 
+                                  ? "Manutenção" 
+                                  : "Livre"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Timeline Horizontal / Fila */}
+                        <div className="relative">
+                          {fila.length === 0 ? (
+                            <div className="py-8 text-center text-zinc-400 dark:text-zinc-600 text-xs">
+                              Fila vazia. Arraste ou aloque um projeto do backlog.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                              <AnimatePresence>
+                                {fila.map((pedido, index) => (
+                                  <motion.div
+                                    key={pedido.id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-all relative flex flex-col justify-between"
+                                  >
+                                    {/* Indicador de Ordem na Fila e controles de reordenação */}
+                                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                                      {index > 0 && (
+                                        <button
+                                          onClick={() => lidarComReordenacao(impressora.id, index, 'subir')}
+                                          className="p-0.5 rounded text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                          title="Mover para cima"
+                                        >
+                                          <ChevronUp size={12} />
+                                        </button>
+                                      )}
+                                      {index < fila.length - 1 && (
+                                        <button
+                                          onClick={() => lidarComReordenacao(impressora.id, index, 'descer')}
+                                          className="p-0.5 rounded text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                          title="Mover para baixo"
+                                        >
+                                          <ChevronDown size={12} />
+                                        </button>
+                                      )}
+                                      <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-black text-zinc-500 dark:text-zinc-400 shrink-0">
+                                        #{index + 1}
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2 pr-6">
+                                      <span className="text-[7px] font-black uppercase tracking-widest text-zinc-400 block">
+                                        {pedido.material || "PLA"}
+                                      </span>
+                                      <h4 className="text-xs font-bold text-primary dark:text-zinc-200 line-clamp-1">
+                                        {pedido.descricao}
+                                      </h4>
+                                      {pedido.dataInicioAgendada && (
+                                        <div className="flex items-center gap-1 text-[9px] text-zinc-400">
+                                          <CalendarIcon size={10} />
+                                          <span>Início: {formatarDataCurta(new Date(pedido.dataInicioAgendada))}</span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="mt-4 pt-3 border-t border-borda-sutil/60 flex items-center justify-between gap-2">
+                                      <span className="text-[10px] font-black text-primaria tabular-nums">
+                                        {pedido.tempoMinutos ? `${pedido.tempoMinutos} min` : "Tempo N/D"}
+                                      </span>
+                                      
+                                      <div className="flex items-center gap-1">
+                                        {index === 0 && (
+                                          <>
+                                            {impressora.status === StatusImpressora.IMPRIMINDO ? (
+                                              <>
+                                                <button
+                                                  onClick={() => lidarComPlayPause(impressora, false)}
+                                                  className="p-1 rounded text-amber-500 hover:bg-amber-500/10 transition-all cursor-pointer flex items-center justify-center"
+                                                  title="Pausar Impressão"
+                                                >
+                                                  <Pause size={12} />
+                                                </button>
+                                                <button
+                                                  onClick={() => lidarComConclusao(pedido, impressora)}
+                                                  className="p-1 rounded text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer flex items-center justify-center"
+                                                  title="Concluir Projeto & Liberar"
+                                                >
+                                                  <CheckCircle2 size={12} />
+                                                </button>
+                                              </>
+                                            ) : (
+                                              <button
+                                                onClick={() => lidarComPlayPause(impressora, true)}
+                                                className="p-1 rounded text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer flex items-center justify-center"
+                                                title="Iniciar Impressão"
+                                              >
+                                                <Play size={12} />
+                                              </button>
+                                            )}
+                                          </>
+                                        )}
+
+                                        {/* Só exibe botão de remover se não estiver imprimindo no momento */}
+                                        {(!(index === 0 && impressora.status === StatusImpressora.IMPRIMINDO)) && (
+                                          <button
+                                            onClick={() => lidarComRemocaoFila(pedido.id)}
+                                            className="p-1 rounded text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                                            title="Remover da fila"
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                ))}
+                              </AnimatePresence>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

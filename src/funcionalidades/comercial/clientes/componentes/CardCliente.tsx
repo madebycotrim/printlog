@@ -7,6 +7,7 @@ import {
   History as HistoryIcon,
   MoreVertical,
   Pencil,
+  Star,
 } from "lucide-react";
 import { Dica } from "@/compartilhado/componentes";
 import { useState, useRef, useEffect } from "react";
@@ -59,6 +60,38 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
 
 
 
+  const temTelefoneValido = (tel: string | null | undefined) => {
+    if (!tel) return false;
+    const limpo = tel.replace(/\D/g, "");
+    if (!limpo || limpo.length < 8) return false;
+    if (/^0+$/.test(limpo)) return false;
+    const lower = tel.toLowerCase();
+    if (
+      lower.includes("sem") ||
+      lower.includes("placeholder") ||
+      lower.includes("null") ||
+      lower.includes("undefined") ||
+      lower.includes("nao") ||
+      lower.includes("não")
+    ) return false;
+    return true;
+  };
+
+  const temEmailValido = (email: string | null | undefined) => {
+    if (!email) return false;
+    const lower = email.toLowerCase().trim();
+    if (
+      !lower ||
+      lower.includes("sem@") ||
+      lower.includes("placeholder") ||
+      lower.includes("null") ||
+      lower.includes("undefined") ||
+      lower.includes("nao") ||
+      lower.includes("não")
+    ) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lower);
+  };
+
   const abrirWhatsapp = (e: React.MouseEvent) => {
     e.stopPropagation();
     const numeroLimpo = (cliente.telefone || "").replace(/\D/g, "");
@@ -78,19 +111,30 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative bg-card backdrop-blur-xl border border-borda-sutil rounded-3xl p-5 transition-all shadow-sm group/card hover:shadow-premium hover:-translate-y-1"
+      onClick={() => aoVerHistorico(cliente)}
+      className="relative bg-zinc-900/40 dark:bg-white/[0.02] backdrop-blur-xl border border-zinc-200/50 dark:border-white/5 rounded-[2rem] p-6 transition-all duration-300 shadow-sm group/card hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-sky-500/30 dark:hover:border-sky-500/20 hover:-translate-y-1 overflow-hidden cursor-pointer"
     >
+      {/* Glow de Fundo Sutil no Hover */}
+      <div className="absolute -inset-px bg-gradient-to-br from-sky-500/0 via-sky-500/0 to-indigo-500/0 group-hover/card:from-sky-500/5 group-hover/card:to-indigo-500/5 rounded-[2rem] transition-all duration-500 pointer-events-none" />
+
       {/* Menu Superior Direito */}
-      <div className="absolute top-4 right-4 z-30" ref={menuRef}>
+      <div className="absolute top-5 right-5 z-30" ref={menuRef}>
         <div className="relative">
           <button
             onClick={(e) => {
               e.stopPropagation();
               definirMenuAberto(!menuAberto);
             }}
-            className={`p-2 rounded-xl transition-all ${menuAberto ? "bg-zinc-100 dark:bg-white/10 text-primary dark:text-white" : "text-muted-foreground hover:bg-zinc-500/10 dark:hover:bg-white/10 hover:text-primary dark:hover:text-white"}`}
+            aria-label="Abrir menu de ações do cliente"
+            aria-haspopup="true"
+            aria-expanded={menuAberto}
+            className={`p-2 rounded-xl transition-all ${
+              menuAberto 
+                ? "bg-zinc-200/50 dark:bg-white/10 text-primary dark:text-white" 
+                : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white"
+            }`}
           >
-            <MoreVertical size={16} strokeWidth={3} />
+            <MoreVertical size={16} strokeWidth={2.5} />
           </button>
 
           <AnimatePresence>
@@ -99,12 +143,13 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className="absolute right-0 mt-2 w-48 bg-card border border-borda-sutil rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
+                className="absolute right-0 mt-2 w-48 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/80 dark:border-white/5 rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
               >
-                <div className="p-1.5 space-y-0.5">
+                <div className="p-1 space-y-0.5">
                   <button
                     onClick={(e) => { e.stopPropagation(); aoVerHistorico(cliente); definirMenuAberto(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-muted-foreground hover:bg-muted hover:text-indigo-500 rounded-xl transition-all uppercase tracking-[0.15em]"
+                    aria-label="Ver histórico e pedidos do cliente"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-indigo-500 dark:hover:text-indigo-400 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
                     <HistoryIcon size={14} />
                     Histórico
@@ -112,17 +157,19 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
 
                   <button
                     onClick={(e) => { e.stopPropagation(); aoEditar(cliente); definirMenuAberto(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-muted-foreground hover:bg-muted hover:text-sky-500 rounded-xl transition-all uppercase tracking-[0.15em]"
+                    aria-label="Editar dados cadastrais do cliente"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-sky-500 dark:hover:text-sky-400 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
                     <Pencil size={14} />
                     Editar
                   </button>
 
-                   <div className="h-px bg-borda-sutil mx-2 my-1" />
+                  <div className="h-px bg-zinc-200/50 dark:bg-white/5 mx-2 my-1" />
 
                   <button
                     onClick={(e) => { e.stopPropagation(); aoRemover(cliente); definirMenuAberto(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-[10px] font-black text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-[0.15em]"
+                    aria-label="Remover cliente do ecossistema"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-[0.15em]"
                   >
                     <Trash2 size={14} />
                     Remover
@@ -134,26 +181,74 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
         </div>
       </div>
 
-      <div className="flex flex-col h-full justify-between gap-5">
+      <div className="relative z-10 flex flex-col h-full justify-between gap-6">
         {/* Identificação & Métricas */}
-        <div className="flex items-center gap-4 pr-10">
-          <div
-            className={`w-12 h-12 shrink-0 rounded-full bg-gradient-to-br flex items-center justify-center text-sm font-black border-2 shadow-lg ${obterCorAvatar(cliente.nome)}`}
-          >
-            {obterIniciais(cliente.nome)}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4 pr-10">
+            {/* Avatar Premium */}
+            <div className="relative shrink-0">
+              <div
+                className={`w-14 h-14 rounded-full bg-gradient-to-br flex items-center justify-center text-sm font-black border-2 shadow-inner transition-transform duration-300 group-hover/card:scale-105 ${obterCorAvatar(cliente.nome)}`}
+              >
+                {obterIniciais(cliente.nome)}
+              </div>
+              {cliente.fiel && (
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full border-2 border-white dark:border-[#121214] flex items-center justify-center text-white shadow-md animate-bounce" title="Cliente VIP">
+                  <Star size={8} className="fill-white text-white" />
+                </div>
+              )}
+            </div>
+
+            {/* Informações Principais */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                <h3 className="text-base font-black text-zinc-900 dark:text-white tracking-tight truncate">
+                  {cliente.nome}
+                </h3>
+                {cliente.tipo && (
+                  <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                    cliente.tipo === "B2B"
+                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                      : "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20"
+                  }`}>
+                    {cliente.tipo}
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                <span>Cliente Ativo</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex-1 min-w-0">
-             <h3 className="text-sm font-black text-primary tracking-tight truncate mb-1.5">
-              {cliente.nome}
-            </h3>
-            
-            <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              <span className="text-emerald-600 dark:text-emerald-400">
+          {/* Notas de CRM (Prévia) */}
+          {cliente.observacoesCRM && cliente.observacoesCRM.trim() !== "" ? (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 italic line-clamp-2 border-l-2 border-sky-500/30 dark:border-sky-500/20 pl-3 py-0.5 leading-relaxed">
+              "{cliente.observacoesCRM}"
+            </p>
+          ) : (
+            <p className="text-xs text-zinc-400 dark:text-zinc-600 italic border-l-2 border-zinc-200 dark:border-white/5 pl-3 py-0.5 leading-relaxed">
+              Sem observações de relacionamento registradas.
+            </p>
+          )}
+
+          {/* Grid de Métricas Premium */}
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <div className="bg-zinc-50 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 p-3 rounded-2xl flex flex-col justify-center">
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1">
+                Faturamento (LTV)
+              </span>
+              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
                 {centavosParaReais(cliente.ltvCentavos)}
               </span>
-              <span className="w-1 h-1 rounded-full bg-borda-sutil" />
-              <span>
+            </div>
+            
+            <div className="bg-zinc-50 dark:bg-white/[0.01] border border-zinc-200/30 dark:border-white/5 p-3 rounded-2xl flex flex-col justify-center">
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1">
+                Volume Produzido
+              </span>
+              <span className="text-sm font-black text-zinc-900 dark:text-white tracking-tight">
                 {pluralizar(cliente.totalProdutos, "Projeto", "Projetos")}
               </span>
             </div>
@@ -161,34 +256,51 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
         </div>
 
         {/* Rodapé - Contatos em Pílulas */}
-        <div className="flex items-center gap-2 pt-4 border-t border-borda-sutil mt-auto">
-          <Dica texto="Chamar no WhatsApp" posicao="cima">
-            <button
-              onClick={abrirWhatsapp}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all group/btn"
-            >
-              <MessageCircle size={14} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
-            </button>
-          </Dica>
+        {(temTelefoneValido(cliente.telefone) || temEmailValido(cliente.email)) && (
+          <div className="flex items-center gap-2.5 pt-4 border-t border-zinc-200/50 dark:border-white/5 mt-auto">
+            {temTelefoneValido(cliente.telefone) && (
+              <>
+                <Dica texto="Chamar no WhatsApp" posicao="cima">
+                  <button
+                    onClick={abrirWhatsapp}
+                    aria-label={`Chamar o cliente ${cliente.nome} no WhatsApp`}
+                    className="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all group/btn"
+                  >
+                    <MessageCircle size={15} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
+                  </button>
+                </Dica>
 
-          <Dica texto={copiado === "E-mail" ? "Copiado!" : "Copiar E-mail"} posicao="cima">
-            <button
-              onClick={() => copiarParaAreaTransferencia(cliente.email, "E-mail")}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white transition-all group/btn"
-            >
-              <Mail size={14} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
-            </button>
-          </Dica>
+                <Dica texto={copiado === "Telefone" ? "Copiado!" : "Copiar Telefone"} posicao="cima">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copiarParaAreaTransferencia(cliente.telefone, "Telefone");
+                    }}
+                    aria-label={`Copiar o telefone do cliente ${cliente.nome}`}
+                    className="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500 hover:text-white hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95 transition-all group/btn"
+                  >
+                    <Phone size={15} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
+                  </button>
+                </Dica>
+              </>
+            )}
 
-          <Dica texto={copiado === "Telefone" ? "Copiado!" : "Copiar Telefone"} posicao="cima">
-            <button
-              onClick={() => copiarParaAreaTransferencia(cliente.telefone, "Telefone")}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all group/btn"
-            >
-              <Phone size={14} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
-            </button>
-          </Dica>
-        </div>
+            {temEmailValido(cliente.email) && (
+              <Dica texto={copiado === "E-mail" ? "Copiado!" : "Copiar E-mail"} posicao="cima">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copiarParaAreaTransferencia(cliente.email, "E-mail");
+                  }}
+                  aria-label={`Copiar o e-mail do cliente ${cliente.nome}`}
+                  className="flex items-center justify-center w-9 h-9 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white hover:shadow-lg hover:shadow-sky-500/20 active:scale-95 transition-all group/btn"
+                >
+                  <Mail size={15} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
+                </button>
+              </Dica>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );

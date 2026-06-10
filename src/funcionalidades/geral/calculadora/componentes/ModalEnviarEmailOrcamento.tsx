@@ -67,7 +67,7 @@ export function ModalEnviarEmailOrcamento({
   };
 
   return (
-    <Dialogo aberto={aberto} aoMudarAberto={(v) => !v && aoFechar()}>
+    <Dialogo aberto={aberto} aoFechar={aoFechar} esconderCabecalho>
       <div className="p-6 md:p-8 max-w-md w-full bg-white dark:bg-slate-900 border border-borda-sutil dark:border-slate-800 rounded-2xl relative shadow-2xl">
         <button
           onClick={aoFechar}

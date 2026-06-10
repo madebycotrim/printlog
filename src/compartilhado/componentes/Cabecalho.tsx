@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Menu, Search, Beaker, AlertTriangle } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
@@ -25,6 +26,23 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
 
   // Inicializa o processador de notificações globais (pedidos atrasados, manutenção, etc.)
   useProcessadorNotificacoes();
+
+  const [termoBusca, setTermoBusca] = useState("");
+
+  // Reseta a busca local se a página mudar o callback de busca
+  useEffect(() => {
+    setTermoBusca("");
+  }, [dados.aoBuscar]);
+
+  // Aplica o debounce de 300ms para evitar chamadas de filtro excessivas
+  useEffect(() => {
+    if (!dados.aoBuscar) return;
+    const temporizador = setTimeout(() => {
+      dados.aoBuscar!(termoBusca);
+    }, 300);
+
+    return () => clearTimeout(temporizador);
+  }, [termoBusca, dados.aoBuscar]);
 
   // Verificação de expiração
   const estaExpirado = () => {
@@ -96,7 +114,8 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               <input
                 type="text"
                 placeholder={dados.placeholderBusca || "PESQUISAR..."}
-                onChange={(e) => dados.aoBuscar && dados.aoBuscar(e.target.value)}
+                value={termoBusca}
+                onChange={(e) => setTermoBusca(e.target.value)}
                 className="w-full h-10 pl-8 pr-2 bg-transparent border-0 border-b-2 border-zinc-100 dark:border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-primary dark:text-white placeholder:text-zinc-500 dark:placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-primary dark:focus:border-white"
               />
             </div>

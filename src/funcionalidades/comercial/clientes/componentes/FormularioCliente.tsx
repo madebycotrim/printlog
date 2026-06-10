@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Save, User, Mail, Phone, FileText } from "lucide-react";
+import { Save, User, Mail, Phone, FileText, Star } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes";
 import { AcoesDescarte } from "@/compartilhado/componentes";
 import { Dialogo } from "@/compartilhado/componentes";
@@ -29,6 +29,8 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
     reset,
     setValue,
     control,
+    watch,
+    getValues,
     formState: { errors, isDirty },
   } = useForm<TipoDadosCliente>({
     resolver: zodResolver(esquemaCliente),
@@ -37,11 +39,13 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
       nome: "",
       email: "",
       telefone: "",
+      tipo: "B2C",
       baseLegal: BaseLegalLGPD.EXECUCAO_CONTRATO,
       idConsentimento: crypto.randomUUID(),
       finalidadeColeta: "Gestão de pedidos e orçamentos de impressão 3D.",
       prazoRetencaoMeses: 60,
       observacoesCRM: "",
+      fiel: false,
     },
   });
 
@@ -54,18 +58,22 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
         nome: clienteEditando.nome || "",
         email: clienteEditando.email || "",
         telefone: clienteEditando.telefone || "",
+        tipo: (clienteEditando.tipo || "B2C") as "B2B" | "B2C",
         observacoesCRM: clienteEditando.observacoesCRM || "",
         baseLegal: clienteEditando.baseLegal || BaseLegalLGPD.EXECUCAO_CONTRATO,
         finalidadeColeta: clienteEditando.finalidadeColeta || "Gestão de pedidos e orçamentos de impressão 3D.",
         prazoRetencaoMeses: clienteEditando.prazoRetencaoMeses || 60,
+        fiel: clienteEditando.fiel || false,
       } : {
         nome: "",
         email: "",
         telefone: "",
+        tipo: "B2C" as "B2B" | "B2C",
         observacoesCRM: "",
         baseLegal: BaseLegalLGPD.EXECUCAO_CONTRATO,
         finalidadeColeta: "Gestão de pedidos e orçamentos de impressão 3D.",
         prazoRetencaoMeses: 60,
+        fiel: false,
       };
 
       reset(valoresIniciais);
@@ -105,6 +113,36 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
         <div className="flex-1 p-8 space-y-12 overflow-y-auto">
           <SecaoFormulario titulo="Dados de Identificação">
             <GradeCampos colunas={2}>
+              <div className="md:col-span-2 flex flex-col gap-2">
+                <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Perfil Comercial do Cliente</label>
+                <div className="grid grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-borda-sutil">
+                  <button
+                    type="button"
+                    onClick={() => setValue("tipo", "B2C", { shouldDirty: true })}
+                    className={`py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                      watch("tipo") === "B2C"
+                        ? "bg-white dark:bg-zinc-800 text-sky-500 border border-borda-sutil dark:border-white/5 shadow-md shadow-sky-500/5 scale-[1.01]"
+                        : "text-zinc-500 hover:text-primary dark:hover:text-white"
+                    }`}
+                  >
+                    <span>Consumidor Final (B2C)</span>
+                    <span className="text-[8px] opacity-60 font-bold normal-case tracking-normal">Markup sugerido de 5.0x</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setValue("tipo", "B2B", { shouldDirty: true })}
+                    className={`py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                      watch("tipo") === "B2B"
+                        ? "bg-white dark:bg-zinc-800 text-indigo-500 border border-borda-sutil dark:border-white/5 shadow-md shadow-indigo-500/5 scale-[1.01]"
+                        : "text-zinc-500 hover:text-primary dark:hover:text-white"
+                    }`}
+                  >
+                    <span>Empresa / Parceiro (B2B)</span>
+                    <span className="text-[8px] opacity-60 font-bold normal-case tracking-normal">Markup sugerido de 3.0x</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="md:col-span-2">
                 <CampoTexto
                   rotulo="Nome Completo"
@@ -141,13 +179,31 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
           </SecaoFormulario>
 
           <SecaoFormulario titulo="Notas e CRM">
-            <CampoTexto
-              rotulo="Notas do Perfil (Útil para o dia a dia)"
-              icone={FileText}
-              placeholder="Ex: Gosta de peças em resina, prefere retirada, costuma pedir brindes..."
-              erro={errors.observacoesCRM?.message}
-              {...register("observacoesCRM")}
-            />
+            <div className="space-y-6">
+              <CampoTexto
+                rotulo="Notas do Perfil (Útil para o dia a dia)"
+                icone={FileText}
+                placeholder="Ex: Gosta de peças em resina, prefere retirada, costuma pedir brindes..."
+                erro={errors.observacoesCRM?.message}
+                {...register("observacoesCRM")}
+              />
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Classificação de Fidelidade</label>
+                <button
+                  type="button"
+                  onClick={() => setValue("fiel", !getValues("fiel"), { shouldDirty: true })}
+                  className={`py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+                    watch("fiel")
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-md shadow-amber-500/5 scale-[1.01]"
+                      : "bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 hover:text-primary dark:hover:text-white border-borda-sutil"
+                  }`}
+                >
+                  <Star size={14} className={watch("fiel") ? "fill-amber-500 text-amber-500" : "text-zinc-500"} />
+                  <span>{watch("fiel") ? "Cliente VIP / Fiel Ativado" : "Marcar como Cliente VIP / Fiel"}</span>
+                </button>
+              </div>
+            </div>
           </SecaoFormulario>
 
         </div>

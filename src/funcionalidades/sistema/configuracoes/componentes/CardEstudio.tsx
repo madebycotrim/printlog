@@ -1,4 +1,4 @@
-import { Beaker, Building2, Settings2, ChevronDown, AlertTriangle, ShieldCheck, Zap, Share2, PackageSearch, TrendingUp, MessageCircle, Lock, Crown, ArrowRight } from "lucide-react";
+import { Beaker, Building2, Settings2, ChevronDown, AlertTriangle, ShieldCheck, Zap, Share2, PackageSearch, TrendingUp, MessageCircle, Lock, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { CabecalhoCard } from "./Compartilhados";
 import { useEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
@@ -101,68 +101,34 @@ export function CardEstudio({
 
       {/* === PAINEL DE ACESSO BLOQUEADO (FREE) === */}
       {!temAcessoBeta ? (
-        <div className="relative flex flex-col items-center justify-center py-10 px-6 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 bg-gradient-to-br from-indigo-50/60 to-purple-50/40 dark:from-indigo-500/[0.06] dark:to-purple-500/[0.04] overflow-hidden">
+        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 bg-gradient-to-r from-indigo-50/60 to-purple-50/40 dark:from-indigo-500/[0.04] dark:to-purple-500/[0.02] overflow-hidden w-full">
           {/* Glow de fundo */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-400/20 dark:bg-indigo-500/10 blur-[60px] pointer-events-none rounded-full" />
-          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 dark:bg-purple-500/10 blur-[40px] pointer-events-none rounded-full" />
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-400/20 dark:bg-indigo-500/10 blur-[40px] pointer-events-none rounded-full" />
 
-          <div className="relative z-10 flex flex-col items-center text-center gap-4">
-            {/* Ícone central */}
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shadow-lg shadow-indigo-500/10">
-                <Beaker size={28} className="text-indigo-500" />
-              </div>
-              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-amber-400 dark:bg-amber-500 flex items-center justify-center shadow-md">
-                <Lock size={11} className="text-white" strokeWidth={3} />
-              </div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-4 text-center md:text-left flex-1">
+            <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
+              <Beaker size={22} className="text-indigo-500" />
             </div>
-
-            {/* Título */}
-            <div>
-              <h3 className="text-sm font-black text-gray-900 dark:text-white mb-1">
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
                 Programa Beta Exclusivo
+                <span className="text-[8px] font-black uppercase tracking-widest bg-amber-400/15 text-amber-500 px-2 py-0.5 rounded border border-amber-400/30">PRO</span>
               </h3>
-              <p className="text-xs text-gray-500 dark:text-zinc-400 leading-relaxed max-w-[280px]">
-                Acesse funcionalidades experimentais antecipadas. Disponível apenas para assinantes <strong className="text-indigo-600 dark:text-indigo-400">Maker Pro</strong> e <strong className="text-sky-500">Maker Fundador</strong>.
+              <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-lg leading-relaxed">
+                Acesse funcionalidades experimentais antecipadas. Disponível nos planos <strong className="text-indigo-600 dark:text-indigo-400">Maker Pro</strong> e <strong className="text-sky-500">Maker Fundador</strong>.
               </p>
             </div>
+          </div>
 
-            {/* Badges dos planos */}
-            <div className="flex items-center gap-2 flex-wrap justify-center">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/25 text-indigo-700 dark:text-indigo-300">
-                <Zap size={11} className="fill-indigo-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Maker Pro</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-100 dark:bg-sky-500/15 border border-sky-200 dark:border-sky-500/25 text-sky-700 dark:text-sky-300">
-                <Crown size={11} className="fill-sky-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Maker Fundador</span>
-              </div>
-            </div>
-
-            {/* O que está dentro */}
-            <div className="w-full mt-2 grid grid-cols-2 gap-2 text-left">
-              {[
-                { icone: Building2, texto: "Multi-Estúdios" },
-                { icone: Share2, texto: "Orçamentos Mágicos" },
-                { icone: PackageSearch, texto: "Estoque Inteligente" },
-                { icone: TrendingUp, texto: "Simulador de Margem" },
-              ].map(({ icone: Icone, texto }) => (
-                <div key={texto} className="flex items-center gap-2 p-2.5 rounded-xl bg-white/60 dark:bg-white/[0.03] border border-indigo-100/80 dark:border-white/5">
-                  <Icone size={13} className="text-indigo-400 shrink-0" />
-                  <span className="text-[10px] font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-tight">{texto}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
+          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full md:w-auto">
             <a
               href="https://printlog.com.br/planos"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/10 transition-all active:scale-95 whitespace-nowrap"
             >
               <Zap size={13} className="fill-white" />
-              Fazer Upgrade de Plano
+              Upgrade de Plano
               <ArrowRight size={13} />
             </a>
           </div>

@@ -2,23 +2,32 @@ import { Plus, Users, Search } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useGerenciadorClientes } from "./hooks/useGerenciadorClientes";
 import { CardCliente } from "./componentes/CardCliente";
-import { FormularioCliente } from "./componentes/FormularioCliente";
+import { ModalGerenciamentoCliente } from "./componentes/ModalGerenciamentoCliente";
 import { ResumoClientes } from "./componentes/ResumoClientes";
 import { FiltrosCliente } from "./componentes/FiltrosCliente";
 import { ModalRemocaoCliente } from "./componentes/ModalRemocaoCliente";
-import { ModalHistoricoCliente } from "./componentes/ModalHistoricoCliente";
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
 import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function PaginaClientes() {
   const { estado, acoes } = useGerenciadorClientes();
   const { usuario } = useAutenticacao();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!estado.carregando) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [estado.carregando]);
+
+  const exibindoLoading = !primeiroCarregamento || estado.carregando;
 
   const tentarNovoCliente = () => {
     if (atingiuLimite("CLIENTES", estado.clientes.length, usuario?.plano)) {
@@ -43,7 +52,7 @@ export function PaginaClientes() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {estado.carregando ? (
+        {exibindoLoading ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}
@@ -117,11 +126,16 @@ export function PaginaClientes() {
         )}
       </AnimatePresence>
 
-      <FormularioCliente
-        aberto={estado.modalAberto}
-        clienteEditando={estado.clienteSendoEditado}
-        aoCancelar={acoes.fecharEditar}
+      {/* Modal Unificado e Modularizado com Abas */}
+      <ModalGerenciamentoCliente
+        aberto={estado.modalAberto || estado.modalHistoricoAberto}
+        cliente={estado.clienteSendoEditado || estado.clienteSendoHistorico}
+        aoFechar={() => {
+          acoes.fecharEditar();
+          acoes.fecharHistorico();
+        }}
         aoSalvar={acoes.salvarCliente}
+        abaInicial={estado.modalHistoricoAberto ? "historico" : "config"}
       />
 
       <ModalRemocaoCliente
@@ -129,12 +143,6 @@ export function PaginaClientes() {
         cliente={estado.clienteSendoRemovido}
         aoFechar={acoes.fecharRemover}
         aoConfirmar={() => estado.clienteSendoRemovido && acoes.removerCliente(estado.clienteSendoRemovido.id)}
-      />
-
-      <ModalHistoricoCliente
-        aberto={estado.modalHistoricoAberto}
-        cliente={estado.clienteSendoHistorico}
-        aoFechar={acoes.fecharHistorico}
       />
 
       <ModalUpgradePaywall

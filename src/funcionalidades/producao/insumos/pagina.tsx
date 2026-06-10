@@ -28,6 +28,16 @@ export function PaginaInsumos() {
   const { usuario } = useAutenticacao();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
 
+  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
+  useEffect(() => {
+    if (!estado.carregando) {
+      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
+      return () => clearTimeout(temporizador);
+    }
+  }, [estado.carregando]);
+
+  const exibindoLoading = !primeiroCarregamento || estado.carregando;
+
   const tentarNovoInsumo = () => {
     if (atingiuLimite("INSUMOS", estado.insumos.length, usuario?.plano)) {
       setModalPaywallAberto(true);
@@ -60,7 +70,7 @@ export function PaginaInsumos() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {estado.carregando ? (
+        {exibindoLoading ? (
           <motion.div
             key="carregando"
             initial={{ opacity: 0 }}

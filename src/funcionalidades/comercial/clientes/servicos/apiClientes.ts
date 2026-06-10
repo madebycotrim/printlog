@@ -13,7 +13,8 @@ export const apiClientes = {
         // Mapeamento de snake_case para camelCase
         return dados.map((c: any) => ({
             ...c,
-
+            tipo: c.tipo || "B2C",
+            fiel: c.fiel === 1 || c.fiel === true,
             observacoesCRM: c.observacoes_crm ?? undefined,
             idConsentimento: c.id_consentimento ?? undefined,
             baseLegal: c.base_legal ?? undefined,
@@ -45,6 +46,8 @@ export const apiClientes = {
             nome: dados.nome ?? null,
             email: dados.email ?? null,
             telefone: dados.telefone ?? null,
+            tipo: dados.tipo ?? "B2C",
+            fiel: dados.fiel ?? false,
 
             observacoesCRM: dados.observacoesCRM ?? null,
             idConsentimento: dados.idConsentimento ?? null,
