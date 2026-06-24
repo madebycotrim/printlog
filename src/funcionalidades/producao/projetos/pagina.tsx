@@ -9,17 +9,63 @@ import { EstadoVazio } from "@/compartilhado/componentes";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
 import { motion, AnimatePresence } from "framer-motion";
 import { Carregamento } from "@/compartilhado/componentes";
+import { BannerErro } from "@/compartilhado/componentes/ui";
 import { useNavigate } from "react-router-dom";
 import { FormularioPedido } from "./componentes/FormularioPedido";
 import { Pedido } from "./tipos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
+
+function SkeletonProjetos() {
+  const kpis = [1, 2, 3, 4];
+  const colunas = [1, 2, 3, 4];
+  const cards = [1, 2];
+  return (
+    <div className="space-y-10 pb-20 animate-pulse w-full">
+      {/* Top metrics row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {kpis.map((i) => (
+          <div key={i} className="h-24 bg-card border border-borda-sutil rounded-[1.5rem]" />
+        ))}
+      </div>
+
+      {/* Kanban Board */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+        {colunas.map((col) => (
+          <div key={col} className="bg-[#f4f4f5] dark:bg-[#121214] border border-borda-sutil/60 dark:border-white/5 rounded-[2rem] p-6 space-y-6">
+            {/* Título da coluna */}
+            <div className="flex items-center justify-between pb-3 border-b border-borda-sutil">
+              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+              <div className="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+
+            {/* List de cards */}
+            <div className="space-y-4">
+              {cards.map((card) => (
+                <div key={card} className="p-5 bg-card border border-borda-sutil rounded-2xl space-y-4 shadow-sm">
+                  <div className="space-y-2">
+                    <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4" />
+                    <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
+                  </div>
+                  <div className="pt-4 border-t border-borda-sutil flex items-center justify-between">
+                    <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
+                    <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function PaginaProjetos() {
   const navigate = useNavigate();
   const [modalArquivoAberto, setModalArquivoAberto] = useState(false);
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
-  const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido } = usePedidos();
+  const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido, erro, recarregar } = usePedidos();
 
   const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
   useEffect(() => {
@@ -50,19 +96,26 @@ export function PaginaProjetos() {
     if (pedido) setPedidoEdicao(pedido);
   };
 
+  if (erro && !exibindoLoading) {
+    return (
+      <BannerErro 
+        titulo="Falha ao carregar projetos" 
+        aoTentarNovamente={() => recarregar(true)} 
+      />
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
         {exibindoLoading ? (
-          <motion.div
-            key="carregando"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center py-40"
-          >
-            <Carregamento tipo="ponto" mensagem="Organizando fluxo de produção..." />
-          </motion.div>
+          pedidos.length > 0 ? (
+            <SkeletonProjetos />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center py-40">
+              <Carregamento tipo="ponto" mensagem="Organizando fluxo de produção..." />
+            </div>
+          )
         ) : pedidos.length === 0 ? (
           <motion.div
             key="vazio"

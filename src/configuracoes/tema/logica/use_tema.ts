@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TemaInterface } from "@/compartilhado/tipos/modelos";
 import type { CorPrimaria, ModoTema, TipoFonte } from "@/compartilhado/tipos/modelos";
+import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
 
 const PALETA_CORES: Record<CorPrimaria, { hex: string; rgb: string }> = {
   sky: { hex: "#0ea5e9", rgb: "14 165 233" },
@@ -28,7 +29,7 @@ const DICIONARIO_FONTES: Record<TipoFonte, string> = {
   "jetbrains-mono": "'JetBrains Mono', monospace",
 };
 
-const CHAVE_PERSISTENCIA = "printlog:tema";
+const CHAVE_PERSISTENCIA = "printlog_tema";
 
 interface PreferenciasInterface {
   modoTema: ModoTema;
@@ -37,16 +38,14 @@ interface PreferenciasInterface {
 }
 
 export function useTema() {
+  const montado = useRef(false);
+
   // Inicializa o estado lendo diretamente do localStorage ou preferência do sistema
   const [preferencias, definirPreferencias] = useState<PreferenciasInterface>(() => {
     if (typeof window !== "undefined") {
-      const salvo = localStorage.getItem(CHAVE_PERSISTENCIA);
+      const salvo = armazenamentoSeguro.obter<PreferenciasInterface | null>(CHAVE_PERSISTENCIA, null);
       if (salvo) {
-        try {
-          return JSON.parse(salvo);
-        } catch {
-          // Fallback para erro de parse
-        }
+        return salvo;
       }
 
       const modoDefault =
@@ -89,28 +88,49 @@ export function useTema() {
 
   useEffect(() => {
     // Persiste as escolhas e aplica variaveis globais de tema/cor
-    localStorage.setItem(CHAVE_PERSISTENCIA, JSON.stringify(preferencias));
+    armazenamentoSeguro.definir(CHAVE_PERSISTENCIA, preferencias);
 
     const root = document.documentElement;
     root.style.setProperty("--cor-primaria", PALETA_CORES[corPrimaria].hex);
     root.style.setProperty("--cor-primaria-rgb", PALETA_CORES[corPrimaria].rgb);
     root.style.setProperty("--familia-fonte", DICIONARIO_FONTES[fonte]);
 
+    let timer: NodeJS.Timeout | undefined;
+
     const aplicarDOM = (modo: ModoTema) => {
+      const deveTransicionar = montado.current;
+
+      if (deveTransicionar) {
+        root.classList.add("theme-transitioning");
+      }
+
       root.setAttribute("data-tema", modo.toLowerCase());
       if (modo === TemaInterface.ESCURO) {
         root.classList.add("dark");
       } else {
         root.classList.remove("dark");
       }
+
+      if (deveTransicionar) {
+        timer = setTimeout(() => {
+          root.classList.remove("theme-transitioning");
+        }, 500);
+      }
     };
 
     aplicarDOM(modoEfetivo);
 
+    if (!montado.current) {
+      montado.current = true;
+    }
+
     // Se estiver no modo SISTEMA, ouvimos mudanças no SO
+    let mediaQuery: MediaQueryList | undefined;
+    let manipulador: ((e: MediaQueryListEvent | MediaQueryList) => void) | undefined;
+
     if (modoTema === TemaInterface.SISTEMA) {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const manipulador = (e: MediaQueryListEvent | MediaQueryList) => {
+      mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      manipulador = (e: MediaQueryListEvent | MediaQueryList) => {
         const novoModo = e.matches ? TemaInterface.ESCURO : TemaInterface.CLARO;
         definirModoEfetivo(novoModo);
       };
@@ -121,15 +141,18 @@ export function useTema() {
       } else {
         mediaQuery.addListener(manipulador);
       }
+    }
 
-      return () => {
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (mediaQuery && manipulador) {
         if (mediaQuery.removeEventListener) {
           mediaQuery.removeEventListener("change", manipulador);
         } else {
           mediaQuery.removeListener(manipulador);
         }
-      };
-    }
+      }
+    };
   }, [preferencias, modoEfetivo]);
 
   function alternarTema() {

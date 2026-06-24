@@ -30,6 +30,7 @@ export function useGerenciadorImpressoras() {
       impressoraSendoEditada: s.impressoraSendoEditada,
       impressoraParaAposentar: s.impressoraParaAposentar,
       impressoraGerenciamento: s.impressoraGerenciamento,
+      erro: s.erro,
     })),
   );
 

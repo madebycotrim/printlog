@@ -4,10 +4,12 @@ import { Material, RegistroUso } from "@/funcionalidades/producao/materiais/tipo
 interface EstadoMateriais {
     materiais: Material[];
     carregando: boolean;
+    jaCarregou: boolean;
 
     // Ações Base
     definirMateriais: (materiais: Material[]) => void;
     definirCarregando: (status: boolean) => void;
+    definirJaCarregou: (status: boolean) => void;
     adicionarMaterial: (novo: Material) => void;
     atualizarMaterial: (id: string, dados: Partial<Material>) => void;
     arquivarMaterial: (id: string) => void;
@@ -20,9 +22,11 @@ interface EstadoMateriais {
 export const useArmazemMateriais = create<EstadoMateriais>((set) => ({
     materiais: [],
     carregando: false,
+    jaCarregou: false,
 
     definirMateriais: (materiais) => set({ materiais }),
     definirCarregando: (status) => set({ carregando: status }),
+    definirJaCarregou: (status) => set({ jaCarregou: status }),
 
     adicionarMaterial: (novo) => set((state) => ({ materiais: [novo, ...state.materiais] })),
 

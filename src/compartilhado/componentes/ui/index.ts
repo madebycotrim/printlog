@@ -13,3 +13,5 @@ export * from "./ToasterPremium";
 export * from "./ContadorAnimado";
 export * from "./InputBancario";
 export * from "./ModalUpgradePaywall";
+export * from "./BannerErro";
+

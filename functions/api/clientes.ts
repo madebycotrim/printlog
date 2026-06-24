@@ -1,8 +1,9 @@
 /// <reference types="@cloudflare/workers-types" />
 import { criptografar, descriptografar } from "./utilitarios/criptografia";
+import { z } from "zod";
 
 /**
- * API de Clientes - v4.0 Blindagem Total (AES-GCM)
+ * API de Clientes - v4.0 Blindagem Total (AES-GCM) com Validação Zod
  * Protege PII (Nome, E-mail, Telefone, Notas) contra vazamentos.
  */
 
@@ -10,6 +11,19 @@ interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
 }
+
+const ZodClienteCriar = z.object({
+    nome: z.string().min(1, "O nome do cliente é obrigatório"),
+    email: z.string().email("E-mail inválido").nullable().optional().or(z.literal("")),
+    telefone: z.string().nullable().optional(),
+    observacoesCRM: z.string().nullable().optional(),
+    tipo: z.string().optional(),
+    fiel: z.boolean().optional()
+});
+
+const ZodClienteAtualizar = ZodClienteCriar.partial().extend({
+    id: z.string().min(1, "O ID do cliente é obrigatório")
+});
 
 export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
     const { env, request, data } = context;
@@ -58,8 +72,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         // ── CRIAR (Com Criptografia) ──
         if (metodo === "POST") {
-            const dados = await request.json() as any;
-            const novoId = dados.id || crypto.randomUUID();
+            const corpoRaw = await request.json();
+            const dados = ZodClienteCriar.parse(corpoRaw) as any;
+            const novoId = (corpoRaw as any).id || crypto.randomUUID();
 
             // Criptografa PII antes da persistência
             const [nomeCripto, emailCripto, telCripto, notasCripto] = await Promise.all([
@@ -93,7 +108,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         // ── ATUALIZAR (Com Criptografia) ──
         if (metodo === "PATCH" || metodo === "PUT") {
-            const dados = await request.json() as any;
+            const corpoRaw = await request.json();
+            const dados = ZodClienteAtualizar.parse(corpoRaw) as any;
             
             // Prepara dados para atualização seletiva com criptografia
             const nomeCripto = dados.nome ? await criptografar(dados.nome, chaveMestra) : undefined;
@@ -102,8 +118,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const notasCripto = dados.observacoesCRM !== undefined ? await criptografar(dados.observacoesCRM, chaveMestra) : undefined;
 
             let historicoStr = null;
-            if (dados.historico !== undefined && dados.historico !== null) {
-                historicoStr = typeof dados.historico === "string" ? dados.historico : JSON.stringify(dados.historico);
+            if ((corpoRaw as any).historico !== undefined && (corpoRaw as any).historico !== null) {
+                historicoStr = typeof (corpoRaw as any).historico === "string" ? (corpoRaw as any).historico : JSON.stringify((corpoRaw as any).historico);
             }
 
             await env.DB.prepare(`
@@ -123,8 +139,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 emailCripto ?? null, 
                 telCripto ?? null,
                 notasCripto ?? null,
-                dados.ltvCentavos ?? null,
-                dados.totalProdutos ?? null,
+                (corpoRaw as any).ltvCentavos ?? null,
+                (corpoRaw as any).totalProdutos ?? null,
                 historicoStr ?? null,
                 dados.tipo ?? null,
                 dados.fiel !== undefined ? (dados.fiel ? 1 : 0) : null,
@@ -149,10 +165,20 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
+        if (erro instanceof z.ZodError) {
+            const mensagens = erro.errors.map(e => e.message).join(", ");
+            return new Response(JSON.stringify({ 
+                sucesso: false, 
+                mensagem: `Erro de validação: ${mensagens}` 
+            }), { 
+                status: 400, 
+                headers: { "Content-Type": "application/json" } 
+            });
+        }
         console.error("[Clientes API Error]:", erro);
         return new Response(JSON.stringify({ 
             sucesso: false,
-            mensagem: String(erro?.stack || erro?.message || JSON.stringify(erro) || "Erro Desconhecido")
+            mensagem: "Ocorreu um erro interno no servidor ao processar os clientes."
         }), { 
             status: 500,
             headers: { "Content-Type": "application/json" }

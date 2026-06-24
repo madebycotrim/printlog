@@ -18,6 +18,42 @@ import { obterCorStatusManutencao } from "@/funcionalidades/producao/impressoras
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { Carregamento } from "@/compartilhado/componentes";
 
+function SkeletonManutencao() {
+  const kpis = [1, 2, 3];
+  const items = [1, 2, 3, 4];
+  return (
+    <div className="space-y-10 pb-20 animate-pulse w-full">
+      {/* Resumo de Saúde */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {kpis.map((i) => (
+          <div key={i} className="h-32 bg-card border border-borda-sutil rounded-[2rem]" />
+        ))}
+      </div>
+
+      {/* Tabela/Lista da Agenda */}
+      <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-6">
+        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4 mb-6" />
+        <div className="space-y-4">
+          {items.map((i) => (
+            <div key={i} className="p-6 rounded-2xl border border-borda-sutil flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4 w-1/3">
+                <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+                <div className="space-y-2 w-full">
+                  <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
+                  <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+                </div>
+              </div>
+              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-28" />
+              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
+              <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded w-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PaginaManutencaoPreditiva() {
   const navigate = useNavigate();
   const { estado: { impressoras, carregando }, acoes: { abrirGerenciamento } } = useGerenciadorImpressoras();
@@ -51,15 +87,13 @@ export function PaginaManutencaoPreditiva() {
     <div className="flex-1 flex flex-col min-h-0">
       <AnimatePresence mode="wait">
         {exibindoLoading ? (
-          <motion.div
-            key="carregando"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center py-40"
-          >
-            <Carregamento tipo="ponto" mensagem="Calculando projeções de desgaste..." />
-          </motion.div>
+          impressoras.length > 0 ? (
+            <SkeletonManutencao />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center py-40">
+              <Carregamento tipo="ponto" mensagem="Calculando projeções de desgaste..." />
+            </div>
+          )
         ) : (
           <motion.div
             key="conteudo"

@@ -2,7 +2,7 @@ import { useArmazemClientes } from "../estado/armazemClientes";
 import { Cliente } from "../tipos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { ErroValidacao, CodigoErro } from "@/compartilhado/utilitarios/excecoes";
-import { useMemo, useEffect, useCallback } from "react";
+import { useMemo, useEffect, useCallback, useState } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiClientes } from "../servicos/apiClientes";
 import { toast } from "react-hot-toast";
@@ -15,15 +15,18 @@ export function useGerenciadorClientes() {
   const estado = useArmazemClientes();
   const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
+  const [erro, setErro] = useState(false);
 
   // 📥 Carregar dados do Banco
   const carregarClientes = useCallback(async () => {
     if (!usuarioId) return;
     try {
+      setErro(false);
       estado.definirCarregando(true);
       const dados = await apiClientes.buscarTodos(usuarioId);
       estado.definirClientes(dados);
     } catch (erro) {
+      setErro(true);
       toast.error("Erro ao carregar clientes.");
     } finally {
       estado.definirCarregando(false);
@@ -112,6 +115,7 @@ export function useGerenciadorClientes() {
     estado: {
       ...estado,
       clientesFiltrados,
+      erro,
     },
     acoes: {
       pesquisar: estado.pesquisar,
@@ -125,6 +129,7 @@ export function useGerenciadorClientes() {
       fecharHistorico: estado.fecharHistorico,
       salvarCliente,
       removerCliente,
+      recarregar: carregarClientes,
     },
   };
 }

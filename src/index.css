@@ -113,11 +113,25 @@
   color-scheme: dark;
 }
 
+/* Transição suave global de tema */
+.theme-transitioning,
+.theme-transitioning * {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important,
+              border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important,
+              color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important,
+              fill 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important,
+              stroke 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important,
+              box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important,
+              opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 body {
   background-color: var(--bg-page);
   color: #1a1a1a;
   font-family: var(--familia-fonte);
-  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark body {

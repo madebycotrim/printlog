@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, Database, User, PackageSearch, Activity, FolderKanban, CheckCircle2 } from "lucide-react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { CabecalhoCard } from "./Compartilhados";
@@ -8,12 +8,18 @@ import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/arm
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { useArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
 import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
+import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
+import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
+import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
+import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
+import { servicoPedidos } from "@/funcionalidades/producao/projetos/servicos/servicoPedidos";
 import { toast } from "react-hot-toast";
 
 export function CardMetricas() {
   const { usuario } = useAutenticacao();
   const [exportando, definirExportando] = useState(false);
   const [mensagemSucesso, definirMensagemSucesso] = useState("");
+  const [carregandoMetricas, definirCarregandoMetricas] = useState(true);
 
   // Acessando dados reais dos armazéns (Estado Global)
   const totalClientes = useArmazemClientes((estado) => estado.clientes.length);
@@ -21,6 +27,40 @@ export function CardMetricas() {
   const totalInsumos = useArmazemInsumos((estado) => estado.insumos.length);
   const totalMaquinas = useArmazemImpressoras((estado) => estado.impressoras.length);
   const totalProjetos = useArmazemPedidos((estado) => estado.pedidos.length);
+
+  // Carrega e sincroniza todos os dados dos armazéns no mount
+  useEffect(() => {
+    if (!usuario?.uid) return;
+
+    const carregarDados = async () => {
+      definirCarregandoMetricas(true);
+      try {
+        const [mats, ins, imps, clis, peds] = await Promise.all([
+          apiMateriais.listar(usuario.uid),
+          apiInsumos.listar(usuario.uid),
+          apiImpressoras.buscarTodas(usuario.uid),
+          apiClientes.buscarTodos(usuario.uid),
+          servicoPedidos.buscarPedidos(usuario.uid)
+        ]);
+
+        useArmazemMateriais.getState().definirMateriais(mats);
+        useArmazemInsumos.getState().definirInsumos(ins);
+        useArmazemImpressoras.getState().definirImpressoras(imps);
+        useArmazemClientes.getState().definirClientes(clis);
+        useArmazemPedidos.getState().definirPedidos(peds);
+      } catch (erro) {
+        registrar.error(
+          { rastreioId: "sistema", servico: "CardMetricas" },
+          "Erro ao carregar dados dos armazéns para o Painel",
+          erro
+        );
+      } finally {
+        definirCarregandoMetricas(false);
+      }
+    };
+
+    carregarDados();
+  }, [usuario?.uid]);
 
   const gerarLogBackend = (formato: string) => {
     // [Art. 37 - ROA] Simulando log em um sistema de auditoria (D1/Logs).
@@ -144,7 +184,11 @@ export function CardMetricas() {
             <span className={`rounded-lg p-1.5 ${item.fundo} ${item.cor} mb-1`}>
               <item.icone size={13} />
             </span>
-            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{item.val}</p>
+            {carregandoMetricas ? (
+              <div className="w-8 h-4 bg-zinc-200 dark:bg-zinc-800 animate-pulse rounded-md my-0.5" />
+            ) : (
+              <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{item.val}</p>
+            )}
             <p className="mt-1 text-[9px] uppercase tracking-[0.14em] font-black text-gray-500 dark:text-zinc-500 truncate w-full px-1">
               {item.lab}
             </p>

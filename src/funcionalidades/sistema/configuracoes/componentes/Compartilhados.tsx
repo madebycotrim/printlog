@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User } from "lucide-react";
+import { User, HelpCircle } from "lucide-react";
 
 export interface PropsCampo {
     label: string;
@@ -7,9 +7,10 @@ export interface PropsCampo {
     aoMudar: (v: string) => void;
     placeholder?: string;
     icone: typeof User;
+    dica?: string;
 }
 
-export function CampoDashboard({ label, valor, aoMudar, placeholder, icone: Icone }: PropsCampo) {
+export function CampoDashboard({ label, valor, aoMudar, placeholder, icone: Icone, dica }: PropsCampo) {
     const [valorLocal, setValorLocal] = useState(valor);
 
     // Sincroniza o valor local se o valor externo mudar
@@ -19,9 +20,20 @@ export function CampoDashboard({ label, valor, aoMudar, placeholder, icone: Icon
 
     return (
         <div className="w-full">
-            <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                {label}
-            </label>
+            <div className="flex items-center gap-1 mb-1 ml-1 select-none">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {label}
+                </label>
+                {dica && (
+                    <div className="group/tooltip relative inline-block">
+                        <HelpCircle size={11} className="text-muted-foreground opacity-50 hover:opacity-100 cursor-help transition-opacity" />
+                        <div className="absolute z-[100] bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block bg-zinc-900 dark:bg-zinc-850 text-[9px] font-bold text-white normal-case p-2 rounded-lg shadow-xl border border-white/5 w-44 text-center leading-relaxed">
+                            {dica}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-850" />
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className="relative group">
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground opacity-60 group-focus-within:text-primary transition-colors duration-300">
                     <Icone size={16} />
@@ -48,9 +60,10 @@ export interface PropsCampoBancario {
     placeholder?: string;
     icone: typeof User;
     prefixo?: string;
+    dica?: string;
 }
 
-export function CampoBancarioDashboard({ label, valor, aoMudar, placeholder, icone: Icone, prefixo }: PropsCampoBancario) {
+export function CampoBancarioDashboard({ label, valor, aoMudar, placeholder, icone: Icone, prefixo, dica }: PropsCampoBancario) {
     const [valorLocal, setValorLocal] = useState(valor);
 
     useEffect(() => {
@@ -59,9 +72,20 @@ export function CampoBancarioDashboard({ label, valor, aoMudar, placeholder, ico
 
     return (
         <div className="w-full">
-            <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                {label}
-            </label>
+            <div className="flex items-center gap-1 mb-1 ml-1 select-none">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {label}
+                </label>
+                {dica && (
+                    <div className="group/tooltip relative inline-block">
+                        <HelpCircle size={11} className="text-muted-foreground opacity-50 hover:opacity-100 cursor-help transition-opacity" />
+                        <div className="absolute z-[100] bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block bg-zinc-900 dark:bg-zinc-850 text-[9px] font-bold text-white normal-case p-2 rounded-lg shadow-xl border border-white/5 w-44 text-center leading-relaxed">
+                            {dica}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-850" />
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className="relative group">
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground opacity-60 group-focus-within:text-primary transition-colors duration-300">
                     <Icone size={16} />

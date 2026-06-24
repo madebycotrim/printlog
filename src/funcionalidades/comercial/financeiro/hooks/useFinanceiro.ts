@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { CriarLancamentoInput, LancamentoFinanceiro } from "../tipos";
 import { servicoFinanceiro } from "../servicos/servicoFinanceiro";
 import { apiFinanceiro } from "../servicos/apiFinanceiro";
@@ -28,6 +28,7 @@ export function useFinanceiro() {
 
   const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
+  const [erro, setErro] = useState(false);
 
   // Gerado uma vez por sessão do hook para agrupar operações relacionadas
   const rastreioId = useMemo(() => crypto.randomUUID(), []);
@@ -35,6 +36,7 @@ export function useFinanceiro() {
   const carregarDados = useCallback(async () => {
     if (!usuarioId) return;
     try {
+      setErro(false);
       definirCarregando(true);
       const [dadosLancamentos, dadosResumo] = await Promise.all([
         servicoFinanceiro.buscarLancamentos(usuarioId, rastreioId),
@@ -45,6 +47,7 @@ export function useFinanceiro() {
       definirLancamentos(dadosLancamentos);
       definirResumo(dadosResumo);
     } catch (erro) {
+      setErro(true);
       const mensagem = erro instanceof ErroPrintLog ? erro.mensagem : "Erro ao carregar dados financeiros.";
       toast.error(mensagem);
     } finally {
@@ -131,6 +134,7 @@ export function useFinanceiro() {
     filtroTipo,
     ordenacao,
     ordemInvertida,
+    erro,
 
     // Ações
     definirFiltroTipo,

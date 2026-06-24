@@ -79,7 +79,7 @@ export function useGerenciadorInsumos() {
       };
       carregarInsumos();
     }
-  }, [usuario?.uid]);
+  }, [usuario?.uid, acoesArmazem]);
 
   // -----------------------------------------------------------------------------------
   // 🧠 DERIVAÇÕES DE ESTADO (Listas e Filtragens)

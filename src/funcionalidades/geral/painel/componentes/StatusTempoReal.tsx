@@ -14,7 +14,7 @@ export function StatusTempoReal() {
     const [errosImagens, setErrosImagens] = useState<Record<string, boolean>>({});
 
     const maquinasAtivas = impressoras.filter(imp => !imp.dataAposentadoria);
-    const resumoMaquinas = maquinasAtivas.slice(0, 3);
+    const resumoMaquinas = maquinasAtivas.slice(0, 4);
 
     const buscarTrabalhoAtivo = (idImpressora: string) => {
         return pedidos.find(p => p.idImpressora === idImpressora && p.status === StatusPedido.EM_PRODUCAO);
@@ -64,6 +64,23 @@ export function StatusTempoReal() {
                         const config = obterConfigStatus(imp.status);
                         const urlImagem = obterImagemImpressora(imp.imagemUrl, imp.marca, imp.modeloBase);
                         const erroNaImagem = errosImagens[imp.id] || !urlImagem;
+
+                        const obterProgressoImpressao = () => {
+                            if (imp.status === StatusImpressora.LIVRE) return '100%';
+                            if (imp.status === StatusImpressora.MANUTENCAO) return '0%';
+                            if (trabalho) {
+                                if (trabalho.tempoMinutos && trabalho.tempoMinutos > 0) {
+                                    const dataInicio = trabalho.dataInicioAgendada ? new Date(trabalho.dataInicioAgendada) : new Date(trabalho.dataCriacao);
+                                    const diffMs = Date.now() - dataInicio.getTime();
+                                    const diffMinutos = diffMs / (1000 * 60);
+                                    let progresso = Math.min(Math.round((diffMinutos / trabalho.tempoMinutos) * 100), 99);
+                                    if (progresso < 0) progresso = 0;
+                                    return `${progresso}%`;
+                                }
+                                return '45%';
+                            }
+                            return '0%';
+                        };
                         
                         return (
                             <div 
@@ -91,7 +108,7 @@ export function StatusTempoReal() {
                                     
                                     <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
                                         <span className={`font-extrabold ${classesCoresText[config.cor]}`}>
-                                            {imp.status === StatusImpressora.LIVRE ? '100%' : '0%'}
+                                            {obterProgressoImpressao()}
                                         </span>
                                         <span>•</span>
                                         <span className="tabular-nums font-medium truncate">

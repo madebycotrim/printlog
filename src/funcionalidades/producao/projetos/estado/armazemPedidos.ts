@@ -21,7 +21,7 @@ interface EstadoPedidos {
 
 export const useArmazemPedidos = create<EstadoPedidos>((set) => ({
     pedidos: [],
-    carregando: true,
+    carregando: false,
     termoBusca: "",
     jaCarregou: false,
     idsBloqueados: [],

@@ -85,7 +85,10 @@ export function CardInsumo({
     : null;
 
   return (
-    <div className="group relative bg-card rounded-xl border border-borda-sutil p-4 transition-all duration-300 hover:bg-muted/30 overflow-hidden">
+    <div 
+      onClick={() => aoVerHistorico(insumo)}
+      className="group relative bg-card rounded-xl border border-borda-sutil p-4 transition-all duration-300 hover:bg-muted/30 overflow-hidden cursor-pointer"
+    >
       {/* Aura de fundo dinâmica */}
       <div 
         className="absolute -right-20 -top-20 w-48 h-48 blur-[80px] opacity-[0.04] pointer-events-none transition-colors duration-1000"
@@ -188,7 +191,10 @@ export function CardInsumo({
         <div className="flex items-center gap-4">
            <div className="flex items-center gap-2">
               <button
-                onClick={() => aoBaixar(insumo)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  aoBaixar(insumo);
+                }}
                 className={`h-10 px-5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border ${CORES_BOTAO_SECUNDARIO[insumo.categoria] || CORES_BOTAO_SECUNDARIO.Geral}`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-current/10">
@@ -198,7 +204,10 @@ export function CardInsumo({
               </button>
               
               <button
-                onClick={() => aoRepor(insumo)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  aoRepor(insumo);
+                }}
                 className={`h-10 px-5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border ${CORES_BOTAO_PRIMARIO[insumo.categoria] || CORES_BOTAO_PRIMARIO.Geral}`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-current/10">
@@ -211,13 +220,31 @@ export function CardInsumo({
            <div className="h-5 w-px bg-borda-sutil" />
 
            <div className="flex items-center gap-1">
-             <button onClick={() => aoVerHistorico(insumo)} className="p-1.5 text-muted-foreground hover:text-sky-500 transition-all">
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 aoVerHistorico(insumo);
+               }}
+               className="p-1.5 text-muted-foreground hover:text-sky-500 transition-all"
+             >
                <HistoryIcon size={16} />
              </button>
-             <button onClick={() => aoEditar(insumo)} className="p-1.5 text-muted-foreground hover:text-indigo-500 transition-all">
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 aoEditar(insumo);
+               }}
+               className="p-1.5 text-muted-foreground hover:text-indigo-500 transition-all"
+             >
                <Edit2 size={16} />
              </button>
-             <button onClick={() => aoExcluir(insumo)} className="p-1.5 text-muted-foreground hover:text-rose-500 transition-all">
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 aoExcluir(insumo);
+               }}
+               className="p-1.5 text-muted-foreground hover:text-rose-500 transition-all"
+             >
                <Trash2 size={16} />
              </button>
            </div>

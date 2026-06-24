@@ -9,6 +9,7 @@ import { TabelaLancamentos } from "./componentes/TabelaLancamentos";
 import { FormularioLancamento } from "./componentes/FormularioLancamento";
 import { FiltrosFinanceiro } from "./componentes/FiltrosFinanceiro";
 import { EstadoVazio } from "@/compartilhado/componentes";
+import { BannerErro } from "@/compartilhado/componentes/ui";
 import { useFinanceiro } from "./hooks/useFinanceiro";
 import { Carregamento } from "@/compartilhado/componentes";
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
@@ -18,6 +19,42 @@ import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos
 import { servicoFinanceiroAvancado } from "@/compartilhado/servicos/servicoFinanceiroAvancado";
 import { ModalDREDetalhado } from "./componentes/ModalDREDetalhado";
 import { LancamentoFinanceiro } from "./tipos";
+
+function SkeletonFinanceiro() {
+  const kpis = [1, 2, 3];
+  const rows = [1, 2, 3, 4, 5];
+  return (
+    <div className="space-y-8 animate-pulse w-full">
+      {/* KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {kpis.map((i) => (
+          <div key={i} className="h-32 bg-card border border-borda-sutil rounded-[2rem]" />
+        ))}
+      </div>
+
+      {/* Banner DRE / Simulação */}
+      <div className="h-40 bg-card border border-borda-sutil rounded-[2rem] w-full" />
+
+      {/* Filtros */}
+      <div className="h-14 bg-card border border-borda-sutil rounded-2xl w-full" />
+
+      {/* Tabela de Lançamentos */}
+      <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
+        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4 mb-6" />
+        {rows.map((i) => (
+          <div key={i} className="flex justify-between items-center py-4 border-b border-borda-sutil/50">
+            <div className="space-y-2 w-1/3">
+              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+            </div>
+            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
+            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-16" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function PaginaFinanceiro() {
   const [modalAberto, setModalAberto] = useState(false);
@@ -38,6 +75,8 @@ export function PaginaFinanceiro() {
     ordenarPor,
     inverterOrdem,
     pesquisar,
+    erro,
+    recarregar,
   } = useFinanceiro();
 
   const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
@@ -89,19 +128,26 @@ export function PaginaFinanceiro() {
     },
   });
 
+  if (erro && !exibindoLoading) {
+    return (
+      <BannerErro 
+        titulo="Falha ao carregar dados financeiros" 
+        aoTentarNovamente={recarregar} 
+      />
+    );
+  }
+
   return (
     <div className="space-y-10 min-h-[60vh] flex flex-col">
       <AnimatePresence mode="wait">
         {exibindoLoading ? (
-          <motion.div
-            key="carregando"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center py-40"
-          >
-            <Carregamento tipo="ponto" mensagem="Calculando rentabilidade e fluxo..." />
-          </motion.div>
+          lancamentos.length > 0 ? (
+            <SkeletonFinanceiro />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center py-40">
+              <Carregamento tipo="ponto" mensagem="Calculando rentabilidade e fluxo..." />
+            </div>
+          )
         ) : lancamentos.length === 0 ? (
           <motion.div
             key="vazio"

@@ -1,8 +1,9 @@
 /// <reference types="@cloudflare/workers-types" />
 import { criptografar, descriptografar } from "./utilitarios/criptografia";
+import { z } from "zod";
 
 /**
- * API de Pedidos - v6.0 Blindagem Total (AES-GCM)
+ * API de Pedidos - v6.0 Blindagem Total (AES-GCM) com Validação Zod
  * Protege detalhes dos projetos e observações contra vazamentos.
  */
 
@@ -10,6 +11,24 @@ interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
 }
+
+const ZodPedidoCriar = z.object({
+    idCliente: z.string().nullable().optional(),
+    id_cliente: z.string().nullable().optional(),
+    idImpressora: z.string().nullable().optional(),
+    id_impressora: z.string().nullable().optional(),
+    descricao: z.string().min(1, "A descrição não pode ser vazia"),
+    valorCentavos: z.number().int().min(0).optional(),
+    valor_centavos: z.number().int().min(0).optional(),
+    status: z.string().optional(),
+    dataCriacao: z.string().optional(),
+    data_criacao: z.string().optional(),
+    dados_extras: z.string().optional()
+});
+
+const ZodPedidoAtualizar = ZodPedidoCriar.partial().extend({
+    id: z.string().min(1, "O ID do pedido é obrigatório")
+});
 
 export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
     const { env, request, data } = context;
@@ -62,8 +81,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         // ── POST - Criar (Com Criptografia) ──
         if (metodo === "POST") {
-            const dados = await request.json() as any;
-            const novoId = dados.id || crypto.randomUUID();
+            const corpoRaw = await request.json();
+            const dados = ZodPedidoCriar.parse(corpoRaw) as any;
+            const novoId = (corpoRaw as any).id || crypto.randomUUID();
             
             const limparId = (val: any) => (!val || val === "null" || val === "0") ? null : String(val);
 
@@ -74,14 +94,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
             // Monta Dados Extras e Criptografa
             const dadosExtras = {
-                material: dados.material ?? dados.material_base,
-                materiais: dados.materiais ?? [],
-                peso_gramas: dados.peso_gramas ?? dados.pesoGramas,
-                tempo_minutos: dados.tempo_minutos ?? dados.tempoMinutos,
-                observacoes: dados.observacoes,
-                insumos_secundarios: dados.insumos_secundarios ?? dados.insumosSecundarios ?? [],
-                pos_processo: dados.pos_processo ?? dados.posProcesso ?? [],
-                configuracoes: dados.configuracoes ?? {}
+                material: (corpoRaw as any).material ?? (corpoRaw as any).material_base,
+                materiais: (corpoRaw as any).materiais ?? [],
+                peso_gramas: (corpoRaw as any).peso_gramas ?? (corpoRaw as any).pesoGramas,
+                tempo_minutos: (corpoRaw as any).tempo_minutos ?? (corpoRaw as any).tempoMinutos,
+                observacoes: (corpoRaw as any).observacoes,
+                insumos_secundarios: (corpoRaw as any).insumos_secundarios ?? (corpoRaw as any).insumosSecundarios ?? [],
+                pos_processo: (corpoRaw as any).pos_processo ?? (corpoRaw as any).posProcesso ?? [],
+                configuracoes: (corpoRaw as any).configuracoes ?? {}
             };
 
             const [descCripto, extrasCripto] = await Promise.all([
@@ -107,12 +127,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         // ── PATCH / PUT - Atualizar (Com Criptografia) ──
         if (metodo === "PATCH" || metodo === "PUT") {
-            const dados = await request.json() as any;
+            const corpoRaw = await request.json();
+            const dados = ZodPedidoAtualizar.parse(corpoRaw) as any;
             const limparId = (val: any) => (!val || val === "null") ? null : String(val);
 
             const descCripto = dados.descricao ? await criptografar(dados.descricao, chaveMestra) : undefined;
-            const extrasCripto = dados.dados_extras ? await criptografar(
-                typeof dados.dados_extras === 'string' ? dados.dados_extras : JSON.stringify(dados.dados_extras),
+            const extrasCripto = (corpoRaw as any).dados_extras ? await criptografar(
+                typeof (corpoRaw as any).dados_extras === 'string' ? (corpoRaw as any).dados_extras : JSON.stringify((corpoRaw as any).dados_extras),
                 chaveMestra
             ) : undefined;
 
@@ -131,7 +152,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     dados.status ?? 'pendente', 
                     descCripto ?? null,
                     dados.valor_centavos ?? dados.valorCentavos ?? null,
-                    dados.limparDataConclusao ? 1 : 0, dados.data_conclusao ?? dados.dataConclusao ?? null,
+                    (corpoRaw as any).limparDataConclusao ? 1 : 0, (corpoRaw as any).data_conclusao ?? (corpoRaw as any).dataConclusao ?? null,
                     limparId(dados.id_cliente ?? dados.idCliente),
                     limparId(dados.id_impressora ?? dados.idImpressora),
                     extrasCripto,
@@ -145,7 +166,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     WHERE id = ? AND id_usuario = ?
                 `).bind(
                     dados.status ?? 'pendente',
-                    dados.limparDataConclusao ? 1 : 0, dados.data_conclusao ?? dados.dataConclusao ?? null,
+                    (corpoRaw as any).limparDataConclusao ? 1 : 0, (corpoRaw as any).data_conclusao ?? (corpoRaw as any).dataConclusao ?? null,
                     dados.id, usuarioId
                 ).run();
             }
@@ -166,9 +187,23 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
+        if (erro instanceof z.ZodError) {
+            const mensagens = erro.errors.map(e => e.message).join(", ");
+            return new Response(JSON.stringify({ 
+                sucesso: false, 
+                mensagem: `Erro de validação: ${mensagens}` 
+            }), { 
+                status: 400, 
+                headers: { "Content-Type": "application/json" } 
+            });
+        }
         console.error("[pedidos] Erro Protegido:", erro);
-        return new Response(JSON.stringify({ sucesso: false, mensagem: String(erro?.stack || erro?.message || JSON.stringify(erro) || "Erro Desconhecido") }), { 
-            status: 500, headers: { "Content-Type": "application/json" } 
+        return new Response(JSON.stringify({ 
+            sucesso: false, 
+            mensagem: "Ocorreu um erro interno no servidor ao processar os pedidos." 
+        }), { 
+            status: 500, 
+            headers: { "Content-Type": "application/json" } 
         });
     }
 };

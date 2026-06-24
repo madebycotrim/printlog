@@ -14,6 +14,7 @@ interface PropriedadesModalGerenciamentoCliente {
   aoFechar: () => void;
   cliente: Cliente | null;
   aoSalvar: (dados: Partial<Cliente>) => Promise<any>;
+  abaInicial?: "historico" | "privacidade" | "config";
 }
 
 export function ModalGerenciamentoCliente({
@@ -21,14 +22,15 @@ export function ModalGerenciamentoCliente({
   aoFechar,
   cliente,
   aoSalvar,
+  abaInicial = "historico",
 }: PropriedadesModalGerenciamentoCliente) {
-  const [abaAtiva, setAbaAtiva] = useState<"historico" | "privacidade" | "config">("historico");
+  const [abaAtiva, setAbaAtiva] = useState<"historico" | "privacidade" | "config">(abaInicial);
 
   useEffect(() => {
     if (aberto) {
-      setAbaAtiva("historico");
+      setAbaAtiva(abaInicial);
     }
-  }, [aberto, cliente]);
+  }, [aberto, abaInicial, cliente]);
 
   if (!cliente) return null;
 

@@ -35,24 +35,28 @@ export function CardOperacional({
                     valor={String((custoEnergia / 100).toFixed(2))}
                     aoMudar={(v) => definirCustoEnergia(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Zap}
+                    dica="Custo do kWh cobrado pela sua distribuidora de energia. Usado para calcular o consumo elétrico de cada impressão."
                 />
                 <CampoDashboard
                     label="Máquina (R$/h)"
                     valor={String((horaMaquina / 100).toFixed(2))}
                     aoMudar={(v) => definirHoraMaquina(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Clock}
+                    dica="Custo de desgaste, amortização e manutenção preventiva da impressora por hora de funcionamento."
                 />
                 <CampoDashboard
                     label="Operador (R$/h)"
                     valor={String((horaOperador / 100).toFixed(2))}
                     aoMudar={(v) => definirHoraOperador(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Wrench}
+                    dica="Valor da sua hora de trabalho dedicada a fatiamento, preparação da máquina e pós-processamento."
                 />
                 <CampoDashboard
                     label="Margem (%)"
                     valor={String((margemLucro / 100).toFixed(2))}
                     aoMudar={(v) => definirMargemLucro(Math.round(extrairValorNumerico(v) * 100))}
                     icone={Percent}
+                    dica="Margem de lucro líquida que será adicionada sobre o custo total de fabricação nos orçamentos."
                 />
             </div>
 

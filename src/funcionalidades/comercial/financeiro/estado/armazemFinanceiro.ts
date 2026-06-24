@@ -32,7 +32,7 @@ export const useArmazemFinanceiro = create<ArmazemFinanceiroState>()(
                 entradasMesCentavos: 0,
                 saidasMesCentavos: 0,
             },
-            carregando: true,
+            carregando: false,
             termoBusca: "",
             filtroTipo: null,
             ordenacao: "DATA",

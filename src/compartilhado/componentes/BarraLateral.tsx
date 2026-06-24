@@ -80,7 +80,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     {
       titulo: "Produção",
       itens: [
-        { nome: "Fluxo & Fila", icone: FolderKanban, caminho: "/producao" },
+        { nome: "Projetos", icone: FolderKanban, caminho: "/producao" },
         { nome: "Impressoras", icone: Printer, caminho: "/impressoras" },
         { nome: "Materiais", icone: Package, caminho: "/materiais" },
         { nome: "Insumos", icone: Layers, caminho: "/insumos" },

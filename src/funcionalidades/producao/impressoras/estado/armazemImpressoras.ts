@@ -6,6 +6,7 @@ import { OrdenacaoImpressora } from "@/funcionalidades/producao/impressoras/comp
 interface ArmazemImpressorasState {
     impressoras: Impressora[];
     carregando: boolean;
+    jaCarregou: boolean;
     erro: string | null;
     filtroBusca: string;
     filtroTecnologia: TecnologiaImpressora | "Todas";
@@ -25,6 +26,7 @@ interface ArmazemImpressorasState {
     // Ações Base
     definirImpressoras: (impressoras: Impressora[]) => void;
     definirCarregando: (status: boolean) => void;
+    definirJaCarregou: (status: boolean) => void;
     definirErro: (erro: string | null) => void;
 
     // Ações de Filtragem e Ordenação
@@ -47,6 +49,7 @@ export const useArmazemImpressoras = create<ArmazemImpressorasState>()(
         (set) => ({
             impressoras: [],
             carregando: false,
+            jaCarregou: false,
             erro: null,
             filtroBusca: "",
             filtroTecnologia: "Todas",
@@ -64,6 +67,7 @@ export const useArmazemImpressoras = create<ArmazemImpressorasState>()(
 
             definirImpressoras: (impressoras) => set({ impressoras }, false, "definirImpressoras"),
             definirCarregando: (status) => set({ carregando: status }, false, "definirCarregando"),
+            definirJaCarregou: (status) => set({ jaCarregou: status }, false, "definirJaCarregou"),
             definirErro: (erro) => set({ erro }, false, "definirErro"),
 
             pesquisar: (termo) => set({ filtroBusca: termo }, false, "impressoras/pesquisar"),

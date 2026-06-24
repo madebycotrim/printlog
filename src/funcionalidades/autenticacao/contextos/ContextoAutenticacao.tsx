@@ -215,7 +215,11 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
    */
   const traduzirErroFirebase = (erro: unknown) => {
     const authError = erro as AuthError;
-    registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, `Erro Firebase: ${authError.code}`, authError);
+    if (authError.code !== "auth/popup-closed-by-user" && authError.code !== "auth/cancelled-popup-request") {
+      registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, `Erro Firebase: ${authError.code}`, authError);
+    } else {
+      registrar.warn({ rastreioId: "sistema", servico: "Autenticacao" }, `Operação cancelada pelo usuário (código: ${authError.code})`);
+    }
     switch (authError.code) {
       case "auth/email-already-in-use":
         throw new Error("Este email já está em uso.");
@@ -234,6 +238,9 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         throw new Error("Senha incorreta.");
       case "auth/account-exists-with-different-credential":
         throw new Error("Já existe uma conta associada a este e-mail usando outro provedor (ex: Google). Por favor, acesse pelo método original.");
+      case "auth/popup-closed-by-user":
+      case "auth/cancelled-popup-request":
+        throw new Error("O popup de autenticação foi fechado antes de concluir o login.");
       default:
         throw new Error("Ocorreu um erro inesperado. Tente novamente mais tarde.");
     }
@@ -434,12 +441,13 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         await signInWithRedirect(autenticacao, provedor);
         return;
       }
-      
-      registrar.error(
-        { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
-        "Falha ao realizar login com Google",
-        erro
-      );
+      if (erro.code !== "auth/popup-closed-by-user") {
+        registrar.error(
+          { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
+          "Falha ao realizar login com Google",
+          erro
+        );
+      }
       traduzirErroFirebase(erro);
     }
   };
@@ -490,11 +498,13 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         return;
       }
 
-      registrar.error(
-        { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
-        "Falha ao realizar login com GitHub",
-        erro
-      );
+      if (erro.code !== "auth/popup-closed-by-user") {
+        registrar.error(
+          { rastreioId: "sistema", servico: "Autenticacao", erro: erro.code },
+          "Falha ao realizar login com GitHub",
+          erro
+        );
+      }
       traduzirErroFirebase(erro);
     }
   };

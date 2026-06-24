@@ -20,10 +20,65 @@ import { centavosParaReais, formatarDataCurta } from "@/compartilhado/utilitario
 import { StatusPedido, StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { toast } from "react-hot-toast";
 import { Carregamento } from "@/compartilhado/componentes";
+import { BannerErro } from "@/compartilhado/componentes/ui";
+
+function SkeletonFila() {
+  const backlogItems = [1, 2, 3];
+  const impressoras = [1, 2, 3];
+  const filaItems = [1, 2];
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 animate-pulse w-full">
+      {/* Backlog Lateral */}
+      <div className="xl:col-span-1 space-y-6 bg-card border border-borda-sutil rounded-[2rem] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-4 h-4 bg-zinc-200 dark:bg-zinc-800 rounded" />
+          <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+        </div>
+        <div className="space-y-4">
+          {backlogItems.map((i) => (
+            <div key={i} className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] space-y-3">
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4" />
+              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Fila Gantt Principal */}
+      <div className="xl:col-span-3 space-y-6">
+        {impressoras.map((imp) => (
+          <div key={imp} className="bg-card border border-borda-sutil rounded-[2rem] p-6 space-y-6">
+            {/* Header da Impressora */}
+            <div className="flex items-center justify-between pb-4 border-b border-borda-sutil">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-32" />
+                  <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
+                </div>
+              </div>
+              <div className="w-16 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+            {/* Fila Gantt (Tabela/Linha) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filaItems.map((f) => (
+                <div key={f} className="p-4 rounded-2xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] space-y-3">
+                  <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
+                  <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function PaginaFila() {
-  const { estado: { impressoras, carregando: carregandoImpressoras }, acoes: { salvarImpressora } } = useGerenciadorImpressoras();
-  const { pedidos, carregando: carregandoPedidos, atualizarPedido } = usePedidos();
+  const { estado: { impressoras, carregando: carregandoImpressoras, erro: erroImpressoras }, acoes: { salvarImpressora, carregarImpressoras } } = useGerenciadorImpressoras();
+  const { pedidos, carregando: carregandoPedidos, erro: erroPedidos, recarregar: recarregarPedidos, atualizarPedido } = usePedidos();
 
   const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
   useEffect(() => {
@@ -35,6 +90,12 @@ export function PaginaFila() {
 
   const exibindoLoading = !primeiroCarregamento || carregandoImpressoras || carregandoPedidos;
 
+  const erroGlobal = !!erroImpressoras || !!erroPedidos;
+
+  const lidarComRecargaFila = () => {
+    carregarImpressoras();
+    recarregarPedidos(true);
+  };
 
   useDefinirCabecalho({
     titulo: "Fila de Produção",
@@ -69,7 +130,7 @@ export function PaginaFila() {
         mapa[p.idImpressora].push(p);
       }
     });
-
+    
     // Ordena fila de cada impressora por data de agendamento ou posição
     Object.keys(mapa).forEach(key => {
       mapa[key].sort((a, b) => {
@@ -90,6 +151,15 @@ export function PaginaFila() {
   const pedidosPendentes = useMemo(() => {
     return pedidosAtivos.filter(p => !p.idImpressora);
   }, [pedidosAtivos]);
+
+  if (erroGlobal && !exibindoLoading) {
+    return (
+      <BannerErro 
+        titulo="Falha ao carregar fila de produção" 
+        aoTentarNovamente={lidarComRecargaFila} 
+      />
+    );
+  }
 
   // Agendar pedido
   const lidarComAgendamento = async (pedidoId: string, impressoraId: string) => {
@@ -193,15 +263,13 @@ export function PaginaFila() {
   return (
     <AnimatePresence mode="wait">
       {exibindoLoading ? (
-        <motion.div
-          key="carregando"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex-1 flex flex-col items-center justify-center py-40"
-        >
-          <Carregamento tipo="ponto" mensagem="Sincronizando fila de produção..." />
-        </motion.div>
+        impressorasAtivas.length > 0 ? (
+          <SkeletonFila />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center py-40">
+            <Carregamento tipo="ponto" mensagem="Sincronizando fila de produção..." />
+          </div>
+        )
       ) : (
         <motion.div
           key="conteudo"

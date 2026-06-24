@@ -7,20 +7,17 @@ const variaveisObrigatorias = [
   "VITE_FIREBASE_PROJECT_ID",
 ];
 
-variaveisObrigatorias.forEach((variavel) => {
-  if (!import.meta.env[variavel]) {
-    throw new Error(`Variável de ambiente obrigatória não definida: ${variavel}`);
-  }
-});
+export const CONFIGURACAO_INVALIDA = variaveisObrigatorias.some((variavel) => !import.meta.env[variavel]);
 
 const configuracaoFirebase = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "placeholder-api-key",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "placeholder-auth-domain",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(configuracaoFirebase);
-export const autenticacao = getAuth(app);
+const app = CONFIGURACAO_INVALIDA ? null : initializeApp(configuracaoFirebase);
+export const autenticacao = app ? getAuth(app) : ({} as any);
+

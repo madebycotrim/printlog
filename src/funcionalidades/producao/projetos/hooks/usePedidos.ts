@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
 import { servicoPedidos } from "../servicos/servicoPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
@@ -26,17 +26,20 @@ export function usePedidos() {
 
   const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
+  const [erro, setErro] = useState(false);
 
-  const carregarPedidos = useCallback(async () => {
-    if (!usuarioId || jaCarregou) return;
+  const carregarPedidos = useCallback(async (forcar = false) => {
+    if (!usuarioId) return;
+    if (!forcar && jaCarregou) return;
     try {
+      setErro(false);
       definirJaCarregou(true);
       definirCarregando(true);
       const dados = await servicoPedidos.buscarPedidos(usuarioId);
       definirPedidos(dados);
     } catch (erro) {
-      // Se der erro, permitimos tentar de novo no futuro se for recarregado manualmente
-      // mas não resetamos jaCarregou aqui para evitar o loop imediato
+      setErro(true);
+      definirJaCarregou(false); // Permite retentar
       registrar.error({ rastreioId: "sistema", servico: "Projetos" }, "Erro ao carregar pedidos", erro);
       toast.error("Erro ao carregar pedidos.");
     } finally {
@@ -167,6 +170,7 @@ export function usePedidos() {
     pedidos,
     pedidosFiltrados,
     carregando,
+    erro,
     criarPedido,
     atualizarPedido,
     moverPedido,

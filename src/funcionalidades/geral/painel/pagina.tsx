@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 
@@ -33,7 +33,7 @@ import { ModalSelecaoMaterial } from "./componentes/ModalSelecaoMaterial";
 import { ModalSelecaoInsumo } from "./componentes/ModalSelecaoInsumo";
 import { DockAcoes } from "./componentes/DockAcoes";
 import { WidgetOrcamentos } from "./componentes/WidgetOrcamentos";
-import { GraficoConsumo } from "./componentes/GraficoConsumo";
+const GraficoConsumo = lazy(() => import("./componentes/GraficoConsumo").then(m => ({ default: m.GraficoConsumo })));
 import { WidgetInsumos } from "./componentes/WidgetInsumos";
 import { WidgetMateriais } from "./componentes/WidgetMateriais";
 import { WidgetAvisos } from "./componentes/WidgetAvisos";
@@ -53,7 +53,55 @@ import { motion } from "framer-motion";
 
 import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
 
-// ... [outras importações]
+// Componentes de Esqueleto para Carregamento
+function SkeletonMetricas() {
+  const itens = [1, 2, 3, 4, 5, 6];
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {itens.map((i) => (
+          <div key={i} className="h-28 bg-card border border-borda-sutil rounded-[1.5rem] p-6 animate-pulse flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
+              <div className="w-8 h-8 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+            <div className="h-6 bg-zinc-300 dark:bg-zinc-700 rounded w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {itens.map((i) => (
+          <div key={i} className="h-28 bg-card border border-borda-sutil rounded-[1.5rem] p-6 animate-pulse flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
+              <div className="w-8 h-8 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+            </div>
+            <div className="h-6 bg-zinc-300 dark:bg-zinc-700 rounded w-16" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SkeletonWidget({ classeAltura }: { classeAltura: string }) {
+  return (
+    <div className={`w-full ${classeAltura} min-h-[300px] bg-card border border-borda-sutil rounded-[2rem] p-8 animate-pulse flex flex-col justify-between`}>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/3" />
+          <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-12" />
+        </div>
+        <div className="space-y-3 pt-4">
+          <div className="h-10 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
+          <div className="h-10 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
+          <div className="h-10 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
+        </div>
+      </div>
+      <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded-xl w-full mt-4" />
+    </div>
+  );
+}
 
 export function PaginaInicial() {
   const { usuario } = useAutenticacao();
@@ -64,34 +112,58 @@ export function PaginaInicial() {
   const materiais = useArmazemMateriais((s) => s.materiais);
   const impressoras = useArmazemImpressoras((s) => s.impressoras);
   const insumos = useArmazemInsumos((s) => s.insumos);
+  const notificacoes = useArmazemNotificacoes((s) => s.notificacoes);
+
+  const jaCarregouMateriais = useArmazemMateriais((s) => s.jaCarregou);
+  const jaCarregouInsumos = useArmazemInsumos((s) => s.jaCarregou);
+  const jaCarregouImpressoras = useArmazemImpressoras((s) => s.jaCarregou);
 
   const { insumos: insumosEstoque, adicionarOuAtualizarInsumo } = useArmazemInsumos();
   const { reporEstoque: reporEstoqueMat } = useArmazemMateriais();
 
-  const acoesMateriais = useArmazemMateriais(useShallow(s => ({ definirMateriais: s.definirMateriais })));
-  const acoesInsumos = useArmazemInsumos(useShallow(s => ({ definirInsumos: s.definirInsumos })));
-  const acoesImpressoras = useArmazemImpressoras(useShallow(s => ({ definirImpressoras: s.definirImpressoras })));
+  const acoesMateriais = useArmazemMateriais(useShallow(s => ({ definirMateriais: s.definirMateriais, definirJaCarregou: s.definirJaCarregou })));
+  const acoesInsumos = useArmazemInsumos(useShallow(s => ({ definirInsumos: s.definirInsumos, definirJaCarregou: s.definirJaCarregou })));
+  const acoesImpressoras = useArmazemImpressoras(useShallow(s => ({ definirImpressoras: s.definirImpressoras, definirJaCarregou: s.definirJaCarregou })));
+
+  const [carregandoDados, definirCarregandoDados] = useState(false);
+  const [erroDados, definirErroDados] = useState(false);
 
   // 🔄 SINCRONIZAÇÃO GLOBAL NO DASHBOARD
-  useEffect(() => {
-    if (usuario?.uid) {
-      const sincronizarTudo = async () => {
-        try {
-          const [mats, ins, imps] = await Promise.all([
-            apiMateriais.listar(usuario.uid),
-            apiInsumos.listar(usuario.uid),
-            apiImpressoras.buscarTodas(usuario.uid)
-          ]);
-          acoesMateriais.definirMateriais(mats);
-          acoesInsumos.definirInsumos(ins);
-          acoesImpressoras.definirImpressoras(imps);
-        } catch (erro) {
-          console.error("Erro ao sincronizar dashboard:", erro);
-        }
-      };
-      sincronizarTudo();
+  const sincronizarTudo = useCallback(async (forcar = false) => {
+    if (!usuario?.uid) return;
+
+    if (!forcar && jaCarregouMateriais && jaCarregouInsumos && jaCarregouImpressoras) {
+      return;
     }
-  }, [usuario?.uid]);
+
+    definirCarregandoDados(true);
+    definirErroDados(false);
+
+    try {
+      const [mats, ins, imps] = await Promise.all([
+        apiMateriais.listar(usuario.uid),
+        apiInsumos.listar(usuario.uid),
+        apiImpressoras.buscarTodas(usuario.uid)
+      ]);
+      acoesMateriais.definirMateriais(mats);
+      acoesInsumos.definirInsumos(ins);
+      acoesImpressoras.definirImpressoras(imps);
+
+      acoesMateriais.definirJaCarregou(true);
+      acoesInsumos.definirJaCarregou(true);
+      acoesImpressoras.definirJaCarregou(true);
+    } catch (erro) {
+      console.error("Erro ao sincronizar dashboard:", erro);
+      definirErroDados(true);
+      toast.error("Falha ao sincronizar dados do painel.");
+    } finally {
+      definirCarregandoDados(false);
+    }
+  }, [usuario?.uid, jaCarregouMateriais, jaCarregouInsumos, jaCarregouImpressoras, acoesMateriais, acoesInsumos, acoesImpressoras]);
+
+  useEffect(() => {
+    sincronizarTudo();
+  }, [usuario?.uid, sincronizarTudo]);
 
   // 🧮 CÁLCULOS DE KPI
   const metricasInventario = servicoInventario.gerarRelatorioConsolidado(materiais, insumos);
@@ -150,83 +222,123 @@ export function PaginaInicial() {
   });
 
   return (
-    <motion.div 
-      variants={variantesContainerLista}
-      initial="inicial"
-      animate="animar"
-      className="space-y-8 pb-10 relative"
-    >
+    <div className="space-y-8 pb-10 relative">
       {/* BACKGROUND PATTERN DISCRETO */}
       <div className="absolute inset-0 -top-20 bg-grid-printlog opacity-[0.03] pointer-events-none -z-10" />
 
       {/* BANNER DE UPGRADE - Oculto para Founders */}
       {plano !== "FUNDADOR" && (
-        <motion.div variants={variantesItemLista}>
+        <div>
           <BannerPro 
             plano={plano} 
             aoRealizarUpgrade={realizarUpgradeGratis} 
             carregandoUpgrade={carregandoUpgrade} 
           />
-        </motion.div>
+        </div>
       )}
 
-      {/* MÉTRICAS DE ALTO IMPACTO */}
-      <motion.div variants={variantesItemLista}>
-        <MetricasPainel 
-          pedidos={pedidos} 
-          impressoras={impressoras} 
-          pedidosAtivos={pedidosAtivos}
-          metricasInventario={metricasInventario}
-        />
-      </motion.div>
+      {erroDados && (
+        <div className="bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/30 rounded-[2rem] p-8 text-center space-y-4">
+          <div className="text-rose-500 font-semibold">Falha na sincronização dos dados do painel</div>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            Não foi possível carregar as informações do servidor. Verifique sua conexão com a internet e tente novamente.
+          </p>
+          <button
+            onClick={() => sincronizarTudo(true)}
+            className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all uppercase tracking-wider shadow-md hover:shadow-lg"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      )}
 
-      {/* GRADE OPERACIONAL PRINCIPAL */}
-      <div className="grid grid-cols-12 gap-6 items-start">
-        {/* COLUNA ESQUERDA: Atividade Comercial */}
-        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-8 space-y-6">
-          <div className="lg:h-[500px]">
-            <WidgetOrcamentos 
+      {carregandoDados ? (
+        <>
+          <SkeletonMetricas />
+          <div className="grid grid-cols-12 gap-6 items-start">
+            <div className="col-span-12 lg:col-span-8">
+              <SkeletonWidget classeAltura="lg:h-[500px]" />
+            </div>
+            <div className="col-span-12 lg:col-span-4">
+              <SkeletonWidget classeAltura="lg:h-[500px]" />
+            </div>
+            <div className="col-span-12 lg:col-span-4">
+              <SkeletonWidget classeAltura="lg:h-[300px]" />
+            </div>
+            <div className="col-span-12 lg:col-span-4">
+              <SkeletonWidget classeAltura="lg:h-[300px]" />
+            </div>
+            <div className="col-span-12 lg:col-span-4">
+              <SkeletonWidget classeAltura="lg:h-[300px]" />
+            </div>
+            <div className="col-span-12">
+              <SkeletonWidget classeAltura="lg:h-[400px]" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* MÉTRICAS DE ALTO IMPACTO */}
+          <div>
+            <MetricasPainel 
               pedidos={pedidos} 
-              aoVerTodos={() => navegar("/producao")} 
-            />
-          </div>
-        </motion.div>
-
-        {/* COLUNA DIREITA: Status de Hardware */}
-        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4">
-          <div className="lg:h-[500px]">
-            <WidgetAvisos 
               impressoras={impressoras} 
-              notificacoes={useArmazemNotificacoes((s) => s.notificacoes)}
-              aoAgendarManutencao={() => navegar("/producao/manutencao")} 
+              pedidosAtivos={pedidosAtivos}
+              metricasInventario={metricasInventario}
             />
           </div>
-        </motion.div>
 
-        {/* LINHA DE UTILITÁRIOS: 3 CARDS ALINHADOS */}
-        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4 lg:h-[300px]">
-          <WidgetInsumos 
-            insumos={insumos} 
-            aoVerTodos={() => navegar("/insumos")} 
-          />
-        </motion.div>
-        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4 lg:h-[300px]">
-          <WidgetMateriais 
-            materiais={materiais} 
-            aoVerTodos={() => navegar("/materiais")} 
-          />
-        </motion.div>
-        <motion.div variants={variantesItemLista} className="col-span-12 lg:col-span-4 lg:h-[300px]">
-          <StatusTempoReal />
-        </motion.div>
+          {/* GRADE OPERACIONAL PRINCIPAL */}
+          <div className="grid grid-cols-12 gap-6 items-start">
+            {/* COLUNA ESQUERDA: Atividade Comercial */}
+            <div className="col-span-12 lg:col-span-8 space-y-6">
+              <div className="lg:h-[500px]">
+                <WidgetOrcamentos 
+                  pedidos={pedidos} 
+                  aoVerTodos={() => navegar("/producao")} 
+                />
+              </div>
+            </div>
 
-        {/* LINHA DE TENDÊNCIA: Gráfico de Consumo Full Width */}
-        <motion.div variants={variantesItemLista} className="col-span-12">
-          <div className="lg:h-[400px]">
-            <GraficoConsumo />
+            {/* COLUNA DIREITA: Status de Hardware */}
+            <div className="col-span-12 lg:col-span-4">
+              <div className="lg:h-[500px]">
+                <WidgetAvisos 
+                  impressoras={impressoras} 
+                  notificacoes={notificacoes}
+                  aoAgendarManutencao={() => navegar("/producao/manutencao")} 
+                />
+              </div>
+            </div>
+
+            {/* LINHA DE UTILITÁRIOS: 3 CARDS ALINHADOS */}
+            <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+              <WidgetInsumos 
+                insumos={insumos} 
+                aoVerTodos={() => navegar("/insumos")} 
+              />
+            </div>
+            <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+              <WidgetMateriais 
+                materiais={materiais} 
+                aoVerTodos={() => navegar("/materiais")} 
+              />
+            </div>
+            <div className="col-span-12 lg:col-span-4 lg:h-[300px]">
+              <StatusTempoReal />
+            </div>
+
+            {/* LINHA DE TENDÊNCIA: Gráfico de Consumo Full Width */}
+            <div className="col-span-12">
+              <div className="lg:h-[400px]">
+                <Suspense fallback={<div className="h-full w-full bg-gray-50/70 dark:bg-white/[0.02] border border-borda-sutil dark:border-white/10 rounded-2xl flex items-center justify-center text-xs text-muted-foreground uppercase font-black tracking-widest animate-pulse">Carregando gráfico de consumo...</div>}>
+                  <GraficoConsumo />
+                </Suspense>
+              </div>
+            </div>
           </div>
-        </motion.div>
-      </div>
+        </>
+      )}
 
       {/* MODAIS GLOBAIS */}
       <ModalPatrimonio
@@ -339,6 +451,6 @@ export function PaginaInicial() {
         aoAbrirModalSelecaoIns={() => definirModalSelecaoInsAberto(true)}
         aoAbrirModalFinanceiro={() => definirModalFinanceiroAberto(true)}
       />
-    </motion.div>
+    </div>
   );
 }

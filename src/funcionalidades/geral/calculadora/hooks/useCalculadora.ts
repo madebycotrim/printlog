@@ -603,15 +603,15 @@ export function useCalculadora(salvamentoAutomatico = true) {
           <meta charset="UTF-8">
           <title>Orçamento - ${sProjeto}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
             @page { size: A4; margin: 0; }
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
-              font-family: 'Inter', sans-serif;
+              font-family: 'Plus Jakarta Sans', sans-serif;
               color: #1e293b;
               background: #fff;
-              font-size: 11px;
-              line-height: 1.5;
+              font-size: 10px;
+              line-height: 1.4;
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
               padding: 8mm 10mm;
@@ -619,10 +619,8 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
             .container {
               background: #ffffff;
-              border-radius: 16px;
-              padding: 24px;
-              border: 1px solid #f1f5f9;
-              box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+              max-width: 100%;
+              margin: 0 auto;
             }
 
             /* ── HEADER ── */
@@ -630,9 +628,9 @@ export function useCalculadora(salvamentoAutomatico = true) {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              padding-bottom: 20px;
-              margin-bottom: 24px;
-              border-bottom: 1px solid #e2e8f0;
+              padding-bottom: 12px;
+              margin-bottom: 12px;
+              border-bottom: 1px dashed #e2e8f0;
             }
             .header-right { 
               display: flex;
@@ -643,168 +641,180 @@ export function useCalculadora(salvamentoAutomatico = true) {
             .badge-orcamento {
               display: inline-flex;
               align-items: center;
-              background: #f8fafc;
-              color: #0f172a;
-              border: 1px solid #e2e8f0;
+              background: #f0f9ff;
+              color: #0369a1;
+              border: 1px solid #e0f2fe;
               font-weight: 800;
               text-transform: uppercase;
-              letter-spacing: 0.05em;
-              padding: 6px 12px;
-              border-radius: 8px;
-              font-size: 9px;
-              margin-bottom: 4px;
+              letter-spacing: 0.08em;
+              padding: 4px 10px;
+              border-radius: 9999px;
+              font-size: 8.5px;
+              margin-bottom: 2px;
+              font-family: 'Outfit', sans-serif;
             }
-            .meta-val { font-size: 10px; font-weight: 500; color: #64748b; }
+            .meta-val { font-size: 9px; font-weight: 500; color: #64748b; }
             .meta-val strong { color: #0f172a; font-weight: 700; }
 
             /* ── PROJETO E CLIENTE ── */
             .info-grid {
               display: grid;
               grid-template-columns: 1fr 1fr;
-              gap: 16px;
+              gap: 12px;
               background: #f8fafc;
-              padding: 16px;
+              padding: 12px 16px;
               border-radius: 12px;
-              margin-bottom: 20px;
+              margin-bottom: 16px;
+              border: 1px solid #f1f5f9;
             }
-            .info-label { font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-            .info-title { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 2px; }
-            .info-sub { font-size: 11px; font-weight: 500; color: #475569; }
+            .info-label { font-size: 8.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+            .info-title { font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 2px; font-family: 'Outfit', sans-serif; }
+            .info-sub { font-size: 10px; font-weight: 500; color: #475569; }
 
             /* ── SECTIONS ── */
             .section-title {
-              font-size: 12px;
+              font-size: 10px;
               font-weight: 800;
               text-transform: uppercase;
               letter-spacing: 0.08em;
               color: #0f172a;
-              margin-bottom: 16px;
+              margin-bottom: 10px;
               display: flex;
               align-items: center;
-              gap: 8px;
+              gap: 6px;
+              font-family: 'Outfit', sans-serif;
             }
             .section-title::before {
               content: "";
               display: block;
-              width: 4px;
-              height: 14px;
-              background: #3b82f6;
-              border-radius: 4px;
+              width: 5px;
+              height: 5px;
+              background: #0ea5e9;
+              border-radius: 50%;
             }
 
             /* ── TABELA ── */
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
             th {
-              font-size: 9px;
-              font-weight: 700;
+              font-size: 8.5px;
+              font-weight: 800;
               text-transform: uppercase;
               color: #94a3b8;
-              letter-spacing: 0.06em;
-              padding: 8px 6px;
-              border-bottom: 2px solid #e2e8f0;
+              letter-spacing: 0.08em;
+              padding: 6px 8px;
+              border-bottom: 2px solid #f1f5f9;
               text-align: left;
             }
             th.r { text-align: right; }
             th.c { text-align: center; }
             td {
-              font-size: 11px;
+              font-size: 10px;
               color: #334155;
-              padding: 10px 6px;
+              padding: 8px 8px;
               border-bottom: 1px solid #f8fafc;
-              vertical-align: top;
+              vertical-align: middle;
             }
             td.r { text-align: right; }
             td.c { text-align: center; }
-            .item-nome { font-weight: 800; color: #0f172a; font-size: 13px; margin-bottom: 4px; }
-            .item-desc { font-size: 10px; color: #64748b; line-height: 1.5; }
+            .item-nome { font-weight: 800; color: #0f172a; font-size: 11px; margin-bottom: 2px; font-family: 'Outfit', sans-serif; }
+            .item-desc { font-size: 9px; color: #64748b; line-height: 1.35; }
             
             .badge {
               display: inline-block;
-              font-size: 9px;
-              font-weight: 600;
-              color: #475569;
-              background: #f1f5f9;
+              font-size: 7.5px;
+              font-weight: 700;
+              color: #0284c7;
+              background: #f0f9ff;
               padding: 3px 8px;
-              border-radius: 6px;
+              border-radius: 9999px;
               margin-right: 4px;
-              margin-top: 6px;
-              border: 1px solid #e2e8f0;
+              margin-top: 4px;
+              border: 1px solid #e0f2fe;
+              text-transform: uppercase;
+              letter-spacing: 0.03em;
             }
 
             .row-subitem td {
-              font-size: 10px;
-              color: #64748b;
-              padding: 4px 6px;
-              background: #f8fafc;
+              font-size: 9px;
+              color: #475569;
+              padding: 5px 8px;
+              background: #fafbfd;
               border-bottom: 1px solid #f1f5f9;
             }
-            .row-subitem td:first-child { padding-left: 24px; position: relative; }
+            .row-subitem td:first-child { padding-left: 16px; position: relative; }
             .row-subitem td:first-child::before {
-              content: "↳";
+              content: "";
               position: absolute;
-              left: 8px;
-              color: #cbd5e1;
+              left: 6px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 3.5px;
+              height: 3.5px;
+              border-radius: 50%;
+              background: #cbd5e1;
             }
-            .row-subitem td.val { font-weight: 600; color: #475569; }
+            .row-subitem td.val { font-weight: 700; color: #0f172a; font-family: monospace; font-size: 9.5px; }
 
             /* ── TOTAIS ── */
             .total-box {
-              background: #0f172a;
+              background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
               color: white;
-              border-radius: 16px;
-              padding: 20px;
+              border-radius: 12px;
+              padding: 16px 20px;
               display: flex;
               justify-content: space-between;
               align-items: center;
-              margin-bottom: 20px;
-              box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+              margin-bottom: 16px;
+              border: 1px solid rgba(255, 255, 255, 0.05);
             }
-            .total-label { font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-            .total-valor { font-size: 32px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
+            .total-label { font-size: 8.5px; font-weight: 850; color: #38bdf8; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.08em; font-family: 'Outfit', sans-serif; }
+            .total-valor { font-size: 24px; font-weight: 900; letter-spacing: -0.03em; color: #fff; font-family: 'Outfit', sans-serif; }
             
             .total-breakdown { text-align: right; }
             .breakdown-row {
               display: flex;
               justify-content: flex-end;
-              gap: 24px;
-              font-size: 11px;
-              color: #cbd5e1;
-              margin-bottom: 6px;
+              gap: 16px;
+              font-size: 10px;
+              color: #94a3b8;
+              margin-bottom: 4px;
             }
-            .breakdown-row strong { color: white; font-weight: 600; }
-            .breakdown-div { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+            .breakdown-row strong { color: white; font-weight: 700; font-family: monospace; }
+            .breakdown-div { height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
 
             /* ── FOOTER ── */
             .footer-card {
-              border: 1px solid #e2e8f0;
-              background: #f8fafc;
+              border: 1px solid #f1f5f9;
+              background: #fcfdfe;
               border-radius: 12px;
-              padding: 16px;
+              padding: 12px;
               text-align: center;
             }
-            .footer-title { font-size: 11px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-            .footer-text { font-size: 10px; color: #64748b; margin-bottom: 48px; line-height: 1.5; max-width: 80%; margin-left: auto; margin-right: auto; }
+            .footer-title { font-size: 9px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-family: 'Outfit', sans-serif; }
+            .footer-text { font-size: 9px; color: #64748b; margin-bottom: 24px; line-height: 1.4; max-width: 90%; margin-left: auto; margin-right: auto; }
             .footer-sign {
               display: flex;
-              justify-content: center;
-              gap: 40px;
+              justify-content: space-around;
+              gap: 20px;
             }
             .sign-line {
-              width: 220px;
-              border-top: 1px solid #cbd5e1;
-              padding-top: 8px;
-              font-size: 10px;
+              width: 180px;
+              border-top: 1px solid #e2e8f0;
+              padding-top: 6px;
+              font-size: 9.5px;
               font-weight: 700;
               color: #0f172a;
+              font-family: 'Outfit', sans-serif;
             }
-            .sign-role { font-size: 9px; font-weight: 500; color: #94a3b8; margin-top: 2px; }
+            .sign-role { font-size: 8.5px; font-weight: 500; color: #94a3b8; margin-top: 1px; text-transform: uppercase; letter-spacing: 0.03em; }
             
             .powered-by {
               text-align: center;
-              font-size: 9px;
+              font-size: 8.5px;
               font-weight: 500;
               color: #94a3b8;
-              margin-top: 24px;
+              margin-top: 16px;
+              letter-spacing: 0.02em;
             }
           </style>
         </head>
@@ -834,12 +844,12 @@ export function useCalculadora(salvamentoAutomatico = true) {
             </div>
 
             <!-- 2. ESPECIFICAÇÕES + COMPOSIÇÃO DE CUSTOS -->
-            <div class="section-title">O que está incluso no seu projeto</div>
+            <div class="section-title">Detalhamento dos Serviços</div>
             <table>
               <thead>
                 <tr>
-                  <th style="width:52%">Serviço Detalhado</th>
-                  <th class="c" style="width:14%">Quantidade</th>
+                  <th style="width:52%">Descrição do Serviço</th>
+                  <th class="c" style="width:14%">Qtd</th>
                   <th class="r" style="width:17%">Valor Unitário</th>
                   <th class="r" style="width:17%">Subtotal</th>
                 </tr>
@@ -850,34 +860,35 @@ export function useCalculadora(salvamentoAutomatico = true) {
                   <td style="border-bottom: none; padding-bottom: 4px;">
                     <div class="item-nome">Serviço de Manufatura Aditiva 3D</div>
                     <div class="item-desc">
-                      Produção técnica de alta qualidade, incluindo setup, impressão e remoção de suportes primários.
+                      Produção tridimensional técnica personalizada, incluindo setup de fatiamento, preparação da impressora e remoção de suportes de impressão.
                     </div>
                   </td>
-                  <td class="c" style="font-weight: 700; border-bottom: none;">${displayQuantidade}x</td>
+                  <td class="c" style="font-weight: 700; border-bottom: none;">${displayQuantidade}</td>
                   <td class="r" style="font-weight: 600; border-bottom: none;">R$ ${(unitPrice / 100).toFixed(2).replace('.', ',')}</td>
                   <td class="r" style="font-weight: 800; color: #0f172a; border-bottom: none;">R$ ${(calculo.precoSugerido / 100).toFixed(2).replace('.', ',')}</td>
                 </tr>
                 <tr>
-                  <td colspan="4" style="padding-top: 0; padding-bottom: 12px;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                      <span class="badge" style="margin: 0;">Tempo est.: ${tempoFormatado}</span>
-                      ${materiaisSelecionados.length > 0 ? materiaisSelecionados.map(m => `<span class="badge" style="margin: 0;">${sanitizar(m.nome)} (${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'})</span>`).join('') : ''}
-                      ${itensPosProcesso.map(p => `<span class="badge" style="margin: 0;">${sanitizar(p.nome)}</span>`).join('')}
-                      ${insumosSelecionados.map(i => `<span class="badge" style="margin: 0;">${sanitizar(i.nome)} (${i.quantidade}x)</span>`).join('')}
+                  <td colspan="4" style="padding-top: 0; padding-bottom: 16px; border-bottom: 1px dashed #e2e8f0;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                      <span class="badge">Tempo est.: ${tempoFormatado}</span>
+                      ${materiaisSelecionados.length > 0 ? materiaisSelecionados.map(m => `<span class="badge">${sanitizar(m.nome)} (${m.quantidade}${m.tipo === 'FDM' ? 'g' : 'ml'})</span>`).join('') : ''}
+                      ${itensPosProcesso.map(p => `<span class="badge">${sanitizar(p.nome)}</span>`).join('')}
+                      ${insumosSelecionados.map(i => `<span class="badge">${sanitizar(i.nome)} (${i.quantidade}x)</span>`).join('')}
                     </div>
                   </td>
                 </tr>
 
                 <!-- Detalhamento Opcional / Transparência -->
                 <tr>
-                  <th colspan="4" style="background: transparent; border-bottom: none; padding-bottom: 4px; padding-top: 16px;">
-                    Composição de Custos e Formação de Preço (Transparência)
+                  <th colspan="4" style="background: transparent; border-bottom: none; padding-bottom: 8px; padding-top: 20px;">
+                    Composição de Custos e Formação de Preço
                   </th>
                 </tr>
 
+                ${calculo.custoMaterial > 0 ? `
                 <tr class="row-subitem">
                   <td>
-                    Filamentos, Resinas e Matéria-Prima
+                    Matéria-Prima Utilizada (Materiais Maker)
                     ${materiaisSelecionados.length > 0 ? `
                       <div style="margin-top: 6px; padding-left: 8px; border-left: 2px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 8.5px; color: #64748b;">
                         ${materiaisSelecionados.map(m => `
@@ -892,7 +903,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
                   <td class="c">—</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${exibirProporcional(calculo.custoMaterial, pesos.material)}</td>
-                </tr>
+                </tr>` : ''}
 
                 ${calculo.custoEnergia > 0 ? `
                 <tr class="row-subitem">
@@ -904,7 +915,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
                 ${calculo.custoDepreciacao > 0 ? `
                 <tr class="row-subitem">
-                  <td>Desgaste de Máquina e Manutenção Preventiva</td>
+                  <td>Depreciação de Máquina e Manutenção Preventiva</td>
                   <td class="c">${tempoFormatado}</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${exibirProporcional(calculo.custoDepreciacao, pesos.depreciacao)}</td>
@@ -912,7 +923,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
                 ${calculo.custoMaoDeObra > 0 ? `
                 <tr class="row-subitem">
-                  <td>Tempo de Operador (Setup, Fatiamento e Acompanhamento)</td>
+                  <td>Setup do Arquivo, Fatiamento e Setup Operacional</td>
                   <td class="c">—</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${exibirProporcional(calculo.custoMaoDeObra, pesos.maodeobra)}</td>
@@ -920,7 +931,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
                 ${calculo.custoPosProcesso > 0 ? `
                 <tr class="row-subitem">
-                  <td>Pós-Processamento e Acabamento Especial</td>
+                  <td>Pós-Processamento e Acabamento Manual</td>
                   <td class="c">${itensPosProcesso.length} etapa(s)</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${exibirProporcional(calculo.custoPosProcesso, pesos.posprocesso)}</td>
@@ -928,7 +939,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
                 ${calculo.custoInsumos > 0 ? `
                 <tr class="row-subitem">
-                  <td>Peças Extras e Insumos Adicionais</td>
+                  <td>Insumos Logísticos e Peças de Reposição</td>
                   <td class="c">${insumosSelecionados.length} item(s)</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${exibirProporcional(calculo.custoInsumos, pesos.insumos)}</td>
@@ -936,7 +947,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
                 ${calculo.custoFalha > 0 ? `
                 <tr class="row-subitem">
-                  <td>Taxa de Segurança e Mitigação de Falhas</td>
+                  <td>Provisão de Margem de Falha Técnica e Segurança</td>
                   <td class="c">—</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${exibirProporcional(calculo.custoFalha, pesos.falha)}</td>
@@ -944,7 +955,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
 
                 ${calculo.taxaMarketplace > 0 ? `
                 <tr class="row-subitem">
-                  <td>Taxas de Plataforma ou Intermediação</td>
+                  <td>Taxas Operacionais de Pagamento / Intermediação</td>
                   <td class="c">—</td>
                   <td class="r">—</td>
                   <td class="r val">R$ ${(calculo.taxaMarketplace / 100).toFixed(2).replace('.', ',')}</td>
@@ -955,7 +966,7 @@ export function useCalculadora(salvamentoAutomatico = true) {
             <!-- 3. TOTAIS -->
             <div class="total-box">
               <div>
-                <div class="total-label">Investimento Total</div>
+                <div class="total-label">Investimento Estimado</div>
                 <div class="total-valor">R$ ${((calculo.precoSugerido + frete) / 100).toFixed(2).replace('.', ',')}</div>
               </div>
               <div class="total-breakdown">
@@ -965,37 +976,27 @@ export function useCalculadora(salvamentoAutomatico = true) {
                 </div>
                 ${frete > 0 ? `
                 <div class="breakdown-row">
-                  <span>Frete e Logística:</span>
+                  <span>Logística de Entrega:</span>
                   <strong>R$ ${(frete / 100).toFixed(2).replace('.', ',')}</strong>
                 </div>` : ''}
                 <div class="breakdown-div"></div>
-                <div style="font-size: 9px; color: #94a3b8; margin-top: 6px;">
-                  Formas de pagamento: Pix ou cartões de crédito e débito.
+                <div style="font-size: 8.5px; color: #94a3b8; margin-top: 4px;">
+                  Opções de Pagamento: Pix, Boleto Bancário ou Cartão de Crédito.
                 </div>
               </div>
             </div>
 
             <!-- 4. FOOTER / ACEITE -->
             <div class="footer-card">
-              <div class="footer-title">Como aprovar esse orçamento?</div>
-              <div class="footer-text">
-                Muito obrigado por nos escolher para tirar a sua ideia do papel! Se tudo estiver certo e você quiser prosseguir com a produção, basta assinar abaixo ou nos confirmar através dos nossos canais de atendimento. O prazo de produção se inicia após esta confirmação.
-              </div>
-              <div class="footer-sign">
-                <div>
-                  <div class="sign-line">${sEstudio}</div>
-                  <div class="sign-role">Emissor da Proposta</div>
-                </div>
-                <div>
-                  <div class="sign-line">${sCliente}</div>
-                  <div class="sign-role">Aceite / Cliente</div>
-                </div>
+              <div class="footer-title">Termos para Aceite do Projeto</div>
+              <div class="footer-text" style="margin-bottom: 0;">
+                Muito obrigado pela oportunidade! Se você concorda com os custos e prazos especificados acima, responda de forma digital para iniciarmos a programação de fabricação. O prazo de entrega estimado inicia-se após a confirmação do aceite e compensação do sinal.
               </div>
             </div>
           </div>
           
-          <div class="powered-by">
-                  🌱 Documento 100% Digital. Economize papel e preserve o meio ambiente. Acesse sempre online em printlog.com.br.
+          <div class="powered-by" style="margin-top: 10px;">
+            ♻️ Proposta Digital. Acesse sempre online em printlog.com.br.
           </div>
 
           <script>

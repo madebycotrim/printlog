@@ -59,7 +59,8 @@ export function CardMaterial({ material, aoEditar, aoExcluir, aoHistorico, aoAlt
   return (
     <div
       ref={referenciaCard}
-      className="group relative flex flex-col h-full rounded-2xl transition-all duration-700 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] cursor-default bg-card border border-borda-sutil"
+      onClick={() => aoHistorico(material)}
+      className="group relative flex flex-col h-full rounded-2xl transition-all duration-700 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] cursor-pointer bg-card border border-borda-sutil"
     >
       {/* Camada de Clipping para o Fundo e Imagem */}
       <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none" />

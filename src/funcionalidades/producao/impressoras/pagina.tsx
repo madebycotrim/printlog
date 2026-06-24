@@ -17,6 +17,35 @@ import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
 import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { useState, useEffect } from "react";
 
+function SkeletonImpressoras() {
+  const kpis = [1, 2, 3, 4, 5];
+  const items = [1, 2, 3, 4];
+  return (
+    <div className="space-y-8 animate-pulse">
+      {/* Resumo/KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {kpis.map((i) => (
+          <div key={i} className="h-24 bg-card border border-borda-sutil rounded-2xl p-6" />
+        ))}
+      </div>
+      {/* Filtros */}
+      <div className="h-14 bg-card border border-borda-sutil rounded-2xl w-full" />
+      {/* Lista de Itens */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {items.map((i) => (
+          <div key={i} className="h-72 bg-card border border-borda-sutil rounded-2xl p-6 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="w-full h-32 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+            </div>
+            <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded-xl w-full mt-4" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function PaginaImpressoras() {
   const { estado, acoes } = useGerenciadorImpressoras();
   const { usuario } = useAutenticacao();
@@ -61,9 +90,15 @@ export function PaginaImpressoras() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center py-40"
+            className="flex-1"
           >
-            <Carregamento tipo="ponto" mensagem="Preparando parque..." />
+            {estado.totais.total > 0 ? (
+              <SkeletonImpressoras />
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center py-40">
+                <Carregamento tipo="ponto" mensagem="Carregando impressoras..." />
+              </div>
+            )}
           </motion.div>
         ) : !estado.carregando && estado.totais.total === 0 ? (
           <motion.div

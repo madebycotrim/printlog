@@ -68,7 +68,7 @@ export function useGerenciadorMateriais() {
       };
       carregarDados();
     }
-  }, [usuario?.uid]);
+  }, [usuario?.uid, acoesArmazem]);
 
 
   // Ações de Modal
@@ -140,10 +140,7 @@ export function useGerenciadorMateriais() {
 
   const confirmarAbatimentoPeso = async (qtdAbatida: number, motivo: string) => {
     if (materialParaAbater && usuario?.uid) {
-      // 1. Calcula o novo estado localmente apenas para salvar no banco
-      // (A lógica de negócio complexa de troca de rolo continua no Zustand para consistência)
-      
-      // Persiste o abatimento e o histórico no D1
+      const materialOriginal = { ...materialParaAbater };
       const registroUso = {
         data: new Date().toISOString(),
         nomePeca: motivo,
@@ -152,10 +149,8 @@ export function useGerenciadorMateriais() {
       };
 
       try {
-        // O Zustand cuida do cálculo do novo pesoRestante e estoque
         acoesArmazem.abaterPeso(materialParaAbater.id, qtdAbatida, motivo);
         
-        // Buscamos o material atualizado do store para persistir o novo estado no D1
         const atualizado = encontrarMaterial(materialParaAbater.id);
         if (atualizado) {
           await apiMateriais.atualizar(atualizado, usuario.uid, registroUso);
@@ -166,13 +161,16 @@ export function useGerenciadorMateriais() {
         definirModalAbatimentoAberto(false);
         definirMaterialParaAbater(null);
       } catch (erro) {
-        toast.error("Falha ao processar abatimento manual.");
+        // Rollback
+        acoesArmazem.atualizarMaterial(materialParaAbater.id, materialOriginal);
+        toast.error("Falha ao processar abatimento manual. Alteração revertida.");
       }
     }
   };
 
   const confirmarReposicaoMaterial = async (quantidadeComprada: number, precoTotalNovaCompra: number) => {
     if (materialParaRepor && usuario?.uid) {
+      const materialOriginal = { ...materialParaRepor };
       try {
         acoesArmazem.reporEstoque(materialParaRepor.id, quantidadeComprada, precoTotalNovaCompra);
         
@@ -187,7 +185,9 @@ export function useGerenciadorMateriais() {
         definirModalReposicaoAberto(false);
         definirMaterialParaRepor(null);
       } catch (erro) {
-        toast.error("Erro ao registrar reposição.");
+        // Rollback
+        acoesArmazem.atualizarMaterial(materialParaRepor.id, materialOriginal);
+        toast.error("Erro ao registrar reposição. Alteração revertida.");
       }
     }
   };
@@ -237,7 +237,7 @@ export function useGerenciadorMateriais() {
     ).length;
 
     return { totalEmbalagens, valorInvestido, alertasBaixoEstoque };
-  }, [materiaisAtivos]);
+  }, [materiaisAtivos, limiteAlertaEstoque]);
 
   // Filtragem e Ordenação
   const materiaisFiltradosOrdenados = useMemo(() => {

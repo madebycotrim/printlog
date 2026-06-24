@@ -67,6 +67,9 @@ export function Dialogo({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={titulo || "Diálogo"}
               className={`
                 w-full pointer-events-auto flex flex-col overflow-hidden bg-card border-borda-sutil shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]
                 ${telaCheia ? "h-full w-full border-none rounded-none" : `${larguraMax} rounded-[2rem] border max-h-[90vh]`}

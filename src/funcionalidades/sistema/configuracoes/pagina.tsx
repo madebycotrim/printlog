@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
@@ -69,8 +69,12 @@ export function PaginaConfiguracoes() {
     fonte: contextoTema.fonte,
   });
 
+  const [inicializado, definirInicializado] = useState(false);
+
   // Sincroniza o estado local quando os dados persistidos são carregados no armazém
   useEffect(() => {
+    if (config.carregando) return;
+
     definirCustoEnergia(config.custoEnergia);
     definirHoraMaquina(config.horaMaquina);
     definirHoraOperador(config.horaOperador);
@@ -79,7 +83,13 @@ export function PaginaConfiguracoes() {
     definirNomeEstudio(config.nomeEstudio);
     definirSloganEstudio(config.sloganEstudio);
     definirLogoEstudio(config.logoEstudio);
-  }, [config.custoEnergia, config.horaMaquina, config.horaOperador, config.margemLucro, config.plano, config.nomeEstudio, config.sloganEstudio, config.logoEstudio]);
+    
+    if (usuario?.nome) {
+      definirNome(usuario.nome);
+    }
+    
+    definirInicializado(true);
+  }, [config.carregando, config.custoEnergia, config.horaMaquina, config.horaOperador, config.margemLucro, config.plano, config.nomeEstudio, config.sloganEstudio, config.logoEstudio, usuario?.nome]);
 
   // Redirecionamento de seção via URL
   useEffect(() => {
@@ -160,15 +170,8 @@ export function PaginaConfiguracoes() {
   };
 
 
-  // Efeito de Auto-save
-  useEffect(() => {
-    if (temAlteracoes) {
-      // Dispara o salvamento no background silenciosamente
-      lidarComSalvar();
-    }
-  }, [temAlteracoes]);
 
-  const lidarComSalvar = async () => {
+  const lidarComSalvar = useCallback(async () => {
     definirSalvando(true);
     definirSucesso(false);
     try {
@@ -214,7 +217,25 @@ export function PaginaConfiguracoes() {
     } finally {
       definirSalvando(false);
     }
-  };
+  }, [
+    atualizarPerfil, nome, usuario, config, custoEnergia, horaMaquina, horaOperador,
+    margemLucro, plano, nomeEstudio, sloganEstudio, logoEstudio, contextoTema,
+    beta, participarPrototipos, betaMultiEstudio, betaOrcamentosMagicos,
+    betaEstoqueInteligente, betaSimuladorMargem, templateOrcamento, limiteAlertaEstoque
+  ]);
+
+  // Efeito de Auto-save com Debounce de 1 segundo para evitar loops e excesso de requisições
+  useEffect(() => {
+    if (!inicializado || salvando) return;
+
+    if (temAlteracoes) {
+      const timer = setTimeout(() => {
+        lidarComSalvar();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [temAlteracoes, inicializado, salvando, lidarComSalvar]);
 
   useDefinirCabecalho({
     titulo: "Configurações",

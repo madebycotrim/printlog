@@ -11,8 +11,45 @@ import { EstadoVazio } from "@/compartilhado/componentes";
 import { Carregamento } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
-import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
+import { ModalUpgradePaywall, BannerErro } from "@/compartilhado/componentes/ui";
 import { useState, useEffect } from "react";
+import { useVirtualizacao } from "@/compartilhado/hooks/useVirtualizacao";
+
+
+function SkeletonClientes() {
+  const kpis = [1, 2, 3, 4];
+  const cards = [1, 2, 3, 4, 5, 6, 7, 8];
+  return (
+    <div className="space-y-8 animate-pulse">
+      {/* Resumo/KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {kpis.map((i) => (
+          <div key={i} className="h-24 bg-card border border-borda-sutil rounded-2xl p-6" />
+        ))}
+      </div>
+      {/* Filtros */}
+      <div className="h-14 bg-card border border-borda-sutil rounded-2xl w-full" />
+      {/* Grid de Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {cards.map((i) => (
+          <div key={i} className="h-64 bg-card border border-borda-sutil rounded-2xl p-6 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-2/3" />
+                <div className="w-12 h-6 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+              </div>
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
+            </div>
+            <div className="space-y-3 pt-6 border-t border-borda-sutil/50">
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
+              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function PaginaClientes() {
   const { estado, acoes } = useGerenciadorClientes();
@@ -26,6 +63,27 @@ export function PaginaClientes() {
       return () => clearTimeout(temporizador);
     }
   }, [estado.carregando]);
+
+  const [colunas, setColunas] = useState(4);
+  useEffect(() => {
+    const calcularColunas = () => {
+      const w = window.innerWidth;
+      if (w < 768) return setColunas(1);
+      if (w < 1024) return setColunas(2);
+      if (w < 1280) return setColunas(3);
+      return setColunas(4);
+    };
+    calcularColunas();
+    window.addEventListener("resize", calcularColunas);
+    return () => window.removeEventListener("resize", calcularColunas);
+  }, []);
+
+  const { containerRef, itensVisiveis, paddingTop, paddingBottom } = useVirtualizacao(
+    estado.clientesFiltrados,
+    280, // altura aproximada do card de cliente em pixels
+    colunas
+  );
+
 
   const exibindoLoading = !primeiroCarregamento || estado.carregando;
 
@@ -49,6 +107,15 @@ export function PaginaClientes() {
     aoBuscar: acoes.pesquisar,
   });
 
+  if (estado.erro && !exibindoLoading) {
+    return (
+      <BannerErro 
+        titulo="Falha ao carregar clientes" 
+        aoTentarNovamente={acoes.recarregar} 
+      />
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
@@ -58,9 +125,15 @@ export function PaginaClientes() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center py-40"
+            className="flex-1"
           >
-            <Carregamento tipo="ponto" mensagem="Sincronizando base comercial..." />
+            {estado.clientes.length > 0 ? (
+              <SkeletonClientes />
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center py-40">
+                <Carregamento tipo="ponto" mensagem="Carregando clientes..." />
+              </div>
+            )}
           </motion.div>
         ) : estado.clientes.length === 0 ? (
           <motion.div
@@ -108,18 +181,30 @@ export function PaginaClientes() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <AnimatePresence mode="popLayout">
-                  {estado.clientesFiltrados.map((cliente) => (
-                    <CardCliente
-                      key={cliente.id}
-                      cliente={cliente}
-                      aoEditar={acoes.abrirEditar}
-                      aoRemover={acoes.abrirRemover}
-                      aoVerHistorico={acoes.abrirHistorico}
-                    />
-                  ))}
-                </AnimatePresence>
+              <div 
+                ref={containerRef}
+                className="max-h-[68vh] overflow-y-auto pr-2 scrollbar-premium"
+                style={{ contentVisibility: 'auto' }}
+              >
+                <div 
+                  style={{
+                    paddingTop: `${paddingTop}px`,
+                    paddingBottom: `${paddingBottom}px`,
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {itensVisiveis.map((cliente) => (
+                      <CardCliente
+                        key={cliente.id}
+                        cliente={cliente}
+                        aoEditar={acoes.abrirEditar}
+                        aoRemover={acoes.abrirRemover}
+                        aoVerHistorico={acoes.abrirHistorico}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
           </motion.div>
