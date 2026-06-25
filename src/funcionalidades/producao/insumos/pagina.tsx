@@ -11,7 +11,6 @@ import { FiltrosInsumo } from "./componentes/FiltrosInsumo";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
-import { Carregamento } from "@/compartilhado/componentes";
 import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
 import { useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -22,37 +21,6 @@ import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
 import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { useState } from "react";
 
-function SkeletonInsumos() {
-  const kpis = [1, 2, 3, 4];
-  const items = [1, 2, 3, 4, 5, 6];
-  return (
-    <div className="space-y-8 animate-pulse">
-      {/* Resumo/KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((i) => (
-          <div key={i} className="h-24 bg-card border border-borda-sutil rounded-2xl p-6" />
-        ))}
-      </div>
-      {/* Filtros */}
-      <div className="h-14 bg-card border border-borda-sutil rounded-2xl w-full" />
-      {/* Lista de Itens */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((i) => (
-          <div key={i} className="h-44 bg-card border border-borda-sutil rounded-2xl p-6 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
-                <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-              </div>
-              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3" />
-            </div>
-            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full mt-4" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function PaginaInsumos() {
   const { estado, acoes } = useGerenciadorInsumos();
@@ -60,15 +28,7 @@ export function PaginaInsumos() {
   const { usuario } = useAutenticacao();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
 
-  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
-  useEffect(() => {
-    if (!estado.carregando) {
-      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
-      return () => clearTimeout(temporizador);
-    }
-  }, [estado.carregando]);
 
-  const exibindoLoading = !primeiroCarregamento || estado.carregando;
 
   const tentarNovoInsumo = () => {
     if (atingiuLimite("INSUMOS", estado.insumos.length, usuario?.plano)) {
@@ -102,23 +62,7 @@ export function PaginaInsumos() {
   return (
     <div className="flex-1 flex flex-col space-y-10">
       <AnimatePresence mode="wait">
-        {exibindoLoading ? (
-          <motion.div
-            key="carregando"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1"
-          >
-            {estado.insumos.length > 0 ? (
-              <SkeletonInsumos />
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center py-40">
-                <Carregamento tipo="ponto" mensagem="Carregando insumos..." />
-              </div>
-            )}
-          </motion.div>
-        ) : estado.insumos.length === 0 ? (
+        {estado.carregando ? null : estado.insumos.length === 0 ? (
           <motion.div
             key="vazio"
             initial={{ opacity: 0, y: 10 }}
@@ -139,7 +83,7 @@ export function PaginaInsumos() {
             key="conteudo"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
             <ResumoInsumos
               materiais={materiais}

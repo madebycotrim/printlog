@@ -42,7 +42,7 @@ export function Layout({ children }: PropriedadesLayout) {
                 initial="inicial"
                 animate="animar"
                 exit="sair"
-                className="flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-8 lg:p-10 flex flex-col"
+                className="flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-8 lg:p-10 flex flex-col relative"
               >
                 {children || <Outlet />}
               </motion.div>

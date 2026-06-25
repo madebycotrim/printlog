@@ -14,21 +14,11 @@ import {
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { Carregamento } from "@/compartilhado/componentes";
 
 export function PaginaLinhaDoTempo() {
-  const { pedidos, carregando } = usePedidos();
+  const { pedidos } = usePedidos();
 
-  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
-  useEffect(() => {
-    if (!carregando) {
-      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
-      return () => clearTimeout(temporizador);
-    }
-  }, [carregando]);
 
-  const exibindoLoading = !primeiroCarregamento || carregando;
 
   // Ordena do mais recente para o mais antigo
   const pedidosOrdenados = [...pedidos].sort((a, b) => {
@@ -57,22 +47,11 @@ export function PaginaLinhaDoTempo() {
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <AnimatePresence mode="wait">
-        {exibindoLoading ? (
-          <motion.div
-            key="carregando"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center py-40"
-          >
-            <Carregamento tipo="ponto" mensagem="Montando linha do tempo de produção..." />
-          </motion.div>
-        ) : (
           <motion.div
             key="conteudo"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="flex-1 overflow-y-auto pr-4 pb-20 custom-scrollbar"
           >
             <div className="max-w-4xl mx-auto space-y-8 py-4">
@@ -159,7 +138,7 @@ export function PaginaLinhaDoTempo() {
               )}
             </div>
           </motion.div>
-        )}
+
       </AnimatePresence>
     </div>
   );

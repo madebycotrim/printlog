@@ -1,5 +1,5 @@
 import { History as HistoryIcon, ArrowLeft, Download, Package, Clock, DollarSign } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
@@ -9,55 +9,14 @@ import { servicoRelatorios } from "@/compartilhado/servicos/servicoRelatorios";
 import { servicoExportacao } from "@/compartilhado/servicos/servicoExportacao";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { Carregamento } from "@/compartilhado/componentes";
 import toast from "react-hot-toast";
 
-function SkeletonHistorico() {
-  const kpis = [1, 2, 3, 4];
-  const items = [1, 2, 3, 4, 5];
-  return (
-    <div className="space-y-10 pb-20 animate-pulse w-full">
-      {/* Resumo Acumulado */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {kpis.map((i) => (
-          <div key={i} className="h-32 bg-card border border-borda-sutil rounded-[2rem]" />
-        ))}
-      </div>
-
-      {/* Gráfico de Histórico */}
-      <div className="h-96 bg-card border border-borda-sutil rounded-[2rem] w-full" />
-
-      {/* Tabela de Itens */}
-      <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4 mb-6" />
-        {items.map((i) => (
-          <div key={i} className="flex justify-between items-center py-4 border-b border-borda-sutil/50">
-            <div className="space-y-2 w-1/3">
-              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
-              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
-            </div>
-            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
-            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-16" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function PaginaHistoricoProducao() {
   const navigate = useNavigate();
-  const { pedidos, carregando } = usePedidos();
+  const { pedidos } = usePedidos();
 
-  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
-  useEffect(() => {
-    if (!carregando) {
-      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
-      return () => clearTimeout(temporizador);
-    }
-  }, [carregando]);
 
-  const exibindoLoading = !primeiroCarregamento || carregando;
 
   const historico = useMemo(() => servicoRelatorios.gerarHistoricoGlobal(pedidos), [pedidos]);
 
@@ -99,20 +58,11 @@ export function PaginaHistoricoProducao() {
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <AnimatePresence mode="wait">
-        {exibindoLoading ? (
-          pedidos.length > 0 ? (
-            <SkeletonHistorico />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center py-40">
-              <Carregamento tipo="ponto" mensagem="Consolidando métricas e relatórios..." />
-            </div>
-          )
-        ) : (
           <motion.div
             key="conteudo"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="space-y-10 pb-20"
           >
             {/* 🔝 RESUMO ACUMULADO */}
@@ -303,7 +253,7 @@ export function PaginaHistoricoProducao() {
               </div>
             </div>
           </motion.div>
-        )}
+
       </AnimatePresence>
     </div>
   );

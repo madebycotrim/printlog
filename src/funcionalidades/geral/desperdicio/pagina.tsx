@@ -23,37 +23,13 @@ import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho
 
 const CORES = ["#f43f5e", "#fbbf24", "#0ea5e9", "#10b981", "#8b5cf6"];
 
-function SkeletonDesperdicio() {
-  const kpis = [1, 2, 3];
-  return (
-    <div className="space-y-10 pb-20 animate-pulse w-full">
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {kpis.map((i) => (
-          <div key={i} className="h-36 bg-card border border-borda-sutil rounded-[2rem]" />
-        ))}
-      </div>
-
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-5 h-[450px] bg-card border border-borda-sutil rounded-[2rem]" />
-        <div className="lg:col-span-7 h-[450px] bg-card border border-borda-sutil rounded-[2rem]" />
-      </div>
-    </div>
-  );
-}
 
 export function PaginaDesperdicio() {
   const navigate = useNavigate();
   const materiais = useArmazemMateriais((s) => s.materiais);
   const insumos = useArmazemInsumos((s) => s.insumos);
   
-  const carregandoMateriais = useArmazemMateriais((s) => s.carregando);
-  const carregandoInsumos = useArmazemInsumos((s) => s.carregando);
-  const jaCarregouMateriais = useArmazemMateriais((s) => s.jaCarregou);
-  const jaCarregouInsumos = useArmazemInsumos((s) => s.jaCarregou);
 
-  const exibindoLoading = carregandoMateriais || carregandoInsumos || !jaCarregouMateriais || !jaCarregouInsumos;
 
   const metricas = useMemo(() => servicoDesperdicio.calcularMetricas(materiais, insumos), [materiais, insumos]);
   const historico = useMemo(() => servicoDesperdicio.gerarHistorico(materiais, insumos), [materiais, insumos]);
@@ -68,17 +44,7 @@ export function PaginaDesperdicio() {
     },
   });
 
-  if (exibindoLoading) {
-    if (materiais.length > 0 || insumos.length > 0) {
-      return <SkeletonDesperdicio />;
-    } else {
-      return (
-        <div className="min-h-[60vh] flex flex-col items-center justify-center py-40">
-          <Carregamento tipo="ponto" mensagem="Calculando falhas e desperdícios..." />
-        </div>
-      );
-    }
-  }
+
 
   const dadosPizza = metricas.topMotivosDesperdicio.map((m) => ({
     name: m.motivo,

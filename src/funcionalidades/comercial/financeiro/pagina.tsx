@@ -1,5 +1,5 @@
 import { Plus, ReceiptText, Search, FileBarChart, Sliders, TrendingUp, Zap as ZapIcon } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -11,7 +11,6 @@ import { FiltrosFinanceiro } from "./componentes/FiltrosFinanceiro";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { BannerErro } from "@/compartilhado/componentes/ui";
 import { useFinanceiro } from "./hooks/useFinanceiro";
-import { Carregamento } from "@/compartilhado/componentes";
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
@@ -20,41 +19,6 @@ import { servicoFinanceiroAvancado } from "@/compartilhado/servicos/servicoFinan
 import { ModalDREDetalhado } from "./componentes/ModalDREDetalhado";
 import { LancamentoFinanceiro } from "./tipos";
 
-function SkeletonFinanceiro() {
-  const kpis = [1, 2, 3];
-  const rows = [1, 2, 3, 4, 5];
-  return (
-    <div className="space-y-8 animate-pulse w-full">
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {kpis.map((i) => (
-          <div key={i} className="h-32 bg-card border border-borda-sutil rounded-[2rem]" />
-        ))}
-      </div>
-
-      {/* Banner DRE / Simulação */}
-      <div className="h-40 bg-card border border-borda-sutil rounded-[2rem] w-full" />
-
-      {/* Filtros */}
-      <div className="h-14 bg-card border border-borda-sutil rounded-2xl w-full" />
-
-      {/* Tabela de Lançamentos */}
-      <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4 mb-6" />
-        {rows.map((i) => (
-          <div key={i} className="flex justify-between items-center py-4 border-b border-borda-sutil/50">
-            <div className="space-y-2 w-1/3">
-              <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
-              <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-1/2" />
-            </div>
-            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-20" />
-            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-16" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function PaginaFinanceiro() {
   const [modalAberto, setModalAberto] = useState(false);
@@ -79,15 +43,7 @@ export function PaginaFinanceiro() {
     recarregar,
   } = useFinanceiro();
 
-  const [primeiroCarregamento, setPrimeiroCarregamento] = useState(false);
-  useEffect(() => {
-    if (!carregando) {
-      const temporizador = setTimeout(() => setPrimeiroCarregamento(true), 50);
-      return () => clearTimeout(temporizador);
-    }
-  }, [carregando]);
 
-  const exibindoLoading = !primeiroCarregamento || carregando;
 
   const { betaSimuladorMargem } = useBeta();
 
@@ -128,7 +84,7 @@ export function PaginaFinanceiro() {
     },
   });
 
-  if (erro && !exibindoLoading) {
+  if (erro) {
     return (
       <BannerErro 
         titulo="Falha ao carregar dados financeiros" 
@@ -140,15 +96,7 @@ export function PaginaFinanceiro() {
   return (
     <div className="space-y-10 min-h-[60vh] flex flex-col">
       <AnimatePresence mode="wait">
-        {exibindoLoading ? (
-          lancamentos.length > 0 ? (
-            <SkeletonFinanceiro />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center py-40">
-              <Carregamento tipo="ponto" mensagem="Calculando rentabilidade e fluxo..." />
-            </div>
-          )
-        ) : lancamentos.length === 0 ? (
+        {carregando ? null : lancamentos.length === 0 ? (
           <motion.div
             key="vazio"
             initial={{ opacity: 0, y: 10 }}
@@ -168,7 +116,7 @@ export function PaginaFinanceiro() {
             key="conteudo"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="space-y-8"
           >
             <ResumoFinanceiroComponente resumo={resumo} lucratividadePercentual={dre.lucratividadePercentual} />

@@ -49,9 +49,7 @@ import { Dialogo } from "@/compartilhado/componentes";
  * Página principal do dashboard (Painel).
  * Centraliza as principais métricas, status de produção e ações rápidas.
  */
-import { motion } from "framer-motion";
 
-import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
 
 // Componentes de Esqueleto para Carregamento
 function SkeletonMetricas() {

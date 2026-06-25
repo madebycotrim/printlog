@@ -86,7 +86,7 @@ export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoCli
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            transition={{ delay: 0.1, duration: 0.15 }}
           >
             <motion.button
               whileHover={{ y: -3, scale: 1.02 }}

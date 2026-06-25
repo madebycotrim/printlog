@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Carregamento, Dica } from "@/compartilhado/componentes";
+import { Dica } from "@/compartilhado/componentes";
 import {
   Download, 
   Crown,
@@ -50,73 +50,6 @@ import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
 import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
 import { ModalEnviarEmailOrcamento } from "./componentes/ModalEnviarEmailOrcamento";
-
-function SkeletonCalculadora() {
-  return (
-    <div className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-hidden px-4 sm:px-6 md:px-12 pt-8 pb-20 animate-pulse">
-      {/* Coluna Esquerda */}
-      <div className="xl:col-span-8 space-y-6 overflow-y-auto pr-1 scrollbar-hide">
-        {/* Card Identificação */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/4" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="h-12 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-            <div className="h-12 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-          </div>
-        </div>
-        {/* Card Equipamento */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/3" />
-          <div className="h-20 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-        {/* Card Materiais */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/5" />
-          <div className="h-24 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-        {/* Card Insumos */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/6" />
-          <div className="h-20 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-        {/* Card Produção & Tempo */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/4" />
-          <div className="h-20 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-        {/* Card Modelagem & Serviços */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/3" />
-          <div className="h-20 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-        {/* Card Desgaste & Operacional */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/4" />
-          <div className="h-20 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-        {/* Card Logística & Embalagem */}
-        <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 space-y-4">
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/5" />
-          <div className="h-20 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-        </div>
-      </div>
-      {/* Coluna Direita */}
-      <div className="xl:col-span-4 h-full">
-        <div className="h-full bg-card border border-borda-sutil rounded-[2rem] p-8 flex flex-col justify-between">
-          <div className="space-y-6">
-            <div className="h-6 bg-zinc-300 dark:bg-zinc-700 rounded w-1/2" />
-            <div className="space-y-4 pt-4">
-              <div className="h-14 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-              <div className="h-14 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-              <div className="h-14 bg-zinc-200 dark:bg-zinc-800/50 rounded-2xl w-full" />
-            </div>
-          </div>
-          <div className="h-14 bg-zinc-200 dark:bg-zinc-800 rounded-2xl w-full mt-8" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function PaginaCalculadora() {
   const { usuario } = useAutenticacao();
@@ -892,19 +825,12 @@ export function PaginaCalculadora() {
 
   return (
     <AnimatePresence mode="wait">
-      {exibindoLoading ? (
+      {!exibindoLoading && (
         <motion.div
-          key="carregando"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-white dark:bg-[#0c0c0e]"
-        >
-          <SkeletonCalculadora />
-        </motion.div>
-      ) : (
-        <div
           key="conteudo"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
           className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-y-auto xl:overflow-hidden px-4 sm:px-6 md:px-12 pb-24 xl:pb-0"
         >
           <motion.div className="xl:col-span-8 space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pt-8 pb-10 xl:pb-20 scrollbar-hide">
@@ -1353,7 +1279,7 @@ export function PaginaCalculadora() {
               window.location.href = "/dashboard";
             }}
           />
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
