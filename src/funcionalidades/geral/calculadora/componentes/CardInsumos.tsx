@@ -3,7 +3,7 @@ import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, Lay
 import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
-import { CATEGORIAS } from "@/funcionalidades/producao/insumos/constantes";
+import { CATEGORIAS, obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 import { useDragScroll } from "@/compartilhado/hooks/useDragScroll";
 
 interface CardInsumosProps {
@@ -177,8 +177,7 @@ export const CardInsumos = memo(function CardInsumos({
         ) : insumosOrdenados.map((i) => {
           const sel = selecionados.some(s => s.id === i.id);
           const corHex = CORES_AURA[i.categoria] || "#84cc16"; // fallback lime-500
-          const categoriaInfo = CATEGORIAS.find(c => c.id.toLowerCase() === i.categoria?.toLowerCase());
-          const IconeCategoria = categoriaInfo?.icone || Box;
+          const IconeCategoria = obterIconeInsumo(i.icone, i.categoria);
 
           return (
             <div 
@@ -305,8 +304,7 @@ export const CardInsumos = memo(function CardInsumos({
                 const alerta = alertas.find(a => a.insumoId === item.id);
                 const original = insumos.find(i => i.id === item.id);
                 const corHex = original ? (CORES_AURA[original.categoria] || "#84cc16") : "#84cc16";
-                const categoriaInfo = original ? CATEGORIAS.find(c => c.id.toLowerCase() === original.categoria?.toLowerCase()) : null;
-                const IconeCategoria = categoriaInfo?.icone || Package;
+                const IconeCategoria = obterIconeInsumo(original?.icone, original?.categoria);
 
                 return (
                   <motion.div

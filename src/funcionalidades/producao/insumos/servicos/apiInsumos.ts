@@ -28,6 +28,7 @@ export const apiInsumos = {
       quantidadeAtual: i.quantidade_atual ?? i.quantidadeAtual,
       quantidadeMinima: i.quantidade_minima ?? i.quantidadeMinima,
       custoMedioUnidade: i.custo_medio_unidade ?? i.custoMedioUnidade,
+      icone: i.icone,
       historico: typeof i.historico === 'string' ? JSON.parse(i.historico) : (i.historico || []),
       dataCriacao: new Date(i.data_criacao || i.dataCriacao),
       dataAtualizacao: new Date(i.data_atualizacao || i.dataAtualizacao)
@@ -73,6 +74,7 @@ export const apiInsumos = {
       nome: insumoValidado.nome ?? null,
       descricao: insumoValidado.descricao ?? null,
       categoria: insumoValidado.categoria ?? null,
+      icone: insumoValidado.icone ?? null,
       link_compra: insumoValidado.linkCompra ?? null,
       unidade_medida: insumoValidado.unidadeMedida ?? null,
       unidade_consumo: insumoValidado.unidadeConsumo ?? null,

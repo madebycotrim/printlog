@@ -25,4 +25,5 @@ export const insumoSchema = z.object({
   itemFracionavel: z.boolean().optional().nullable(),
   rendimentoTotal: z.number().optional().nullable(),
   unidadeConsumo: z.string().optional().nullable(),
+  icone: z.string().optional().nullable(),
 });

@@ -69,8 +69,8 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                 id, id_usuario, nome, descricao, categoria, unidade_medida, 
                 quantidade_atual, quantidade_minima, custo_medio_unidade,
                 link_compra, marca, item_fracionavel, rendimento_total, unidade_consumo,
-                arquivado, data_criacao
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+                arquivado, data_criacao, icone
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 nome = excluded.nome,
                 descricao = excluded.descricao,
@@ -84,6 +84,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                 item_fracionavel = excluded.item_fracionavel,
                 rendimento_total = excluded.rendimento_total,
                 unidade_consumo = excluded.unidade_consumo,
+                icone = excluded.icone,
                 arquivado = excluded.arquivado
         `).bind(
             id, 
@@ -100,7 +101,8 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
             dados.itemFracionavel ? 1 : 0, 
             dados.rendimentoTotal || null, 
             dados.unidadeConsumo || null,
-            new Date().toISOString()
+            new Date().toISOString(),
+            dados.icone || null
         ).run();
 
         return new Response(JSON.stringify({ id, sucesso: true }), { 

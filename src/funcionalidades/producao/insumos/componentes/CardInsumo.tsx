@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Insumo, CategoriaInsumo } from "@/funcionalidades/producao/insumos/tipos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 
 /** Mapa de cores por categoria para a barra lateral do card */
 const CORES_CATEGORIA: Record<CategoriaInsumo, string> = {
@@ -101,7 +102,12 @@ export function CardInsumo({
           
           {/* IDENTIDADE */}
           <div className="flex items-start gap-3 flex-1">
-            <div className={`h-8 w-1 rounded-full ${corDaCategoria} shadow-sm shrink-0 mt-1`} />
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${corDaCategoria.replace('bg-', 'bg-').replace('500', '500/10')} ${corDaCategoria.replace('bg-', 'text-')}`}>
+              {(() => {
+                const Icone = obterIconeInsumo(insumo.icone, insumo.categoria);
+                return <Icone size={20} strokeWidth={2.5} />;
+              })()}
+            </div>
             <div className="flex flex-col">
               <h3 className="text-lg font-black text-primary uppercase tracking-tight leading-none mb-2">
                 {insumo.nome}

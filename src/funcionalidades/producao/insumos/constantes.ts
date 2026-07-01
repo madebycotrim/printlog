@@ -34,3 +34,13 @@ export const UNIDADES_CONSUMO = [
   { valor: "spray", rotulo: "Spray / Borrifada" },
   { valor: "gota", rotulo: "Gota" },
 ];
+
+import * as TodosIconesLucide from "lucide-react";
+
+export function obterIconeInsumo(nomeIcone?: string, nomeCategoria?: string) {
+  if (nomeIcone && (TodosIconesLucide as any)[nomeIcone]) {
+    return (TodosIconesLucide as any)[nomeIcone];
+  }
+  const categoria = CATEGORIAS.find(c => c.id === nomeCategoria);
+  return categoria?.icone || Package;
+}

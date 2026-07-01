@@ -17,6 +17,7 @@ export interface Insumo {
     id: string;
     nome: string;
     descricao?: string;
+    icone?: string;
     categoria: CategoriaInsumo;
     unidadeMedida: UnidadeInsumo;
 

@@ -22,12 +22,14 @@ export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancel
     watch,
     setValue,
     control,
+    trigger,
     formState: { errors, isDirty },
   } = useForm<Partial<Insumo>>({
     mode: "onChange",
     defaultValues: {
       nome: "",
       marca: "",
+      icone: "Package",
       categoria: "Geral",
       unidadeMedida: "un",
       quantidadeAtual: 0,
@@ -40,6 +42,7 @@ export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancel
     },
   });
 
+  const iconeAtivo = watch("icone") || "Package";
   const categoriaAtiva = watch("categoria");
   const unidadeMedidaAtiva = watch("unidadeMedida") || "un";
   const itemFracionavelAtivo = watch("itemFracionavel");
@@ -144,8 +147,10 @@ export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancel
     watch,
     setValue,
     control,
+    trigger,
     errors,
     isDirty,
+    iconeAtivo,
     categoriaAtiva,
     unidadeMedidaAtiva,
     itemFracionavelAtivo,

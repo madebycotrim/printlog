@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Search, Star, Settings, Package } from "lucide-react";
 import { Dialogo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 
 /**
  * Interface para as propriedades do ModalSelecaoInsumo.
@@ -119,6 +120,7 @@ export function ModalSelecaoInsumo({
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
           >
             {insumosFiltrados.map(i => {
+              const IconeInsumo = obterIconeInsumo(i.icone, i.categoria);
               return (
                 <motion.button
                   variants={itemAnimacao}
@@ -128,7 +130,7 @@ export function ModalSelecaoInsumo({
                 >
                   <div className="shrink-0 w-16 h-16 flex items-center justify-center">
                     <div className="w-14 h-14 rounded-2xl bg-zinc-800/50 flex items-center justify-center text-zinc-500 group-hover:bg-[#00a3ff]/20 group-hover:text-[#00a3ff] transition-all duration-500 border border-white/5">
-                      <Package size={28} />
+                      <IconeInsumo size={28} />
                     </div>
                   </div>
 

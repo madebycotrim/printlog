@@ -14,4 +14,5 @@ export * from "./ContadorAnimado";
 export * from "./InputBancario";
 export * from "./ModalUpgradePaywall";
 export * from "./BannerErro";
-
+export * from "./SeletorIcone";
+export * from "./IndicadorEtapas";

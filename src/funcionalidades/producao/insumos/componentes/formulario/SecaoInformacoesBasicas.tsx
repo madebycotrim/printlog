@@ -1,14 +1,17 @@
 import { Box, Tag } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes";
+import { SeletorIcone } from "@/compartilhado/componentes/ui";
 import { CATEGORIAS } from "../../constantes";
 import { CategoriaInsumo } from "../../tipos";
-import { useRef } from "react";
 
 interface PropriedadesSecaoBasica {
   register: any;
   errors: any;
   categoriaAtiva: CategoriaInsumo;
   aoMudarCategoria: (cat: CategoriaInsumo) => void;
+  iconeAtivo?: string;
+  aoMudarIcone?: (icone: string) => void;
+  corTema?: string;
 }
 
 const CORES_TAILWIND: Record<string, string> = {
@@ -23,38 +26,7 @@ const CORES_TAILWIND: Record<string, string> = {
   "sky-500": "bg-sky-500 border-sky-500 shadow-sky-500/20",
 };
 
-export function SecaoInformacoesBasicas({ register, errors, categoriaAtiva, aoMudarCategoria }: PropriedadesSecaoBasica) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
-  const isDraggingRef = useRef(false);
-  const dragDistanceRef = useRef(0);
-
-  const lidarComMouseDown = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    isDraggingRef.current = true;
-    dragDistanceRef.current = 0;
-    startXRef.current = e.pageX - containerRef.current.offsetLeft;
-    scrollLeftRef.current = containerRef.current.scrollLeft;
-  };
-
-  const lidarComMouseLeave = () => {
-    isDraggingRef.current = false;
-  };
-
-  const lidarComMouseUp = () => {
-    isDraggingRef.current = false;
-  };
-
-  const lidarComMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !containerRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - containerRef.current.offsetLeft;
-    const walk = (x - startXRef.current) * 2;
-    containerRef.current.scrollLeft = scrollLeftRef.current - walk;
-    dragDistanceRef.current = Math.abs(walk);
-  };
-
+export function SecaoInformacoesBasicas({ register, errors, categoriaAtiva, aoMudarCategoria, iconeAtivo, aoMudarIcone, corTema }: PropriedadesSecaoBasica) {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-1">
@@ -65,13 +37,25 @@ export function SecaoInformacoesBasicas({ register, errors, categoriaAtiva, aoMu
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <CampoTexto
-          rotulo="Nome do Insumo"
-          icone={Box}
-          placeholder="Ex: Álcool Isopropílico, Fita Blue Tape..."
-          erro={errors.nome?.message}
-          {...register("nome", { required: "Obrigatório" })}
-        />
+        <div className="flex gap-4">
+          {aoMudarIcone && (
+            <div className="shrink-0 space-y-1.5">
+              <label className="block text-[11px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest px-1">
+                Ícone
+              </label>
+              <SeletorIcone valor={iconeAtivo} aoMudar={aoMudarIcone} corTema={corTema} />
+            </div>
+          )}
+          <div className="flex-1">
+            <CampoTexto
+              rotulo="Nome do Insumo"
+              icone={Box}
+              placeholder="Ex: Álcool Isopropílico, Fita Blue Tape..."
+              erro={errors.nome?.message}
+              {...register("nome", { required: "Obrigatório" })}
+            />
+          </div>
+        </div>
 
         <CampoTexto
           rotulo="Marca / Fabricante"
@@ -88,12 +72,7 @@ export function SecaoInformacoesBasicas({ register, errors, categoriaAtiva, aoMu
         </label>
         <input type="hidden" {...register("categoria")} />
         <div 
-          ref={containerRef}
-          onMouseDown={lidarComMouseDown}
-          onMouseLeave={lidarComMouseLeave}
-          onMouseUp={lidarComMouseUp}
-          onMouseMove={lidarComMouseMove}
-          className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar -mx-1 px-1 cursor-grab active:cursor-grabbing select-none"
+          className="flex flex-wrap items-center gap-2 mt-2"
         >
           {CATEGORIAS.map((cat) => {
             const estaSelecionado = categoriaAtiva === cat.id;
@@ -103,15 +82,7 @@ export function SecaoInformacoesBasicas({ register, errors, categoriaAtiva, aoMu
               <button
                 key={cat.id}
                 type="button"
-                onClick={(e) => {
-                  // Previne o clique se o usuário estava apenas arrastando o mouse
-                  if (dragDistanceRef.current > 5) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return;
-                  }
-                  aoMudarCategoria(cat.id as CategoriaInsumo);
-                }}
+                onClick={() => aoMudarCategoria(cat.id as CategoriaInsumo)}
                 className={`h-11 px-6 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black tracking-[0.1em] transition-all whitespace-nowrap border shrink-0 uppercase
                   ${
                     estaSelecionado
