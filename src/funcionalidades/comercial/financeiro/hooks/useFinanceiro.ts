@@ -25,6 +25,8 @@ export function useFinanceiro() {
   const ordenarPor = useArmazemFinanceiro((s) => s.ordenarPor);
   const inverterOrdem = useArmazemFinanceiro((s) => s.inverterOrdem);
   const pesquisar = useArmazemFinanceiro((s) => s.pesquisar);
+  const adicionarOuAtualizarLancamento = useArmazemFinanceiro((s) => s.adicionarOuAtualizarLancamento);
+  const removerLancamentoNoEstado = useArmazemFinanceiro((s) => s.removerLancamentoNoEstado);
 
   const { usuario } = useAutenticacao();
   const usuarioId = usuario?.uid;
@@ -57,13 +59,30 @@ export function useFinanceiro() {
 
   const adicionarLancamento = async (dados: CriarLancamentoInput) => {
     if (!usuarioId) return;
+    const id = crypto.randomUUID();
+    const lancamentoOtimista: LancamentoFinanceiro = {
+      id,
+      idUsuario: usuarioId,
+      tipo: dados.tipo,
+      valorCentavos: dados.valorCentavos,
+      descricao: dados.descricao,
+      categoria: dados.categoria || "Outros",
+      arquivado: false,
+      dataCriacao: new Date(),
+    };
+
+    // ⚡️ OTIMISTA
+    adicionarOuAtualizarLancamento(lancamentoOtimista);
+
     try {
-      const novo = await servicoFinanceiro.registrarLancamento(dados, usuarioId, rastreioId);
+      const novo = await servicoFinanceiro.registrarLancamento({ ...dados, id } as any, usuarioId, rastreioId);
+      adicionarOuAtualizarLancamento(novo); // Sincroniza dados da API
       toast.success("Lançamento registrado!");
-      await carregarDados();
       return novo;
     } catch (erro) {
-      const mensagem = erro instanceof ErroPrintLog ? erro.mensagem : "Erro ao registrar lançamento.";
+      // 🔙 ROLLBACK
+      removerLancamentoNoEstado(id);
+      const mensagem = erro instanceof ErroPrintLog ? erro.mensagem : "Erro ao registrar lançamento. Alteração revertida.";
       toast.error(mensagem);
       throw erro;
     }
@@ -71,12 +90,24 @@ export function useFinanceiro() {
 
   const atualizarLancamento = async (dados: Partial<LancamentoFinanceiro> & { id: string }) => {
     if (!usuarioId) return;
+    const antigo = lancamentos.find(l => l.id === dados.id);
+    if (!antigo) return;
+
+    const atualizado: LancamentoFinanceiro = {
+      ...antigo,
+      ...dados
+    } as any;
+
+    // ⚡️ OTIMISTA
+    adicionarOuAtualizarLancamento(atualizado);
+
     try {
       await apiFinanceiro.atualizar(dados);
       toast.success("Lançamento atualizado!");
-      await carregarDados();
     } catch (erro) {
-      toast.error("Erro ao atualizar lançamento.");
+      // 🔙 ROLLBACK
+      adicionarOuAtualizarLancamento(antigo);
+      toast.error("Erro ao atualizar lançamento. Alteração revertida.");
       throw erro;
     }
   };
@@ -145,12 +176,19 @@ export function useFinanceiro() {
     atualizarLancamento,
     removerLancamento: async (id: string) => {
       if (!usuarioId) return;
+      const antigo = lancamentos.find(l => l.id === id);
+      if (!antigo) return;
+
+      // ⚡️ OTIMISTA
+      removerLancamentoNoEstado(id);
+
       try {
         await apiFinanceiro.remover(id, usuarioId);
         toast.success("Lançamento removido.");
-        await carregarDados();
       } catch (erro) {
-        toast.error("Erro ao remover lançamento do banco.");
+        // 🔙 ROLLBACK
+        adicionarOuAtualizarLancamento(antigo);
+        toast.error("Erro ao remover lançamento. Alteração revertida.");
       }
     },
     recarregar: carregarDados,

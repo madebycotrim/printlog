@@ -53,7 +53,7 @@ class ServicoPedidos {
   }
 
   async criarPedido(dados: CriarPedidoInput, usuarioId: string): Promise<Pedido> {
-    const id = crypto.randomUUID();
+    const id = (dados as any).id || crypto.randomUUID();
     const dataCriacao = new Date();
     
     const novoPedido: Pedido = {

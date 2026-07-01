@@ -21,6 +21,10 @@ interface ArmazemFinanceiroState {
     definirFiltroTipo: (tipo: string | null) => void;
     ordenarPor: (ordenacao: OrdenacaoFinanceiro) => void;
     inverterOrdem: () => void;
+
+    // Ações de Mutação Local Otimistas
+    adicionarOuAtualizarLancamento: (lancamento: LancamentoFinanceiro) => void;
+    removerLancamentoNoEstado: (id: string) => void;
 }
 
 export const useArmazemFinanceiro = create<ArmazemFinanceiroState>()(
@@ -46,6 +50,59 @@ export const useArmazemFinanceiro = create<ArmazemFinanceiroState>()(
             definirFiltroTipo: (tipo) => set({ filtroTipo: tipo }, false, "financeiro/definirFiltroTipo"),
             ordenarPor: (ordenacao) => set({ ordenacao }, false, "financeiro/ordenarPor"),
             inverterOrdem: () => set((state) => ({ ordemInvertida: !state.ordemInvertida }), false, "financeiro/inverterOrdem"),
+
+            adicionarOuAtualizarLancamento: (l) => set((state) => {
+                const existe = state.lancamentos.some((item) => item.id === l.id);
+                const antigo = state.lancamentos.find((item) => item.id === l.id);
+                
+                let saldoDiff = 0;
+                let entradaDiff = 0;
+                let saidaDiff = 0;
+                
+                if (antigo) {
+                    const fator = antigo.tipo === "entrada" ? 1 : -1;
+                    saldoDiff -= (antigo.valorCentavos || 0) * fator;
+                    if (antigo.tipo === "entrada") entradaDiff -= (antigo.valorCentavos || 0);
+                    else saidaDiff -= (antigo.valorCentavos || 0);
+                }
+                
+                const fatorNovo = l.tipo === "entrada" ? 1 : -1;
+                saldoDiff += (l.valorCentavos || 0) * fatorNovo;
+                if (l.tipo === "entrada") entradaDiff += (l.valorCentavos || 0);
+                else saidaDiff += (l.valorCentavos || 0);
+
+                const novos = existe
+                    ? state.lancamentos.map((item) => (item.id === l.id ? l : item))
+                    : [l, ...state.lancamentos];
+
+                return {
+                    lancamentos: novos,
+                    resumo: {
+                        saldoTotalCentavos: state.resumo.saldoTotalCentavos + saldoDiff,
+                        entradasMesCentavos: state.resumo.entradasMesCentavos + entradaDiff,
+                        saidasMesCentavos: state.resumo.saidasMesCentavos + saidaDiff,
+                    }
+                };
+            }, false, "financeiro/adicionarOuAtualizarLancamento"),
+
+            removerLancamentoNoEstado: (id) => set((state) => {
+                const l = state.lancamentos.find((item) => item.id === id);
+                if (!l) return state;
+
+                const fator = l.tipo === "entrada" ? 1 : -1;
+                const saldoDiff = -(l.valorCentavos || 0) * fator;
+                const entradaDiff = l.tipo === "entrada" ? -(l.valorCentavos || 0) : 0;
+                const saidaDiff = l.tipo === "saida" ? -(l.valorCentavos || 0) : 0;
+
+                return {
+                    lancamentos: state.lancamentos.filter((item) => item.id !== id),
+                    resumo: {
+                        saldoTotalCentavos: state.resumo.saldoTotalCentavos + saldoDiff,
+                        entradasMesCentavos: state.resumo.entradasMesCentavos + entradaDiff,
+                        saidasMesCentavos: state.resumo.saidasMesCentavos + saidaDiff,
+                    }
+                };
+            }, false, "financeiro/removerLancamentoNoEstado"),
         }),
         { name: "ArmazemFinanceiro" }
     )

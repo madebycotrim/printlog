@@ -49,28 +49,59 @@ export function usePedidos() {
 
   const criarPedido = async (dados: CriarPedidoInput) => {
     if (!usuarioId) return;
+    const id = crypto.randomUUID();
+    const pedidoOtimista: Pedido = {
+      id,
+      idUsuario: usuarioId,
+      idCliente: dados.idCliente || "",
+      nomeCliente: dados.nomeCliente || "Cliente avulso",
+      idImpressora: dados.idImpressora || "",
+      descricao: dados.descricao || "",
+      status: StatusPedido.A_FAZER,
+      valorCentavos: dados.valorCentavos || 0,
+      tempoMinutos: dados.tempoMinutos || 0,
+      pesoGramas: dados.pesoGramas || 0,
+      dataCriacao: new Date(),
+      configuracoes: dados.configuracoes || {},
+      arquivado: false,
+      ...dados
+    } as any;
+
+    // ⚡️ OTIMISTA
+    adicionarPedido(pedidoOtimista);
+
     try {
-      const novo = await servicoPedidos.criarPedido(dados, usuarioId);
-      adicionarPedido(novo);
+      const novo = await servicoPedidos.criarPedido({ ...dados, id } as any, usuarioId);
+      atualizarPedidoNoEstado(id, novo);
       toast.success("Pedido criado com sucesso! 🚀");
       return novo;
     } catch (erro) {
+      // 🔙 ROLLBACK
+      removerPedido(id);
       registrar.error({ rastreioId: "sistema", servico: "Projetos" }, "Erro ao criar pedido", erro);
-      toast.error("Erro ao criar pedido.");
+      toast.error("Erro ao criar pedido. Alteração revertida.");
       throw erro;
     }
   };
 
   const atualizarPedido = async (dados: AtualizarPedidoInput) => {
     if (!usuarioId) return;
+    const pedidoOriginal = pedidos.find(p => p.id === dados.id);
+    if (!pedidoOriginal) return;
+
+    // ⚡️ OTIMISTA
+    atualizarPedidoNoEstado(dados.id, dados);
+
     try {
       const atualizado = await servicoPedidos.atualizarPedido(dados, usuarioId);
       atualizarPedidoNoEstado(dados.id, atualizado);
       toast.success("Pedido atualizado!");
       return atualizado;
     } catch (erro: any) {
+      // 🔙 ROLLBACK
+      atualizarPedidoNoEstado(dados.id, pedidoOriginal);
       registrar.error({ rastreioId: dados.id, servico: "Projetos" }, "Erro ao atualizar pedido", erro);
-      toast.error(erro.mensagem || "Erro ao atualizar pedido.");
+      toast.error(erro.mensagem || "Erro ao atualizar pedido. Alteração revertida.");
       throw erro;
     }
   };
@@ -129,13 +160,22 @@ export function usePedidos() {
 
   const excluirPedido = async (id: string) => {
     if (!usuarioId) return;
+    const pedidoOriginal = pedidos.find(p => p.id === id);
+    if (!pedidoOriginal) return;
+
+    // ⚡️ OTIMISTA
+    removerPedido(id);
+
     try {
       await servicoPedidos.excluirPedido(id, usuarioId);
-      removerPedido(id);
       toast.success("Pedido excluído.");
     } catch (erro) {
+      // 🔙 ROLLBACK
+      if (pedidoOriginal) {
+        adicionarPedido(pedidoOriginal);
+      }
       registrar.error({ rastreioId: id, servico: "Projetos" }, "Erro ao excluir pedido", erro);
-      toast.error("Erro ao excluir pedido.");
+      toast.error("Erro ao excluir pedido. Alteração revertida.");
     }
   };
 

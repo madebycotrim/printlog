@@ -89,12 +89,13 @@ export function useGerenciadorMateriais() {
     const idParaVerificar = dadosDoFormulario.id || materialSendoEditado?.id;
     const materialExistente = materiais.find(m => m.id === idParaVerificar);
     const eEdicao = Boolean(materialExistente);
+    const id = idParaVerificar || crypto.randomUUID();
     
     const materialParaSalvar: Material = eEdicao 
-      ? { ...materialExistente!, ...dadosDoFormulario, dataAtualizacao: new Date() }
+      ? { ...materialExistente!, ...dadosDoFormulario, id, dataAtualizacao: new Date() }
       : {
         ...dadosDoFormulario,
-        id: crypto.randomUUID(),
+        id,
         pesoRestanteGramas: dadosDoFormulario.estoque >= 1 ? dadosDoFormulario.pesoGramas : 0,
         estoque: dadosDoFormulario.estoque >= 1 ? dadosDoFormulario.estoque - 1 : 0,
         arquivado: false,
@@ -103,37 +104,53 @@ export function useGerenciadorMateriais() {
         historicoUso: []
       };
 
+    // ⚡️ OTIMISTA
+    if (eEdicao) {
+      acoesArmazem.atualizarMaterial(materialParaSalvar.id, materialParaSalvar);
+    } else {
+      acoesArmazem.adicionarMaterial(materialParaSalvar);
+    }
+    fecharModal();
+    definirModalHistoricoAberto(false);
+
     try {
       // Persiste no Banco de Dados Real (D1)
       await apiMateriais.salvar(materialParaSalvar, usuario.uid, eEdicao);
-      
-      // Atualiza o estado local (Zustand) para resposta instantânea
-      if (eEdicao) {
-        acoesArmazem.atualizarMaterial(materialParaSalvar.id, materialParaSalvar);
-      } else {
-        acoesArmazem.adicionarMaterial(materialParaSalvar);
-      }
-      
       auditoria.evento("SALVAR_MATERIAL", { id: materialParaSalvar.id, eEdicao, nome: dadosDoFormulario.nome });
       toast.success(eEdicao ? "Material atualizado!" : "Material cadastrado com sucesso! 🚀");
-      fecharModal();
-      definirModalHistoricoAberto(false);
     } catch (erro) {
-      toast.error("Erro ao salvar material no banco de dados.");
+      // 🔙 ROLLBACK
+      if (eEdicao && materialExistente) {
+        acoesArmazem.atualizarMaterial(materialParaSalvar.id, materialExistente);
+      } else {
+        acoesArmazem.arquivarMaterial(materialParaSalvar.id);
+      }
+      toast.error("Erro ao salvar material no banco de dados. Alteração revertida.");
+      if (eEdicao) {
+        definirMaterialSendoEditado(materialParaSalvar);
+      }
+      definirModalAberto(true);
     }
   };
 
   const confirmarArquivamento = async () => {
     if (materialParaExcluir && usuario?.uid) {
+      const id = materialParaExcluir.id;
+      const materialOriginal = { ...materialParaExcluir };
+
+      // ⚡️ OTIMISTA
+      acoesArmazem.arquivarMaterial(id);
+      definirModalExclusaoAberto(false);
+      definirMaterialParaExcluir(null);
+
       try {
-        await apiMateriais.remover(materialParaExcluir.id, usuario.uid);
-        acoesArmazem.arquivarMaterial(materialParaExcluir.id);
-        auditoria.evento("ARQUIVAR_MATERIAL", { id: materialParaExcluir.id, nome: materialParaExcluir.nome });
+        await apiMateriais.remover(id, usuario.uid);
+        auditoria.evento("ARQUIVAR_MATERIAL", { id, nome: materialOriginal.nome });
         toast.success("Material arquivado com sucesso.");
-        definirModalExclusaoAberto(false);
-        definirMaterialParaExcluir(null);
       } catch (erro) {
-        toast.error("Erro ao arquivar material.");
+        // 🔙 ROLLBACK
+        acoesArmazem.atualizarMaterial(id, { arquivado: false });
+        toast.error("Erro ao arquivar material. Alteração revertida.");
       }
     }
   };
@@ -168,27 +185,31 @@ export function useGerenciadorMateriais() {
     }
   };
 
-  const confirmarReposicaoMaterial = async (quantidadeComprada: number, precoTotalNovaCompra: number) => {
-    if (materialParaRepor && usuario?.uid) {
-      const materialOriginal = { ...materialParaRepor };
-      try {
-        acoesArmazem.reporEstoque(materialParaRepor.id, quantidadeComprada, precoTotalNovaCompra);
-        
-        // Buscamos o material atualizado do store
-        const atualizado = materiais.find(m => m.id === materialParaRepor.id);
-        if (atualizado) {
-          await apiMateriais.atualizar(atualizado, usuario.uid);
-        }
+  const confirmarReposicaoMaterial = async (idMaterial: string, quantidadeComprada: number, precoTotalNovaCompra: number) => {
+    if (!usuario?.uid) return;
+    const material = materiais.find(m => m.id === idMaterial);
+    if (!material) return;
 
-        auditoria.evento("REPOSICAO_MATERIAL", { id: materialParaRepor.id, quantidadeComprada });
-        toast.success("Estoque de material renovado!");
-        definirModalReposicaoAberto(false);
-        definirMaterialParaRepor(null);
-      } catch (erro) {
-        // Rollback
-        acoesArmazem.atualizarMaterial(materialParaRepor.id, materialOriginal);
-        toast.error("Erro ao registrar reposição. Alteração revertida.");
+    const materialOriginal = { ...material };
+    
+    // ⚡️ OTIMISTA
+    acoesArmazem.reporEstoque(idMaterial, quantidadeComprada, precoTotalNovaCompra);
+    definirModalReposicaoAberto(false);
+    definirMaterialParaRepor(null);
+
+    try {
+      // Obtém o material atualizado diretamente do Zustand (evitando closure desatualizada)
+      const atualizado = useArmazemMateriais.getState().materiais.find(m => m.id === idMaterial);
+      if (atualizado) {
+        await apiMateriais.atualizar(atualizado, usuario.uid);
       }
+
+      auditoria.evento("REPOSICAO_MATERIAL", { id: idMaterial, quantidadeComprada });
+      toast.success("Estoque de material renovado!");
+    } catch (erro) {
+      // 🔙 ROLLBACK
+      acoesArmazem.atualizarMaterial(idMaterial, materialOriginal);
+      toast.error("Erro ao registrar reposição. Alteração revertida.");
     }
   };
 

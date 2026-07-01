@@ -68,8 +68,20 @@ export function CardImpressora({
           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
             {impressora.marca || "Custom"} {impressora.modeloBase}
           </span>
-          <h4 className="text-2xl font-black text-primary tracking-tighter leading-none uppercase">
+          <h4 className="text-2xl font-black text-primary tracking-tighter leading-none uppercase flex items-center gap-2">
             {impressora.nome}
+            {impressora.status === 'imprimindo' && (
+              <span className="relative flex h-2.5 w-2.5 shrink-0" title="Imprimindo">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+            )}
+            {impressora.status === 'livre' && (
+              <span className="w-2.5 h-2.5 rounded-full bg-zinc-300 dark:bg-zinc-700 shrink-0" title="Pronta / Livre" />
+            )}
+            {impressora.status === 'manutencao' && (
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500/70 shrink-0 animate-pulse" title="Em Manutenção" />
+            )}
           </h4>
         </div>
 

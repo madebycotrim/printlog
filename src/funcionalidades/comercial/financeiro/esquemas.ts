@@ -10,4 +10,5 @@ export const criarLancamentoSchema = z.object({
   idReferencia: z.string().optional(),
   idCliente: z.string().optional(),
   data: z.date().or(z.string().transform((val) => new Date(val))).optional(),
+  id: z.string().optional(),
 });

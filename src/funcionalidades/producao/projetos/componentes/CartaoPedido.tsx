@@ -129,7 +129,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
           relative p-3 rounded-2xl border transition-all duration-500
           bg-card border-borda-sutil group-hover/card:border-zinc-300 dark:group-hover/card:border-white/[0.08]
           group-hover/card:bg-zinc-50 dark:group-hover/card:bg-[#16161c]
-          ${estaAtrasado ? "border-rose-500/30 ring-1 ring-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.1)]" : "hover:shadow-premium"}
+          ${estaAtrasado ? "animate-glow-red ring-1 ring-rose-500/10" : "hover:shadow-premium"}
           ${menuAberto ? "z-[100]" : "z-10"}
         `}
       >

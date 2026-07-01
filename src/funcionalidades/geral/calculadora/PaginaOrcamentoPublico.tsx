@@ -9,6 +9,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
+const mapeamentoCores: Record<string, string> = {
+  sky: "#0ea5e9",
+  blue: "#2563eb",
+  indigo: "#6366f1",
+  violet: "#8b5cf6",
+  fuchsia: "#d946ef",
+  pink: "#ec4899",
+  rose: "#f43f5e",
+  orange: "#f97316",
+  amber: "#f59e0b",
+  lime: "#84cc16",
+  emerald: "#10b981",
+  teal: "#14b8a6",
+  cyan: "#06b6d4",
+  slate: "#64748b",
+};
+
 export function PaginaOrcamentoPublico() {
   const [searchParams] = useSearchParams();
   const hash = searchParams.get("q");
@@ -47,8 +64,11 @@ export function PaginaOrcamentoPublico() {
     cli: nomeCliente = "", 
     obs: observacoes = "", 
     cm: custoMaquina = 0, 
-    cmo: custoMaoDeObra = 0 
+    cmo: custoMaoDeObra = 0,
+    c: corTema = "sky"
   } = dados || {};
+
+  const corHex = mapeamentoCores[corTema] || "#0ea5e9";
 
   const estudioNomeExibicao = estudioNome || "Estúdio de Impressão 3D";
   const nomeClienteExibicao = nomeCliente || "Consumidor Final";
@@ -249,6 +269,11 @@ export function PaginaOrcamentoPublico() {
 
   return (
     <div className={`min-h-screen bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-[size:16px_16px] font-sans text-neutral-800 antialiased selection:bg-neutral-900/10 relative flex flex-col items-center ${isPrintMode ? 'bg-white p-0 m-0' : 'py-10 px-4 sm:py-16'}`}>
+      <style>{`
+        :root {
+          --cor-cliente-primaria: ${corHex};
+        }
+      `}</style>
       
       {/* Barra de Status e Ações Rápida Superior */}
       {!isPrintMode && (
@@ -300,7 +325,10 @@ export function PaginaOrcamentoPublico() {
             {estudioLogoUrl ? (
               <img src={estudioLogoUrl} alt={estudioNomeExibicao} className="h-11 w-auto object-contain rounded-xl border border-slate-100 p-1 bg-white shadow-sm" />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white text-[11px] font-black uppercase tracking-widest">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-[11px] font-black uppercase tracking-widest"
+                style={{ backgroundColor: "var(--cor-cliente-primaria)" }}
+              >
                 {estudioNomeExibicao.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -415,7 +443,10 @@ export function PaginaOrcamentoPublico() {
             <div className={`bg-slate-50 border-t border-slate-200/60 flex justify-end ${isPrintMode ? 'p-3' : 'p-5'}`}>
               <div className="flex justify-between items-baseline w-60 text-[11px] font-bold">
                 <span className="text-slate-400 uppercase tracking-widest text-[9px] font-black">Investimento Total:</span>
-                <span className="text-xl text-slate-900 font-black font-mono">
+                <span 
+                  className="text-xl font-black font-mono"
+                  style={{ color: "var(--cor-cliente-primaria)" }}
+                >
                   R$ {formatarPrecoCentavos(precoEmCentavos)}
                 </span>
               </div>
@@ -468,7 +499,8 @@ export function PaginaOrcamentoPublico() {
                       checked={termoAceite} 
                       onChange={(e) => setTermoAceite(e.target.checked)} 
                       id="termo-aceite"
-                      className="mt-0.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 transition-all cursor-pointer"
+                      className="mt-0.5 rounded border-slate-300 transition-all cursor-pointer"
+                      style={{ accentColor: "var(--cor-cliente-primaria)" }}
                     />
                     <span className="text-[10px] leading-normal font-semibold group-hover:text-slate-800 transition-colors">
                       Aceito a proposta de serviços e autorizo o início da fabricação do lote técnico.
@@ -480,7 +512,8 @@ export function PaginaOrcamentoPublico() {
                       onClick={lidarComAprovacao}
                       disabled={!termoAceite}
                       id="btn-aprovar"
-                      className="flex-1 h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1 active:scale-[0.98] shadow-sm cursor-pointer"
+                      className="flex-1 h-10 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1 active:scale-[0.98] shadow-sm cursor-pointer"
+                      style={{ backgroundColor: termoAceite ? "var(--cor-cliente-primaria)" : undefined }}
                     >
                       Confirmar Aceite
                     </button>

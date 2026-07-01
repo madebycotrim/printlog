@@ -4,6 +4,7 @@ import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
 import { ModalProjetosAtrasados } from "./componentes/ModalProjetosAtrasados";
+import { ModalConclusaoProjeto } from "./componentes/ModalConclusaoProjeto";
 import { usePedidos } from "./hooks/usePedidos";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
@@ -13,6 +14,9 @@ import { useNavigate } from "react-router-dom";
 import { FormularioPedido } from "./componentes/FormularioPedido";
 import { Pedido } from "./tipos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
+import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 
 
 export function PaginaProjetos() {
@@ -21,6 +25,46 @@ export function PaginaProjetos() {
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
   const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido, erro, recarregar } = usePedidos();
+  
+  const { usuario } = useAutenticacao();
+  const [pedidoSendoConcluido, setPedidoSendoConcluido] = useState<Pedido | null>(null);
+
+  const lidarComMover = async (id: string, novoStatus: StatusPedido) => {
+    if (novoStatus === StatusPedido.CONCLUIDO) {
+      const ped = pedidos.find(p => p.id === id);
+      if (ped) {
+        setPedidoSendoConcluido(ped);
+        return; // Intercepta e abre o modal
+      }
+    }
+    await moverPedido(id, novoStatus);
+  };
+
+  const confirmarConclusaoComPerda = async (gramasPerdidas: Record<string, number>) => {
+    if (!pedidoSendoConcluido || !usuario?.uid) return;
+
+    try {
+      // 1. Processa perdas de materiais no Zustand e persiste no banco D1
+      for (const [idMaterial, qtd] of Object.entries(gramasPerdidas)) {
+        if (qtd > 0) {
+          // Abate local
+          useArmazemMateriais.getState().abaterPeso(idMaterial, qtd, `Falha: ${pedidoSendoConcluido.descricao}`, "FALHA");
+          
+          // Persiste no banco D1
+          const materialAtualizado = useArmazemMateriais.getState().materiais.find(m => m.id === idMaterial);
+          if (materialAtualizado) {
+            await apiMateriais.atualizar(materialAtualizado, usuario.uid);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao registrar perda técnica:", e);
+    }
+
+    // 2. Move para concluído
+    await moverPedido(pedidoSendoConcluido.id, StatusPedido.CONCLUIDO);
+    setPedidoSendoConcluido(null);
+  };
 
 
 
@@ -109,7 +153,7 @@ export function PaginaProjetos() {
             />
 
             <div className="flex-1 min-h-0">
-              <QuadroKanban pedidosInjetados={pedidosFiltrados} abrirFormularioEdicao={abrirFormularioEdicao} aoMover={moverPedido} />
+              <QuadroKanban pedidosInjetados={pedidosFiltrados} abrirFormularioEdicao={abrirFormularioEdicao} aoMover={lidarComMover} />
             </div>
 
             {pedidos.some(p => p.status === StatusPedido.ARQUIVADO) && (
@@ -145,6 +189,13 @@ export function PaginaProjetos() {
         aoFechar={() => setModalAtrasadosAberto(false)}
         pedidos={pedidos}
         abrirFormularioEdicao={abrirFormularioEdicao}
+      />
+
+      <ModalConclusaoProjeto
+        aberto={!!pedidoSendoConcluido}
+        aoFechar={() => setPedidoSendoConcluido(null)}
+        pedido={pedidoSendoConcluido}
+        aoConfirmar={confirmarConclusaoComPerda}
       />
 
       <FormularioPedido

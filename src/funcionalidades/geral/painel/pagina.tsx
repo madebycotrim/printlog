@@ -19,8 +19,10 @@ import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
-import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
-import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/apiFinanceiro";
+import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
+import { useFinanceiro } from "@/funcionalidades/comercial/financeiro/hooks/useFinanceiro";
+import { useGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/useGerenciadorInsumos";
+import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/useGerenciadorMateriais";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
 // Componentes do Painel
@@ -105,6 +107,10 @@ export function PaginaInicial() {
   const { usuario } = useAutenticacao();
   const { pedidos } = usePedidos();
   const navegar = useNavigate();
+  const { acoes: acoesClientes } = useGerenciadorClientes();
+  const { adicionarLancamento } = useFinanceiro();
+  const { acoes: acoesInsumosHook } = useGerenciadorInsumos();
+  const { acoes: acoesMateriaisHook } = useGerenciadorMateriais();
 
   // 🏪 ACESSO AO ESTADO
   const materiais = useArmazemMateriais((s) => s.materiais);
@@ -357,9 +363,8 @@ export function PaginaInicial() {
           aoCancelar={() => definirModalClienteAberto(false)}
           aoSalvar={async (dados) => {
             if (!usuario?.uid) return;
-            await apiClientes.salvar(dados, usuario.uid);
             definirModalClienteAberto(false);
-            toast.success("Cliente cadastrado com sucesso!");
+            await acoesClientes.salvarCliente(dados);
           }} 
         />
       </Dialogo>
@@ -374,9 +379,8 @@ export function PaginaInicial() {
           aoCancelar={() => definirModalFinanceiroAberto(false)}
           aoSalvar={async (dados) => {
             if (!usuario?.uid) return;
-            await apiFinanceiro.registrar(dados as any, usuario.uid);
             definirModalFinanceiroAberto(false);
-            toast.success("Lançamento registrado!");
+            await adicionarLancamento(dados as any);
           }} 
         />
       </Dialogo>
@@ -386,10 +390,9 @@ export function PaginaInicial() {
           aberto={modalReposicaoMatAberto}
           aoFechar={() => definirModalReposicaoMatAberto(false)}
           material={materialSelecionado}
-          aoConfirmar={(qtd, preco) => {
-            reporEstoqueMat(materialSelecionado.id, qtd, preco);
+          aoConfirmar={async (qtd, preco) => {
             definirModalReposicaoMatAberto(false);
-            toast.success("Estoque de material atualizado!");
+            await acoesMateriaisHook.confirmarReposicaoMaterial(materialSelecionado.id, qtd, preco);
           }}
         />
       )}
@@ -399,23 +402,9 @@ export function PaginaInicial() {
           aberto={modalReposicaoInsAberto}
           aoFechar={() => definirModalReposicaoInsAberto(false)}
           insumo={insumoSelecionado}
-          aoConfirmar={(id, qtd, valorTotal) => {
-            const insumoAtual = insumosEstoque.find(i => i.id === id);
-            if (insumoAtual) {
-              const novoEstoque = (insumoAtual.quantidadeAtual || 0) + qtd;
-              const novoCustoTotal = ((insumoAtual.quantidadeAtual || 0) * (insumoAtual.custoMedioUnidade || 0)) + valorTotal;
-              const novoCustoMedio = novoEstoque > 0 ? novoCustoTotal / novoEstoque : (insumoAtual.custoMedioUnidade || 0);
-
-              adicionarOuAtualizarInsumo({
-                ...insumoAtual,
-                quantidadeAtual: novoEstoque,
-                custoMedioUnidade: Math.round(novoCustoMedio),
-                dataAtualizacao: new Date()
-              });
-              
-              definirModalReposicaoInsAberto(false);
-              toast.success("Estoque de insumo atualizado!");
-            }
+          aoConfirmar={async (id, qtd, valorTotal) => {
+            definirModalReposicaoInsAberto(false);
+            await acoesInsumosHook.confirmarReposicaoInsumo(id, qtd, valorTotal);
           }}
         />
       )}

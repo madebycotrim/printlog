@@ -176,7 +176,11 @@ export function PaginaMateriais() {
         aberto={estado.modalReposicaoAberto}
         material={estado.materialParaRepor}
         aoFechar={acoes.fecharRepor}
-        aoConfirmar={acoes.confirmarReposicaoMaterial}
+        aoConfirmar={(qtd, preco) => {
+          if (estado.materialParaRepor) {
+            acoes.confirmarReposicaoMaterial(estado.materialParaRepor.id, qtd, preco);
+          }
+        }}
       />
 
       <ModalUpgradePaywall

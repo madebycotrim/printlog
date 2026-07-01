@@ -26,13 +26,34 @@ export function useManutencao(idImpressora?: string) {
   }, [idImpressora]);
 
   const registrarManutencao = async (dados: RegistrarManutencaoInput) => {
+    const id = dados.id || crypto.randomUUID();
+    const novaManutencaoOtimista: RegistroManutencao = {
+      id,
+      idImpressora: dados.idImpressora,
+      tipo: dados.tipo,
+      descricao: dados.descricao,
+      custoCentavos: dados.custoCentavos || 0,
+      data: new Date().toISOString(),
+      horasMaquinaNoMomentoMinutos: dados.horasMaquinaNoMomentoMinutos,
+      observacoes: dados.observacoes || "",
+      pecasTrocadas: dados.pecasTrocadas || [],
+      responsavel: dados.responsavel || "",
+      tempoParadaMinutos: dados.tempoParadaMinutos || 0,
+    };
+
+    // ⚡️ OTIMISTA
+    setManutencoes(prev => [novaManutencaoOtimista, ...prev]);
+
     try {
-      const nova = await servicoManutencao.registrarManutencao(dados);
+      const nova = await servicoManutencao.registrarManutencao({ ...dados, id });
+      // Substitui o registro otimista pelo real retornado da API
+      setManutencoes(prev => prev.map(m => m.id === id ? nova : m));
       toast.success("Manutenção registrada com sucesso!");
-      await carregarDados();
       return nova;
     } catch (erro) {
-      toast.error("Erro ao registrar manutenção.");
+      // 🔙 ROLLBACK
+      setManutencoes(prev => prev.filter(m => m.id !== id));
+      toast.error("Erro ao registrar manutenção. Alteração revertida.");
       throw erro;
     }
   };

@@ -29,6 +29,7 @@ export interface PayloadLinkMagico {
   ce?: number; // custoEnergia em centavos
   cd?: number; // custoDepreciacao em centavos
   cmo?: number; // custoMaoDeObra (setup) em centavos
+  c?: string; // cor do tema configurado
 }
 
 const SUBSTITUICOES = [
@@ -149,7 +150,8 @@ export function codificarLinkMagico(payload: PayloadLinkMagico): string {
     payload.cli || '',
     payload.obs || '',
     payload.cm || 0,
-    payload.cmo || 0
+    payload.cmo || 0,
+    payload.c || ''
   ];
 
   const serializado = partes.join('|');
@@ -213,7 +215,8 @@ export function decodificarLinkMagico(hash: string): PayloadLinkMagico | null {
       cli: partes[10] || undefined,
       obs: partes[11] || undefined,
       cm: Number(partes[12] || 0),
-      cmo: Number(partes[13] || 0)
+      cmo: Number(partes[13] || 0),
+      c: partes[14] || undefined
     };
   } catch (e) {
     console.error("Erro ao decodificar link mágico:", e);

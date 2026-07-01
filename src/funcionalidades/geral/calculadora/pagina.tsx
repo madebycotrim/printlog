@@ -21,6 +21,7 @@ import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/ho
 import { useGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/useGerenciadorInsumos";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
+import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { Dialogo } from "@/compartilhado/componentes";
 import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
 import { ModalGerenciamentoInsumo } from "@/funcionalidades/producao/insumos/componentes/ModalGerenciamentoInsumo";
@@ -53,6 +54,7 @@ import { ModalEnviarEmailOrcamento } from "./componentes/ModalEnviarEmailOrcamen
 
 export function PaginaCalculadora() {
   const { usuario } = useAutenticacao();
+  const { corPrimaria } = useContextoTema();
   const navegar = useNavigate();
   const eProOuSuperior = useMemo(() => {
     const plano = ((usuario as any)?.plano || '').toUpperCase();
@@ -627,7 +629,8 @@ export function PaginaCalculadora() {
       cm: hook.calculo.custoDepreciacao + hook.calculo.custoEnergia,
       ce: hook.calculo.custoEnergia,
       cd: hook.calculo.custoDepreciacao,
-      cmo: hook.calculo.custoMaoDeObra
+      cmo: hook.calculo.custoMaoDeObra,
+      c: corPrimaria || 'sky'
     });
     return `${window.location.origin}/orcamento?q=${hash}`;
   };

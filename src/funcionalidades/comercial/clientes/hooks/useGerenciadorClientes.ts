@@ -64,7 +64,7 @@ export function useGerenciadorClientes() {
     return resultado;
   }, [estado.clientes, estado.filtroBusca, estado.ordenacao, estado.ordemInvertida]);
 
-  // 🛠 Ações de CRUD (Simuladas - Persistência Real via D1 no futuro)
+  // 🛠 Ações de CRUD (Persistência Real via D1)
   const salvarCliente = async (dados: Partial<Cliente>): Promise<Cliente> => {
     if (!usuarioId) throw new Error("Não autorizado");
     const rastreioId = crypto.randomUUID();
@@ -76,21 +76,46 @@ export function useGerenciadorClientes() {
 
       registrar.info({ rastreioId }, "Salvando registro de cliente no banco");
 
-      const id = estado.clienteSendoEditado?.id;
-      const clienteExistente = id ? estado.clientes.find(c => c.id === id) : {};
-      const clienteParaSalvar = { ...clienteExistente, ...dados, id };
+      const id = dados.id || estado.clienteSendoEditado?.id || crypto.randomUUID();
+      const clienteExistente = estado.clientes.find(c => c.id === id);
+      
+      const clienteParaSalvar: Cliente = {
+        id,
+        nome: dados.nome || "",
+        email: dados.email || "",
+        telefone: dados.telefone || "",
+        statusComercial: dados.statusComercial || "Prospect",
+        observacoesCrm: dados.observacoesCrm || "",
+        arquivado: false,
+        ltvCentavos: clienteExistente?.ltvCentavos || 0,
+        dataCriacao: clienteExistente?.dataCriacao || new Date(),
+        ...dados,
+      };
 
-      const clienteFinal = await apiClientes.salvar(clienteParaSalvar, usuarioId);
-      
-      // Recarregar para garantir sincronia
-      await carregarClientes();
-      
-      toast.success(id ? "Cliente atualizado!" : "Cliente salvo com sucesso! 🚀");
+      // ⚡️ OTIMISTA
+      estado.adicionarOuAtualizarCliente(clienteParaSalvar);
       estado.fecharEditar();
-      return clienteFinal;
+
+      try {
+        const clienteFinal = await apiClientes.salvar(clienteParaSalvar, usuarioId);
+        estado.adicionarOuAtualizarCliente(clienteFinal);
+        toast.success(estado.clienteSendoEditado?.id ? "Cliente atualizado!" : "Cliente salvo com sucesso! 🚀");
+        return clienteFinal;
+      } catch (erro) {
+        // 🔙 ROLLBACK
+        if (clienteExistente) {
+          estado.adicionarOuAtualizarCliente(clienteExistente);
+        } else {
+          estado.removerCliente(id);
+        }
+        registrar.error({ rastreioId }, "Erro ao salvar cliente", erro);
+        toast.error("Erro ao salvar cliente. Alteração revertida.");
+        estado.abrirEditar(clienteParaSalvar);
+        throw erro;
+      }
     } catch (erro) {
-      registrar.error({ rastreioId }, "Erro ao salvar cliente", erro);
-      toast.error("Erro ao salvar cliente.");
+      registrar.error({ rastreioId }, "Erro ao validar cliente", erro);
+      toast.error("Erro ao validar dados do cliente.");
       throw erro;
     }
   };
@@ -98,15 +123,23 @@ export function useGerenciadorClientes() {
   const removerCliente = async (id: string) => {
     if (!usuarioId) return;
     const rastreioId = crypto.randomUUID();
+    const clienteAntigo = estado.clientes.find(c => c.id === id);
+
+    // ⚡️ OTIMISTA
+    estado.removerCliente(id);
+    estado.fecharRemover();
+
     try {
       registrar.info({ rastreioId, idCliente: id }, "Removendo cliente do banco");
       await apiClientes.remover(id, usuarioId);
-      await carregarClientes();
       toast.success("Cliente removido.");
-      estado.fecharRemover();
     } catch (erro) {
+      // 🔙 ROLLBACK
+      if (clienteAntigo) {
+        estado.adicionarOuAtualizarCliente(clienteAntigo);
+      }
       registrar.error({ rastreioId }, "Erro ao remover cliente", erro);
-      toast.error("Erro ao remover cliente.");
+      toast.error("Erro ao remover cliente. Alteração revertida.");
       throw erro;
     }
   };

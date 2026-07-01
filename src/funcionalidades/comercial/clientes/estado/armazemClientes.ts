@@ -35,6 +35,10 @@ interface ArmazemClientesState {
     fecharRemover: () => void;
     abrirHistorico: (cliente: Cliente) => void;
     fecharHistorico: () => void;
+
+    // Ações de Mutação Local Otimistas
+    adicionarOuAtualizarCliente: (cliente: Cliente) => void;
+    removerCliente: (id: string) => void;
 }
 
 export const useArmazemClientes = create<ArmazemClientesState>()(
@@ -74,6 +78,18 @@ export const useArmazemClientes = create<ArmazemClientesState>()(
                 set({ modalHistoricoAberto: true, clienteSendoHistorico: cliente }, false, "clientes/abrirHistorico"),
             fecharHistorico: () =>
                 set({ modalHistoricoAberto: false, clienteSendoHistorico: null }, false, "clientes/fecharHistorico"),
+
+            adicionarOuAtualizarCliente: (cliente) => set((state) => {
+                const existe = state.clientes.some((c) => c.id === cliente.id);
+                const novas = existe
+                    ? state.clientes.map((c) => (c.id === cliente.id ? cliente : c))
+                    : [cliente, ...state.clientes];
+                return { clientes: novas };
+            }, false, "clientes/adicionarOuAtualizarCliente"),
+
+            removerCliente: (id) => set((state) => ({
+                clientes: state.clientes.filter((c) => c.id !== id)
+            }), false, "clientes/removerCliente"),
         }),
         { name: "ArmazemClientes" }
     )

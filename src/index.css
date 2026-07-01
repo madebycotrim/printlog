@@ -394,3 +394,18 @@ body {
     background: rgba(255, 255, 255, 0.1);
   }
 }
+
+@keyframes glow-red-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(244, 63, 94, 0.45);
+    border-color: rgba(244, 63, 94, 0.6);
+  }
+}
+
+.animate-glow-red {
+  animation: glow-red-pulse 2s infinite ease-in-out;
+}

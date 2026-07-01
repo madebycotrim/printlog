@@ -42,6 +42,10 @@ interface ArmazemImpressorasState {
     fecharAposentar: () => void;
     abrirGerenciamento: (impressora: Impressora, aba?: "producao" | "manutencao" | "config") => void;
     fecharGerenciamento: () => void;
+
+    // Ações de Mutação Local Otimistas
+    adicionarOuAtualizarImpressora: (impressora: Impressora) => void;
+    removerImpressora: (id: string) => void;
 }
 
 export const useArmazemImpressoras = create<ArmazemImpressorasState>()(
@@ -96,6 +100,18 @@ export const useArmazemImpressoras = create<ArmazemImpressorasState>()(
                     modalGerenciamentoAberto: false, 
                     impressoraGerenciamento: null 
                 }, false, "impressoras/fecharGerenciamento"),
+
+            adicionarOuAtualizarImpressora: (impressora) => set((state) => {
+                const existe = state.impressoras.some((i) => i.id === impressora.id);
+                const novas = existe
+                    ? state.impressoras.map((i) => (i.id === impressora.id ? { ...i, ...impressora } : i))
+                    : [impressora, ...state.impressoras];
+                return { impressoras: novas };
+            }, false, "impressoras/adicionarOuAtualizarImpressora"),
+
+            removerImpressora: (id) => set((state) => ({
+                impressoras: state.impressoras.filter((i) => i.id !== id)
+            }), false, "impressoras/removerImpressora"),
         }),
         { name: "ArmazemImpressoras" }
     )

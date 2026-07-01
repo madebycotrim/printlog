@@ -89,6 +89,12 @@ export function StatusTempoReal() {
                                 className="flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-sky-500/30 transition-all hover:bg-white/[0.04] dark:hover:bg-white/[0.04] group/item cursor-pointer shadow-sm hover:shadow-md text-center"
                             >
                                 <div className="w-28 h-28 flex items-center justify-center rounded-2xl z-10 overflow-hidden group-hover/item:scale-110 transition-transform duration-300 mb-2 relative">
+                                    {imp.status === StatusImpressora.IMPRIMINDO && (
+                                        <div className="absolute top-1.5 right-1.5 z-20 flex h-2.5 w-2.5" title="Imprimindo">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                        </div>
+                                    )}
                                     {!erroNaImagem ? (
                                         <img 
                                             src={urlImagem} 
