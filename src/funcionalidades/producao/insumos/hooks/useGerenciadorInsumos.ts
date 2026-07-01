@@ -204,18 +204,30 @@ export function useGerenciadorInsumos() {
       };
 
       if (usuario?.uid) {
-        // Persiste no D1 antes de atualizar localmente
-        await apiInsumos.salvar(insumoCompleto, usuario.uid);
-        
+        // ⚡️ OTIMISTA: Atualiza o estado local e fecha o modal IMEDIATAMENTE
+        const insumoAntigo = estadoArmazem.insumos.find(i => i.id === id);
         acoesArmazem.adicionarOuAtualizarInsumo(insumoCompleto);
-        auditoria.evento("SALVAR_INSUMO", { id, eEdicao, nome: insumoCompleto.nome });
-
-        toast.success(eEdicao ? "Insumo atualizado." : "Novo insumo rastreado na base.");
         acoesArmazem.fecharEditar();
+        
+        try {
+          // Persiste no D1 em background
+          await apiInsumos.salvar(insumoCompleto, usuario.uid);
+          auditoria.evento("SALVAR_INSUMO", { id, eEdicao, nome: insumoCompleto.nome });
+          toast.success(eEdicao ? "Insumo atualizado." : "Novo insumo rastreado na base.");
+        } catch (erro) {
+          // 🔙 ROLLBACK: Em caso de falha, reverte a interface
+          if (insumoAntigo) {
+            acoesArmazem.adicionarOuAtualizarInsumo(insumoAntigo);
+          } else {
+            acoesArmazem.removerInsumo(id);
+          }
+          auditoria.erro("Erro ao salvar insumo", erro);
+          toast.error("Erro ao salvar o insumo. Alteração revertida.");
+          acoesArmazem.abrirEditar(insumoCompleto); // Reabre com os dados
+        }
       }
     } catch (erro) {
-      auditoria.erro("Erro ao salvar insumo", erro);
-      toast.error("Erro ao salvar o insumo.");
+      toast.error("Erro inesperado.");
     }
   };
 
@@ -251,22 +263,29 @@ export function useGerenciadorInsumos() {
       };
 
       if (usuario?.uid) {
-        // Persiste a baixa no D1
-        await apiInsumos.atualizar(insumoAtualizado, usuario.uid, novaMovimentacao);
-        
+        // ⚡️ OTIMISTA
         acoesArmazem.adicionarOuAtualizarInsumo(insumoAtualizado);
-        auditoria.evento("BAIXA_INSUMO", { id: idInsumo, quantidade: quantidadeBaixada, motivo });
-
-        toast.success(`${quantidadeBaixada}${insumo.unidadeMedida} subtraídos com sucesso.`);
         acoesArmazem.fecharBaixa();
-      }
 
-      if (insumoAtualizado.quantidadeAtual <= insumoAtualizado.quantidadeMinima) {
-        toast.error(`⚠️ ATENÇÃO: ${insumo.nome} atingiu nível crítico de estoque!`, { duration: 5000 });
+        try {
+          // Persiste a baixa no D1
+          await apiInsumos.atualizar(insumoAtualizado, usuario.uid, novaMovimentacao);
+          auditoria.evento("BAIXA_INSUMO", { id: idInsumo, quantidade: quantidadeBaixada, motivo });
+          toast.success(`${quantidadeBaixada}${insumo.unidadeMedida} subtraídos com sucesso.`);
+          
+          if (insumoAtualizado.quantidadeAtual <= insumoAtualizado.quantidadeMinima) {
+            toast.error(`⚠️ ATENÇÃO: ${insumo.nome} atingiu nível crítico de estoque!`, { duration: 5000 });
+          }
+        } catch (erro) {
+          // 🔙 ROLLBACK
+          acoesArmazem.adicionarOuAtualizarInsumo(insumo); // Restaura o original
+          auditoria.erro("Erro na baixa de insumo", erro);
+          toast.error("Erro ao abater o estoque. Alteração revertida.");
+          acoesArmazem.abrirBaixa(insumo);
+        }
       }
     } catch (e) {
-      auditoria.erro("Erro na baixa de insumo", e);
-      toast.error("Erro ao abater o estoque deste insumo.");
+      toast.error("Erro inesperado.");
     }
   };
 
@@ -304,32 +323,47 @@ export function useGerenciadorInsumos() {
       };
 
       if (usuario?.uid) {
-        // Persiste a reposição no D1
-        await apiInsumos.atualizar(insumoAtualizado, usuario.uid, novaMovimentacao);
-
+        // ⚡️ OTIMISTA
         acoesArmazem.adicionarOuAtualizarInsumo(insumoAtualizado);
-        auditoria.evento("REPOSICAO_INSUMO", { id: idInsumo, quantidade: quantidadeAdicionada });
-
-        toast.success(`Estoque do insumo reabastecido!`);
         acoesArmazem.fecharReposicao();
+
+        try {
+          // Persiste a reposição no D1
+          await apiInsumos.atualizar(insumoAtualizado, usuario.uid, novaMovimentacao);
+          auditoria.evento("REPOSICAO_INSUMO", { id: idInsumo, quantidade: quantidadeAdicionada });
+          toast.success(`Estoque do insumo reabastecido!`);
+        } catch (erro) {
+          // 🔙 ROLLBACK
+          acoesArmazem.adicionarOuAtualizarInsumo(insumo);
+          auditoria.erro("Erro na reposição de insumo", erro);
+          toast.error("Falha ao registrar a entrada. Alteração revertida.");
+          acoesArmazem.abrirReposicao(insumo);
+        }
       }
     } catch (e) {
-      auditoria.erro("Erro na reposição de insumo", e);
-      toast.error("Falha ao registrar a entrada.");
+      toast.error("Erro inesperado.");
     }
   };
 
   const confirmarArquivamento = async (idInsumo: string) => {
     if (!usuario?.uid) return;
+    const insumoAntigo = estadoArmazem.insumos.find(i => i.id === idInsumo);
+    
+    // ⚡️ OTIMISTA
+    acoesArmazem.removerInsumo(idInsumo);
+    acoesArmazem.fecharArquivamento();
+
     try {
       await apiInsumos.remover(idInsumo, usuario.uid);
-      acoesArmazem.removerInsumo(idInsumo);
       auditoria.evento("REMOVER_INSUMO", { id: idInsumo });
       toast.success("Insumo removido permanentemente do banco.");
-      acoesArmazem.fecharArquivamento();
     } catch (e) {
+      // 🔙 ROLLBACK
+      if (insumoAntigo) {
+        acoesArmazem.adicionarOuAtualizarInsumo(insumoAntigo);
+      }
       auditoria.erro("Erro ao deletar insumo no banco", e);
-      toast.error("Erro ao deletar do banco de dados.");
+      toast.error("Erro ao deletar. Alteração revertida.");
     }
   };
 
