@@ -25,7 +25,21 @@ export const apiMateriais = {
       url += `&search=${encodeURIComponent(parametros.search)}`;
     }
 
-    const resposta = await servicoBaseApi.get<{ items: any[]; total: number }>(url);
+    const resposta = await servicoBaseApi.get<any>(url);
+
+    // v9.0: Blindagem contra o Worker em produção retornar array plano (legado)
+    if (Array.isArray(resposta)) {
+      const todosMateriais = resposta.map(this.mapearMaterial);
+      const filtrados = parametros.search 
+        ? todosMateriais.filter(m => m.nome.toLowerCase().includes(parametros.search!.toLowerCase()))
+        : todosMateriais;
+        
+      return {
+        items: filtrados.slice(parametros.offset, parametros.offset + parametros.limit),
+        total: filtrados.length
+      };
+    }
+
     return {
       items: (resposta.items || []).map(this.mapearMaterial),
       total: resposta.total || 0

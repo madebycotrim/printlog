@@ -43,9 +43,23 @@ export const apiClientes = {
         }
         
         const dados = await servicoBaseApi.get<any>(`/api/clientes?${params.toString()}`);
+        
+        // v9.0: Blindagem contra o Worker em produção retornar array plano (legado)
+        if (Array.isArray(dados)) {
+            const todosClientes = dados.map(mapearCliente);
+            const filtrados = search 
+                ? todosClientes.filter(c => c.nome.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase()))
+                : todosClientes;
+                
+            return {
+                items: filtrados.slice(offset, offset + limit),
+                total: filtrados.length
+            };
+        }
+        
         return {
-            items: dados.items.map(mapearCliente),
-            total: dados.total
+            items: (dados.items || []).map(mapearCliente),
+            total: dados.total || 0
         };
     },
 

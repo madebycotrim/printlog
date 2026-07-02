@@ -48,9 +48,23 @@ export const apiInsumos = {
     }
     
     const dados = await servicoBaseApi.get<any>(`/api/insumos?${params.toString()}`);
+    
+    // v9.0: Blindagem contra o Worker em produção retornar array plano (legado)
+    if (Array.isArray(dados)) {
+      const todosInsumos = dados.map(mapearInsumo);
+      const filtrados = search 
+        ? todosInsumos.filter(i => i.nome.toLowerCase().includes(search.toLowerCase()))
+        : todosInsumos;
+        
+      return {
+        items: filtrados.slice(offset, offset + limit),
+        total: filtrados.length
+      };
+    }
+    
     return {
-      items: dados.items.map(mapearInsumo),
-      total: dados.total
+      items: (dados.items || []).map(mapearInsumo),
+      total: dados.total || 0
     };
   },
 
