@@ -115,15 +115,8 @@ export function PaginaProjetos() {
 
   return (
     <div className="flex-1 flex flex-col space-y-10">
-      <AnimatePresence mode="wait">
-        {carregando ? null : pedidos.length === 0 ? (
-          <motion.div
-            key="vazio"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="flex-1 flex items-center justify-center"
-          >
+      {carregando ? null : pedidos.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
             <EstadoVazio
               titulo="Nenhum pedido no fluxo"
               descricao="Crie o seu primeiro pedido para iniciar a gestão de produção no Kanban."
@@ -131,14 +124,9 @@ export function PaginaProjetos() {
               textoBotao="Novo Pedido"
               aoClicarBotao={() => navigate("/calculadora")}
             />
-          </motion.div>
+          </div>
         ) : pedidos.length > 0 && pedidos.every(p => p.status === StatusPedido.ARQUIVADO) ? (
-          <motion.div
-            key="apenas-arquivados"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex-1 flex flex-col space-y-8"
-          >
+          <div className="flex-1 flex flex-col space-y-8">
             <ResumoProjetos 
               pedidos={pedidos} 
               aoAbrirArquivo={() => setModalArquivoAberto(true)} 
@@ -154,15 +142,9 @@ export function PaginaProjetos() {
                 aoClicarBotao={() => setModalArquivoAberto(true)}
               />
             </div>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            key="conteudo"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="flex-1 flex flex-col space-y-8 overflow-hidden"
-          >
+          <div className="flex-1 flex flex-col space-y-8 overflow-hidden">
             <ResumoProjetos 
               pedidos={pedidos} 
               aoAbrirArquivo={() => setModalArquivoAberto(true)} 
@@ -190,9 +172,8 @@ export function PaginaProjetos() {
                 </button>
               </motion.div>
             )}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       <ModalArquivoProjetos
         aberto={modalArquivoAberto}

@@ -1,7 +1,8 @@
-import { memo } from "react";
-import { Warehouse, Settings } from "lucide-react";
+import { memo, useState } from "react";
+import { Warehouse, Settings, Search, MapPin, RefreshCcw } from "lucide-react";
 import { PerfilMarketplace } from "../tipos";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
+import { toast } from "react-hot-toast";
 
 interface CardLogisticaProps {
   perfis: PerfilMarketplace[];
@@ -21,6 +22,30 @@ interface CardLogisticaProps {
 export const CardLogistica = memo(function CardLogistica({
   perfis, perfilAtivo, setPerfilAtivo, taxaEcommerce, setTaxaEcommerce, taxaFixa, setTaxaFixa, frete, setFrete, abrirPerfis, cobrarLogistica, setCobrarLogistica
 }: CardLogisticaProps) {
+  const [cep, setCep] = useState("");
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const estadoLogista = "SP"; // Para efeito de simulação, logista é de SP
+
+  const consultarCep = async () => {
+    const cepLimpo = cep.replace(/\D/g, "");
+    if (cepLimpo.length !== 8) return toast.error("CEP incompleto");
+    
+    setBuscandoCep(true);
+    try {
+      const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      const dados = await resp.json();
+      if (dados.erro) throw new Error("CEP não encontrado");
+      
+      const freteSimulado = dados.uf === estadoLogista ? 1500 : 3500;
+      setFrete(freteSimulado);
+      toast.success(`Frete calculado para ${dados.localidade}-${dados.uf}!`);
+    } catch {
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setBuscandoCep(false);
+    }
+  };
+
   return (
     <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-orange ${!cobrarLogistica ? 'opacity-50 grayscale-[0.5]' : ''}`}>
       {/* Efeito Glow Laranja de Fundo */}
@@ -84,7 +109,7 @@ export const CardLogistica = memo(function CardLogistica({
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-borda-sutil">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-borda-sutil items-end">
         <div>
           <label className="block text-xs font-black uppercase text-muted-foreground mb-2">Comissão (%)</label>
           <input 
@@ -104,8 +129,32 @@ export const CardLogistica = memo(function CardLogistica({
             className={`w-full h-14 px-4 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
           />
         </div>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label className="block text-[10px] font-black uppercase text-muted-foreground mb-2 whitespace-nowrap">CEP Cliente</label>
+            <div className="relative">
+              <input 
+                type="text"
+                placeholder="00000-000"
+                value={cep}
+                onChange={(e) => setCep(e.target.value)}
+                maxLength={9}
+                className={`w-full h-14 pl-10 pr-3 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-orange-500/40 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
+              />
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+            </div>
+          </div>
+          <button 
+            onClick={consultarCep}
+            disabled={!cep || buscandoCep || !cobrarLogistica}
+            className="w-14 h-14 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-muted text-white flex items-center justify-center transition-colors shrink-0 shadow-lg mt-auto"
+            title="Calcular frete automático"
+          >
+            {buscandoCep ? <RefreshCcw className="animate-spin w-5 h-5" /> : <Search className="w-5 h-5" />}
+          </button>
+        </div>
         <div>
-          <label className="block text-xs font-black uppercase text-muted-foreground mb-2">Frete (R$)</label>
+          <label className="block text-[10px] font-black uppercase text-muted-foreground mb-2">Frete Estimado (R$)</label>
           <InputBancario 
             placeholder="0.00" 
             value={frete === 0 ? "" : frete / 100} 

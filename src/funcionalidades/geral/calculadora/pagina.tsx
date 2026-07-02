@@ -13,6 +13,7 @@ import {
 import { toast } from "react-hot-toast";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
@@ -107,21 +108,20 @@ export function PaginaCalculadora() {
     localStorage.setItem("printlog_anos_vida_util", String(anosVidaUtil));
   }, [anosVidaUtil]);
 
-  // Aplica automaticamente o Markup (margem) baseado no perfil comercial do cliente (B2B = Markup 3.0x, B2C = Markup 5.0x)
-  useEffect(() => {
-    if (clienteProjetoId && estadoClientes.clientes.length > 0) {
-      const cliente = estadoClientes.clientes.find(c => c.id === clienteProjetoId);
+  // Aplica automaticamente o Markup (margem) baseado no perfil comercial do cliente apenas ao selecionar manualmente
+  const aoSelecionarCliente = useCallback((id: string) => {
+    setClienteProjetoId(id);
+    if (id && estadoClientes.clientes.length > 0) {
+      const cliente = estadoClientes.clientes.find(c => c.id === id);
       if (cliente) {
         const margemDesejada = cliente.tipo === "B2B" ? 20000 : 40000;
-        if (hook.margem !== margemDesejada) {
-          hook.setMargem(margemDesejada);
-          const markupTexto = cliente.tipo === "B2B" ? "3.0x" : "5.0x";
-          const pctTexto = cliente.tipo === "B2B" ? "200%" : "400%";
-          toast.success(`Perfil ${cliente.tipo}: Markup de ${markupTexto} aplicado (${pctTexto} de margem)`);
-        }
+        hook.setMargem(margemDesejada);
+        const markupTexto = cliente.tipo === "B2B" ? "3.0x" : "5.0x";
+        const pctTexto = cliente.tipo === "B2B" ? "200%" : "400%";
+        toast.success(`Perfil ${cliente.tipo}: Markup de ${markupTexto} aplicado (${pctTexto} de margem)`);
       }
     }
-  }, [clienteProjetoId, estadoClientes.clientes, hook.margem, hook.setMargem]);
+  }, [estadoClientes.clientes, hook]);
 
   const [indiceCanalSendoEditado, setIndiceCanalSendoEditado] = useState<number | null>(null);
   const [nomeCanalTemporario, setNomeCanalTemporario] = useState('');
@@ -853,14 +853,20 @@ export function PaginaCalculadora() {
                   setAbertoSeletorCliente={setAbertoSeletorCliente}
                   clientes={estadoClientes.clientes || []}
                   clienteId={clienteProjetoId}
-                  setClienteId={setClienteProjetoId}
+                  setClienteId={aoSelecionarCliente}
                   criandoNovoCliente={criandoNovoCliente}
                   aoCriarNovoCliente={async (nome) => {
                     setCriandoNovoCliente(true);
                     try {
-                      const novo = await acoesClientes.salvarCliente({ nome });
+                      const novo = await acoesClientes.salvarCliente({ 
+                        nome,
+                        tipo: "B2C",
+                        baseLegal: BaseLegalLGPD.EXECUCAO_CONTRATO,
+                        finalidadeColeta: "Gestão de pedidos e orçamentos de impressão 3D.",
+                        prazoRetencaoMeses: 60
+                      } as any);
                       if (novo && novo.id) {
-                        setClienteProjetoId(novo.id);
+                        aoSelecionarCliente(novo.id);
                         setBuscaClienteSeletor(nome); // Usa o nome fornecido em vez do retorno da API
                         setAbertoSeletorCliente(false);
                       }

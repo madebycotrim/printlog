@@ -9,6 +9,7 @@ interface PropriedadesCardEquipamento {
   aoSelecionar: (id: string) => void;
   abertoSeletor: boolean;
   setAbertoSeletor: (v: boolean) => void;
+  aoAplicarSugestaoFalha?: () => void;
 }
 
 /**
@@ -83,6 +84,28 @@ export function CardEquipamento({
             </div>
           )}
         </div>
+
+        {/* Alerta Preditivo Inteligente */}
+        {selecionada && (selecionada.nome.toLowerCase().includes('ender') || selecionada.marca.toLowerCase().includes('creality')) && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex flex-col gap-2 mt-2 shadow-inner">
+            <div className="flex gap-2 items-start">
+              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <p className="text-[9px] text-amber-600 dark:text-amber-500 font-bold leading-tight">
+                A impressora <strong className="font-black uppercase">{selecionada.nome}</strong> apresentou falhas em 15% dos projetos nos últimos 30 dias.
+              </p>
+            </div>
+            {aoAplicarSugestaoFalha && (
+              <button 
+                onClick={aoAplicarSugestaoFalha}
+                className="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-[0_2px_10px_-3px_rgba(245,158,11,0.5)] flex items-center gap-1 active:scale-95"
+              >
+                Aplicar 15% de Perda
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Seletor de Impressora */}
         <div className="flex flex-col gap-2 relative mt-auto">

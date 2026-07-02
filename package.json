@@ -7,7 +7,6 @@
     "dev": "vite",
     "dev:live": "cross-env VITE_PROXY_TARGET=https://www.printlog.com.br npm run dev",
     "dev:full": "wrangler pages dev --compatibility-date=2025-04-16 --d1 DB --proxy 5173 --command \"npm run dev\"",
-
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -30,6 +29,7 @@
     "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
     "zod": "^4.3.6",
+    "zundo": "^2.3.0",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

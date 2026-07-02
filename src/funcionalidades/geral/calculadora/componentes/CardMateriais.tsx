@@ -25,7 +25,7 @@ interface CardMateriaisProps {
 }
 
 export const CardMateriais = memo(function CardMateriais({
-  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarTempo, remover, abrirArmazem, abrirCriar, alternarFavorito, adicionarPeca
+  materiais, selecionados, alertas, busca, setBusca, alternar, atualizarQtd, atualizarTempo, atualizarNomePeca, remover, abrirArmazem, abrirCriar, alternarFavorito, adicionarPeca
 }: CardMateriaisProps) {
   const [tipoOrdenacao, setTipoOrdenacao] = useState<'favoritos' | 'uso'>('favoritos');
   const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
@@ -343,10 +343,27 @@ export const CardMateriais = memo(function CardMateriais({
                   <div className="flex-1 w-full flex flex-col gap-3">
                     {grupo.map((item, index) => (
                       <div key={item.instanceId || item.id} className="flex flex-col sm:flex-row sm:items-end justify-end gap-4 w-full">
-                        {/* Peso Input */}
-                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
+                        
+                        {/* Nome da Sub-Peça */}
+                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-[140px]">
                           {index === 0 && (
                             <label className="text-[8px] font-black uppercase tracking-widest leading-none text-zinc-400 dark:text-zinc-500">
+                              Sub-Peça (Opcional)
+                            </label>
+                          )}
+                          <input 
+                            type="text" 
+                            placeholder={`Ex: Parte ${index + 1}`} 
+                            value={item.nomePeca || ""} 
+                            onChange={(e) => atualizarNomePeca && atualizarNomePeca(item.instanceId || item.id, e.target.value)} 
+                            className="h-9 px-3 rounded-xl bg-zinc-100 dark:bg-black/40 outline-none font-black text-xs text-left border border-borda-sutil focus:border-cyan-500/30 transition-all shadow-inner text-primary dark:text-white" 
+                          />
+                        </div>
+
+                        {/* Peso Input */}
+                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-[90px]">
+                          {index === 0 && (
+                            <label className="text-[8px] font-black uppercase tracking-widest leading-none text-zinc-400 dark:text-zinc-500 text-center">
                               Peso ({item.tipo === "FDM" ? "g" : "ml"})
                             </label>
                           )}

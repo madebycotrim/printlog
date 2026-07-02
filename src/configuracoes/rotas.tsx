@@ -32,8 +32,8 @@ const PaginaInicial = lazy(() =>
   })),
 );
 const PaginaCalculadora = lazy(() =>
-  import("@/funcionalidades/geral/calculadora/pagina").then((m) => ({
-    default: m.PaginaCalculadora,
+  import("@/funcionalidades/geral/calculadora/PaginaCalculadoraV2").then((m) => ({
+    default: m.PaginaCalculadoraV2,
   })),
 );
 const PaginaOrcamentoPublico = lazy(() =>
