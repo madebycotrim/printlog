@@ -2,6 +2,27 @@ import { Cliente } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { esquemaCliente } from "../esquemas";
 
+const mapearCliente = (c: any): Cliente => ({
+    ...c,
+    tipo: c.tipo || "B2C",
+    fiel: c.fiel === 1 || c.fiel === true,
+    observacoesCRM: c.observacoes_crm ?? undefined,
+    idConsentimento: c.id_consentimento ?? undefined,
+    baseLegal: c.base_legal ?? undefined,
+    finalidadeColeta: c.finalidade_coleta ?? undefined,
+    prazoRetencaoMeses: c.prazo_retencao_meses ?? undefined,
+    ltvCentavos: c.ltv_centavos || 0,
+    totalProdutos: c.total_produtos || 0,
+    nome: c.nome ?? undefined,
+    email: c.email ?? undefined,
+    telefone: c.telefone ?? undefined,
+    historico: typeof c.historico === 'string' 
+        ? JSON.parse(c.historico) 
+        : (c.historico || []),
+    dataCriacao: new Date(c.data_criacao),
+    dataAtualizacao: new Date(c.data_atualizacao)
+});
+
 /**
  * Serviço de comunicação com a API de Clientes do Cloudflare D1.
  * Refatorado para usar o servicoBaseApi com autenticação segura via Token e validação Zod.
@@ -9,28 +30,23 @@ import { esquemaCliente } from "../esquemas";
 export const apiClientes = {
     buscarTodos: async (_usuarioId: string): Promise<Cliente[]> => {
         const dados = await servicoBaseApi.get<any[]>("/api/clientes");
+        return dados.map(mapearCliente);
+    },
+
+    listarPaginado: async ({ limit, offset, search }: { limit: number, offset: number, search?: string }): Promise<{ items: Cliente[], total: number }> => {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            offset: offset.toString()
+        });
+        if (search) {
+            params.append("search", search);
+        }
         
-        // Mapeamento de snake_case para camelCase
-        return dados.map((c: any) => ({
-            ...c,
-            tipo: c.tipo || "B2C",
-            fiel: c.fiel === 1 || c.fiel === true,
-            observacoesCRM: c.observacoes_crm ?? undefined,
-            idConsentimento: c.id_consentimento ?? undefined,
-            baseLegal: c.base_legal ?? undefined,
-            finalidadeColeta: c.finalidade_coleta ?? undefined,
-            prazoRetencaoMeses: c.prazo_retencao_meses ?? undefined,
-            ltvCentavos: c.ltv_centavos || 0,
-            totalProdutos: c.total_produtos || 0,
-            nome: c.nome ?? undefined,
-            email: c.email ?? undefined,
-            telefone: c.telefone ?? undefined,
-            historico: typeof c.historico === 'string' 
-                ? JSON.parse(c.historico) 
-                : (c.historico || []),
-            dataCriacao: new Date(c.data_criacao),
-            dataAtualizacao: new Date(c.data_atualizacao)
-        }));
+        const dados = await servicoBaseApi.get<any>(`/api/clientes?${params.toString()}`);
+        return {
+            items: dados.items.map(mapearCliente),
+            total: dados.total
+        };
     },
 
     salvar: async (dados: Partial<Cliente>, _usuarioId: string): Promise<Cliente> => {

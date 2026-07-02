@@ -7,6 +7,7 @@ export type OrdenacaoInsumo = "nome" | "quantidade" | "atualizacao" | "custo";
 
 interface ArmazemInsumosState {
     insumos: Insumo[];
+    totalInsumos: number;
     carregando: boolean;
     jaCarregou: boolean;
 
@@ -33,7 +34,8 @@ interface ArmazemInsumosState {
     insumoHistorico: Insumo | null;
 
     // Ações de Escrita no Banco
-    definirInsumos: (lista: Insumo[]) => void;
+    definirInsumos: (lista: Insumo[], total?: number) => void;
+    adicionarPagina: (lista: Insumo[]) => void;
     adicionarOuAtualizarInsumo: (insumo: Insumo) => void;
     removerInsumo: (id: string) => void;
     definirCarregando: (valor: boolean) => void;
@@ -62,6 +64,7 @@ export const useArmazemInsumos = create<ArmazemInsumosState>()(
     persist(
         (set) => ({
             insumos: [],
+            totalInsumos: 0,
             carregando: false,
             jaCarregou: false,
 
@@ -85,7 +88,13 @@ export const useArmazemInsumos = create<ArmazemInsumosState>()(
             modalHistoricoAberto: false,
             insumoHistorico: null,
 
-            definirInsumos: (lista) => set({ insumos: lista }),
+            definirInsumos: (lista, total) => set({ insumos: lista, totalInsumos: total ?? lista.length }),
+
+            adicionarPagina: (novosInsumos) => set((state) => {
+                const mapIds = new Set(state.insumos.map(i => i.id));
+                const unicos = novosInsumos.filter(i => !mapIds.has(i.id));
+                return { insumos: [...state.insumos, ...unicos] };
+            }),
 
             adicionarOuAtualizarInsumo: (insumo) => set((state) => {
                 const existe = state.insumos.find((i) => i.id === insumo.id);

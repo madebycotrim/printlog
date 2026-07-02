@@ -18,14 +18,38 @@ export const onRequestGet: PagesFunction<Env, any, { uid: string }> = async (con
     const usuarioId = data.uid;
     if (!usuarioId) return new Response("Não autorizado", { status: 401 });
 
+    const url = new URL(request.url);
+    const limit = url.searchParams.get("limit");
+    const offset = url.searchParams.get("offset");
+    const search = url.searchParams.get("search");
+
+    let query = "SELECT * FROM materiais WHERE id_usuario = ? AND arquivado = 0";
+    const bindParams: any[] = [usuarioId];
+
+    if (search) {
+        query += " AND (nome LIKE ? OR fabricante LIKE ?)";
+        bindParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    query += " ORDER BY data_criacao DESC";
+
+    if (limit) {
+        query += " LIMIT ?";
+        bindParams.push(parseInt(limit, 10));
+        
+        if (offset) {
+            query += " OFFSET ?";
+            bindParams.push(parseInt(offset, 10));
+        }
+    }
+
     try {
-        const { results: materiais } = await env.DB.prepare(
-            "SELECT * FROM materiais WHERE id_usuario = ? AND arquivado = 0 ORDER BY data_criacao DESC"
-        ).bind(usuarioId).all();
+        const stmt = env.DB.prepare(query).bind(...bindParams);
+        const { results: materiais } = await stmt.all();
 
         const materiaisComHistorico = await Promise.all(materiais.map(async (m: any) => {
             const { results: historico } = await env.DB.prepare(
-                "SELECT * FROM historico_uso_materiais WHERE id_material = ? AND id_usuario = ? ORDER BY data DESC"
+                "SELECT * FROM historico_uso_materiais WHERE id_material = ? AND id_usuario = ? ORDER BY data DESC LIMIT 10"
             ).bind(m.id, usuarioId).all();
             
             return {
@@ -35,6 +59,22 @@ export const onRequestGet: PagesFunction<Env, any, { uid: string }> = async (con
                 historicoUso: historico || []
             };
         }));
+
+        if (limit) {
+            let countQuery = "SELECT COUNT(*) as total FROM materiais WHERE id_usuario = ? AND arquivado = 0";
+            const countBindParams: any[] = [usuarioId];
+            if (search) {
+                countQuery += " AND (nome LIKE ? OR fabricante LIKE ?)";
+                countBindParams.push(`%${search}%`, `%${search}%`);
+            }
+            
+            const countResult = await env.DB.prepare(countQuery).bind(...countBindParams).first();
+            const total = countResult ? (countResult.total as number) : 0;
+
+            return new Response(JSON.stringify({ items: materiaisComHistorico, total }), {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
 
         return new Response(JSON.stringify(materiaisComHistorico), {
             headers: { "Content-Type": "application/json" }

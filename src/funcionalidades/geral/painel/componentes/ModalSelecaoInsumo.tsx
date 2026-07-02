@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, Search, Star, Settings, Package } from "lucide-react";
+import { X, Search, Star, Settings } from "lucide-react";
 import { Dialogo } from "@/compartilhado/componentes";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";

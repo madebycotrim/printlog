@@ -122,9 +122,6 @@ export function PaginaInicial() {
   const jaCarregouInsumos = useArmazemInsumos((s) => s.jaCarregou);
   const jaCarregouImpressoras = useArmazemImpressoras((s) => s.jaCarregou);
 
-  const { insumos: insumosEstoque, adicionarOuAtualizarInsumo } = useArmazemInsumos();
-  const { reporEstoque: reporEstoqueMat } = useArmazemMateriais();
-
   const acoesMateriais = useArmazemMateriais(useShallow(s => ({ definirMateriais: s.definirMateriais, definirJaCarregou: s.definirJaCarregou })));
   const acoesInsumos = useArmazemInsumos(useShallow(s => ({ definirInsumos: s.definirInsumos, definirJaCarregou: s.definirJaCarregou })));
   const acoesImpressoras = useArmazemImpressoras(useShallow(s => ({ definirImpressoras: s.definirImpressoras, definirJaCarregou: s.definirJaCarregou })));

@@ -33,6 +33,7 @@ export interface RegistroManutencao {
 }
 
 export interface RegistrarManutencaoInput {
+  id?: string;
   idImpressora: string;
   tipo: TipoManutencao;
   descricao: string;

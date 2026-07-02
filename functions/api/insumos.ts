@@ -9,19 +9,48 @@ interface Env {
 }
 
 /**
- * BUSCAR INSUMOS (Apenas Ativos)
+ * BUSCAR INSUMOS (Apenas Ativos) - COM PAGINAÇÃO
  */
 export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
-    const { env, data } = context;
+    const { env, request, data } = context;
 
     // Obtido com segurança via Middleware JWT
     const usuarioId = data.uid;
     if (!usuarioId) return new Response("Não autorizado", { status: 401 });
 
+    const url = new URL(request.url);
+    const limiteStr = url.searchParams.get("limit");
+    const offsetStr = url.searchParams.get("offset");
+    const termo = url.searchParams.get("search");
+
+    const limit = limiteStr ? parseInt(limiteStr, 10) : null;
+    const offset = offsetStr ? parseInt(offsetStr, 10) : 0;
+
     try {
-        const { results: insumos } = await env.DB.prepare(
-            "SELECT * FROM insumos WHERE id_usuario = ? AND arquivado = 0 ORDER BY nome ASC"
-        ).bind(usuarioId).all();
+        let sql = "SELECT * FROM insumos WHERE id_usuario = ? AND arquivado = 0";
+        let sqlCount = "SELECT COUNT(*) as total FROM insumos WHERE id_usuario = ? AND arquivado = 0";
+        const params: any[] = [usuarioId];
+
+        if (termo) {
+            sql += " AND nome LIKE ?";
+            sqlCount += " AND nome LIKE ?";
+            params.push(`%${termo}%`);
+        }
+
+        sql += " ORDER BY nome ASC";
+
+        if (limit !== null) {
+            sql += " LIMIT ? OFFSET ?";
+            params.push(limit, offset);
+        }
+
+        const [resultadoCount, resultadoBusca] = await env.DB.batch([
+            env.DB.prepare(sqlCount).bind(...(termo ? [usuarioId, `%${termo}%`] : [usuarioId])),
+            env.DB.prepare(sql).bind(...params)
+        ]);
+
+        const insumos = resultadoBusca.results;
+        const total = (resultadoCount.results[0] as any)?.total || 0;
 
         const insumosComHistorico = await Promise.all(insumos.map(async (i: any) => {
             const { results: historico } = await env.DB.prepare(
@@ -40,6 +69,17 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 historico: historico || []
             };
         }));
+
+        if (limit !== null) {
+            return new Response(JSON.stringify({
+                items: insumosComHistorico,
+                total,
+                limit,
+                offset
+            }), {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
 
         return new Response(JSON.stringify(insumosComHistorico), {
             headers: { "Content-Type": "application/json" }

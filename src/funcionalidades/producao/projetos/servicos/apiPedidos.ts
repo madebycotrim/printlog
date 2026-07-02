@@ -107,6 +107,11 @@ export const apiPedidos = {
         return (resultados || []).map(apiPedidos.mapearParaFrontend);
     },
 
+    buscarPorCliente: async (clienteId: string, _usuarioId: string): Promise<Pedido[]> => {
+        const resultados = await servicoBaseApi.get<any[]>(`/api/pedidos?clienteId=${clienteId}`);
+        return (resultados || []).map(apiPedidos.mapearParaFrontend);
+    },
+
     /**
      * Mapeia um objeto de pedido do frontend (camelCase) para o formato do banco (snake_case).
      * Converte strings vazias em null para IDs e garante tipos corretos para o SQLite.

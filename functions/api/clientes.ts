@@ -45,11 +45,26 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         
         // ── BUSCAR (Com Descriptografia On-the-fly) ──
         if (metodo === "GET") {
-            const { results } = await env.DB.prepare(
-                "SELECT * FROM clientes WHERE id_usuario = ? AND arquivado = 0"
-            ).bind(usuarioId).all();
+            const limitStr = url.searchParams.get("limit");
+            const offsetStr = url.searchParams.get("offset");
+            const searchStr = url.searchParams.get("search");
 
-            // Descriptografa os dados sensíveis antes de enviar para a UI
+            const limit = limitStr ? parseInt(limitStr, 10) : null;
+            const offset = offsetStr ? parseInt(offsetStr, 10) : 0;
+
+            let sql = "SELECT * FROM clientes WHERE id_usuario = ? AND arquivado = 0";
+            let sqlCount = "SELECT COUNT(*) as total FROM clientes WHERE id_usuario = ? AND arquivado = 0";
+            const params: any[] = [usuarioId];
+
+            // Não podemos fazer LIKE nativo no banco em dados criptografados perfeitamente.
+            // Para nome, como é sensível a descriptografia, buscaremos no JS se search for enviado.
+            // Mas para otimizar, puxamos todos (ou filtramos no script). 
+            // O correto em um banco criptografado é que a busca parcial não rola na query nativa a menos que façamos blind indexing.
+            // Para não quebrar, vamos buscar todos do banco e depois filtrar/paginar em memória no worker.
+
+            const { results } = await env.DB.prepare(sql).bind(...params).all();
+
+            // Descriptografa os dados sensíveis
             const clientesProtegidos = await Promise.all(results.map(async (c: any) => {
                 return {
                     ...c,
@@ -62,10 +77,32 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 };
             }));
 
-            // Ordenação manual (já que o banco não consegue ordenar dado criptografado)
-            clientesProtegidos.sort((a, b) => a.nome.localeCompare(b.nome));
+            let filtrados = clientesProtegidos;
+            if (searchStr) {
+                const term = searchStr.toLowerCase();
+                filtrados = filtrados.filter(c => 
+                    c.nome.toLowerCase().includes(term) ||
+                    (c.email && c.email.toLowerCase().includes(term))
+                );
+            }
 
-            return new Response(JSON.stringify(clientesProtegidos), { 
+            // Ordenação manual
+            filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            const total = filtrados.length;
+            if (limit !== null) {
+                const paginados = filtrados.slice(offset, offset + limit);
+                return new Response(JSON.stringify({
+                    items: paginados,
+                    total,
+                    limit,
+                    offset
+                }), { 
+                    headers: { "Content-Type": "application/json" } 
+                });
+            }
+
+            return new Response(JSON.stringify(filtrados), { 
                 headers: { "Content-Type": "application/json" } 
             });
         }
@@ -166,7 +203,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
         if (erro instanceof z.ZodError) {
-            const mensagens = erro.errors.map(e => e.message).join(", ");
+            const mensagens = erro.issues.map((e: any) => e.message).join(", ");
             return new Response(JSON.stringify({ 
                 sucesso: false, 
                 mensagem: `Erro de validação: ${mensagens}` 

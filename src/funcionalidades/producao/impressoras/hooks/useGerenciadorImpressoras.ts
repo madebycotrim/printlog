@@ -49,6 +49,8 @@ export function useGerenciadorImpressoras() {
       fecharAposentar: s.fecharAposentar,
       abrirGerenciamento: s.abrirGerenciamento,
       fecharGerenciamento: s.fecharGerenciamento,
+      adicionarOuAtualizarImpressora: s.adicionarOuAtualizarImpressora,
+      removerImpressora: s.removerImpressora,
     })),
   );
 
@@ -88,23 +90,21 @@ export function useGerenciadorImpressoras() {
     const impressoraExistente = estadoArmazem.impressoras.find(i => i.id === id);
 
     const impressoraParaSalvar: Impressora = {
-      id,
-      nome: impressora.nome,
-      tecnologia: impressora.tecnologia,
-      status: impressora.status || "livre",
-      marca: impressora.marca || "",
-      modeloBase: impressora.modeloBase || "",
-      imagemUrl: impressora.imagemUrl || "",
-      taxaHoraCentavos: impressora.taxaHoraCentavos || 0,
-      horimetroTotalMinutos: impressora.horimetroTotalMinutos || 0,
-      intervaloRevisaoMinutos: impressora.intervaloRevisaoMinutos || 30000,
-      valorCompraCentavos: impressora.valorCompraCentavos || 0,
-      potenciaWatts: impressora.potenciaWatts || 0,
-      consumoKw: impressora.consumoKw || 0,
-      observacoes: impressora.observacoes || "",
+      marca: "",
+      modeloBase: "",
+      imagemUrl: "",
+      taxaHoraCentavos: 0,
+      horimetroTotalMinutos: 0,
+      intervaloRevisaoMinutos: 30000,
+      valorCompraCentavos: 0,
+      potenciaWatts: 0,
+      consumoKw: 0,
+      observacoes: "",
       historicoManutencao: impressoraExistente?.historicoManutencao || [],
       pecasDesgaste: impressoraExistente?.pecasDesgaste || [],
       ...impressora,
+      id,
+      status: impressora.status || "livre",
     };
 
     // ⚡️ OTIMISTA
@@ -183,8 +183,7 @@ export function useGerenciadorImpressoras() {
     acoesArmazem.fecharGerenciamento();
 
     try {
-      const salvo = await apiManutencoes.salvar(novoRegistro, usuarioId);
-      const historicoFinal = [salvo, ...(impressoraOriginal.historicoManutencao || [])];
+      await apiManutencoes.salvar(novoRegistro, usuarioId);
       
       if (registro.horasMaquinaNoMomentoMinutos && registro.horasMaquinaNoMomentoMinutos > (impressoraOriginal.horimetroTotalMinutos || 0)) {
         await apiImpressoras.salvar({ 
@@ -193,10 +192,7 @@ export function useGerenciadorImpressoras() {
         }, usuarioId);
       }
 
-      acoesArmazem.adicionarOuAtualizarImpressora({
-        ...impressoraAtualizada,
-        historicoManutencao: historicoFinal,
-      });
+      acoesArmazem.adicionarOuAtualizarImpressora(impressoraAtualizada);
 
       auditoria.evento("REGISTRAR_MANUTENCAO", { id, tipo: registro.tipo });
       toast.success("Manutenção registrada!");

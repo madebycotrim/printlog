@@ -6,6 +6,7 @@ import { useMemo, useEffect, useCallback, useState } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiClientes } from "../servicos/apiClientes";
 import { toast } from "react-hot-toast";
+import { useDebounce } from "@/compartilhado/hooks/useDebounce";
 
 /**
  * Hook de domínio para gerenciamento de clientes.
@@ -17,25 +18,64 @@ export function useGerenciadorClientes() {
   const usuarioId = usuario?.uid;
   const [erro, setErro] = useState(false);
 
+  const [paginaAtual, definirPaginaAtual] = useState(0);
+  const [carregandoMais, definirCarregandoMais] = useState(false);
+  const [temMais, definirTemMais] = useState(true);
+
+  const termoDebounced = useDebounce(estado.filtroBusca, 300);
+
   // 📥 Carregar dados do Banco
   const carregarClientes = useCallback(async () => {
     if (!usuarioId) return;
     try {
       setErro(false);
       estado.definirCarregando(true);
-      const dados = await apiClientes.buscarTodos(usuarioId);
-      estado.definirClientes(dados);
+      const limit = 10;
+      const dados = await apiClientes.listarPaginado({
+        limit,
+        offset: 0,
+        search: termoDebounced || undefined
+      });
+      estado.definirClientes(dados.items, dados.total);
+      definirTemMais(dados.items.length === limit);
+      definirPaginaAtual(0);
     } catch (erro) {
       setErro(true);
       toast.error("Erro ao carregar clientes.");
     } finally {
       estado.definirCarregando(false);
     }
-  }, [usuarioId]);
+  }, [usuarioId, termoDebounced]);
 
   useEffect(() => {
     carregarClientes();
   }, [carregarClientes]);
+
+  const carregarMais = useCallback(async () => {
+    if (!usuarioId || carregandoMais || !temMais) return;
+    
+    definirCarregandoMais(true);
+    try {
+      const limit = 10;
+      const novaPagina = paginaAtual + 1;
+      const offset = novaPagina * limit;
+      
+      const dados = await apiClientes.listarPaginado({
+        limit,
+        offset,
+        search: termoDebounced || undefined
+      });
+      
+      estado.adicionarPagina(dados.items);
+      definirTemMais(dados.items.length === limit);
+      definirPaginaAtual(novaPagina);
+    } catch (erro) {
+      console.error("Erro ao carregar mais clientes:", erro);
+      toast.error("Erro ao carregar mais clientes.");
+    } finally {
+      definirCarregandoMais(false);
+    }
+  }, [usuarioId, carregandoMais, temMais, paginaAtual, termoDebounced, estado]);
 
   // 🔍 Lógica de Filtragem e Ordenação
   const clientesFiltrados = useMemo(() => {
@@ -84,13 +124,19 @@ export function useGerenciadorClientes() {
         nome: dados.nome || "",
         email: dados.email || "",
         telefone: dados.telefone || "",
-        statusComercial: dados.statusComercial || "Prospect",
-        observacoesCrm: dados.observacoesCrm || "",
-        arquivado: false,
+        observacoesCRM: dados.observacoesCRM || "",
         ltvCentavos: clienteExistente?.ltvCentavos || 0,
+        totalProdutos: clienteExistente?.totalProdutos || 0,
+        fiel: clienteExistente?.fiel || false,
         dataCriacao: clienteExistente?.dataCriacao || new Date(),
+        dataAtualizacao: new Date(),
+        idConsentimento: clienteExistente?.idConsentimento || "",
+        baseLegal: clienteExistente?.baseLegal || ("consentimento" as any),
+        finalidadeColeta: clienteExistente?.finalidadeColeta || "",
+        prazoRetencaoMeses: clienteExistente?.prazoRetencaoMeses || 60,
+        anonimizado: clienteExistente?.anonimizado || false,
         ...dados,
-      };
+      } as Cliente;
 
       // ⚡️ OTIMISTA
       estado.adicionarOuAtualizarCliente(clienteParaSalvar);
@@ -149,6 +195,8 @@ export function useGerenciadorClientes() {
       ...estado,
       clientesFiltrados,
       erro,
+      carregandoMais,
+      temMais,
     },
     acoes: {
       pesquisar: estado.pesquisar,
@@ -163,6 +211,7 @@ export function useGerenciadorClientes() {
       salvarCliente,
       removerCliente,
       recarregar: carregarClientes,
+      carregarMais,
     },
   };
 }

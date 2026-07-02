@@ -13,7 +13,30 @@ export const apiMateriais = {
   async listar(_usuarioId: string): Promise<Material[]> {
     const dadosInternos = await servicoBaseApi.get<any[]>("/api/materiais");
 
-    return dadosInternos.map((m: any) => ({
+    return dadosInternos.map(this.mapearMaterial);
+  },
+
+  /**
+   * Busca materiais com suporte a paginação e busca no backend (D1)
+   */
+  async listarPaginado(parametros: { limit: number; offset: number; search?: string }): Promise<{ items: Material[]; total: number }> {
+    let url = `/api/materiais?limit=${parametros.limit}&offset=${parametros.offset}`;
+    if (parametros.search) {
+      url += `&search=${encodeURIComponent(parametros.search)}`;
+    }
+
+    const resposta = await servicoBaseApi.get<{ items: any[]; total: number }>(url);
+    return {
+      items: (resposta.items || []).map(this.mapearMaterial),
+      total: resposta.total || 0
+    };
+  },
+
+  /**
+   * Função auxiliar para converter do banco para o Frontend
+   */
+  mapearMaterial(m: any): Material {
+    return {
       id: m.id,
       tipo: m.tipo,
       nome: m.nome,
@@ -27,7 +50,7 @@ export const apiMateriais = {
       arquivado: m.arquivado === 1,
       favorito: m.favorito === 1,
       dataCriacao: new Date(m.data_criacao),
-      dataAtualizacao: new Date(m.data_atualizacao),
+      dataAtualizacao: m.data_atualizacao ? new Date(m.data_atualizacao) : new Date(),
       historicoUso: (typeof m.historicoUso === 'string' 
         ? JSON.parse(m.historicoUso) 
         : (m.historicoUso || [])).map((h: any) => ({
@@ -37,7 +60,7 @@ export const apiMateriais = {
         quantidadeGastaGramas: h.quantidade_gasta_gramas || h.quantidadeGastaGramas,
         status: h.status
       }))
-    }));
+    };
   },
 
   /**

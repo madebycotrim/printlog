@@ -21,8 +21,34 @@ export function MonitorPecas({ pecas }: MonitorPecasProps) {
         );
     }
 
+    const pecasCriticas = pecas.filter(p => (p.horasUsoAtualMinutos / p.vidaUtilMinutos) * 100 > 90);
+
     return (
         <div className="bg-white dark:bg-white/[0.01] p-8 rounded-3xl border border-zinc-100 dark:border-white/5 shadow-sm space-y-10">
+            {/* ÁREA DE ALERTAS CRÍTICOS */}
+            {pecasCriticas.length > 0 && (
+                <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none text-rose-500">
+                        <AlertTriangle size={100} />
+                    </div>
+                    <div className="flex items-start gap-4 relative z-10">
+                        <div className="p-3 bg-rose-500/20 rounded-xl text-rose-600 dark:text-rose-400 mt-1">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest">
+                                    Alerta Crítico de Manutenção
+                                </h3>
+                            </div>
+                            <p className="text-xs text-rose-600/80 dark:text-rose-300/80 mt-1 leading-relaxed max-w-xl">
+                                <strong>{pecasCriticas.length} componente(s)</strong> ultrapassaram o limite de uso seguro. A chance de falha estrutural e perda de impressões é iminente. Planeje uma manutenção corretiva o mais rápido possível.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Grid de Componentes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
                 {pecas.map((peca, idx) => {

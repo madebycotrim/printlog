@@ -67,7 +67,6 @@ export function useFinanceiro() {
       valorCentavos: dados.valorCentavos,
       descricao: dados.descricao,
       categoria: dados.categoria || "Outros",
-      arquivado: false,
       dataCriacao: new Date(),
     };
 

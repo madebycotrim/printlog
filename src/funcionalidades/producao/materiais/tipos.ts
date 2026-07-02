@@ -23,4 +23,6 @@ export interface Material {
   historicoUso: RegistroUso[]; // Novo campo para o histórico real
   arquivado?: boolean; // Controle de Soft Delete para preservar relatórios passados
   favorito?: boolean; // Marcação de material mais utilizado/preferido
+  dataCriacao?: Date;
+  dataAtualizacao?: Date;
 }

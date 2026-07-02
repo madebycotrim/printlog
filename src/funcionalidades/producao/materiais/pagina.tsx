@@ -139,6 +139,9 @@ export function PaginaMateriais() {
               aoHistorico={(m, aba) => acoes.abrirHistorico(m.id, aba)}
               aoExcluir={(m) => acoes.abrirExcluir(m.id)}
               aoAlternarFavorito={acoes.alternarFavorito}
+              aoCarregarMais={acoes.carregarMais}
+              temMais={estado.temMais}
+              carregandoMais={estado.carregandoMais}
             />
           </motion.div>
         )}

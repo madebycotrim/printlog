@@ -1,11 +1,12 @@
 import { useEffect, useCallback, useMemo, useState } from "react";
-import { CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
+import { CriarPedidoInput, AtualizarPedidoInput, Pedido } from "../tipos";
 import { servicoPedidos } from "../servicos/servicoPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { toast } from "react-hot-toast";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemPedidos } from "../estado/armazemPedidos";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
 
 export function usePedidos() {
   const pedidos = useArmazemPedidos((s) => s.pedidos);
@@ -50,22 +51,26 @@ export function usePedidos() {
   const criarPedido = async (dados: CriarPedidoInput) => {
     if (!usuarioId) return;
     const id = crypto.randomUUID();
+
+    const clientes = useArmazemClientes.getState().clientes;
+    const cliente = clientes.find(c => c.id === dados.idCliente);
+    const nomeCliente = cliente ? cliente.nome : "Cliente avulso";
+
     const pedidoOtimista: Pedido = {
-      id,
       idUsuario: usuarioId,
+      status: StatusPedido.A_FAZER,
+      dataCriacao: new Date(),
+      configuracoes: dados.configuracoes || {},
+      ...dados,
+      id,
       idCliente: dados.idCliente || "",
-      nomeCliente: dados.nomeCliente || "Cliente avulso",
+      nomeCliente,
       idImpressora: dados.idImpressora || "",
       descricao: dados.descricao || "",
-      status: StatusPedido.A_FAZER,
       valorCentavos: dados.valorCentavos || 0,
       tempoMinutos: dados.tempoMinutos || 0,
       pesoGramas: dados.pesoGramas || 0,
-      dataCriacao: new Date(),
-      configuracoes: dados.configuracoes || {},
-      arquivado: false,
-      ...dados
-    } as any;
+    };
 
     // ⚡️ OTIMISTA
     adicionarPedido(pedidoOtimista);
@@ -90,7 +95,7 @@ export function usePedidos() {
     if (!pedidoOriginal) return;
 
     // ⚡️ OTIMISTA
-    atualizarPedidoNoEstado(dados.id, dados);
+    atualizarPedidoNoEstado(dados.id, dados as any);
 
     try {
       const atualizado = await servicoPedidos.atualizarPedido(dados, usuarioId);

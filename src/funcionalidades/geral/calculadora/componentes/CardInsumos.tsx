@@ -3,7 +3,7 @@ import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, Lay
 import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
-import { CATEGORIAS, obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
+import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 import { useDragScroll } from "@/compartilhado/hooks/useDragScroll";
 
 interface CardInsumosProps {

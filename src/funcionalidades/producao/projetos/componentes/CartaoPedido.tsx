@@ -397,9 +397,16 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
         aberto={modalFalhaAberto}
         aoFechar={() => setModalFalhaAberto(false)}
         pedido={pedido}
-        aoConfirmar={() => {
-          // Aqui no futuro chamaremos o serviço real
-          toast.success("Falha registrada. O sistema descontou o material perdido.");
+        aoConfirmar={(id, gramasPerdidas) => {
+          moverPedido(id, StatusPedido.A_FAZER);
+          
+          if (gramasPerdidas > 0 && pedido.material) {
+            // No futuro, conectaremos essa perda ao relatório financeiro de desperdício
+            // e ao hook do ArmazemMateriais para abater diretamente
+            toast.success(`Falha registrada. Descontado ${gramasPerdidas}g de material.`);
+          } else {
+            toast.success("Falha registrada sem perda de material.");
+          }
         }}
       />
 

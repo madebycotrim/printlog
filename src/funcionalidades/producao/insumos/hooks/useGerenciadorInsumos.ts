@@ -10,8 +10,9 @@ import {
 } from "@/funcionalidades/producao/insumos/tipos";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { apiInsumos } from "../servicos/apiInsumos";
+import { useDebounce } from "@/compartilhado/hooks/useDebounce";
 
 export function useGerenciadorInsumos() {
   // -----------------------------------------------------------------------------------
@@ -57,10 +58,17 @@ export function useGerenciadorInsumos() {
       fecharArquivamento: s.fecharArquivamento,
       abrirHistorico: s.abrirHistorico,
       fecharHistorico: s.fecharHistorico,
+      adicionarPagina: s.adicionarPagina,
+      definirInsumos: s.definirInsumos,
     })),
   );
 
   const { usuario } = useAutenticacao();
+  const termoDebounced = useDebounce(estadoArmazem.filtroPesquisa, 300);
+
+  const [paginaAtual, definirPaginaAtual] = useState(0);
+  const [carregandoMais, definirCarregandoMais] = useState(false);
+  const [temMais, definirTemMais] = useState(true);
 
   // 🔄 SINCRONIZAÇÃO INICIAL COM D1
   useEffect(() => {
@@ -68,9 +76,17 @@ export function useGerenciadorInsumos() {
       const carregarInsumos = async () => {
         acoesArmazem.definirCarregando(true);
         try {
-          const dadosDoBanco = await apiInsumos.listar(usuario.uid);
-          dadosDoBanco.forEach(i => acoesArmazem.adicionarOuAtualizarInsumo(i));
-          auditoria.evento("SINCRONIZACAO_INSUMOS_SUCESSO", { qtd: dadosDoBanco.length });
+          const limit = 10;
+          const dadosDoBanco = await apiInsumos.listarPaginado({
+            limit,
+            offset: 0,
+            search: termoDebounced || undefined
+          });
+          
+          acoesArmazem.definirInsumos(dadosDoBanco.items, dadosDoBanco.total);
+          definirTemMais(dadosDoBanco.items.length === limit);
+          definirPaginaAtual(0);
+          auditoria.evento("SINCRONIZACAO_INSUMOS_SUCESSO", { qtd: dadosDoBanco.items.length });
         } catch (erro) {
           console.error("Falha ao sincronizar insumos:", erro);
         } finally {
@@ -79,7 +95,32 @@ export function useGerenciadorInsumos() {
       };
       carregarInsumos();
     }
-  }, [usuario?.uid, acoesArmazem]);
+  }, [usuario?.uid, termoDebounced]);
+
+  const carregarMais = useCallback(async () => {
+    if (!usuario?.uid || carregandoMais || !temMais) return;
+    
+    definirCarregandoMais(true);
+    try {
+      const limit = 10;
+      const novaPagina = paginaAtual + 1;
+      const offset = novaPagina * limit;
+      
+      const dadosDoBanco = await apiInsumos.listarPaginado({
+        limit,
+        offset,
+        search: termoDebounced || undefined
+      });
+      
+      acoesArmazem.adicionarPagina(dadosDoBanco.items);
+      definirTemMais(dadosDoBanco.items.length === limit);
+      definirPaginaAtual(novaPagina);
+    } catch (erro) {
+      console.error("Erro ao carregar mais insumos:", erro);
+    } finally {
+      definirCarregandoMais(false);
+    }
+  }, [usuario?.uid, carregandoMais, temMais, paginaAtual, termoDebounced, acoesArmazem]);
 
   // -----------------------------------------------------------------------------------
   // 🧠 DERIVAÇÕES DE ESTADO (Listas e Filtragens)
@@ -392,6 +433,8 @@ export function useGerenciadorInsumos() {
       insumosFiltradosOrdenados,
       agrupadosPorCategoria,
       kpis,
+      carregandoMais,
+      temMais,
     },
     acoes: {
       ...acoesArmazem,
@@ -400,6 +443,7 @@ export function useGerenciadorInsumos() {
       confirmarReposicaoInsumo,
       confirmarArquivamento,
       alternarFavorito,
+      carregarMais,
     },
   };
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { RegistroManutencao, PecaDesgaste, RegistrarManutencaoInput } from "../../tipos";
 import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
 import { toast } from "react-hot-toast";
 
 export function useManutencao(idImpressora?: string) {
@@ -27,6 +28,9 @@ export function useManutencao(idImpressora?: string) {
 
   const registrarManutencao = async (dados: RegistrarManutencaoInput) => {
     const id = dados.id || crypto.randomUUID();
+    const impressora = useArmazemImpressoras.getState().impressoras.find(i => i.id === dados.idImpressora);
+    const horasMaquina = impressora?.horimetroTotalMinutos || 0;
+
     const novaManutencaoOtimista: RegistroManutencao = {
       id,
       idImpressora: dados.idImpressora,
@@ -34,10 +38,9 @@ export function useManutencao(idImpressora?: string) {
       descricao: dados.descricao,
       custoCentavos: dados.custoCentavos || 0,
       data: new Date().toISOString(),
-      horasMaquinaNoMomentoMinutos: dados.horasMaquinaNoMomentoMinutos,
-      observacoes: dados.observacoes || "",
-      pecasTrocadas: dados.pecasTrocadas || [],
-      responsavel: dados.responsavel || "",
+      horasMaquinaNoMomentoMinutos: horasMaquina,
+      pecasTrocadas: dados.pecasTrocadas?.join(", ") || "",
+      responsavel: "Usuário",
       tempoParadaMinutos: dados.tempoParadaMinutos || 0,
     };
 

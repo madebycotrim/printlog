@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { CardMaterial } from "./CardMaterial";
 import { Material } from "../tipos";
+import { useEffect, useRef } from "react";
 
 interface ListaMateriaisProps {
   materiais: Material[];
@@ -11,9 +12,41 @@ interface ListaMateriaisProps {
   aoHistorico: (m: Material, aba?: "extrato" | "novo" | "cadastro") => void;
   aoExcluir: (m: Material) => void;
   aoAlternarFavorito: (id: string) => void;
+  
+  // Props de Paginação
+  aoCarregarMais?: () => void;
+  temMais?: boolean;
+  carregandoMais?: boolean;
 }
 
-export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistorico, aoExcluir, aoAlternarFavorito }: ListaMateriaisProps) {
+export function ListaMateriais({ 
+  materiais, 
+  agrupadosPorTipo, 
+  aoEditar, 
+  aoHistorico, 
+  aoExcluir, 
+  aoAlternarFavorito,
+  aoCarregarMais,
+  temMais = false,
+  carregandoMais = false
+}: ListaMateriaisProps) {
+  
+  const observerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && temMais && !carregandoMais && aoCarregarMais) {
+        aoCarregarMais();
+      }
+    }, { threshold: 0.1, rootMargin: "200px" });
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [temMais, carregandoMais, aoCarregarMais]);
+
   if (materiais.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center min-h-[400px] relative overflow-hidden">
@@ -63,7 +96,7 @@ export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistor
               <div className="flex-1 h-px bg-borda-sutil/40" />
             </div>
 
-                        <motion.div 
+            <motion.div 
               variants={variantesContainerLista}
               initial="inicial"
               animate="animar"
@@ -85,6 +118,20 @@ export function ListaMateriais({ materiais, agrupadosPorTipo, aoEditar, aoHistor
           </motion.div>
         ))}
       </AnimatePresence>
+
+      {/* Gatilho para Scroll Infinito */}
+      {temMais && (
+        <div ref={observerRef} className="w-full flex justify-center py-8">
+          {carregandoMais && (
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 size={24} className="text-primary animate-spin opacity-50" />
+              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                Carregando mais...
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -2,6 +2,26 @@ import { Insumo, RegistroMovimentacaoInsumo } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { insumoSchema, registroMovimentacaoInsumoSchema } from "../esquemas";
 
+const mapearInsumo = (i: any): Insumo => ({
+  id: i.id,
+  nome: i.nome,
+  descricao: i.descricao,
+  categoria: i.categoria,
+  marca: i.marca,
+  linkCompra: i.link_compra || i.linkCompra,
+  unidadeMedida: i.unidade_medida || i.unidadeMedida,
+  unidadeConsumo: i.unidade_consumo || i.unidadeConsumo,
+  itemFracionavel: Boolean(i.item_fracionavel ?? i.itemFracionavel),
+  rendimentoTotal: i.rendimento_total ?? i.rendimentoTotal,
+  quantidadeAtual: i.quantidade_atual ?? i.quantidadeAtual,
+  quantidadeMinima: i.quantidade_minima ?? i.quantidadeMinima,
+  custoMedioUnidade: i.custo_medio_unidade ?? i.custoMedioUnidade,
+  icone: i.icone,
+  historico: typeof i.historico === 'string' ? JSON.parse(i.historico) : (i.historico || []),
+  dataCriacao: new Date(i.data_criacao || i.dataCriacao),
+  dataAtualizacao: new Date(i.data_atualizacao || i.dataAtualizacao)
+});
+
 /**
  * Serviço de integração com o Cloudflare D1 via Pages Functions.
  * Refatorado para usar o servicoBaseApi com autenticação segura via Token e validação Zod.
@@ -12,27 +32,26 @@ export const apiInsumos = {
    */
   async listar(_usuarioId: string): Promise<Insumo[]> {
     const dados = await servicoBaseApi.get<any[]>("/api/insumos");
+    return dados.map(mapearInsumo);
+  },
+
+  /**
+   * Busca os insumos paginados
+   */
+  async listarPaginado({ limit, offset, search }: { limit: number, offset: number, search?: string }): Promise<{ items: Insumo[], total: number }> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString()
+    });
+    if (search) {
+      params.append("search", search);
+    }
     
-    // Mapeia de snake_case (D1) para camelCase (Frontend)
-    return dados.map(i => ({
-      id: i.id,
-      nome: i.nome,
-      descricao: i.descricao,
-      categoria: i.categoria,
-      marca: i.marca,
-      linkCompra: i.link_compra || i.linkCompra,
-      unidadeMedida: i.unidade_medida || i.unidadeMedida,
-      unidadeConsumo: i.unidade_consumo || i.unidadeConsumo,
-      itemFracionavel: Boolean(i.item_fracionavel ?? i.itemFracionavel),
-      rendimentoTotal: i.rendimento_total ?? i.rendimentoTotal,
-      quantidadeAtual: i.quantidade_atual ?? i.quantidadeAtual,
-      quantidadeMinima: i.quantidade_minima ?? i.quantidadeMinima,
-      custoMedioUnidade: i.custo_medio_unidade ?? i.custoMedioUnidade,
-      icone: i.icone,
-      historico: typeof i.historico === 'string' ? JSON.parse(i.historico) : (i.historico || []),
-      dataCriacao: new Date(i.data_criacao || i.dataCriacao),
-      dataAtualizacao: new Date(i.data_atualizacao || i.dataAtualizacao)
-    }));
+    const dados = await servicoBaseApi.get<any>(`/api/insumos?${params.toString()}`);
+    return {
+      items: dados.items.map(mapearInsumo),
+      total: dados.total
+    };
   },
 
   /**

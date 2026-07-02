@@ -10,6 +10,8 @@ interface ArmazemClientesState {
     ordenacao: OrdenacaoCliente;
     ordemInvertida: boolean;
 
+    totalClientes: number;
+
     // Modais e Controle de UI
     modalAberto: boolean;
     clienteSendoEditado: Cliente | null;
@@ -19,7 +21,8 @@ interface ArmazemClientesState {
     clienteSendoHistorico: Cliente | null;
 
     // Ações Base
-    definirClientes: (clientes: Cliente[]) => void;
+    definirClientes: (clientes: Cliente[], total?: number) => void;
+    adicionarPagina: (clientes: Cliente[]) => void;
     definirCarregando: (status: boolean) => void;
     definirErro: (erro: string | null) => void;
 
@@ -45,6 +48,7 @@ export const useArmazemClientes = create<ArmazemClientesState>()(
     devtools(
         (set) => ({
             clientes: [],
+            totalClientes: 0,
             carregando: false,
             erro: null,
             filtroBusca: "",
@@ -58,7 +62,12 @@ export const useArmazemClientes = create<ArmazemClientesState>()(
             modalHistoricoAberto: false,
             clienteSendoHistorico: null,
 
-            definirClientes: (clientes) => set({ clientes }, false, "clientes/definirClientes"),
+            definirClientes: (clientes, total) => set({ clientes, totalClientes: total ?? clientes.length }, false, "clientes/definirClientes"),
+            adicionarPagina: (novos) => set((state) => {
+                const mapIds = new Set(state.clientes.map(i => i.id));
+                const unicos = novos.filter(i => !mapIds.has(i.id));
+                return { clientes: [...state.clientes, ...unicos] };
+            }, false, "clientes/adicionarPagina"),
             definirCarregando: (status) => set({ carregando: status }, false, "clientes/definirCarregando"),
             definirErro: (erro) => set({ erro }, false, "clientes/definirErro"),
 

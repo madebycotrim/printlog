@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
 import {
@@ -7,6 +7,7 @@ import {
 } from "@/funcionalidades/producao/materiais/componentes/FiltrosMaterial";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
+import { useDebounce } from "@/compartilhado/hooks/useDebounce";
 
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
@@ -16,6 +17,7 @@ import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 export function useGerenciadorMateriais() {
   // 🎯 SELETORES OTIMIZADOS
   const materiais = useArmazemMateriais((s) => s.materiais);
+  const totalMateriaisBanco = useArmazemMateriais((s) => s.totalMateriais);
   const carregando = useArmazemMateriais((s) => s.carregando);
   const acoesArmazem = useArmazemMateriais(
     useShallow((s) => ({
@@ -25,6 +27,7 @@ export function useGerenciadorMateriais() {
       abaterPeso: s.abaterPeso,
       reporEstoque: s.reporEstoque,
       definirMateriais: s.definirMateriais,
+      adicionarPagina: s.adicionarPagina,
       definirCarregando: s.definirCarregando,
     })),
   );
@@ -48,18 +51,30 @@ export function useGerenciadorMateriais() {
   const [ordenacao, definirOrdenacao] = useState<OrdenacaoMaterial>("NOME");
   const [ordemInvertida, definirOrdemInvertida] = useState(false);
   const [termoBusca, definirTermoBusca] = useState("");
+  const termoDebounced = useDebounce(termoBusca, 300);
+
+  const [paginaAtual, definirPaginaAtual] = useState(0);
+  const [carregandoMais, definirCarregandoMais] = useState(false);
+  const [temMais, definirTemMais] = useState(true);
 
   const { usuario } = useAutenticacao();
   const { limiteAlertaEstoque } = useBeta();
 
-  // 🔄 SINCRONIZAÇÃO INICIAL COM D1
+  // 🔄 SINCRONIZAÇÃO INICIAL E BUSCA COM D1
   useEffect(() => {
     if (usuario?.uid) {
       const carregarDados = async () => {
         acoesArmazem.definirCarregando(true);
         try {
-          const dadosDoBanco = await apiMateriais.listar(usuario.uid);
-          acoesArmazem.definirMateriais(dadosDoBanco);
+          const limit = 10;
+          const dadosDoBanco = await apiMateriais.listarPaginado({
+            limit,
+            offset: 0,
+            search: termoDebounced || undefined
+          });
+          acoesArmazem.definirMateriais(dadosDoBanco.items, dadosDoBanco.total);
+          definirTemMais(dadosDoBanco.items.length === limit);
+          definirPaginaAtual(0);
         } catch (erro) {
           console.error("Erro ao sincronizar com banco de dados:", erro);
         } finally {
@@ -68,7 +83,32 @@ export function useGerenciadorMateriais() {
       };
       carregarDados();
     }
-  }, [usuario?.uid, acoesArmazem]);
+  }, [usuario?.uid, termoDebounced]);
+
+  const carregarMais = useCallback(async () => {
+    if (!usuario?.uid || carregandoMais || !temMais) return;
+    
+    definirCarregandoMais(true);
+    try {
+      const limit = 10;
+      const novaPagina = paginaAtual + 1;
+      const offset = novaPagina * limit;
+      
+      const dadosDoBanco = await apiMateriais.listarPaginado({
+        limit,
+        offset,
+        search: termoDebounced || undefined
+      });
+      
+      acoesArmazem.adicionarPagina(dadosDoBanco.items);
+      definirTemMais(dadosDoBanco.items.length === limit);
+      definirPaginaAtual(novaPagina);
+    } catch (erro) {
+      console.error("Erro ao carregar mais materiais:", erro);
+    } finally {
+      definirCarregandoMais(false);
+    }
+  }, [usuario?.uid, carregandoMais, temMais, paginaAtual, termoDebounced, acoesArmazem]);
 
 
   // Ações de Modal
@@ -320,15 +360,20 @@ export function useGerenciadorMateriais() {
       materialParaHistorico,
       materialParaExcluir,
       materialParaRepor,
-      abaHistoricoInicial,
+      // Estado de Paginação
+      carregandoMais,
+      temMais,
+      totalMateriaisBanco,
       // Filtros
       filtro,
       ordenacao,
       ordemInvertida,
+      abaHistoricoInicial,
       // KPIs
       metricas: metricas,
     },
     acoes: {
+      carregarMais,
       // Abertores (A UI envia ID exceto em Editar)
       abrirEditar: (mat: Material) => {
         if (!mat) {

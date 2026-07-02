@@ -1,6 +1,6 @@
 import { Box, ArrowRight } from "lucide-react";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
-import { CATEGORIAS, obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
+import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 
 interface PropriedadesWidgetInsumos {
   insumos: Insumo[];

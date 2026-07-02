@@ -40,15 +40,47 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const metodo = request.method;
     const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
 
+    // ── Helper para atualizar LTV do Cliente ──
+    const atualizarMetricasCliente = async (idCliente: string | null | undefined) => {
+        if (!idCliente || idCliente === "null") return;
+        try {
+            await env.DB.prepare(`
+                UPDATE clientes 
+                SET 
+                    ltv_centavos = (
+                        SELECT COALESCE(SUM(valor_centavos), 0) 
+                        FROM pedidos_impressao 
+                        WHERE id_cliente = ? AND status IN ('concluido', 'arquivado') AND arquivado = 0
+                    ),
+                    total_produtos = (
+                        SELECT COUNT(*) 
+                        FROM pedidos_impressao 
+                        WHERE id_cliente = ? AND status IN ('concluido', 'arquivado') AND arquivado = 0
+                    )
+                WHERE id = ?
+            `).bind(idCliente, idCliente, idCliente).run();
+        } catch (e) {
+            console.error("Erro ao atualizar métricas do cliente:", e);
+        }
+    };
+
     try {
         // Migração automática (garante que a coluna de criptografia existe no SQLite local)
         await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN dados_extras TEXT DEFAULT NULL`).run().catch(() => {});
 
         // ── GET - Listar (Com Descriptografia) ──
         if (metodo === "GET") {
-            const { results: pedidos } = await env.DB.prepare(
-                "SELECT * FROM pedidos_impressao WHERE id_usuario = ? AND arquivado = 0"
-            ).bind(usuarioId).all();
+            const clienteId = url.searchParams.get("clienteId");
+            
+            let sql = "SELECT * FROM pedidos_impressao WHERE id_usuario = ? AND arquivado = 0";
+            const params: any[] = [usuarioId];
+            
+            if (clienteId) {
+                sql += " AND id_cliente = ?";
+                params.push(clienteId);
+            }
+            
+            const { results: pedidos } = await env.DB.prepare(sql).bind(...params).all();
 
             const processados = await Promise.all(pedidos.map(async (p: any) => {
                 // Descriptografa Descrição e Dados Extras
@@ -120,6 +152,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 data_criacao, extrasCripto
             ).run();
 
+            await atualizarMetricasCliente(id_cliente);
+
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { 
                 status: 201, headers: { "Content-Type": "application/json" } 
             });
@@ -171,6 +205,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 ).run();
             }
 
+            // Precisamos buscar o id_cliente atual (se não foi passado na atualização) para atualizar o LTV
+            let idClienteParaAtualizar = limparId(dados.id_cliente ?? dados.idCliente);
+            if (!idClienteParaAtualizar) {
+                const pedidoAtual = await env.DB.prepare("SELECT id_cliente FROM pedidos_impressao WHERE id = ?").bind(dados.id).first();
+                if (pedidoAtual) idClienteParaAtualizar = (pedidoAtual as any).id_cliente;
+            }
+            await atualizarMetricasCliente(idClienteParaAtualizar);
+
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
             });
@@ -178,8 +220,12 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
         // ── DELETE ──
         if (metodo === "DELETE") {
+            const pedidoAtual = await env.DB.prepare("SELECT id_cliente FROM pedidos_impressao WHERE id = ?").bind(id).first();
             await env.DB.prepare("DELETE FROM pedidos_impressao WHERE id = ? AND id_usuario = ?")
                 .bind(id, usuarioId).run();
+            if (pedidoAtual && (pedidoAtual as any).id_cliente) {
+                await atualizarMetricasCliente((pedidoAtual as any).id_cliente);
+            }
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
             });
@@ -188,7 +234,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
         if (erro instanceof z.ZodError) {
-            const mensagens = erro.errors.map(e => e.message).join(", ");
+            const mensagens = erro.issues.map((e: any) => e.message).join(", ");
             return new Response(JSON.stringify({ 
                 sucesso: false, 
                 mensagem: `Erro de validação: ${mensagens}` 
