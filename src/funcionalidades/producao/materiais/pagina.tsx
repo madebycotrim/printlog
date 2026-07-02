@@ -140,8 +140,7 @@ export function PaginaMateriais() {
               aoExcluir={(m) => acoes.abrirExcluir(m.id)}
               aoAlternarFavorito={acoes.alternarFavorito}
               aoCarregarMais={acoes.carregarMais}
-              temMais={estado.temMais}
-              carregandoMais={estado.carregandoMais}
+              temMais={estado.temMais && !estado.carregando}
             />
           </motion.div>
         )}

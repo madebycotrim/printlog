@@ -180,29 +180,36 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
             <form onSubmit={handleSubmit(aoSubmeter)} className="flex flex-col h-full overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-thin scrollbar-thumb-borda-sutil scrollbar-track-transparent">
                         
-                        {/* 🚀 HEADER DE ESTADO (Estilo Calculadora) */}
-                        <div className="flex items-center justify-between p-6 rounded-3xl bg-zinc-50 dark:bg-[#121214] border border-borda-sutil shadow-2xl">
+                        {/* 🚀 HEADER DE ESTADO (Discreto e Profissional) */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/[0.04] backdrop-blur-xl transition-all duration-300 hover:border-zinc-300 dark:hover:border-white/[0.08] shadow-sm">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sky-400 border border-sky-500/30 bg-sky-500/5">
-                                    <Cpu size={24} />
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-950">
+                                    <Cpu size={20} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h2 className="text-lg font-black text-primary dark:text-white uppercase tracking-tighter italic">
+                                    <h2 className="text-base font-bold text-zinc-800 dark:text-zinc-200 tracking-tight">
                                         {pedidoEdicao ? "Ajustar Parâmetros" : "Lançar Novo Projeto"}
                                     </h2>
-                                    <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em]">
-                                        {pedidoEdicao ? `Identificador Técnico: #${pedidoEdicao.id.slice(0,12)}` : "Engenharia de Custos e Fila de Produção"}
-                                    </p>
+                                    <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
+                                        <span>
+                                            {pedidoEdicao ? "Identificador Técnico:" : "Engenharia de Custos e Fila de Produção"}
+                                        </span>
+                                        {pedidoEdicao && (
+                                            <code className="font-mono bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 px-1.5 py-0.5 rounded text-[10px] text-zinc-600 dark:text-zinc-400 select-all">
+                                                #{pedidoEdicao.id.slice(0, 12).toUpperCase()}
+                                            </code>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="hidden md:flex flex-col items-end gap-2">
-                                <span className="text-[9px] font-black text-zinc-500 dark:text-zinc-600 uppercase tracking-widest">Valor de Mercado</span>
-                                <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-950/60 border border-borda-sutil rounded-2xl focus-within:border-emerald-500/40 transition-all">
-                                    <DollarSign size={16} className="text-emerald-500" />
+                            <div className="flex flex-col items-start md:items-end gap-1.5 mt-4 md:mt-0">
+                                <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Valor de Mercado</span>
+                                <div className="flex items-center gap-2 px-4 py-2 bg-zinc-100/50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-white/10 rounded-xl focus-within:border-zinc-400 dark:focus-within:border-white/20 focus-within:bg-white dark:focus-within:bg-zinc-950 transition-all duration-250 w-full md:w-auto">
+                                    <DollarSign size={14} className="text-zinc-400 dark:text-zinc-500 shrink-0" />
                                     <InputBancario 
                                         placeholder="0.00"
-                                        className="bg-transparent text-xl font-black text-emerald-400 outline-none tabular-nums w-32 text-right"
+                                        className="bg-transparent text-sm font-bold text-zinc-800 dark:text-zinc-100 outline-none tabular-nums w-full md:w-28 text-left md:text-right font-mono"
                                         onChange={(e) => setValue("valorCentavos", Number(e.target.value), { shouldDirty: true })}
                                         value={watch("valorCentavos") || ""}
                                     />

@@ -36,7 +36,7 @@ export const servicoNotificacoes = {
               tipo: TipoNotificacao.CRITICO,
               categoria: CategoriaNotificacao.PEDIDOS,
               idReferencia: pedido.id,
-              link: `/projetos`,
+              link: `/producao`,
             });
           }
         }

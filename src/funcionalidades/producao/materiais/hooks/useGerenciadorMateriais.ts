@@ -7,7 +7,7 @@ import {
 } from "@/funcionalidades/producao/materiais/componentes/FiltrosMaterial";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
-import { useDebounce } from "@/compartilhado/hooks/useDebounce";
+
 
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
@@ -51,12 +51,9 @@ export function useGerenciadorMateriais() {
   const [ordenacao, definirOrdenacao] = useState<OrdenacaoMaterial>("NOME");
   const [ordemInvertida, definirOrdemInvertida] = useState(false);
   const [termoBusca, definirTermoBusca] = useState("");
-  const termoDebounced = useDebounce(termoBusca, 300);
 
+  const limitePagina = 12;
   const [paginaAtual, definirPaginaAtual] = useState(0);
-  const [carregandoMais, definirCarregandoMais] = useState(false);
-  const [temMais, definirTemMais] = useState(true);
-
   const { usuario } = useAutenticacao();
   const { limiteAlertaEstoque } = useBeta();
 
@@ -66,14 +63,11 @@ export function useGerenciadorMateriais() {
       const carregarDados = async () => {
         acoesArmazem.definirCarregando(true);
         try {
-          const limit = 10;
           const dadosDoBanco = await apiMateriais.listarPaginado({
-            limit,
+            limit: 2000,
             offset: 0,
-            search: termoDebounced || undefined
           });
           acoesArmazem.definirMateriais(dadosDoBanco.items, dadosDoBanco.total);
-          definirTemMais(dadosDoBanco.items.length === limit);
           definirPaginaAtual(0);
         } catch (erro) {
           console.error("Erro ao sincronizar com banco de dados:", erro);
@@ -83,32 +77,11 @@ export function useGerenciadorMateriais() {
       };
       carregarDados();
     }
-  }, [usuario?.uid, termoDebounced]);
+  }, [usuario?.uid]);
 
-  const carregarMais = useCallback(async () => {
-    if (!usuario?.uid || carregandoMais || !temMais) return;
-    
-    definirCarregandoMais(true);
-    try {
-      const limit = 10;
-      const novaPagina = paginaAtual + 1;
-      const offset = novaPagina * limit;
-      
-      const dadosDoBanco = await apiMateriais.listarPaginado({
-        limit,
-        offset,
-        search: termoDebounced || undefined
-      });
-      
-      acoesArmazem.adicionarPagina(dadosDoBanco.items);
-      definirTemMais(dadosDoBanco.items.length === limit);
-      definirPaginaAtual(novaPagina);
-    } catch (erro) {
-      console.error("Erro ao carregar mais materiais:", erro);
-    } finally {
-      definirCarregandoMais(false);
-    }
-  }, [usuario?.uid, carregandoMais, temMais, paginaAtual, termoDebounced, acoesArmazem]);
+  const carregarMais = useCallback(() => {
+    definirPaginaAtual((prev) => prev + 1);
+  }, []);
 
 
   // Ações de Modal
@@ -332,9 +305,17 @@ export function useGerenciadorMateriais() {
     return filtrados;
   }, [materiaisAtivos, filtro, ordenacao, termoBusca, ordemInvertida]);
 
+  // Client-side pagination slicing
+  const materiaisExibidos = useMemo(() => {
+    const maxItems = (paginaAtual + 1) * limitePagina;
+    return materiaisFiltradosOrdenados.slice(0, maxItems);
+  }, [materiaisFiltradosOrdenados, paginaAtual]);
+
+  const temMais = materiaisExibidos.length < materiaisFiltradosOrdenados.length;
+
   const agrupadosPorTipoMaterial = useMemo(() => {
     const grupos = new Map<string, Material[]>();
-    materiaisFiltradosOrdenados.forEach((mat) => {
+    materiaisExibidos.forEach((mat) => {
       const tipo = mat.tipoMaterial?.trim() || "Outros";
       if (!grupos.has(tipo)) grupos.set(tipo, []);
       grupos.get(tipo)!.push(mat);
@@ -361,7 +342,6 @@ export function useGerenciadorMateriais() {
       materialParaExcluir,
       materialParaRepor,
       // Estado de Paginação
-      carregandoMais,
       temMais,
       totalMateriaisBanco,
       // Filtros

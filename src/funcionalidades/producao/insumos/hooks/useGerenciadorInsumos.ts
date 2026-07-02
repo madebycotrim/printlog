@@ -6,7 +6,6 @@ import {
   Insumo,
   RegistroMovimentacaoInsumo,
   MotivoBaixaInsumo,
-  CategoriaInsumo,
 } from "@/funcionalidades/producao/insumos/tipos";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -66,9 +65,8 @@ export function useGerenciadorInsumos() {
   const { usuario } = useAutenticacao();
   const termoDebounced = useDebounce(estadoArmazem.filtroPesquisa, 300);
 
+  const limitePagina = 12;
   const [paginaAtual, definirPaginaAtual] = useState(0);
-  const [carregandoMais, definirCarregandoMais] = useState(false);
-  const [temMais, definirTemMais] = useState(true);
 
   // 🔄 SINCRONIZAÇÃO INICIAL COM D1
   useEffect(() => {
@@ -76,15 +74,12 @@ export function useGerenciadorInsumos() {
       const carregarInsumos = async () => {
         acoesArmazem.definirCarregando(true);
         try {
-          const limit = 10;
           const dadosDoBanco = await apiInsumos.listarPaginado({
-            limit,
+            limit: 2000,
             offset: 0,
-            search: termoDebounced || undefined
           });
           
           acoesArmazem.definirInsumos(dadosDoBanco.items, dadosDoBanco.total);
-          definirTemMais(dadosDoBanco.items.length === limit);
           definirPaginaAtual(0);
           auditoria.evento("SINCRONIZACAO_INSUMOS_SUCESSO", { qtd: dadosDoBanco.items.length });
         } catch (erro) {
@@ -95,43 +90,22 @@ export function useGerenciadorInsumos() {
       };
       carregarInsumos();
     }
-  }, [usuario?.uid, termoDebounced]);
+  }, [usuario?.uid]);
 
-  const carregarMais = useCallback(async () => {
-    if (!usuario?.uid || carregandoMais || !temMais) return;
-    
-    definirCarregandoMais(true);
-    try {
-      const limit = 10;
-      const novaPagina = paginaAtual + 1;
-      const offset = novaPagina * limit;
-      
-      const dadosDoBanco = await apiInsumos.listarPaginado({
-        limit,
-        offset,
-        search: termoDebounced || undefined
-      });
-      
-      acoesArmazem.adicionarPagina(dadosDoBanco.items);
-      definirTemMais(dadosDoBanco.items.length === limit);
-      definirPaginaAtual(novaPagina);
-    } catch (erro) {
-      console.error("Erro ao carregar mais insumos:", erro);
-    } finally {
-      definirCarregandoMais(false);
-    }
-  }, [usuario?.uid, carregandoMais, temMais, paginaAtual, termoDebounced, acoesArmazem]);
+  const carregarMais = useCallback(() => {
+    definirPaginaAtual((prev) => prev + 1);
+  }, []);
 
   // -----------------------------------------------------------------------------------
   // 🧠 DERIVAÇÕES DE ESTADO (Listas e Filtragens)
   // -----------------------------------------------------------------------------------
 
-  const insumosFiltradosOrdenados = useMemo(() => {
+  const insumosFiltradosEOrdenados = useMemo(() => {
     let filtrados = [...estadoArmazem.insumos];
 
     // 1. Filtro Texto
-    if (estadoArmazem.filtroPesquisa) {
-      const termo = estadoArmazem.filtroPesquisa.toLowerCase();
+    if (termoDebounced) {
+      const termo = termoDebounced.toLowerCase();
       filtrados = filtrados.filter(
         (i) =>
           i.nome.toLowerCase().includes(termo) ||
@@ -166,23 +140,25 @@ export function useGerenciadorInsumos() {
     });
 
     return filtrados;
-  }, [
-    estadoArmazem.insumos,
-    estadoArmazem.filtroPesquisa,
-    estadoArmazem.filtroCategoria,
-    estadoArmazem.ordenacao,
-    estadoArmazem.ordemInvertida,
-  ]);
+  }, [estadoArmazem.insumos, termoDebounced, estadoArmazem.filtroCategoria, estadoArmazem.ordenacao, estadoArmazem.ordemInvertida]);
+
+  // Client-side pagination slicing
+  const insumosExibidos = useMemo(() => {
+    const maxItems = (paginaAtual + 1) * limitePagina;
+    return insumosFiltradosEOrdenados.slice(0, maxItems);
+  }, [insumosFiltradosEOrdenados, paginaAtual]);
+
+  const temMais = insumosExibidos.length < insumosFiltradosEOrdenados.length;
 
   const agrupadosPorCategoria = useMemo(() => {
-    const grupos = new Map<CategoriaInsumo, Insumo[]>();
-    insumosFiltradosOrdenados.forEach((i) => {
+    const grupos = new Map<string, Insumo[]>();
+    insumosExibidos.forEach((i) => {
       if (!grupos.has(i.categoria)) grupos.set(i.categoria, []);
       grupos.get(i.categoria)!.push(i);
     });
 
     return Array.from(grupos.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [insumosFiltradosOrdenados]);
+  }, [insumosExibidos]);
 
   const kpis = useMemo(() => {
     let valorInvestido = 0;
@@ -430,10 +406,9 @@ export function useGerenciadorInsumos() {
   return {
     estado: {
       ...estadoArmazem,
-      insumosFiltradosOrdenados,
+      insumosFiltradosOrdenados: insumosExibidos,
       agrupadosPorCategoria,
       kpis,
-      carregandoMais,
       temMais,
     },
     acoes: {

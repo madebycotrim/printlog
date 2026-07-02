@@ -68,14 +68,14 @@ export function ColunaKanban({ titulo, status, pedidos, aoMover, abrirFormulario
       onDrop={lidarComDrop}
     >
       <div className="flex items-center justify-between px-1 shrink-0">
-        <div className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full ${configCor.bg} border ${configCor.border} backdrop-blur-md shadow-sm dark:shadow-lg dark:shadow-black/40`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${configCor.dot} shadow-[0_0_8px_rgba(0,0,0,0.1)] dark:shadow-[0_0_8px_rgba(0,0,0,0.5)]`} />
-          <h3 className={`font-black text-[9px] tracking-[0.2em] uppercase ${configCor.text}`}>
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${configCor.bg} border ${configCor.border} backdrop-blur-md shadow-sm`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${configCor.dot}`} />
+          <h3 className={`font-bold text-[10px] tracking-wider uppercase ${configCor.text}`}>
             {titulo}
           </h3>
         </div>
-        <div className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-lg bg-white/[0.03] border border-white/5">
-          <span className="text-[10px] font-black text-zinc-500 tabular-nums">{pedidos.length}</span>
+        <div className="flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5">
+          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 tabular-nums">{pedidos.length}</span>
         </div>
       </div>
 

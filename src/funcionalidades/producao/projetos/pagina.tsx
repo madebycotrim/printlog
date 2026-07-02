@@ -1,5 +1,5 @@
 import { FolderKanban, Plus, Archive } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
@@ -10,7 +10,7 @@ import { EstadoVazio } from "@/compartilhado/componentes";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
 import { motion, AnimatePresence } from "framer-motion";
 import { BannerErro } from "@/compartilhado/componentes/ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FormularioPedido } from "./componentes/FormularioPedido";
 import { Pedido } from "./tipos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
@@ -21,6 +21,9 @@ import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado
 
 export function PaginaProjetos() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const idParam = searchParams.get("id");
+
   const [modalArquivoAberto, setModalArquivoAberto] = useState(false);
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
@@ -28,6 +31,20 @@ export function PaginaProjetos() {
   
   const { usuario } = useAutenticacao();
   const [pedidoSendoConcluido, setPedidoSendoConcluido] = useState<Pedido | null>(null);
+
+  useEffect(() => {
+    if (idParam && pedidos.length > 0 && !pedidoEdicao) {
+      const ped = pedidos.find(p => p.id === idParam);
+      if (ped) {
+        setPedidoEdicao(ped);
+        
+        // Remove o parâmetro ?id da URL para não ficar abrindo ao re-renderizar
+        const novosParams = new URLSearchParams(searchParams);
+        novosParams.delete("id");
+        setSearchParams(novosParams);
+      }
+    }
+  }, [idParam, pedidos, pedidoEdicao, searchParams, setSearchParams]);
 
   const lidarComMover = async (id: string, novoStatus: StatusPedido) => {
     if (novoStatus === StatusPedido.CONCLUIDO) {

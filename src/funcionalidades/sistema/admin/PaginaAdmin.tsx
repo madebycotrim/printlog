@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShieldCheck, Users, Crown, Zap, Search } from "lucide-react";
+import { ShieldCheck, Users, Crown, Zap } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
@@ -111,7 +111,8 @@ export function PaginaAdmin() {
   useDefinirCabecalho({
     titulo: "Gestão Master",
     subtitulo: "Administração de Fundadores e Planos Premium",
-    ocultarBusca: true,
+    placeholderBusca: "Buscar email, ID ou estúdio...",
+    aoBuscar: (t) => definirBusca(t),
   });
 
   if (!acessoPermitido) {
@@ -172,18 +173,6 @@ export function PaginaAdmin() {
             <p className="text-xl font-black text-gray-900 dark:text-white">{usuarios.length}</p>
           </div>
         </div>
-      </div>
-
-      {/* BARRA DE BUSCA */}
-      <div className="relative group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-        <input 
-          type="text" 
-          placeholder="Buscar por Email, ID ou Nome do Estúdio..."
-          value={busca}
-          onChange={(e) => definirBusca(e.target.value)}
-          className="w-full h-14 pl-12 pr-6 rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 outline-none focus:border-sky-500/50 transition-all font-medium text-sm"
-        />
       </div>
 
       {/* LISTAGEM */}

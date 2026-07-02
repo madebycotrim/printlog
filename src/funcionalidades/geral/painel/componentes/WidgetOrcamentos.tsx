@@ -52,7 +52,7 @@ export function WidgetOrcamentos({ pedidos, aoVerTodos }: PropriedadesWidgetOrca
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => navegar(`/projetos?id=${pedido.id}`)}
+              onClick={() => navegar(`/producao?id=${pedido.id}`)}
               className="flex items-center p-5 border-b border-borda-sutil last:border-0 hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-all cursor-pointer group/item"
             >
               <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center border border-borda-sutil mr-4 text-zinc-400 group-hover/item:text-sky-500 group-hover/item:border-sky-500/20 transition-all shadow-sm">

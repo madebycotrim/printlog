@@ -214,10 +214,10 @@ export function PaginaFila() {
             <div className="xl:col-span-1 space-y-6 bg-card border border-borda-sutil rounded-[2rem] p-6 shadow-sm relative overflow-hidden">
               <div className="flex items-center gap-2 mb-4">
                 <LayoutGrid size={16} className="text-primaria" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-200">
                   Backlog de Projetos
                 </h3>
-                <span className="ml-auto bg-primaria/10 text-primaria text-[10px] font-black px-2 py-0.5 rounded-full">
+                <span className="ml-auto bg-primaria/10 text-primaria text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {pedidosPendentes.length}
                 </span>
               </div>
@@ -235,7 +235,7 @@ export function PaginaFila() {
                       className="p-4 rounded-xl border border-borda-sutil bg-zinc-50/50 dark:bg-white/[0.01] hover:border-zinc-300 dark:hover:border-white/10 transition-all space-y-3"
                     >
                       <div>
-                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400">
                           {pedido.material || "Filamento"}
                         </span>
                         <h4 className="text-xs font-bold text-primary dark:text-zinc-200 line-clamp-1">
@@ -257,7 +257,7 @@ export function PaginaFila() {
 
                       {impressorasAtivas.length > 0 && (
                         <div className="pt-2 border-t border-borda-sutil/60 space-y-1.5">
-                          <span className="text-[8px] font-black uppercase text-zinc-400 block">Alocar em:</span>
+                          <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 block">Alocar em:</span>
                           <div className="grid grid-cols-2 gap-1">
                             {impressorasAtivas.map(imp => (
                               <button
@@ -299,7 +299,7 @@ export function PaginaFila() {
                               <Printer size={20} />
                             </div>
                             <div>
-                              <h3 className="text-sm font-black text-primary dark:text-white uppercase tracking-wider">
+                              <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-100">
                                 {impressora.nome}
                               </h3>
                               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -309,7 +309,7 @@ export function PaginaFila() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                            <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
                               impressora.status === StatusImpressora.IMPRIMINDO
                                 ? "bg-amber-500/10 text-amber-500" 
                                 : impressora.status === StatusImpressora.MANUTENCAO
@@ -363,13 +363,13 @@ export function PaginaFila() {
                                           <ChevronDown size={12} />
                                         </button>
                                       )}
-                                      <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-black text-zinc-500 dark:text-zinc-400 shrink-0">
+                                      <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0">
                                         #{index + 1}
                                       </div>
                                     </div>
 
                                     <div className="space-y-2 pr-6">
-                                      <span className="text-[7px] font-black uppercase tracking-widest text-zinc-400 block">
+                                      <span className="text-[8px] font-semibold uppercase tracking-wider text-zinc-400 block">
                                         {pedido.material || "PLA"}
                                       </span>
                                       <h4 className="text-xs font-bold text-primary dark:text-zinc-200 line-clamp-1">
@@ -384,7 +384,7 @@ export function PaginaFila() {
                                     </div>
 
                                     <div className="mt-4 pt-3 border-t border-borda-sutil/60 flex items-center justify-between gap-2">
-                                      <span className="text-[10px] font-black text-primaria tabular-nums">
+                                      <span className="text-[10px] font-bold text-primaria tabular-nums">
                                         {pedido.tempoMinutos ? `${pedido.tempoMinutos} min` : "Tempo N/D"}
                                       </span>
                                       

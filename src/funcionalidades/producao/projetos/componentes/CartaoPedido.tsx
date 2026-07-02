@@ -150,25 +150,24 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
           )}
         </AnimatePresence>
 
-        {/* Glow de Status Lateral - Blindagem de Cor */}
+        {/* Barra de Status Lateral - Limpa e Discreta */}
         <div 
           className={`absolute left-0 top-3 bottom-3 w-[2px] rounded-r-full transition-all duration-500 group-hover/card:top-2 group-hover/card:bottom-2 group-hover/card:w-[3px]`} 
           style={{ 
-            backgroundColor: `var(--cor-status-${configStatus.cor}, currentColor)`,
-            boxShadow: `0 0 12px var(--cor-status-${configStatus.cor}, transparent)`
+            backgroundColor: `var(--cor-status-${configStatus.cor}, currentColor)`
           }}
         />
 
         {/* Cabeçalho do Card */}
         <div className="flex items-start justify-between mb-2 relative pl-2">
           <div className="flex-1 min-w-0 mr-2">
-            <div className="flex items-center gap-1 mb-1 opacity-30 group-hover/card:opacity-60 transition-opacity">
-              <User size={8} className="text-zinc-500" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 truncate">
+            <div className="flex items-center gap-1 mb-1 opacity-40 group-hover/card:opacity-75 transition-opacity">
+              <User size={9} className="text-zinc-400 dark:text-zinc-500" />
+              <span className="text-[9px] font-semibold tracking-wider text-zinc-500 truncate uppercase">
                 {pedido.nomeCliente || "Cliente avulso"}
               </span>
             </div>
-            <h4 className="text-[11px] font-black text-primary dark:text-zinc-300 group-hover/card:text-zinc-950 dark:group-hover/card:text-white leading-tight tracking-tight line-clamp-1 uppercase transition-colors">
+            <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-200 group-hover/card:text-zinc-950 dark:group-hover/card:text-white leading-tight tracking-tight line-clamp-1 transition-colors">
               {pedido.descricao}
             </h4>
           </div>
@@ -272,7 +271,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                 className="opacity-80"
               />
               <span 
-                className="text-[11px] font-black tabular-nums tracking-tight"
+                className="text-[11px] font-bold tabular-nums tracking-tight"
                 style={{ color: `var(--cor-status-${configStatus.cor}, currentColor)` }}
               >
                 {centavosParaReais(pedido.valorCentavos)}
@@ -281,9 +280,9 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
 
             {pedido.prazoEntrega && (
               <div
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[8px] font-black uppercase tracking-tighter transition-colors ${
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-semibold uppercase tracking-wider transition-colors ${
                   estaAtrasado
-                    ? "bg-rose-500 text-white border-rose-400 animate-pulse"
+                    ? "bg-rose-500 text-white border-rose-400"
                     : "bg-zinc-50/50 dark:bg-white/[0.02] border-borda-sutil text-zinc-500 group-hover/card:border-zinc-300 dark:group-hover/card:border-white/10"
                 }`}
               >
@@ -296,7 +295,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
           <div className="flex items-center justify-between pt-2 border-t border-borda-sutil">
             {pedido.status === StatusPedido.A_FAZER ? (
               <div className="flex flex-col gap-2 w-full pt-1">
-                <span className="text-[7px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-0.5 ml-1 opacity-70 group-hover/card:opacity-100 transition-opacity">
+                <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500 mb-0.5 ml-1 opacity-70 group-hover/card:opacity-100 transition-opacity">
                   Orçamento Pendente
                 </span>
                 <div className="flex items-center gap-2 w-full">
@@ -307,7 +306,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                       e.stopPropagation();
                       moverPedido(pedido.id, StatusPedido.EM_PRODUCAO);
                     }}
-                    className="flex-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 shadow-lg shadow-emerald-500/0 hover:shadow-emerald-500/20"
+                    className="flex-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border border-emerald-500/20"
                   >
                     Aprovar
                   </button>
@@ -318,7 +317,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                       e.stopPropagation();
                       setModalExcluirAberto(true);
                     }}
-                    className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all border border-rose-500/20"
+                    className="bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white px-3 py-1 rounded-lg text-[9px] font-bold transition-all border border-rose-500/20"
                   >
                     X
                   </button>
@@ -333,7 +332,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                     e.stopPropagation();
                     moverPedido(pedido.id, StatusPedido.ACABAMENTO);
                   }}
-                  className="flex-1 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-indigo-500/20"
+                  className="flex-1 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border border-indigo-500/20"
                 >
                   Pronto p/ Acabamento
                 </button>
@@ -347,7 +346,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                     e.stopPropagation();
                     moverPedido(pedido.id, StatusPedido.CONCLUIDO);
                   }}
-                  className="flex-1 bg-sky-500/10 hover:bg-sky-500 text-sky-500 hover:text-white py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-sky-500/20"
+                  className="flex-1 bg-sky-500/10 hover:bg-sky-500 text-sky-500 hover:text-white py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border border-sky-500/20"
                 >
                   Marcar como Concluído
                 </button>
@@ -365,7 +364,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                   {pedido.idImpressora && (
                     <div className="flex items-center gap-1 mr-1">
                       <Settings size={8} className="text-amber-500/50" />
-                      <span className="text-[8px] font-black uppercase text-amber-500/70">
+                      <span className="text-[8px] font-bold uppercase text-amber-500/70">
                         {impressoras.find(i => i.id === pedido.idImpressora)?.nome || "Máquina"}
                       </span>
                     </div>
@@ -376,8 +375,8 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
                   {pedido.tempoMinutos && pedido.tempoMinutos > 0 && (
                     <span className="text-[8px] font-bold text-zinc-600 uppercase">{pedido.tempoMinutos}m</span>
                   )}
-                  <div className={`w-1 h-1 rounded-full bg-${configStatus.cor}-500 shadow-[0_0_8px_rgba(var(--${configStatus.cor}-rgb),0.6)]`} />
-                  <span className={`text-[8px] font-black uppercase tracking-tighter text-${configStatus.cor}-500/80`}>
+                  <div className={`w-1.5 h-1.5 rounded-full bg-${configStatus.cor}-500`} />
+                  <span className={`text-[8px] font-bold uppercase tracking-wider text-${configStatus.cor}-500/80`}>
                     {configStatus.label}
                   </span>
                 </div>

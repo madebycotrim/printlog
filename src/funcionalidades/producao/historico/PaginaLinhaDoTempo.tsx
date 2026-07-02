@@ -14,8 +14,14 @@ import {
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 
 export function PaginaLinhaDoTempo() {
+  useDefinirCabecalho({
+    titulo: "Histórico de Produção",
+    subtitulo: "Linha do tempo completa de todos os pedidos já registrados",
+    ocultarBusca: true,
+  });
   const { pedidos } = usePedidos();
 
 
@@ -56,14 +62,10 @@ export function PaginaLinhaDoTempo() {
           >
             <div className="max-w-4xl mx-auto space-y-8 py-4">
               
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white">Linha do Tempo de Pedidos</h2>
-                  <p className="text-sm text-zinc-500 mt-1">Histórico completo de todos os pedidos já registrados, incluindo os arquivados e recusados.</p>
-                </div>
+              <div className="flex items-center justify-end mb-4">
                 <div className="flex items-center gap-2 bg-zinc-100 dark:bg-white/5 px-4 py-2 rounded-xl">
                   <CalendarClock size={16} className="text-zinc-500" />
-                  <span className="text-xs font-black uppercase tracking-widest text-zinc-500">{pedidosOrdenados.length} Registros</span>
+                  <span className="text-xs font-semibold text-zinc-500">{pedidosOrdenados.length} Registros</span>
                 </div>
               </div>
 
@@ -98,7 +100,7 @@ export function PaginaLinhaDoTempo() {
                             
                             <div>
                               <div className="flex items-center gap-3 mb-1.5">
-                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${config.bg} ${config.cor}`}>
+                                <span className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${config.bg} ${config.cor}`}>
                                   {config.label}
                                 </span>
                                 <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1">
@@ -106,7 +108,7 @@ export function PaginaLinhaDoTempo() {
                                   {format(pedido.dataCriacao, "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                                 </span>
                               </div>
-                              <h4 className="text-base font-black text-zinc-900 dark:text-white leading-tight">
+                              <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 leading-tight">
                                 {pedido.descricao}
                               </h4>
                               <div className="text-xs font-medium text-zinc-500 mt-1 flex items-center gap-4">
@@ -123,8 +125,8 @@ export function PaginaLinhaDoTempo() {
                             </div>
 
                             <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 border-zinc-100 dark:border-white/5 pt-3 md:pt-0">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 md:mb-1">Valor Total</span>
-                              <span className="text-lg font-black text-emerald-500">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 md:mb-1">Valor Total</span>
+                              <span className="text-base font-bold text-emerald-500">
                                 {centavosParaReais(pedido.valorCentavos)}
                               </span>
                             </div>
