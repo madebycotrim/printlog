@@ -1,4 +1,4 @@
-import { memo, useState, useMemo } from "react";
+import { memo, useState, useMemo, createElement } from "react";
 import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, LayoutGrid } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
@@ -177,7 +177,6 @@ export const CardInsumos = memo(function CardInsumos({
         ) : insumosOrdenados.map((i) => {
           const sel = selecionados.some(s => s.id === i.id);
           const corHex = CORES_AURA[i.categoria] || "#84cc16"; // fallback lime-500
-          const IconeCategoria = obterIconeInsumo(i.icone, i.categoria);
 
           return (
             <div 
@@ -213,7 +212,7 @@ export const CardInsumos = memo(function CardInsumos({
                   className={`p-2.5 rounded-xl transition-all duration-300 ${!sel && 'bg-white dark:bg-white/5 text-zinc-400 group-hover:text-current'}`}
                   style={sel ? { backgroundColor: corHex, color: '#fff', boxShadow: `0 4px 14px ${corHex}40` } : { color: corHex }}
                 >
-                  <IconeCategoria size={18} />
+                  {createElement(obterIconeInsumo(i.icone, i.categoria), { size: 18 })}
                 </div>
               </div>
 
@@ -304,7 +303,6 @@ export const CardInsumos = memo(function CardInsumos({
                 const alerta = alertas.find(a => a.insumoId === item.id);
                 const original = insumos.find(i => i.id === item.id);
                 const corHex = original ? (CORES_AURA[original.categoria] || "#84cc16") : "#84cc16";
-                const IconeCategoria = obterIconeInsumo(original?.icone, original?.categoria);
 
                 return (
                   <motion.div
@@ -323,7 +321,7 @@ export const CardInsumos = memo(function CardInsumos({
                         className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                         style={{ backgroundColor: `${corHex}15`, color: corHex }}
                       >
-                        <IconeCategoria size={16} />
+                        {createElement(obterIconeInsumo(original?.icone, original?.categoria), { size: 16 })}
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-xs font-black uppercase tracking-tight truncate text-primary dark:text-zinc-100">{item.nome}</span>

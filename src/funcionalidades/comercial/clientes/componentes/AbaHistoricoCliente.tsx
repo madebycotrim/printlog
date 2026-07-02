@@ -7,6 +7,7 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { apiPedidos } from "@/funcionalidades/producao/projetos/servicos/apiPedidos";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 interface PropriedadesAbaHistorico {
   cliente: Cliente;
@@ -27,7 +28,8 @@ export function AbaHistoricoCliente({ cliente }: PropriedadesAbaHistorico) {
         const resultados = await apiPedidos.buscarPorCliente(cliente.id, usuario.uid);
         setPedidos(resultados);
       } catch (e) {
-        console.error("Erro ao buscar histórico do cliente", e);
+        console.error("Erro ao buscar histórico do cliente:", e);
+        toast.error("Não foi possível carregar o histórico de pedidos deste cliente.");
       } finally {
         setCarregando(false);
       }

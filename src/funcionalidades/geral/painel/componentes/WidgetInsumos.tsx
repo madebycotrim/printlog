@@ -1,6 +1,7 @@
 import { Box, ArrowRight } from "lucide-react";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
 import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
+import { createElement } from "react";
 
 interface PropriedadesWidgetInsumos {
   insumos: Insumo[];
@@ -85,7 +86,6 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
             const categoriaCor = CORES_HEX[insumo.categoria] || "#f59e0b"; // Fallback para amber
             const bordaHover = BORDAS_HOVER[insumo.categoria] || "hover:border-amber-500/30";
             const textoHover = TEXTOS_HOVER[insumo.categoria] || "group-hover/item:text-amber-500";
-            const IconeCategoria = obterIconeInsumo(insumo.icone, insumo.categoria);
 
             return (
               <div key={insumo.id} className={`flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil ${bordaHover} transition-all hover:bg-white/[0.04] dark:hover:bg-white/[0.04] group/item shadow-sm hover:shadow-md text-center`}>
@@ -129,7 +129,7 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
                       ? "text-rose-400 group-hover/item:text-rose-500"
                       : `text-zinc-400 ${textoHover}`
                     }`}>
-                    <IconeCategoria size={20} />
+                    {createElement(obterIconeInsumo(insumo.icone, insumo.categoria), { size: 20 })}
                   </div>
                 </div>
 
