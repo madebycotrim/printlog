@@ -22,7 +22,7 @@ class ServicoPedidos {
     
     const processados = pedidos.map((p: any) => ({
       ...p,
-      status: (p.status || '')
+      status: String(p.status || '')
         .toLowerCase()
         .trim()
         .replace(/\s+/g, '_')

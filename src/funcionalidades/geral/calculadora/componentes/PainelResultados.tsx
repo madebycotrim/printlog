@@ -31,7 +31,6 @@ interface PainelResultadosProps {
   descontoVolume?: number;
   setDescontoVolume?: (v: number) => void;
   precoAlvoCentavos?: number;
-  precoAlvoCentavos?: number;
   setPrecoAlvoCentavos?: (v: number) => void;
   explicacaoIA?: string;
 }
@@ -39,7 +38,7 @@ interface PainelResultadosProps {
 export const PainelResultados = memo(function PainelResultados({
   calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
-  tempo = 0, modoEntrada = 'projeto', frete = 0, taxaFixa = 0, aoSugerirPrecoIA,
+  tempo = 0, modoEntrada = 'projeto', frete = 0, aoSugerirPrecoIA,
   descontoVolume = 0, setDescontoVolume, precoAlvoCentavos = 0, setPrecoAlvoCentavos,
   explicacaoIA = ""
 }: PainelResultadosProps) {
@@ -241,8 +240,9 @@ export const PainelResultados = memo(function PainelResultados({
             { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
             { label: 'Mão de Obra', valor: calculo.custoMaoDeObra, icone: Timer, cor: 'text-emerald-400' },
             { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400' },
-            { label: 'Taxas', valor: calculo.taxaMarketplace, icone: DollarSign, cor: 'text-violet-400' },
-            { label: 'Frete e Logística', valor: (modoEntrada === 'lote' ? frete * 100 : frete * 100 * quantidade) + (taxaFixa * 100), icone: Package, cor: 'text-orange-400' },
+            { label: 'Comissão Marketplace', valor: calculo.taxaComissao ?? 0, icone: DollarSign, cor: 'text-violet-400' },
+            { label: 'Taxa Fixa Plataforma', valor: calculo.taxaFixaVenda ?? 0, icone: DollarSign, cor: 'text-purple-400' },
+            { label: 'Frete e Envio', valor: calculo.custoFrete ?? (modoEntrada === 'lote' ? frete : frete * quantidade), icone: Package, cor: 'text-orange-400' },
             { label: 'Desconto Aplicado', valor: -(calculo.valorDesconto || 0), icone: DollarSign, cor: 'text-emerald-500' },
           ].filter(i => i.valor !== 0);
 

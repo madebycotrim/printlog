@@ -17,6 +17,11 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { Dialogo } from "@/compartilhado/componentes";
+import { useShallow } from "zustand/react/shallow";
+import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
+import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
+import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 
 // Zustand Store 
 import { useArmazemCalculadora } from "./estado/armazemCalculadora";
@@ -24,6 +29,7 @@ import { useArmazemCalculadora } from "./estado/armazemCalculadora";
 // Modais V2
 import { ModalConfiguracoesV2 } from "./componentes/ModalConfiguracoesV2";
 import { ModalHistoricoV2 } from "./componentes/ModalHistoricoV2";
+import { ModalCanaisVenda } from "./componentes/ModalCanaisVenda";
 
 // Componentes da Calculadora
 import { CardIdentificacaoProjeto } from "./componentes/CardIdentificacaoProjeto";
@@ -56,8 +62,40 @@ export function PaginaCalculadoraV2() {
   
   const { estado: estadoClientes, acoes: acoesClientes } = useGerenciadorClientes();
   const { estado: estadoImpressoras } = useGerenciadorImpressoras();
-  const { materiais } = useArmazemMateriais();
-  const { insumos: insumosEstoque } = useArmazemInsumos();
+  const { materiais, definirMateriais: setMateriais, definirJaCarregou: setJaCarregouMateriais, jaCarregou: jaCarregouMateriais } = useArmazemMateriais(
+    useShallow(s => ({ materiais: s.materiais, definirMateriais: s.definirMateriais, definirJaCarregou: s.definirJaCarregou, jaCarregou: s.jaCarregou }))
+  );
+  const { insumos: insumosEstoque, definirInsumos: setInsumos } = useArmazemInsumos(
+    useShallow(s => ({ insumos: s.insumos, definirInsumos: s.definirInsumos }))
+  );
+  const { definirImpressoras: setImpressoras, definirJaCarregou: setJaCarregouImpressoras, jaCarregou: jaCarregouImpressoras } = useArmazemImpressoras(
+    useShallow(s => ({ definirImpressoras: s.definirImpressoras, definirJaCarregou: s.definirJaCarregou, jaCarregou: s.jaCarregou }))
+  );
+
+  // 🔄 Sincronização inicial — carrega dados se o usuário entrou direto na calculadora
+  useEffect(() => {
+    if (!usuario?.uid) return;
+
+    const carregarTudo = async () => {
+      try {
+        const promises: Promise<any>[] = [];
+        if (!jaCarregouMateriais) promises.push(
+          apiMateriais.listar(usuario.uid).then(mats => { setMateriais(mats); setJaCarregouMateriais(true); })
+        );
+        if (insumosEstoque.length === 0) promises.push(
+          apiInsumos.listar(usuario.uid).then(ins => setInsumos(ins))
+        );
+        if (!jaCarregouImpressoras) promises.push(
+          apiImpressoras.buscarTodas(usuario.uid).then(imps => { setImpressoras(imps); setJaCarregouImpressoras(true); })
+        );
+        if (promises.length > 0) await Promise.all(promises);
+      } catch (erro) {
+        console.error("Erro ao carregar dados na calculadora:", erro);
+      }
+    };
+
+    carregarTudo();
+  }, [usuario?.uid]);
 
   // Estados locais da UI
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
@@ -65,6 +103,38 @@ export function PaginaCalculadoraV2() {
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
   const [modalConfirmarReset, setModalConfirmarReset] = useState(false);
   const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
+
+  // Canais de Venda / Perfis Marketplace
+  const [perfisMarketplace, setPerfisMarketplace] = useState<any[]>(() => {
+    const salvo = localStorage.getItem("printlog_perfis_marketplace");
+    if (salvo) {
+      try {
+        const parsed = JSON.parse(salvo);
+        return parsed.map((p: any) => ({
+          nome: p.nome,
+          taxaPontosBase: p.taxaPontosBase !== undefined ? p.taxaPontosBase : (p.taxa || 0) * 100,
+          fixaCentavos: p.fixaCentavos !== undefined ? p.fixaCentavos : (p.fixa || 0) * 100,
+          freteCentavos: p.freteCentavos !== undefined ? p.freteCentavos : (p.frete || 0) * 100
+        }));
+      } catch (e) {
+        console.error("Erro ao migrar perfis:", e);
+      }
+    }
+    return [
+      { nome: "Direto", taxaPontosBase: 0, fixaCentavos: 0, freteCentavos: 0 },
+      { nome: "M. Livre", taxaPontosBase: 1800, fixaCentavos: 600, freteCentavos: 0 },
+      { nome: "Shopee", taxaPontosBase: 2000, fixaCentavos: 300, freteCentavos: 0 },
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("printlog_perfis_marketplace", JSON.stringify(perfisMarketplace));
+  }, [perfisMarketplace]);
+
+  const [perfilAtivo, setPerfilAtivo] = useState("");
+  const [modalCanaisAberto, setModalCanaisAberto] = useState(false);
+  const [indiceSendoEditado, setIndiceSendoEditado] = useState<number | null>(null);
+  const [nomeTemporario, setNomeTemporario] = useState("");
 
   const [nomeProjeto, setNomeProjeto] = useState("");
   const [descricaoProjeto, setDescricaoProjeto] = useState("");
@@ -479,12 +549,31 @@ export function PaginaCalculadoraV2() {
           aplicarTemplate={() => {}}
         />
 
-        <CardLogistica
-          perfis={[]} perfilAtivo={""} setPerfilAtivo={() => {}}
-          taxaEcommerce={armazem.taxaEcommercePercentual} setTaxaEcommerce={v => armazem.setParametro('taxaEcommercePercentual', v)}
-          taxaFixa={armazem.taxaFixaVendaCentavos} setTaxaFixa={v => armazem.setParametro('taxaFixaVendaCentavos', v)}
-          frete={armazem.freteCentavos} setFrete={v => armazem.setParametro('freteCentavos', v)}
-          abrirPerfis={() => {}} cobrarLogistica={armazem.cobrarLogistica} setCobrarLogistica={v => armazem.setParametro('cobrarLogistica', v)}
+         <CardLogistica
+          perfis={perfisMarketplace}
+          perfilAtivo={perfilAtivo}
+          setPerfilAtivo={(nome) => {
+            setPerfilAtivo(nome);
+            const p = perfisMarketplace.find(x => x.nome === nome);
+            if (p) {
+              armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
+              armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
+              armazem.setParametro('freteCentavos', p.freteCentavos);
+            } else {
+              armazem.setParametro('taxaEcommercePercentual', 0);
+              armazem.setParametro('taxaFixaVendaCentavos', 0);
+              armazem.setParametro('freteCentavos', 0);
+            }
+          }}
+          taxaEcommerce={armazem.taxaEcommercePercentual}
+          setTaxaEcommerce={v => armazem.setParametro('taxaEcommercePercentual', v)}
+          taxaFixa={armazem.taxaFixaVendaCentavos}
+          setTaxaFixa={v => armazem.setParametro('taxaFixaVendaCentavos', v)}
+          frete={armazem.freteCentavos}
+          setFrete={v => armazem.setParametro('freteCentavos', v)}
+          abrirPerfis={() => setModalCanaisAberto(true)}
+          cobrarLogistica={armazem.cobrarLogistica}
+          setCobrarLogistica={v => armazem.setParametro('cobrarLogistica', v)}
         />
         
       </div>
@@ -731,6 +820,35 @@ export function PaginaCalculadoraV2() {
         </div>
       </div>
 
+      <ModalCanaisVenda
+        aberto={modalCanaisAberto}
+        aoFechar={() => setModalCanaisAberto(false)}
+        hook={{
+          perfisMarketplace,
+          setPerfisMarketplace,
+          perfilAtivo,
+          setPerfilAtivo: (nome: string) => {
+            setPerfilAtivo(nome);
+            const p = perfisMarketplace.find(x => x.nome === nome);
+            if (p) {
+              armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
+              armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
+              armazem.setParametro('freteCentavos', p.freteCentavos);
+            } else {
+              armazem.setParametro('taxaEcommercePercentual', 0);
+              armazem.setParametro('taxaFixaVendaCentavos', 0);
+              armazem.setParametro('freteCentavos', 0);
+            }
+          },
+          setTaxaEcommerce: (v: number) => armazem.setParametro('taxaEcommercePercentual', v),
+          setTaxaFixa: (v: number) => armazem.setParametro('taxaFixaVendaCentavos', v),
+          setFrete: (v: number) => armazem.setParametro('freteCentavos', v)
+        }}
+        indiceSendoEditado={indiceSendoEditado}
+        setIndiceSendoEditado={setIndiceSendoEditado}
+        nomeTemporario={nomeTemporario}
+        setNomeTemporario={setNomeTemporario}
+      />
     </div>
   );
 }

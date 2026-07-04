@@ -27,7 +27,7 @@ export function ModalProjetosAtrasados({ aberto, aoFechar, pedidos, abrirFormula
     if (!busca) return pedidosAtrasados;
     const termo = busca.toLowerCase();
     return pedidosAtrasados.filter(
-      (p) => p.descricao.toLowerCase().includes(termo) || p.nomeCliente?.toLowerCase().includes(termo),
+      (p) => (p.descricao || "").toLowerCase().includes(termo) || (p.nomeCliente || "").toLowerCase().includes(termo),
     );
   }, [pedidosAtrasados, busca]);
 

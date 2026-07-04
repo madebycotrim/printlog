@@ -28,7 +28,7 @@ export function ModalArquivoProjetos({ aberto, aoFechar, pedidos, abrirFormulari
     if (!busca) return pedidosArquivados;
     const termo = busca.toLowerCase();
     return pedidosArquivados.filter(
-      (p) => p.descricao.toLowerCase().includes(termo) || p.nomeCliente?.toLowerCase().includes(termo),
+      (p) => (p.descricao || "").toLowerCase().includes(termo) || (p.nomeCliente || "").toLowerCase().includes(termo),
     );
   }, [pedidosArquivados, busca]);
 

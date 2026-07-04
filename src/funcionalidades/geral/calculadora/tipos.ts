@@ -51,7 +51,10 @@ export interface CalculoResultado {
   custoDepreciacao: number;
   custoPosProcesso: number;
   custoInsumos: number;
-  taxaMarketplace: number;
+  taxaMarketplace: number;  // total = taxaComissao + taxaFixaVenda
+  taxaComissao: number;     // parcela percentual sobre o preço
+  taxaFixaVenda: number;    // parcela fixa por transação
+  custoFrete: number;       // frete já aplicado
   precoSugerido: number;
   precoSugeridoOriginal?: number;
   precoAlvo?: number;

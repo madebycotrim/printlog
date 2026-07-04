@@ -292,7 +292,8 @@ export function useCalculadora(salvamentoAutomatico = true) {
     
     const precoFinalBaseCalculo = precoAlvoCentavos > 0 ? precoAlvoCentavos : precoSugeridoCentavos;
 
-    const taxaMktTotalCentavos = Math.round(precoFinalBaseCalculo * taxaMktPercentual + taxaFixaVendaCentavos);
+    const taxaComissaoCentavos = Math.round(precoFinalBaseCalculo * taxaMktPercentual);
+    const taxaMktTotalCentavos = taxaComissaoCentavos + taxaFixaVendaCentavos;
     const lucroLiquidoCentavos = precoFinalBaseCalculo - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos - custoModelagemCentavos;
     return {
       custoMaterial: Math.round(custoMaterialTotalCentavos),
@@ -302,6 +303,9 @@ export function useCalculadora(salvamentoAutomatico = true) {
       custoPosProcesso: custoPosProcessoCentavos,
       custoInsumos: custoInsumosDinamicosCentavos + custoInsumosFixosCentavos,
       taxaMarketplace: taxaMktTotalCentavos,
+      taxaComissao: taxaComissaoCentavos,
+      taxaFixaVenda: taxaFixaVendaCentavos,
+      custoFrete: custoFreteCentavos,
       precoSugerido: precoFinalBaseCalculo,
       precoSugeridoOriginal: precoSugeridoCentavos,
       precoAlvo: precoAlvoCentavos > 0 ? precoAlvoCentavos : 0,

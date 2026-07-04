@@ -87,7 +87,8 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
   
   const precoFinalBaseCalculo = p.precoAlvoCentavos > 0 ? p.precoAlvoCentavos : precoSugeridoCentavos;
 
-  const taxaMktTotalCentavos = Math.round(precoFinalBaseCalculo * taxaMktPercentual + taxaFixaVendaCentavos);
+  const taxaComissaoCentavos = Math.round(precoFinalBaseCalculo * taxaMktPercentual);
+  const taxaMktTotalCentavos = taxaComissaoCentavos + taxaFixaVendaCentavos;
   const lucroLiquidoCentavos = precoFinalBaseCalculo - taxaMktTotalCentavos - custoFreteCentavos - custoProducaoTotalCentavos - custoModelagemCentavos;
   
   return {
@@ -98,6 +99,9 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
     custoPosProcesso: custoPosProcessoCentavos,
     custoInsumos: custoInsumosDinamicosCentavos + custoInsumosFixosCentavos,
     taxaMarketplace: taxaMktTotalCentavos,
+    taxaComissao: taxaComissaoCentavos,
+    taxaFixaVenda: taxaFixaVendaCentavos,
+    custoFrete: custoFreteCentavos,
     precoSugerido: precoFinalBaseCalculo,
     precoSugeridoOriginal: precoSugeridoCentavos,
     precoAlvo: p.precoAlvoCentavos > 0 ? p.precoAlvoCentavos : 0,

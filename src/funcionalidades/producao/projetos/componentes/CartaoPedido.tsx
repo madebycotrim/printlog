@@ -293,7 +293,7 @@ export function CartaoPedido({ pedido }: PropriedadesCartaoPedido) {
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-borda-sutil">
-            {pedido.status === StatusPedido.A_FAZER ? (
+            {(pedido.status === StatusPedido.A_FAZER || pedido.status === StatusPedido.ORCAMENTO) ? (
               <div className="flex flex-col gap-2 w-full pt-1">
                 <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500 mb-0.5 ml-1 opacity-70 group-hover/card:opacity-100 transition-opacity">
                   Orçamento Pendente

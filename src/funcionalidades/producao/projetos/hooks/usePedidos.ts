@@ -197,10 +197,10 @@ export function usePedidos() {
     
     return pedidos.filter(
       (p) =>
-        p.descricao.toLowerCase().includes(busca) ||
-        p.nomeCliente?.toLowerCase().includes(busca) ||
-        p.idCliente.toLowerCase().includes(busca) ||
-        p.id.toLowerCase().includes(busca),
+        (p.descricao || "").toLowerCase().includes(busca) ||
+        (p.nomeCliente || "").toLowerCase().includes(busca) ||
+        (p.idCliente || "").toLowerCase().includes(busca) ||
+        (p.id || "").toLowerCase().includes(busca),
     );
   }, [pedidos, termoBusca]);
 
