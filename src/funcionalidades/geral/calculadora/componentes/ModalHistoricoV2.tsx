@@ -1,5 +1,5 @@
 import { Dialogo } from "@/compartilhado/componentes";
-import { Timer, Trash2, Check, Save } from "lucide-react";
+import { Timer, Trash2, Check, Save, X } from "lucide-react";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { OrcamentoSnapshot } from "../estado/armazemCalculadora";
 import { useState } from "react";
@@ -19,8 +19,27 @@ export function ModalHistoricoV2({
   const [novoNome, setNovoNome] = useState("");
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} titulo="Histórico de Variações" larguraMax="max-w-2xl">
-      <div className="p-6 space-y-6">
+    <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-2xl" esconderCabecalho={true}>
+      <div className="p-6 space-y-5">
+        {/* Cabeçalho Premium Standardizado */}
+        <div className="flex items-center justify-between border-b border-borda-sutil pb-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
+              <Timer size={18} />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-black uppercase tracking-wider text-primary">Histórico de Variações</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Versões e snapshots salvos</span>
+            </div>
+          </div>
+          <button
+            onClick={aoFechar}
+            className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
         {/* Salvar Novo Snapshot */}
         <div className="flex gap-3 p-4 rounded-2xl bg-sky-500/5 border border-sky-500/20">
           <input 
@@ -36,7 +55,7 @@ export function ModalHistoricoV2({
               aoSalvar(novoNome); 
               setNovoNome(""); 
             }}
-            className="px-6 h-12 bg-sky-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-sky-600 transition-all flex items-center gap-2"
+            className="px-6 h-12 bg-sky-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-sky-600 transition-all flex items-center gap-2 shadow-lg shadow-sky-500/20 cursor-pointer"
           >
             <Save size={14} /> Salvar
           </button>

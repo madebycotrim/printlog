@@ -71,7 +71,7 @@ export function ModalListagemPremium({
   const corHex = mapasCores[corDestaque] || "sky-500";
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} titulo={titulo} larguraMax={larguraMax} telaCheia={false} semScroll={true}>
+    <Dialogo aberto={aberto} aoFechar={aoFechar} titulo={titulo} icone={IconeTitulo} subtitulo={`${totalResultados} itens disponíveis`} larguraMax={larguraMax} telaCheia={false} semScroll={true}>
       <div className={`flex flex-col bg-card ${altura}`}>
         {/* 🔍 Barra de Busca Superior */}
          <div

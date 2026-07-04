@@ -70,7 +70,11 @@ export function useGerenciadorClientes() {
     resultado.sort((a, b) => {
       let comp = 0;
       if (estado.ordenacao === "NOME") comp = a.nome.localeCompare(b.nome);
-      if (estado.ordenacao === "RECENTE") comp = b.dataCriacao.getTime() - a.dataCriacao.getTime();
+      if (estado.ordenacao === "RECENTE") {
+        const timeA = a.dataCriacao ? (a.dataCriacao instanceof Date ? a.dataCriacao.getTime() : new Date(a.dataCriacao).getTime()) : 0;
+        const timeB = b.dataCriacao ? (b.dataCriacao instanceof Date ? b.dataCriacao.getTime() : new Date(b.dataCriacao).getTime()) : 0;
+        comp = timeB - timeA;
+      }
       if (estado.ordenacao === "LTV") comp = b.ltvCentavos - a.ltvCentavos;
       return estado.ordemInvertida ? -comp : comp;
     });
@@ -103,22 +107,22 @@ export function useGerenciadorClientes() {
       
       const clienteParaSalvar: Cliente = {
         id,
-        nome: dados.nome || "",
-        email: dados.email || "",
-        telefone: dados.telefone || "",
-        observacoesCRM: dados.observacoesCRM || "",
-        ltvCentavos: clienteExistente?.ltvCentavos || 0,
-        totalProdutos: clienteExistente?.totalProdutos || 0,
-        fiel: clienteExistente?.fiel || false,
-        dataCriacao: clienteExistente?.dataCriacao || new Date(),
+        nome: dados.nome ?? clienteExistente?.nome ?? "",
+        email: dados.email ?? clienteExistente?.email ?? "",
+        telefone: dados.telefone ?? clienteExistente?.telefone ?? "",
+        observacoesCRM: dados.observacoesCRM ?? clienteExistente?.observacoesCRM ?? "",
+        ltvCentavos: dados.ltvCentavos ?? clienteExistente?.ltvCentavos ?? 0,
+        totalProdutos: dados.totalProdutos ?? clienteExistente?.totalProdutos ?? 0,
+        fiel: dados.fiel ?? clienteExistente?.fiel ?? false,
+        dataCriacao: dados.dataCriacao ?? clienteExistente?.dataCriacao ?? new Date(),
         dataAtualizacao: new Date(),
-        idConsentimento: clienteExistente?.idConsentimento || "",
-        baseLegal: clienteExistente?.baseLegal || ("consentimento" as any),
-        finalidadeColeta: clienteExistente?.finalidadeColeta || "",
-        prazoRetencaoMeses: clienteExistente?.prazoRetencaoMeses || 60,
-        anonimizado: clienteExistente?.anonimizado || false,
-        ...dados,
-      } as Cliente;
+        idConsentimento: dados.idConsentimento ?? clienteExistente?.idConsentimento ?? "",
+        baseLegal: dados.baseLegal ?? clienteExistente?.baseLegal ?? ("consentimento" as any),
+        finalidadeColeta: dados.finalidadeColeta ?? clienteExistente?.finalidadeColeta ?? "",
+        prazoRetencaoMeses: dados.prazoRetencaoMeses ?? clienteExistente?.prazoRetencaoMeses ?? 60,
+        anonimizado: dados.anonimizado ?? clienteExistente?.anonimizado ?? false,
+        historico: dados.historico ?? clienteExistente?.historico ?? [],
+      };
 
       // ⚡️ OTIMISTA
       estado.adicionarOuAtualizarCliente(clienteParaSalvar);

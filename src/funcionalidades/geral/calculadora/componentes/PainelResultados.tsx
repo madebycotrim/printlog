@@ -152,47 +152,85 @@ export const PainelResultados = memo(function PainelResultados({
 
 
   return (
-    <div className={`pt-4 pb-6 px-6 rounded-2xl bg-card border border-borda-sutil shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] flex flex-col items-center text-center overflow-y-auto xl:overflow-y-auto relative h-fit max-h-[740px] xl:max-h-[740px] w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl premium-card premium-card-sky`}>
-      <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-sky-500/20 to-transparent blur-3xl" />
+    <div className="pt-4 pb-5 px-5 rounded-2xl bg-card border border-borda-sutil shadow-[0_24px_48px_-12px_rgba(0,0,0,0.1)] flex flex-col items-center text-center overflow-y-auto xl:overflow-y-auto relative h-fit max-h-[740px] xl:max-h-[740px] w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl">
+      <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-sky-500/10 to-transparent blur-3xl pointer-events-none" />
       <div className="relative z-10 w-full flex flex-col flex-1 min-h-0">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400">Preço Sugerido</span>
-          {(usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
-            <button 
-              onClick={aoSugerirPrecoIA}
-              title="Otimizar Preço com IA"
-              className="p-1.5 rounded-lg text-sky-400 bg-sky-500/5 border border-sky-500/10 hover:bg-sky-500/20 hover:border-sky-500/30 hover:scale-110 active:scale-95 transition-all animate-pulse hover:animate-none group/ia"
-            >
-              <Sparkles size={14} className="fill-sky-400/20 group-hover/ia:fill-sky-400" />
-            </button>
-          )}
-        </div>
+        
+        {/* CONSOLE UNIFICADO DE PREÇO E DESEMPENHO (FLAT & INTEGRADO) */}
+        <div className="w-full flex flex-col gap-4.5 mb-5 text-center relative select-none">
+          <div className="flex items-center justify-between w-full px-1">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+              {precoAlvoCentavos && precoAlvoCentavos > 0 ? 'Preço Alvo Ativo' : 'Preço Sugerido'}
+            </span>
+            {(!precoAlvoCentavos || precoAlvoCentavos === 0) && (usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
+              <button 
+                onClick={aoSugerirPrecoIA}
+                title="Otimizar Preço com IA"
+                className="flex items-center gap-1.5 text-[9px] font-black text-sky-500 hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300 transition-colors uppercase tracking-wider group/ia"
+              >
+                <span>Otimizar IA</span>
+                <Sparkles size={11} className="fill-sky-500/5 group-hover/ia:fill-sky-500/20" />
+              </button>
+            )}
+          </div>
 
-        <div className="mt-2 mb-4">
-          <h2 className={`text-4xl font-black tracking-tighter leading-none mb-3 text-center ${precoAlvoCentavos && precoAlvoCentavos > 0 ? "text-violet-500" : "text-primary"}`}>
-            <ContadorAnimado valor={calculo.precoSugerido / 100} />
-          </h2>
+          <div className="my-0.5 flex flex-col items-center">
+            <h2 className="text-5xl font-black tracking-tight leading-none text-center relative">
+              <ContadorAnimado 
+                valor={calculo.precoSugerido / 100} 
+                className={`inline-block bg-gradient-to-r bg-clip-text text-transparent transition-all duration-300 ${precoAlvoCentavos && precoAlvoCentavos > 0 ? 'from-violet-500 to-fuchsia-500 dark:from-violet-400 dark:to-fuchsia-400' : 'from-sky-500 via-blue-500 to-indigo-500 dark:from-sky-400 dark:to-indigo-400'}`}
+              />
+            </h2>
 
-          {(() => {
-            const pesoAcumulado = materiais.reduce((acc, m) => acc + (modoEntrada === 'lote' ? m.quantidade : m.quantidade * Math.max(1, quantidade)), 0);
-            const tempoCalculado = modoEntrada === 'lote' ? tempo : tempo * Math.max(1, quantidade);
-            const h = Math.floor(tempoCalculado / 60);
-            const m = Math.round(tempoCalculado % 60);
-            const tempoStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            {(() => {
+              const pesoAcumulado = materiais.reduce((acc, m) => acc + (modoEntrada === 'lote' ? m.quantidade : m.quantidade * Math.max(1, quantidade)), 0);
+              const tempoCalculado = modoEntrada === 'lote' ? tempo : tempo * Math.max(1, quantidade);
+              const h = Math.floor(tempoCalculado / 60);
+              const m = Math.round(tempoCalculado % 60);
+              const tempoStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+              
+              return (pesoAcumulado > 0 || tempoCalculado > 0) ? (
+                <div className="flex items-center justify-center gap-2 mt-2 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                  {pesoAcumulado > 0 && <span>{pesoAcumulado.toFixed(1)}g total</span>}
+                  {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />}
+                  {tempoCalculado > 0 && <span>{tempoStr}</span>}
+                </div>
+              ) : null;
+            })()}
+          </div>
+
+          <div className="h-px bg-zinc-200/50 dark:bg-zinc-800/40 w-full" />
+
+          {/* Grid de Métricas e Configurações Sem Card (Flat) */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4.5 w-full text-left px-1 relative">
+            <div className="absolute top-2 bottom-2 left-1/2 w-px bg-zinc-200/40 dark:bg-zinc-800/20 -translate-x-1/2" />
             
-            return (pesoAcumulado > 0 || tempoCalculado > 0) ? (
-              <div className="flex items-center justify-center gap-3 mb-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                {pesoAcumulado > 0 && <span>{pesoAcumulado.toFixed(1)}g total</span>}
-                {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
-                {tempoCalculado > 0 && <span>{tempoStr}</span>}
-              </div>
-            ) : null;
-          })()}
+            {/* Lucro Líquido */}
+            <div className="flex flex-col items-start">
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">Lucro Líquido</span>
+              <span className={`text-2xl font-black tracking-tight leading-none mt-1 block ${cl.textPrimary}`}>
+                <ContadorAnimado valor={calculo.lucroLiquido / 100} />
+              </span>
+              <span className="text-[9px] text-zinc-400 dark:text-zinc-500/80 uppercase font-black tracking-wider mt-1 block">
+                Rentab.: {calculo.custoTotalOperacional > 0 ? ((calculo.lucroLiquido / calculo.custoTotalOperacional) * 100).toFixed(0) : 0}%
+              </span>
+            </div>
 
-          <div className="flex flex-col gap-3 items-center">
-            <div className="flex flex-wrap justify-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-muted/30 focus-within:border-sky-500/50 transition-colors shadow-inner">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Desconto Lote:</span>
+            {/* Margem Real */}
+            <div className="flex flex-col items-start pl-2">
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">Margem Real</span>
+              <span className={`text-2xl font-black tracking-tight leading-none mt-1 block ${cl.textSecondary}`}>
+                <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
+              </span>
+              <span className="text-[9px] text-zinc-400 dark:text-zinc-500/80 uppercase font-black tracking-wider mt-1 block">
+                Fabricação: <ContadorAnimado valor={calculo.custoTotalOperacional / 100} />
+              </span>
+            </div>
+
+            {/* Desconto Lote */}
+            <div className="flex flex-col items-start w-full">
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">Desconto Lote</span>
+              <div className="flex items-center justify-between gap-1 bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200/40 dark:border-zinc-800/40 rounded-xl px-3 py-1.5 mt-1.5 w-full focus-within:ring-1 focus-within:ring-sky-500/10 focus-within:border-sky-500/40 transition-all shadow-sm">
                 <input 
                   type="number"
                   min="0"
@@ -202,14 +240,18 @@ export const PainelResultados = memo(function PainelResultados({
                     const v = e.target.value;
                     setDescontoVolume?.(v === "" ? 0 : Number(v));
                   }}
-                  className="w-8 bg-transparent text-[11px] font-black text-primary dark:text-white text-center outline-none border-b border-borda-sutil focus:border-sky-500 transition-colors"
+                  className="w-full bg-transparent text-xs font-bold text-primary dark:text-white outline-none"
                   placeholder="0"
                 />
-                <span className="text-[10px] font-black text-muted-foreground">%</span>
+                <span className="text-[10px] font-black text-zinc-400">%</span>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-borda-sutil bg-violet-500/5 focus-within:border-violet-500/50 transition-colors shadow-inner" title="Matemática Reversa: Calcule o lucro com base no preço final pago pelo cliente">
-                <span className="text-[9px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-500">Preço Alvo: R$</span>
+            {/* Preço Alvo */}
+            <div className="flex flex-col items-start w-full pl-2" title="Matemática Reversa: Calcule o lucro com base no preço final pago pelo cliente">
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">Preço Alvo</span>
+              <div className="flex items-center gap-0.5 bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200/40 dark:border-zinc-800/40 rounded-xl px-3 py-1.5 mt-1.5 w-full focus-within:ring-1 focus-within:ring-sky-500/10 focus-within:border-sky-500/40 transition-all shadow-sm">
+                <span className="text-[10px] font-bold text-zinc-400">R$</span>
                 <input 
                   type="number"
                   min="0"
@@ -218,20 +260,35 @@ export const PainelResultados = memo(function PainelResultados({
                     const v = e.target.value;
                     setPrecoAlvoCentavos?.(v === "" ? 0 : Math.round(Number(v) * 100));
                   }}
-                  className="w-16 bg-transparent text-[11px] font-black text-violet-600 dark:text-violet-500 text-center outline-none border-b border-borda-sutil focus:border-violet-500 transition-colors"
+                  className="w-full bg-transparent text-xs font-bold text-primary dark:text-white outline-none"
                   placeholder="0.00"
                 />
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="flex bg-muted/40 dark:bg-white/5 p-1 rounded-2xl mb-4 w-full shadow-inner">
-          <button onClick={() => setAba('orcamento')} className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${aba === 'orcamento' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'text-muted-foreground hover:text-primary'}`}>Orçamento</button>
-          <button onClick={() => setAba('metricas')} className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5 ${aba === 'metricas' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-muted-foreground hover:text-primary'}`}>Métricas 360 <PieChart size={12} /></button>
+
+        <div className="h-px bg-zinc-200/50 dark:bg-zinc-800/40 w-full mb-4" />
+
+        {/* INTERRUPTOR DE ABAS */}
+        <div className="flex bg-zinc-100 dark:bg-zinc-900/60 p-1 rounded-xl mb-4 w-full border border-borda-sutil shadow-inner">
+          <button 
+            type="button"
+            onClick={() => setAba('orcamento')} 
+            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${aba === 'orcamento' ? 'bg-white dark:bg-zinc-800 text-primary dark:text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+          >
+            Orçamento
+          </button>
+          <button 
+            type="button"
+            onClick={() => setAba('metricas')} 
+            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5 ${aba === 'metricas' ? 'bg-white dark:bg-zinc-800 text-primary dark:text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+          >
+            Métricas 360 <PieChart size={11} className={aba === 'metricas' ? 'text-indigo-500 dark:text-indigo-400' : ''} />
+          </button>
         </div>
-        
-        {aba === 'orcamento' && (() => {
+
+                {aba === 'orcamento' && (() => {
           const itens = [
             { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400' },
             { label: 'Modelagem 3D', valor: calculo.custoModelagem || 0, icone: PenTool, cor: 'text-rose-400' },
@@ -439,10 +496,8 @@ export const PainelResultados = memo(function PainelResultados({
           </div>
         )}
 
-        <div className="h-px bg-borda-sutil/50 my-4 w-full" />
-
         {explicacaoIA && (
-          <div className="w-full text-left p-3.5 rounded-2xl bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/20 shadow-sm mb-4 animate-in slide-in-from-top-4 duration-300">
+          <div className="w-full text-left p-3.5 rounded-2xl bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/20 shadow-sm mt-4 mb-4 animate-in slide-in-from-top-4 duration-300">
             <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 mb-1.5">
               <Sparkles size={14} className="fill-violet-500/10" />
               <span className="text-[10px] font-black uppercase tracking-widest">Justificativa da IA</span>
@@ -453,58 +508,8 @@ export const PainelResultados = memo(function PainelResultados({
           </div>
         )}
 
-        {/* Card do Lucro Líquido Premium */}
-        <div className={`w-full p-4 rounded-2xl border transition-all duration-500 relative overflow-hidden flex flex-col gap-3.5 ${cl.bg} ${cl.border} ${cl.shadow}`}>
-          <div className="absolute top-0 left-0 w-1 h-full transition-all duration-500 bg-current" style={{ color: `var(--color-primary)` }} /> 
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className={`p-1.5 rounded-lg transition-all duration-500 ${cl.iconBg} ${cl.textPrimary}`}>
-                <cl.icone size={16} className="animate-in zoom-in-50" />
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">Desempenho</span>
-                <span className={`text-xs font-black uppercase tracking-wider ${cl.textPrimary}`}>Lucro Líquido</span>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <span className={`text-2xl font-black block tracking-tight leading-none ${cl.textPrimary}`}>
-                <ContadorAnimado valor={calculo.lucroLiquido / 100} />
-              </span>
-              <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-0.5 block">Saldo Livre</span>
-            </div>
-          </div>
-
-          <div className="h-px bg-zinc-200/50 dark:bg-zinc-800/40 w-full" />
-
-          {/* Grid de Sub-Métricas */}
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="flex flex-col items-center">
-              <span className="text-[8px] text-zinc-400 uppercase font-bold tracking-wider mb-0.5">Rentabilidade</span>
-              <span className={`text-[10px] font-black tracking-tight ${cl.textSecondary}`}>
-                <ContadorAnimado valor={calculo.custoTotalOperacional > 0 ? (calculo.lucroLiquido / calculo.custoTotalOperacional) * 100 : 0} prefixo="" sufixo="%" casasDecimais={1} />
-              </span>
-            </div>
-            
-            <div className="flex flex-col items-center border-x border-zinc-200/50 dark:border-zinc-800/40">
-              <span className="text-[8px] text-zinc-400 uppercase font-bold tracking-wider mb-0.5">Margem Real</span>
-              <span className={`text-[10px] font-black tracking-tight ${cl.textSecondary}`}>
-                <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center">
-              <span className="text-[8px] text-zinc-400 uppercase font-bold tracking-wider mb-0.5">Fabricação</span>
-              <span className="text-[10px] font-black text-zinc-700 dark:text-zinc-300 tracking-tight">
-                <ContadorAnimado valor={calculo.custoTotalOperacional / 100} />
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Botões de Ação Principais */}
-        <div className="flex items-center gap-3 mt-4 w-full">
+        <div className="flex items-center gap-3 mt-auto pt-4 w-full">
           <button 
             onClick={salvarProjeto}
             className="flex-1 h-11 font-black uppercase tracking-widest text-[9px] rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white hover:shadow-md hover:shadow-sky-500/10 active:scale-[0.98] transition-all disabled:opacity-30 disabled:pointer-events-none"

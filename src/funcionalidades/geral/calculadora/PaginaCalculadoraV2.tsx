@@ -140,6 +140,37 @@ export function PaginaCalculadoraV2() {
   
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState("");
   const [abertoSeletorImpressora, setAbertoSeletorImpressora] = useState(false);
+
+  const [anosVidaUtil, setAnosVidaUtil] = useState<5 | 3 | 2>(() => {
+    const salvo = localStorage.getItem("printlog_anos_vida_util");
+    return salvo ? Number(salvo) as 5 | 3 | 2 : 5;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("printlog_anos_vida_util", String(anosVidaUtil));
+  }, [anosVidaUtil]);
+
+  const impressoraSelecionada = useMemo(() =>
+    estadoImpressoras.impressoras.find(i => i.id === impressoraSelecionadaId),
+    [estadoImpressoras.impressoras, impressoraSelecionadaId]
+  );
+
+  // Recalcular depreciação automaticamente com base no valor de compra da impressora e anos de vida útil
+  useEffect(() => {
+    if (impressoraSelecionada) {
+      const valorCompra = impressoraSelecionada.valorCompraCentavos || 0;
+      const custoHoraCalculado = Math.round(
+        (valorCompra / anosVidaUtil) / 12 / 240
+      );
+      if (armazem.depreciacaoHoraCentavos !== custoHoraCalculado) {
+        armazem.setParametro('depreciacaoHoraCentavos', custoHoraCalculado);
+      }
+    } else {
+      if (armazem.depreciacaoHoraCentavos !== 0) {
+        armazem.setParametro('depreciacaoHoraCentavos', 0);
+      }
+    }
+  }, [impressoraSelecionada, anosVidaUtil, armazem.depreciacaoHoraCentavos]);
   
   const [buscaMaterial, setBuscaMaterial] = useState("");
   const [buscaInsumo, setBuscaInsumo] = useState("");
@@ -603,7 +634,7 @@ export function PaginaCalculadoraV2() {
           depreciacao={armazem.depreciacaoHoraCentavos}
           cobrarDesgaste={armazem.cobrarDesgaste} setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
           cobrarMaoDeObra={armazem.cobrarMaoDeObra} setCobrarMaoDeObra={v => armazem.setParametro('cobrarMaoDeObra', v)}
-          anosVidaUtil={5} setAnosVidaUtil={() => {}}
+          anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
           tempo={armazem.tempoMinutosMaquina} quantidade={armazem.quantidade}
           tempoSetup={armazem.tempoSetupMinutos} setTempoSetup={v => armazem.setParametro('tempoSetupMinutos', v)}
           aplicarTemplate={() => {}}

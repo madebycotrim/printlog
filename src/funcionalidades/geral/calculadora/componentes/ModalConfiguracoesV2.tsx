@@ -23,14 +23,14 @@ export function ModalConfiguracoesV2({
 }: PropriedadesModalConfiguracoesV2) {
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho={true}>
-      <div className="flex flex-col md:flex-row bg-card rounded-2xl overflow-hidden shadow-2xl relative w-full border border-borda-sutil">
+      <div className="flex flex-col md:flex-row relative w-full h-full min-h-[50vh]">
         
         {/* PAINEL ESQUERDO: IDENTIDADE (PDF) */}
         <div className="w-full md:w-2/5 p-8 bg-zinc-50 dark:bg-zinc-900/50 relative flex flex-col border-b md:border-b-0 md:border-r border-borda-sutil">
           <div className="relative z-10 flex-1 flex flex-col justify-between h-full">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <Crown size={16} className="text-zinc-500 dark:text-zinc-400" />
+                <Crown size={16} className="text-sky-500" />
                 <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-zinc-300">Personalizar Orçamento</h3>
               </div>
 
@@ -42,7 +42,7 @@ export function ModalConfiguracoesV2({
                     placeholder="Ex: PrintPro Lab"
                     value={config.nomeEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio, config.logoEstudio)}
-                    className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    className="w-full h-11 bg-white dark:bg-zinc-900/40 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
                 </div>
 
@@ -53,7 +53,7 @@ export function ModalConfiguracoesV2({
                     placeholder="Ex: Impressão 3D de alta precisão"
                     value={config.sloganEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value, config.logoEstudio)}
-                    className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    className="w-full h-11 bg-white dark:bg-zinc-900/40 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
                 </div>
 
@@ -64,7 +64,7 @@ export function ModalConfiguracoesV2({
                     placeholder="https://exemplo.com/logo.png"
                     value={config.logoEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, config.sloganEstudio, e.target.value)}
-                    className="w-full h-11 bg-white dark:bg-zinc-900 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-zinc-400 dark:focus:border-zinc-700 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    className="w-full h-11 bg-white dark:bg-zinc-900/40 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                   />
                 </div>
               </div>
@@ -72,7 +72,7 @@ export function ModalConfiguracoesV2({
 
             {/* Preview Dinâmico do Rodapé PRO */}
             {eProOuSuperior && (
-              <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-borda-sutil flex flex-col gap-1 mt-6">
+              <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/40 border border-borda-sutil flex flex-col gap-1 mt-6">
                 <span className="text-[9px] font-black uppercase text-zinc-500 border-b border-borda-sutil pb-1.5 mb-1 tracking-wider">
                   Pré-Visualização
                 </span>
@@ -119,13 +119,13 @@ export function ModalConfiguracoesV2({
         <div className="w-full md:w-3/5 p-8 bg-card relative flex flex-col justify-between">
           <button
             onClick={aoFechar}
-            className="absolute top-6 right-6 w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900 border border-borda-sutil flex items-center justify-center"
+            className="absolute top-6 right-6 w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer"
           >
             <X size={14} />
           </button>
 
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-borda-sutil flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-3.5 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
               <Settings size={18} />
             </div>
             <div>
@@ -136,7 +136,7 @@ export function ModalConfiguracoesV2({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 items-center">
             {/* Energia */}
-            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-borda-sutil flex flex-col gap-2">
+            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/30 border border-borda-sutil flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Zap size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
@@ -144,7 +144,7 @@ export function ModalConfiguracoesV2({
                   <span className="text-[7px] font-bold text-zinc-500">Custo por kWh</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
                 <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
                 <InputBancario
                   placeholder="0.00"
@@ -160,7 +160,7 @@ export function ModalConfiguracoesV2({
             </div>
 
             {/* Margem */}
-            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-borda-sutil flex flex-col gap-2">
+            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/30 border border-borda-sutil flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Percent size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
@@ -168,7 +168,7 @@ export function ModalConfiguracoesV2({
                   <span className="text-[7px] font-bold text-zinc-500">Padrão do estúdio</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
                 <input
                   type="number"
                   placeholder="0"
@@ -185,7 +185,7 @@ export function ModalConfiguracoesV2({
             </div>
 
             {/* Operador */}
-            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-borda-sutil flex flex-col gap-2">
+            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/30 border border-borda-sutil flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Wrench size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
@@ -193,7 +193,7 @@ export function ModalConfiguracoesV2({
                   <span className="text-[7px] font-bold text-zinc-500">Mão de obra / h</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
                 <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
                 <InputBancario
                   placeholder="0.00"
@@ -209,7 +209,7 @@ export function ModalConfiguracoesV2({
             </div>
 
             {/* Máquina */}
-            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-borda-sutil flex flex-col gap-2">
+            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/30 border border-borda-sutil flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
@@ -217,7 +217,7 @@ export function ModalConfiguracoesV2({
                   <span className="text-[7px] font-bold text-zinc-500">Uso do equipamento / h</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-zinc-400 dark:focus-within:border-zinc-700 overflow-hidden">
+              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
                 <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
                 <InputBancario
                   placeholder="0.00"
@@ -236,7 +236,7 @@ export function ModalConfiguracoesV2({
           <div className="mt-6">
             <button
               onClick={aoSalvar}
-              className="w-full h-12 bg-zinc-900 text-white font-bold uppercase text-[10px] tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 shadow hover:bg-zinc-800"
+              className="w-full h-12 bg-sky-500 text-white font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 hover:bg-sky-400 cursor-pointer"
             >
               <Settings size={14} /> Salvar & Sincronizar
             </button>

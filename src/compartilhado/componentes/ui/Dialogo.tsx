@@ -1,12 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
-import { ReactNode, useEffect } from "react";
+import { X, Settings } from "lucide-react";
+import { ReactNode, useEffect, ComponentType } from "react";
 import { createPortal } from "react-dom";
 
 interface PropriedadesDialogo {
   aberto: boolean;
   aoFechar: () => void;
   titulo?: string;
+  subtitulo?: string;
+  icone?: ComponentType<any>;
   children: ReactNode;
   larguraMax?: string;
   esconderCabecalho?: boolean;
@@ -22,6 +24,8 @@ export function Dialogo({
   aberto,
   aoFechar,
   titulo,
+  subtitulo,
+  icone: Icone,
   children,
   larguraMax = "max-w-2xl",
   esconderCabecalho = false,
@@ -79,16 +83,26 @@ export function Dialogo({
             >
               {/* Cabeçalho */}
               {!esconderCabecalho && (
-                <div className={`flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-transparent backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-2xl"}`}>
-                  <h3 className="text-sm font-black text-muted-foreground tracking-widest uppercase">
-                    {titulo}
-                  </h3>
+                <div className={`flex items-center justify-between px-6 py-4.5 border-b border-borda-sutil bg-card backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-3xl"}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
+                      {Icone ? <Icone size={18} /> : <Settings size={18} />}
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <h3 className="text-sm font-black text-primary tracking-wider uppercase leading-none">
+                        {titulo || "Painel"}
+                      </h3>
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                        {subtitulo || "Configurações do Sistema"}
+                      </span>
+                    </div>
+                  </div>
                   <button
                     onClick={aoFechar}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-all active:scale-90"
+                    className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer active:scale-95"
                     aria-label="Fechar"
                   >
-                    <X size={18} strokeWidth={2.5} />
+                    <X size={14} />
                   </button>
                 </div>
               )}

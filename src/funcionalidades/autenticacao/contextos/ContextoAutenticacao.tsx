@@ -160,7 +160,6 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       if (user) {
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
         const ehGithub = user.providerData.some((provedor) => provedor.providerId === "github.com");
-        const plano = useArmazemConfiguracoes.getState().plano;
         
         const novoUsuario = {
           uid: user.uid,
@@ -169,7 +168,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           fotoUrl: user.photoURL,
           provedorGoogle: ehGoogle,
           provedorGithub: ehGithub,
-          plano: plano,
+          plano: useArmazemConfiguracoes.getState().plano || "FREE",
           dataAceiteTermos: new Date().toISOString(), // Idealmente buscar do banco D1
           versaoTermos: "2026-05-14",
           emailVerified: user.emailVerified,
@@ -184,8 +183,26 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           // Se o usuário foi desconectado pelo Firebase (sessão expirada, etc) sem chamar sair()
           toast.error("Sua sessão expirou por segurança. Faça login novamente.", { id: "sessao-expirada" });
         }
-        definirUsuario(null);
-        usuarioAnteriorRef.current = null;
+        
+        if (import.meta.env.DEV && !logoutIntencionalRef.current) {
+          const devUser = {
+            uid: "dev-user-uid",
+            email: "dev@printlog.com",
+            nome: "Desenvolvedor Local",
+            fotoUrl: "",
+            provedorGoogle: false,
+            provedorGithub: false,
+            plano: "PRO",
+            dataAceiteTermos: new Date().toISOString(),
+            versaoTermos: "2026-05-14",
+            emailVerified: true,
+          };
+          definirUsuario(devUser);
+          usuarioAnteriorRef.current = devUser;
+        } else {
+          definirUsuario(null);
+          usuarioAnteriorRef.current = null;
+        }
       }
 
       // Finaliza o estado de carregamento global após a primeira resposta real

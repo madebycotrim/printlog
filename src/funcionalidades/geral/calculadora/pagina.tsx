@@ -988,6 +988,8 @@ export function PaginaCalculadora() {
                 maoDeObra={hook.maoDeObra} setMaoDeObra={(v) => { hook.setMaoDeObra(v); config.definirHoraOperador(v); }}
                 margem={hook.margem} setMargem={(v) => { hook.setMargem(v); config.definirMargemLucro(v); }}
                 depreciacao={hook.depreciacaoHora}
+                setDepreciacao={hook.setDepreciacaoHora}
+                valorCompraCentavos={impressoraSelecionada?.valorCompraCentavos || 0}
                 cobrarDesgaste={hook.cobrarDesgaste} setCobrarDesgaste={hook.setCobrarDesgaste}
                 cobrarMaoDeObra={hook.cobrarMaoDeObra} setCobrarMaoDeObra={hook.setCobrarMaoDeObra}
                 anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}

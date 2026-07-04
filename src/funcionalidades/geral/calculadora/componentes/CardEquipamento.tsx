@@ -22,6 +22,7 @@ export function CardEquipamento({
   aoSelecionar,
   abertoSeletor,
   setAbertoSeletor,
+  aoAplicarSugestaoFalha
 }: PropriedadesCardEquipamento) {
   const selecionada = impressoras.find(i => i.id === impressoraSelecionadaId);
   const [erroImagem, definirErroImagem] = useState(false);
