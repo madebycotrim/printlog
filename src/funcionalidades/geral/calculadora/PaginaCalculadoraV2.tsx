@@ -105,31 +105,26 @@ export function PaginaCalculadoraV2() {
   const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
 
   // Canais de Venda / Perfis Marketplace
-  const [perfisMarketplace, setPerfisMarketplace] = useState<any[]>(() => {
-    const salvo = localStorage.getItem("printlog_perfis_marketplace");
-    if (salvo) {
-      try {
-        const parsed = JSON.parse(salvo);
-        return parsed.map((p: any) => ({
-          nome: p.nome,
-          taxaPontosBase: p.taxaPontosBase !== undefined ? p.taxaPontosBase : (p.taxa || 0) * 100,
-          fixaCentavos: p.fixaCentavos !== undefined ? p.fixaCentavos : (p.fixa || 0) * 100,
-          freteCentavos: p.freteCentavos !== undefined ? p.freteCentavos : (p.frete || 0) * 100
-        }));
-      } catch (e) {
-        console.error("Erro ao migrar perfis:", e);
-      }
-    }
-    return [
-      { nome: "Direto", taxaPontosBase: 0, fixaCentavos: 0, freteCentavos: 0 },
-      { nome: "M. Livre", taxaPontosBase: 1800, fixaCentavos: 600, freteCentavos: 0 },
-      { nome: "Shopee", taxaPontosBase: 2000, fixaCentavos: 300, freteCentavos: 0 },
-    ];
-  });
+  const perfisPadrao = [
+    { nome: "Direto", taxaPontosBase: 0, fixaCentavos: 0, freteCentavos: 0 },
+    { nome: "M. Livre", taxaPontosBase: 1800, fixaCentavos: 600, freteCentavos: 0 },
+    { nome: "Shopee", taxaPontosBase: 2000, fixaCentavos: 300, freteCentavos: 0 },
+  ];
 
-  useEffect(() => {
-    localStorage.setItem("printlog_perfis_marketplace", JSON.stringify(perfisMarketplace));
-  }, [perfisMarketplace]);
+  const perfisMarketplace = useMemo(() => {
+    if (config.calculadoraMeta?.canais_venda) {
+      return config.calculadoraMeta.canais_venda;
+    }
+    return perfisPadrao;
+  }, [config.calculadoraMeta]);
+
+  const setPerfisMarketplace = async (novosPerfis: any[]) => {
+    const novaMeta = { ...config.calculadoraMeta, canais_venda: novosPerfis };
+    config.definirCalculadoraMeta(novaMeta);
+    if (usuario?.uid) {
+      await config.salvarNoD1(usuario.uid);
+    }
+  };
 
   const [perfilAtivo, setPerfilAtivo] = useState("");
   const [modalCanaisAberto, setModalCanaisAberto] = useState(false);
@@ -153,6 +148,71 @@ export function PaginaCalculadoraV2() {
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
   const [autoSalvar, setAutoSalvar] = useState(true);
+
+  const [carregouNuvemInicial, setCarregouNuvemInicial] = useState(false);
+
+  // 📥 Inicializa Histórico e Rascunho da Nuvem (uma única vez)
+  useEffect(() => {
+    if (!config.carregando && !carregouNuvemInicial && config.calculadoraMeta) {
+      if (config.calculadoraMeta.historico) {
+        armazem.definirHistorico(config.calculadoraMeta.historico);
+      }
+      if (config.calculadoraMeta.ultimaImpressoraId) {
+        setImpressoraSelecionadaId(config.calculadoraMeta.ultimaImpressoraId);
+      }
+      if (config.calculadoraMeta.autoSalvar !== undefined) {
+        setAutoSalvar(config.calculadoraMeta.autoSalvar);
+      }
+      if (config.calculadoraMeta.rascunho && config.calculadoraMeta.autoSalvar !== false) {
+        armazem.restaurarRascunho(config.calculadoraMeta.rascunho.parametros);
+        setNomeProjeto(config.calculadoraMeta.rascunho.nomeProjeto || "");
+        setDescricaoProjeto(config.calculadoraMeta.rascunho.descricaoProjeto || "");
+        setClienteProjetoId(config.calculadoraMeta.rascunho.clienteProjetoId || "");
+      }
+      setCarregouNuvemInicial(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.carregando]); // Roda apenas quando a carga do DB termina
+
+  // 📤 Debounce para Salvar Rascunho na Nuvem
+  useEffect(() => {
+    if (!carregouNuvemInicial || !autoSalvar) return;
+    
+    const timeoutId = setTimeout(async () => {
+      const parametrosAtuais = armazem.obterParametros();
+      const novaMeta = {
+        ...config.calculadoraMeta,
+        autoSalvar,
+        ultimaImpressoraId: impressoraSelecionadaId,
+        historico: armazem.historico,
+        rascunho: {
+          nomeProjeto,
+          descricaoProjeto,
+          clienteProjetoId,
+          parametros: parametrosAtuais
+        }
+      };
+      config.definirCalculadoraMeta(novaMeta);
+      if (usuario?.uid) {
+        await config.salvarNoD1(usuario.uid);
+      }
+    }, 2500);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    autoSalvar,
+    nomeProjeto,
+    descricaoProjeto,
+    clienteProjetoId,
+    impressoraSelecionadaId,
+    armazem.materiaisSelecionados,
+    armazem.insumosSelecionados,
+    armazem.itensPosProcesso,
+    armazem.resultado.precoSugerido, // Detecta qualquer mudança nos números
+    armazem.historico, // Salva o array de historico quando modificado
+    carregouNuvemInicial
+  ]);
 
   // Hook Temporal do Zundo
   const undo = useStore(useArmazemCalculadora.temporal, (state) => state.undo);
@@ -554,7 +614,7 @@ export function PaginaCalculadoraV2() {
           perfilAtivo={perfilAtivo}
           setPerfilAtivo={(nome) => {
             setPerfilAtivo(nome);
-            const p = perfisMarketplace.find(x => x.nome === nome);
+            const p = perfisMarketplace.find((x: any) => x.nome === nome);
             if (p) {
               armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
               armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
@@ -829,7 +889,7 @@ export function PaginaCalculadoraV2() {
           perfilAtivo,
           setPerfilAtivo: (nome: string) => {
             setPerfilAtivo(nome);
-            const p = perfisMarketplace.find(x => x.nome === nome);
+            const p = perfisMarketplace.find((x: any) => x.nome === nome);
             if (p) {
               armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
               armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);

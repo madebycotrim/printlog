@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
 interface ContextoBetaProps {
   participarPrototipos: boolean;
@@ -44,47 +46,45 @@ export function useBeta() {
 const CHAVE_BETA = "printlog:beta_preferencias" as const;
 
 export function ProvedorBeta({ children }: { children: ReactNode }) {
-  const [preferencias, setPreferencias] = useState(() => {
-    const padrao = {
-      participarPrototipos: false,
-      betaMultiEstudio: false,
-      betaOrcamentosMagicos: false,
-      betaEstoqueInteligente: false,
-      betaSimuladorMargem: false,
-      templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
-      limiteAlertaEstoque: 500,
-    };
-    try {
-      const salvo = typeof window !== "undefined" ? localStorage.getItem(CHAVE_BETA) : null;
-      if (salvo) {
-        return { ...padrao, ...JSON.parse(salvo) };
-      }
-    } catch (e) {
-      registrar.error({ rastreioId: crypto.randomUUID() }, "Erro ao carregar preferências beta", e);
-    }
-    return padrao;
-  });
+  const { usuario } = useAutenticacao();
+  const config = useArmazemConfiguracoes();
 
-  const atualizar = (novas: Partial<typeof preferencias>) => {
-    setPreferencias((prev: typeof preferencias) => {
-      const atualizado = { ...prev, ...novas };
-      localStorage.setItem(CHAVE_BETA, JSON.stringify(atualizado));
-      return atualizado;
-    });
+  const padrao = {
+    participarPrototipos: false,
+    betaMultiEstudio: false,
+    betaOrcamentosMagicos: false,
+    betaEstoqueInteligente: false,
+    betaSimuladorMargem: false,
+    templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
+    limiteAlertaEstoque: 500,
   };
 
-  const resetarTudo = () => {
-    const reset = {
-      participarPrototipos: false,
-      betaMultiEstudio: false,
-      betaOrcamentosMagicos: false,
-      betaEstoqueInteligente: false,
-      betaSimuladorMargem: false,
-      templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
-      limiteAlertaEstoque: 500,
+  const preferencias = {
+    ...padrao,
+    ...(config.calculadoraMeta?.beta || {})
+  };
+
+  const atualizar = async (novas: Partial<typeof preferencias>) => {
+    const atualizado = { ...preferencias, ...novas };
+    const novaMeta = {
+      ...config.calculadoraMeta,
+      beta: atualizado
     };
-    localStorage.setItem(CHAVE_BETA, JSON.stringify(reset));
-    setPreferencias(reset);
+    config.definirCalculadoraMeta(novaMeta);
+    if (usuario?.uid) {
+      await config.salvarNoD1(usuario.uid);
+    }
+  };
+
+  const resetarTudo = async () => {
+    const novaMeta = {
+      ...config.calculadoraMeta,
+      beta: padrao
+    };
+    config.definirCalculadoraMeta(novaMeta);
+    if (usuario?.uid) {
+      await config.salvarNoD1(usuario.uid);
+    }
   };
 
   const valor: ContextoBetaProps = {

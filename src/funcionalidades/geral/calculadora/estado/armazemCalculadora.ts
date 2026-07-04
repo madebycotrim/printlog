@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+// Removed persist to keep calculator in memory only
 import { temporal } from 'zundo';
 import { ParametrosCalculo, executarMotorCalculo } from '../utilitarios/motorCalculo';
 import { MaterialSelecionado, InsumoSelecionado, ItemPosProcesso, CalculoResultado } from '../tipos';
@@ -53,6 +53,9 @@ const estadoInicialResultado: CalculoResultado = {
   custoPosProcesso: 0,
   custoInsumos: 0,
   taxaMarketplace: 0,
+  taxaComissao: 0,
+  taxaFixaVenda: 0,
+  custoFrete: 0,
   precoSugerido: 0,
   precoSugeridoOriginal: 0,
   precoAlvo: 0,
@@ -83,13 +86,15 @@ export interface EstadoCalculadora extends ParametrosCalculo {
   salvarSnapshot: (nome: string, descricao?: string, clienteId?: string) => void;
   carregarSnapshot: (snapshot: OrcamentoSnapshot) => void;
   removerSnapshot: (id: string) => void;
+  definirHistorico: (historico: OrcamentoSnapshot[]) => void;
+  restaurarRascunho: (rascunho: Partial<ParametrosCalculo>) => void;
+  obterParametros: () => ParametrosCalculo;
   jaFoiInicializado: boolean;
   inicializarComConfiguracoes: (cfg: { precoKwhCentavos: number, maoDeObraHoraCentavos: number, margemLucroPercentual: number }) => void;
 }
 
 export const useArmazemCalculadora = create<EstadoCalculadora>()(
   temporal(
-    persist(
       (set, get) => ({
       ...estadoInicialParametros,
       resultado: estadoInicialResultado,
@@ -278,11 +283,50 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
         set((state) => ({ historico: state.historico.filter(h => h.id !== id) }));
       },
 
-    }),
-    {
-      name: 'printlog-calculadora-v2', 
-      storage: createJSONStorage(() => localStorage),
-    }
+      definirHistorico: (historico) => {
+        set({ historico });
+      },
+
+      restaurarRascunho: (rascunho) => {
+        set({ ...rascunho });
+        get().atualizarCalculo();
+      },
+
+      obterParametros: () => {
+        const estadoAtual = get();
+        return {
+          materiaisSelecionados: estadoAtual.materiaisSelecionados,
+          insumosSelecionados: estadoAtual.insumosSelecionados,
+          itensPosProcesso: estadoAtual.itensPosProcesso,
+          tempoMinutosMaquina: estadoAtual.tempoMinutosMaquina,
+          potenciaWatts: estadoAtual.potenciaWatts,
+          precoKwhCentavos: estadoAtual.precoKwhCentavos,
+          maoDeObraHoraCentavos: estadoAtual.maoDeObraHoraCentavos,
+          depreciacaoHoraCentavos: estadoAtual.depreciacaoHoraCentavos,
+          margemLucroPercentual: estadoAtual.margemLucroPercentual,
+          cobrarEnergia: estadoAtual.cobrarEnergia,
+          cobrarDesgaste: estadoAtual.cobrarDesgaste,
+          cobrarMaoDeObra: estadoAtual.cobrarMaoDeObra,
+          cobrarInsumosFixos: estadoAtual.cobrarInsumosFixos,
+          cobrarLogistica: estadoAtual.cobrarLogistica,
+          modoEntrada: estadoAtual.modoEntrada,
+          quantidade: estadoAtual.quantidade,
+          pecasPorMesa: estadoAtual.pecasPorMesa,
+          tempoSetupMinutos: estadoAtual.tempoSetupMinutos,
+          materialPerdidoGramas: estadoAtual.materialPerdidoGramas,
+          tempoPerdidoMinutos: estadoAtual.tempoPerdidoMinutos,
+          insumosFixosCentavos: estadoAtual.insumosFixosCentavos,
+          freteCentavos: estadoAtual.freteCentavos,
+          taxaEcommercePercentual: estadoAtual.taxaEcommercePercentual,
+          taxaFixaVendaCentavos: estadoAtual.taxaFixaVendaCentavos,
+          tempoModelagemMinutos: estadoAtual.tempoModelagemMinutos,
+          valorHoraModelagemCentavos: estadoAtual.valorHoraModelagemCentavos,
+          descontoVolumePercentual: estadoAtual.descontoVolumePercentual,
+          precoAlvoCentavos: estadoAtual.precoAlvoCentavos,
+        };
+      },
+
+    })
+    // Removed persist middleware to avoid saving sensitive budget data to localStorage
   )
-)
 );

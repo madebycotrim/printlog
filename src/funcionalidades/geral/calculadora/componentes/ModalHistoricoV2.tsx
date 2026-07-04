@@ -85,7 +85,7 @@ export function ModalHistoricoV2({
         </div>
 
         <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest text-center">
-          * Os snapshots ficam salvos no armazenamento local do seu dispositivo.
+          * Os snapshots agora ficam salvos na sua nuvem e sincronizados em todos os dispositivos.
         </p>
       </div>
     </Dialogo>

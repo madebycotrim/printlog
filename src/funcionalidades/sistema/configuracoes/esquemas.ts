@@ -9,4 +9,5 @@ export const configuracoesSchema = z.object({
   sloganEstudio: z.string().optional(),
   logoEstudio: z.string().optional(),
   plano: z.enum(["FREE", "PRO", "FUNDADOR"]).optional(),
+  calculadoraMeta: z.any().optional(),
 });

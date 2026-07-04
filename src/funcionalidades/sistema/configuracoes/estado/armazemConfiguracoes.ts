@@ -20,9 +20,11 @@ interface ArmazemConfiguracoes {
   plano: PlanoUsuario;
   cicloPagamento?: string;
   vencimentoPlano?: string | null;
+  calculadoraMeta?: any;
   carregando: boolean;
 
   // Ações
+  definirCalculadoraMeta: (meta: any) => void;
   carregarDoD1: (usuarioId: string) => Promise<void>;
   definirCustoEnergia: (valor: number) => void;
   definirHoraMaquina: (valor: number) => void;
@@ -47,6 +49,7 @@ export const VALORES_PADRAO = {
   plano: "FREE" as PlanoUsuario,
   cicloPagamento: "MENSAL",
   vencimentoPlano: null,
+  calculadoraMeta: null,
 };
 
 /**
@@ -87,9 +90,10 @@ export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
         nomeEstudio: dados.nomeEstudio || "",
         sloganEstudio: dados.sloganEstudio || "",
         logoEstudio: dados.logoEstudio || "",
-        plano: dados.plano || "PRO",
+        plano: dados.plano || "FREE",
         cicloPagamento: dados.cicloPagamento || "MENSAL",
-        vencimentoPlano: dados.vencimentoPlano || null,
+        vencimentoPlano: dados.vencimentoPlano,
+        calculadoraMeta: dados.calculadoraMeta,
       });
     } catch (erro) {
       // Se falhar, mantém os valores padrão silenciosamente
@@ -104,15 +108,16 @@ export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
   definirHoraOperador: (valor) => set({ horaOperador: valor }),
   definirMargemLucro: (valor) => set({ margemLucro: valor }),
   definirIdentidadeEstudio: (nome, slogan, logo) => set({ nomeEstudio: nome, sloganEstudio: slogan, logoEstudio: logo }),
-  definirPlano: (plano) => set({ plano }),
+  definirPlano: (plano: PlanoUsuario) => set({ plano }),
+  definirCalculadoraMeta: (meta: any) => set({ calculadoraMeta: meta }),
 
   /**
    * Persiste o estado atual das configurações no D1.
    * Chamado quando o usuário clica em "Salvar" na página de Configurações.
    */
   salvarNoD1: async (usuarioId: string) => {
-    const { custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, logoEstudio, plano } = get();
-    await apiConfiguracoes.salvar({ custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, logoEstudio, plano }, usuarioId);
+    const { custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, logoEstudio, plano, calculadoraMeta } = get();
+    await apiConfiguracoes.salvar({ custoEnergia, horaMaquina, horaOperador, margemLucro, nomeEstudio, sloganEstudio, logoEstudio, plano, calculadoraMeta }, usuarioId);
   },
 
   resetarParaPadrao: () => set(VALORES_PADRAO),

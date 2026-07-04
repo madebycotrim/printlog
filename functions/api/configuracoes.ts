@@ -49,6 +49,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     plano: "FREE",
                     cicloPagamento: "MENSAL",
                     vencimentoPlano: null,
+                    calculadoraMeta: null,
                 }), { headers: { "Content-Type": "application/json" } });
             }
 
@@ -63,6 +64,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 plano: resultado.plano || "FREE",
                 cicloPagamento: resultado.ciclo_pagamento || "MENSAL",
                 vencimentoPlano: resultado.vencimento_plano || null,
+                calculadoraMeta: resultado.calculadora_meta ? JSON.parse(resultado.calculadora_meta) : null,
             }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -72,8 +74,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             const dados = await request.json() as any;
 
             await env.DB.prepare(`
-                INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, logo_estudio, plano, ciclo_pagamento, atualizado_em)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, logo_estudio, plano, ciclo_pagamento, atualizado_em, calculadora_meta)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id_usuario) DO UPDATE SET
                     email          = excluded.email,
                     custo_energia  = excluded.custo_energia,
@@ -84,6 +86,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     slogan_estudio = excluded.slogan_estudio,
                     logo_estudio   = excluded.logo_estudio,
                     plano          = excluded.plano,
+                    calculadora_meta = excluded.calculadora_meta,
                     atualizado_em  = excluded.atualizado_em
             `).bind(
                 usuarioId,
@@ -97,7 +100,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 dados.logoEstudio || "",
                 dados.plano || "FREE",
                 "MENSAL",
-                new Date().toISOString()
+                new Date().toISOString(),
+                dados.calculadoraMeta ? JSON.stringify(dados.calculadoraMeta) : null
             ).run();
 
             return new Response(JSON.stringify({ sucesso: true }), {

@@ -14,6 +14,7 @@ export interface ConfiguracoesSalvas {
   plano?: PlanoUsuario;
   cicloPagamento?: string;
   vencimentoPlano?: string | null;
+  calculadoraMeta?: any;
 }
 
 /**

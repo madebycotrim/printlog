@@ -251,10 +251,12 @@ export const PainelResultados = memo(function PainelResultados({
           return (
             <div className={`space-y-4 w-full text-left relative animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col flex-1 min-h-0 overflow-hidden ${estaVazio ? 'justify-center' : 'justify-start'}`}>
               {estaVazio ? (
-                <div className="flex flex-col items-center justify-center text-muted-foreground w-full py-8">
-                  <Sparkles size={24} className="opacity-40 text-sky-500 dark:text-sky-400 animate-pulse mb-2" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Aguardando dados</span>
-                  <span className="text-[9px] font-bold text-muted-foreground/60 text-center tracking-tight uppercase">Insira pesos e tempos nos cards ao lado</span>
+                <div className="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 w-full py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50/30 dark:bg-zinc-950/10">
+                  <div className="w-9 h-9 rounded-xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-2.5">
+                    <Sparkles size={14} className="text-sky-500 dark:text-sky-400 animate-pulse" />
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-800 dark:text-zinc-200 text-center">Aguardando dados</span>
+                  <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 text-center tracking-wider uppercase mt-1">Insira pesos e tempos nos cards ao lado</span>
                 </div>
               ) : (
                 <div className="flex-1 overflow-y-auto pr-2 scrollbar-fino space-y-4 min-h-0">
@@ -451,66 +453,76 @@ export const PainelResultados = memo(function PainelResultados({
           </div>
         )}
 
-        <div className={`flex items-center justify-between p-4 rounded-2xl border w-full transition-all duration-500 ${cl.bg} ${cl.border} ${cl.shadow}`}>
-          <div className="flex flex-col items-start flex-1">
-            <div className={`flex items-center gap-2 mb-2 transition-colors duration-500 ${cl.textPrimary}`}>
-              <div className={`p-1.5 rounded-lg transition-colors duration-500 ${cl.iconBg}`}>
-                <cl.icone size={16} className="transition-transform duration-500 animate-in zoom-in-50" />
+        {/* Card do Lucro Líquido Premium */}
+        <div className={`w-full p-4 rounded-2xl border transition-all duration-500 relative overflow-hidden flex flex-col gap-3.5 ${cl.bg} ${cl.border} ${cl.shadow}`}>
+          <div className="absolute top-0 left-0 w-1 h-full transition-all duration-500 bg-current" style={{ color: `var(--color-primary)` }} /> 
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`p-1.5 rounded-lg transition-all duration-500 ${cl.iconBg} ${cl.textPrimary}`}>
+                <cl.icone size={16} className="animate-in zoom-in-50" />
               </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Lucro Líquido</span>
+              <div className="flex flex-col items-start">
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">Desempenho</span>
+                <span className={`text-xs font-black uppercase tracking-wider ${cl.textPrimary}`}>Lucro Líquido</span>
+              </div>
             </div>
-            
-            <div className="flex flex-col items-start">
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Rentabilidade:</span>
-                <span className={`text-[10px] font-black transition-colors duration-500 ${cl.textSecondary}`}>
-                  <ContadorAnimado valor={calculo.custoTotalOperacional > 0 ? (calculo.lucroLiquido / calculo.custoTotalOperacional) * 100 : 0} prefixo="" sufixo="%" casasDecimais={1} />
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Margem Real:</span>
-                <span className={`text-[10px] font-black transition-colors duration-500 ${cl.textSecondary}`}>
-                  <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Custo de Fabricação:</span>
-                <span className="text-[10px] font-black text-muted-foreground">
-                  <ContadorAnimado valor={calculo.custoTotalOperacional / 100} />
-                </span>
-              </div>
+
+            <div className="text-right">
+              <span className={`text-2xl font-black block tracking-tight leading-none ${cl.textPrimary}`}>
+                <ContadorAnimado valor={calculo.lucroLiquido / 100} />
+              </span>
+              <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-0.5 block">Saldo Livre</span>
             </div>
           </div>
-          
-          <div className="flex flex-col items-center flex-1 border-l border-borda-sutil/50">
-            <span className={`text-3xl font-black block tracking-tighter leading-none transition-colors duration-500 ${cl.textPrimary}`}>
-              <ContadorAnimado valor={calculo.lucroLiquido / 100} />
-            </span>
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1 block">Saldo Livre</span>
+
+          <div className="h-px bg-zinc-200/50 dark:bg-zinc-800/40 w-full" />
+
+          {/* Grid de Sub-Métricas */}
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] text-zinc-400 uppercase font-bold tracking-wider mb-0.5">Rentabilidade</span>
+              <span className={`text-[10px] font-black tracking-tight ${cl.textSecondary}`}>
+                <ContadorAnimado valor={calculo.custoTotalOperacional > 0 ? (calculo.lucroLiquido / calculo.custoTotalOperacional) * 100 : 0} prefixo="" sufixo="%" casasDecimais={1} />
+              </span>
+            </div>
+            
+            <div className="flex flex-col items-center border-x border-zinc-200/50 dark:border-zinc-800/40">
+              <span className="text-[8px] text-zinc-400 uppercase font-bold tracking-wider mb-0.5">Margem Real</span>
+              <span className={`text-[10px] font-black tracking-tight ${cl.textSecondary}`}>
+                <ContadorAnimado valor={calculo.margemReal} prefixo="" sufixo="%" casasDecimais={1} />
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] text-zinc-400 uppercase font-bold tracking-wider mb-0.5">Fabricação</span>
+              <span className="text-[10px] font-black text-zinc-700 dark:text-zinc-300 tracking-tight">
+                <ContadorAnimado valor={calculo.custoTotalOperacional / 100} />
+              </span>
+            </div>
           </div>
         </div>
 
-
-
+        {/* Botões de Ação Principais */}
         <div className="flex items-center gap-3 mt-4 w-full">
           <button 
             onClick={salvarProjeto}
-            className="flex-1 h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-2 bg-sky-500 text-white hover:bg-sky-400 hover:shadow-sky-500/30 transition-all active:scale-[0.98] shadow-[0_8px_20px_-6px_rgba(14,165,233,0.4)] disabled:opacity-30 disabled:pointer-events-none"
+            className="flex-1 h-11 font-black uppercase tracking-widest text-[9px] rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white hover:shadow-md hover:shadow-sky-500/10 active:scale-[0.98] transition-all disabled:opacity-30 disabled:pointer-events-none"
             disabled={calculo.precoSugerido <= 0}
             title="Salvar Projeto"
           >
-            <FolderKanban size={18} />
+            <FolderKanban size={15} />
             <span>Salvar Projeto</span>
           </button>
 
           <div className="relative flex-1" ref={menuRef}>
             <button 
               onClick={() => setMenuExportarAberto(!menuExportarAberto)}
-              className="w-full h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-2 bg-muted/40 dark:bg-zinc-800 hover:bg-muted/80 dark:hover:bg-zinc-700/80 hover:text-primary dark:hover:text-white text-muted-foreground dark:text-zinc-300 border border-borda-sutil transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none" 
+              className="w-full h-11 font-black uppercase tracking-widest text-[9px] rounded-xl flex items-center justify-center gap-2 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 hover:text-primary dark:hover:text-white text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 active:scale-[0.98] transition-all disabled:opacity-30 disabled:pointer-events-none shadow-sm" 
               disabled={calculo.precoSugerido <= 0}
               title="Opções de Exportação"
             >
-              {carregandoPdf ? <Activity className="animate-spin" size={18} /> : <Download size={18} />}
+              {carregandoPdf ? <Activity className="animate-spin" size={15} /> : <Download size={15} />}
               <span>Exportar</span>
             </button>
             

@@ -1,4 +1,4 @@
-import { Settings, Check, X, Pencil, Trash } from "lucide-react";
+import { Settings, Check, X, Pencil, Trash, Plus } from "lucide-react";
 import { ModalListagemPremium, InputBancario } from "@/compartilhado/componentes";
 
 /**
@@ -192,6 +192,18 @@ export function ModalCanaisVenda({
               );
             })}
           </div>
+
+          <button
+            onClick={() => {
+              const novos = [...hook.perfisMarketplace, { nome: "Novo Canal", taxaPontosBase: 0, fixaCentavos: 0, freteCentavos: 0 }];
+              hook.setPerfisMarketplace(novos);
+              setIndiceSendoEditado(novos.length - 1);
+              setNomeTemporario("Novo Canal");
+            }}
+            className="w-full mt-4 h-10 border border-dashed border-orange-500/30 hover:border-orange-500 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-orange-500/70 hover:text-orange-500 bg-orange-500/5 hover:bg-orange-500/10 transition-all"
+          >
+            <Plus size={14} /> NOVO CANAL DE VENDA
+          </button>
         </div>
       </div>
     </ModalListagemPremium>

@@ -17,7 +17,7 @@ import {
   ChevronRight,
   ShieldCheck,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
@@ -25,6 +25,7 @@ import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { Avatar, SeloPlano } from "./ui";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { TemaInterface, StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 
@@ -60,14 +61,26 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const { participarPrototipos, betaMultiEstudio, resetarTudo } = useBeta();
   const { modoEfetivo } = useContextoTema();
 
-  // Estado de colapso da Barra Lateral (Desktop)
-  const [colapsada, setColapsada] = useState(() => {
-    return localStorage.getItem("printlog_sidebar_colapsada") === "true";
-  });
+  const config = useArmazemConfiguracoes();
 
-  useEffect(() => {
-    localStorage.setItem("printlog_sidebar_colapsada", colapsada.toString());
-  }, [colapsada]);
+  // Estado de colapso da Barra Lateral (Desktop) persistido via D1 (Metadados)
+  const colapsada = config.calculadoraMeta?.ui?.sidebarColapsada ?? false;
+
+  const setColapsada = async (novoValor: boolean | ((prev: boolean) => boolean)) => {
+    const proximoValor = typeof novoValor === "function" ? novoValor(colapsada) : novoValor;
+    const novaMeta = {
+      ...config.calculadoraMeta,
+      ui: {
+        ...(config.calculadoraMeta?.ui || {}),
+        sidebarColapsada: proximoValor
+      }
+    };
+    config.definirCalculadoraMeta(novaMeta);
+    if (usuario?.uid) {
+      await config.salvarNoD1(usuario.uid);
+    }
+  };
+  // Removido useEffect com localStorage
 
   const lidarComSair = async () => {
     try {

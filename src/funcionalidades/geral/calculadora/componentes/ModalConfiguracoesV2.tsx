@@ -92,26 +92,27 @@ export function ModalConfiguracoesV2({
               </div>
             )}
 
-            {!eProOuSuperior && (
-              <div 
-                className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-sm rounded-xl text-center gap-2 cursor-pointer"
-                onClick={aoClicarPaywall}
-              >
-                <Crown size={24} className="text-zinc-400 dark:text-zinc-500" />
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Exclusivo PRO</span>
-                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
-                    Personalize seus orçamentos
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
           
           <div className="relative z-10 mt-6 flex justify-between items-center text-[8px] font-bold text-zinc-500 dark:text-zinc-600 uppercase tracking-widest pt-4 border-t border-borda-sutil">
             <span>PrintLog OS</span>
             <span>2026</span>
           </div>
+
+          {!eProOuSuperior && (
+            <div 
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-sm text-center gap-2 cursor-pointer"
+              onClick={aoClicarPaywall}
+            >
+              <Crown size={24} className="text-zinc-400 dark:text-zinc-500" />
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Exclusivo PRO</span>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
+                  Personalize seus orçamentos
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* PAINEL DIREITO: MOTORES OPERACIONAIS */}
