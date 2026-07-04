@@ -117,7 +117,13 @@ export function CardEquipamento({
             className="flex items-center justify-between bg-muted/40 dark:bg-zinc-950/60 border border-borda-sutil hover:border-zinc-500/30 rounded-xl px-4 h-12 transition-all group/btn shadow-inner"
           >
             <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${selecionada ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
+              {selecionada && exibirImagem ? (
+                <div className="w-6 h-6 rounded flex items-center justify-center shrink-0">
+                  <img src={urlImagem} alt={selecionada.nome} className="w-full h-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] brightness-110" />
+                </div>
+              ) : (
+                <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] ${selecionada ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`} />
+              )}
               <div className="flex flex-col text-left">
                 <span className="text-xs font-bold text-primary dark:text-zinc-100 uppercase tracking-tight">
                   {selecionada?.nome || "Escolher impressora..."}
@@ -139,7 +145,9 @@ export function CardEquipamento({
                 {impressoras.length === 0 ? (
                    <span className="text-[9px] font-bold text-muted-foreground uppercase py-4 text-center">Nenhuma impressora cadastrada</span>
                 ) : (
-                  impressoras.map((imp) => (
+                  impressoras.map((imp) => {
+                    const imgOpcao = obterImagemImpressora(imp.imagemUrl, imp.marca, imp.modeloBase);
+                    return (
                     <button
                       key={imp.id}
                       type="button"
@@ -152,13 +160,25 @@ export function CardEquipamento({
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-muted dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
                         }`}
                     >
-                      <div className="flex flex-col">
-                        <span>{imp.nome}</span>
-                        <span className="text-[8px] opacity-50 uppercase tracking-tighter">{imp.marca} {imp.modeloBase}</span>
+                      <div className="flex items-center gap-3">
+                        {imgOpcao ? (
+                          <div className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-center shrink-0 p-1">
+                            <img src={imgOpcao} alt={imp.nome} className="w-full h-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] brightness-110" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-center text-zinc-500 shrink-0">
+                            <Cpu size={14} />
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <span>{imp.nome}</span>
+                          <span className="text-[8px] opacity-50 uppercase tracking-tighter">{imp.marca} {imp.modeloBase}</span>
+                        </div>
                       </div>
                       {impressoraSelecionadaId === imp.id && <Check size={14} />}
                     </button>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </>

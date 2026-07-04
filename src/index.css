@@ -405,7 +405,235 @@ body {
     border-color: rgba(244, 63, 94, 0.6);
   }
 }
+.dark .skeleton {
+  background-color: var(--bg-skeleton);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Grid Patterns */
+.bg-grid-printlog {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+
+.dark .bg-grid-printlog {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+.bg-grid-sidebar {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+}
+
+.dark .bg-grid-sidebar {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+}
+
+/* Estilos de Cartão Premium com Foco Dinâmico */
+.premium-card {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:focus-within {
+  transform: translateY(-2px);
+}
+
+.premium-card-sky:focus-within {
+  border-color: rgba(14, 165, 233, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(14, 165, 233, 0.1), 0 0 15px -3px rgba(14, 165, 233, 0.2);
+}
+
+.premium-card-orange:focus-within {
+  border-color: rgba(249, 115, 22, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(249, 115, 22, 0.1), 0 0 15px -3px rgba(249, 115, 22, 0.2);
+}
+
+.premium-card-cyan:focus-within {
+  border-color: rgba(8, 145, 178, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(8, 145, 178, 0.1), 0 0 15px -3px rgba(8, 145, 178, 0.2);
+}
+
+.premium-card-indigo:focus-within {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(99, 102, 241, 0.1), 0 0 15px -3px rgba(99, 102, 241, 0.2);
+}
+
+.premium-card-violet:focus-within {
+  border-color: rgba(139, 92, 246, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(139, 92, 246, 0.1), 0 0 15px -3px rgba(139, 92, 246, 0.2);
+}
+
+.premium-card-emerald:focus-within {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(16, 185, 129, 0.1), 0 0 15px -3px rgba(16, 185, 129, 0.2);
+}
+
+.premium-card-blue:focus-within {
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(59, 130, 246, 0.1), 0 0 15px -3px rgba(59, 130, 246, 0.2);
+}
+
+.premium-card-zinc:focus-within {
+  border-color: rgba(161, 161, 170, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(161, 161, 170, 0.1), 0 0 15px -3px rgba(161, 161, 170, 0.2);
+}
+
+.premium-card-red:focus-within {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(239, 68, 68, 0.1), 0 0 15px -3px rgba(239, 68, 68, 0.2);
+}
+
+.premium-card-teal:focus-within {
+  border-color: rgba(20, 184, 166, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(20, 184, 166, 0.1), 0 0 15px -3px rgba(20, 184, 166, 0.2);
+}
+
+.premium-card-rose:focus-within {
+  border-color: rgba(244, 63, 94, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(244, 63, 94, 0.1), 0 0 15px -3px rgba(244, 63, 94, 0.2);
+}
+
+.premium-card-pink:focus-within {
+  border-color: rgba(236, 72, 153, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(236, 72, 153, 0.1), 0 0 15px -3px rgba(236, 72, 153, 0.2);
+}
+
+.premium-card-amber:focus-within {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(245, 158, 11, 0.1), 0 0 15px -3px rgba(245, 158, 11, 0.2);
+}
+
+.premium-card-lime:focus-within {
+  border-color: rgba(132, 204, 22, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(132, 204, 22, 0.1), 0 0 15px -3px rgba(132, 204, 22, 0.2);
+}
+
+.premium-card-stone:focus-within {
+  border-color: rgba(120, 113, 108, 0.4) !important;
+  box-shadow: 0 20px 50px -12px rgba(120, 113, 108, 0.1), 0 0 15px -3px rgba(120, 113, 108, 0.2);
+}
+
+
+/* Animações */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
+}
+
+@layer utilities {
+
+  /* Remove spinners de inputs number globalmente */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* Utilitário para esconder scrollbar mantendo funcionalidade */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Scrollbar Fino e Minimalista */
+  .scrollbar-fino::-webkit-scrollbar {
+    width: 3px;
+  }
+  .scrollbar-fino::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-fino::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  .scrollbar-fino::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@keyframes glow-red-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(244, 63, 94, 0.45);
+    border-color: rgba(244, 63, 94, 0.6);
+  }
+}
 
 .animate-glow-red {
   animation: glow-red-pulse 2s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   MODO DESEMPENHO (PERFORMANCE MODE) - EXTREMO
+   ========================================================================== */
+body.modo-desempenho *,
+body.modo-desempenho *::before,
+body.modo-desempenho *::after {
+  /* 1. Morte ao Vidro e Desfoque (Maior gargalo) */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
+  /* 2. Morte a Filtros Pesados e Sombras */
+  filter: none !important;
+  -webkit-filter: none !important;
+  box-shadow: none !important;
+  
+  /* 3. Paralisia Temporal Absoluta (Sem animações ou atrasos) */
+  transition: none !important;
+  animation: none !important;
+  
+  /* 4. Rolagem seca */
+  scroll-behavior: auto !important;
+}
+
+/* 5. Ocultar orbes gigantes de luz decorativas apenas se forem blur real, e não backdrop-blur */
+body.modo-desempenho [class^="blur-[1"],
+body.modo-desempenho [class*=" blur-[1"],
+body.modo-desempenho [class^="blur-2xl"],
+body.modo-desempenho [class*=" blur-2xl"],
+body.modo-desempenho [class^="blur-3xl"],
+body.modo-desempenho [class*=" blur-3xl"] {
+  display: none !important;
 }

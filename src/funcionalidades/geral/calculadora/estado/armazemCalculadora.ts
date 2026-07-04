@@ -4,6 +4,16 @@ import { temporal } from 'zundo';
 import { ParametrosCalculo, executarMotorCalculo } from '../utilitarios/motorCalculo';
 import { MaterialSelecionado, InsumoSelecionado, ItemPosProcesso, CalculoResultado } from '../tipos';
 
+export interface OrcamentoSnapshot {
+  id: string;
+  data: string;
+  nome: string;
+  descricao?: string;
+  clienteId?: string;
+  parametros: ParametrosCalculo;
+  resultado: CalculoResultado;
+}
+
 const estadoInicialParametros: ParametrosCalculo = {
   materiaisSelecionados: [],
   insumosSelecionados: [],
@@ -69,6 +79,12 @@ export interface EstadoCalculadora extends ParametrosCalculo {
   adicionarPosProcesso: (p: ItemPosProcesso) => void;
   removerPosProcesso: (id: string) => void;
   limpar: () => void;
+  historico: OrcamentoSnapshot[];
+  salvarSnapshot: (nome: string, descricao?: string, clienteId?: string) => void;
+  carregarSnapshot: (snapshot: OrcamentoSnapshot) => void;
+  removerSnapshot: (id: string) => void;
+  jaFoiInicializado: boolean;
+  inicializarComConfiguracoes: (cfg: { precoKwhCentavos: number, maoDeObraHoraCentavos: number, margemLucroPercentual: number }) => void;
 }
 
 export const useArmazemCalculadora = create<EstadoCalculadora>()(
@@ -77,6 +93,20 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
       (set, get) => ({
       ...estadoInicialParametros,
       resultado: estadoInicialResultado,
+      historico: [],
+      jaFoiInicializado: false,
+
+      inicializarComConfiguracoes: (cfg) => {
+        if (!get().jaFoiInicializado) {
+          set({
+            precoKwhCentavos: cfg.precoKwhCentavos,
+            maoDeObraHoraCentavos: cfg.maoDeObraHoraCentavos,
+            margemLucroPercentual: cfg.margemLucroPercentual,
+            jaFoiInicializado: true
+          });
+          get().atualizarCalculo();
+        }
+      },
 
       setParametro: (chave, valor) => {
         set({ [chave]: valor });
@@ -186,7 +216,66 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
         set({
           ...estadoInicialParametros,
           resultado: estadoInicialResultado,
+          jaFoiInicializado: false
         });
+      },
+
+      salvarSnapshot: (nome, descricao, clienteId) => {
+        const estadoAtual = get();
+        const parametros: ParametrosCalculo = {
+          materiaisSelecionados: estadoAtual.materiaisSelecionados,
+          insumosSelecionados: estadoAtual.insumosSelecionados,
+          itensPosProcesso: estadoAtual.itensPosProcesso,
+          tempoMinutosMaquina: estadoAtual.tempoMinutosMaquina,
+          potenciaWatts: estadoAtual.potenciaWatts,
+          precoKwhCentavos: estadoAtual.precoKwhCentavos,
+          maoDeObraHoraCentavos: estadoAtual.maoDeObraHoraCentavos,
+          depreciacaoHoraCentavos: estadoAtual.depreciacaoHoraCentavos,
+          margemLucroPercentual: estadoAtual.margemLucroPercentual,
+          cobrarEnergia: estadoAtual.cobrarEnergia,
+          cobrarDesgaste: estadoAtual.cobrarDesgaste,
+          cobrarMaoDeObra: estadoAtual.cobrarMaoDeObra,
+          cobrarInsumosFixos: estadoAtual.cobrarInsumosFixos,
+          cobrarLogistica: estadoAtual.cobrarLogistica,
+          modoEntrada: estadoAtual.modoEntrada,
+          quantidade: estadoAtual.quantidade,
+          pecasPorMesa: estadoAtual.pecasPorMesa,
+          tempoSetupMinutos: estadoAtual.tempoSetupMinutos,
+          materialPerdidoGramas: estadoAtual.materialPerdidoGramas,
+          tempoPerdidoMinutos: estadoAtual.tempoPerdidoMinutos,
+          insumosFixosCentavos: estadoAtual.insumosFixosCentavos,
+          freteCentavos: estadoAtual.freteCentavos,
+          taxaEcommercePercentual: estadoAtual.taxaEcommercePercentual,
+          taxaFixaVendaCentavos: estadoAtual.taxaFixaVendaCentavos,
+          tempoModelagemMinutos: estadoAtual.tempoModelagemMinutos,
+          valorHoraModelagemCentavos: estadoAtual.valorHoraModelagemCentavos,
+          descontoVolumePercentual: estadoAtual.descontoVolumePercentual,
+          precoAlvoCentavos: estadoAtual.precoAlvoCentavos,
+        };
+
+        const novoSnapshot: OrcamentoSnapshot = {
+          id: crypto.randomUUID(),
+          data: new Date().toISOString(),
+          nome,
+          descricao,
+          clienteId,
+          parametros,
+          resultado: estadoAtual.resultado,
+        };
+
+        set((state) => ({ historico: [novoSnapshot, ...state.historico] }));
+      },
+
+      carregarSnapshot: (snapshot) => {
+        set({
+          ...snapshot.parametros,
+          resultado: snapshot.resultado,
+        });
+        get().atualizarCalculo();
+      },
+
+      removerSnapshot: (id) => {
+        set((state) => ({ historico: state.historico.filter(h => h.id !== id) }));
       },
 
     }),

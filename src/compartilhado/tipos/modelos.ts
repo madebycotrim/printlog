@@ -2,6 +2,7 @@
 export type Centavos = number;
 
 export enum StatusPedido {
+  ORCAMENTO = "orcamento",
   A_FAZER = "a_fazer",
   EM_PRODUCAO = "em_producao",
   ACABAMENTO = "acabamento",

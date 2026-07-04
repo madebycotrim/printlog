@@ -88,7 +88,7 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
     >
       {/* LINHA 1: OPERACIONAL E IMEDIATO */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <CardMetrica variants={item} titulo="Produção Ativa" valor={pedidosAtivos} icone={Clock} cor="sky" dica="Quantidade de projetos que estão sendo impressos ou aguardando produção atualmente." aoClicar={() => navegar("/producao")} />
+        <CardMetrica variants={item} titulo="Produção Ativa" valor={pedidosAtivos} icone={Clock} cor="sky" dica="Quantidade de projetos que estão sendo impressos ou aguardando produção atualmente." aoClicar={() => navegar("/projetos")} />
         <CardMetrica variants={item} titulo="Taxa Sucesso" valor={`${taxaSucesso.toFixed(0)}%`} icone={Percent} cor="emerald" dica="Percentual de impressões concluídas com êxito em relação ao total de tentativas registradas." aoClicar={() => navegar("/impressoras")} />
         <CardMetrica variants={item} titulo="Alertas Estoque" valor={metricasInventario.itensEmAlerta} icone={Package} cor="rose" dica="Número de materiais ou insumos que atingiram o limite mínimo configurado para reposição." aoClicar={() => navegar("/insumos")} />
         <CardMetrica variants={item} titulo="Patrimônio" valor={centavosParaReais(metricasInventario.valorTotalEstoqueCentavos)} icone={Activity} cor="amber" dica="Valor financeiro total investido nos materiais e insumos que você possui em estoque atualmente." aoClicar={() => navegar("/materiais")} />
@@ -102,7 +102,7 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
         <CardMetrica variants={item} titulo="Horas de Voo" valor={`${horasTotais}h`} icone={Timer} cor="violet" mini dica="Tempo total de operação acumulado de todas as suas impressoras em atividade." aoClicar={() => navegar("/impressoras")} />
         <CardMetrica variants={item} titulo="Consumo Total" valor={`${consumoTotalKg}kg`} icone={Weight} cor="cyan" mini dica="Massa total de filamento consumida em todos os projetos de impressão." aoClicar={() => navegar("/materiais")} />
         <CardMetrica variants={item} titulo="Base Clientes" valor={clientesUnicos} icone={Users} cor="fuchsia" mini dica="Quantidade de clientes cadastrados que já realizaram pedidos no seu estúdio." aoClicar={() => navegar("/clientes")} />
-        <CardMetrica variants={item} titulo="Potencial" valor={centavosParaReais(potencialVendaCentavos)} icone={Target} cor="blue" mini dica="Soma do valor estimado de todos os projetos que estão ativos em fila de produção." aoClicar={() => navegar("/producao")} />
+        <CardMetrica variants={item} titulo="Potencial" valor={centavosParaReais(potencialVendaCentavos)} icone={Target} cor="blue" mini dica="Soma do valor estimado de todos os projetos que estão ativos em fila de produção." aoClicar={() => navegar("/projetos")} />
         <CardMetrica variants={item} titulo="ROI Estimado" valor={`${roiEstimado.toFixed(0)}%`} icone={BarChart3} cor="emerald" mini dica="Retorno sobre o Investimento calculado a partir do custo base de compra das máquinas." aoClicar={() => navegar("/financeiro")} />
       </div>
     </motion.div>

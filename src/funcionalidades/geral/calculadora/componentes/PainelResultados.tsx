@@ -31,6 +31,7 @@ interface PainelResultadosProps {
   descontoVolume?: number;
   setDescontoVolume?: (v: number) => void;
   precoAlvoCentavos?: number;
+  precoAlvoCentavos?: number;
   setPrecoAlvoCentavos?: (v: number) => void;
   explicacaoIA?: string;
 }
@@ -488,6 +489,8 @@ export const PainelResultados = memo(function PainelResultados({
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1 block">Saldo Livre</span>
           </div>
         </div>
+
+
 
         <div className="flex items-center gap-3 mt-4 w-full">
           <button 

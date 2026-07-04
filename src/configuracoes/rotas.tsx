@@ -155,12 +155,12 @@ export function RoteadorPrincipal() {
                   <Route path="/dashboard" element={<PaginaInicial />} />
                   <Route path="/calculadora" element={<PaginaCalculadora />} />
                   <Route path="/relatorios/desperdicio" element={<PaginaDesperdicio />} />
-                  <Route path="/producao" element={<PaginaProducao />} />
+                  <Route path="/projetos" element={<PaginaProducao />} />
                   <Route path="/impressoras" element={<PaginaImpressoras />} />
                   <Route path="/materiais" element={<PaginaMateriais />} />
                   <Route path="/insumos" element={<PaginaInsumos />} />
-                  <Route path="/producao/historico" element={<PaginaHistoricoProducao />} />
-                  <Route path="/producao/manutencao" element={<PaginaManutencaoPreditiva />} />
+                  <Route path="/projetos/historico" element={<PaginaHistoricoProducao />} />
+                  <Route path="/projetos/manutencao" element={<PaginaManutencaoPreditiva />} />
                   <Route path="/clientes" element={<PaginaClientes />} />
                   <Route path="/financeiro" element={<PaginaFinanceiro />} />
                   <Route path="/configuracoes" element={<PaginaConfiguracoes />} />

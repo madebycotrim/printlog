@@ -25,7 +25,16 @@ import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { Avatar, SeloPlano } from "./ui";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
-import { TemaInterface } from "@/compartilhado/tipos/modelos";
+import { TemaInterface, StatusPedido } from "@/compartilhado/tipos/modelos";
+import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
+
+// Componente isolado: leitura segura do store sem quebrar a Sidebar
+function BadgeOrcamentos({ colapsado }: { colapsado: boolean }) {
+  const qtd = useArmazemPedidos(s => s.pedidos.filter(p => p.status === StatusPedido.ORCAMENTO).length);
+  if (qtd === 0) return null;
+  if (colapsado) return <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-card shadow-sm" />;
+  return <div className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[10px] font-black text-rose-500 shrink-0">{qtd}</div>;
+}
 
 type PropriedadesBarraLateral = {
   abertaMobile?: boolean;
@@ -50,7 +59,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const { usuario, sair } = useAutenticacao();
   const { participarPrototipos, betaMultiEstudio, resetarTudo } = useBeta();
   const { modoEfetivo } = useContextoTema();
-  
+
   // Estado de colapso da Barra Lateral (Desktop)
   const [colapsada, setColapsada] = useState(() => {
     return localStorage.getItem("printlog_sidebar_colapsada") === "true";
@@ -80,7 +89,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     {
       titulo: "Produção",
       itens: [
-        { nome: "Projetos", icone: FolderKanban, caminho: "/producao" },
+        { nome: "Projetos", icone: FolderKanban, caminho: "/projetos" },
         { nome: "Impressoras", icone: Printer, caminho: "/impressoras" },
         { nome: "Materiais", icone: Package, caminho: "/materiais" },
         { nome: "Insumos", icone: Layers, caminho: "/insumos" },
@@ -237,6 +246,10 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
 
                         {!colapsada && (
                           <span className="flex-1 leading-none truncate">{item.nome}</span>
+                        )}
+
+                        {item.nome === "Projetos" && (
+                          <BadgeOrcamentos colapsado={colapsada} />
                         )}
 
                         {!colapsada && item.beta && (

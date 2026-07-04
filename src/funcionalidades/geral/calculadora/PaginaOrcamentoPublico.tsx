@@ -84,7 +84,7 @@ export function PaginaOrcamentoPublico() {
 
   const lidarComAprovacao = () => {
     setStatusAprovacao('aprovado');
-    let linkBusca = "/producao";
+    let linkBusca = "/projetos";
 
     if (pedidoId) {
        useArmazemPedidos.getState().atualizarPedidoNoEstado(pedidoId, { status: StatusPedido.A_FAZER });

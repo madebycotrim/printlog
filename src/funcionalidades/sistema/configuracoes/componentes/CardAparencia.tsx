@@ -1,5 +1,6 @@
-import { Palette, Sun, Moon, Check, Type, Monitor } from "lucide-react";
+import { Palette, Sun, Moon, Check, Type, Monitor, Activity } from "lucide-react";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
+import { useArmazemDispositivo } from "@/compartilhado/estado/armazemDispositivo";
 import { CorPrimaria, TemaInterface } from "@/compartilhado/tipos/modelos";
 import { CabecalhoCard } from "./Compartilhados";
 
@@ -33,6 +34,8 @@ interface CardAparenciaProps {
 
 export function CardAparencia({ pendente }: CardAparenciaProps) {
   const { modoTema, definirModoTema, corPrimaria, definirCorPrimaria, fonte, definirFonte } = useContextoTema();
+  const modoDesempenho = useArmazemDispositivo((s) => s.modoDesempenho);
+  const alternarModoDesempenho = useArmazemDispositivo((s) => s.alternarModoDesempenho);
 
   return (
     <div className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-4 md:p-5 flex flex-col gap-4 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-700">
@@ -117,6 +120,26 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
           ))}
         </div>
       </div>
+
+      {/* MODO DESEMPENHO */}
+      <div className="mt-2 p-4 rounded-xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-zinc-500">
+            <Activity size={14} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-900 dark:text-zinc-200">Modo Desempenho</span>
+            <span className="text-[7px] font-bold text-gray-500 dark:text-zinc-500">Desativa desfoque e física gráfica em tempo real</span>
+          </div>
+        </div>
+        <button
+          onClick={alternarModoDesempenho}
+          className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 shadow-inner ${modoDesempenho ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-700'}`}
+        >
+          <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${modoDesempenho ? 'translate-x-5' : 'translate-x-0'}`} />
+        </button>
+      </div>
+
     </div>
   );
 }

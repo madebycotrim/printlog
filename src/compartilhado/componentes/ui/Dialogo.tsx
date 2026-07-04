@@ -56,6 +56,7 @@ export function Dialogo({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-[2px]"
             onClick={aoFechar}
           />
@@ -63,10 +64,10 @@ export function Dialogo({
           {/* Container Centralizado */}
           <div className={`fixed inset-0 z-[1000] flex items-center justify-center ${telaCheia ? "p-0" : "p-4 md:p-8"} pointer-events-none`}>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.8 }}
               role="dialog"
               aria-modal="true"
               aria-label={titulo || "Diálogo"}

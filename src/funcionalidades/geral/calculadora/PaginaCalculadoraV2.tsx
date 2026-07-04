@@ -1,6 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "react-hot-toast";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { format } from "date-fns";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
+import { servicoIA } from "@/funcionalidades/geral/calculadora/servicos/servicoIA";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
@@ -8,9 +13,17 @@ import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hoo
 import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 import { useSearchParams } from "react-router-dom";
 import { useStore } from "zustand";
+import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
+import { Dialogo } from "@/compartilhado/componentes";
 
 // Zustand Store 
 import { useArmazemCalculadora } from "./estado/armazemCalculadora";
+
+// Modais V2
+import { ModalConfiguracoesV2 } from "./componentes/ModalConfiguracoesV2";
+import { ModalHistoricoV2 } from "./componentes/ModalHistoricoV2";
 
 // Componentes da Calculadora
 import { CardIdentificacaoProjeto } from "./componentes/CardIdentificacaoProjeto";
@@ -27,6 +40,17 @@ import { PainelResultados } from "./componentes/PainelResultados";
 
 export function PaginaCalculadoraV2() {
   const armazem = useArmazemCalculadora();
+  const { usuario } = useAutenticacao();
+  const config = useArmazemConfiguracoes();
+
+  const eProOuSuperior = useMemo(() => {
+    const plano = ((usuario as any)?.plano || '').toUpperCase();
+    const role = ((usuario as any)?.role || (usuario as any)?.cargo || '').toUpperCase();
+    return ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(plano) ||
+      ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(role) ||
+      plano.includes('FUNDADOR') || role.includes('FUNDADOR');
+  }, [usuario]);
+
   const [searchParams] = useSearchParams();
   const idEdicao = searchParams.get("id") || searchParams.get("edicao");
   
@@ -36,6 +60,12 @@ export function PaginaCalculadoraV2() {
   const { insumos: insumosEstoque } = useArmazemInsumos();
 
   // Estados locais da UI
+  const [modalConfigAberto, setModalConfigAberto] = useState(false);
+  const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
+  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
+  const [modalConfirmarReset, setModalConfirmarReset] = useState(false);
+  const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
+
   const [nomeProjeto, setNomeProjeto] = useState("");
   const [descricaoProjeto, setDescricaoProjeto] = useState("");
   const [clienteProjetoId, setClienteProjetoId] = useState("");
@@ -52,12 +82,218 @@ export function PaginaCalculadoraV2() {
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
   const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
+  const [autoSalvar, setAutoSalvar] = useState(true);
 
-  // Inicialização de Títulos
+  // Hook Temporal do Zundo
+  const undo = useStore(useArmazemCalculadora.temporal, (state) => state.undo);
+  const redo = useStore(useArmazemCalculadora.temporal, (state) => state.redo);
+  const pastStates = useStore(useArmazemCalculadora.temporal, (state) => state.pastStates);
+  const futureStates = useStore(useArmazemCalculadora.temporal, (state) => state.futureStates);
+
+  // Aprovação de orçamentos ocorre no Kanban (PaginaProjetos) — não mais na Calculadora
+
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
+  const gerarPdfExportacao = async () => {
+
+    try {
+      setGerandoPdf(true);
+      toast.loading("Montando PDF oficial...", { id: "pdf" });
+
+      const elemento = document.getElementById("recibo-pdf-oculto");
+      if (!elemento) throw new Error("Template de PDF não encontrado");
+
+      const canvas = await html2canvas(elemento, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff"
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Orcamento-${nomeProjeto || "Cliente"}.pdf`);
+
+      toast.success("PDF gerado com sucesso!", { id: "pdf" });
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao gerar PDF.", { id: "pdf" });
+    } finally {
+      setGerandoPdf(false);
+    }
+  };
+
+  const [explicacaoIA, setExplicacaoIA] = useState("");
+
+  const sugerirPrecoComIA = async () => {
+    try {
+      toast.loading("Analisando mercado e custos...", { id: "ia" });
+      
+      const sugestao = await servicoIA.obterSugestaoPreco({
+        custoMaterial: armazem.resultado.custoMaterial / 100,
+        custoEnergia: armazem.resultado.custoEnergia / 100,
+        custoTrabalho: armazem.resultado.custoMaoDeObra / 100,
+        custoDepreciacao: armazem.resultado.custoDepreciacao / 100,
+        lucroDesejadoPercentual: armazem.margemLucroPercentual,
+        nomePeca: nomeProjeto || "Projeto 3D",
+        pesoGramas: armazem.materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0),
+        tempoMinutos: armazem.tempoMinutosMaquina
+      });
+      
+      armazem.setParametro("precoAlvoCentavos", Math.round(sugestao.recomendado.valor * 100));
+      setExplicacaoIA(sugestao.dica || sugestao.recomendado.justificativa);
+      
+      toast.success("Preço sugerido pela IA!", { id: "ia" });
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao se conectar com o motor de IA.", { id: "ia" });
+    }
+  };
+
+  const [idOrcamentoNuvem, setIdOrcamentoNuvem] = useState("");
+
+  const urlLinkMagico = idOrcamentoNuvem ? `${window.location.origin}/o/${idOrcamentoNuvem}` : "";
+
+  const gerarLinkPublico = async () => {
+    if (!idOrcamentoNuvem) {
+       toast.error("Você precisa Salvar o Projeto antes de gerar o Link Mágico!");
+       return;
+    }
+    await navigator.clipboard.writeText(urlLinkMagico);
+    toast.success("Link Mágico copiado para a Área de Transferência!");
+  };
+
+  // Carrega orçamento da nuvem se vier por link
+  useEffect(() => {
+    async function carregarNuvem() {
+      if (idEdicao && !armazem.jaFoiInicializado) {
+        try {
+          toast.loading("Baixando orçamento...", { id: "loadNuvem" });
+          
+          const { servicoBaseApi } = await import("@/compartilhado/servicos/servicoBaseApi");
+          const pedido = await servicoBaseApi.get<any>(`/api/pedidos/${idEdicao}`);
+          
+          if (pedido && pedido.dados_extras) {
+             const extras = JSON.parse(pedido.dados_extras);
+             if (extras.configuracoes?.snapshot) {
+                armazem.carregarSnapshot(extras.configuracoes.snapshot);
+                setNomeProjeto(extras.configuracoes.snapshot.nome || "");
+                setDescricaoProjeto(extras.configuracoes.snapshot.descricao || "");
+                if (extras.configuracoes.snapshot.clienteId) {
+                   setClienteProjetoId(extras.configuracoes.snapshot.clienteId);
+                }
+                setIdOrcamentoNuvem(idEdicao);
+                toast.success("Orçamento recuperado com sucesso!", { id: "loadNuvem" });
+                return;
+             }
+          }
+          toast.dismiss("loadNuvem");
+        } catch(e) {
+          console.error(e);
+          toast.dismiss("loadNuvem");
+        }
+      }
+    }
+    carregarNuvem();
+  }, [idEdicao]);
+
+  // Inicialização de Configurações Globais (Só roda se não for edição)
+  useEffect(() => {
+    if (!idEdicao && !armazem.jaFoiInicializado && !config.carregando) {
+      armazem.inicializarComConfiguracoes({
+        precoKwhCentavos: config.custoEnergia * 100,
+        maoDeObraHoraCentavos: config.horaOperador * 100,
+        margemLucroPercentual: config.margemLucro * 100
+      });
+    }
+  }, [idEdicao, armazem.jaFoiInicializado, config.carregando, config.custoEnergia, config.horaOperador, config.margemLucro]);
+
+  // Inicialização de Títulos e Ações do Cabeçalho
   useDefinirCabecalho(useMemo(() => ({
-    titulo: idEdicao ? "Editar Orçamento" : "Novo Orçamento",
-    subtitulo: "Modo Profissional V2"
-  }), [idEdicao]));
+    titulo: idEdicao ? "Editando Precificação" : "Calculadora de Custos",
+    subtitulo: "Motor de Orçamentação Avançado",
+    ocultarBusca: true,
+    ocultarNotificacoes: true,
+    elementoAcao: (
+      <div className="flex items-center gap-2">
+        <button 
+          onClick={() => setModalConfirmarReset(true)}
+          className="h-9 px-3 rounded-xl bg-card border border-rose-500/20 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500 transition-all shadow-sm gap-2"
+          title="Limpar Tudo / Resetar"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">Resetar</span>
+        </button>
+        <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
+        <button 
+          onClick={() => undo()} 
+          disabled={pastStates.length === 0}
+          className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-cyan-500 hover:border-cyan-500/30 transition-all disabled:opacity-30 disabled:hover:text-zinc-400 disabled:hover:border-borda-sutil shadow-sm"
+          title="Desfazer (Ctrl+Z)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+        </button>
+        <button 
+          onClick={() => redo()} 
+          disabled={futureStates.length === 0} 
+          className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-cyan-500 hover:border-cyan-500/30 transition-all disabled:opacity-30 disabled:hover:text-zinc-400 disabled:hover:border-borda-sutil shadow-sm"
+          title="Refazer (Ctrl+Y)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+        </button>
+        <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
+        <button 
+          onClick={() => {
+            setAutoSalvar(!autoSalvar);
+            toast.success(autoSalvar ? "Salvamento automático desativado" : "Salvamento automático ativado!");
+          }}
+          className={`h-9 px-3 rounded-xl border flex items-center justify-center transition-all shadow-sm gap-2 text-sm font-medium ${autoSalvar ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-500' : 'bg-card border-borda-sutil text-zinc-400 hover:text-cyan-500 hover:border-cyan-500/30'}`}
+          title="Salvamento Automático"
+        >
+          {autoSalvar ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><polyline points="8 15 12 11 16 15"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+          )}
+          <span className="hidden sm:inline">{autoSalvar ? 'Auto' : 'Manual'}</span>
+        </button>
+        <button 
+          onClick={() => {
+            armazem.salvarSnapshot(nomeProjeto || "Orçamento sem nome", descricaoProjeto, clienteProjetoId);
+            toast.success("Orçamento salvo na versão 2.0!");
+          }}
+          className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-green-500 hover:border-green-500/30 transition-all shadow-sm"
+          title="Salvar Manualmente"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+        <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
+        <button 
+          onClick={() => setModalHistoricoAberto(true)}
+          className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary transition-all shadow-sm"
+          title="Histórico de Versões"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+        <button 
+          onClick={() => setModalConfigAberto(true)}
+          className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary transition-all shadow-sm"
+          title="Configurações da Calculadora"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    )
+  }), [idEdicao, pastStates.length, futureStates.length, undo, redo, autoSalvar]));
 
   // Handlers para Zustand
   const alternarMaterial = useCallback((id: string) => {
@@ -116,12 +352,6 @@ export function PaginaCalculadoraV2() {
     }
   }, [armazem, materiais]);
 
-  // Hook Temporal do Zundo
-  const undo = useStore(useArmazemCalculadora.temporal, (state) => state.undo);
-  const redo = useStore(useArmazemCalculadora.temporal, (state) => state.redo);
-  const pastStates = useStore(useArmazemCalculadora.temporal, (state) => state.pastStates);
-  const futureStates = useStore(useArmazemCalculadora.temporal, (state) => state.futureStates);
-
   // Atalhos de teclado (Ctrl+Z / Ctrl+Y)
   useEffect(() => {
     const lidarComTeclado = (e: KeyboardEvent) => {
@@ -138,29 +368,9 @@ export function PaginaCalculadoraV2() {
     <div className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-y-auto xl:overflow-hidden px-4 sm:px-6 md:px-12 pb-24 xl:pb-0 bg-background pt-8">
       
       {/* PAINEL ESQUERDO: Lista Completa */}
-      <div className="xl:col-span-8 relative space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pb-10 xl:pb-20 scrollbar-hide">
+      <div className="xl:col-span-8 relative space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pb-10 xl:pb-20 px-4 pt-4 -mx-4 -mt-4 scrollbar-hide">
         
-        {/* Botões Histórico Temporal Flutuantes */}
-        <div className="sticky top-0 right-0 z-50 flex justify-end mb-4 pointer-events-none">
-          <div className="pointer-events-auto flex items-center gap-1 bg-card border border-borda-sutil p-1 rounded-full shadow-lg backdrop-blur-md bg-opacity-90">
-            <button 
-              onClick={() => undo()} 
-              disabled={pastStates.length === 0} 
-              className="p-2 rounded-full text-zinc-500 hover:text-primary hover:bg-muted disabled:opacity-30 transition-all group relative"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-            </button>
-            <div className="w-[1px] h-4 bg-borda-sutil"></div>
-            <button 
-              onClick={() => redo()} 
-              disabled={futureStates.length === 0} 
-              className="p-2 rounded-full text-zinc-500 hover:text-primary hover:bg-muted disabled:opacity-30 transition-all group relative"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
-            </button>
-          </div>
-        </div>
-
+        {/* O conteúdo da calculadora começa aqui */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-8 h-full">
             <CardIdentificacaoProjeto
@@ -285,19 +495,240 @@ export function PaginaCalculadoraV2() {
           calculo={armazem.resultado}
           dadosPizza={[]} 
           aba={abaResultado} setAba={setAbaResultado}
-          salvarProjeto={async () => { toast.success("Orçamento salvo na versão 2.0!"); }}
-          gerarPdf={() => toast.success("Gerador de PDF será portado na v2.0 completa.")}
-          gerarLinkMagico={() => {}} obterUrlLinkMagico={() => ""}
-          carregandoPdf={false}
+          salvarProjeto={async () => {
+            if (!nomeProjeto) {
+               toast.error("Dê um nome para o projeto antes de salvar!");
+               return;
+            }
+            
+            armazem.salvarSnapshot(nomeProjeto, descricaoProjeto, clienteProjetoId);
+            
+            if (usuario?.uid) {
+               try {
+                  toast.loading("Sincronizando com a nuvem...", { id: "nuvem" });
+                  
+                  const { apiPedidos } = await import("@/funcionalidades/producao/projetos/servicos/apiPedidos");
+                  const { StatusPedido } = await import("@/compartilhado/tipos/modelos");
+
+                  const idSalvo = await apiPedidos.criar({
+                    descricao: nomeProjeto,
+                    idCliente: clienteProjetoId || "",
+                    valorCentavos: armazem.resultado.precoSugerido,
+                    status: StatusPedido.ORCAMENTO,
+                    configuracoes: {
+                       snapshot: {
+                         id: crypto.randomUUID(),
+                         data: new Date().toISOString(),
+                         nome: nomeProjeto,
+                         descricao: descricaoProjeto,
+                         clienteId: clienteProjetoId,
+                         parametros: {
+                            materiaisSelecionados: armazem.materiaisSelecionados,
+                            insumosSelecionados: armazem.insumosSelecionados,
+                            itensPosProcesso: armazem.itensPosProcesso,
+                            tempoMinutosMaquina: armazem.tempoMinutosMaquina,
+                            potenciaWatts: armazem.potenciaWatts,
+                            precoKwhCentavos: armazem.precoKwhCentavos,
+                            maoDeObraHoraCentavos: armazem.maoDeObraHoraCentavos,
+                            depreciacaoHoraCentavos: armazem.depreciacaoHoraCentavos,
+                            margemLucroPercentual: armazem.margemLucroPercentual,
+                            cobrarEnergia: armazem.cobrarEnergia,
+                            cobrarDesgaste: armazem.cobrarDesgaste,
+                            cobrarMaoDeObra: armazem.cobrarMaoDeObra,
+                            cobrarInsumosFixos: armazem.cobrarInsumosFixos,
+                            cobrarLogistica: armazem.cobrarLogistica,
+                            modoEntrada: armazem.modoEntrada,
+                            quantidade: armazem.quantidade,
+                            pecasPorMesa: armazem.pecasPorMesa,
+                            tempoSetupMinutos: armazem.tempoSetupMinutos,
+                            materialPerdidoGramas: armazem.materialPerdidoGramas,
+                            tempoPerdidoMinutos: armazem.tempoPerdidoMinutos,
+                            insumosFixosCentavos: armazem.insumosFixosCentavos,
+                            freteCentavos: armazem.freteCentavos,
+                            taxaEcommercePercentual: armazem.taxaEcommercePercentual,
+                            taxaFixaVendaCentavos: armazem.taxaFixaVendaCentavos,
+                            tempoModelagemMinutos: armazem.tempoModelagemMinutos,
+                            valorHoraModelagemCentavos: armazem.valorHoraModelagemCentavos,
+                            descontoVolumePercentual: armazem.descontoVolumePercentual,
+                            precoAlvoCentavos: armazem.precoAlvoCentavos,
+                         },
+                         resultado: armazem.resultado
+                       }
+                    }
+                  }, usuario.uid);
+                  
+                  setIdOrcamentoNuvem(idSalvo);
+                  toast.success("Orçamento salvo e sincronizado!", { id: "nuvem" });
+               } catch(e) {
+                  console.error(e);
+                  toast.error("Salvo localmente (Erro na nuvem).", { id: "nuvem" });
+               }
+            } else {
+               toast.success("Orçamento salvo localmente!");
+            }
+          }}
+          gerarPdf={gerarPdfExportacao}
+          gerarLinkMagico={gerarLinkPublico} obterUrlLinkMagico={() => urlLinkMagico}
+          carregandoPdf={gerandoPdf}
           materiais={armazem.materiaisSelecionados} insumos={armazem.insumosSelecionados}
           posProcesso={armazem.itensPosProcesso} quantidade={armazem.quantidade}
           insumosFixos={armazem.insumosFixosCentavos} tempo={armazem.tempoMinutosMaquina}
           modoEntrada={armazem.modoEntrada} frete={armazem.freteCentavos}
-          taxaFixa={armazem.taxaFixaVendaCentavos} aoSugerirPrecoIA={async () => {}}
+          taxaFixa={armazem.taxaFixaVendaCentavos} aoSugerirPrecoIA={sugerirPrecoComIA}
           descontoVolume={armazem.descontoVolumePercentual} setDescontoVolume={v => armazem.setParametro('descontoVolumePercentual', v)}
           precoAlvoCentavos={armazem.precoAlvoCentavos} setPrecoAlvoCentavos={v => armazem.setParametro('precoAlvoCentavos', v)}
-          explicacaoIA=""
+          explicacaoIA={explicacaoIA}
         />
+      </div>
+
+      {/* Modais V2 */}
+      <ModalConfiguracoesV2
+        aberto={modalConfigAberto}
+        aoFechar={() => setModalConfigAberto(false)}
+        eProOuSuperior={eProOuSuperior}
+        config={config}
+        armazem={armazem}
+        aoSalvar={async () => {
+          if (usuario?.uid) {
+            await config.salvarNoD1(usuario.uid);
+            setModalConfigAberto(false);
+            toast.success("Configurações sincronizadas!");
+          }
+        }}
+        aoClicarPaywall={() => {
+          setRecursoPaywall("Orçamento PDF White-label");
+          setModalConfigAberto(false);
+          setModalPaywallAberto(true);
+        }}
+      />
+
+      <ModalHistoricoV2
+        aberto={modalHistoricoAberto}
+        aoFechar={() => setModalHistoricoAberto(false)}
+        historico={armazem.historico}
+        aoSalvar={(nome) => {
+          armazem.salvarSnapshot(nome, descricaoProjeto, clienteProjetoId);
+          toast.success("Orçamento salvo com sucesso!");
+        }}
+        aoCarregar={(snapshot) => {
+          armazem.carregarSnapshot(snapshot);
+          setNomeProjeto(snapshot.nome);
+          setDescricaoProjeto(snapshot.descricao || "");
+          setClienteProjetoId(snapshot.clienteId || "");
+          toast.success("Orçamento restaurado!");
+        }}
+        aoRemover={(id) => {
+          armazem.removerSnapshot(id);
+          toast.success("Snapshot removido!");
+        }}
+      />
+      
+      <ModalUpgradePaywall
+        aberto={modalPaywallAberto}
+        aoFechar={() => setModalPaywallAberto(false)}
+        recurso={recursoPaywall}
+        aoFazerUpgrade={() => {
+          setModalPaywallAberto(false);
+          toast("Redirecionando para a tela de Upgrade...", { icon: 'ℹ️' });
+          // window.location.href = '/assinatura'; 
+        }}
+      />
+
+      {/* Pop-up de Confirmação Customizado */}
+      <Dialogo 
+        aberto={modalConfirmarReset} 
+        aoFechar={() => setModalConfirmarReset(false)} 
+        larguraMax="max-w-md"
+        esconderCabecalho={true}
+      >
+        <div className="p-6 text-center space-y-6">
+          <div className="mx-auto w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-black text-primary dark:text-white mb-2">Resetar Orçamento?</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Tem certeza que deseja apagar todo o orçamento atual e começar do zero? Esta ação limpará todos os materiais, insumos e custos informados.
+            </p>
+          </div>
+          
+          <div className="flex gap-3 mt-8">
+            <button 
+              onClick={() => setModalConfirmarReset(false)}
+              className="flex-1 h-12 rounded-xl font-bold text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+            >
+              Cancelar
+            </button>
+            <button 
+              onClick={() => {
+                armazem.limpar();
+                setNomeProjeto("");
+                setDescricaoProjeto("");
+                setClienteProjetoId("");
+                toast.success("Orçamento resetado com sucesso!");
+                setModalConfirmarReset(false);
+              }}
+              className="flex-1 h-12 rounded-xl font-bold text-sm bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/30"
+            >
+              Sim, apagar tudo
+            </button>
+          </div>
+        </div>
+      </Dialogo>
+
+      {/* Tabela de PDF Oculta para o HTML2Canvas */}
+      <div className="fixed overflow-hidden opacity-0 pointer-events-none" style={{ left: '-9999px', top: 0 }}>
+        <div id="recibo-pdf-oculto" style={{ width: '800px', padding: '40px', backgroundColor: 'white', color: 'black', fontFamily: 'sans-serif' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid #e5e7eb', paddingBottom: '16px' }}>
+            <div>
+              <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#18181b', margin: 0 }}>{config.nomeEstudio || "Estúdio de Impressão 3D"}</h1>
+              <p style={{ color: '#71717a', fontSize: '14px', margin: '4px 0 0 0' }}>{""}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#27272a', margin: 0 }}>PROPOSTA COMERCIAL</h2>
+              <p style={{ color: '#71717a', fontSize: '14px', margin: '4px 0 0 0' }}>Data: {format(new Date(), "dd/MM/yyyy")}</p>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontWeight: 'bold', color: '#27272a', fontSize: '18px', borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', marginBottom: '12px', margin: 0 }}>Detalhes do Projeto</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
+              <div><span style={{ color: '#71717a' }}>Projeto:</span> <span style={{ fontWeight: 500, color: '#18181b' }}>{nomeProjeto || "Não especificado"}</span></div>
+              <div><span style={{ color: '#71717a' }}>Cliente:</span> <span style={{ fontWeight: 500, color: '#18181b' }}>{estadoClientes.clientes.find(c => c.id === clienteProjetoId)?.nome || "Não especificado"}</span></div>
+              <div style={{ gridColumn: 'span 2' }}><span style={{ color: '#71717a' }}>Descrição:</span> <span style={{ fontWeight: 500, color: '#18181b' }}>{descricaoProjeto || "Sem descrição"}</span></div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontWeight: 'bold', color: '#27272a', fontSize: '18px', borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', marginBottom: '12px', margin: 0 }}>Especificações Técnicas</h3>
+            <ul style={{ fontSize: '14px', margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {armazem.materiaisSelecionados.map((m, i) => (
+                <li key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>- Material: {m.nome} ({m.cor})</span>
+                  <span style={{ fontWeight: 500 }}>Consumo: {m.quantidade}g</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{ fontWeight: 'bold', color: '#27272a', fontSize: '18px', borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', marginBottom: '12px', margin: 0 }}>Resumo Financeiro</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#71717a' }}>Tempo Estimado de Produção:</span> <span style={{ fontWeight: 500, color: '#18181b' }}>{Math.floor(armazem.tempoMinutosMaquina/60)}h {Math.floor(armazem.tempoMinutosMaquina%60)}m</span></div>
+               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#71717a' }}>Quantidade de Peças (Lotes):</span> <span style={{ fontWeight: 500, color: '#18181b' }}>{armazem.quantidade}x</span></div>
+               
+               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 900, marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+                 <span style={{ color: '#18181b' }}>VALOR TOTAL:</span> 
+                 <span style={{ color: '#0ea5e9' }}>{centavosParaReais(armazem.resultado.precoSugerido)}</span>
+               </div>
+            </div>
+          </div>
+          
+          <div style={{ marginTop: '48px', textAlign: 'center', fontSize: '12px', color: '#a1a1aa' }}>
+             Este orçamento é válido por 15 dias corridos. Os valores podem sofrer alteração caso o modelo 3D original passe por reajustes.
+          </div>
+        </div>
       </div>
 
     </div>

@@ -296,7 +296,7 @@ export function PaginaInicial() {
               <div className="lg:h-[500px]">
                 <WidgetOrcamentos 
                   pedidos={pedidos} 
-                  aoVerTodos={() => navegar("/producao")} 
+                  aoVerTodos={() => navegar("/projetos")} 
                 />
               </div>
             </div>

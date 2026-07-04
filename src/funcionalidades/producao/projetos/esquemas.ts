@@ -23,6 +23,7 @@ export const itemPosProcessoSchema = z.object({
 export const criarPedidoSchema = z.object({
   idCliente: z.string().min(1),
   descricao: z.string().min(1),
+  status: z.nativeEnum(StatusPedido).optional(),
   valorCentavos: z.number().int().min(0),
   prazoEntrega: z.date().or(z.string().transform((val) => new Date(val))).optional(),
   observacoes: z.string().optional(),
