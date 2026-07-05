@@ -189,11 +189,35 @@ export const PainelResultados = memo(function PainelResultados({
               const m = Math.round(tempoCalculado % 60);
               const tempoStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
               
+              const precoPorGrama = pesoAcumulado > 0 ? (calculo.precoSugerido / pesoAcumulado) : 0;
+              const tempoHoras = tempoCalculado / 60;
+              const precoPorHora = tempoHoras > 0 ? (calculo.precoSugerido / tempoHoras) : 0;
+              
               return (pesoAcumulado > 0 || tempoCalculado > 0) ? (
-                <div className="flex items-center justify-center gap-2 mt-2 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                  {pesoAcumulado > 0 && <span>{pesoAcumulado.toFixed(1)}g total</span>}
-                  {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />}
-                  {tempoCalculado > 0 && <span>{tempoStr}</span>}
+                <div className="flex flex-col items-center gap-2 mt-2 w-full">
+                  <div className="flex items-center justify-center gap-2 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                    {pesoAcumulado > 0 && <span>{pesoAcumulado.toFixed(1)}g total</span>}
+                    {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />}
+                    {tempoCalculado > 0 && <span>{tempoStr}</span>}
+                  </div>
+                  
+                  <div className="flex items-center justify-center gap-3 text-[8.5px] font-black text-sky-500 dark:text-sky-400/90 uppercase tracking-widest bg-sky-500/10 dark:bg-sky-500/10 px-3 py-1.5 rounded-full border border-sky-500/20">
+                    {pesoAcumulado > 0 && <span>R$ {(precoPorGrama / 100).toFixed(2)}/g</span>}
+                    {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-sky-500/30" />}
+                    {tempoCalculado > 0 && <span>R$ {(precoPorHora / 100).toFixed(2)}/h</span>}
+                  </div>
+
+                  {calculo.lucroLiquido <= 100 ? (
+                    <div className="mt-1 flex items-center justify-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-rose-500 bg-rose-500/10 px-3 py-2 rounded-xl border border-rose-500/20 animate-pulse w-full">
+                      <AlertTriangle size={11} className="shrink-0" />
+                      <span>Prejuízo ou Margem Nula!</span>
+                    </div>
+                  ) : calculo.margemReal < 15 ? (
+                    <div className="mt-1 flex items-center justify-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-3 py-2 rounded-xl border border-amber-500/20 w-full">
+                      <AlertTriangle size={11} className="shrink-0" />
+                      <span>Margem de Risco Detectada!</span>
+                    </div>
+                  ) : null}
                 </div>
               ) : null;
             })()}

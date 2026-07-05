@@ -598,8 +598,40 @@ export function PaginaCalculadoraV2() {
         <CardInsumos
           insumos={insumosEstoque} selecionados={armazem.insumosSelecionados}
           alertas={[]} busca={buscaInsumo} setBusca={setBuscaInsumo}
-          alternar={() => {}} atualizarQtd={() => {}} remover={armazem.removerInsumo}
-          alternarPorLote={() => {}} abrirGerenciar={() => {}} abrirNovo={() => {}}
+          alternar={(insumo: any) => {
+            const existe = armazem.insumosSelecionados.some(i => i.id === insumo.id);
+            if (existe) {
+              armazem.removerInsumo(insumo.id);
+            } else {
+              armazem.adicionarInsumo({
+                id: insumo.id,
+                nome: insumo.nome,
+                quantidade: 1,
+                custoCentavos: insumo.custoMedioUnidade,
+                porLote: false
+              });
+            }
+          }} 
+          atualizarQtd={(id: string, qtd: number) => {
+            const selec = armazem.insumosSelecionados;
+            const index = selec.findIndex(i => i.id === id);
+            if (index !== -1) {
+              const novo = [...selec];
+              novo[index] = { ...novo[index], quantidade: qtd };
+              armazem.setParametro('insumosSelecionados', novo);
+            }
+          }} 
+          remover={armazem.removerInsumo}
+          alternarPorLote={(id: string) => {
+            const selec = armazem.insumosSelecionados;
+            const index = selec.findIndex(i => i.id === id);
+            if (index !== -1) {
+              const novo = [...selec];
+              novo[index] = { ...novo[index], porLote: !novo[index].porLote };
+              armazem.setParametro('insumosSelecionados', novo);
+            }
+          }} 
+          abrirGerenciar={() => {}} abrirNovo={() => {}}
           modoEntrada={armazem.modoEntrada} alternarFavorito={() => {}}
         />
 

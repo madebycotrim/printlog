@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { autenticacao } from "./firebase";
 import { registrar } from "../utilitarios/registrador";
 
@@ -74,6 +74,7 @@ export const servicoBaseApi = {
       });
 
       if (resposta.status === 401) {
+        await signOut(autenticacao);
         throw { 
           status: 401, 
           mensagem: "Sessão expirada ou não autorizada. Por favor, logue novamente." 

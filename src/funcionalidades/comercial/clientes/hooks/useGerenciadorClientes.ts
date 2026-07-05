@@ -71,8 +71,15 @@ export function useGerenciadorClientes() {
       let comp = 0;
       if (estado.ordenacao === "NOME") comp = a.nome.localeCompare(b.nome);
       if (estado.ordenacao === "RECENTE") {
-        const timeA = a.dataCriacao ? (a.dataCriacao instanceof Date ? a.dataCriacao.getTime() : new Date(a.dataCriacao).getTime()) : 0;
-        const timeB = b.dataCriacao ? (b.dataCriacao instanceof Date ? b.dataCriacao.getTime() : new Date(b.dataCriacao).getTime()) : 0;
+        const obterTempo = (data: any) => {
+          if (!data) return 0;
+          if (typeof data.getTime === 'function') return data.getTime();
+          if (typeof data.toDate === 'function') return data.toDate().getTime();
+          const d = new Date(data);
+          return isNaN(d.getTime()) ? 0 : d.getTime();
+        };
+        const timeA = obterTempo(a.dataCriacao);
+        const timeB = obterTempo(b.dataCriacao);
         comp = timeB - timeA;
       }
       if (estado.ordenacao === "LTV") comp = b.ltvCentavos - a.ltvCentavos;
