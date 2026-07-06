@@ -3,6 +3,8 @@ import { Mail, ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+
 interface PropriedadesModalEnviarEmail {
   aberto: boolean;
   aoFechar: () => void;
@@ -22,6 +24,7 @@ export function ModalEnviarEmailOrcamento({
   const [nomeCliente, setNomeCliente] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
+  const config = useArmazemConfiguracoes();
 
   const enviarEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,9 +35,8 @@ export function ModalEnviarEmailOrcamento({
 
     setEnviando(true);
     
-    // Obter o nome do estúdio de alguma configuração (idealmente do Firebase/Zustand)
-    // Para simplificar, usamos um valor fixo ou pedimos do Contexto. Aqui vamos usar "PrintLog Studio" de fallback.
-    const nomeEstudio = localStorage.getItem("printlog_nome_estudio") || "Estúdio Maker";
+    // Obter o nome do estúdio configurado no banco de dados (Zustand / Cloudflare D1)
+    const nomeEstudio = config.nomeEstudio || "Estúdio Maker";
 
     try {
       // Como estamos rodando com Vite e proxy em dev:live, bate na rota /api/email/enviar-orcamento
