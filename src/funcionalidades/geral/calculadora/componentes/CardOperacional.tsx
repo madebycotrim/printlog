@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import { DollarSign, Activity, Check, AlertTriangle, Clock, Settings, Plus, Trash2 } from "lucide-react";
+import { DollarSign, Activity, Check, AlertTriangle, Clock, Settings, Plus, Trash2, Zap } from "lucide-react";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
@@ -531,9 +531,12 @@ export const CardOperacional = memo(function CardOperacional({
 
         {aplicarTemplate && (
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-borda-sutil pb-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sky-600 dark:text-sky-400 border border-sky-500/30 bg-gradient-to-br from-sky-500/10 to-blue-500/10">
+                <Zap size={18} />
+              </div>
               <div className="flex flex-col">
-                <span className="text-xs font-black uppercase tracking-wider text-primary">Templates Rápidos</span>
+                <span className="text-xs font-black uppercase tracking-wider text-primary">Perfis de Projeto</span>
                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Configurações pré-definidas para tipos de projeto</span>
               </div>
             </div>

@@ -1,6 +1,5 @@
-import { Box, Zap, Timer, Activity, Package, DollarSign, PieChart, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Mail } from "lucide-react";
+import { Box, Zap, Timer, Activity, Package, DollarSign, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { memo, useState, useRef, useEffect } from "react";
@@ -9,9 +8,6 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 
 interface PainelResultadosProps {
   calculo: CalculoResultado;
-  dadosPizza: any[];
-  aba: 'orcamento' | 'metricas';
-  setAba: (v: 'orcamento' | 'metricas') => void;
   salvarProjeto: () => void;
   gerarPdf: () => void;
   gerarLinkMagico?: () => void;
@@ -36,7 +32,7 @@ interface PainelResultadosProps {
 }
 
 export const PainelResultados = memo(function PainelResultados({
-  calculo, dadosPizza, aba, setAba, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
+  calculo, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
   tempo = 0, modoEntrada = 'projeto', frete = 0, aoSugerirPrecoIA,
   descontoVolume = 0, setDescontoVolume, precoAlvoCentavos = 0, setPrecoAlvoCentavos,
@@ -348,67 +344,57 @@ export const PainelResultados = memo(function PainelResultados({
                     
                     if (item.label === 'Materiais' && materiais.length > 0) {
                       const agrupadosMap = new Map<string, {
-                        nome: string;
-                        tipo: string;
-                        pesoAcumulado: number;
-                        valorAcumulado: number;
+                        corHex: string;
+                        peso: number;
+                        custo: number;
                       }>();
-
+                      
                       materiais.forEach(m => {
-                        const chave = m.id || m.nome;
-                        const qtdReal = Math.max(1, quantidade);
-                        const pesoFinal = modoEntrada === 'lote' ? m.quantidade : m.quantidade * qtdReal;
-                        const valorItem = Math.round((m.quantidade / 1000) * m.precoKgCentavos * (modoEntrada === 'lote' ? 1 : qtdReal));
-
-                        const existente = agrupadosMap.get(chave);
-                        if (existente) {
-                          existente.pesoAcumulado += pesoFinal;
-                          existente.valorAcumulado += valorItem;
-                        } else {
-                          agrupadosMap.set(chave, {
-                            nome: m.nome,
-                            tipo: m.tipo,
-                            pesoAcumulado: pesoFinal,
-                            valorAcumulado: valorItem
-                          });
-                        }
-                      });
-
-                      subitens = Array.from(agrupadosMap.values()).map(agrupado => {
-                        const unid = <span className="lowercase">{agrupado.tipo === 'FDM' ? 'g' : 'ml'}</span>;
-                        return {
-                          nome: <>{agrupado.nome} ({agrupado.pesoAcumulado}{unid})</>,
-                          valor: agrupado.valorAcumulado
-                        };
-                      });
-                    } else if (item.label === 'Insumos & Extras') {
-                      const qtdReal = Math.max(1, quantidade);
-                      const subInsumos = insumos.map(i => ({
-                        nome: <>{i.nome} ({modoEntrada === 'lote' || i.porLote ? i.quantidade : i.quantidade * qtdReal}<span className="lowercase">x</span>)</>,
-                        valor: (modoEntrada === 'lote' || i.porLote) ? i.quantidade * i.custoCentavos : i.quantidade * i.custoCentavos * qtdReal
-                      }));
-                      const subPos = posProcesso.map(p => ({
-                        nome: (modoEntrada === 'unitario' || modoEntrada === 'projeto') ? <>{p.nome} (<span className="lowercase">x</span>{qtdReal})</> : p.nome,
-                        valor: p.valor * (modoEntrada === 'lote' ? 1 : qtdReal)
-                      }));
-                      subitens = [...subInsumos, ...subPos];
-
-                      if (insumosFixos && insumosFixos > 0) {
-                        subitens.push({
-                          nome: 'Insumos Fixos',
-                          valor: Math.round(insumosFixos * 100)
+                        const chave = `${m.tipoMaterial} (${m.cor})`;
+                        const atual = agrupadosMap.get(chave) || { corHex: m.corHex || '#fff', peso: 0, custo: 0 };
+                        agrupadosMap.set(chave, {
+                          corHex: m.corHex || '#fff',
+                          peso: atual.peso + m.pesoUsado,
+                          custo: atual.custo + m.custoMaterial
                         });
-                      }
-                    } else if (item.label === 'Depreciação') {
-                      const qtdReal = Math.max(1, quantidade);
-                      const horasTotais = modoEntrada === 'lote' ? (tempo / 60) : (tempo / 60) * qtdReal;
-                      subitens = [{
-                        nome: <>Uso da Máquina ({horasTotais < 1 
-                          ? <>{Math.round(horasTotais * 60)}<span className="lowercase">min</span></> 
-                          : <>{horasTotais.toFixed(1)}<span className="lowercase">h</span></>
-                        })</>,
-                        valor: calculo.custoDepreciacao
-                      }];
+                      });
+                      
+                      agrupadosMap.forEach((dados, chave) => {
+                        subitens.push({
+                          nome: (
+                            <span className="flex items-center gap-1.5 font-bold text-stone-600 dark:text-stone-400 text-[9px] uppercase tracking-wider">
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dados.corHex }} />
+                              {chave} <span className="font-medium text-stone-400">({dados.peso}g)</span>
+                            </span>
+                          ),
+                          valor: dados.custo
+                        });
+                      });
+                    }
+                    
+                    if (item.label === 'Insumos & Extras' && insumos.length > 0) {
+                      insumos.forEach(i => {
+                        subitens.push({
+                          nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">{i.nome} <span className="font-medium text-stone-400">({i.quantidade}x)</span></span>,
+                          valor: i.custoInsumo
+                        });
+                      });
+                    }
+                    
+                    if (item.label === 'Insumos & Extras' && posProcesso.length > 0) {
+                      posProcesso.forEach(p => {
+                        subitens.push({
+                          nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">{p.nome}</span>,
+                          valor: p.custo
+                        });
+                      });
+                    }
+                    
+                    if (item.label === 'Insumos & Extras' && insumosFixos > 0) {
+                      subitens.push({
+                        nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">Custos Fixos / Adicionais</span>,
+                        valor: insumosFixos
+                      });
                     }
 
                     return (
@@ -417,28 +403,27 @@ export const PainelResultados = memo(function PainelResultados({
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
-                        className="flex flex-col group border-b border-borda-sutil/20 pb-2 last:border-0"
+                        className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-borda-sutil relative overflow-hidden flex flex-col gap-2"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-muted/40 dark:bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-muted dark:group-hover:bg-white/10 transition-colors shadow-inner">
-                              <item.icone size={14} className={item.cor} />
+                        <div className="flex justify-between items-center z-10">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`p-1.5 rounded-lg bg-zinc-200/50 dark:bg-zinc-800/40 ${item.cor} shrink-0`}>
+                              <item.icone size={12} />
                             </div>
-                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider">{item.label}</span>
+                            <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200 tracking-wider">{item.label}</span>
                           </div>
-                          <span className="text-sm font-black text-primary">
-                            <ContadorAnimado valor={item.valor / 100} />
+                          <span className="text-xs font-black text-zinc-800 dark:text-zinc-200 tracking-tight">
+                            R$ {centavosParaReais(item.valor)}
                           </span>
                         </div>
-
-                        {/* Detalhamento dos subitens */}
+                        
                         {subitens.length > 0 && (
-                          <div className="pl-11 mt-1.5 space-y-1">
+                          <div className="pl-9 pr-1 py-1.5 border-t border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col gap-1.5 z-10">
                             {subitens.map((sub, idx) => (
-                              <div key={idx} className="flex items-center justify-between text-[10px] text-muted-foreground font-medium normal-case">
-                                <span className="opacity-90">{sub.nome}</span>
-                                <span className="opacity-90 tabular-nums font-semibold">
-                                  <ContadorAnimado valor={sub.valor / 100} />
+                              <div key={idx} className="flex justify-between items-center">
+                                {sub.nome}
+                                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400">
+                                  R$ {centavosParaReais(sub.valor)}
                                 </span>
                               </div>
                             ))}

@@ -177,7 +177,6 @@ export function PaginaCalculadoraV2() {
   
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
-  const [abaResultado, setAbaResultado] = useState<'orcamento' | 'metricas'>('orcamento');
   const [autoSalvar, setAutoSalvar] = useState(true);
 
   const [carregouNuvemInicial, setCarregouNuvemInicial] = useState(false);
@@ -705,8 +704,6 @@ export function PaginaCalculadoraV2() {
       <div className="xl:col-span-4 xl:h-full flex flex-col justify-start items-center overflow-y-visible scrollbar-hide">
         <PainelResultados
           calculo={armazem.resultado}
-          dadosPizza={[]} 
-          aba={abaResultado} setAba={setAbaResultado}
           salvarProjeto={async () => {
             if (!nomeProjeto) {
                toast.error("Dê um nome para o projeto antes de salvar!");
