@@ -29,8 +29,11 @@ const mapearCliente = (c: any): Cliente => ({
  */
 export const apiClientes = {
     buscarTodos: async (_usuarioId: string): Promise<Cliente[]> => {
-        const dados = await servicoBaseApi.get<any[]>("/api/clientes");
-        return dados.map(mapearCliente);
+        const dados = await servicoBaseApi.get<any>("/api/clientes");
+        const lista = Array.isArray(dados) 
+            ? dados 
+            : (dados?.items || dados?.data || []);
+        return lista.map(mapearCliente);
     },
 
     listarPaginado: async ({ limit, offset, search }: { limit: number, offset: number, search?: string }): Promise<{ items: Cliente[], total: number }> => {

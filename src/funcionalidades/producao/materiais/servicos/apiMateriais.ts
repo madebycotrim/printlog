@@ -11,9 +11,12 @@ export const apiMateriais = {
    * Busca todos os materiais do usuário e mapeia para camelCase
    */
   async listar(_usuarioId: string): Promise<Material[]> {
-    const dadosInternos = await servicoBaseApi.get<any[]>("/api/materiais");
+    const dadosInternos = await servicoBaseApi.get<any>("/api/materiais");
+    const lista = Array.isArray(dadosInternos) 
+      ? dadosInternos 
+      : (dadosInternos?.items || dadosInternos?.data || []);
 
-    return dadosInternos.map(this.mapearMaterial);
+    return lista.map(this.mapearMaterial);
   },
 
   /**

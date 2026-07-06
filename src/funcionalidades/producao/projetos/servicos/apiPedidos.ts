@@ -103,13 +103,19 @@ export const apiPedidos = {
     },
 
     buscarTodos: async (_usuarioId: string): Promise<Pedido[]> => {
-        const resultados = await servicoBaseApi.get<any[]>("/api/pedidos");
-        return (resultados || []).map(apiPedidos.mapearParaFrontend);
+        const resultados = await servicoBaseApi.get<any>("/api/pedidos");
+        const lista = Array.isArray(resultados) 
+            ? resultados 
+            : (resultados?.items || resultados?.data || []);
+        return lista.map(apiPedidos.mapearParaFrontend);
     },
 
     buscarPorCliente: async (clienteId: string, _usuarioId: string): Promise<Pedido[]> => {
-        const resultados = await servicoBaseApi.get<any[]>(`/api/pedidos?clienteId=${clienteId}`);
-        return (resultados || []).map(apiPedidos.mapearParaFrontend);
+        const resultados = await servicoBaseApi.get<any>(`/api/pedidos?clienteId=${clienteId}`);
+        const lista = Array.isArray(resultados) 
+            ? resultados 
+            : (resultados?.items || resultados?.data || []);
+        return lista.map(apiPedidos.mapearParaFrontend);
     },
 
     /**

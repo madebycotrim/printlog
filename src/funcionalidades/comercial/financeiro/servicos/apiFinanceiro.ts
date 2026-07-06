@@ -8,9 +8,12 @@ import { criarLancamentoSchema } from "../esquemas";
  */
 export const apiFinanceiro = {
     buscarTodos: async (_usuarioId: string): Promise<LancamentoFinanceiro[]> => {
-        const dados = await servicoBaseApi.get<any[]>("/api/financeiro");
+        const dados = await servicoBaseApi.get<any>("/api/financeiro");
+        const lista = Array.isArray(dados) 
+            ? dados 
+            : (dados?.items || dados?.data || []);
         
-        return dados.map((l: any) => ({
+        return lista.map((l: any) => ({
             ...l,
             idPedido: l.id_pedido,
             idCliente: l.id_cliente,

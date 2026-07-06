@@ -8,9 +8,12 @@ import { impressoraSchema } from "../esquemas";
  */
 export const apiImpressoras = {
     buscarTodas: async (_usuarioId: string): Promise<Impressora[]> => {
-        const dados = await servicoBaseApi.get<any[]>("/api/impressoras");
+        const dados = await servicoBaseApi.get<any>("/api/impressoras");
+        const lista = Array.isArray(dados) 
+            ? dados 
+            : (dados?.items || dados?.data || []);
 
-        return dados.map((i: any) => {
+        return lista.map((i: any) => {
             // Higienização de links quebrados (Amazon/Creality/etc)
             let imagemFinal = i.imagem_url;
             const linkQuebrado = /media-amazon|creality3d|bambulab|shopify/i.test(imagemFinal || "");

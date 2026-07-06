@@ -31,8 +31,11 @@ export const apiInsumos = {
    * Busca todos os insumos do usuário
    */
   async listar(_usuarioId: string): Promise<Insumo[]> {
-    const dados = await servicoBaseApi.get<any[]>("/api/insumos");
-    return dados.map(mapearInsumo);
+    const dados = await servicoBaseApi.get<any>("/api/insumos");
+    const lista = Array.isArray(dados) 
+      ? dados 
+      : (dados?.items || dados?.data || []);
+    return lista.map(mapearInsumo);
   },
 
   /**

@@ -158,6 +158,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       );
 
       if (user) {
+        localStorage.removeItem("printlog_logout_intencional");
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
         const ehGithub = user.providerData.some((provedor) => provedor.providerId === "github.com");
         
@@ -179,12 +180,13 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         logoutIntencionalRef.current = false;
         carregarConfiguracoes(user.uid);
       } else {
-        if (usuarioAnteriorRef.current && !logoutIntencionalRef.current) {
+        const logoutFoiIntencional = logoutIntencionalRef.current || localStorage.getItem("printlog_logout_intencional") === "true";
+        if (usuarioAnteriorRef.current && !logoutFoiIntencional) {
           // Se o usuário foi desconectado pelo Firebase (sessão expirada, etc) sem chamar sair()
           toast.error("Sua sessão expirou por segurança. Faça login novamente.", { id: "sessao-expirada" });
         }
         
-        if (import.meta.env.DEV && !logoutIntencionalRef.current) {
+        if (import.meta.env.DEV && !logoutFoiIntencional) {
           const devUser = {
             uid: "dev-user-uid",
             email: "dev@printlog.com",
@@ -192,7 +194,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
             fotoUrl: "",
             provedorGoogle: false,
             provedorGithub: false,
-            plano: "PRO",
+            plano: "PRO" as const,
             dataAceiteTermos: new Date().toISOString(),
             versaoTermos: "2026-05-14",
             emailVerified: true,
@@ -349,6 +351,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     const uid = usuario?.uid || "desconhecido";
     try {
       logoutIntencionalRef.current = true;
+      localStorage.setItem("printlog_logout_intencional", "true");
       await signOut(autenticacao);
       registrar.info(
         { rastreioId: uid, servico: "Autenticacao", evento: "LOGOUT" },

@@ -17,6 +17,9 @@ export default defineConfig({
     },
   },
   server: {
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+    },
     proxy: {
       "/api": {
         target: process.env.VITE_PROXY_TARGET || "https://www.printlog.com.br",
