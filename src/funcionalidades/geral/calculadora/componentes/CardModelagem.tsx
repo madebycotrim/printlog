@@ -29,21 +29,17 @@ export const CardModelagem = memo(function CardModelagem({
   }, [tempoModelagem]);
 
   return (
-    <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl transition-all duration-500 overflow-hidden ${!mostrar ? 'opacity-60' : ''}`}>
-      {/* Efeito Glow Ciano de Fundo */}
-      <div className="absolute -top-24 -right-20 w-80 h-80 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
-      
-      <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
+    <div className="flex flex-col my-6">
+      <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 via-cyan-500/5 to-transparent border border-cyan-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(6,182,212,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${mostrar ? 'text-cyan-500 border-cyan-500/30 bg-cyan-500/10' : 'text-zinc-500 border-borda-sutil bg-muted/20'}`}>
-            <PenTool size={18} className={mostrar && tempoModelagem > 0 ? "animate-pulse" : ""} />
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 shadow-inner">
+            <PenTool size={16} className={`${tempoModelagem > 0 ? "animate-pulse" : ""}`} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Modelagem e CAD 3D</span>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Design, adequações e criação de modelos 3D</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Deseja adicionar horas de design (CAD)?</span>
+            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Modelagem 3D sob medida e adequação de peças</span>
           </div>
         </div>
-
         <button
           type="button"
           onClick={() => {
@@ -54,89 +50,93 @@ export const CardModelagem = memo(function CardModelagem({
               setValorHoraModelagem(8000); // Reset para default
             }
           }}
-          className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-500/50 ${
-            mostrar ? 'bg-cyan-500' : 'bg-muted dark:bg-zinc-700'
-          }`}
-          aria-label="Cobrar Modelagem 3D"
+          className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
+            ? "bg-cyan-500 text-white border-cyan-600 shadow-sm shadow-cyan-500/30 hover:bg-cyan-600"
+            : "bg-card text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-500/40 border-borda-sutil shadow-sm"
+            }`}
         >
-          <div className={`w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-300 ${
-            mostrar ? 'translate-x-4' : 'translate-x-0'
-          }`} />
+          {mostrar ? "Ocultar" : "Adicionar"}
         </button>
       </div>
 
       <AnimatePresence>
         {mostrar && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="flex flex-col md:flex-row gap-6 relative z-10"
+            className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,var(--bg-card)_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
           >
-            <div className="flex-1 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider ml-1">Tempo de Projeto</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
-                      <input 
-                        type="number" 
-                        placeholder="0" 
-                        value={tempHora !== undefined ? tempHora : (Math.floor(tempoModelagem / 60) === 0 ? "" : (Math.floor(tempoModelagem / 60) || ""))} 
-                        onBlur={() => setTempHora(undefined)}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setTempHora(v);
-                          setTempoModelagem((v === "" ? 0 : Number(v)) * 60 + (tempoModelagem % 60));
-                        }} 
-                        className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
-                      />
-                      <span className="absolute right-3 text-[9px] font-black text-muted-foreground uppercase pointer-events-none">H</span>
-                    </div>
+            {/* Quininhas para preencher o gap dos cantos arredondados */}
+            <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
+            <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
 
-                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
-                      <input 
-                        type="number" 
-                        placeholder="0" 
-                        value={tempMinuto !== undefined ? tempMinuto : ((tempoModelagem % 60) === 0 ? "" : ((tempoModelagem % 60) || ""))} 
-                        onBlur={() => setTempMinuto(undefined)}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setTempMinuto(v);
-                          setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + (v === "" ? 0 : Number(v)));
-                        }} 
-                        className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
-                      />
-                      <span className="absolute right-3 text-[9px] font-black text-muted-foreground uppercase pointer-events-none">Min</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider ml-1">Valor da Hora CAD</label>
-                  <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-cyan-500/40 shadow-inner">
-                    <span className="absolute left-4 text-[10px] font-black text-muted-foreground">R$</span>
-                    <InputBancario
-                      placeholder="0,00"
-                      value={valorHoraModelagem ? (valorHoraModelagem / 100) : ""}
-                      onChange={(e) => setValorHoraModelagem(Math.round(Number(e.target.value) * 100))}
-                      className="w-full h-11 bg-transparent pl-10 pr-4 font-black text-xs text-primary dark:text-white outline-none"
-                    />
-                  </div>
-                </div>
+            <div className="flex items-center justify-between pb-3 border-b border-borda-sutil">
+              <div className="flex items-center gap-3">
+                <PenTool size={16} className="text-cyan-400" />
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-cyan-500">Gestão de Modelagem 3D</h3>
               </div>
             </div>
 
-            <div className="w-full md:w-64 p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 flex flex-col justify-center gap-1">
-              <span className="text-[9px] font-black uppercase text-cyan-600 dark:text-cyan-500/80 tracking-wider">Custo de Modelagem:</span>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                  {Math.floor(tempoModelagem / 60)}h {(tempoModelagem % 60)}min x R$ {(valorHoraModelagem / 100).toFixed(2)}
-                </span>
-                <span className="text-lg font-black text-cyan-500 tracking-tight">
-                  R$ {((tempoModelagem / 60) * (valorHoraModelagem / 100)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="flex-1 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo de Projeto</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                        <input 
+                          type="number" 
+                          placeholder="0" 
+                          value={tempHora !== undefined ? tempHora : (Math.floor(tempoModelagem / 60) === 0 ? "" : (Math.floor(tempoModelagem / 60) || ""))} 
+                          onFocus={() => {}}
+                          onBlur={() => setTempHora(undefined)}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setTempHora(v);
+                            setTempoModelagem((v === "" ? 0 : Number(v)) * 60 + (tempoModelagem % 60));
+                          }} 
+                          className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                        />
+                        <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
+                      </div>
+
+                      <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                        <input 
+                          type="number" 
+                          placeholder="0" 
+                          value={tempMinuto !== undefined ? tempMinuto : (tempoModelagem % 60 === 0 ? "" : (tempoModelagem % 60 || ""))} 
+                          onFocus={() => {}}
+                          onBlur={() => setTempMinuto(undefined)}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setTempMinuto(v);
+                            setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + (v === "" ? 0 : Number(v)));
+                          }} 
+                          className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
+                        />
+                        <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor da Hora (R$)</label>
+                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner overflow-hidden">
+                      <span className="absolute left-3 text-[10px] font-black text-muted-foreground">R$</span>
+                      <InputBancario 
+                        placeholder="80.00" 
+                        value={valorHoraModelagem === 0 ? "" : valorHoraModelagem / 100} 
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setValorHoraModelagem(v === "" ? 0 : Math.round(Number(v) * 100));
+                        }} 
+                        className="w-full h-full pl-10 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-left" 
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

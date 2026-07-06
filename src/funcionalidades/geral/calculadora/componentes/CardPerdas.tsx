@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, AlertCircle } from "lucide-react";
 
 /**
  * Interface para as propriedades do CardPerdas.
@@ -25,71 +25,73 @@ export function CardPerdas({
   setTempoPerdido
 }: PropriedadesCardPerdas) {
   return (
-    <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-6 shadow-2xl backdrop-blur-3xl transition-all duration-500 overflow-hidden ${!mostrar ? 'opacity-60' : ''}`}>
-      {/* Efeito Glow Vermelho de Fundo */}
-      <div className="absolute -top-24 -right-20 w-80 h-80 bg-red-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
-      
-      <div className="relative z-10 flex items-center justify-between pb-4 border-b border-borda-sutil">
+    <div className="flex flex-col my-6">
+      <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${mostrar ? 'text-red-500 border-red-500/30 bg-red-500/10' : 'text-zinc-500 border-borda-sutil bg-muted/20'}`}>
-            <AlertTriangle size={18} className={mostrar && (materialPerdido > 0 || tempoPerdido > 0) ? "animate-pulse" : ""} />
+          <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 shadow-inner">
+            <AlertTriangle size={16} className={`${materialPerdido > 0 || tempoPerdido > 0 ? "animate-pulse" : ""}`} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Perdas e Falhas</span>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Material e tempo perdidos na impressão</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400">Ocorreu alguma perda ou falha nessa impressão?</span>
+            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">O prejuízo será calculado e embutido no custo operacional</span>
           </div>
         </div>
-
         <button
           type="button"
           onClick={() => setMostrar(!mostrar)}
-          className={`relative w-10 h-6 rounded-full transition-colors flex items-center px-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500/50 ${
-            mostrar ? 'bg-red-500' : 'bg-muted dark:bg-zinc-700'
-          }`}
-          aria-label="Reportar Perdas"
+          className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
+            ? "bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/30 hover:bg-red-600"
+            : "bg-card text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:border-red-500/40 border-borda-sutil shadow-sm"
+            }`}
         >
-          <div className={`w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-300 ${
-            mostrar ? 'translate-x-4' : 'translate-x-0'
-          }`} />
+          {mostrar ? "Ocultar" : "Reportar"}
         </button>
       </div>
 
       <AnimatePresence>
         {mostrar && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10"
+            className="p-6 pt-8 rounded-b-xl bg-[linear-gradient(to_bottom,transparent_12px,var(--bg-card)_12px)] shadow-sm space-y-4 -mt-3 z-0 relative overflow-hidden"
           >
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider ml-1">Filamento Perdido</label>
-              <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={materialPerdido || ""}
-                  onChange={(e) => setMaterialPerdido(Number(e.target.value))}
-                  className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
-                />
-                <span className="absolute right-4 text-[10px] font-black text-muted-foreground">gramas</span>
-              </div>
+            {/* Quininhas para preencher o gap dos cantos arredondados */}
+            <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
+            <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
+            <div className="flex items-center gap-3 pb-3 border-b border-borda-sutil">
+              <AlertCircle size={16} className="text-red-400" />
+              <h3 className="text-[10px] font-black uppercase tracking-wider text-red-500">Registro de Desperdício</h3>
             </div>
-            
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider ml-1">Tempo Perdido</label>
-              <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={tempoPerdido / 60 || ""}
-                  onChange={(e) => setTempoPerdido(Number(e.target.value) * 60)}
-                  className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
-                />
-                <span className="absolute right-4 text-[10px] font-black text-muted-foreground">horas</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Filamento Perdido</label>
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={materialPerdido || ""}
+                    onChange={(e) => setMaterialPerdido(Number(e.target.value))}
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
+                  />
+                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground">gramas</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo Perdido</label>
+                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={tempoPerdido / 60 || ""}
+                    onChange={(e) => setTempoPerdido(Number(e.target.value) * 60)}
+                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
+                  />
+                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground">horas</span>
+                </div>
               </div>
             </div>
           </motion.div>
