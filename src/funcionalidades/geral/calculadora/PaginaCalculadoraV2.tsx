@@ -56,7 +56,6 @@ import { useSincronizacaoCalculadora } from "./hooks/useSincronizacaoCalculadora
 import { CardLogistica } from "./componentes/CardLogistica";
 import { PainelResultados } from "./componentes/PainelResultados";
 import { ModalDetectarTarifa } from "./componentes/ModalDetectarTarifa";
-import { detectarTarifaKwhAutomatico } from "@/compartilhado/utilitarios/tarifas-energia";
 
 export function PaginaCalculadoraV2() {
   const armazem = useArmazemCalculadora();
@@ -199,7 +198,7 @@ export function PaginaCalculadoraV2() {
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
 
-  const { autoSalvar, setAutoSalvar, carregouNuvemInicial } = useSincronizacaoCalculadora({
+  const { autoSalvar, setAutoSalvar } = useSincronizacaoCalculadora({
     armazem,
     nomeProjeto,
     descricaoProjeto,
