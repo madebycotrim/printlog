@@ -143,7 +143,7 @@ export const CardMateriais = memo(function CardMateriais({
               onClick={abrirArmazem}
               className="text-[10px] font-black uppercase text-cyan-500 hover:text-cyan-400 transition-colors flex items-center gap-1 group"
             >
-              Gerenciar Armazém <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
+              Gerenciar Estoque <RefreshCcw className="w-2.5 h-2.5 group-hover:rotate-180 transition-transform duration-500" />
             </button>
             <div className="w-[1px] h-3 bg-borda-sutil" />
             <button 

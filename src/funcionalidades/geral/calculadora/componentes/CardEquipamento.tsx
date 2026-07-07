@@ -51,7 +51,7 @@ export function CardEquipamento({
         </div>
       </div>
 
-      <div className="relative z-20 flex flex-col gap-5 pt-2 h-full">
+      <div className="relative z-20 flex flex-col gap-5 h-full">
         {/* Visualização da Impressora */}
         <div className="flex-1 min-h-[220px] flex items-center justify-center relative">
           {selecionada ? (
@@ -87,7 +87,7 @@ export function CardEquipamento({
         </div>
 
         {/* Alerta Preditivo Inteligente */}
-        {selecionada && (selecionada.nome.toLowerCase().includes('ender') || selecionada.marca.toLowerCase().includes('creality')) && (
+        {selecionada && (selecionada.nome.toLowerCase().includes('ender') || selecionada.marca?.toLowerCase().includes('creality')) && (
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex flex-col gap-2 mt-2 shadow-inner">
             <div className="flex gap-2 items-start">
               <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">

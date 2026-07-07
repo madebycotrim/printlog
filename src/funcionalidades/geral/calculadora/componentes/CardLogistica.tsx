@@ -67,7 +67,7 @@ export const CardLogistica = memo(function CardLogistica({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button 
             type="button"
             onClick={abrirPerfis} 
@@ -78,6 +78,8 @@ export const CardLogistica = memo(function CardLogistica({
             <Settings size={15} />
           </button>
           
+          <div className="w-px h-6 bg-borda-sutil mx-1" />
+
           <button
             type="button"
             onClick={() => setCobrarLogistica(!cobrarLogistica)}

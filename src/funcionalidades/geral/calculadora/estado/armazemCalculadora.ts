@@ -2,7 +2,7 @@ import { create } from 'zustand';
 // Removed persist to keep calculator in memory only
 import { temporal } from 'zundo';
 import { ParametrosCalculo, executarMotorCalculo } from '../utilitarios/motorCalculo';
-import { MaterialSelecionado, InsumoSelecionado, ItemPosProcesso, CalculoResultado } from '../tipos';
+import { MaterialSelecionado, InsumoSelecionado, ItemPosProcesso, CalculoResultado, ItemCustoFixo } from '../tipos';
 
 export interface OrcamentoSnapshot {
   id: string;
@@ -18,6 +18,7 @@ const estadoInicialParametros: ParametrosCalculo = {
   materiaisSelecionados: [],
   insumosSelecionados: [],
   itensPosProcesso: [],
+  itensCustosFixos: [],
   tempoMinutosMaquina: 0,
   potenciaWatts: 0,
   precoKwhCentavos: 0,
@@ -40,9 +41,7 @@ const estadoInicialParametros: ParametrosCalculo = {
   taxaEcommercePercentual: 0,
   taxaFixaVendaCentavos: 0,
   tempoModelagemMinutos: 0,
-  valorHoraModelagemCentavos: 8000, 
-  descontoVolumePercentual: 0,
-  precoAlvoCentavos: 0,
+  valorHoraModelagemCentavos: 0, 
 };
 
 const estadoInicialResultado: CalculoResultado = {
@@ -58,14 +57,11 @@ const estadoInicialResultado: CalculoResultado = {
   custoFrete: 0,
   precoSugerido: 0,
   precoSugeridoOriginal: 0,
-  precoAlvo: 0,
   lucroLiquido: 0,
   custoTotalOperacional: 0,
   margemReal: 0,
   custoFalha: 0,
   custoModelagem: 0,
-  valorDesconto: 0,
-  percentualDesconto: 0,
   modoEntrada: 'lote'
 };
 
@@ -130,6 +126,7 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           materiaisSelecionados: estadoAtual.materiaisSelecionados,
           insumosSelecionados: estadoAtual.insumosSelecionados,
           itensPosProcesso: estadoAtual.itensPosProcesso,
+          itensCustosFixos: (estadoAtual as any).itensCustosFixos || [],
           tempoMinutosMaquina: estadoAtual.tempoMinutosMaquina,
           potenciaWatts: estadoAtual.potenciaWatts,
           precoKwhCentavos: estadoAtual.precoKwhCentavos,
@@ -153,8 +150,6 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           taxaFixaVendaCentavos: estadoAtual.taxaFixaVendaCentavos,
           tempoModelagemMinutos: estadoAtual.tempoModelagemMinutos,
           valorHoraModelagemCentavos: estadoAtual.valorHoraModelagemCentavos,
-          descontoVolumePercentual: estadoAtual.descontoVolumePercentual,
-          precoAlvoCentavos: estadoAtual.precoAlvoCentavos,
         };
 
         const novoResultado = executarMotorCalculo(parametros);
@@ -254,8 +249,6 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           taxaFixaVendaCentavos: estadoAtual.taxaFixaVendaCentavos,
           tempoModelagemMinutos: estadoAtual.tempoModelagemMinutos,
           valorHoraModelagemCentavos: estadoAtual.valorHoraModelagemCentavos,
-          descontoVolumePercentual: estadoAtual.descontoVolumePercentual,
-          precoAlvoCentavos: estadoAtual.precoAlvoCentavos,
         };
 
         const novoSnapshot: OrcamentoSnapshot = {
@@ -321,8 +314,6 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           taxaFixaVendaCentavos: estadoAtual.taxaFixaVendaCentavos,
           tempoModelagemMinutos: estadoAtual.tempoModelagemMinutos,
           valorHoraModelagemCentavos: estadoAtual.valorHoraModelagemCentavos,
-          descontoVolumePercentual: estadoAtual.descontoVolumePercentual,
-          precoAlvoCentavos: estadoAtual.precoAlvoCentavos,
         };
       },
 

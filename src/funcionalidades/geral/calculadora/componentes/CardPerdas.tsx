@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, AlertCircle } from "lucide-react";
 
@@ -11,6 +12,8 @@ interface PropriedadesCardPerdas {
   setMaterialPerdido: (v: number) => void;
   tempoPerdido: number;
   setTempoPerdido: (v: number) => void;
+  custoFalha?: number;
+  modoEntrada?: 'unitario' | 'lote' | 'projeto';
 }
 
 /**
@@ -22,8 +25,14 @@ export function CardPerdas({
   materialPerdido,
   setMaterialPerdido,
   tempoPerdido,
-  setTempoPerdido
+  setTempoPerdido,
+  custoFalha,
+  modoEntrada = 'lote'
 }: PropriedadesCardPerdas) {
+  const textoModo = modoEntrada === 'unitario' ? 'Unidade' : modoEntrada === 'projeto' ? 'Projeto' : 'Lote';
+  const [tempHora, setTempHora] = useState<string | undefined>(undefined);
+  const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
+  const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
   return (
     <div className="flex flex-col my-6">
       <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
@@ -60,9 +69,20 @@ export function CardPerdas({
             {/* Quininhas para preencher o gap dos cantos arredondados */}
             <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
             <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
-            <div className="flex items-center gap-3 pb-3 border-b border-borda-sutil">
-              <AlertCircle size={16} className="text-red-400" />
-              <h3 className="text-[10px] font-black uppercase tracking-wider text-red-500">Registro de Desperdício</h3>
+            <div className="flex items-center justify-between pb-3 border-b border-borda-sutil mb-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle size={16} className="text-red-400" />
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-red-500">Registro de Desperdício</h3>
+              </div>
+              <div className="flex flex-col items-end">
+                 <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>
+                 <div className="flex items-baseline gap-1">
+                   <span className="text-xs font-black text-muted-foreground">R$</span>
+                   <span className="text-lg font-black text-red-600 dark:text-red-400 tracking-tight leading-none">
+                     {((custoFalha || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                   </span>
+                 </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
@@ -81,16 +101,61 @@ export function CardPerdas({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo Perdido</label>
-                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={tempoPerdido / 60 || ""}
-                    onChange={(e) => setTempoPerdido(Number(e.target.value) * 60)}
-                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
-                  />
-                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground">horas</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      value={tempHora !== undefined ? tempHora : (Math.floor(tempoPerdido / 60) === 0 ? "" : (Math.floor(tempoPerdido / 60) || ""))} 
+                      onFocus={() => {}}
+                      onBlur={() => setTempHora(undefined)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setTempHora(v);
+                        setTempoPerdido((v === "" ? 0 : Number(v)) * 60 + Math.floor(tempoPerdido % 60) + (tempoPerdido % 1));
+                      }} 
+                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                    />
+                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
+                  </div>
+
+                  <span className="text-zinc-400 font-bold">:</span>
+
+                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      value={tempMinuto !== undefined ? tempMinuto : (Math.floor(tempoPerdido % 60) === 0 ? "" : (Math.floor(tempoPerdido % 60) || ""))} 
+                      onFocus={() => {}}
+                      onBlur={() => setTempMinuto(undefined)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setTempMinuto(v);
+                        setTempoPerdido(Math.floor(tempoPerdido / 60) * 60 + (v === "" ? 0 : Number(v)) + (tempoPerdido % 1));
+                      }} 
+                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                    />
+                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">m</span>
+                  </div>
+
+                  <span className="text-zinc-400 font-bold">:</span>
+
+                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      value={tempSegundo !== undefined ? tempSegundo : (Math.round((tempoPerdido % 1) * 60) === 0 ? "" : (Math.round((tempoPerdido % 1) * 60) || ""))} 
+                      onFocus={() => {}}
+                      onBlur={() => setTempSegundo(undefined)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setTempSegundo(v);
+                        setTempoPerdido(Math.floor(tempoPerdido / 60) * 60 + Math.floor(tempoPerdido % 60) + (v === "" ? 0 : Number(v) / 60));
+                      }} 
+                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                    />
+                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">s</span>
+                  </div>
                 </div>
               </div>
             </div>

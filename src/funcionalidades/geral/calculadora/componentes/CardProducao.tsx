@@ -16,8 +16,6 @@ interface CardProducaoProps {
   custoEnergia: number;
   cobrarEnergia: boolean;
   setCobrarEnergia: (v: boolean) => void;
-  posProcesso: ItemPosProcesso[];
-  setPosProcesso: (v: ItemPosProcesso[]) => void;
   impressoras?: any[];
   idImpressoraSelecionada?: string;
   aoSelecionarImpressora?: (id: string) => void;
@@ -29,14 +27,12 @@ interface CardProducaoProps {
 }
 
 export const CardProducao = memo(function CardProducao({
-  tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia, posProcesso, setPosProcesso,
+  tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia,
   impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, modoEntrada, aoDetectarTarifa
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
   
   // Estados de foco
-  const [detectando, setDetectando] = useState(false);
-
   // Buffers de digitação para garantir que o campo fique vazio ao focar
   const [tempQuantidade, setTempQuantidade] = useState<string | undefined>(undefined);
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
@@ -44,25 +40,14 @@ export const CardProducao = memo(function CardProducao({
   const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
   const [tempPotencia, setTempPotencia] = useState<string | undefined>(undefined);
 
-  const lidarComDeteccao = async () => {
-    if (!aoDetectarTarifa) return;
-    setDetectando(true);
-    try {
-      const res = await aoDetectarTarifa();
-      if (res) {
-        toast.success(`Tarifa de ${res.estado} aplicada: R$ ${res.tarifa.toFixed(2)}/kWh`);
-      } else {
-        toast.error("Não foi possível detectar sua localização.");
-      }
-    } catch (e) {
-      toast.error("Erro ao buscar tarifas.");
-    } finally {
-      setDetectando(false);
+  const lidarComDeteccao = () => {
+    if (aoDetectarTarifa) {
+      aoDetectarTarifa();
     }
   };
 
   return (
-    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500 premium-card premium-card-emerald">
+    <div className="p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col gap-3 shadow-2xl backdrop-blur-3xl group transition-all duration-500 premium-card premium-card-emerald h-full w-full">
       {/* Efeito Glow Indigo de Fundo */}
       <div className="absolute -top-24 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
       
@@ -96,9 +81,9 @@ export const CardProducao = memo(function CardProducao({
         )}
       </div>
 
-        <div className="flex flex-col md:flex-row gap-8 md:gap-0">
-        {/* Coluna Esquerda: Tempo e Energia */}
-        <div className="flex-1 space-y-4 md:pr-6">
+        <div className="flex-1 flex flex-col justify-center">
+        {/* Coluna Única: Tempo e Energia */}
+        <div className="space-y-6">
           <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3 sm:gap-4">
             <div>
               <label className="block h-4 text-[10px] font-black uppercase text-muted-foreground mb-2">
@@ -249,16 +234,11 @@ export const CardProducao = memo(function CardProducao({
                 <label className="block text-xs font-black uppercase text-muted-foreground">kWh (R$)</label>
                 <button
                   onClick={lidarComDeteccao}
-                  disabled={detectando}
-                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 ${
-                    detectando 
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 animate-pulse' 
-                      : 'bg-muted/40 border-borda-sutil text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10'
-                  }`}
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 bg-muted/40 border-borda-sutil text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10"
                   title="Auto-detectar tarifa pelo IP"
                 >
-                  <Sparkles size={10} className={detectando ? 'animate-pulse text-emerald-400' : ''} />
-                  <span>{detectando ? 'Buscando...' : 'Auto-ajuste'}</span>
+                  <Sparkles size={10} />
+                  <span>Auto-ajuste</span>
                 </button>
               </div>
               <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner overflow-hidden">
@@ -273,90 +253,6 @@ export const CardProducao = memo(function CardProducao({
                 />
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Linha Divisória Vertical */}
-        <div className="hidden md:block w-[1px] bg-borda-sutil self-stretch mx-3" />
-
-        {/* Coluna Direita: Pós-Processamento */}
-        <div className="flex-1 flex flex-col h-full md:pl-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-primary dark:text-white">
-                Pós-Processamento
-              </label>
-              <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Lixamento, Pintura, Cola e Acabamentos</p>
-            </div>
-            <button 
-              onClick={() => {
-                setPosProcesso([...posProcesso, { id: crypto.randomUUID(), nome: "Novo Item", valor: 0 }]);
-              }}
-              className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 hover:bg-emerald-500 hover:text-white text-[9px] font-black uppercase transition-all flex items-center gap-1"
-            >
-              <Plus size={10} strokeWidth={3} /> Adicionar Item
-            </button>
-          </div>
-
-          <div className="min-h-[140px] max-h-[240px] overflow-y-auto space-y-2 mb-3 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-800/50 transition-all">
-            {posProcesso.length === 0 ? (
-              <div className="w-full border border-dashed border-borda-sutil rounded-2xl flex flex-col items-center justify-center h-[140px] p-4 text-center bg-transparent opacity-60">
-                <Plus size={20} className="text-zinc-300 dark:text-zinc-700 mb-2" />
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-relaxed">Nenhum acabamento<br/>extra aplicado</span>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {posProcesso.map((item, index) => (
-                  <div key={item.id} className="flex items-center gap-3 p-2 bg-muted/20 dark:bg-white/[0.02] border border-borda-sutil rounded-xl group animate-in slide-in-from-right-2 duration-300">
-                    <div className="flex-1 min-w-[120px]">
-                      <input
-                        type="text"
-                        value={item.nome}
-                        placeholder="Nome do item..."
-                        onChange={(e) => {
-                          const novaLista = [...posProcesso];
-                          novaLista[index].nome = e.target.value;
-                          setPosProcesso(novaLista);
-                        }}
-                        className="w-full bg-transparent border-0 border-b border-borda-sutil text-[11px] font-black uppercase tracking-tight text-primary dark:text-white outline-none focus:border-emerald-500 py-1 transition-colors"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-2 w-20">
-                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">R$</span>
-                      <InputBancario
-                        placeholder="0.00"
-                        value={item.valor === 0 ? "" : item.valor / 100}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          const novaLista = [...posProcesso];
-                          novaLista[index].valor = v === "" ? 0 : Math.round(Number(v) * 100);
-                          setPosProcesso(novaLista);
-                        }}
-                        className="w-full bg-transparent border-0 border-b border-borda-sutil text-[11px] font-black text-center text-primary dark:text-white outline-none focus:border-emerald-500 py-1 transition-colors"
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setPosProcesso(posProcesso.filter(i => i.id !== item.id))}
-                      className="p-1.5 text-zinc-400 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
-
-                <div className="pt-2 px-3 flex justify-end">
-                  <div className="text-right">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Total em Pós-Processamento</p>
-                    <p className="text-xs font-black text-primary dark:text-white">
-                      {centavosParaReais(posProcesso.reduce((acc, i) => acc + (i.valor || 0), 0))}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -30,6 +30,14 @@ import { useArmazemCalculadora } from "./estado/armazemCalculadora";
 import { ModalConfiguracoesV2 } from "./componentes/ModalConfiguracoesV2";
 import { ModalHistoricoV2 } from "./componentes/ModalHistoricoV2";
 import { ModalCanaisVenda } from "./componentes/ModalCanaisVenda";
+import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
+import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
+
+// Gerenciadores de Estoque
+import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/useGerenciadorMateriais";
+import { FormularioMaterial } from "@/funcionalidades/producao/materiais/componentes/FormularioMaterial";
+import { useGerenciadorInsumos } from "@/funcionalidades/producao/insumos/hooks/useGerenciadorInsumos";
+import { FormularioInsumo } from "@/funcionalidades/producao/insumos/componentes/FormularioInsumo";
 
 // Componentes da Calculadora
 import { CardIdentificacaoProjeto } from "./componentes/CardIdentificacaoProjeto";
@@ -38,16 +46,28 @@ import { CardMateriais } from "./componentes/CardMateriais";
 import { CardPerdas } from "./componentes/CardPerdas";
 import { CardInsumos } from "./componentes/CardInsumos";
 import { CardCustosFixos } from "./componentes/CardCustosFixos";
+import { CardMaoDeObra } from "./componentes/CardMaoDeObra";
+import { CardDepreciacao } from "./componentes/CardDepreciacao";
+import { CardLucro } from "./componentes/CardLucro";
 import { CardProducao } from "./componentes/CardProducao";
+import { CardPosProcesso } from "./componentes/CardPosProcesso";
 import { CardModelagem } from "./componentes/CardModelagem";
-import { CardOperacional } from "./componentes/CardOperacional";
+import { useSincronizacaoCalculadora } from "./hooks/useSincronizacaoCalculadora";
 import { CardLogistica } from "./componentes/CardLogistica";
 import { PainelResultados } from "./componentes/PainelResultados";
+import { ModalDetectarTarifa } from "./componentes/ModalDetectarTarifa";
+import { detectarTarifaKwhAutomatico } from "@/compartilhado/utilitarios/tarifas-energia";
 
 export function PaginaCalculadoraV2() {
   const armazem = useArmazemCalculadora();
   const { usuario } = useAutenticacao();
   const config = useArmazemConfiguracoes();
+
+  const { estado: estadoMateriais, acoes: acoesMateriais } = useGerenciadorMateriais();
+  const { estado: estadoInsumos, acoes: acoesInsumos } = useGerenciadorInsumos();
+
+  const [modalArmazemMateriaisAberto, setModalArmazemMateriaisAberto] = useState(false);
+  const [modalArmazemInsumosAberto, setModalArmazemInsumosAberto] = useState(false);
 
   const eProOuSuperior = useMemo(() => {
     const plano = ((usuario as any)?.plano || '').toUpperCase();
@@ -59,6 +79,7 @@ export function PaginaCalculadoraV2() {
 
   const [searchParams] = useSearchParams();
   const idEdicao = searchParams.get("id") || searchParams.get("edicao");
+  const [modalTarifaAberto, setModalTarifaAberto] = useState(false);
   
   const { estado: estadoClientes, acoes: acoesClientes } = useGerenciadorClientes();
   const { estado: estadoImpressoras } = useGerenciadorImpressoras();
@@ -177,73 +198,19 @@ export function PaginaCalculadoraV2() {
   
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
-  const [autoSalvar, setAutoSalvar] = useState(true);
 
-  const [carregouNuvemInicial, setCarregouNuvemInicial] = useState(false);
-
-  // 📥 Inicializa Histórico e Rascunho da Nuvem (uma única vez)
-  useEffect(() => {
-    if (!config.carregando && !carregouNuvemInicial && config.calculadoraMeta) {
-      if (config.calculadoraMeta.historico) {
-        armazem.definirHistorico(config.calculadoraMeta.historico);
-      }
-      if (config.calculadoraMeta.ultimaImpressoraId) {
-        setImpressoraSelecionadaId(config.calculadoraMeta.ultimaImpressoraId);
-      }
-      if (config.calculadoraMeta.autoSalvar !== undefined) {
-        setAutoSalvar(config.calculadoraMeta.autoSalvar);
-      }
-      if (config.calculadoraMeta.rascunho && config.calculadoraMeta.autoSalvar !== false) {
-        armazem.restaurarRascunho(config.calculadoraMeta.rascunho.parametros);
-        setNomeProjeto(config.calculadoraMeta.rascunho.nomeProjeto || "");
-        setDescricaoProjeto(config.calculadoraMeta.rascunho.descricaoProjeto || "");
-        setClienteProjetoId(config.calculadoraMeta.rascunho.clienteProjetoId || "");
-      }
-      setCarregouNuvemInicial(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.carregando]); // Roda apenas quando a carga do DB termina
-
-  // 📤 Debounce para Salvar Rascunho na Nuvem
-  useEffect(() => {
-    if (!carregouNuvemInicial || !autoSalvar) return;
-    
-    const timeoutId = setTimeout(async () => {
-      const parametrosAtuais = armazem.obterParametros();
-      const novaMeta = {
-        ...config.calculadoraMeta,
-        autoSalvar,
-        ultimaImpressoraId: impressoraSelecionadaId,
-        historico: armazem.historico,
-        rascunho: {
-          nomeProjeto,
-          descricaoProjeto,
-          clienteProjetoId,
-          parametros: parametrosAtuais
-        }
-      };
-      config.definirCalculadoraMeta(novaMeta);
-      if (usuario?.uid) {
-        await config.salvarNoD1(usuario.uid);
-      }
-    }, 2500);
-
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    autoSalvar,
+  const { autoSalvar, setAutoSalvar, carregouNuvemInicial } = useSincronizacaoCalculadora({
+    armazem,
     nomeProjeto,
     descricaoProjeto,
     clienteProjetoId,
     impressoraSelecionadaId,
-    armazem.materiaisSelecionados,
-    armazem.insumosSelecionados,
-    armazem.itensPosProcesso,
-    armazem.resultado.precoSugerido, // Detecta qualquer mudança nos números
-    armazem.historico, // Salva o array de historico quando modificado
-    carregouNuvemInicial
-  ]);
-
+    setNomeProjeto,
+    setDescricaoProjeto,
+    setClienteProjetoId,
+    setImpressoraSelecionadaId
+  });
+  
   // Hook Temporal do Zundo
   const undo = useStore(useArmazemCalculadora.temporal, (state) => state.undo);
   const redo = useStore(useArmazemCalculadora.temporal, (state) => state.redo);
@@ -308,8 +275,6 @@ export function PaginaCalculadoraV2() {
         pesoGramas: armazem.materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0),
         tempoMinutos: armazem.tempoMinutosMaquina
       });
-      
-      armazem.setParametro("precoAlvoCentavos", Math.round(sugestao.recomendado.valor * 100));
       setExplicacaoIA(sugestao.dica || sugestao.recomendado.justificativa);
       
       toast.success("Preço sugerido pela IA!", { id: "ia" });
@@ -431,7 +396,7 @@ export function PaginaCalculadoraV2() {
             armazem.salvarSnapshot(nomeProjeto || "Orçamento sem nome", descricaoProjeto, clienteProjetoId);
             toast.success("Orçamento salvo na versão 2.0!");
           }}
-          className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-green-500 hover:border-green-500/30 transition-all shadow-sm"
+          className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-emerald-500 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all shadow-sm"
           title="Salvar Manualmente"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -439,14 +404,14 @@ export function PaginaCalculadoraV2() {
         <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
         <button 
           onClick={() => setModalHistoricoAberto(true)}
-          className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary transition-all shadow-sm"
+          className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-sm"
           title="Histórico de Versões"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </button>
         <button 
           onClick={() => setModalConfigAberto(true)}
-          className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary transition-all shadow-sm"
+          className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-sm"
           title="Configurações da Calculadora"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -577,6 +542,39 @@ export function PaginaCalculadoraV2() {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <CardProducao
+              quantidade={armazem.quantidade} setQuantidade={v => armazem.setParametro('quantidade', v)}
+              pecasPorMesa={armazem.pecasPorMesa} setPecasPorMesa={v => armazem.setParametro('pecasPorMesa', v)}
+              tempo={armazem.tempoMinutosMaquina} setTempo={v => armazem.setParametro('tempoMinutosMaquina', v)}
+              modoEntrada={armazem.modoEntrada}
+              potencia={armazem.potenciaWatts} setPotencia={v => armazem.setParametro('potenciaWatts', v)}
+              precoKwh={armazem.precoKwhCentavos} setPrecoKwh={v => armazem.setParametro('precoKwhCentavos', v)}
+              custoEnergia={armazem.resultado.custoEnergia / 100}
+              cobrarEnergia={armazem.cobrarEnergia} setCobrarEnergia={v => armazem.setParametro('cobrarEnergia', v)}
+              impressoras={estadoImpressoras.impressoras}
+              idImpressoraSelecionada={impressoraSelecionadaId}
+              aoDetectarTarifa={async () => {
+                setModalTarifaAberto(true);
+                return null;
+              }}
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <CardDepreciacao
+              depreciacao={armazem.depreciacaoHoraCentavos}
+              cobrarDesgaste={armazem.cobrarDesgaste}
+              setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
+              anosVidaUtil={anosVidaUtil}
+              setAnosVidaUtil={setAnosVidaUtil}
+              tempo={armazem.tempoMinutosMaquina}
+              quantidade={armazem.quantidade}
+              modoEntrada={armazem.modoEntrada}
+            />
+          </div>
+        </div>
+
         <CardMateriais
           materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
           selecionados={armazem.materiaisSelecionados} alertas={[]} 
@@ -584,7 +582,9 @@ export function PaginaCalculadoraV2() {
           alternar={alternarMaterial} atualizarQtd={atualizarQtdMaterial}
           atualizarPreco={atualizarPrecoMaterial} atualizarTempo={atualizarTempoMaterial}
           atualizarNomePeca={atualizarNomePecaMaterial} remover={armazem.removerMaterial}
-          abrirArmazem={() => {}} abrirCriar={() => {}} alternarFavorito={() => {}} 
+          abrirArmazem={() => setModalArmazemMateriaisAberto(true)} 
+          abrirCriar={() => acoesMateriais.abrirEditar(null as any)} 
+          alternarFavorito={() => {}} 
           adicionarPeca={adicionarSubPeca}
         />
 
@@ -592,6 +592,36 @@ export function PaginaCalculadoraV2() {
           mostrar={mostrarPerdas} setMostrar={setMostrarPerdas}
           materialPerdido={armazem.materialPerdidoGramas} setMaterialPerdido={v => armazem.setParametro('materialPerdidoGramas', v)}
           tempoPerdido={armazem.tempoPerdidoMinutos} setTempoPerdido={v => armazem.setParametro('tempoPerdidoMinutos', v)}
+          custoFalha={armazem.resultado.custoFalha}
+          modoEntrada={armazem.modoEntrada}
+        />
+
+        <CardModelagem
+          tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
+          valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
+          modoEntrada={armazem.modoEntrada}
+        />
+
+        <CardMaoDeObra
+          maoDeObra={armazem.maoDeObraHoraCentavos}
+          setMaoDeObra={v => armazem.setParametro('maoDeObraHoraCentavos', v)}
+          cobrarMaoDeObra={armazem.cobrarMaoDeObra}
+          setCobrarMaoDeObra={v => armazem.setParametro('cobrarMaoDeObra', v)}
+          tempoSetup={armazem.tempoSetupMinutos}
+          setTempoSetup={v => armazem.setParametro('tempoSetupMinutos', v)}
+        />
+
+        <CardPosProcesso
+          posProcesso={armazem.itensPosProcesso}
+          setPosProcesso={v => {
+            const existingIds = armazem.itensPosProcesso.map(i => i.id);
+            existingIds.forEach(id => armazem.removerPosProcesso(id));
+            v.forEach(i => armazem.adicionarPosProcesso(i));
+          }}
+          maoDeObraHoraCentavos={armazem.maoDeObraHoraCentavos}
+          cobrarMaoDeObra={armazem.cobrarMaoDeObra}
+          quantidade={armazem.quantidade}
+          modoEntrada={armazem.modoEntrada}
         />
 
         <CardInsumos
@@ -629,8 +659,9 @@ export function PaginaCalculadoraV2() {
               novo[index] = { ...novo[index], porLote: !novo[index].porLote };
               armazem.setParametro('insumosSelecionados', novo);
             }
-          }} 
-          abrirGerenciar={() => {}} abrirNovo={() => {}}
+          }}
+          abrirGerenciar={() => setModalArmazemInsumosAberto(true)}
+          abrirNovo={() => acoesInsumos.abrirEditar(null as any)}
           modoEntrada={armazem.modoEntrada} alternarFavorito={() => {}}
         />
 
@@ -638,37 +669,17 @@ export function PaginaCalculadoraV2() {
           mostrar={mostrarCustosFixos} setMostrar={setMostrarCustosFixos}
           insumosFixos={armazem.insumosFixosCentavos} setInsumosFixos={v => armazem.setParametro('insumosFixosCentavos', v)}
           cobrarInsumosFixos={armazem.cobrarInsumosFixos} setCobrarInsumosFixos={v => armazem.setParametro('cobrarInsumosFixos', v)}
-        />
-
-        <CardProducao
-          quantidade={armazem.quantidade} setQuantidade={v => armazem.setParametro('quantidade', v)}
-          pecasPorMesa={armazem.pecasPorMesa} setPecasPorMesa={v => armazem.setParametro('pecasPorMesa', v)}
-          tempo={armazem.tempoMinutosMaquina} setTempo={v => armazem.setParametro('tempoMinutosMaquina', v)}
+          itensCustosFixos={armazem.itensCustosFixos || []}
+          setItensCustosFixos={v => armazem.setParametro('itensCustosFixos', v)}
           modoEntrada={armazem.modoEntrada}
-          potencia={armazem.potenciaWatts} setPotencia={v => armazem.setParametro('potenciaWatts', v)}
-          precoKwh={armazem.precoKwhCentavos} setPrecoKwh={v => armazem.setParametro('precoKwhCentavos', v)}
-          custoEnergia={armazem.resultado.custoEnergia / 100}
-          cobrarEnergia={armazem.cobrarEnergia} setCobrarEnergia={v => armazem.setParametro('cobrarEnergia', v)}
-          posProcesso={armazem.itensPosProcesso} setPosProcesso={() => {}} 
-          impressoras={estadoImpressoras.impressoras}
-          idImpressoraSelecionada={impressoraSelecionadaId}
         />
 
-        <CardModelagem
-          tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
-          valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
-        />
-
-        <CardOperacional
-          maoDeObra={armazem.maoDeObraHoraCentavos} setMaoDeObra={v => armazem.setParametro('maoDeObraHoraCentavos', v)}
-          margem={armazem.margemLucroPercentual} setMargem={v => armazem.setParametro('margemLucroPercentual', v)}
-          depreciacao={armazem.depreciacaoHoraCentavos}
-          cobrarDesgaste={armazem.cobrarDesgaste} setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
-          cobrarMaoDeObra={armazem.cobrarMaoDeObra} setCobrarMaoDeObra={v => armazem.setParametro('cobrarMaoDeObra', v)}
-          anosVidaUtil={anosVidaUtil} setAnosVidaUtil={setAnosVidaUtil}
-          tempo={armazem.tempoMinutosMaquina} quantidade={armazem.quantidade}
-          tempoSetup={armazem.tempoSetupMinutos} setTempoSetup={v => armazem.setParametro('tempoSetupMinutos', v)}
-          aplicarTemplate={() => {}}
+        <CardLucro
+          margem={armazem.margemLucroPercentual}
+          setMargem={v => armazem.setParametro('margemLucroPercentual', v)}
+          setCobrarMaoDeObra={v => armazem.setParametro('cobrarMaoDeObra', v)}
+          setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
+          aplicarTemplate={true}
         />
 
          <CardLogistica
@@ -757,9 +768,7 @@ export function PaginaCalculadoraV2() {
                             taxaEcommercePercentual: armazem.taxaEcommercePercentual,
                             taxaFixaVendaCentavos: armazem.taxaFixaVendaCentavos,
                             tempoModelagemMinutos: armazem.tempoModelagemMinutos,
-                            valorHoraModelagemCentavos: armazem.valorHoraModelagemCentavos,
-                            descontoVolumePercentual: armazem.descontoVolumePercentual,
-                            precoAlvoCentavos: armazem.precoAlvoCentavos,
+                            valorHoraModelagemCentavos: armazem.valorHoraModelagemCentavos
                          },
                          resultado: armazem.resultado
                        }
@@ -784,8 +793,6 @@ export function PaginaCalculadoraV2() {
           insumosFixos={armazem.insumosFixosCentavos} tempo={armazem.tempoMinutosMaquina}
           modoEntrada={armazem.modoEntrada} frete={armazem.freteCentavos}
           taxaFixa={armazem.taxaFixaVendaCentavos} aoSugerirPrecoIA={sugerirPrecoComIA}
-          descontoVolume={armazem.descontoVolumePercentual} setDescontoVolume={v => armazem.setParametro('descontoVolumePercentual', v)}
-          precoAlvoCentavos={armazem.precoAlvoCentavos} setPrecoAlvoCentavos={v => armazem.setParametro('precoAlvoCentavos', v)}
           explicacaoIA={explicacaoIA}
         />
       </div>
@@ -939,6 +946,73 @@ export function PaginaCalculadoraV2() {
           </div>
         </div>
       </div>
+      
+      <ModalDetectarTarifa 
+          aberto={modalTarifaAberto} 
+          aoFechar={() => setModalTarifaAberto(false)} 
+          aoAplicarTarifa={(estado, tarifa) => {
+            armazem.setParametro('precoKwhCentavos', Math.round(tarifa * 100));
+            toast.success(`Tarifa de ${estado} aplicada: R$ ${tarifa.toFixed(2)}/kWh`);
+          }}
+        />
+
+        <ModalArmazemMateriais
+          aberto={modalArmazemMateriaisAberto}
+          aoFechar={() => setModalArmazemMateriaisAberto(false)}
+          busca={buscaMaterial}
+          setBusca={setBuscaMaterial}
+          filtroTipo={estadoMateriais.filtro}
+          setFiltroTipo={(t) => acoesMateriais.definirFiltro(t)}
+          materiaisFiltrados={estadoMateriais.materiaisFiltradosOrdenados}
+          selecionados={armazem.materiaisSelecionados}
+          aoAlternar={(m) => alternarMaterial(m)}
+          aoCriarNovo={() => {
+            setModalArmazemMateriaisAberto(false);
+            acoesMateriais.abrirEditar(null as any);
+          }}
+          aoAlternarFavorito={acoesMateriais.alternarFavorito}
+        />
+
+        <ModalArmazemInsumos
+          aberto={modalArmazemInsumosAberto}
+          aoFechar={() => setModalArmazemInsumosAberto(false)}
+          busca={buscaInsumo}
+          setBusca={setBuscaInsumo}
+          insumosFiltrados={estadoInsumos.insumos}
+          selecionados={armazem.insumosSelecionados}
+          aoAlternar={(insumo: any) => {
+            const existe = armazem.insumosSelecionados.some(i => i.id === insumo.id);
+            if (existe) {
+              armazem.removerInsumo(insumo.id);
+            } else {
+              armazem.adicionarInsumo({
+                id: insumo.id,
+                nome: insumo.nome,
+                quantidade: 1,
+                custoCentavos: insumo.custoMedioUnidade,
+                porLote: false
+              });
+            }
+          }}
+          aoCriarNovo={() => {
+            setModalArmazemInsumosAberto(false);
+            acoesInsumos.abrirEditar(null as any);
+          }}
+          aoAlternarFavorito={() => {}}
+        />
+
+        <FormularioMaterial
+          aberto={estadoMateriais.modalAberto}
+          aoSalvar={acoesMateriais.salvarMaterial}
+          aoCancelar={acoesMateriais.fecharEditar}
+        />
+
+        <FormularioInsumo
+          aberto={estadoInsumos.modalCricaoAberto}
+          insumoEditando={estadoInsumos.insumoEditando}
+          aoSalvar={(dados) => acoesInsumos.adicionarOuAtualizarInsumo(dados as any)}
+          aoCancelar={acoesInsumos.fecharEditar}
+        />
 
       <ModalCanaisVenda
         aberto={modalCanaisAberto}

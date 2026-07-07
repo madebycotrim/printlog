@@ -1,9 +1,10 @@
-import { InsumoSelecionado, ItemPosProcesso, MaterialSelecionado } from "../tipos";
+import { InsumoSelecionado, ItemPosProcesso, MaterialSelecionado, ItemCustoFixo } from "../tipos";
 
 export interface ParametrosCalculo {
   materiaisSelecionados: MaterialSelecionado[];
   insumosSelecionados: InsumoSelecionado[];
   itensPosProcesso: ItemPosProcesso[];
+  itensCustosFixos?: ItemCustoFixo[];
   tempoMinutosMaquina: number;
   potenciaWatts: number;
   precoKwhCentavos: number;
@@ -34,8 +35,6 @@ export interface ParametrosCalculo {
   
   tempoModelagemMinutos: number;
   valorHoraModelagemCentavos: number;
-  descontoVolumePercentual: number; // 0-100
-  precoAlvoCentavos: number;
 }
 
 export function executarMotorCalculo(p: ParametrosCalculo) {
@@ -67,8 +66,12 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
   const multiplicadorSetup = p.modoEntrada === 'lote' && p.pecasPorMesa > 0 ? Math.ceil(qtdReal / p.pecasPorMesa) : multiplicadorGeral;
   const custoMaoDeObraCentavos = p.cobrarMaoDeObra ? Math.round(((p.tempoSetupMinutos * multiplicadorSetup) / 60) * p.maoDeObraHoraCentavos) : 0;
   
-  const custoPosProcessoCentavos = p.itensPosProcesso.reduce((t, i) => t + (i.valor), 0) * multiplicadorGeral;
-  const custoInsumosFixosCentavos = p.cobrarInsumosFixos ? p.insumosFixosCentavos : 0; // Fixos não multiplicam
+  const custoPosProcessoCentavos = p.itensPosProcesso.reduce((t, i) => {
+    const custoTempoObra = p.cobrarMaoDeObra ? (i.tempoMinutos * (p.maoDeObraHoraCentavos / 60)) : 0;
+    return t + custoTempoObra + i.custoMaterialCentavos;
+  }, 0) * multiplicadorGeral;
+  const totalItensFixos = p.itensCustosFixos?.reduce((sum, item) => sum + item.valorCentavos, 0) || 0;
+  const custoInsumosFixosCentavos = p.cobrarInsumosFixos ? p.insumosFixosCentavos + totalItensFixos : 0; // Fixos não multiplicam
   const custoFreteCentavos = p.cobrarLogistica ? p.freteCentavos : 0;
   const custoModelagemCentavos = Math.round((p.tempoModelagemMinutos / 60) * p.valorHoraModelagemCentavos);
   
@@ -82,10 +85,9 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
   const denominadorTaxas = 1 - taxaMktPercentual;
   
   const precoSugeridoBrutoCentavos = denominadorTaxas > 0.05 ? Math.round(precoBaseVendaCentavos / denominadorTaxas) : Math.round(precoBaseVendaCentavos * 1.5);
-  const valorDescontoCentavos = Math.round(precoSugeridoBrutoCentavos * (p.descontoVolumePercentual / 100));
-  const precoSugeridoCentavos = precoSugeridoBrutoCentavos - valorDescontoCentavos;
+  const precoSugeridoCentavos = precoSugeridoBrutoCentavos;
   
-  const precoFinalBaseCalculo = p.precoAlvoCentavos > 0 ? p.precoAlvoCentavos : precoSugeridoCentavos;
+  const precoFinalBaseCalculo = precoSugeridoCentavos;
 
   const taxaComissaoCentavos = Math.round(precoFinalBaseCalculo * taxaMktPercentual);
   const taxaMktTotalCentavos = taxaComissaoCentavos + taxaFixaVendaCentavos;
@@ -104,14 +106,11 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
     custoFrete: custoFreteCentavos,
     precoSugerido: precoFinalBaseCalculo,
     precoSugeridoOriginal: precoSugeridoCentavos,
-    precoAlvo: p.precoAlvoCentavos > 0 ? p.precoAlvoCentavos : 0,
     lucroLiquido: lucroLiquidoCentavos,
     custoTotalOperacional: custoProducaoTotalCentavos,
     margemReal: precoFinalBaseCalculo > 0 ? (lucroLiquidoCentavos / precoFinalBaseCalculo) * 100 : 0,
     custoFalha: custoFalhaRealCentavos,
     custoModelagem: custoModelagemCentavos,
-    valorDesconto: valorDescontoCentavos,
-    percentualDesconto: p.descontoVolumePercentual,
     modoEntrada: p.modoEntrada
   };
 }

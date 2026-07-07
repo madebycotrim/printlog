@@ -38,14 +38,25 @@ export const TARIFAS_KWH_POR_ESTADO: Record<string, number> = {
  */
 export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; tarifa: number } | null> => {
   try {
-    // Usando um serviço gratuito de GeoIP (ip-api.com não precisa de chave para uso básico)
-    const resposta = await fetch('/api/detectar-regiao');
-    const dados = await resposta.json();
+    let estado = null;
 
-    if (dados.region) {
-      const estado = dados.region; // Retorna a UF (ex: SP, RJ...)
+    try {
+      const res1 = await fetch('https://ipapi.co/json/');
+      const dados1 = await res1.json();
+      if (dados1.region_code) estado = dados1.region_code;
+    } catch (e1) {
+      // Fallback para ipwho.is caso ipapi falhe (ex: bloqueadores de anúncio)
+      try {
+        const res2 = await fetch('https://ipwho.is/');
+        const dados2 = await res2.json();
+        if (dados2.region_code) estado = dados2.region_code;
+      } catch (e2) {
+        // Ambas falharam
+      }
+    }
+
+    if (estado) {
       const tarifa = TARIFAS_KWH_POR_ESTADO[estado];
-      
       if (tarifa) {
         return { estado, tarifa };
       }
@@ -53,7 +64,6 @@ export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; t
     
     return null;
   } catch (erro) {
-    console.error('[detectarTarifaKwh] Falha ao detectar tarifa por IP:', erro);
     return null;
   }
 };

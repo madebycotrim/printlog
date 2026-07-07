@@ -8,18 +8,22 @@ interface CardModelagemProps {
   setTempoModelagem: (v: number) => void;
   valorHoraModelagem: number; // centavos
   setValorHoraModelagem: (v: number) => void;
+  modoEntrada?: 'unitario' | 'lote' | 'projeto';
 }
 
 export const CardModelagem = memo(function CardModelagem({
   tempoModelagem,
   setTempoModelagem,
   valorHoraModelagem,
-  setValorHoraModelagem
+  setValorHoraModelagem,
+  modoEntrada = 'lote'
 }: CardModelagemProps) {
+  const textoModo = modoEntrada === 'unitario' ? 'Unidade' : modoEntrada === 'projeto' ? 'Projeto' : 'Lote';
   const temValor = tempoModelagem > 0;
   const [mostrar, setMostrar] = useState(temValor);
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
+  const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
 
   // Mantém o painel aberto caso haja valor configurado via load/snapshot
   useEffect(() => {
@@ -47,7 +51,7 @@ export const CardModelagem = memo(function CardModelagem({
             setMostrar(novoEstado);
             if (!novoEstado) {
               setTempoModelagem(0);
-              setValorHoraModelagem(8000); // Reset para default
+              setValorHoraModelagem(0); // Reset para default
             }
           }}
           className={`px-3 py-1.5 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all border ${mostrar
@@ -72,20 +76,42 @@ export const CardModelagem = memo(function CardModelagem({
             <div className="absolute top-0 left-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_100%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
             <div className="absolute top-0 right-0 w-[12px] h-[12px] bg-[radial-gradient(circle_at_0%_0%,transparent_12px,var(--bg-card)_12px)] z-[-1]" />
 
-            <div className="flex items-center justify-between pb-3 border-b border-borda-sutil">
+            <div className="flex items-center justify-between pb-3 border-b border-borda-sutil mb-4">
               <div className="flex items-center gap-3">
                 <PenTool size={16} className="text-cyan-400" />
                 <h3 className="text-[10px] font-black uppercase tracking-wider text-cyan-500">Gestão de Modelagem 3D</h3>
+              </div>
+              <div className="flex flex-col items-end">
+                 <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>
+                 <div className="flex items-baseline gap-1">
+                   <span className="text-xs font-black text-muted-foreground">R$</span>
+                   <span className="text-lg font-black text-cyan-600 dark:text-cyan-400 tracking-tight leading-none">
+                     {((Math.round((tempoModelagem / 60) * valorHoraModelagem)) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                   </span>
+                 </div>
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-8">
               <div className="flex-1 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+                  <div className="flex flex-col gap-1.5 lg:col-span-1">
+                    <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor da Hora (R$)</label>
+                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner overflow-hidden">
+                      <span className="absolute left-3 text-[10px] font-black text-muted-foreground">R$</span>
+                      <InputBancario 
+                        placeholder="0.00" 
+                        value={valorHoraModelagem === 0 ? "" : valorHoraModelagem / 100} 
+                        onChange={(e) => setValorHoraModelagem(Math.round(extrairValorNumerico(e.target.value) * 100))} 
+                        className="w-full h-11 pl-10 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-left" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 lg:col-span-2">
                     <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo de Projeto</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                    <div className="flex items-center gap-1.5">
+                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
                         <input 
                           type="number" 
                           placeholder="0" 
@@ -95,45 +121,50 @@ export const CardModelagem = memo(function CardModelagem({
                           onChange={(e) => {
                             const v = e.target.value;
                             setTempHora(v);
-                            setTempoModelagem((v === "" ? 0 : Number(v)) * 60 + (tempoModelagem % 60));
+                            setTempoModelagem((v === "" ? 0 : Number(v)) * 60 + Math.floor(tempoModelagem % 60) + (tempoModelagem % 1));
                           }} 
-                          className="w-full h-11 pl-4 pr-10 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                         />
-                        <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                       </div>
 
-                      <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                      <span className="text-zinc-400 font-bold">:</span>
+
+                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
                         <input 
                           type="number" 
                           placeholder="0" 
-                          value={tempMinuto !== undefined ? tempMinuto : (tempoModelagem % 60 === 0 ? "" : (tempoModelagem % 60 || ""))} 
+                          value={tempMinuto !== undefined ? tempMinuto : (Math.floor(tempoModelagem % 60) === 0 ? "" : (Math.floor(tempoModelagem % 60) || ""))} 
                           onFocus={() => {}}
                           onBlur={() => setTempMinuto(undefined)}
                           onChange={(e) => {
                             const v = e.target.value;
                             setTempMinuto(v);
-                            setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + (v === "" ? 0 : Number(v)));
+                            setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + (v === "" ? 0 : Number(v)) + (tempoModelagem % 1));
                           }} 
-                          className="w-full h-11 pl-4 pr-12 bg-transparent outline-none font-black text-sm text-left text-primary dark:text-white" 
+                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                         />
-                        <span className="absolute right-3 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">min</span>
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">m</span>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor da Hora (R$)</label>
-                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner overflow-hidden">
-                      <span className="absolute left-3 text-[10px] font-black text-muted-foreground">R$</span>
-                      <InputBancario 
-                        placeholder="80.00" 
-                        value={valorHoraModelagem === 0 ? "" : valorHoraModelagem / 100} 
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setValorHoraModelagem(v === "" ? 0 : Math.round(Number(v) * 100));
-                        }} 
-                        className="w-full h-full pl-10 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-left" 
-                      />
+                      <span className="text-zinc-400 font-bold">:</span>
+
+                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                        <input 
+                          type="number" 
+                          placeholder="0" 
+                          value={tempSegundo !== undefined ? tempSegundo : (Math.round((tempoModelagem % 1) * 60) === 0 ? "" : (Math.round((tempoModelagem % 1) * 60) || ""))} 
+                          onFocus={() => {}}
+                          onBlur={() => setTempSegundo(undefined)}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setTempSegundo(v);
+                            setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + Math.floor(tempoModelagem % 60) + (v === "" ? 0 : Number(v) / 60));
+                          }} 
+                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                        />
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">s</span>
+                      </div>
                     </div>
                   </div>
                 </div>

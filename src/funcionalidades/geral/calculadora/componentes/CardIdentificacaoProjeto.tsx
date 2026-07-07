@@ -68,7 +68,7 @@ export function CardIdentificacaoProjeto({
         </div>
       </div>
 
-      <div className="relative z-20 grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-6">
+      <div className="relative z-20 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
         {/* Lado Esquerdo: Dados do Cliente */}
         <div className="md:col-span-4 flex flex-col gap-2 relative">
           <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Cliente do Projeto</label>
@@ -204,7 +204,7 @@ export function CardIdentificacaoProjeto({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={() => setModoEntrada('unitario')}
-            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
+            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col items-center gap-3 text-center overflow-hidden ${
               modoEntrada === 'unitario' 
               ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
               : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-blue-500/30'
@@ -216,12 +216,12 @@ export function CardIdentificacaoProjeto({
               <Box size={20} />
             </div>
             
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col items-center gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
                 modoEntrada === 'unitario' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Peça Única</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                Valores equivalem a 1 peça isolada. O total será multiplicado por <span className={modoEntrada === 'unitario' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
+                Valores equivalem a 1 peça isolada. O custo total será multiplicado por <span className={modoEntrada === 'unitario' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
               </p>
             </div>
 
@@ -239,7 +239,7 @@ export function CardIdentificacaoProjeto({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={() => setModoEntrada('lote')}
-            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
+            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col items-center gap-3 text-center overflow-hidden ${
               modoEntrada === 'lote' 
               ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
               : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-blue-500/30'
@@ -251,12 +251,12 @@ export function CardIdentificacaoProjeto({
               <LayoutGrid size={20} />
             </div>
             
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col items-center gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
                 modoEntrada === 'lote' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Mesa / Lote</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                Valores equivalem a impressão de todas as <span className={modoEntrada === 'lote' ? 'text-blue-500' : ''}>{quantidade || 'X'} {quantidade === 1 ? 'peça' : 'peças'}</span> de uma única vez.
+                Tempo e material da mesa inteira. O custo inserido já cobre todas as <span className={modoEntrada === 'lote' ? 'text-blue-500' : ''}>{quantidade || 'X'} {quantidade === 1 ? 'peça' : 'peças'}</span> produzidas de uma só vez.
               </p>
             </div>
 
@@ -274,7 +274,7 @@ export function CardIdentificacaoProjeto({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={() => setModoEntrada('projeto')}
-            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-3 text-left overflow-hidden ${
+            className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col items-center gap-3 text-center overflow-hidden ${
               modoEntrada === 'projeto' 
               ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
               : 'bg-zinc-50 dark:bg-zinc-950/40 border-borda-sutil hover:border-blue-500/30'
@@ -286,12 +286,12 @@ export function CardIdentificacaoProjeto({
               <Blocks size={20} />
             </div>
             
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col items-center gap-1">
               <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
                 modoEntrada === 'projeto' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
-              }`}>Projeto Multipeças</span>
+              }`}>Projeto Completo</span>
               <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
-                Valores equivalem a soma de várias partes de 1 projeto. O total será multiplicado por <span className={modoEntrada === 'projeto' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
+                Soma de todas as partes de um kit. O custo do kit completo será multiplicado por <span className={modoEntrada === 'projeto' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
               </p>
             </div>
 

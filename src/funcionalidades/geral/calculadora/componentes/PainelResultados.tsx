@@ -1,10 +1,12 @@
-import { Box, Zap, Timer, Activity, Package, DollarSign, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Mail } from "lucide-react";
+import { Box, Zap, Timer, Activity, DollarSign, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Package, Mail } from "lucide-react";
+import { gerarMensagemWhatsApp, abrirWhatsAppComMensagem } from "../utilitarios/formatadorWhatsApp";
 import { motion, AnimatePresence } from "framer-motion";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { memo, useState, useRef, useEffect } from "react";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+
 
 interface PainelResultadosProps {
   calculo: CalculoResultado;
@@ -24,10 +26,6 @@ interface PainelResultadosProps {
   frete?: number;
   taxaFixa?: number;
   aoSugerirPrecoIA?: () => void;
-  descontoVolume?: number;
-  setDescontoVolume?: (v: number) => void;
-  precoAlvoCentavos?: number;
-  setPrecoAlvoCentavos?: (v: number) => void;
   explicacaoIA?: string;
 }
 
@@ -35,7 +33,6 @@ export const PainelResultados = memo(function PainelResultados({
   calculo, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
   tempo = 0, modoEntrada = 'projeto', frete = 0, aoSugerirPrecoIA,
-  descontoVolume = 0, setDescontoVolume, precoAlvoCentavos = 0, setPrecoAlvoCentavos,
   explicacaoIA = ""
 }: PainelResultadosProps) {
   const { usuario } = useAutenticacao();
@@ -55,27 +52,20 @@ export const PainelResultados = memo(function PainelResultados({
 
   const compartilharWhatsApp = (incluirLink: boolean) => {
     setMenuExportarAberto(false);
-    const nomeEstudio = "Meu Estúdio 3D";
-    const valorFormatado = centavosParaReais(calculo.precoSugerido);
     
-    let baseTemplate = "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._";
-    
-    if (incluirLink && obterUrlLinkMagico) {
-      const url = obterUrlLinkMagico();
-      baseTemplate += `\n\nVocê pode conferir os detalhes e *assinar digitalmente* o orçamento acessando este link seguro:\n${url}`;
-    } else {
-      baseTemplate += "\n\nO *PDF* com todos os detalhes está em anexo!";
+    const urlMagica = obterUrlLinkMagico ? obterUrlLinkMagico() : undefined;
+    const mensagem = gerarMensagemWhatsApp({
+      precoSugeridoCentavos: calculo.precoSugerido,
+      incluirLink,
+      urlLinkMagico: urlMagica || undefined,
+      nomeEstudio: "Meu Estúdio 3D"
+    });
+
+    if (!incluirLink) {
       gerarPdf();
     }
 
-    baseTemplate += "\n\nFico à disposição para fecharmos! 🚀";
-    
-    const mensagem = baseTemplate
-      .replace(/{estudio}/g, nomeEstudio)
-      .replace(/{valor}/g, valorFormatado);
-
-    const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
+    abrirWhatsAppComMensagem(mensagem);
   };
 
   const corLucro = calculo.lucroLiquido <= 0 
@@ -156,9 +146,9 @@ export const PainelResultados = memo(function PainelResultados({
         <div className="w-full flex flex-col gap-4.5 mb-5 text-center relative select-none">
           <div className="flex items-center justify-between w-full px-1">
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-              {precoAlvoCentavos && precoAlvoCentavos > 0 ? 'Preço Alvo Ativo' : 'Preço Sugerido'}
+              Preço Sugerido
             </span>
-            {(!precoAlvoCentavos || precoAlvoCentavos === 0) && (usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
+            {(usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
               <button 
                 onClick={aoSugerirPrecoIA}
                 title="Otimizar Preço com IA"
@@ -174,7 +164,7 @@ export const PainelResultados = memo(function PainelResultados({
             <h2 className="text-5xl font-black tracking-tight leading-none text-center relative">
               <ContadorAnimado 
                 valor={calculo.precoSugerido / 100} 
-                className={`inline-block bg-gradient-to-r bg-clip-text text-transparent transition-all duration-300 ${precoAlvoCentavos && precoAlvoCentavos > 0 ? 'from-violet-500 to-fuchsia-500 dark:from-violet-400 dark:to-fuchsia-400' : 'from-sky-500 via-blue-500 to-indigo-500 dark:from-sky-400 dark:to-indigo-400'}`}
+                className="inline-block bg-gradient-to-r bg-clip-text text-transparent transition-all duration-300 from-sky-500 via-blue-500 to-indigo-500 dark:from-sky-400 dark:to-indigo-400"
               />
             </h2>
 
@@ -246,69 +236,12 @@ export const PainelResultados = memo(function PainelResultados({
                 Fabricação: <ContadorAnimado valor={calculo.custoTotalOperacional / 100} />
               </span>
             </div>
-
-            {/* Desconto Lote */}
-            <div className="flex flex-col items-start w-full">
-              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">Desconto Lote</span>
-              <div className="flex items-center justify-between gap-1 bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200/40 dark:border-zinc-800/40 rounded-xl px-3 py-1.5 mt-1.5 w-full focus-within:ring-1 focus-within:ring-sky-500/10 focus-within:border-sky-500/40 transition-all shadow-sm">
-                <input 
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={!descontoVolume || descontoVolume === 0 ? "" : descontoVolume}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setDescontoVolume?.(v === "" ? 0 : Number(v));
-                  }}
-                  className="w-full bg-transparent text-xs font-bold text-primary dark:text-white outline-none"
-                  placeholder="0"
-                />
-                <span className="text-[10px] font-black text-zinc-400">%</span>
-              </div>
-            </div>
-
-            {/* Preço Alvo */}
-            <div className="flex flex-col items-start w-full pl-2" title="Matemática Reversa: Calcule o lucro com base no preço final pago pelo cliente">
-              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">Preço Alvo</span>
-              <div className="flex items-center gap-0.5 bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200/40 dark:border-zinc-800/40 rounded-xl px-3 py-1.5 mt-1.5 w-full focus-within:ring-1 focus-within:ring-sky-500/10 focus-within:border-sky-500/40 transition-all shadow-sm">
-                <span className="text-[10px] font-bold text-zinc-400">R$</span>
-                <input 
-                  type="number"
-                  min="0"
-                  value={!precoAlvoCentavos || precoAlvoCentavos === 0 ? "" : (precoAlvoCentavos || 0) / 100}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setPrecoAlvoCentavos?.(v === "" ? 0 : Math.round(Number(v) * 100));
-                  }}
-                  className="w-full bg-transparent text-xs font-bold text-primary dark:text-white outline-none"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
           </div>
         </div>
 
         <div className="h-px bg-zinc-200/50 dark:bg-zinc-800/40 w-full mb-4" />
 
-        {/* INTERRUPTOR DE ABAS */}
-        <div className="flex bg-zinc-100 dark:bg-zinc-900/60 p-1 rounded-xl mb-4 w-full border border-borda-sutil shadow-inner">
-          <button 
-            type="button"
-            onClick={() => setAba('orcamento')} 
-            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${aba === 'orcamento' ? 'bg-white dark:bg-zinc-800 text-primary dark:text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
-          >
-            Orçamento
-          </button>
-          <button 
-            type="button"
-            onClick={() => setAba('metricas')} 
-            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5 ${aba === 'metricas' ? 'bg-white dark:bg-zinc-800 text-primary dark:text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
-          >
-            Métricas 360 <PieChart size={11} className={aba === 'metricas' ? 'text-indigo-500 dark:text-indigo-400' : ''} />
-          </button>
-        </div>
-
-                {aba === 'orcamento' && (() => {
+        {(() => {
           const itens = [
             { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400' },
             { label: 'Modelagem 3D', valor: calculo.custoModelagem || 0, icone: PenTool, cor: 'text-rose-400' },
@@ -320,7 +253,6 @@ export const PainelResultados = memo(function PainelResultados({
             { label: 'Comissão Marketplace', valor: calculo.taxaComissao ?? 0, icone: DollarSign, cor: 'text-violet-400' },
             { label: 'Taxa Fixa Plataforma', valor: calculo.taxaFixaVenda ?? 0, icone: DollarSign, cor: 'text-purple-400' },
             { label: 'Frete e Envio', valor: calculo.custoFrete ?? (modoEntrada === 'lote' ? frete : frete * quantidade), icone: Package, cor: 'text-orange-400' },
-            { label: 'Desconto Aplicado', valor: -(calculo.valorDesconto || 0), icone: DollarSign, cor: 'text-emerald-500' },
           ].filter(i => i.valor !== 0);
 
           const estaVazio = itens.length === 0;
@@ -350,12 +282,12 @@ export const PainelResultados = memo(function PainelResultados({
                       }>();
                       
                       materiais.forEach(m => {
-                        const chave = `${m.tipoMaterial} (${m.cor})`;
-                        const atual = agrupadosMap.get(chave) || { corHex: m.corHex || '#fff', peso: 0, custo: 0 };
+                        const chave = `${m.tipo} - ${m.nomePeca || m.nome}`;
+                        const atual = agrupadosMap.get(chave) || { corHex: '#fff', peso: 0, custo: 0 };
                         agrupadosMap.set(chave, {
-                          corHex: m.corHex || '#fff',
-                          peso: atual.peso + m.pesoUsado,
-                          custo: atual.custo + m.custoMaterial
+                          corHex: '#fff',
+                          peso: atual.peso + m.quantidade,
+                          custo: atual.custo + (m.quantidade * m.precoKgCentavos) / 1000
                         });
                       });
                       
@@ -376,7 +308,7 @@ export const PainelResultados = memo(function PainelResultados({
                       insumos.forEach(i => {
                         subitens.push({
                           nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">{i.nome} <span className="font-medium text-stone-400">({i.quantidade}x)</span></span>,
-                          valor: i.custoInsumo
+                          valor: i.custoCentavos
                         });
                       });
                     }
@@ -385,7 +317,7 @@ export const PainelResultados = memo(function PainelResultados({
                       posProcesso.forEach(p => {
                         subitens.push({
                           nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">{p.nome}</span>,
-                          valor: p.custo
+                          valor: p.custoMaterialCentavos
                         });
                       });
                     }
@@ -438,72 +370,8 @@ export const PainelResultados = memo(function PainelResultados({
             </div>
           );
         })()}
-        
-        {aba === 'metricas' && (
-          <div className="space-y-6 w-full text-left animate-in fade-in slide-in-from-left-4 duration-500 flex flex-col flex-1 min-h-0 overflow-hidden justify-center">
-            {dadosPizza.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-muted-foreground">
-                <PieChart size={24} className="opacity-40 text-indigo-400 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-center">Gráfico Vazio</span>
-                <span className="text-[9px] font-bold text-muted-foreground text-center uppercase tracking-wider">Nenhum custo registrado para análise</span>
-              </div>
-            ) : (
-              <>
-                {/* FEATURE 5: Gráfico de Pizza */}
-                <div className="h-36 w-full">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                    <RePieChart>
-                      <Pie
-                        data={dadosPizza}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={55}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {dadosPizza.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: number | string | undefined) => {
-                          if (value === undefined || value === null) return "";
-                          const valorNumerico = typeof value === 'string' ? Number(value) : value;
-                          return `R$ ${(valorNumerico / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        }}
-                        contentStyle={{ 
-                          backgroundColor: 'var(--bg-card)', 
-                          border: '1px solid var(--border-subtle)', 
-                          borderRadius: '12px', 
-                          fontSize: '10px', 
-                          fontWeight: '900', 
-                          textTransform: 'uppercase',
-                          boxShadow: 'var(--sombra-media)'
-                        }}
-                        itemStyle={{ color: 'var(--text-primary)' }}
-                      />
-                    </RePieChart>
-                  </ResponsiveContainer>
-                </div>
 
-                <div className="max-h-[180px] overflow-y-auto pr-2 scrollbar-fino grid grid-cols-2 gap-y-3 gap-x-4 px-1">
-                  {dadosPizza.map((d) => (
-                    <div key={d.name} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.fill }}></div>
-                        <span className="text-[10px] font-black uppercase text-muted-foreground">{d.name}</span>
-                      </div>
-                      <span className="text-[11px] font-black text-muted-foreground dark:text-zinc-300">
-                        <ContadorAnimado valor={(d.value / calculo.precoSugerido * 100)} prefixo="" sufixo="%" casasDecimais={0} />
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
+
 
         {explicacaoIA && (
           <div className="w-full text-left p-3.5 rounded-2xl bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/20 shadow-sm mt-4 mb-4 animate-in slide-in-from-top-4 duration-300">

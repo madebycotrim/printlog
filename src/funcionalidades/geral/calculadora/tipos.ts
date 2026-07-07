@@ -17,7 +17,14 @@ export interface MaterialSelecionado {
 export interface ItemPosProcesso {
   id: string;
   nome: string;
-  valor: number;
+  tempoMinutos: number;
+  custoMaterialCentavos: number;
+}
+
+export interface ItemCustoFixo {
+  id: string;
+  nome: string;
+  valorCentavos: number;
 }
 
 export interface InsumoSelecionado {
@@ -57,12 +64,9 @@ export interface CalculoResultado {
   custoFrete: number;       // frete já aplicado
   precoSugerido: number;
   precoSugeridoOriginal?: number;
-  precoAlvo?: number;
   lucroLiquido: number;
   custoTotalOperacional: number;
   margemReal: number;
   custoFalha: number;
   custoModelagem: number;
-  valorDesconto: number;
-  percentualDesconto: number;
 }
