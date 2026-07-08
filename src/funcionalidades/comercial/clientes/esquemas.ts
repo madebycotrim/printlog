@@ -20,6 +20,7 @@ export const esquemaCliente = z.object({
   finalidadeColeta: z.string().min(1, "A finalidade é obrigatória"),
   prazoRetencaoMeses: z.number().int().min(1),
   tipo: z.enum(["B2B", "B2C"]),
+  canalReferencia: z.string().optional(),
   anonimizado: z.boolean().optional(),
   historico: z.array(z.any()).optional(),
 });

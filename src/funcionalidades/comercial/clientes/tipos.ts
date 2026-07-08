@@ -40,6 +40,7 @@ export interface Cliente {
   anonimizado: boolean;
   dataAnonimizacao?: Date;
   tipo?: "B2B" | "B2C";
+  canalReferencia?: string;
 }
 
 /** Opções de ordenação para a listagem */

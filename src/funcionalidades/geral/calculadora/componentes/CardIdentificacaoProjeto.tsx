@@ -62,7 +62,7 @@ export function CardIdentificacaoProjeto({
             <FolderKanban size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Identificação do Orçamento</span>
+            <span className="text-xs font-black uppercase tracking-widest text-primary">Identificação do Orçamento</span>
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Vincule o cliente e os detalhes técnicos</span>
           </div>
         </div>
@@ -71,7 +71,7 @@ export function CardIdentificacaoProjeto({
       <div className="relative z-20 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
         {/* Lado Esquerdo: Dados do Cliente */}
         <div className="md:col-span-4 flex flex-col gap-2 relative">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Cliente do Projeto</label>
+          <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Cliente do Projeto</label>
 
           <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
             <div className="absolute left-4 text-zinc-400 dark:text-zinc-600 focus-within:text-blue-500">
@@ -157,7 +157,7 @@ export function CardIdentificacaoProjeto({
         {/* Lado Direito: Nome e Descrição */}
         <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Nome do Projeto</label>
+            <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Nome do Projeto</label>
             <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
                <div className="absolute left-4 text-zinc-400 dark:text-zinc-600">
                   <PencilLine size={16} />
@@ -173,7 +173,7 @@ export function CardIdentificacaoProjeto({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 ml-1">Observações Técnicas</label>
+            <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Observações Técnicas</label>
             <div className="relative flex items-center bg-zinc-100 dark:bg-white/[0.03] border border-borda-sutil focus-within:border-blue-500/50 focus-within:bg-blue-500/[0.02] rounded-xl shadow-inner h-12 transition-all overflow-hidden">
                <div className="absolute left-4 text-zinc-400 dark:text-zinc-600">
                   <MessageSquare size={16} />
@@ -193,8 +193,8 @@ export function CardIdentificacaoProjeto({
       {/* Seletor de Estratégia: Cards Interativos */}
       <div className="relative z-10 pt-4 border-t border-borda-sutil flex flex-col gap-4 mt-auto">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Estratégia de Preenchimento</span>
-          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Selecione como a inteligência deve processar os dados</span>
+          <span className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Estratégia de Preenchimento</span>
+          <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-0.5">Selecione como a inteligência deve processar os dados</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -217,10 +217,10 @@ export function CardIdentificacaoProjeto({
             </div>
             
             <div className="flex flex-col items-center gap-1">
-              <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+              <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
                 modoEntrada === 'unitario' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Peça Única</span>
-              <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
+              <p className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 leading-tight uppercase tracking-widest">
                 Valores equivalem a 1 peça isolada. O custo total será multiplicado por <span className={modoEntrada === 'unitario' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
               </p>
             </div>
@@ -252,10 +252,10 @@ export function CardIdentificacaoProjeto({
             </div>
             
             <div className="flex flex-col items-center gap-1">
-              <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+              <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
                 modoEntrada === 'lote' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Mesa / Lote</span>
-              <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
+              <p className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 leading-tight uppercase tracking-widest">
                 Tempo e material da mesa inteira. O custo inserido já cobre todas as <span className={modoEntrada === 'lote' ? 'text-blue-500' : ''}>{quantidade || 'X'} {quantidade === 1 ? 'peça' : 'peças'}</span> produzidas de uma só vez.
               </p>
             </div>
@@ -287,10 +287,10 @@ export function CardIdentificacaoProjeto({
             </div>
             
             <div className="flex flex-col items-center gap-1">
-              <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+              <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
                 modoEntrada === 'projeto' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>Projeto Completo</span>
-              <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight uppercase tracking-tighter">
+              <p className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 leading-tight uppercase tracking-widest">
                 Soma de todas as partes de um kit. O custo do kit completo será multiplicado por <span className={modoEntrada === 'projeto' ? 'text-blue-500' : ''}>{quantidade || 'X'}{quantidade ? 'x' : ''}</span>.
               </p>
             </div>

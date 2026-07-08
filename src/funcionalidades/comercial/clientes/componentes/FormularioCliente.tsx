@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Save, User, Mail, Phone, FileText, Star } from "lucide-react";
+import { Save, User, Mail, Phone, FileText, Star, Store } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes";
 import { AcoesDescarte } from "@/compartilhado/componentes";
 import { Dialogo } from "@/compartilhado/componentes";
@@ -64,6 +64,7 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
         finalidadeColeta: clienteEditando.finalidadeColeta || "Gestão de pedidos e orçamentos de impressão 3D.",
         prazoRetencaoMeses: clienteEditando.prazoRetencaoMeses || 60,
         fiel: clienteEditando.fiel || false,
+        canalReferencia: clienteEditando.canalReferencia || "",
       } : {
         nome: "",
         email: "",
@@ -74,6 +75,7 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
         finalidadeColeta: "Gestão de pedidos e orçamentos de impressão 3D.",
         prazoRetencaoMeses: 60,
         fiel: false,
+        canalReferencia: "",
       };
 
       reset(valoresIniciais);
@@ -174,6 +176,14 @@ export function FormularioCliente({ aberto, clienteEditando, aoSalvar, aoCancela
                     setValue("telefone", formatado);
                   }
                 })}
+              />
+
+              <CampoTexto
+                rotulo="Canal de Venda Preferencial"
+                icone={Store}
+                placeholder="Ex: Instagram, Mercado Livre..."
+                erro={errors.canalReferencia?.message}
+                {...register("canalReferencia")}
               />
             </GradeCampos>
           </SecaoFormulario>

@@ -53,7 +53,7 @@ export function ModalArmazemInsumos({
           </div>
           <div className="flex flex-col text-left">
             <span className="text-[10px] font-black uppercase tracking-widest text-primary dark:text-white">Novo Insumo</span>
-            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">Adicionar ao catálogo</span>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Adicionar ao catálogo</span>
           </div>
         </button>
 
@@ -109,7 +109,7 @@ export function ModalArmazemInsumos({
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white truncate">
                       {i.nome}
                     </h4>
-                    <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter truncate">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 truncate">
                       {i.categoria} • {i.unidadeMedida}
                     </p>
                   </div>
@@ -139,14 +139,14 @@ export function ModalArmazemInsumos({
 
                 <div className="flex items-end justify-between gap-2 border-t border-borda-sutil dark:border-white/5 pt-2 mt-1">
                   <div className="flex flex-col">
-                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Estoque</span>
-                    <span className={`text-[9px] font-black tabular-nums ${i.quantidadeAtual < (i.quantidadeMinima || 0) ? 'text-rose-500' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Estoque</span>
+                    <span className={`text-[10px] font-black tabular-nums ${i.quantidadeAtual < (i.quantidadeMinima || 0) ? 'text-rose-500' : 'text-zinc-600 dark:text-zinc-300'}`}>
                       {i.quantidadeAtual}{i.unidadeMedida}
                     </span>
                   </div>
                   <div className="text-right">
                     <span 
-                      className="text-[10px] font-black tracking-tighter tabular-nums"
+                      className="text-[10px] font-black tabular-nums"
                       style={{ color: corHex }}
                     >
                       {centavosParaReais(custoUnitario)}

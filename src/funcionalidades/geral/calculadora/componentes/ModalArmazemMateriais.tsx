@@ -81,7 +81,7 @@ export function ModalArmazemMateriais({
           </div>
           <div className="flex flex-col text-left">
             <span className="text-[10px] font-black uppercase tracking-widest text-primary dark:text-white">Novo Material</span>
-            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">Adicionar ao catálogo</span>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Adicionar ao catálogo</span>
           </div>
         </button>
 
@@ -130,7 +130,7 @@ export function ModalArmazemMateriais({
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white truncate">
                       {m.nome}
                     </h4>
-                    <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter truncate">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 truncate">
                       {m.fabricante} • {m.tipoMaterial}
                     </p>
                   </div>
@@ -157,13 +157,13 @@ export function ModalArmazemMateriais({
 
                 <div className="flex items-end justify-between gap-2 border-t border-borda-sutil dark:border-white/5 pt-2 mt-1">
                   <div className="flex flex-col">
-                    <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Saldo</span>
-                    <span className={`text-[9px] font-black tabular-nums ${m.pesoRestanteGramas < 100 ? 'text-rose-500' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Saldo</span>
+                    <span className={`text-[10px] font-black tabular-nums ${m.pesoRestanteGramas < 100 ? 'text-rose-500' : 'text-zinc-600 dark:text-zinc-300'}`}>
                       {m.pesoRestanteGramas}{unidade}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] font-black text-emerald-500 tracking-tighter tabular-nums">
+                    <span className="text-[10px] font-black text-emerald-500 tabular-nums">
                       {centavosParaReais(Math.round(precoPorUnidade * 100))}
                     </span>
                   </div>

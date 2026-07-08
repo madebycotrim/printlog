@@ -9,6 +9,8 @@ interface CardModelagemProps {
   valorHoraModelagem: number; // centavos
   setValorHoraModelagem: (v: number) => void;
   modoEntrada?: 'unitario' | 'lote' | 'projeto';
+  mostrar: boolean;
+  setMostrar: (v: boolean) => void;
 }
 
 export const CardModelagem = memo(function CardModelagem({
@@ -16,11 +18,12 @@ export const CardModelagem = memo(function CardModelagem({
   setTempoModelagem,
   valorHoraModelagem,
   setValorHoraModelagem,
-  modoEntrada = 'lote'
+  modoEntrada = 'lote',
+  mostrar,
+  setMostrar
 }: CardModelagemProps) {
   const textoModo = modoEntrada === 'unitario' ? 'Unidade' : modoEntrada === 'projeto' ? 'Projeto' : 'Lote';
   const temValor = tempoModelagem > 0;
-  const [mostrar, setMostrar] = useState(temValor);
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
   const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
@@ -94,24 +97,24 @@ export const CardModelagem = memo(function CardModelagem({
 
             <div className="flex flex-col md:flex-row gap-8">
               <div className="flex-1 space-y-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-                  <div className="flex flex-col gap-1.5 lg:col-span-1">
+                <div className="grid grid-cols-1 sm:grid-cols-[240px_1fr] gap-4 items-start">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Valor da Hora (R$)</label>
-                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner overflow-hidden">
+                    <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner overflow-hidden">
                       <span className="absolute left-3 text-[10px] font-black text-muted-foreground">R$</span>
                       <InputBancario 
                         placeholder="0.00" 
                         value={valorHoraModelagem === 0 ? "" : valorHoraModelagem / 100} 
                         onChange={(e) => setValorHoraModelagem(Math.round(extrairValorNumerico(e.target.value) * 100))} 
-                        className="w-full h-11 pl-10 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-left" 
+                        className="w-full h-11 pl-10 pr-4 bg-transparent outline-none font-bold text-xs text-primary dark:text-white text-left" 
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1.5 lg:col-span-2">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo de Projeto</label>
                     <div className="flex items-center gap-1.5">
-                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
                         <input 
                           type="number" 
                           placeholder="0" 
@@ -123,14 +126,14 @@ export const CardModelagem = memo(function CardModelagem({
                             setTempHora(v);
                             setTempoModelagem((v === "" ? 0 : Number(v)) * 60 + Math.floor(tempoModelagem % 60) + (tempoModelagem % 1));
                           }} 
-                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                         />
                         <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                       </div>
 
                       <span className="text-zinc-400 font-bold">:</span>
 
-                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
                         <input 
                           type="number" 
                           placeholder="0" 
@@ -142,14 +145,14 @@ export const CardModelagem = memo(function CardModelagem({
                             setTempMinuto(v);
                             setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + (v === "" ? 0 : Number(v)) + (tempoModelagem % 1));
                           }} 
-                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                         />
-                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">m</span>
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">MIN</span>
                       </div>
 
                       <span className="text-zinc-400 font-bold">:</span>
 
-                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
+                      <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-cyan-500/40 transition-all shadow-inner">
                         <input 
                           type="number" 
                           placeholder="0" 
@@ -161,9 +164,9 @@ export const CardModelagem = memo(function CardModelagem({
                             setTempSegundo(v);
                             setTempoModelagem(Math.floor(tempoModelagem / 60) * 60 + Math.floor(tempoModelagem % 60) + (v === "" ? 0 : Number(v) / 60));
                           }} 
-                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                          className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                         />
-                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">s</span>
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">SEG</span>
                       </div>
                     </div>
                   </div>

@@ -19,27 +19,15 @@ export function ModalHistoricoV2({
   const [novoNome, setNovoNome] = useState("");
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-2xl" esconderCabecalho={true}>
+    <Dialogo 
+      aberto={aberto} 
+      aoFechar={aoFechar} 
+      larguraMax="max-w-2xl" 
+      titulo="Histórico de Variações"
+      subtitulo="Versões e snapshots salvos"
+      icone={Timer}
+    >
       <div className="p-6 space-y-5">
-        {/* Cabeçalho Premium Standardizado */}
-        <div className="flex items-center justify-between border-b border-borda-sutil pb-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
-              <Timer size={18} />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-sm font-black uppercase tracking-wider text-primary">Histórico de Variações</span>
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Versões e snapshots salvos</span>
-            </div>
-          </div>
-          <button
-            onClick={aoFechar}
-            className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer"
-          >
-            <X size={14} />
-          </button>
-        </div>
-
         {/* Salvar Novo Snapshot */}
         <div className="flex gap-3 p-4 rounded-2xl bg-sky-500/5 border border-sky-500/20">
           <input 
@@ -47,7 +35,7 @@ export function ModalHistoricoV2({
             placeholder="NOME DO ORÇAMENTO..." 
             value={novoNome}
             onChange={(e) => setNovoNome(e.target.value)}
-            className="flex-1 h-12 px-4 rounded-xl bg-white dark:bg-black/40 border border-borda-sutil outline-none font-black text-[10px] uppercase tracking-[0.2em] text-primary dark:text-white placeholder:text-zinc-400 focus:ring-1 focus:ring-sky-500"
+            className="flex-1 h-12 px-4 rounded-xl bg-white dark:bg-black/40 border border-borda-sutil outline-none text-xs font-bold text-primary dark:text-white placeholder:text-zinc-400 placeholder:text-[9px] placeholder:font-black placeholder:uppercase placeholder:tracking-widest focus:ring-1 focus:ring-sky-500"
           />
           <button 
             onClick={() => { 
@@ -62,7 +50,7 @@ export function ModalHistoricoV2({
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] px-1">Orçamentos Salvos ({historico?.length || 0})</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 px-1">Orçamentos Salvos ({historico?.length || 0})</p>
           
           <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto scrollbar-hide">
             {!historico || historico.length === 0 ? (
@@ -74,8 +62,8 @@ export function ModalHistoricoV2({
               historico.map((v) => (
                 <div key={v.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/5 border border-transparent hover:border-sky-500/30 transition-all flex items-center justify-between group">
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-white mb-1">{v.nome}</span>
-                    <span className="text-[8px] font-bold text-zinc-400 dark:text-gray-400 uppercase">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white mb-1">{v.nome}</span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                       {new Date(v.data).toLocaleString('pt-BR')} • {centavosParaReais(v.resultado.precoSugerido)}
                     </span>
                   </div>
@@ -86,7 +74,7 @@ export function ModalHistoricoV2({
                         aoCarregar(v);
                         aoFechar();
                       }}
-                      className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg font-black uppercase text-[9px] hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-1.5"
+                      className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-1.5"
                     >
                       <Check size={12} /> Restaurar
                     </button>
@@ -103,7 +91,7 @@ export function ModalHistoricoV2({
           </div>
         </div>
 
-        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest text-center">
+        <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center">
           * Os snapshots agora ficam salvos na sua nuvem e sincronizados em todos os dispositivos.
         </p>
       </div>

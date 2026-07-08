@@ -16,6 +16,7 @@ const mapearCliente = (c: any): Cliente => ({
     nome: c.nome ?? undefined,
     email: c.email ?? undefined,
     telefone: c.telefone ?? undefined,
+    canalReferencia: c.canal_referencia ?? undefined,
     historico: typeof c.historico === 'string' 
         ? JSON.parse(c.historico) 
         : (c.historico || []),
@@ -73,23 +74,24 @@ export const apiClientes = {
 
         // Mapeamento para snake_case (D1)
         const payload = {
-            ...dadosValidados,
             id: dados.id,
             id_usuario: _usuarioId,
-            nome: dados.nome ?? null,
-            email: dados.email ?? null,
-            telefone: dados.telefone ?? null,
-            tipo: dados.tipo ?? "B2C",
-            fiel: dados.fiel ?? false,
+            nome: dadosValidados.nome ?? null,
+            email: dadosValidados.email ?? null,
+            telefone: dadosValidados.telefone ?? null,
+            tipo: dadosValidados.tipo ?? "B2C",
+            fiel: dadosValidados.fiel ?? false,
+            anonimizado: dadosValidados.anonimizado ?? false,
 
-            observacoesCRM: dados.observacoesCRM ?? null,
-            idConsentimento: dados.idConsentimento ?? null,
-            baseLegal: dados.baseLegal ?? null,
-            finalidadeColeta: dados.finalidadeColeta ?? null,
-            prazoRetencaoMeses: dados.prazoRetencaoMeses ?? null,
-            ltvCentavos: dados.ltvCentavos ?? null,
-            totalProdutos: dados.totalProdutos ?? null,
-            historico: dados.historico ? JSON.stringify(dados.historico) : null
+            observacoes_crm: dadosValidados.observacoesCRM ?? null,
+            id_consentimento: dadosValidados.idConsentimento ?? null,
+            base_legal: dadosValidados.baseLegal ?? null,
+            finalidade_coleta: dadosValidados.finalidadeColeta ?? null,
+            prazo_retencao_meses: dadosValidados.prazoRetencaoMeses ?? null,
+            ltv_centavos: dadosValidados.ltvCentavos ?? null,
+            total_produtos: dadosValidados.totalProdutos ?? null,
+            canal_referencia: dadosValidados.canalReferencia ?? null,
+            historico: dadosValidados.historico ? JSON.stringify(dadosValidados.historico) : null
         };
 
         return servicoBaseApi.requisicao<Cliente>("/api/clientes", {

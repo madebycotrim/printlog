@@ -9,7 +9,7 @@ interface PropsModalConclusao {
   aberto: boolean;
   aoFechar: () => void;
   pedido: Pedido | null;
-  aoConfirmar: (perdas: Record<string, number>) => void;
+  aoConfirmar: (perdas: Record<string, number>, gerarReceitaFinanceira: boolean) => void;
 }
 
 export function ModalConclusaoProjeto({ aberto, aoFechar, pedido, aoConfirmar }: PropsModalConclusao) {
@@ -18,6 +18,7 @@ export function ModalConclusaoProjeto({ aberto, aoFechar, pedido, aoConfirmar }:
   
   // Mapeia o id do material para a quantidade de gramas perdidas
   const [perdas, setPerdas] = useState<Record<string, number>>({});
+  const [gerarReceitaFinanceira, setGerarReceitaFinanceira] = useState(true);
 
   // 1. Identifica quais materiais associar ao projeto
   const materiaisAssociados = useMemo(() => {
@@ -69,11 +70,7 @@ export function ModalConclusaoProjeto({ aberto, aoFechar, pedido, aoConfirmar }:
   if (!pedido) return null;
 
   const lidarComConfirmacao = () => {
-    if (houveFalha === false) {
-      aoConfirmar({});
-    } else {
-      aoConfirmar(perdas);
-    }
+    aoConfirmar(perdas, gerarReceitaFinanceira);
   };
 
   const calcularCustoPerda = (idMaterial: string, gramas: number) => {
@@ -209,6 +206,21 @@ export function ModalConclusaoProjeto({ aberto, aoFechar, pedido, aoConfirmar }:
                 )}
               </div>
             )}
+
+            <div className="pt-4 border-t border-border mt-4">
+              <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 cursor-pointer transition-colors border border-border/50">
+                <input
+                  type="checkbox"
+                  checked={gerarReceitaFinanceira}
+                  onChange={(e) => setGerarReceitaFinanceira(e.target.checked)}
+                  className="w-4 h-4 rounded border-input bg-background accent-primary"
+                />
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-primary">Lançar no Financeiro</span>
+                  <span className="text-[9px] font-medium text-muted-foreground mt-0.5">Criar receita com o valor do projeto ({pedido?.valorCentavos ? centavosParaReais(pedido.valorCentavos) : "R$ 0,00"})</span>
+                </div>
+              </label>
+            </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4">
               <button

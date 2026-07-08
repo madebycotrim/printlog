@@ -16,6 +16,11 @@ import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
+import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
+import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/apiFinanceiro";
+import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
+import { toast } from "react-hot-toast";
 
 export function PaginaProjetos() {
   const navigate = useNavigate();
@@ -54,7 +59,7 @@ export function PaginaProjetos() {
     await moverPedido(id, novoStatus);
   };
 
-  const confirmarConclusaoComPerda = async (gramasPerdidas: Record<string, number>) => {
+  const confirmarConclusaoComPerda = async (gramasPerdidas: Record<string, number>, gerarReceitaFinanceira: boolean) => {
     if (!pedidoSendoConcluido || !usuario?.uid) return;
 
     try {
@@ -90,6 +95,36 @@ export function PaginaProjetos() {
             await apiMateriais.atualizar(materialAtualizado, usuario.uid);
           }
         }
+      }
+
+      if (pedidoSendoConcluido.insumosSecundarios && pedidoSendoConcluido.insumosSecundarios.length > 0) {
+        for (const insumo of pedidoSendoConcluido.insumosSecundarios) {
+          if (insumo.quantidade > 0) {
+            useArmazemInsumos.getState().abaterQuantidade(insumo.idInsumo, insumo.quantidade, `Projeto Concluído: ${pedidoSendoConcluido.descricao}`);
+            const insumoAtualizado = useArmazemInsumos.getState().insumos.find((i: any) => i.id === insumo.idInsumo);
+            if (insumoAtualizado) {
+              await apiInsumos.atualizar(insumoAtualizado, usuario.uid);
+            }
+          }
+        }
+      }
+      
+      if (gerarReceitaFinanceira) {
+         try {
+           await apiFinanceiro.registrar({
+              tipo: TipoLancamentoFinanceiro.ENTRADA,
+              valorCentavos: pedidoSendoConcluido.valorCentavos,
+              descricao: `Receita Projeto: ${pedidoSendoConcluido.descricao}`,
+              categoria: "Venda de Serviços",
+              idPedido: pedidoSendoConcluido.id,
+              idCliente: pedidoSendoConcluido.idCliente !== "avulso" ? pedidoSendoConcluido.idCliente : undefined,
+              status: "pago"
+           }, usuario.uid);
+           toast.success("Receita registrada no Financeiro!");
+         } catch(e) {
+           console.error("Erro ao gerar receita:", e);
+           toast.error("Erro ao registrar no financeiro.");
+         }
       }
     } catch (e) {
       console.error("Erro ao registrar conclusão:", e);

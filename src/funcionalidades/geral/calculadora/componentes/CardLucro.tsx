@@ -1,7 +1,6 @@
 import { useState, useEffect, memo } from "react";
-import { createPortal } from "react-dom";
-import { Zap, Settings, Trash2, Plus, Check, X, Activity } from "lucide-react";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { Zap, Settings, Trash2, Plus, Activity } from "lucide-react";
+import { ContadorAnimado, Dialogo } from "@/compartilhado/componentes/ui";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
@@ -10,7 +9,7 @@ interface CardLucroProps {
   setMargem: (v: number) => void;
   setCobrarMaoDeObra: (v: boolean) => void;
   setCobrarDesgaste: (v: boolean) => void;
-  aplicarTemplate?: boolean; // Se true, mostra os botões de templates
+  aplicarTemplate?: boolean;
 }
 
 export const CardLucro = memo(function CardLucro({
@@ -58,7 +57,7 @@ export const CardLucro = memo(function CardLucro({
     }
   }, [modalPresetsAberto, config.calculadoraMeta]);
 
-  const salvarPresetsPersonalizados = async () => {
+  const salvarPresets = async () => {
     try {
       const meta = config.calculadoraMeta || {};
       meta.presets_lucro = presetsEditados.map(p => ({
@@ -71,8 +70,6 @@ export const CardLucro = memo(function CardLucro({
       if (usuario?.uid) {
         await config.salvarNoD1(usuario.uid);
       }
-      
-      setModalPresetsAberto(false);
     } catch (e) {
       console.error("Erro ao salvar configurações");
     }
@@ -167,11 +164,6 @@ export const CardLucro = memo(function CardLucro({
                 className={`text-5xl font-black transition-colors duration-500 ${msgMargem.cor}`} 
               />
               <span className={`text-base font-black transition-colors duration-500 ${msgMargem.cor} opacity-50`}>%</span>
-
-              <div 
-                className="absolute inset-0 blur-2xl opacity-20 pointer-events-none transition-all duration-700"
-                style={{ backgroundColor: msgMargem.corHex, transform: 'scale(1.5)' }}
-              />
             </div>
 
             <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 mt-2 flex items-center gap-1 bg-zinc-100 dark:bg-white/5 py-1 px-2.5 rounded-lg border border-borda-sutil" title="Fator multiplicador aplicado ao custo total para chegar ao preço de venda">
@@ -203,16 +195,14 @@ export const CardLucro = memo(function CardLucro({
                   className={`h-full transition-all duration-300 rounded-full absolute left-0`}
                   style={{ 
                     width: `${Math.min(100, (margemInterna / 50000) * 100)}%`,
-                    backgroundColor: msgMargem.corHex,
-                    boxShadow: `0 0 10px ${msgMargem.corHex}80`
+                    backgroundColor: msgMargem.corHex
                   }}
                 />
                 <div 
                   className="w-6 h-6 bg-white rounded-full absolute shadow-lg border-4 transition-all duration-300"
                   style={{ 
                     left: `calc(${Math.min(100, (margemInterna / 50000) * 100)}% - 12px)`,
-                    borderColor: msgMargem.corHex,
-                    boxShadow: `0 0 20px ${msgMargem.corHex}`
+                    borderColor: msgMargem.corHex
                   }}
                 />
               </div>
@@ -237,9 +227,6 @@ export const CardLucro = memo(function CardLucro({
                   <span className={`text-[8px] font-bold uppercase tracking-widest z-10 ${margemInterna === preset.valor ? 'text-white/80' : 'text-muted-foreground group-hover:text-zinc-500'}`}>
                     {preset.rotulo}
                   </span>
-                  {margemInterna === preset.valor && (
-                    <div className="absolute inset-0 bg-white/20 blur-md" />
-                  )}
                 </button>
               ))}
             </div>
@@ -247,190 +234,128 @@ export const CardLucro = memo(function CardLucro({
         </div>
       </div>
 
-      {modalPresetsAberto && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-          <div 
-            className="bg-card w-full max-w-3xl rounded-[2rem] p-6 shadow-2xl border border-white/5 relative overflow-hidden flex flex-col max-h-[90vh]"
-            style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(14, 165, 233, 0.15) 0%, transparent 60%)' }}
-          >
-            <button 
-              onClick={() => setModalPresetsAberto(false)}
-              className="absolute top-6 right-6 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900/40 hover:bg-zinc-800/80 text-zinc-400 hover:text-white transition-all border border-white/5"
-            >
-              <X size={16} />
-            </button>
-            
-            <div className="flex items-center gap-4 mb-6 relative z-10 shrink-0">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500/20 to-blue-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-inner">
-                <Settings size={22} className="animate-spin-slow" />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-base font-black uppercase tracking-widest text-primary">Configurações Rápidas</span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Customize presets e templates</span>
-              </div>
+      <Dialogo
+        aberto={modalPresetsAberto}
+        aoFechar={() => setModalPresetsAberto(false)}
+        titulo="Configurações Rápidas"
+        subtitulo="Customize presets e templates"
+        icone={Settings}
+        larguraMax="max-w-4xl"
+      >
+        <div className="flex flex-col md:flex-row h-full">
+          <div className="flex-1 p-8 bg-zinc-50 dark:bg-zinc-900/50 border-b md:border-b-0 md:border-r border-borda-sutil">
+            <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-white mb-6 block">Presets Rápidos</span>
+            <div className="space-y-3">
+              {presetsEditados.map((preset, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 dark:bg-zinc-900/40 border border-borda-sutil gap-2">
+                  <div className="flex flex-col flex-1">
+                    <input 
+                      type="text" 
+                      value={preset.rotulo}
+                      onChange={(e) => {
+                        const novos = [...presetsEditados];
+                        novos[idx].rotulo = e.target.value;
+                        setPresetsEditados(novos);
+                      }}
+                      className="text-sm font-black text-primary dark:text-white bg-transparent outline-none w-full"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-950 border border-borda-sutil shadow-inner">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Margem</span>
+                    <input 
+                      type="number" 
+                      value={preset.valor}
+                      onChange={(e) => {
+                        const novos = [...presetsEditados];
+                        novos[idx].valor = Number(e.target.value);
+                        setPresetsEditados(novos);
+                      }}
+                      className="w-10 bg-transparent outline-none font-black text-sm text-right"
+                    />
+                    <span className="text-[10px] font-black text-sky-500">%</span>
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
 
-            <div className="flex flex-col md:flex-row gap-4 mb-6 overflow-y-auto pr-2 scrollbar-fino relative z-10 flex-1">
-              <div className="flex-1 shrink-0">
-                <span className="text-[9px] font-black uppercase tracking-widest text-sky-500 mb-2 block px-1">Presets Rápidos</span>
-                <div className="space-y-1.5">
-                  {presetsEditados.map((preset, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-zinc-900/30 border border-white/5 hover:bg-zinc-900/50 hover:border-sky-500/20 transition-all gap-2 group">
-                      <div className="flex flex-col flex-1 pl-1">
-                        <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">Predefinição {idx + 1}</span>
-                        <input 
+          <div className="flex-[1.5] p-8 relative bg-card flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Templates de Projeto</span>
+              <button 
+                type="button" 
+                onClick={() => setTemplatesEditados([...templatesEditados, { id: `custom_${Date.now()}`, nome: 'NOVO TEMPLATE', descricao: 'Descrição Curta', margem: 100, maoDeObra: false, desgaste: false }])} 
+                className="h-8 px-3 rounded-lg border border-sky-500/30 text-[9px] font-black uppercase tracking-widest text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 transition-all flex items-center gap-1.5"
+              >
+                <Plus size={10} /> ADICIONAR
+              </button>
+            </div>
+            <div className="space-y-3 flex-1">
+              {templatesEditados.map((t, idx) => (
+                <div key={t.id} className="flex flex-col gap-3 p-4 rounded-xl bg-muted/20 dark:bg-zinc-900/40 border border-borda-sutil hover:border-sky-500/20 transition-all">
+                  <div className="flex items-start justify-between gap-2">
+                     <div className="flex flex-col flex-1">
+                       <input 
                           type="text" 
-                          value={preset.rotulo}
-                          onChange={(e) => {
-                            const novos = [...presetsEditados];
-                            novos[idx].rotulo = e.target.value;
-                            setPresetsEditados(novos);
-                          }}
-                          placeholder="Rótulo"
-                          className="text-[10px] font-black text-zinc-200 bg-transparent border-none focus:text-white outline-none w-full transition-all placeholder:text-zinc-700"
-                        />
-                      </div>
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-zinc-950/80 border border-white/5 shadow-inner shrink-0">
-                        <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">Margem</span>
-                        <input 
-                          type="number" 
-                          value={preset.valor}
-                          onChange={(e) => {
-                            const novos = [...presetsEditados];
-                            novos[idx].valor = Number(e.target.value);
-                            setPresetsEditados(novos);
-                          }}
-                          className="w-6 bg-transparent border-none outline-none font-black text-xs text-right text-white"
-                        />
-                        <span className="text-[9px] font-black text-sky-500">%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="w-full md:w-px h-px md:h-auto self-stretch bg-white/5 shrink-0" />
-
-              <div className="flex-1 shrink-0">
-                <div className="flex items-center justify-between mb-2 px-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-sky-500 block">Templates de Projeto</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setTemplatesEditados([...templatesEditados, { id: `custom_${Date.now()}`, nome: 'NOVO TEMPLATE', descricao: 'Descrição Curta', margem: 100, maoDeObra: false, desgaste: false }])} 
-                    className="flex items-center gap-1 text-[8px] font-black text-sky-400 hover:text-white uppercase tracking-widest bg-sky-500/10 hover:bg-sky-500 py-1 px-2 rounded-md cursor-pointer transition-all border border-sky-500/20 shadow-sm"
-                  >
-                    <Plus size={10} /> ADICIONAR
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {templatesEditados.map((t, idx) => (
-                    <div key={t.id} className="flex flex-col p-2.5 rounded-xl bg-zinc-900/30 border border-white/5 gap-2 group relative hover:border-sky-500/20 hover:bg-zinc-900/50 transition-all overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-sky-500/5 rounded-full blur-xl pointer-events-none group-hover:bg-sky-500/10 transition-colors" />
-                      
-                      <div className="flex items-start justify-between gap-2 relative z-10">
-                         <div className="flex flex-col flex-1 pl-1">
-                           <input 
-                              type="text" 
-                              value={t.nome} 
-                              onChange={(e) => { const n = [...templatesEditados]; n[idx].nome = e.target.value; setTemplatesEditados(n); }} 
-                              className="text-xs font-black text-zinc-100 bg-transparent outline-none placeholder:text-zinc-700 focus:text-white transition-colors w-full" 
-                              placeholder="Nome do Template"
-                           />
-                           <input 
-                              type="text" 
-                              value={t.descricao} 
-                              onChange={(e) => { const n = [...templatesEditados]; n[idx].descricao = e.target.value; setTemplatesEditados(n); }} 
-                              className="text-[9px] font-bold text-zinc-500 focus:text-zinc-300 bg-transparent outline-none placeholder:text-zinc-700 w-full" 
-                              placeholder="Descrição curta"
-                           />
-                         </div>
-                         <button 
-                            type="button" 
-                            onClick={() => setTemplatesEditados(templatesEditados.filter(x => x.id !== t.id))} 
-                            className="w-6 h-6 flex items-center justify-center rounded-md bg-zinc-950/50 border border-white/5 text-zinc-600 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20 cursor-pointer transition-all shrink-0"
-                            title="Remover template"
-                         >
-                            <Trash2 size={10} />
-                         </button>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-1.5 relative z-10 pl-1">
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-zinc-950/80 border border-white/5 shadow-inner shrink-0">
-                           <span className="text-[7px] font-black uppercase tracking-widest text-zinc-600">Margem</span>
-                           <input 
-                              type="number" 
-                              value={t.margem} 
-                              onChange={(e) => { const n = [...templatesEditados]; n[idx].margem = Number(e.target.value); setTemplatesEditados(n); }} 
-                              className="w-6 bg-transparent border-none outline-none font-black text-[10px] text-right text-white" 
-                           />
-                           <span className="text-[9px] font-black text-sky-500">%</span>
-                        </div>
-                        
-                        <button
-                           type="button"
-                           onClick={() => {
-                             const n = [...templatesEditados];
-                             n[idx].maoDeObra = !n[idx].maoDeObra;
-                             setTemplatesEditados(n);
-                           }}
-                           className={`flex items-center gap-1 px-2 py-1 rounded-md border transition-all cursor-pointer ${
-                             t.maoDeObra 
-                               ? 'bg-violet-500/10 border-violet-500/30 text-violet-400 shadow-sm' 
-                               : 'bg-zinc-950/80 border-white/5 text-zinc-600 hover:text-zinc-400 hover:border-white/10'
-                           }`}
-                        >
-                           <Zap size={10} className={t.maoDeObra ? "text-violet-400" : "text-zinc-600"} />
-                           <span className="text-[7px] font-black uppercase tracking-widest">Mão de Obra</span>
-                        </button>
-
-                        <button
-                           type="button"
-                           onClick={() => {
-                             const n = [...templatesEditados];
-                             n[idx].desgaste = !n[idx].desgaste;
-                             setTemplatesEditados(n);
-                           }}
-                           className={`flex items-center gap-1 px-2 py-1 rounded-md border transition-all cursor-pointer ${
-                             t.desgaste 
-                               ? 'bg-stone-500/10 border-stone-500/30 text-stone-400 shadow-sm' 
-                               : 'bg-zinc-950/80 border-white/5 text-zinc-600 hover:text-zinc-400 hover:border-white/10'
-                           }`}
-                        >
-                           <Activity size={10} className={t.desgaste ? "text-stone-400" : "text-zinc-600"} />
-                           <span className="text-[7px] font-black uppercase tracking-widest">Depreciação</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                          value={t.nome} 
+                          onChange={(e) => { const n = [...templatesEditados]; n[idx].nome = e.target.value; setTemplatesEditados(n); }} 
+                          className="text-sm font-black text-primary dark:text-white bg-transparent outline-none w-full" 
+                       />
+                       <input 
+                          type="text" 
+                          value={t.descricao} 
+                          onChange={(e) => { const n = [...templatesEditados]; n[idx].descricao = e.target.value; setTemplatesEditados(n); }} 
+                          className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 bg-transparent outline-none w-full" 
+                       />
+                     </div>
+                     <button 
+                        type="button" 
+                        onClick={() => setTemplatesEditados(templatesEditados.filter(x => x.id !== t.id))} 
+                        className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-950 border border-borda-sutil text-zinc-400 hover:text-rose-500 flex items-center justify-center transition-all"
+                     >
+                        <Trash2 size={12} />
+                     </button>
+                  </div>
                   
-                  {templatesEditados.length === 0 && (
-                    <div className="text-center p-6 border border-dashed border-white/10 rounded-2xl bg-zinc-900/20">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Nenhum template cadastrado</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-950 border border-borda-sutil shadow-inner">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Margem</span>
+                       <input 
+                          type="number" 
+                          value={t.margem} 
+                          onChange={(e) => { const n = [...templatesEditados]; n[idx].margem = Number(e.target.value); setTemplatesEditados(n); }} 
+                          className="w-10 bg-transparent outline-none font-black text-xs text-right" 
+                       />
+                       <span className="text-[10px] font-black text-sky-500">%</span>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                    
+                    <button
+                       type="button"
+                       onClick={() => { const n = [...templatesEditados]; n[idx].maoDeObra = !n[idx].maoDeObra; setTemplatesEditados(n); }}
+                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${t.maoDeObra ? 'bg-violet-500/10 border-violet-500/30 text-violet-600' : 'bg-white dark:bg-zinc-950 border-borda-sutil text-zinc-400'}`}
+                    >
+                       <Zap size={10} /> Mão de Obra
+                    </button>
 
-            <div className="flex gap-2 relative z-10 shrink-0 mt-auto">
-              <button 
-                type="button"
-                onClick={() => setModalPresetsAberto(false)}
-                className="w-24 shrink-0 h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
-              >
-                Fechar
-              </button>
-              <button 
-                type="button"
-                onClick={salvarPresetsPersonalizados}
-                className="flex-1 h-12 text-xs font-black uppercase tracking-widest rounded-xl bg-sky-500 hover:bg-sky-400 text-white border border-sky-400/20 transition-all cursor-pointer shadow-lg shadow-sky-500/20"
-              >
-                Salvar
-              </button>
+                    <button
+                       type="button"
+                       onClick={() => { const n = [...templatesEditados]; n[idx].desgaste = !n[idx].desgaste; setTemplatesEditados(n); }}
+                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${t.desgaste ? 'bg-orange-500/10 border-orange-500/30 text-orange-600' : 'bg-white dark:bg-zinc-950 border-borda-sutil text-zinc-400'}`}
+                    >
+                       <Activity size={10} /> Depreciação
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex gap-3 mt-8 pt-6 border-t border-borda-sutil">
+              <button onClick={() => setModalPresetsAberto(false)} className="flex-1 h-12 rounded-xl text-[10px] font-black uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200">Fechar</button>
+              <button onClick={() => { salvarPresets(); setModalPresetsAberto(false); }} className="flex-1 h-12 rounded-xl text-[10px] font-black uppercase tracking-widest bg-sky-500 text-white hover:bg-sky-600">Salvar</button>
             </div>
           </div>
         </div>
-      , document.body)}
+      </Dialogo>
     </>
   );
 });

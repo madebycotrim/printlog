@@ -16,6 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
+import { useArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { useNavigate } from "react-router-dom";
@@ -33,15 +34,22 @@ interface PropriedadesMetricasPainel {
 export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasInventario }: PropriedadesMetricasPainel) {
   const navegar = useNavigate();
   const pedidosConcluidos = pedidos.filter(p => p.status === StatusPedido.CONCLUIDO);
-  const totalFaturadoCentavos = pedidosConcluidos.reduce((acc, p) => acc + (p.valorCentavos || 0), 0);
+  // 💰 FINANCEIRO AVANÇADO (Lendo dados reais das máquinas)
+  const totalFaturadoCentavos = impressoras.reduce((acc, i) => acc + (i.receitaAcumuladaCentavos || 0), 0);
+  const totalCustoEnergiaCentavos = impressoras.reduce((acc, i) => acc + (i.custoEnergiaCentavos || 0), 0);
   
-  // 💰 FINANCEIRO AVANÇADO
-  const lucroTotalCentavos = pedidosConcluidos.reduce((acc, p) => {
-    const lucroReal = p.configuracoes?.lucroLiquidoCentavos;
-    return acc + (lucroReal !== undefined ? lucroReal : ((p.valorCentavos || 0) * 0.6));
+  const lucroTotalCentavos = impressoras.reduce((acc, i) => {
+    // Estimativa grosseira de custo de material se não houver cálculo de insumos perfeito salvo: 30% da receita.
+    const lucroAproximadoDaMaquina = (i.receitaAcumuladaCentavos || 0) * 0.7 - (i.custoEnergiaCentavos || 0);
+    return acc + Math.max(0, lucroAproximadoDaMaquina);
   }, 0);
 
-  const ticketMedioCentavos = pedidosConcluidos.length > 0 ? totalFaturadoCentavos / pedidosConcluidos.length : 0;
+  // 👥 CRM E CRESCIMENTO
+  const clientes = useArmazemClientes((s) => s.clientes);
+  const totalProdutosVendidos = clientes.reduce((acc, c) => acc + (c.totalProdutos || 0), 0);
+  const ltvTotalCentavos = clientes.reduce((acc, c) => acc + (c.ltvCentavos || 0), 0);
+  const ticketMedioCentavos = totalProdutosVendidos > 0 ? ltvTotalCentavos / totalProdutosVendidos : 0;
+  
   const potencialVendaCentavos = pedidos
     .filter(p => p.status !== StatusPedido.CONCLUIDO && p.status !== StatusPedido.ARQUIVADO)
     .reduce((acc, p) => acc + (p.valorCentavos || 0), 0);
@@ -51,14 +59,14 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
   const totalSucessos = impressoras.reduce((acc, imp) => acc + (imp.historicoProducao?.filter(h => h.sucesso).length || 0), 0);
   const taxaSucesso = totalTentativas > 0 ? (totalSucessos / totalTentativas) * 100 : (pedidosConcluidos.length / (pedidos.length || 1)) * 100;
 
-  const totalMinutosImpressao = pedidos.reduce((acc, p) => acc + (p.tempoMinutos || 0), 0);
+  // Horímetro direto das impressoras
+  const totalMinutosImpressao = impressoras.reduce((acc, i) => acc + (i.horimetroTotalMinutos || 0), 0);
   const horasTotais = Math.floor(totalMinutosImpressao / 60);
 
   const consumoTotalGramas = pedidos.reduce((acc, p) => acc + (p.pesoGramas || 0), 0);
   const consumoTotalKg = (consumoTotalGramas / 1000).toFixed(1);
 
-  // 👥 CRM E CRESCIMENTO
-  const clientesUnicos = new Set(pedidos.map(p => p.nomeCliente).filter(Boolean)).size;
+  const clientesUnicos = clientes.length;
   
   // ROI Estimado (Custo médio de máquina vs Lucro)
   const custoEstimadoMaquinas = impressoras.length * 150000; // 1500 reais per machine base

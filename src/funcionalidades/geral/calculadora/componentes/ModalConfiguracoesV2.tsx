@@ -22,7 +22,14 @@ export function ModalConfiguracoesV2({
   aoClicarPaywall
 }: PropriedadesModalConfiguracoesV2) {
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho={true}>
+    <Dialogo 
+      aberto={aberto} 
+      aoFechar={aoFechar} 
+      larguraMax="max-w-4xl" 
+      titulo="Configurações da Calculadora"
+      subtitulo="Personalize orçamentos e operacional"
+      icone={Settings}
+    >
       <div className="flex flex-col md:flex-row relative w-full h-full min-h-[50vh]">
         
         {/* PAINEL ESQUERDO: IDENTIDADE (PDF) */}
@@ -31,40 +38,40 @@ export function ModalConfiguracoesV2({
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <Crown size={16} className="text-sky-500" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-zinc-300">Personalizar Orçamento</h3>
+                <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Personalizar Orçamento</h3>
               </div>
 
               <div className={`space-y-4 transition-all ${!eProOuSuperior ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
                 <div className="flex flex-col gap-1.5 group">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 ml-1">Nome do Estúdio</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Nome do Estúdio</label>
                   <input
                     type="text"
                     placeholder="Ex: PrintPro Lab"
                     value={config.nomeEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(e.target.value, config.sloganEstudio, config.logoEstudio)}
-                    className="w-full h-11 bg-white dark:bg-zinc-900/40 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    className="w-full h-12 bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl px-4 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5 group">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 ml-1">Slogan / Frase de Rodapé</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Slogan / Frase de Rodapé</label>
                   <input
                     type="text"
                     placeholder="Ex: Impressão 3D de alta precisão"
                     value={config.sloganEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, e.target.value, config.logoEstudio)}
-                    className="w-full h-11 bg-white dark:bg-zinc-900/40 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    className="w-full h-12 bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl px-4 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5 group">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 ml-1">URL da Logo (Opcional)</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">URL da Logo (Opcional)</label>
                   <input
                     type="url"
                     placeholder="https://exemplo.com/logo.png"
                     value={config.logoEstudio || ""}
                     onChange={(e) => config.definirIdentidadeEstudio(config.nomeEstudio, config.sloganEstudio, e.target.value)}
-                    className="w-full h-11 bg-white dark:bg-zinc-900/40 border border-borda-sutil rounded-lg px-3 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    className="w-full h-12 bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl px-4 text-xs font-bold text-primary dark:text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                   />
                 </div>
               </div>
@@ -73,7 +80,7 @@ export function ModalConfiguracoesV2({
             {/* Preview Dinâmico do Rodapé PRO */}
             {eProOuSuperior && (
               <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/40 border border-borda-sutil flex flex-col gap-1 mt-6">
-                <span className="text-[9px] font-black uppercase text-zinc-500 border-b border-borda-sutil pb-1.5 mb-1 tracking-wider">
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-borda-sutil pb-1.5 mb-1">
                   Pré-Visualização
                 </span>
                 <div className="flex items-center gap-3 mt-1">
@@ -106,8 +113,8 @@ export function ModalConfiguracoesV2({
             >
               <Crown size={24} className="text-zinc-400 dark:text-zinc-500" />
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-black uppercase tracking-wider text-zinc-600 dark:text-zinc-300">Exclusivo PRO</span>
-                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
+                <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Exclusivo PRO</span>
+                <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed">
                   Personalize seus orçamentos
                 </span>
               </div>
@@ -117,20 +124,14 @@ export function ModalConfiguracoesV2({
 
         {/* PAINEL DIREITO: MOTORES OPERACIONAIS */}
         <div className="w-full md:w-3/5 p-8 bg-card relative flex flex-col justify-between">
-          <button
-            onClick={aoFechar}
-            className="absolute top-6 right-6 w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer"
-          >
-            <X size={14} />
-          </button>
 
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
               <Settings size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-primary dark:text-zinc-200 leading-none">Operacional</h3>
-              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Motores base de custeio</p>
+              <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Operacional</h3>
+              <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">Motores base de custeio</p>
             </div>
           </div>
 
@@ -140,12 +141,12 @@ export function ModalConfiguracoesV2({
               <div className="flex items-center gap-2">
                 <Zap size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Energia</span>
-                  <span className="text-[7px] font-bold text-zinc-500">Custo por kWh</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white">Energia</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Custo por kWh</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
-                <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
+              <div className="relative flex items-center bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl focus-within:border-sky-500/50 focus-within:ring-2 focus-within:ring-sky-500/10 overflow-hidden shadow-inner transition-all h-12">
+                <span className="absolute left-3 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none">R$</span>
                 <InputBancario
                   placeholder="0.00"
                   value={config.custoEnergia === 0 ? "" : (config.custoEnergia / 100)}
@@ -154,7 +155,7 @@ export function ModalConfiguracoesV2({
                     config.definirCustoEnergia(v);
                     armazem.setParametro("precoKwhCentavos", v);
                   }}
-                  className="w-full h-10 bg-transparent outline-none pl-9 pr-3 font-bold text-xs text-primary dark:text-white"
+                  className="w-full h-full bg-transparent outline-none pl-9 pr-4 font-bold text-xs text-primary dark:text-white"
                 />
               </div>
             </div>
@@ -164,11 +165,11 @@ export function ModalConfiguracoesV2({
               <div className="flex items-center gap-2">
                 <Percent size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Margem Lucro</span>
-                  <span className="text-[7px] font-bold text-zinc-500">Padrão do estúdio</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white">Margem Lucro</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Padrão do estúdio</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
+              <div className="relative flex items-center bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl focus-within:border-sky-500/50 focus-within:ring-2 focus-within:ring-sky-500/10 overflow-hidden shadow-inner transition-all h-12">
                 <input
                   type="number"
                   placeholder="0"
@@ -178,9 +179,9 @@ export function ModalConfiguracoesV2({
                     config.definirMargemLucro(v);
                     armazem.setParametro("margemLucroPercentual", v);
                   }}
-                  className="w-full h-10 bg-transparent outline-none pl-3 pr-8 font-bold text-xs text-primary dark:text-white"
+                  className="w-full h-full bg-transparent outline-none pl-4 pr-8 font-bold text-xs text-primary dark:text-white"
                 />
-                <span className="absolute right-3 font-black text-[10px] text-zinc-400 select-none">%</span>
+                <span className="absolute right-3 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none">%</span>
               </div>
             </div>
 
@@ -189,12 +190,12 @@ export function ModalConfiguracoesV2({
               <div className="flex items-center gap-2">
                 <Wrench size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Operador</span>
-                  <span className="text-[7px] font-bold text-zinc-500">Mão de obra / h</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white">Operador</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Mão de obra / h</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
-                <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
+              <div className="relative flex items-center bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl focus-within:border-sky-500/50 focus-within:ring-2 focus-within:ring-sky-500/10 overflow-hidden shadow-inner transition-all h-12">
+                <span className="absolute left-3 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none">R$</span>
                 <InputBancario
                   placeholder="0.00"
                   value={config.horaOperador === 0 ? "" : (config.horaOperador / 100)}
@@ -203,7 +204,7 @@ export function ModalConfiguracoesV2({
                     config.definirHoraOperador(v);
                     armazem.setParametro("maoDeObraHoraCentavos", v);
                   }}
-                  className="w-full h-10 bg-transparent outline-none pl-9 pr-3 font-bold text-xs text-primary dark:text-white"
+                  className="w-full h-full bg-transparent outline-none pl-9 pr-4 font-bold text-xs text-primary dark:text-white"
                 />
               </div>
             </div>
@@ -213,12 +214,12 @@ export function ModalConfiguracoesV2({
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-zinc-500" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Máquina</span>
-                  <span className="text-[7px] font-bold text-zinc-500">Uso do equipamento / h</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white">Máquina</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Uso do equipamento / h</span>
                 </div>
               </div>
-              <div className="relative flex items-center bg-white dark:bg-zinc-950/40 border border-borda-sutil dark:border-zinc-800 rounded-lg focus-within:border-sky-500/50 overflow-hidden">
-                <span className="absolute left-3 font-black text-[10px] text-zinc-400 select-none">R$</span>
+              <div className="relative flex items-center bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl focus-within:border-sky-500/50 focus-within:ring-2 focus-within:ring-sky-500/10 overflow-hidden shadow-inner transition-all h-12">
+                <span className="absolute left-3 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none">R$</span>
                 <InputBancario
                   placeholder="0.00"
                   value={config.horaMaquina === 0 ? "" : (config.horaMaquina / 100)}
@@ -227,7 +228,7 @@ export function ModalConfiguracoesV2({
                     config.definirHoraMaquina(v);
                     armazem.setParametro("depreciacaoHoraCentavos", v);
                   }}
-                  className="w-full h-10 bg-transparent outline-none pl-9 pr-3 font-bold text-xs text-primary dark:text-white"
+                  className="w-full h-full bg-transparent outline-none pl-9 pr-4 font-bold text-xs text-primary dark:text-white"
                 />
               </div>
             </div>
@@ -236,7 +237,7 @@ export function ModalConfiguracoesV2({
           <div className="mt-6">
             <button
               onClick={aoSalvar}
-              className="w-full h-12 bg-sky-500 text-white font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 hover:bg-sky-400 cursor-pointer"
+              className="w-full h-12 bg-sky-500 text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 hover:bg-sky-400 cursor-pointer"
             >
               <Settings size={14} /> Salvar & Sincronizar
             </button>

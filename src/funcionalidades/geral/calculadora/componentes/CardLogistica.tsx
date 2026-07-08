@@ -62,7 +62,7 @@ export const CardLogistica = memo(function CardLogistica({
             <Warehouse size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Canais de Venda e Logística</span>
+            <span className="text-xs font-black uppercase tracking-widest text-primary">Canais de Venda e Logística</span>
             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Custos de plataforma e fretes</span>
           </div>
         </div>
@@ -136,27 +136,27 @@ export const CardLogistica = memo(function CardLogistica({
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2">Comissão (%)</label>
+                <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Comissão (%)</label>
                 <div className="relative">
                   <input 
                     type="number" 
                     placeholder="0" 
                     value={taxaEcommerce === 0 ? "" : (taxaEcommerce / 100)} 
                     onChange={(e) => setTaxaEcommerce(Math.round(Number(e.target.value) * 100))} 
-                    className={`w-full h-12 pl-10 pr-4 rounded-xl bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
+                    className={`w-full h-12 pl-10 pr-4 rounded-xl bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none font-bold text-xs text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
                   />
                   <Percent className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={15} />
                 </div>
               </div>
               
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2">Taxa Fixa (R$)</label>
+                <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Taxa Fixa (R$)</label>
                 <div className="relative">
                   <InputBancario 
                     placeholder="0.00" 
                     value={taxaFixa === 0 ? "" : taxaFixa / 100} 
                     onChange={(e) => setTaxaFixa(Math.round(extrairValorNumerico(e.target.value) * 100))} 
-                    className={`w-full h-12 pl-10 pr-4 rounded-xl bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
+                    className={`w-full h-12 pl-10 pr-4 rounded-xl bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none font-bold text-xs text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
                   />
                   <Coins className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={15} />
                 </div>
@@ -172,7 +172,7 @@ export const CardLogistica = memo(function CardLogistica({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* CEP Cliente com botão integrado */}
               <div className="w-full">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2 whitespace-nowrap">Consultar CEP</label>
+                <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2 whitespace-nowrap">Consultar CEP</label>
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2">
                     <div className="relative flex-1">
@@ -191,13 +191,13 @@ export const CardLogistica = memo(function CardLogistica({
                           }
                         }}
                         maxLength={9}
-                        className={`w-full h-12 pl-10 pr-3 rounded-xl bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none font-black text-sm text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
+                        className={`w-full h-12 pl-10 pr-3 rounded-xl bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none font-bold text-xs text-primary dark:text-white transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
                       />
                     </div>
                     <button 
                       onClick={consultarCep}
                       disabled={!cep || buscandoCep || !cobrarLogistica}
-                      className="h-12 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-muted disabled:text-muted-foreground text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all shadow-lg shadow-cyan-500/20 active:scale-95 shrink-0"
+                      className="h-12 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-muted disabled:text-muted-foreground text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center transition-all shadow-lg shadow-cyan-500/20 active:scale-95 shrink-0"
                       title="Calcular frete automático"
                     >
                       {buscandoCep ? <RefreshCcw className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
@@ -213,14 +213,14 @@ export const CardLogistica = memo(function CardLogistica({
 
               {/* Frete Estimado */}
               <div className="w-full">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2">Valor do Frete (R$)</label>
+                <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Valor do Frete (R$)</label>
                 <div className="relative">
                   <Truck className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-500/70" size={15} />
                   <InputBancario 
                     placeholder="0.00" 
                     value={frete === 0 ? "" : frete / 100} 
                     onChange={(e) => setFrete(Math.round(extrairValorNumerico(e.target.value) * 100))} 
-                    className={`w-full h-12 pl-10 pr-4 rounded-xl bg-cyan-500/5 dark:bg-cyan-500/10 border border-cyan-500/20 focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 outline-none font-black text-sm text-cyan-700 dark:text-cyan-400 transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
+                    className={`w-full h-12 pl-10 pr-4 rounded-xl bg-cyan-500/5 dark:bg-cyan-500/10 border border-cyan-500/20 focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 outline-none font-bold text-xs text-cyan-700 dark:text-cyan-400 transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
                   />
                 </div>
               </div>

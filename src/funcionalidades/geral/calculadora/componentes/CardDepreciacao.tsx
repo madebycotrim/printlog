@@ -24,7 +24,7 @@ export const CardDepreciacao = memo(function CardDepreciacao({
   modoEntrada
 }: CardDepreciacaoProps) {
   return (
-    <div className={`p-5 rounded-3xl bg-card/60 border border-borda-sutil relative flex flex-col shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-stone w-full h-full`}>
+    <div className={`p-6 rounded-3xl bg-card border border-borda-sutil relative flex flex-col shadow-2xl backdrop-blur-3xl group transition-all duration-500 overflow-hidden premium-card premium-card-stone w-full h-full`}>
       <div className="absolute -top-24 -right-20 w-80 h-80 bg-stone-500/10 rounded-full blur-[100px] pointer-events-none transition-all duration-700" />
       
       <div className="relative z-10 flex items-center justify-between pb-3 border-b border-borda-sutil">
@@ -62,9 +62,9 @@ export const CardDepreciacao = memo(function CardDepreciacao({
                   }}
                   className={`flex-1 flex flex-col items-center justify-center text-[9px] font-black uppercase py-1.5 rounded-lg transition-all cursor-pointer ${
                     cobrarDesgaste && anosVidaUtil === opcao.value
-                      ? opcao.value === 5
+                      ? opcao.label === "Padrão"
                         ? 'bg-stone-500/20 text-stone-600 dark:text-stone-400 border border-stone-500/30 shadow-sm'
-                        : opcao.value === 3
+                        : opcao.label === "Severo"
                         ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-sm'
                         : 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 shadow-sm'
                       : 'text-muted-foreground border border-transparent hover:text-primary dark:hover:text-white'

@@ -197,6 +197,8 @@ export function PaginaCalculadoraV2() {
   
   const [mostrarPerdas, setMostrarPerdas] = useState(false);
   const [mostrarCustosFixos, setMostrarCustosFixos] = useState(false);
+  const [mostrarModelagem, setMostrarModelagem] = useState(false);
+  const [mostrarPosProcesso, setMostrarPosProcesso] = useState(false);
 
   const { autoSalvar, setAutoSalvar } = useSincronizacaoCalculadora({
     armazem,
@@ -500,7 +502,19 @@ export function PaginaCalculadoraV2() {
             <CardIdentificacaoProjeto
               buscaCliente={buscaClienteSeletor} setBuscaCliente={setBuscaClienteSeletor}
               abertoSeletorCliente={abertoSeletorCliente} setAbertoSeletorCliente={setAbertoSeletorCliente}
-              clientes={estadoClientes.clientes || []} clienteId={clienteProjetoId} setClienteId={setClienteProjetoId}
+              clientes={estadoClientes.clientes || []} clienteId={clienteProjetoId} setClienteId={(id) => {
+                setClienteProjetoId(id);
+                const cli = estadoClientes.clientes?.find(c => c.id === id);
+                if (cli && cli.canalReferencia) {
+                  const canal = armazem.perfisMarketplace.find(c => c.nome === cli.canalReferencia);
+                  if (canal) {
+                    armazem.setPerfilAtivo(canal.nome);
+                    armazem.setParametro('taxaEcommercePercentual', canal.taxaVariavel || 0);
+                    armazem.setParametro('taxaFixaVendaCentavos', canal.taxaFixaCentavos || 0);
+                    toast.success(`Taxas do canal ${canal.nome} aplicadas automaticamente!`, { id: "canal-venda" });
+                  }
+                }
+              }}
               criandoNovoCliente={criandoNovoCliente}
               aoCriarNovoCliente={async (nome) => {
                 setCriandoNovoCliente(true);
@@ -596,6 +610,7 @@ export function PaginaCalculadoraV2() {
         />
 
         <CardModelagem
+          mostrar={mostrarModelagem} setMostrar={setMostrarModelagem}
           tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
           valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
           modoEntrada={armazem.modoEntrada}
@@ -611,6 +626,7 @@ export function PaginaCalculadoraV2() {
         />
 
         <CardPosProcesso
+          mostrar={mostrarPosProcesso} setMostrar={setMostrarPosProcesso}
           posProcesso={armazem.itensPosProcesso}
           setPosProcesso={v => {
             const existingIds = armazem.itensPosProcesso.map(i => i.id);
@@ -734,6 +750,19 @@ export function PaginaCalculadoraV2() {
                     idCliente: clienteProjetoId || "",
                     valorCentavos: armazem.resultado.precoSugerido,
                     status: StatusPedido.ORCAMENTO,
+                    idImpressora: impressoraSelecionadaId || undefined,
+                    tempoMinutos: armazem.tempoMinutosMaquina,
+                    materiais: armazem.materiaisSelecionados.map(m => ({
+                      idMaterial: m.id,
+                      nome: m.nome,
+                      quantidadeGasta: m.quantidade * armazem.quantidade
+                    })),
+                    insumosSecundarios: armazem.insumosSelecionados.map(i => ({
+                      idInsumo: i.id,
+                      nome: i.nome,
+                      quantidade: i.porLote ? i.quantidade : i.quantidade * armazem.quantidade,
+                      custoUnitarioCentavos: i.custoCentavos
+                    })),
                     configuracoes: {
                        snapshot: {
                          id: crypto.randomUUID(),
@@ -881,6 +910,14 @@ export function PaginaCalculadoraV2() {
                 setNomeProjeto("");
                 setDescricaoProjeto("");
                 setClienteProjetoId("");
+                setBuscaClienteSeletor("");
+                setImpressoraSelecionadaId("");
+                setBuscaMaterial("");
+                setBuscaInsumo("");
+                setMostrarPerdas(false);
+                setMostrarCustosFixos(false);
+                setMostrarModelagem(false);
+                setMostrarPosProcesso(false);
                 toast.success("Orçamento resetado com sucesso!");
                 setModalConfirmarReset(false);
               }}

@@ -5,7 +5,10 @@ import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
+import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 import { useArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/armazemClientes";
+import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
+import { servicoEmail } from "@/compartilhado/servicos/servicoEmail";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 
 
@@ -217,8 +220,8 @@ class ServicoPedidos {
         };
         const novoHistorico = [novoRegistro, ...(imp.historicoProducao || [])].slice(0, 50);
 
-        const atualizadas = impressoras.map(i => i.id === pedido.idImpressora ? {
-          ...i,
+        const impressoraAtualizada = {
+          ...imp,
           horimetroTotalMinutos: novoHorimetro,
           totalProjetosConcluidos: novoTotalProjetos,
           receitaAcumuladaCentavos: novaReceita,
@@ -226,9 +229,17 @@ class ServicoPedidos {
           roiPercentual: novoRoi,
           historicoProducao: novoHistorico,
           dataAtualizacao: new Date()
-        } : i);
+        };
+
+        const atualizadas = impressoras.map(i => i.id === pedido.idImpressora ? impressoraAtualizada : i);
 
         definirImpressoras(atualizadas);
+        
+        try {
+          await apiImpressoras.salvar(impressoraAtualizada, pedido.idUsuario);
+        } catch (e) {
+          console.error("Erro ao salvar métricas da impressora:", e);
+        }
       }
     }
 
@@ -248,14 +259,31 @@ class ServicoPedidos {
           }
         ];
 
-        const atualizados = clientes.map(c => c.id === pedido.idCliente ? {
-          ...c,
-          ltvCentavos: (c.ltvCentavos || 0) + (pedido.valorCentavos || 0),
-          totalProdutos: (c.totalProdutos || 0) + 1,
+        const clienteAtualizado = {
+          ...cliente,
+          ltvCentavos: (cliente.ltvCentavos || 0) + (pedido.valorCentavos || 0),
+          totalProdutos: (cliente.totalProdutos || 0) + 1,
           historico: novoHistorico,
-        } : c);
+        };
+
+        const atualizados = clientes.map(c => c.id === pedido.idCliente ? clienteAtualizado : c);
 
         definirClientes(atualizados);
+
+        try {
+          await apiClientes.salvar(clienteAtualizado, pedido.idUsuario);
+          
+          // ✉️ Envio Automático de E-mail de Conclusão (CRM)
+          if (clienteAtualizado.email) {
+            servicoEmail.enviarEmailPedidoPronto({
+              nomeCliente: clienteAtualizado.nome,
+              emailCliente: clienteAtualizado.email,
+              nomeProjeto: pedido.descricao,
+            });
+          }
+        } catch (e) {
+          console.error("Erro ao salvar métricas do cliente:", e);
+        }
       }
     }
   }

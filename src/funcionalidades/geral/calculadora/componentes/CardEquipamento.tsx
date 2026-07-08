@@ -1,5 +1,6 @@
 import { Cpu, ChevronDown, Check } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
+import { StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { useState, useEffect } from "react";
 import { obterImagemImpressora } from "@/funcionalidades/producao/impressoras/utilitarios/obter-imagem-simplyprint";
 
@@ -148,22 +149,27 @@ export function CardEquipamento({
                 ) : (
                   impressoras.map((imp) => {
                     const imgOpcao = obterImagemImpressora(imp.imagemUrl, imp.marca, imp.modeloBase);
+                    const emManutencao = imp.status === StatusImpressora.MANUTENCAO;
+                    
                     return (
                     <button
                       key={imp.id}
                       type="button"
+                      disabled={emManutencao}
                       onClick={() => {
-                        aoSelecionar(imp.id);
-                        setAbertoSeletor(false);
+                        if (!emManutencao) {
+                          aoSelecionar(imp.id);
+                          setAbertoSeletor(false);
+                        }
                       }}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${impressoraSelecionadaId === imp.id
+                      className={`w-full text-left px-3 py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-between ${emManutencao ? 'opacity-50 cursor-not-allowed grayscale' : ''} ${impressoraSelecionadaId === imp.id
                         ? 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-500'
                         : 'text-zinc-500 dark:text-zinc-400 hover:bg-muted dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
                         }`}
                     >
                       <div className="flex items-center gap-3">
                         {imgOpcao ? (
-                          <div className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-center shrink-0 p-1">
+                          <div className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-center shrink-0 p-1 relative">
                             <img src={imgOpcao} alt={imp.nome} className="w-full h-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] brightness-110" />
                           </div>
                         ) : (
@@ -172,7 +178,10 @@ export function CardEquipamento({
                           </div>
                         )}
                         <div className="flex flex-col">
-                          <span>{imp.nome}</span>
+                          <span className="flex items-center gap-2">
+                            {imp.nome}
+                            {emManutencao && <span className="text-[7px] bg-rose-500 text-white px-1.5 py-0.5 rounded uppercase tracking-widest font-black">Em Manutenção</span>}
+                          </span>
                           <span className="text-[8px] opacity-50 uppercase tracking-tighter">{imp.marca} {imp.modeloBase}</span>
                         </div>
                       </div>

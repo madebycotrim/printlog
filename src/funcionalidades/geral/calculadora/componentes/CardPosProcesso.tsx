@@ -12,15 +12,16 @@ interface CardPosProcessoProps {
   cobrarMaoDeObra: boolean;
   quantidade: number;
   modoEntrada?: 'unitario' | 'lote' | 'projeto';
+  mostrar: boolean;
+  setMostrar: (v: boolean) => void;
 }
 
 export const CardPosProcesso = memo(function CardPosProcesso({
-  posProcesso, setPosProcesso, maoDeObraHoraCentavos, cobrarMaoDeObra, quantidade, modoEntrada = 'lote'
+  posProcesso, setPosProcesso, maoDeObraHoraCentavos, cobrarMaoDeObra, quantidade, modoEntrada = 'lote', mostrar, setMostrar
 }: CardPosProcessoProps) {
   
   const textoModo = modoEntrada === 'unitario' ? 'Unidade' : modoEntrada === 'projeto' ? 'Projeto' : 'Lote';
   const temPosProcesso = posProcesso.length > 0;
-  const [mostrar, setMostrar] = useState(temPosProcesso);
 
   // Mantém o painel aberto caso haja valor configurado
   useEffect(() => {

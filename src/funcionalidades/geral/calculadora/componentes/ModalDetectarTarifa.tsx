@@ -49,15 +49,15 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa }: Props
       <div className="p-6 flex flex-col gap-4">
         {passo === 'consentimento' ? (
           <>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center">
               Podemos utilizar o seu IP para descobrir o seu Estado e aplicar a tarifa média residencial (ANEEL) automaticamente?
             </p>
-            {erro && <p className="text-xs text-red-500 text-center font-bold">{erro}</p>}
+            {erro && <p className="text-[10px] text-red-500 text-center font-bold">{erro}</p>}
             <div className="flex flex-col gap-2 mt-4">
               <button
                 onClick={lidarComConsentimento}
                 disabled={detectando}
-                className="w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                className="w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
                 {detectando ? (
                   <Sparkles size={16} className="animate-pulse" />
@@ -69,7 +69,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa }: Props
               <button
                 onClick={() => setPasso('selecao')}
                 disabled={detectando}
-                className="w-full h-11 bg-muted/50 hover:bg-muted text-primary dark:text-white font-black uppercase text-xs rounded-xl transition-all flex items-center justify-center"
+                className="w-full h-11 bg-muted/50 hover:bg-muted text-primary dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center"
               >
                 Não, escolher manualmente
               </button>
@@ -77,7 +77,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa }: Props
           </>
         ) : (
           <>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center">
               Selecione o seu Estado abaixo para aplicar a tarifa média correspondente.
             </p>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 mt-4 max-h-[250px] overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-800/50">
@@ -89,7 +89,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa }: Props
                     aoFechar();
                     setPasso('consentimento');
                   }}
-                  className="h-10 rounded-lg border border-borda-sutil bg-muted/30 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-500 font-black text-sm transition-all flex items-center justify-center"
+                  className="h-10 rounded-lg border border-borda-sutil bg-muted/30 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-500 text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center"
                 >
                   {uf}
                 </button>

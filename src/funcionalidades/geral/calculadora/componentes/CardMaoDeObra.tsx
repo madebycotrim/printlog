@@ -1,7 +1,7 @@
 import { useState, memo } from "react";
 import { createPortal } from "react-dom";
 import { DollarSign, Settings, Clock, Check, Plus, Trash2, Activity, PenTool, Printer, Zap, Box, Package, Scissors, Droplets, X } from "lucide-react";
-import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado, InputBancario, Dialogo } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 const ICONS_MAP: Record<string, any> = {
@@ -27,6 +27,7 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
 }: CardMaoDeObraProps) {
   const [microTasks, setMicroTasks] = useState<Record<string, boolean>>({});
   const [modalMicroTarefasAberto, setModalMicroTarefasAberto] = useState(false);
+  const [indiceEditando, setIndiceEditando] = useState<number | null>(null);
   const [novaMicroLabel, setNovaMicroLabel] = useState("");
   const [novaMicroTempo, setNovaMicroTempo] = useState("");
   const [tempHora, setTempHora] = useState<string | undefined>();
@@ -88,7 +89,7 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
               <DollarSign size={18} />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-black uppercase tracking-wider text-primary">Mão de Obra</span>
+              <span className="text-xs font-black uppercase tracking-widest text-primary">Mão de Obra</span>
               <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
             </div>
           </div>
@@ -118,23 +119,23 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
 
         <div className={`flex-1 flex flex-col pt-6 transition-all duration-300 ${!cobrarMaoDeObra ? "opacity-60" : ""}`}>
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-              <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase text-muted-foreground tracking-wider mb-1.5">Custo da Hora</label>
-                <div className="relative flex items-center rounded-xl transition-all shadow-inner border bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil focus-within:border-violet-500/40 focus-within:ring-1 focus-within:ring-violet-500/20">
+            <div className="grid grid-cols-1 sm:grid-cols-[240px_1fr] gap-4 items-start">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Custo da Hora</label>
+                <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-violet-500/40 transition-all shadow-inner overflow-hidden">
                   <span className="absolute left-4 font-black text-xs text-muted-foreground select-none">R$</span>
                   <InputBancario 
                     placeholder="0.00"
                     value={cobrarMaoDeObra ? (maoDeObra === 0 ? "" : (maoDeObra / 100 || "")) : 0} 
                     onChange={(e) => setMaoDeObra(Math.round(extrairValorNumerico(e.target.value) * 100))} 
-                    className="w-full h-11 pl-12 pr-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white"
+                    className="w-full h-11 pl-12 pr-4 bg-transparent outline-none font-bold text-xs text-primary dark:text-white text-left"
                     disabled={!cobrarMaoDeObra}
                   />
                 </div>
               </div>
               
-              <div className="lg:col-span-2">
-                <label className="block text-[10px] font-black uppercase text-muted-foreground tracking-wider mb-1.5">Setup p/ Projeto</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Setup p/ Projeto</label>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-1.5">
                     <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-violet-500/40 transition-all shadow-inner">
@@ -149,7 +150,7 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
                           setTempHora(v);
                           setTempoSetup((v === "" ? 0 : Number(v)) * 60 + Math.floor(tempoSetup % 60) + (tempoSetup % 1));
                         }} 
-                        className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                        className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                         disabled={!cobrarMaoDeObra}
                       />
                       <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
@@ -169,10 +170,10 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
                           setTempMinuto(v);
                           setTempoSetup(Math.floor(tempoSetup / 60) * 60 + (v === "" ? 0 : Number(v)) + (tempoSetup % 1));
                         }} 
-                        className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                        className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                         disabled={!cobrarMaoDeObra}
                       />
-                      <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">m</span>
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">MIN</span>
                     </div>
 
                     <span className="text-zinc-400 font-bold">:</span>
@@ -189,10 +190,10 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
                           setTempSegundo(v);
                           setTempoSetup(Math.floor(tempoSetup / 60) * 60 + Math.floor(tempoSetup % 60) + ((v === "" ? 0 : Number(v)) / 60));
                         }} 
-                        className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                        className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                         disabled={!cobrarMaoDeObra}
                       />
-                      <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">s</span>
+                        <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">SEG</span>
                     </div>
                   </div>
                   <div className="flex gap-2 w-full flex-nowrap mt-2">
@@ -259,142 +260,243 @@ export const CardMaoDeObra = memo(function CardMaoDeObra({
             </div>
           </div>
           
-          <div className="mt-6 flex flex-col gap-2">
-            <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground justify-center bg-zinc-900/20 py-1.5 px-3 rounded-lg border border-white/[0.02]">
-                <Clock size={10} className="text-violet-500" />
-                <span>
-                  FÓRMULA: ({Number.isInteger(tempoSetup) ? tempoSetup : tempoSetup.toFixed(2)} min / 60) * R$ {(maoDeObra / 100).toFixed(2)} = R$ {((tempoSetup / 60) * (maoDeObra / 100)).toFixed(2).replace('.', ',')}
-                </span>
-            </div>
-            
-            <div className="p-4 rounded-2xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-1 relative overflow-hidden mt-1">
+          <div className="mt-6 flex flex-col">
+            <div className="p-4 rounded-2xl bg-violet-500/5 border border-violet-500/10 flex flex-col gap-4 relative overflow-hidden group">
               <div className="flex justify-between items-center z-10">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase text-violet-600 dark:text-violet-500/80 tracking-wider">Custo de Mão de Obra:</span>
                   <span className="text-[9px] font-bold text-muted-foreground">Tempo operacional acumulado</span>
                 </div>
+                
+                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hidden sm:flex">
+                  <Clock size={10} className="text-violet-500/50" />
+                  <span>
+                    ({Number.isInteger(tempoSetup) ? tempoSetup : tempoSetup.toFixed(2)} MIN / 60) * R$ {(maoDeObra / 100).toFixed(2)} <span className="mx-1">=</span>
+                  </span>
+                </div>
+
                 <span className={`text-xl font-black tracking-tight ${cobrarMaoDeObra && tempoSetup > 0 ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground'}`}>
                   <ContadorAnimado valor={cobrarMaoDeObra ? (tempoSetup / 60) * (maoDeObra / 100) : 0} />
                 </span>
               </div>
+
               <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-violet-500/5 rounded-full blur-2xl pointer-events-none" />
             </div>
           </div>
         </div>
       </div>
 
-      {modalMicroTarefasAberto && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-          <div 
-            className="bg-card w-full max-w-md rounded-[2rem] p-6 shadow-2xl border border-white/5 relative overflow-hidden"
-            style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(139, 92, 246, 0.15) 0%, transparent 60%)' }}
-          >
-            <button 
-              onClick={() => setModalMicroTarefasAberto(false)}
-              className="absolute top-6 right-6 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900/40 hover:bg-zinc-800/80 text-zinc-400 hover:text-white transition-all border border-white/5"
-            >
-              <X size={16} />
-            </button>
+      <Dialogo
+        aberto={modalMicroTarefasAberto}
+        aoFechar={() => {
+          setModalMicroTarefasAberto(false);
+          setIndiceEditando(null);
+        }}
+        titulo="Micro-tarefas"
+        subtitulo="Tempo operacional de setup"
+        icone={Settings}
+        larguraMax="max-w-4xl"
+        corBase="violet"
+      >
+        <div className="flex flex-col md:flex-row h-full min-h-[50vh]">
+          {/* Painel Esquerdo: Lista de Tarefas */}
+          <div className="w-full md:w-2/5 p-6 md:p-8 bg-zinc-50 dark:bg-zinc-900/50 border-b md:border-b-0 md:border-r border-borda-sutil flex flex-col h-full">
+            <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-white mb-6 block">Tarefas de Setup</span>
             
-            <div className="flex items-center gap-4 mb-6 relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-inner">
-                <Settings size={22} className="animate-spin-slow" />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-base font-black uppercase tracking-widest text-primary">Micro-tarefas</span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Tempo operacional de setup</span>
-              </div>
-            </div>
-            
-            <div className="flex flex-col gap-3 mb-6 max-h-[40vh] overflow-y-auto pr-2 scrollbar-fino relative z-10">
-              {listaMicroTarefas.map((t: any) => {
+            <div className="flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-fino flex-1">
+              {listaMicroTarefas.map((t: any, idx: number) => {
+                const selecionado = indiceEditando === idx;
+                const ativo = !!microTasks[t.key];
                 const IconeComponente = t.icon && ICONS_MAP[t.icon] ? ICONS_MAP[t.icon] : Settings;
+                
                 return (
-                  <div key={t.key} className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-900/40 border border-white/5 hover:bg-zinc-900/60 transition-colors group">
+                  <button
+                    key={t.key}
+                    onClick={() => {
+                      setIndiceEditando(idx);
+                    }}
+                    className={`flex flex-col p-3 rounded-xl border text-left transition-all group ${
+                      selecionado
+                        ? "bg-violet-500/10 border-violet-500/30 shadow-[0_4px_12px_rgba(139,92,246,0.1)]"
+                        : "bg-muted/20 dark:bg-zinc-900/40 border-borda-sutil hover:bg-muted/40 dark:hover:bg-zinc-900/60"
+                    }`}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center">
-                        <IconeComponente size={14} />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                        selecionado 
+                          ? "bg-violet-500/20 text-violet-600 dark:text-violet-400 border-violet-500/30" 
+                          : "bg-white dark:bg-zinc-900/80 text-zinc-500 border-borda-sutil group-hover:text-violet-500 shadow-sm"
+                      }`}>
+                        <IconeComponente size={16} />
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-primary tracking-wide">{t.label}</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-violet-500/80">+{t.time} MIN</span>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <span className={`text-xs font-black uppercase tracking-wider truncate ${
+                          selecionado ? "text-violet-600 dark:text-violet-400" : "text-primary dark:text-white"
+                        }`}>
+                          {t.label}
+                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-violet-500/80">+{t.time} MIN</span>
+                          {ativo && (
+                            <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-1 rounded">Em uso</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <button type="button" onClick={() => removerMicroTarefa(t.key)} className="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  </button>
                 );
               })}
             </div>
 
-            <div className="flex flex-col gap-4 mb-6 p-4 rounded-2xl bg-zinc-950 border border-white/5 relative z-10">
-              <span className="text-[10px] font-black uppercase text-violet-500 tracking-widest">Adicionar Nova Tarefa</span>
-              
-              <div className="flex flex-wrap gap-2 pb-2">
-                {Object.keys(ICONS_MAP).map(iconName => {
-                  const Icon = ICONS_MAP[iconName];
-                  return (
-                    <button
-                      key={iconName}
-                      onClick={() => setNovaMicroIcone(iconName)}
-                      className={`w-10 h-10 shrink-0 snap-center rounded-xl flex items-center justify-center transition-all ${
-                        novaMicroIcone === iconName 
-                          ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20' 
-                          : 'bg-zinc-900 border border-white/5 text-zinc-500 hover:text-violet-400 hover:border-violet-500/30'
-                      }`}
-                    >
-                      <Icon size={16} />
-                    </button>
-                  );
-                })}
-              </div>
+            <button
+              onClick={() => {
+                const nova = {
+                  key: `custom_${Date.now()}`,
+                  label: "Nova Tarefa",
+                  time: 0,
+                  icon: "Settings"
+                };
+                const novas = [...listaMicroTarefas, nova];
+                salvarMicroTarefas(novas);
+                setIndiceEditando(novas.length - 1);
+              }}
+              className="w-full mt-4 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-dashed border-borda-sutil hover:border-violet-500/30 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-500/5 transition-all group shrink-0 shadow-sm"
+            >
+              <Plus size={14} className="group-hover:scale-125 transition-transform" /> NOVA MICRO-TAREFA
+            </button>
+          </div>
 
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={novaMicroLabel}
-                  onChange={(e) => setNovaMicroLabel(e.target.value)}
-                  placeholder="Nome (ex: Limpeza)"
-                  className="flex-[2] h-11 px-4 rounded-xl bg-zinc-900 border border-white/5 outline-none text-xs font-bold text-white placeholder:text-zinc-600 focus:border-violet-500/50 transition-colors"
-                />
-                <div className="relative w-24 h-11 shrink-0">
-                  <input 
-                    type="number" 
-                    value={novaMicroTempo}
-                    onChange={(e) => setNovaMicroTempo(e.target.value)}
-                    placeholder="0"
-                    className="w-full h-full pl-3 pr-7 text-center rounded-xl bg-zinc-900 border border-white/5 outline-none text-sm font-black text-white placeholder:text-zinc-600 focus:border-violet-500/50 transition-colors"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-zinc-500 pointer-events-none select-none">
-                    M
-                  </span>
+          {/* Painel Direito: Configuração da Tarefa */}
+          <div className="w-full md:w-3/5 p-6 md:p-8 bg-card relative flex flex-col">
+            {indiceEditando !== null && listaMicroTarefas[indiceEditando] ? (
+              <>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500">
+                      <Settings size={18} />
+                    </div>
+                    <div className="flex flex-col">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Editar Tarefa</h3>
+                      <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">Configure as propriedades desta micro-tarefa</p>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      removerMicroTarefa(listaMicroTarefas[indiceEditando].key);
+                      setIndiceEditando(null);
+                    }}
+                    className="h-8 px-3 rounded-lg border border-rose-500/30 text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-all flex items-center gap-1.5"
+                  >
+                    <Trash2 size={12} /> Excluir
+                  </button>
                 </div>
-                <button type="button" onClick={adicionarMicroTarefa} disabled={!novaMicroLabel.trim() || !novaMicroTempo} className="h-11 w-11 flex items-center justify-center rounded-xl bg-violet-500 text-white hover:bg-violet-400 disabled:opacity-50 disabled:hover:bg-violet-500 transition-all shrink-0 shadow-lg shadow-violet-500/20">
-                  <Plus size={18} />
-                </button>
-              </div>
-            </div>
 
-            <div className="flex gap-2 relative z-10">
+                <div className="flex flex-col gap-6 flex-1">
+                  {/* ÍCONE */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Ícone</label>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.keys(ICONS_MAP).map(iconName => {
+                        const Icon = ICONS_MAP[iconName];
+                        const iconSelecionado = listaMicroTarefas[indiceEditando].icon === iconName;
+                        return (
+                          <button
+                            key={iconName}
+                            onClick={() => {
+                              const novas = [...listaMicroTarefas];
+                              novas[indiceEditando].icon = iconName;
+                              salvarMicroTarefas(novas);
+                            }}
+                            className={`w-10 h-10 shrink-0 snap-center rounded-xl flex items-center justify-center transition-all ${
+                              iconSelecionado
+                                ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20' 
+                                : 'bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil text-zinc-500 hover:text-violet-500 dark:hover:text-violet-400 hover:border-violet-500/30 shadow-inner'
+                            }`}
+                          >
+                            <Icon size={16} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                    {/* NOME DA TAREFA */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Nome da Tarefa</label>
+                      <input
+                        type="text"
+                        value={listaMicroTarefas[indiceEditando].label}
+                        onChange={(e) => {
+                          const novas = [...listaMicroTarefas];
+                          novas[indiceEditando].label = e.target.value;
+                          salvarMicroTarefas(novas);
+                        }}
+                        placeholder="Ex: Limpeza Cuba"
+                        className="w-full h-12 bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl px-4 text-xs font-bold text-primary dark:text-white focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/10 outline-none transition-all shadow-inner"
+                      />
+                    </div>
+
+                    {/* TEMPO */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Tempo de Execução</label>
+                      <div className="relative flex items-center bg-muted/30 dark:bg-zinc-800/30 border border-borda-sutil rounded-xl focus-within:border-violet-500/50 focus-within:ring-2 focus-within:ring-violet-500/10 overflow-hidden shadow-inner transition-all h-12">
+                        <input
+                          type="number"
+                          value={listaMicroTarefas[indiceEditando].time || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const novas = [...listaMicroTarefas];
+                            novas[indiceEditando].time = val ? parseInt(val) : 0;
+                            salvarMicroTarefas(novas);
+                          }}
+                          placeholder="0"
+                          className="w-full h-full bg-transparent outline-none pl-4 pr-10 text-xs font-bold text-primary dark:text-white"
+                        />
+                        <span className="absolute right-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none">MIN</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center flex-1 text-center opacity-50">
+                <Settings size={48} className="text-zinc-300 dark:text-zinc-700 mb-4" />
+                <span className="text-xs font-black uppercase tracking-widest text-zinc-500">Selecione uma tarefa para editar</span>
+              </div>
+            )}
+
+            <div className="flex gap-2 relative z-10 shrink-0 mt-8 pt-6 border-t border-borda-sutil">
               <button 
                 type="button"
-                onClick={() => setModalMicroTarefasAberto(false)}
-                className="w-24 shrink-0 h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                onClick={() => {
+                  setModalMicroTarefasAberto(false);
+                  setIndiceEditando(null);
+                }}
+                className="flex-1 h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-primary dark:text-white transition-all cursor-pointer"
               >
                 Fechar
               </button>
               <button 
                 type="button"
-                onClick={() => setModalMicroTarefasAberto(false)}
-                className="flex-1 h-12 text-xs font-black uppercase tracking-widest rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all cursor-pointer shadow-lg"
+                onClick={() => {
+                  if (indiceEditando !== null) {
+                    const tarefa = listaMicroTarefas[indiceEditando];
+                    lidarMicroTask(tarefa.key, tarefa.time, true);
+                  }
+                  setModalMicroTarefasAberto(false);
+                  setIndiceEditando(null);
+                }}
+                disabled={indiceEditando === null}
+                className="flex-[2] h-12 text-[10px] font-black uppercase tracking-widest rounded-xl bg-violet-500 hover:bg-violet-600 text-white shadow-lg shadow-violet-500/20 transition-all cursor-pointer disabled:opacity-50"
               >
-                Concluir
+                Usar Tarefa e Concluir
               </button>
             </div>
           </div>
         </div>
-      , document.body)}
+      </Dialogo>
     </>
   );
 });

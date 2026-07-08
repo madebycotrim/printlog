@@ -84,25 +84,25 @@ export function CardPerdas({
                  </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-[240px_1fr] gap-4 items-start">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Filamento Perdido</label>
-                <div className="relative flex items-center bg-muted/40 dark:bg-black/20 rounded-xl border border-borda-sutil focus-within:border-red-500/40 shadow-inner">
+                <div className="relative flex items-center h-11 bg-muted/40 dark:bg-zinc-800/40 rounded-xl border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
                   <input
                     type="number"
                     min="0"
                     placeholder="0"
                     value={materialPerdido || ""}
                     onChange={(e) => setMaterialPerdido(Number(e.target.value))}
-                    className="w-full h-11 bg-transparent px-4 font-black text-xs text-primary dark:text-white outline-none"
+                    className="w-full h-11 bg-transparent px-4 font-bold text-xs text-primary dark:text-white outline-none"
                   />
-                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground">gramas</span>
+                  <span className="absolute right-4 text-[10px] font-black text-muted-foreground uppercase tracking-widest select-none">gramas</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-muted-foreground tracking-wider ml-1">Tempo Perdido</label>
                 <div className="flex items-center gap-1.5">
-                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
+                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
                     <input 
                       type="number" 
                       placeholder="0" 
@@ -114,14 +114,14 @@ export function CardPerdas({
                         setTempHora(v);
                         setTempoPerdido((v === "" ? 0 : Number(v)) * 60 + Math.floor(tempoPerdido % 60) + (tempoPerdido % 1));
                       }} 
-                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                     />
                     <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">h</span>
                   </div>
 
                   <span className="text-zinc-400 font-bold">:</span>
 
-                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
+                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
                     <input 
                       type="number" 
                       placeholder="0" 
@@ -133,14 +133,14 @@ export function CardPerdas({
                         setTempMinuto(v);
                         setTempoPerdido(Math.floor(tempoPerdido / 60) * 60 + (v === "" ? 0 : Number(v)) + (tempoPerdido % 1));
                       }} 
-                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                     />
-                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">m</span>
+                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">MIN</span>
                   </div>
 
                   <span className="text-zinc-400 font-bold">:</span>
 
-                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-black/20 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
+                  <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-red-500/40 transition-all shadow-inner">
                     <input 
                       type="number" 
                       placeholder="0" 
@@ -152,9 +152,9 @@ export function CardPerdas({
                         setTempSegundo(v);
                         setTempoPerdido(Math.floor(tempoPerdido / 60) * 60 + Math.floor(tempoPerdido % 60) + (v === "" ? 0 : Number(v) / 60));
                       }} 
-                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
+                      className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-bold text-xs text-center text-primary dark:text-white" 
                     />
-                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">s</span>
+                    <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">SEG</span>
                   </div>
                 </div>
               </div>

@@ -14,7 +14,17 @@ interface PropriedadesDialogo {
   esconderCabecalho?: boolean;
   telaCheia?: boolean;
   semScroll?: boolean;
+  corBase?: "sky" | "violet" | "emerald" | "rose" | "stone" | "cyan";
 }
+
+const coresMapeamento = {
+  sky: "bg-sky-500/10 border-sky-500/20 text-sky-500",
+  violet: "bg-violet-500/10 border-violet-500/20 text-violet-500",
+  emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
+  rose: "bg-rose-500/10 border-rose-500/20 text-rose-500",
+  stone: "bg-stone-500/10 border-stone-500/20 text-stone-500",
+  cyan: "bg-cyan-500/10 border-cyan-500/20 text-cyan-500",
+};
 
 /**
  * Componente de DiÃ¡logo (Modal) com suporte a Portals.
@@ -31,6 +41,7 @@ export function Dialogo({
   esconderCabecalho = false,
   telaCheia = false,
   semScroll = false,
+  corBase = "sky",
 }: PropriedadesDialogo) {
   // Fecha com ESC
   useEffect(() => {
@@ -85,7 +96,7 @@ export function Dialogo({
               {!esconderCabecalho && (
                 <div className={`flex items-center justify-between px-6 py-4.5 border-b border-borda-sutil bg-card backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-3xl"}`}>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${coresMapeamento[corBase]}`}>
                       {Icone ? <Icone size={18} /> : <Settings size={18} />}
                     </div>
                     <div className="flex flex-col text-left">
