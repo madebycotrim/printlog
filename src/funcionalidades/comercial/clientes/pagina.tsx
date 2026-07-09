@@ -125,7 +125,7 @@ export function PaginaClientes() {
             ) : (
               <div 
                 ref={containerRef}
-                className="max-h-[68vh] overflow-y-auto pr-2 scrollbar-premium"
+                className="max-h-[68vh] overflow-y-auto pr-2 p-2 scrollbar-premium"
                 style={{ contentVisibility: 'auto' }}
               >
                 <div 

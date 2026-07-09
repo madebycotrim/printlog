@@ -9,9 +9,5 @@ binding = "DB"
 database_name = "printlog_db"
 database_id = "48e53769-4e08-4f61-bfd3-8b328c14aacf"
 
-[vars]
-VITE_TURNSTILE_SITE_KEY = "0x4AAAAAAC-vX-nczncGC-OE"
-FIREBASE_PROJECT_ID = "printlog-85fe6"
-
 [ai]
 binding = "AI"

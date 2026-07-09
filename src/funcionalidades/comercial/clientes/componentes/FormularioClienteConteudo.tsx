@@ -95,35 +95,33 @@ export function FormularioClienteConteudo({ clienteEditando, aoSalvar, aoCancela
 
   return (
     <form onSubmit={handleSubmit(lidarComEnvio)} className="flex flex-col bg-white dark:bg-[#121214] flex-1">
-      <div className="flex-1 p-8 space-y-12 overflow-y-auto">
+      <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
         <SecaoFormulario titulo="Dados de Identificação">
           <GradeCampos colunas={2}>
             <div className="md:col-span-2 flex flex-col gap-2">
               <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Perfil Comercial do Cliente</label>
-              <div className="grid grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-borda-sutil">
+              <div className="grid grid-cols-2 gap-1 bg-zinc-50 dark:bg-zinc-900/50 p-1 rounded-xl border border-borda-sutil">
                 <button
                   type="button"
                   onClick={() => setValue("tipo", "B2C", { shouldDirty: true })}
-                  className={`py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                  className={`py-2 px-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     watch("tipo") === "B2C"
-                      ? "bg-white dark:bg-zinc-800 text-sky-500 border border-borda-sutil dark:border-white/5 shadow-md shadow-sky-500/5 scale-[1.01]"
-                      : "text-zinc-500 hover:text-primary dark:hover:text-white"
+                      ? "bg-white dark:bg-zinc-800 text-sky-500 border border-borda-sutil dark:border-white/5 shadow-sm"
+                      : "text-zinc-500 hover:text-primary dark:hover:text-white border border-transparent"
                   }`}
                 >
-                  <span>Consumidor Final (B2C)</span>
-                  <span className="text-[8px] opacity-60 font-bold normal-case tracking-normal">Markup sugerido de 5.0x</span>
+                  <span>B2C (Consumidor)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setValue("tipo", "B2B", { shouldDirty: true })}
-                  className={`py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                  className={`py-2 px-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     watch("tipo") === "B2B"
-                      ? "bg-white dark:bg-zinc-800 text-indigo-500 border border-borda-sutil dark:border-white/5 shadow-md shadow-indigo-500/5 scale-[1.01]"
-                      : "text-zinc-500 hover:text-primary dark:hover:text-white"
+                      ? "bg-white dark:bg-zinc-800 text-indigo-500 border border-borda-sutil dark:border-white/5 shadow-sm"
+                      : "text-zinc-500 hover:text-primary dark:hover:text-white border border-transparent"
                   }`}
                 >
-                  <span>Empresa / Parceiro (B2B)</span>
-                  <span className="text-[8px] opacity-60 font-bold normal-case tracking-normal">Markup sugerido de 3.0x</span>
+                  <span>B2B (Empresa)</span>
                 </button>
               </div>
             </div>

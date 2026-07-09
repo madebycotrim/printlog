@@ -28,16 +28,16 @@ export function ModalGerenciamentoCliente({
 
   useEffect(() => {
     if (aberto) {
-      setAbaAtiva(abaInicial);
+      setAbaAtiva(!cliente ? "config" : abaInicial);
     }
   }, [aberto, abaInicial, cliente]);
 
-  if (!cliente) return null;
-
-  const abas = [
+  const abas = cliente?.id ? [
     { id: "historico", rotulo: "Histórico", icone: History },
     { id: "privacidade", rotulo: "Privacidade (LGPD)", icone: Shield },
     { id: "config", rotulo: "Especificações", icone: Settings },
+  ] : [
+    { id: "config", rotulo: "Dados do Cliente", icone: Settings },
   ];
 
   const obterIniciais = (nome: string) => {
@@ -50,41 +50,42 @@ export function ModalGerenciamentoCliente({
 
   return (
     <Dialogo aberto={aberto} aoFechar={aoFechar} larguraMax="max-w-4xl" esconderCabecalho={true}>
-      <div className="bg-white dark:bg-[#121214] min-h-[650px] flex flex-col overflow-hidden rounded-2xl shadow-2xl">
+      <div className="bg-white dark:bg-[#121214] flex flex-col overflow-hidden rounded-2xl shadow-2xl">
         
-        {/* Cabeçalho Premium Unificado */}
         <CabecalhoModalPremium 
-          titulo={cliente.nome}
+          titulo={cliente?.nome || "Novo Cadastro"}
           aoFechar={aoFechar}
           corTema="indigo-500"
           icone={
             <div className="w-full h-full bg-gradient-to-br from-indigo-500/20 to-indigo-600/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-lg">
-              {obterIniciais(cliente.nome)}
+              {obterIniciais(cliente?.nome || "NC")}
             </div>
           }
           subtitulo={
             <>
               <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">
-                {cliente.tipo || "B2C"}
+                {cliente?.tipo || "NOVO"}
               </span>
               <span className="w-1 h-1 rounded-full bg-border" />
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                {cliente.email || "Sem e-mail"}
+                {cliente?.email || "Cadastro Manual"}
               </span>
             </>
           }
         />
 
-        {/* Sistema de Abas Padronizado */}
-        <AbasModalPremium 
-          abas={abas}
-          abaAtiva={abaAtiva}
-          aoMudarAba={(id) => setAbaAtiva(id as any)}
-          corTema="indigo-500"
-        />
+        {/* Sistema de Abas Padronizado (Apenas para edição) */}
+        {cliente?.id && (
+          <AbasModalPremium 
+            abas={abas}
+            abaAtiva={abaAtiva}
+            aoMudarAba={(id) => setAbaAtiva(id as any)}
+            corTema="indigo-500"
+          />
+        )}
 
         {/* Conteúdo Dinâmico */}
-        <div className={`flex-1 overflow-y-auto custom-scrollbar flex flex-col ${abaAtiva === "config" ? "p-0" : "p-8"}`}>
+        <div className={`flex-1 overflow-hidden flex flex-col ${abaAtiva === "config" ? "p-0" : "p-8"}`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={abaAtiva}

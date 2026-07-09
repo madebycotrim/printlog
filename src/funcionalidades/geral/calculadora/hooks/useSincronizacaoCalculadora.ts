@@ -47,7 +47,11 @@ export function useSincronizacaoCalculadora({
         armazem.restaurarRascunho(config.calculadoraMeta.rascunho.parametros);
         setNomeProjeto(config.calculadoraMeta.rascunho.nomeProjeto || "");
         setDescricaoProjeto(config.calculadoraMeta.rascunho.descricaoProjeto || "");
-        setClienteProjetoId(config.calculadoraMeta.rascunho.clienteProjetoId || "");
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.get("clienteId")) {
+          setClienteProjetoId(config.calculadoraMeta.rascunho.clienteProjetoId || "");
+        }
       }
       setCarregouNuvemInicial(true);
     }

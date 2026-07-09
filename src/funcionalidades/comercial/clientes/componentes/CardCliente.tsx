@@ -8,6 +8,9 @@ import {
   MoreVertical,
   Pencil,
   Star,
+  Calculator,
+  Store,
+  Plus
 } from "lucide-react";
 import { Dica } from "@/compartilhado/componentes";
 import { useState, useRef, useEffect } from "react";
@@ -106,19 +109,42 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
     setTimeout(() => definirCopiado(null), 2000);
   };
 
+  const obterStatusCliente = () => {
+    if (!cliente.historico || cliente.historico.length === 0) return { texto: "Lead", cor: "text-amber-500", dot: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" };
+    
+    const ultimoPedido = [...cliente.historico].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
+    const dias = Math.floor((new Date().getTime() - new Date(ultimoPedido.data).getTime()) / (1000 * 3600 * 24));
+
+    if (dias > 90) return { texto: "Inativo", cor: "text-rose-500", dot: "bg-rose-500 shadow-[0_0_8px_rgba(243,67,54,0.6)]" };
+    return { texto: "Ativo", cor: "text-emerald-500", dot: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" };
+  };
+
+  const status = obterStatusCliente();
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       onClick={() => aoVerHistorico(cliente)}
-      className="relative bg-zinc-900/40 dark:bg-white/[0.02] backdrop-blur-xl border border-zinc-200/50 dark:border-white/5 rounded-[2rem] p-6 transition-all duration-300 shadow-sm group/card hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-sky-500/30 dark:hover:border-sky-500/20 hover:-translate-y-1 overflow-hidden cursor-pointer"
+      className={`relative bg-zinc-900/40 dark:bg-white/[0.02] backdrop-blur-xl border border-zinc-200/50 dark:border-white/5 rounded-[2rem] p-6 transition-all duration-300 shadow-sm group/card hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-sky-500/30 dark:hover:border-sky-500/20 hover:-translate-y-1 cursor-pointer ${menuAberto ? 'z-50' : 'z-10'}`}
     >
       {/* Glow de Fundo Sutil no Hover */}
       <div className="absolute -inset-px bg-gradient-to-br from-sky-500/0 via-sky-500/0 to-indigo-500/0 group-hover/card:from-sky-500/5 group-hover/card:to-indigo-500/5 rounded-[2rem] transition-all duration-500 pointer-events-none" />
 
       {/* Menu Superior Direito */}
-      <div className="absolute top-5 right-5 z-30" ref={menuRef}>
+      <div className="absolute top-5 right-5 z-30 flex items-center gap-1" ref={menuRef}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            window.location.href = `/calculadora?clienteId=${cliente.id}`;
+          }}
+          className="p-2 rounded-xl transition-all text-zinc-400 hover:bg-emerald-500/10 hover:text-emerald-500 dark:hover:bg-emerald-500/20"
+          title="Novo Orçamento"
+        >
+          <Plus size={16} strokeWidth={2.5} />
+        </button>
+
         <div className="relative">
           <button
             onClick={(e) => {
@@ -143,7 +169,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className="absolute right-0 mt-2 w-48 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/80 dark:border-white/5 rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
+                className="absolute right-0 mt-2 w-56 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/80 dark:border-white/5 rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
               >
                 <div className="p-1 space-y-0.5">
                   <button
@@ -153,6 +179,18 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                   >
                     <HistoryIcon size={14} />
                     Histórico
+                  </button>
+
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      window.location.href = `/calculadora?clienteId=${cliente.id}`;
+                    }}
+                    aria-label="Criar novo orçamento"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-emerald-500 dark:hover:text-emerald-400 rounded-xl transition-all uppercase tracking-[0.15em]"
+                  >
+                    <Calculator size={14} />
+                    Novo Orçamento
                   </button>
 
                   <button
@@ -205,19 +243,26 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                 <h3 className="text-base font-black text-zinc-900 dark:text-white tracking-tight truncate">
                   {cliente.nome}
                 </h3>
-                {cliente.tipo && (
-                  <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                    cliente.tipo === "B2B"
-                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
-                      : "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20"
-                  }`}>
-                    {cliente.tipo}
-                  </span>
-                )}
-              </div>
+                  {cliente.tipo && (
+                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                      cliente.tipo === "B2B"
+                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                        : "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20"
+                    }`}>
+                      {cliente.tipo}
+                    </span>
+                  )}
+                  {cliente.canalReferencia && (
+                    <span className="flex items-center gap-1 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider bg-zinc-800/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 border border-zinc-200/50 dark:border-white/10">
+                      <Store size={8} />
+                      {cliente.canalReferencia}
+                    </span>
+                  )}
+                </div>
               
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                <span>Cliente Ativo</span>
+                <div className={`w-2 h-2 rounded-full ${status.dot}`} />
+                <span className={status.cor}>{status.texto}</span>
               </div>
             </div>
           </div>

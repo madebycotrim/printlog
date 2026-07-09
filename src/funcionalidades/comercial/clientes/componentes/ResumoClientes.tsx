@@ -28,12 +28,12 @@ export function ResumoClientes({ clientes }: PropriedadesResumoClientes) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      <CardResumo
-        titulo="Receita Total"
-        valor={centavosParaReais(ltvTotalCentavos)}
-        unidade="faturamento LTV"
-        icone={TrendingUp}
-        cor="emerald"
+      <CardResumo 
+        titulo="Base de Clientes" 
+        valor={total} 
+        unidade="parceiros ativos" 
+        icone={Users} 
+        cor="violet" 
       />
 
       <CardResumo 
@@ -52,12 +52,12 @@ export function ResumoClientes({ clientes }: PropriedadesResumoClientes) {
         cor="sky" 
       />
 
-      <CardResumo 
-        titulo="Base de Clientes" 
-        valor={total} 
-        unidade="parceiros ativos" 
-        icone={Users} 
-        cor="violet" 
+      <CardResumo
+        titulo="Receita Total"
+        valor={centavosParaReais(ltvTotalCentavos)}
+        unidade="faturamento LTV"
+        icone={TrendingUp}
+        cor="emerald"
       />
     </div>
   );

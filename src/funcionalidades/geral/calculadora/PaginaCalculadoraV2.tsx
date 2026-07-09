@@ -117,6 +117,7 @@ export function PaginaCalculadoraV2() {
     carregarTudo();
   }, [usuario?.uid]);
 
+
   // Estados locais da UI
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
@@ -153,13 +154,31 @@ export function PaginaCalculadoraV2() {
 
   const [nomeProjeto, setNomeProjeto] = useState("");
   const [descricaoProjeto, setDescricaoProjeto] = useState("");
-  const [clienteProjetoId, setClienteProjetoId] = useState("");
+  const [clienteProjetoId, setClienteProjetoId] = useState(() => searchParams.get("clienteId") || "");
   const [buscaClienteSeletor, setBuscaClienteSeletor] = useState("");
   const [abertoSeletorCliente, setAbertoSeletorCliente] = useState(false);
   const [criandoNovoCliente, setCriandoNovoCliente] = useState(false);
-  
   const [impressoraSelecionadaId, setImpressoraSelecionadaId] = useState("");
   const [abertoSeletorImpressora, setAbertoSeletorImpressora] = useState(false);
+
+  // Se o clienteId vir via URL e a lista carregar, aplica o nome do cliente e a taxa
+  useEffect(() => {
+    if (clienteProjetoId && estadoClientes.clientes && estadoClientes.clientes.length > 0) {
+      const cli = estadoClientes.clientes.find(c => c.id === clienteProjetoId);
+      if (cli) {
+        setBuscaClienteSeletor(cli.nome);
+        if (cli.canalReferencia) {
+          const canal = perfisMarketplace.find((c: any) => c.nome === cli.canalReferencia);
+          if (canal && perfilAtivo !== canal.nome) {
+            setPerfilAtivo(canal.nome);
+            armazem.setParametro('taxaEcommercePercentual', canal.taxaVariavel || canal.taxaPontosBase || 0);
+            armazem.setParametro('taxaFixaVendaCentavos', canal.taxaFixaCentavos || 0);
+            toast.success(`Taxas do canal ${canal.nome} aplicadas automaticamente!`, { id: "canal-venda-url" });
+          }
+        }
+      }
+    }
+  }, [clienteProjetoId, estadoClientes.clientes, perfisMarketplace, perfilAtivo]);
 
   const [anosVidaUtil, setAnosVidaUtil] = useState<5 | 3 | 2>(() => {
     const salvo = localStorage.getItem("printlog_anos_vida_util");
