@@ -69,18 +69,6 @@ export function CardInsumo({
   const estaComEstoqueBaixo = insumo.quantidadeAtual <= insumo.quantidadeMinima;
   const corDaCategoria = CORES_CATEGORIA[insumo.categoria] || "bg-muted-foreground/40";
   
-  const CORES_AURA: Record<CategoriaInsumo, string> = {
-    Limpeza: "#0ea5e9", // sky-500
-    Embalagem: "#f59e0b", // amber-500
-    Embrulho: "#ec4899", // pink-500
-    Fixação: "#ef4444", // red-500
-    Eletrônica: "#8b5cf6", // violet-500
-    Acabamento: "#10b981", // emerald-500
-    Proteção: "#14b8a6", // teal-500
-    Geral: "#71717a", // zinc-500
-    Outros: "#78716c", // stone-500
-  };
-  const corAura = CORES_AURA[insumo.categoria] || "#71717a";
 
   const custoEfetivo = insumo.itemFracionavel && insumo.rendimentoTotal 
     ? insumo.custoMedioUnidade / insumo.rendimentoTotal 
@@ -91,11 +79,6 @@ export function CardInsumo({
       onClick={() => aoVerHistorico(insumo)}
       className="group relative bg-card rounded-xl border border-borda-sutil p-4 transition-all duration-300 hover:bg-muted/30 overflow-hidden cursor-pointer"
     >
-      {/* Aura de fundo dinâmica */}
-      <div 
-        className="absolute -right-20 -top-20 w-48 h-48 blur-[80px] opacity-[0.04] pointer-events-none transition-colors duration-1000"
-        style={{ backgroundColor: corAura }}
-      />
 
       <div className="relative z-10 flex flex-col gap-4">
         {/* LINHA SUPERIOR: INFO + DADOS + ESTOQUE */}

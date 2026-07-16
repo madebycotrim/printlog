@@ -10,7 +10,6 @@ interface PropriedadesCardCustosFixos {
   mostrar: boolean;
   setMostrar: (v: boolean) => void;
   insumosFixos: number;
-  setInsumosFixos: (v: number) => void;
   cobrarInsumosFixos: boolean;
   setCobrarInsumosFixos: (v: boolean) => void;
   itensCustosFixos: ItemCustoFixo[];
@@ -25,7 +24,6 @@ export function CardCustosFixos({
   mostrar,
   setMostrar,
   insumosFixos,
-  setInsumosFixos,
   cobrarInsumosFixos: _cobrarInsumosFixos,
   setCobrarInsumosFixos,
   itensCustosFixos,
@@ -42,7 +40,7 @@ export function CardCustosFixos({
     }]);
   };
   return (
-    <div className="flex flex-col my-6">
+    <div className="flex flex-col">
       <div className="p-4 rounded-xl bg-gradient-to-r from-pink-500/10 via-pink-500/5 to-transparent border border-pink-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(217,70,239,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 shadow-inner">

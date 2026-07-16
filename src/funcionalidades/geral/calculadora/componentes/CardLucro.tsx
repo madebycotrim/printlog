@@ -7,7 +7,7 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 interface CardLucroProps {
   margem: number;
   setMargem: (v: number) => void;
-  setCobrarMaoDeObra: (v: boolean) => void;
+  setCobrarCustosAdicionais?: (v: boolean) => void;
   setCobrarDesgaste: (v: boolean) => void;
   aplicarTemplate?: boolean;
 }
@@ -15,7 +15,7 @@ interface CardLucroProps {
 export const CardLucro = memo(function CardLucro({
   margem,
   setMargem,
-  setCobrarMaoDeObra,
+  setCobrarCustosAdicionais,
   setCobrarDesgaste,
   aplicarTemplate = true
 }: CardLucroProps) {
@@ -34,9 +34,9 @@ export const CardLucro = memo(function CardLucro({
   ];
 
   const templatesPadrao = [
-    { id: '1', nome: 'Action Figure', descricao: 'Margem + Mão de Obra', margem: 300, maoDeObra: true, desgaste: true },
-    { id: '2', nome: 'Peça Técnica', descricao: 'Foco em Precisão', margem: 150, maoDeObra: false, desgaste: true },
-    { id: '3', nome: 'Protótipo (Rápido)', descricao: 'Baixo Custo', margem: 50, maoDeObra: false, desgaste: false }
+    { id: '1', nome: 'Action Figure', descricao: 'Margem + Custos Extras', margem: 300, custosAdicionais: true, desgaste: true },
+    { id: '2', nome: 'Peça Técnica', descricao: 'Foco em Precisão', margem: 150, custosAdicionais: false, desgaste: true },
+    { id: '3', nome: 'Protótipo (Rápido)', descricao: 'Baixo Custo', margem: 50, custosAdicionais: false, desgaste: false }
   ];
 
   const presets = config.calculadoraMeta?.presets_lucro || presetsPadrao;
@@ -129,7 +129,7 @@ export const CardLucro = memo(function CardLucro({
                     type="button" 
                     onClick={() => {
                       setMargem(t.margem * 100);
-                      setCobrarMaoDeObra(t.maoDeObra);
+                      if (setCobrarCustosAdicionais) setCobrarCustosAdicionais(t.custosAdicionais);
                       setCobrarDesgaste(t.desgaste);
                     }} 
                     className={`px-3 py-1.5 rounded-xl border border-borda-sutil hover:border-${cor}-500 hover:bg-${cor}-500/10 text-[10px] font-black text-muted-foreground hover:text-${cor}-500 transition-all uppercase tracking-widest active:scale-95 cursor-pointer`}
@@ -284,7 +284,7 @@ export const CardLucro = memo(function CardLucro({
               <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Templates de Projeto</span>
               <button 
                 type="button" 
-                onClick={() => setTemplatesEditados([...templatesEditados, { id: `custom_${Date.now()}`, nome: 'NOVO TEMPLATE', descricao: 'Descrição Curta', margem: 100, maoDeObra: false, desgaste: false }])} 
+                onClick={() => setTemplatesEditados([...templatesEditados, { id: `custom_${Date.now()}`, nome: 'NOVO TEMPLATE', descricao: 'Descrição Curta', margem: 100, custosAdicionais: false, desgaste: false }])} 
                 className="h-8 px-3 rounded-lg border border-sky-500/30 text-[9px] font-black uppercase tracking-widest text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 transition-all flex items-center gap-1.5"
               >
                 <Plus size={10} /> ADICIONAR
@@ -331,10 +331,10 @@ export const CardLucro = memo(function CardLucro({
                     
                     <button
                        type="button"
-                       onClick={() => { const n = [...templatesEditados]; n[idx].maoDeObra = !n[idx].maoDeObra; setTemplatesEditados(n); }}
-                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${t.maoDeObra ? 'bg-violet-500/10 border-violet-500/30 text-violet-600' : 'bg-white dark:bg-zinc-950 border-borda-sutil text-zinc-400'}`}
+                       onClick={() => { const n = [...templatesEditados]; n[idx].custosAdicionais = !n[idx].custosAdicionais; setTemplatesEditados(n); }}
+                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${t.custosAdicionais ? 'bg-violet-500/10 border-violet-500/30 text-violet-600' : 'bg-white dark:bg-zinc-950 border-borda-sutil text-zinc-400'}`}
                     >
-                       <Zap size={10} /> Mão de Obra
+                       <Zap size={10} /> Custos Extras
                     </button>
 
                     <button

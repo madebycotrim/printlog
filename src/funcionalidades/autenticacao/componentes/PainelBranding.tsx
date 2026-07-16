@@ -13,16 +13,11 @@ export function PainelBranding({
   descricao,
   beneficios,
   largura = "w-1/2",
-  fundoEfeito = "blue",
 }: PropsPainelBranding) {
   return (
     <div
       className={`hidden lg:flex ${largura} relative flex-col justify-between p-12 overflow-hidden border-r border-white/5 bg-black/20`}
     >
-      {/* Efeito interno sutil */}
-      <div
-        className={`absolute top-0 right-0 w-64 h-64 ${fundoEfeito === "blue" ? "bg-blue-500/10" : "bg-emerald-500/10"} blur-[80px] rounded-full pointer-events-none`}
-      ></div>
 
       {/* Logo */}
       <div className="relative z-10">

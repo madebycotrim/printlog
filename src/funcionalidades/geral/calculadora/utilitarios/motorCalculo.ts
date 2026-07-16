@@ -1,4 +1,4 @@
-import { InsumoSelecionado, ItemPosProcesso, MaterialSelecionado, ItemCustoFixo } from "../tipos";
+import { InsumoSelecionado, ItemPosProcesso, MaterialSelecionado, ItemCustoFixo, CustoAdicional } from "../tipos";
 
 export interface ParametrosCalculo {
   materiaisSelecionados: MaterialSelecionado[];
@@ -8,14 +8,14 @@ export interface ParametrosCalculo {
   tempoMinutosMaquina: number;
   potenciaWatts: number;
   precoKwhCentavos: number;
-  maoDeObraHoraCentavos: number;
+  custosAdicionais: CustoAdicional[];
   depreciacaoHoraCentavos: number;
   margemLucroPercentual: number; // 0-10000 (0-100%)
   
   // Toggles de Cobrança
   cobrarEnergia: boolean;
   cobrarDesgaste: boolean;
-  cobrarMaoDeObra: boolean;
+  cobrarCustosAdicionais: boolean;
   cobrarInsumosFixos: boolean;
   cobrarLogistica: boolean;
   
@@ -63,19 +63,19 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
   const custoTempoPerdidoCentavos = ((tempoPerdidoTotal / 60) * p.depreciacaoHoraCentavos) + (p.cobrarEnergia ? Math.round((p.potenciaWatts / 1000) * (tempoPerdidoTotal / 60) * p.precoKwhCentavos) : 0);
   const custoFalhaRealCentavos = Math.round(custoFilamentoPerdidoCentavos + custoTempoPerdidoCentavos);
   
-  const multiplicadorSetup = p.modoEntrada === 'lote' && p.pecasPorMesa > 0 ? Math.ceil(qtdReal / p.pecasPorMesa) : multiplicadorGeral;
-  const custoMaoDeObraCentavos = p.cobrarMaoDeObra ? Math.round(((p.tempoSetupMinutos * multiplicadorSetup) / 60) * p.maoDeObraHoraCentavos) : 0;
+  const custoAdicionalTotalCentavos = p.cobrarCustosAdicionais 
+    ? p.custosAdicionais.reduce((acc, c) => acc + c.valorCentavos, 0) * multiplicadorGeral 
+    : 0;
   
   const custoPosProcessoCentavos = p.itensPosProcesso.reduce((t, i) => {
-    const custoTempoObra = p.cobrarMaoDeObra ? (i.tempoMinutos * (p.maoDeObraHoraCentavos / 60)) : 0;
-    return t + custoTempoObra + i.custoMaterialCentavos;
+    return t + i.custoMaterialCentavos;
   }, 0) * multiplicadorGeral;
   const totalItensFixos = p.itensCustosFixos?.reduce((sum, item) => sum + item.valorCentavos, 0) || 0;
   const custoInsumosFixosCentavos = p.cobrarInsumosFixos ? p.insumosFixosCentavos + totalItensFixos : 0; // Fixos não multiplicam
   const custoFreteCentavos = p.cobrarLogistica ? p.freteCentavos : 0;
   const custoModelagemCentavos = Math.round((p.tempoModelagemMinutos / 60) * p.valorHoraModelagemCentavos);
   
-  const custoProducaoTotalCentavos = custoMaterialTotalCentavos + custoEnergiaCentavos + custoMaoDeObraCentavos + custoDepreciacaoCentavos + custoPosProcessoCentavos + custoInsumosDinamicosCentavos + custoInsumosFixosCentavos + custoFalhaRealCentavos;
+  const custoProducaoTotalCentavos = custoMaterialTotalCentavos + custoEnergiaCentavos + custoAdicionalTotalCentavos + custoDepreciacaoCentavos + custoPosProcessoCentavos + custoInsumosDinamicosCentavos + custoInsumosFixosCentavos + custoFalhaRealCentavos;
 
   const margemPercentual = p.margemLucroPercentual / 10000;
   const taxaMktPercentual = p.cobrarLogistica ? p.taxaEcommercePercentual / 10000 : 0;
@@ -96,7 +96,7 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
   return {
     custoMaterial: Math.round(custoMaterialTotalCentavos),
     custoEnergia: custoEnergiaCentavos,
-    custoMaoDeObra: custoMaoDeObraCentavos,
+    custoAdicionalTotal: custoAdicionalTotalCentavos,
     custoDepreciacao: custoDepreciacaoCentavos,
     custoPosProcesso: custoPosProcessoCentavos,
     custoInsumos: custoInsumosDinamicosCentavos + custoInsumosFixosCentavos,

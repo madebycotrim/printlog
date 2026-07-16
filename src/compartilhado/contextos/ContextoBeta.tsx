@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from "react";
-import { registrar } from "@/compartilhado/utilitarios/registrador";
+
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
@@ -43,7 +43,6 @@ export function useBeta() {
   return useContext(ContextoBeta);
 }
 
-const CHAVE_BETA = "printlog:beta_preferencias" as const;
 
 export function ProvedorBeta({ children }: { children: ReactNode }) {
   const { usuario } = useAutenticacao();

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 // Removed persist to keep calculator in memory only
 import { temporal } from 'zundo';
 import { ParametrosCalculo, executarMotorCalculo } from '../utilitarios/motorCalculo';
-import { MaterialSelecionado, InsumoSelecionado, ItemPosProcesso, CalculoResultado, ItemCustoFixo } from '../tipos';
+import { MaterialSelecionado, InsumoSelecionado, ItemPosProcesso, CalculoResultado, CustoAdicional } from '../tipos';
 
 export interface OrcamentoSnapshot {
   id: string;
@@ -22,12 +22,12 @@ const estadoInicialParametros: ParametrosCalculo = {
   tempoMinutosMaquina: 0,
   potenciaWatts: 0,
   precoKwhCentavos: 0,
-  maoDeObraHoraCentavos: 0,
+  custosAdicionais: [],
   depreciacaoHoraCentavos: 0,
   margemLucroPercentual: 10000, 
   cobrarEnergia: true,
   cobrarDesgaste: true,
-  cobrarMaoDeObra: true,
+  cobrarCustosAdicionais: true,
   cobrarInsumosFixos: true,
   cobrarLogistica: true,
   modoEntrada: 'lote',
@@ -47,7 +47,7 @@ const estadoInicialParametros: ParametrosCalculo = {
 const estadoInicialResultado: CalculoResultado = {
   custoMaterial: 0,
   custoEnergia: 0,
-  custoMaoDeObra: 0,
+  custoAdicionalTotal: 0,
   custoDepreciacao: 0,
   custoPosProcesso: 0,
   custoInsumos: 0,
@@ -77,6 +77,8 @@ export interface EstadoCalculadora extends ParametrosCalculo {
   removerInsumo: (id: string) => void;
   adicionarPosProcesso: (p: ItemPosProcesso) => void;
   removerPosProcesso: (id: string) => void;
+  adicionarCustoAdicional: (c: CustoAdicional) => void;
+  removerCustoAdicional: (id: string) => void;
   limpar: () => void;
   historico: OrcamentoSnapshot[];
   salvarSnapshot: (nome: string, descricao?: string, clienteId?: string) => void;
@@ -86,7 +88,7 @@ export interface EstadoCalculadora extends ParametrosCalculo {
   restaurarRascunho: (rascunho: Partial<ParametrosCalculo>) => void;
   obterParametros: () => ParametrosCalculo;
   jaFoiInicializado: boolean;
-  inicializarComConfiguracoes: (cfg: { precoKwhCentavos: number, maoDeObraHoraCentavos: number, margemLucroPercentual: number }) => void;
+  inicializarComConfiguracoes: (cfg: { precoKwhCentavos: number, margemLucroPercentual: number }) => void;
 }
 
 export const useArmazemCalculadora = create<EstadoCalculadora>()(
@@ -101,7 +103,6 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
         if (!get().jaFoiInicializado) {
           set({
             precoKwhCentavos: cfg.precoKwhCentavos,
-            maoDeObraHoraCentavos: cfg.maoDeObraHoraCentavos,
             margemLucroPercentual: cfg.margemLucroPercentual,
             jaFoiInicializado: true
           });
@@ -130,12 +131,12 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           tempoMinutosMaquina: estadoAtual.tempoMinutosMaquina,
           potenciaWatts: estadoAtual.potenciaWatts,
           precoKwhCentavos: estadoAtual.precoKwhCentavos,
-          maoDeObraHoraCentavos: estadoAtual.maoDeObraHoraCentavos,
+          custosAdicionais: (estadoAtual as any).custosAdicionais || [],
           depreciacaoHoraCentavos: estadoAtual.depreciacaoHoraCentavos,
           margemLucroPercentual: estadoAtual.margemLucroPercentual,
           cobrarEnergia: estadoAtual.cobrarEnergia,
           cobrarDesgaste: estadoAtual.cobrarDesgaste,
-          cobrarMaoDeObra: estadoAtual.cobrarMaoDeObra,
+          cobrarCustosAdicionais: estadoAtual.cobrarCustosAdicionais,
           cobrarInsumosFixos: estadoAtual.cobrarInsumosFixos,
           cobrarLogistica: estadoAtual.cobrarLogistica,
           modoEntrada: estadoAtual.modoEntrada,
@@ -212,6 +213,16 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
         get().atualizarCalculo();
       },
 
+      adicionarCustoAdicional: (c) => {
+        set((state) => ({ custosAdicionais: [...state.custosAdicionais, c] }));
+        get().atualizarCalculo();
+      },
+
+      removerCustoAdicional: (id) => {
+        set((state) => ({ custosAdicionais: state.custosAdicionais.filter(item => item.id !== id) }));
+        get().atualizarCalculo();
+      },
+
       limpar: () => {
         set({
           ...estadoInicialParametros,
@@ -229,12 +240,12 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           tempoMinutosMaquina: estadoAtual.tempoMinutosMaquina,
           potenciaWatts: estadoAtual.potenciaWatts,
           precoKwhCentavos: estadoAtual.precoKwhCentavos,
-          maoDeObraHoraCentavos: estadoAtual.maoDeObraHoraCentavos,
+          custosAdicionais: (estadoAtual as any).custosAdicionais || [],
           depreciacaoHoraCentavos: estadoAtual.depreciacaoHoraCentavos,
           margemLucroPercentual: estadoAtual.margemLucroPercentual,
           cobrarEnergia: estadoAtual.cobrarEnergia,
           cobrarDesgaste: estadoAtual.cobrarDesgaste,
-          cobrarMaoDeObra: estadoAtual.cobrarMaoDeObra,
+          cobrarCustosAdicionais: estadoAtual.cobrarCustosAdicionais,
           cobrarInsumosFixos: estadoAtual.cobrarInsumosFixos,
           cobrarLogistica: estadoAtual.cobrarLogistica,
           modoEntrada: estadoAtual.modoEntrada,
@@ -294,12 +305,12 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           tempoMinutosMaquina: estadoAtual.tempoMinutosMaquina,
           potenciaWatts: estadoAtual.potenciaWatts,
           precoKwhCentavos: estadoAtual.precoKwhCentavos,
-          maoDeObraHoraCentavos: estadoAtual.maoDeObraHoraCentavos,
+          custosAdicionais: (estadoAtual as any).custosAdicionais || [],
           depreciacaoHoraCentavos: estadoAtual.depreciacaoHoraCentavos,
           margemLucroPercentual: estadoAtual.margemLucroPercentual,
           cobrarEnergia: estadoAtual.cobrarEnergia,
           cobrarDesgaste: estadoAtual.cobrarDesgaste,
-          cobrarMaoDeObra: estadoAtual.cobrarMaoDeObra,
+          cobrarCustosAdicionais: estadoAtual.cobrarCustosAdicionais,
           cobrarInsumosFixos: estadoAtual.cobrarInsumosFixos,
           cobrarLogistica: estadoAtual.cobrarLogistica,
           modoEntrada: estadoAtual.modoEntrada,

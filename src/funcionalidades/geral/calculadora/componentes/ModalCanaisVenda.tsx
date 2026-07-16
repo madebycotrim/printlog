@@ -1,6 +1,6 @@
-import { Store, Check, X, Pencil, Trash, Plus, ShoppingBag } from "lucide-react";
+import { Store, Trash, Plus, ShoppingBag } from "lucide-react";
 import { Dialogo, InputBancario } from "@/compartilhado/componentes";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 interface PropriedadesModalCanaisVenda {
   aberto: boolean;

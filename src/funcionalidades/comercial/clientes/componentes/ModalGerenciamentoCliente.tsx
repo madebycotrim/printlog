@@ -96,10 +96,10 @@ export function ModalGerenciamentoCliente({
               className="flex-1 flex flex-col"
             >
               {abaAtiva === "historico" && (
-                <AbaHistoricoCliente cliente={cliente} />
+                <AbaHistoricoCliente cliente={cliente as Cliente} />
               )}
               {abaAtiva === "privacidade" && (
-                <AbaPrivacidadeCliente cliente={cliente} />
+                <AbaPrivacidadeCliente cliente={cliente as Cliente} />
               )}
               {abaAtiva === "config" && (
                 <FormularioClienteConteudo 

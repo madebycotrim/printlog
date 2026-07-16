@@ -1,5 +1,5 @@
 import { Dialogo } from "@/compartilhado/componentes";
-import { Mail, ArrowRight, X } from "lucide-react";
+import { Mail, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 

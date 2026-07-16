@@ -34,7 +34,7 @@ export function CardPerdas({
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
   const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
   return (
-    <div className="flex flex-col my-6">
+    <div className="flex flex-col">
       <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 shadow-inner">

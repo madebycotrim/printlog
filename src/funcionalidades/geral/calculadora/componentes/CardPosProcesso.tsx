@@ -1,15 +1,12 @@
-import { useState, useEffect, memo } from "react";
+import { useEffect, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Brush } from "lucide-react";
+import { Trash2, Brush } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
 import { InputBancario } from "@/compartilhado/componentes/ui";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardPosProcessoProps {
   posProcesso: ItemPosProcesso[];
   setPosProcesso: (v: ItemPosProcesso[]) => void;
-  maoDeObraHoraCentavos: number;
-  cobrarMaoDeObra: boolean;
   quantidade: number;
   modoEntrada?: 'unitario' | 'lote' | 'projeto';
   mostrar: boolean;
@@ -17,11 +14,10 @@ interface CardPosProcessoProps {
 }
 
 export const CardPosProcesso = memo(function CardPosProcesso({
-  posProcesso, setPosProcesso, maoDeObraHoraCentavos, cobrarMaoDeObra, quantidade, modoEntrada = 'lote', mostrar, setMostrar
+  posProcesso, setPosProcesso, quantidade, modoEntrada = 'lote', mostrar, setMostrar
 }: CardPosProcessoProps) {
   
   const textoModo = modoEntrada === 'unitario' ? 'Unidade' : modoEntrada === 'projeto' ? 'Projeto' : 'Lote';
-  const temPosProcesso = posProcesso.length > 0;
 
   // Mantém o painel aberto caso haja valor configurado
   useEffect(() => {
@@ -32,8 +28,7 @@ export const CardPosProcesso = memo(function CardPosProcesso({
 
   const calcularCustoTotalPosProcesso = () => {
     return posProcesso.reduce((t, i) => {
-      const custoTempoObra = cobrarMaoDeObra ? (i.tempoMinutos * (maoDeObraHoraCentavos / 60)) : 0;
-      return t + custoTempoObra + i.custoMaterialCentavos;
+      return t + i.custoMaterialCentavos;
     }, 0) * quantidade;
   };
 
@@ -47,7 +42,7 @@ export const CardPosProcesso = memo(function CardPosProcesso({
   };
 
   return (
-    <div className="flex flex-col my-6">
+    <div className="flex flex-col">
       <div className="p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent border border-rose-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(244,63,94,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 shadow-inner shrink-0">

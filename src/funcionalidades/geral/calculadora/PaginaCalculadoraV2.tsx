@@ -46,7 +46,7 @@ import { CardMateriais } from "./componentes/CardMateriais";
 import { CardPerdas } from "./componentes/CardPerdas";
 import { CardInsumos } from "./componentes/CardInsumos";
 import { CardCustosFixos } from "./componentes/CardCustosFixos";
-import { CardMaoDeObra } from "./componentes/CardMaoDeObra";
+import { CardCustosAdicionais } from "./componentes/CardCustosAdicionais";
 import { CardDepreciacao } from "./componentes/CardDepreciacao";
 import { CardLucro } from "./componentes/CardLucro";
 import { CardProducao } from "./componentes/CardProducao";
@@ -288,7 +288,7 @@ export function PaginaCalculadoraV2() {
       const sugestao = await servicoIA.obterSugestaoPreco({
         custoMaterial: armazem.resultado.custoMaterial / 100,
         custoEnergia: armazem.resultado.custoEnergia / 100,
-        custoTrabalho: armazem.resultado.custoMaoDeObra / 100,
+        custoTrabalho: armazem.resultado.custoAdicionalTotal / 100,
         custoDepreciacao: armazem.resultado.custoDepreciacao / 100,
         lucroDesejadoPercentual: armazem.margemLucroPercentual,
         nomePeca: nomeProjeto || "Projeto 3D",
@@ -356,7 +356,6 @@ export function PaginaCalculadoraV2() {
     if (!idEdicao && !armazem.jaFoiInicializado && !config.carregando) {
       armazem.inicializarComConfiguracoes({
         precoKwhCentavos: config.custoEnergia * 100,
-        maoDeObraHoraCentavos: config.horaOperador * 100,
         margemLucroPercentual: config.margemLucro * 100
       });
     }
@@ -525,9 +524,9 @@ export function PaginaCalculadoraV2() {
                 setClienteProjetoId(id);
                 const cli = estadoClientes.clientes?.find(c => c.id === id);
                 if (cli && cli.canalReferencia) {
-                  const canal = armazem.perfisMarketplace.find(c => c.nome === cli.canalReferencia);
+                  const canal = perfisMarketplace.find((c: any) => c.nome === cli.canalReferencia);
                   if (canal) {
-                    armazem.setPerfilAtivo(canal.nome);
+                    setPerfilAtivo(canal.nome);
                     armazem.setParametro('taxaEcommercePercentual', canal.taxaVariavel || 0);
                     armazem.setParametro('taxaFixaVendaCentavos', canal.taxaFixaCentavos || 0);
                     toast.success(`Taxas do canal ${canal.nome} aplicadas automaticamente!`, { id: "canal-venda" });
@@ -607,141 +606,160 @@ export function PaginaCalculadoraV2() {
           </div>
         </div>
 
-        <CardMateriais
-          materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
-          selecionados={armazem.materiaisSelecionados} alertas={[]} 
-          busca={buscaMaterial} setBusca={setBuscaMaterial}
-          alternar={alternarMaterial} atualizarQtd={atualizarQtdMaterial}
-          atualizarPreco={atualizarPrecoMaterial} atualizarTempo={atualizarTempoMaterial}
-          atualizarNomePeca={atualizarNomePecaMaterial} remover={armazem.removerMaterial}
-          abrirArmazem={() => setModalArmazemMateriaisAberto(true)} 
-          abrirCriar={() => acoesMateriais.abrirEditar(null as any)} 
-          alternarFavorito={() => {}} 
-          adicionarPeca={adicionarSubPeca}
-        />
+        <section className="space-y-4 mt-4">
+          <div className="flex items-center gap-2 px-2">
+            <h2 className="text-sm font-black text-white tracking-widest uppercase">Materiais e Insumos</h2>
+          </div>
+          <div className="flex flex-col gap-6">
+            <CardMateriais
+              materiais={materiais.filter(m => !m.arquivado && m.nome.toLowerCase().includes(buscaMaterial.toLowerCase()))}
+              selecionados={armazem.materiaisSelecionados} alertas={[]} 
+              busca={buscaMaterial} setBusca={setBuscaMaterial}
+              alternar={alternarMaterial} atualizarQtd={atualizarQtdMaterial}
+              atualizarPreco={atualizarPrecoMaterial} atualizarTempo={atualizarTempoMaterial}
+              atualizarNomePeca={atualizarNomePecaMaterial} remover={armazem.removerMaterial}
+              abrirArmazem={() => setModalArmazemMateriaisAberto(true)} 
+              abrirCriar={() => acoesMateriais.abrirEditar(null as any)} 
+              alternarFavorito={() => {}} 
+              adicionarPeca={adicionarSubPeca}
+            />
 
-        <CardPerdas
-          mostrar={mostrarPerdas} setMostrar={setMostrarPerdas}
-          materialPerdido={armazem.materialPerdidoGramas} setMaterialPerdido={v => armazem.setParametro('materialPerdidoGramas', v)}
-          tempoPerdido={armazem.tempoPerdidoMinutos} setTempoPerdido={v => armazem.setParametro('tempoPerdidoMinutos', v)}
-          custoFalha={armazem.resultado.custoFalha}
-          modoEntrada={armazem.modoEntrada}
-        />
+            <CardInsumos
+              insumos={insumosEstoque} selecionados={armazem.insumosSelecionados}
+              alertas={[]} busca={buscaInsumo} setBusca={setBuscaInsumo}
+              alternar={(insumo: any) => {
+                const existe = armazem.insumosSelecionados.some(i => i.id === insumo.id);
+                if (existe) {
+                  armazem.removerInsumo(insumo.id);
+                } else {
+                  armazem.adicionarInsumo({
+                    id: insumo.id,
+                    nome: insumo.nome,
+                    quantidade: 1,
+                    custoCentavos: insumo.custoMedioUnidade,
+                    porLote: false
+                  });
+                }
+              }} 
+              atualizarQtd={(id: string, qtd: number) => {
+                const selec = armazem.insumosSelecionados;
+                const index = selec.findIndex(i => i.id === id);
+                if (index !== -1) {
+                  const novo = [...selec];
+                  novo[index] = { ...novo[index], quantidade: qtd };
+                  armazem.setParametro('insumosSelecionados', novo);
+                }
+              }} 
+              remover={armazem.removerInsumo}
+              alternarPorLote={(id: string) => {
+                const selec = armazem.insumosSelecionados;
+                const index = selec.findIndex(i => i.id === id);
+                if (index !== -1) {
+                  const novo = [...selec];
+                  novo[index] = { ...novo[index], porLote: !novo[index].porLote };
+                  armazem.setParametro('insumosSelecionados', novo);
+                }
+              }}
+              abrirGerenciar={() => setModalArmazemInsumosAberto(true)}
+              abrirNovo={() => acoesInsumos.abrirEditar(null as any)}
+              modoEntrada={armazem.modoEntrada} alternarFavorito={() => {}}
+            />
+          </div>
+        </section>
 
-        <CardModelagem
-          mostrar={mostrarModelagem} setMostrar={setMostrarModelagem}
-          tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
-          valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
-          modoEntrada={armazem.modoEntrada}
-        />
+        <section className="space-y-4 mt-8">
+          <div className="flex items-center gap-2 px-2">
+            <h2 className="text-sm font-black text-white tracking-widest uppercase">Serviços e Adicionais</h2>
+          </div>
+          <div className="flex flex-col gap-6">
+            <CardModelagem
+              mostrar={mostrarModelagem} setMostrar={setMostrarModelagem}
+              tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
+              valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
+              modoEntrada={armazem.modoEntrada}
+            />
 
-        <CardMaoDeObra
-          maoDeObra={armazem.maoDeObraHoraCentavos}
-          setMaoDeObra={v => armazem.setParametro('maoDeObraHoraCentavos', v)}
-          cobrarMaoDeObra={armazem.cobrarMaoDeObra}
-          setCobrarMaoDeObra={v => armazem.setParametro('cobrarMaoDeObra', v)}
-          tempoSetup={armazem.tempoSetupMinutos}
-          setTempoSetup={v => armazem.setParametro('tempoSetupMinutos', v)}
-        />
+            <CardPosProcesso
+              mostrar={mostrarPosProcesso} setMostrar={setMostrarPosProcesso}
+              posProcesso={armazem.itensPosProcesso}
+              setPosProcesso={v => {
+                const existingIds = armazem.itensPosProcesso.map(i => i.id);
+                existingIds.forEach(id => armazem.removerPosProcesso(id));
+                v.forEach(i => armazem.adicionarPosProcesso(i));
+              }}
+              quantidade={armazem.quantidade}
+              modoEntrada={armazem.modoEntrada}
+            />
 
-        <CardPosProcesso
-          mostrar={mostrarPosProcesso} setMostrar={setMostrarPosProcesso}
-          posProcesso={armazem.itensPosProcesso}
-          setPosProcesso={v => {
-            const existingIds = armazem.itensPosProcesso.map(i => i.id);
-            existingIds.forEach(id => armazem.removerPosProcesso(id));
-            v.forEach(i => armazem.adicionarPosProcesso(i));
-          }}
-          maoDeObraHoraCentavos={armazem.maoDeObraHoraCentavos}
-          cobrarMaoDeObra={armazem.cobrarMaoDeObra}
-          quantidade={armazem.quantidade}
-          modoEntrada={armazem.modoEntrada}
-        />
+            <CardCustosAdicionais
+              custosAdicionais={armazem.custosAdicionais || []}
+              adicionarCustoAdicional={armazem.adicionarCustoAdicional}
+              removerCustoAdicional={armazem.removerCustoAdicional}
+              cobrarCustosAdicionais={armazem.cobrarCustosAdicionais}
+              setCobrarCustosAdicionais={v => armazem.setParametro('cobrarCustosAdicionais', v)}
+              multiplicadorGeral={armazem.quantidade}
+            />
+          </div>
+        </section>
 
-        <CardInsumos
-          insumos={insumosEstoque} selecionados={armazem.insumosSelecionados}
-          alertas={[]} busca={buscaInsumo} setBusca={setBuscaInsumo}
-          alternar={(insumo: any) => {
-            const existe = armazem.insumosSelecionados.some(i => i.id === insumo.id);
-            if (existe) {
-              armazem.removerInsumo(insumo.id);
-            } else {
-              armazem.adicionarInsumo({
-                id: insumo.id,
-                nome: insumo.nome,
-                quantidade: 1,
-                custoCentavos: insumo.custoMedioUnidade,
-                porLote: false
-              });
-            }
-          }} 
-          atualizarQtd={(id: string, qtd: number) => {
-            const selec = armazem.insumosSelecionados;
-            const index = selec.findIndex(i => i.id === id);
-            if (index !== -1) {
-              const novo = [...selec];
-              novo[index] = { ...novo[index], quantidade: qtd };
-              armazem.setParametro('insumosSelecionados', novo);
-            }
-          }} 
-          remover={armazem.removerInsumo}
-          alternarPorLote={(id: string) => {
-            const selec = armazem.insumosSelecionados;
-            const index = selec.findIndex(i => i.id === id);
-            if (index !== -1) {
-              const novo = [...selec];
-              novo[index] = { ...novo[index], porLote: !novo[index].porLote };
-              armazem.setParametro('insumosSelecionados', novo);
-            }
-          }}
-          abrirGerenciar={() => setModalArmazemInsumosAberto(true)}
-          abrirNovo={() => acoesInsumos.abrirEditar(null as any)}
-          modoEntrada={armazem.modoEntrada} alternarFavorito={() => {}}
-        />
+        <section className="space-y-4 mt-8 mb-8">
+          <div className="flex items-center gap-2 px-2">
+            <h2 className="text-sm font-black text-white tracking-widest uppercase">Logística e Precificação</h2>
+          </div>
+          <div className="flex flex-col gap-6">
+            <CardPerdas
+              mostrar={mostrarPerdas} setMostrar={setMostrarPerdas}
+              materialPerdido={armazem.materialPerdidoGramas} setMaterialPerdido={v => armazem.setParametro('materialPerdidoGramas', v)}
+              tempoPerdido={armazem.tempoPerdidoMinutos} setTempoPerdido={v => armazem.setParametro('tempoPerdidoMinutos', v)}
+              custoFalha={armazem.resultado.custoFalha}
+              modoEntrada={armazem.modoEntrada}
+            />
 
-        <CardCustosFixos
-          mostrar={mostrarCustosFixos} setMostrar={setMostrarCustosFixos}
-          insumosFixos={armazem.insumosFixosCentavos} setInsumosFixos={v => armazem.setParametro('insumosFixosCentavos', v)}
-          cobrarInsumosFixos={armazem.cobrarInsumosFixos} setCobrarInsumosFixos={v => armazem.setParametro('cobrarInsumosFixos', v)}
-          itensCustosFixos={armazem.itensCustosFixos || []}
-          setItensCustosFixos={v => armazem.setParametro('itensCustosFixos', v)}
-          modoEntrada={armazem.modoEntrada}
-        />
+            <CardCustosFixos
+              mostrar={mostrarCustosFixos} setMostrar={setMostrarCustosFixos}
+              insumosFixos={armazem.insumosFixosCentavos}
+              cobrarInsumosFixos={armazem.cobrarInsumosFixos} setCobrarInsumosFixos={v => armazem.setParametro('cobrarInsumosFixos', v)}
+              itensCustosFixos={armazem.itensCustosFixos || []}
+              setItensCustosFixos={v => armazem.setParametro('itensCustosFixos', v)}
+              modoEntrada={armazem.modoEntrada}
+            />
 
-        <CardLucro
-          margem={armazem.margemLucroPercentual}
-          setMargem={v => armazem.setParametro('margemLucroPercentual', v)}
-          setCobrarMaoDeObra={v => armazem.setParametro('cobrarMaoDeObra', v)}
-          setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
-          aplicarTemplate={true}
-        />
+            <CardLogistica
+              perfis={perfisMarketplace}
+              perfilAtivo={perfilAtivo}
+              setPerfilAtivo={(nome) => {
+                setPerfilAtivo(nome);
+                const p = perfisMarketplace.find((x: any) => x.nome === nome);
+                if (p) {
+                  armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
+                  armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
+                  armazem.setParametro('freteCentavos', p.freteCentavos);
+                } else {
+                  armazem.setParametro('taxaEcommercePercentual', 0);
+                  armazem.setParametro('taxaFixaVendaCentavos', 0);
+                  armazem.setParametro('freteCentavos', 0);
+                }
+              }}
+              taxaEcommerce={armazem.taxaEcommercePercentual}
+              setTaxaEcommerce={v => armazem.setParametro('taxaEcommercePercentual', v)}
+              taxaFixa={armazem.taxaFixaVendaCentavos}
+              setTaxaFixa={v => armazem.setParametro('taxaFixaVendaCentavos', v)}
+              frete={armazem.freteCentavos}
+              setFrete={v => armazem.setParametro('freteCentavos', v)}
+              abrirPerfis={() => setModalCanaisAberto(true)}
+              cobrarLogistica={armazem.cobrarLogistica}
+              setCobrarLogistica={v => armazem.setParametro('cobrarLogistica', v)}
+            />
 
-         <CardLogistica
-          perfis={perfisMarketplace}
-          perfilAtivo={perfilAtivo}
-          setPerfilAtivo={(nome) => {
-            setPerfilAtivo(nome);
-            const p = perfisMarketplace.find((x: any) => x.nome === nome);
-            if (p) {
-              armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
-              armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
-              armazem.setParametro('freteCentavos', p.freteCentavos);
-            } else {
-              armazem.setParametro('taxaEcommercePercentual', 0);
-              armazem.setParametro('taxaFixaVendaCentavos', 0);
-              armazem.setParametro('freteCentavos', 0);
-            }
-          }}
-          taxaEcommerce={armazem.taxaEcommercePercentual}
-          setTaxaEcommerce={v => armazem.setParametro('taxaEcommercePercentual', v)}
-          taxaFixa={armazem.taxaFixaVendaCentavos}
-          setTaxaFixa={v => armazem.setParametro('taxaFixaVendaCentavos', v)}
-          frete={armazem.freteCentavos}
-          setFrete={v => armazem.setParametro('freteCentavos', v)}
-          abrirPerfis={() => setModalCanaisAberto(true)}
-          cobrarLogistica={armazem.cobrarLogistica}
-          setCobrarLogistica={v => armazem.setParametro('cobrarLogistica', v)}
-        />
+            <CardLucro
+              margem={armazem.margemLucroPercentual}
+              setMargem={v => armazem.setParametro('margemLucroPercentual', v)}
+              setCobrarCustosAdicionais={v => armazem.setParametro('cobrarCustosAdicionais', v)}
+              setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
+              aplicarTemplate={true}
+            />
+          </div>
+        </section>
         
       </div>
 
@@ -796,12 +814,12 @@ export function PaginaCalculadoraV2() {
                             tempoMinutosMaquina: armazem.tempoMinutosMaquina,
                             potenciaWatts: armazem.potenciaWatts,
                             precoKwhCentavos: armazem.precoKwhCentavos,
-                            maoDeObraHoraCentavos: armazem.maoDeObraHoraCentavos,
+                            custosAdicionais: armazem.custosAdicionais,
                             depreciacaoHoraCentavos: armazem.depreciacaoHoraCentavos,
                             margemLucroPercentual: armazem.margemLucroPercentual,
                             cobrarEnergia: armazem.cobrarEnergia,
                             cobrarDesgaste: armazem.cobrarDesgaste,
-                            cobrarMaoDeObra: armazem.cobrarMaoDeObra,
+                            cobrarCustosAdicionais: armazem.cobrarCustosAdicionais,
                             cobrarInsumosFixos: armazem.cobrarInsumosFixos,
                             cobrarLogistica: armazem.cobrarLogistica,
                             modoEntrada: armazem.modoEntrada,

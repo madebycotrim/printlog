@@ -248,7 +248,7 @@ export const PainelResultados = memo(function PainelResultados({
             { label: 'Perdas & Falhas', valor: calculo.custoFalha || 0, icone: AlertTriangle, cor: 'text-rose-500' },
             { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-indigo-400' },
             { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
-            { label: 'Mão de Obra', valor: calculo.custoMaoDeObra, icone: Timer, cor: 'text-emerald-400' },
+            { label: 'Custos Adicionais', valor: calculo.custoAdicionalTotal, icone: Timer, cor: 'text-emerald-400' },
             { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400' },
             { label: 'Comissão Marketplace', valor: calculo.taxaComissao ?? 0, icone: DollarSign, cor: 'text-violet-400' },
             { label: 'Taxa Fixa Plataforma', valor: calculo.taxaFixaVenda ?? 0, icone: DollarSign, cor: 'text-purple-400' },

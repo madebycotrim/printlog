@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Dialogo } from "@/compartilhado/componentes/ui";
-import { Sparkles, MapPin, X } from "lucide-react";
+import { Sparkles, MapPin } from "lucide-react";
 import { TARIFAS_KWH_POR_ESTADO, detectarTarifaKwhAutomatico } from "@/compartilhado/utilitarios/tarifas-energia";
 
 interface Props {

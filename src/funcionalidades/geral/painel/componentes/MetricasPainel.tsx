@@ -36,8 +36,6 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
   const pedidosConcluidos = pedidos.filter(p => p.status === StatusPedido.CONCLUIDO);
   // 💰 FINANCEIRO AVANÇADO (Lendo dados reais das máquinas)
   const totalFaturadoCentavos = impressoras.reduce((acc, i) => acc + (i.receitaAcumuladaCentavos || 0), 0);
-  const totalCustoEnergiaCentavos = impressoras.reduce((acc, i) => acc + (i.custoEnergiaCentavos || 0), 0);
-  
   const lucroTotalCentavos = impressoras.reduce((acc, i) => {
     // Estimativa grosseira de custo de material se não houver cálculo de insumos perfeito salvo: 30% da receita.
     const lucroAproximadoDaMaquina = (i.receitaAcumuladaCentavos || 0) * 0.7 - (i.custoEnergiaCentavos || 0);

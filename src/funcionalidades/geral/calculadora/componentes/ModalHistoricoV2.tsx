@@ -1,5 +1,5 @@
 import { Dialogo } from "@/compartilhado/componentes";
-import { Timer, Trash2, Check, Save, X } from "lucide-react";
+import { Timer, Trash2, Check, Save } from "lucide-react";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { OrcamentoSnapshot } from "../estado/armazemCalculadora";
 import { useState } from "react";

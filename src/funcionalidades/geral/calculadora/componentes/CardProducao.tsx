@@ -1,9 +1,7 @@
-import { Zap, Plus, Trash2, Minus, Sparkles } from "lucide-react";
-import { ItemPosProcesso } from "../tipos";
+import { Zap, Plus, Minus, Sparkles } from "lucide-react";
 import { useState, memo } from "react";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
-import { toast } from "react-hot-toast";
-import { centavosParaReais, extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardProducaoProps {
   tempo: number;

@@ -20,6 +20,8 @@ export interface CriarLancamentoInput {
   categoria?: string;
   idReferencia?: string;
   idCliente?: string;
+  idPedido?: string;
+  status?: string;
   data?: Date;
 }
 

@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PenTool } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 import { InputBancario } from "@/compartilhado/componentes/ui";
+import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardModelagemProps {
   tempoModelagem: number; // minutos
@@ -23,7 +24,6 @@ export const CardModelagem = memo(function CardModelagem({
   setMostrar
 }: CardModelagemProps) {
   const textoModo = modoEntrada === 'unitario' ? 'Unidade' : modoEntrada === 'projeto' ? 'Projeto' : 'Lote';
-  const temValor = tempoModelagem > 0;
   const [tempHora, setTempHora] = useState<string | undefined>(undefined);
   const [tempMinuto, setTempMinuto] = useState<string | undefined>(undefined);
   const [tempSegundo, setTempSegundo] = useState<string | undefined>(undefined);
@@ -36,7 +36,7 @@ export const CardModelagem = memo(function CardModelagem({
   }, [tempoModelagem]);
 
   return (
-    <div className="flex flex-col my-6">
+    <div className="flex flex-col">
       <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 via-cyan-500/5 to-transparent border border-cyan-500/20 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(6,182,212,0.15)] transition-all z-10 relative">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 shadow-inner">

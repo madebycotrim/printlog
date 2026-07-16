@@ -38,6 +38,7 @@ interface ArmazemInsumosState {
     adicionarPagina: (lista: Insumo[]) => void;
     adicionarOuAtualizarInsumo: (insumo: Insumo) => void;
     removerInsumo: (id: string) => void;
+    abaterQuantidade: (id: string, quantidade: number, motivo?: string) => void;
     definirCarregando: (valor: boolean) => void;
     definirJaCarregou: (valor: boolean) => void;
 
@@ -107,6 +108,16 @@ export const useArmazemInsumos = create<ArmazemInsumosState>()(
             removerInsumo: (id) => set((state) => ({
                 insumos: state.insumos.filter((i) => i.id !== id)
             })),
+
+            abaterQuantidade: (id, quantidade, _motivo) => set((state) => {
+                const insumos = state.insumos.map((i) => {
+                    if (i.id === id) {
+                        return { ...i, quantidadeAtual: Math.max(0, i.quantidadeAtual - quantidade) };
+                    }
+                    return i;
+                });
+                return { insumos };
+            }),
 
             definirCarregando: (valor) => set({ carregando: valor }),
             definirJaCarregou: (valor) => set({ jaCarregou: valor }),

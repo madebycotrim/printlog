@@ -50,11 +50,17 @@ export interface VersaoCalculo {
   configuracoes: any;
 }
 
+export interface CustoAdicional {
+  id: string;
+  nome: string;
+  valorCentavos: number;
+}
+
 export interface CalculoResultado {
   custoMaterial: number;
   modoEntrada: 'unitario' | 'lote' | 'projeto';
   custoEnergia: number;
-  custoMaoDeObra: number;
+  custoAdicionalTotal: number;
   custoDepreciacao: number;
   custoPosProcesso: number;
   custoInsumos: number;

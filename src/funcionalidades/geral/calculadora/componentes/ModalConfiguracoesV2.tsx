@@ -1,4 +1,4 @@
-import { Crown, Settings, Zap, Percent, Wrench, Clock, X } from "lucide-react";
+import { Crown, Settings, Zap, Percent, Wrench, Clock } from "lucide-react";
 import { Dialogo, InputBancario } from "@/compartilhado/componentes";
 import { EstadoCalculadora } from "../estado/armazemCalculadora";
 
@@ -202,7 +202,6 @@ export function ModalConfiguracoesV2({
                   onChange={(e) => {
                     const v = Math.round(Number(e.target.value) * 100);
                     config.definirHoraOperador(v);
-                    armazem.setParametro("maoDeObraHoraCentavos", v);
                   }}
                   className="w-full h-full bg-transparent outline-none pl-9 pr-4 font-bold text-xs text-primary dark:text-white"
                 />
