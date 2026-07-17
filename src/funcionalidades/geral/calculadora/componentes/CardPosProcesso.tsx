@@ -1,8 +1,8 @@
 import { useEffect, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Brush } from "lucide-react";
+import { Trash2, Brush, HelpCircle } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
-import { InputBancario } from "@/compartilhado/componentes/ui";
+import { InputBancario, Dica } from "@/compartilhado/componentes/ui";
 
 interface CardPosProcessoProps {
   posProcesso: ItemPosProcesso[];
@@ -87,7 +87,12 @@ export const CardPosProcesso = memo(function CardPosProcesso({
             <div className="flex items-center justify-between pb-3 border-b border-borda-sutil mb-4">
               <div className="flex items-center gap-3">
                 <Brush size={16} className="text-rose-400" />
-                <h3 className="text-[10px] font-black uppercase tracking-wider text-rose-500">Gestão de Pós-Processamento</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-rose-500 flex items-center gap-1">
+                  Gestão de Pós-processamento
+                  <Dica texto="Atividades manuais como lixar, aplicar primer, pintar ou dar banho de álcool/isopropílico na peça após a impressão." posicao="baixo">
+                    <HelpCircle size={14} className="text-rose-400/70 hover:text-rose-500 cursor-help transition-colors" />
+                  </Dica>
+                </h3>
               </div>
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>

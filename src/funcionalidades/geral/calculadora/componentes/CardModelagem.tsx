@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { PenTool } from "lucide-react";
+import { PenTool, HelpCircle } from "lucide-react";
 import { memo, useState, useEffect } from "react";
-import { InputBancario } from "@/compartilhado/componentes/ui";
+import { InputBancario, Dica } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardModelagemProps {
@@ -82,7 +82,12 @@ export const CardModelagem = memo(function CardModelagem({
             <div className="flex items-center justify-between pb-3 border-b border-borda-sutil mb-4">
               <div className="flex items-center gap-3">
                 <PenTool size={16} className="text-cyan-400" />
-                <h3 className="text-[10px] font-black uppercase tracking-wider text-cyan-500">Gestão de Modelagem 3D</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-cyan-500 flex items-center gap-1">
+                  Gestão de Modelagem 3D
+                  <Dica texto="O tempo gasto no computador desenhando a peça do zero, ajustando as dimensões de um modelo pronto ou fatiando para a máquina." posicao="baixo">
+                    <HelpCircle size={14} className="text-cyan-400/70 hover:text-cyan-500 cursor-help transition-colors" />
+                  </Dica>
+                </h3>
               </div>
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>

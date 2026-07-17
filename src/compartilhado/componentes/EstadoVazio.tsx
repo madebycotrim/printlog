@@ -7,13 +7,14 @@ interface EstadoVazioProps {
   icone: LucideIcon;
   textoBotao?: string;
   aoClicarBotao?: () => void;
+  children?: React.ReactNode;
 }
 
 /**
  * 🎨 EstadoVazio (Versão Premium Animada)
  * Design premium com micro-animações, glow effects e flutuação.
  */
-export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoClicarBotao }: EstadoVazioProps) {
+export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoClicarBotao, children }: EstadoVazioProps) {
   return (
     <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center py-16 px-6 overflow-hidden">
       
@@ -80,6 +81,12 @@ export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoCli
             {descricao}
           </p>
         </div>
+
+        {children && (
+          <div className="mt-8 max-w-md w-full text-left">
+            {children}
+          </div>
+        )}
 
         {/* Botão */}
         {textoBotao && aoClicarBotao && (

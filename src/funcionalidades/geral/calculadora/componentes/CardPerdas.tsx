@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, AlertCircle } from "lucide-react";
+import { AlertTriangle, AlertCircle, HelpCircle } from "lucide-react";
+import { Dica } from "@/compartilhado/componentes/ui";
 
 /**
  * Interface para as propriedades do CardPerdas.
@@ -41,8 +42,8 @@ export function CardPerdas({
             <AlertTriangle size={16} className={`${materialPerdido > 0 || tempoPerdido > 0 ? "animate-pulse" : ""}`} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400">Ocorreu alguma perda ou falha nessa impressão?</span>
-            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">O prejuízo será calculado e embutido no custo operacional</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400">Prever falha ou erro de impressão?</span>
+            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Cobra um adicional no orçamento para cobrir possíveis peças perdidas</span>
           </div>
         </div>
         <button
@@ -72,7 +73,12 @@ export function CardPerdas({
             <div className="flex items-center justify-between pb-3 border-b border-borda-sutil mb-4">
               <div className="flex items-center gap-3">
                 <AlertCircle size={16} className="text-red-400" />
-                <h3 className="text-[10px] font-black uppercase tracking-wider text-red-500">Registro de Desperdício</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-red-500 flex items-center gap-1">
+                  Taxa de Risco (Gordura)
+                  <Dica texto="Estime quantas gramas de filamento ou horas costumam dar errado nesse tipo de peça. O sistema adicionará isso ao custo do cliente." posicao="baixo">
+                    <HelpCircle size={14} className="text-red-400/70 hover:text-red-500 cursor-help transition-colors" />
+                  </Dica>
+                </h3>
               </div>
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>

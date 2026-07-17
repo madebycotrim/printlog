@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from "react";
-import { Zap, Settings, Trash2, Plus, Activity } from "lucide-react";
-import { ContadorAnimado, Dialogo } from "@/compartilhado/componentes/ui";
+import { Zap, Settings, Trash2, Plus, Activity, HelpCircle } from "lucide-react";
+import { ContadorAnimado, Dialogo, Dica } from "@/compartilhado/componentes/ui";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 
@@ -166,10 +166,13 @@ export const CardLucro = memo(function CardLucro({
               <span className={`text-base font-black transition-colors duration-500 ${msgMargem.cor} opacity-50`}>%</span>
             </div>
 
-            <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 mt-2 flex items-center gap-1 bg-zinc-100 dark:bg-white/5 py-1 px-2.5 rounded-lg border border-borda-sutil" title="Fator multiplicador aplicado ao custo total para chegar ao preço de venda">
-              <span className="uppercase tracking-wider">Markup:</span>
-              <span className="font-mono text-zinc-700 dark:text-zinc-300">{(margemInterna / 100 / 100 + 1).toFixed(2)}x</span>
-            </div>
+            <Dica texto="Fator multiplicador aplicado ao custo total para chegar ao preço final." posicao="baixo">
+              <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 mt-2 flex items-center gap-1 bg-zinc-100 dark:bg-white/5 py-1 px-2.5 rounded-lg border border-borda-sutil cursor-help">
+                <span className="uppercase tracking-wider">Multiplicador (Markup):</span>
+                <span className="font-mono text-zinc-700 dark:text-zinc-300">{(margemInterna / 100 / 100 + 1).toFixed(2)}x</span>
+                <HelpCircle size={10} className="ml-1 opacity-70" />
+              </div>
+            </Dica>
           </div>
 
           <div className="md:col-span-8 flex flex-col w-full gap-3">

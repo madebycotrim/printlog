@@ -124,6 +124,7 @@ export function PaginaCalculadoraV2() {
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
   const [modalConfirmarReset, setModalConfirmarReset] = useState(false);
   const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
+  const [modoAvancado, setModoAvancado] = useState(false);
 
   // Canais de Venda / Perfis Marketplace
   const perfisPadrao = [
@@ -515,6 +516,22 @@ export function PaginaCalculadoraV2() {
       <div className="xl:col-span-8 relative space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pb-10 xl:pb-20 px-4 pt-4 -mx-4 -mt-4 scrollbar-hide">
         
         {/* O conteúdo da calculadora começa aqui */}
+        {/* Banner Modo da Calculadora */}
+        <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/40 p-4 rounded-2xl border border-borda-sutil">
+          <div className="flex flex-col">
+            <h3 className="text-sm font-black text-primary dark:text-white uppercase tracking-widest">Modo Avançado</h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5 font-bold uppercase tracking-wider">
+              {modoAvancado ? "Exibindo todos os custos, variáveis e logística" : "Exibindo apenas peças, tempo e materiais"}
+            </p>
+          </div>
+          <button 
+            onClick={() => setModoAvancado(!modoAvancado)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${modoAvancado ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${modoAvancado ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-8 h-full">
             <CardIdentificacaoProjeto
@@ -574,7 +591,7 @@ export function PaginaCalculadoraV2() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+          <div className={modoAvancado ? "lg:col-span-2" : "lg:col-span-3"}>
             <CardProducao
               quantidade={armazem.quantidade} setQuantidade={v => armazem.setParametro('quantidade', v)}
               pecasPorMesa={armazem.pecasPorMesa} setPecasPorMesa={v => armazem.setParametro('pecasPorMesa', v)}
@@ -592,18 +609,21 @@ export function PaginaCalculadoraV2() {
               }}
             />
           </div>
-          <div className="lg:col-span-1">
-            <CardDepreciacao
-              depreciacao={armazem.depreciacaoHoraCentavos}
-              cobrarDesgaste={armazem.cobrarDesgaste}
-              setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
-              anosVidaUtil={anosVidaUtil}
-              setAnosVidaUtil={setAnosVidaUtil}
-              tempo={armazem.tempoMinutosMaquina}
-              quantidade={armazem.quantidade}
-              modoEntrada={armazem.modoEntrada}
-            />
-          </div>
+          
+          {modoAvancado && (
+            <div className="lg:col-span-1">
+              <CardDepreciacao
+                depreciacao={armazem.depreciacaoHoraCentavos}
+                cobrarDesgaste={armazem.cobrarDesgaste}
+                setCobrarDesgaste={v => armazem.setParametro('cobrarDesgaste', v)}
+                anosVidaUtil={anosVidaUtil}
+                setAnosVidaUtil={setAnosVidaUtil}
+                tempo={armazem.tempoMinutosMaquina}
+                quantidade={armazem.quantidade}
+                modoEntrada={armazem.modoEntrada}
+              />
+            </div>
+          )}
         </div>
 
         <section className="space-y-4 mt-4">
@@ -667,89 +687,97 @@ export function PaginaCalculadoraV2() {
           </div>
         </section>
 
-        <section className="space-y-4 mt-8">
-          <div className="flex items-center gap-2 px-2">
-            <h2 className="text-sm font-black text-white tracking-widest uppercase">Serviços e Adicionais</h2>
-          </div>
-          <div className="flex flex-col gap-6">
-            <CardModelagem
-              mostrar={mostrarModelagem} setMostrar={setMostrarModelagem}
-              tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
-              valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
-              modoEntrada={armazem.modoEntrada}
-            />
+        {modoAvancado && (
+          <section className="space-y-4 mt-8">
+            <div className="flex items-center gap-2 px-2">
+              <h2 className="text-sm font-black text-white tracking-widest uppercase">Serviços e Adicionais</h2>
+            </div>
+            <div className="flex flex-col gap-6">
+              <CardModelagem
+                mostrar={mostrarModelagem} setMostrar={setMostrarModelagem}
+                tempoModelagem={armazem.tempoModelagemMinutos} setTempoModelagem={v => armazem.setParametro('tempoModelagemMinutos', v)}
+                valorHoraModelagem={armazem.valorHoraModelagemCentavos} setValorHoraModelagem={v => armazem.setParametro('valorHoraModelagemCentavos', v)}
+                modoEntrada={armazem.modoEntrada}
+              />
 
-            <CardPosProcesso
-              mostrar={mostrarPosProcesso} setMostrar={setMostrarPosProcesso}
-              posProcesso={armazem.itensPosProcesso}
-              setPosProcesso={v => {
-                const existingIds = armazem.itensPosProcesso.map(i => i.id);
-                existingIds.forEach(id => armazem.removerPosProcesso(id));
-                v.forEach(i => armazem.adicionarPosProcesso(i));
-              }}
-              quantidade={armazem.quantidade}
-              modoEntrada={armazem.modoEntrada}
-            />
+              <CardPosProcesso
+                mostrar={mostrarPosProcesso} setMostrar={setMostrarPosProcesso}
+                posProcesso={armazem.itensPosProcesso}
+                setPosProcesso={v => {
+                  const existingIds = armazem.itensPosProcesso.map(i => i.id);
+                  existingIds.forEach(id => armazem.removerPosProcesso(id));
+                  v.forEach(i => armazem.adicionarPosProcesso(i));
+                }}
+                quantidade={armazem.quantidade}
+                modoEntrada={armazem.modoEntrada}
+              />
 
-            <CardCustosAdicionais
-              custosAdicionais={armazem.custosAdicionais || []}
-              adicionarCustoAdicional={armazem.adicionarCustoAdicional}
-              removerCustoAdicional={armazem.removerCustoAdicional}
-              cobrarCustosAdicionais={armazem.cobrarCustosAdicionais}
-              setCobrarCustosAdicionais={v => armazem.setParametro('cobrarCustosAdicionais', v)}
-              multiplicadorGeral={armazem.quantidade}
-            />
-          </div>
-        </section>
+              <CardCustosAdicionais
+                custosAdicionais={armazem.custosAdicionais || []}
+                adicionarCustoAdicional={armazem.adicionarCustoAdicional}
+                removerCustoAdicional={armazem.removerCustoAdicional}
+                cobrarCustosAdicionais={armazem.cobrarCustosAdicionais}
+                setCobrarCustosAdicionais={v => armazem.setParametro('cobrarCustosAdicionais', v)}
+                multiplicadorGeral={armazem.quantidade}
+              />
+            </div>
+          </section>
+        )}
 
         <section className="space-y-4 mt-8 mb-8">
-          <div className="flex items-center gap-2 px-2">
-            <h2 className="text-sm font-black text-white tracking-widest uppercase">Logística e Precificação</h2>
-          </div>
+          {modoAvancado && (
+            <div className="flex items-center gap-2 px-2">
+              <h2 className="text-sm font-black text-white tracking-widest uppercase">Logística e Precificação</h2>
+            </div>
+          )}
           <div className="flex flex-col gap-6">
-            <CardPerdas
-              mostrar={mostrarPerdas} setMostrar={setMostrarPerdas}
-              materialPerdido={armazem.materialPerdidoGramas} setMaterialPerdido={v => armazem.setParametro('materialPerdidoGramas', v)}
-              tempoPerdido={armazem.tempoPerdidoMinutos} setTempoPerdido={v => armazem.setParametro('tempoPerdidoMinutos', v)}
-              custoFalha={armazem.resultado.custoFalha}
-              modoEntrada={armazem.modoEntrada}
-            />
+            {modoAvancado && (
+              <>
+                <CardPerdas
+                  mostrar={mostrarPerdas} setMostrar={setMostrarPerdas}
+                  materialPerdido={armazem.materialPerdidoGramas} setMaterialPerdido={v => armazem.setParametro('materialPerdidoGramas', v)}
+                  tempoPerdido={armazem.tempoPerdidoMinutos} setTempoPerdido={v => armazem.setParametro('tempoPerdidoMinutos', v)}
+                  custoFalha={armazem.resultado.custoFalha}
+                  modoEntrada={armazem.modoEntrada}
+                />
 
-            <CardCustosFixos
-              mostrar={mostrarCustosFixos} setMostrar={setMostrarCustosFixos}
-              insumosFixos={armazem.insumosFixosCentavos}
-              cobrarInsumosFixos={armazem.cobrarInsumosFixos} setCobrarInsumosFixos={v => armazem.setParametro('cobrarInsumosFixos', v)}
-              itensCustosFixos={armazem.itensCustosFixos || []}
-              setItensCustosFixos={v => armazem.setParametro('itensCustosFixos', v)}
-              modoEntrada={armazem.modoEntrada}
-            />
+                <CardCustosFixos
+                  mostrar={mostrarCustosFixos} setMostrar={setMostrarCustosFixos}
+                  insumosFixos={armazem.insumosFixosCentavos}
+                  cobrarInsumosFixos={armazem.cobrarInsumosFixos} setCobrarInsumosFixos={v => armazem.setParametro('cobrarInsumosFixos', v)}
+                  itensCustosFixos={armazem.itensCustosFixos || []}
+                  setItensCustosFixos={v => armazem.setParametro('itensCustosFixos', v)}
+                  modoEntrada={armazem.modoEntrada}
+                />
 
-            <CardLogistica
-              perfis={perfisMarketplace}
-              perfilAtivo={perfilAtivo}
-              setPerfilAtivo={(nome) => {
-                setPerfilAtivo(nome);
-                const p = perfisMarketplace.find((x: any) => x.nome === nome);
-                if (p) {
-                  armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
-                  armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
-                  armazem.setParametro('freteCentavos', p.freteCentavos);
-                } else {
-                  armazem.setParametro('taxaEcommercePercentual', 0);
-                  armazem.setParametro('taxaFixaVendaCentavos', 0);
-                  armazem.setParametro('freteCentavos', 0);
-                }
-              }}
-              taxaEcommerce={armazem.taxaEcommercePercentual}
-              setTaxaEcommerce={v => armazem.setParametro('taxaEcommercePercentual', v)}
-              taxaFixa={armazem.taxaFixaVendaCentavos}
-              setTaxaFixa={v => armazem.setParametro('taxaFixaVendaCentavos', v)}
-              frete={armazem.freteCentavos}
-              setFrete={v => armazem.setParametro('freteCentavos', v)}
-              abrirPerfis={() => setModalCanaisAberto(true)}
-              cobrarLogistica={armazem.cobrarLogistica}
-              setCobrarLogistica={v => armazem.setParametro('cobrarLogistica', v)}
-            />
+                <CardLogistica
+                  perfis={perfisMarketplace}
+                  perfilAtivo={perfilAtivo}
+                  setPerfilAtivo={(nome) => {
+                    setPerfilAtivo(nome);
+                    const p = perfisMarketplace.find((x: any) => x.nome === nome);
+                    if (p) {
+                      armazem.setParametro('taxaEcommercePercentual', p.taxaPontosBase);
+                      armazem.setParametro('taxaFixaVendaCentavos', p.fixaCentavos);
+                      armazem.setParametro('freteCentavos', p.freteCentavos);
+                    } else {
+                      armazem.setParametro('taxaEcommercePercentual', 0);
+                      armazem.setParametro('taxaFixaVendaCentavos', 0);
+                      armazem.setParametro('freteCentavos', 0);
+                    }
+                  }}
+                  taxaEcommerce={armazem.taxaEcommercePercentual}
+                  setTaxaEcommerce={v => armazem.setParametro('taxaEcommercePercentual', v)}
+                  taxaFixa={armazem.taxaFixaVendaCentavos}
+                  setTaxaFixa={v => armazem.setParametro('taxaFixaVendaCentavos', v)}
+                  frete={armazem.freteCentavos}
+                  setFrete={v => armazem.setParametro('freteCentavos', v)}
+                  abrirPerfis={() => setModalCanaisAberto(true)}
+                  cobrarLogistica={armazem.cobrarLogistica}
+                  setCobrarLogistica={v => armazem.setParametro('cobrarLogistica', v)}
+                />
+              </>
+            )}
 
             <CardLucro
               margem={armazem.margemLucroPercentual}

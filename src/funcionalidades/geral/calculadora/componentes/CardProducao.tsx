@@ -250,6 +250,16 @@ export const CardProducao = memo(function CardProducao({
                   className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-center" 
                 />
               </div>
+              {precoKwh > 200 && (
+                <div className="mt-2 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 flex items-start gap-1.5">
+                  <div className="text-amber-500 mt-0.5 shrink-0 text-[10px]">
+                    ⚠️
+                  </div>
+                  <span className="text-[9px] font-bold text-amber-600 dark:text-amber-500 leading-tight">
+                    Custo alto. A média no Brasil é R$ 0,90. Verifique sua conta de luz.
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

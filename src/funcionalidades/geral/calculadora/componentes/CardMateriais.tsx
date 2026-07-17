@@ -342,7 +342,8 @@ export const CardMateriais = memo(function CardMateriais({
                   
                   <div className="flex-1 w-full flex flex-col gap-3">
                     {grupo.map((item, index) => (
-                      <div key={item.instanceId || item.id} className="flex flex-col sm:flex-row sm:items-end justify-end gap-4 w-full">
+                      <div key={item.instanceId || item.id} className="flex flex-col w-full gap-1">
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-end gap-4 w-full">
                         
                         {/* Nome da Sub-Peça */}
                         <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-[140px]">
@@ -454,6 +455,19 @@ export const CardMateriais = memo(function CardMateriais({
                             </button>
                           </div>
                         </div>
+                        </div>
+                        
+                        {/* Weight Guardrail */}
+                        {item.quantidade > 1000 && item.tipo === "FDM" && (
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 flex items-start gap-2">
+                            <div className="text-amber-500 mt-0.5 shrink-0 text-[10px]">
+                              ⚠️
+                            </div>
+                            <span className="text-[9.5px] font-bold text-amber-600 dark:text-amber-500 leading-snug">
+                              Você digitou mais de 1000g (1 kg). Lembre-se que este peso deve ser <strong>apenas de 1 peça</strong>. Se você for imprimir várias peças, adicione a quantidade lá em cima no campo "Quantas Peças?".
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

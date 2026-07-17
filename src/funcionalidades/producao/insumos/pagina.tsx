@@ -72,11 +72,17 @@ export function PaginaInsumos() {
           >
             <EstadoVazio
               titulo="Nenhum insumo encontrado"
-              descricao="Adicione o seu primeiro insumo para gerenciar o seu estoque de apoio logístico."
+              descricao="Cadastre os materiais que você costuma usar para contabilizá-los em seus orçamentos."
               icone={Box}
               textoBotao="Cadastrar Insumo"
               aoClicarBotao={tentarNovoInsumo}
-            />
+            >
+              <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl mt-4">
+                <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                  <strong className="font-black uppercase tracking-wider text-[10px]">💡 Dica:</strong> Adicione itens como <strong>Filamento (PLA, PETG), Resina, Tinta, Cola, Embalagens</strong> e o que mais você usar na produção das suas peças.
+                </p>
+              </div>
+            </EstadoVazio>
           </motion.div>
         ) : (
           <motion.div

@@ -1,8 +1,8 @@
 import { memo, useState, useMemo, createElement } from "react";
-import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, LayoutGrid } from "lucide-react";
+import { Box, Package, RefreshCcw, Search, Plus, Minus, Check, Trash2, Star, LayoutGrid, HelpCircle } from "lucide-react";
 import { InsumoSelecionado } from "../tipos";
 import { motion, AnimatePresence } from "framer-motion";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { ContadorAnimado, Dica } from "@/compartilhado/componentes/ui";
 import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 import { useDragScroll } from "@/compartilhado/hooks/useDragScroll";
 
@@ -81,7 +81,12 @@ export const CardInsumos = memo(function CardInsumos({
             <Box size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Insumos e Adicionais</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
+              Materiais Adicionais (Cola, Tinta)
+              <Dica texto="Itens extras que você gasta no projeto além do filamento ou resina, como super-cola, tinta, verniz ou embalagens." posicao="baixo">
+                <HelpCircle size={14} className="text-muted-foreground hover:text-indigo-500 cursor-help transition-colors" />
+              </Dica>
+            </span>
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Complementos do projeto</span>
           </div>
         </div>

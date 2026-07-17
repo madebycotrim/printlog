@@ -57,11 +57,17 @@ export function PaginaImpressoras() {
           >
             <EstadoVazio
               titulo="Nenhuma impressora ativa"
-              descricao="Adicione sua primeira impressora 3D ou reative uma máquina arquivada para começar a produzir."
+              descricao="Para calcular custos com precisão, precisamos saber qual máquina você usa."
               icone={Printer}
               textoBotao="Cadastrar Máquina"
               aoClicarBotao={tentarNovaMaquina}
-            />
+            >
+              <div className="bg-sky-500/10 border border-sky-500/20 p-4 rounded-xl mt-4">
+                <p className="text-xs font-medium text-sky-600 dark:text-sky-400">
+                  <strong className="font-black uppercase tracking-wider text-[10px]">💡 Dica:</strong> Cadastre a sua impressora mesmo se você não souber todos os detalhes técnicos no momento.
+                </p>
+              </div>
+            </EstadoVazio>
           </motion.div>
         ) : (
           <motion.div

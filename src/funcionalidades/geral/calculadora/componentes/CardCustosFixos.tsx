@@ -47,8 +47,8 @@ export function CardCustosFixos({
             <Wallet size={16} className={`${insumosFixos > 0 ? "animate-pulse" : ""}`} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400">Deseja adicionar custos fixos extras?</span>
-            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Brindes, mimos, marketing ou custos de gestão e embalagem</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400">Deseja adicionar custos fixos do negócio?</span>
+            <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Embalagens, brindes ou repasse de custos (luz, aluguel) na peça</span>
           </div>
         </div>
         <button

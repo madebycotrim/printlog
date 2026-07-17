@@ -183,12 +183,18 @@ export function PaginaProjetos() {
     return (
       <div className="flex-1 flex items-center justify-center">
         <EstadoVazio
-          titulo="Nenhum pedido no fluxo"
-          descricao="Crie o seu primeiro pedido para iniciar a gestão de produção no Kanban."
+          titulo="Nenhum projeto salvo"
+          descricao="Aqui ficam seus orçamentos salvos. Vamos criar o primeiro?"
           icone={FolderKanban}
-          textoBotao="Novo Pedido"
+          textoBotao="Novo Projeto"
           aoClicarBotao={() => navigate("/calculadora")}
-        />
+        >
+          <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mt-4">
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <strong className="font-black uppercase tracking-wider text-[10px]">💡 Como Funciona:</strong> Use a calculadora para gerar um orçamento. Quando terminar, clique em <strong>Salvar Orçamento</strong> para que ele apareça aqui e você possa acompanhar a produção!
+            </p>
+          </div>
+        </EstadoVazio>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import { memo } from "react";
-import { Activity, Clock } from "lucide-react";
-import { ContadorAnimado } from "@/compartilhado/componentes/ui";
+import { Activity, Clock, HelpCircle } from "lucide-react";
+import { ContadorAnimado, Dica } from "@/compartilhado/componentes/ui";
 
 interface CardDepreciacaoProps {
   depreciacao: number;
@@ -33,7 +33,12 @@ export const CardDepreciacao = memo(function CardDepreciacao({
             <Activity size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Desgaste e Depreciação</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
+              Desgaste da Máquina (Reserva)
+              <Dica texto="O valor que você cobra do cliente para juntar dinheiro e comprar uma máquina nova quando essa quebrar." posicao="baixo">
+                <HelpCircle size={14} className="text-muted-foreground hover:text-stone-500 cursor-help transition-colors" />
+              </Dica>
+            </span>
             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Vida útil do equipamento</span>
           </div>
         </div>
