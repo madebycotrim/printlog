@@ -333,6 +333,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                   <button
                     onClick={lidarComSair}
                     title="Sair"
+                    aria-label="Sair da conta"
                     className="shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                   >
                     <LogOut size={16} />

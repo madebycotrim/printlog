@@ -62,14 +62,29 @@ export default function PaginaGestaoDados() {
 
   return (
     <div className="flex-1 w-full max-w-2xl mx-auto space-y-10 pb-20 animate-in fade-in duration-500 text-zinc-800 dark:text-zinc-300">
-      <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 shadow-sm">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest w-fit mb-6">
+      <div className="bg-card border border-borda-sutil rounded-[2rem] p-8 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest w-fit">
           <ShieldAlert size={14} />
           Privacidade do Titular (Art. 18 LGPD)
         </div>
         <p className="text-sm text-secondary leading-relaxed">
-          O PrintLog está em total conformidade com a Lei Geral de Proteção de Dados Pessoais. Você tem total controle sobre suas informações. Utilize as opções abaixo para gerenciar ou excluir seus dados permanentemente.
+          O PrintLog está em total conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei 13.709/2018) e com o Marco Civil da Internet (Lei 12.965/2014). Você tem total controle sobre suas informações.
         </p>
+
+        {/* DPO Channel Card */}
+        <div className="pt-4 border-t border-borda-sutil grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="p-4 rounded-2xl bg-muted/40 border border-borda-sutil space-y-1">
+            <span className="font-black text-primary uppercase text-[10px] tracking-wider block">Encarregado de Dados (DPO)</span>
+            <span className="text-zinc-500 block font-mono">dpo@printlog.com.br</span>
+            <span className="text-[9px] text-zinc-400 block mt-1">Prazo legal de resposta: até 15 dias úteis (Art. 19 LGPD)</span>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-muted/40 border border-borda-sutil space-y-1">
+            <span className="font-black text-primary uppercase text-[10px] tracking-wider block">Guarda Legal de Registros</span>
+            <span className="text-zinc-500 block">Marco Civil da Internet (Art. 15)</span>
+            <span className="text-[9px] text-zinc-400 block mt-1">Logs de acesso em IP e UTC mantidos por 6 meses</span>
+          </div>
+        </div>
       </div>
 
       <div className="relative">

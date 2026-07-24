@@ -10,6 +10,8 @@ import { BaseLegalLGPD } from "@/compartilhado/tipos/modelos";
 import { esquemaCliente, TipoDadosCliente } from "../esquemas";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { formatarTelefone } from "@/compartilhado/utilitarios/formatadores";
+import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
+import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 
 interface PropriedadesFormularioClienteConteudo {
   clienteEditando: Cliente | null;
@@ -73,9 +75,17 @@ export function FormularioClienteConteudo({ clienteEditando, aoSalvar, aoCancela
     reset(valoresIniciais);
   }, [clienteEditando, reset]);
 
+  const { adicionarNotificacao } = useArmazemNotificacoes();
+
   const lidarComEnvio = async (dados: TipoDadosCliente) => {
     try {
       await aoSalvar(dados as any);
+      adicionarNotificacao({
+        titulo: estaEditando ? "Cliente Atualizado" : "Novo Cliente Cadastrado",
+        mensagem: `Cliente "${dados.nome}" ${estaEditando ? "atualizado" : "cadastrado"} com sucesso.`,
+        tipo: TipoNotificacao.SUCESSO,
+        categoria: CategoriaNotificacao.PEDIDOS,
+      });
       aoCancelar();
     } catch (erro) {
       registrar.error({ rastreioId: "sistema", servico: "FormularioClienteConteudo" }, "Erro ao salvar cliente", erro);

@@ -78,7 +78,11 @@ export function useSincronizacaoCalculadora({
       };
       config.definirCalculadoraMeta(novaMeta);
       if (usuario?.uid) {
-        await config.salvarNoD1(usuario.uid);
+        try {
+          await config.salvarNoD1(usuario.uid);
+        } catch {
+          // Ignora silenciosamente erros de conexao durante o auto-save de fundo
+        }
       }
     }, 2500);
 

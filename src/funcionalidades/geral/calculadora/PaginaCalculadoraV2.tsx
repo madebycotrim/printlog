@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { useAtalhosTeclado } from "@/compartilhado/hooks/useAtalhosTeclado";
+import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Sliders } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -24,6 +25,8 @@ import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/es
 import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
+import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
+import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 
 // Zustand Store 
 import { useArmazemCalculadora } from "./estado/armazemCalculadora";
@@ -123,6 +126,7 @@ export function PaginaCalculadoraV2() {
 
 
   // Estados locais da UI
+  const { adicionarNotificacao } = useArmazemNotificacoes();
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
@@ -321,20 +325,27 @@ export function PaginaCalculadoraV2() {
           
           setIdOrcamentoNuvem(idSalvo);
           toast.success("Orçamento salvo e sincronizado!", { id: "nuvem" });
+          adicionarNotificacao({
+            titulo: "Orçamento Salvo",
+            mensagem: `Projeto "${nomeProjeto || "Sem nome"}" salvo e sincronizado com a nuvem.`,
+            tipo: TipoNotificacao.SUCESSO,
+            categoria: CategoriaNotificacao.FINANCEIRO,
+          });
        } catch(e) {
           toast.error("Salvo localmente (Erro na nuvem).", { id: "nuvem" });
        }
     } else {
        toast.success("Orçamento salvo localmente!");
+       adicionarNotificacao({
+         titulo: "Orçamento Salvo",
+         mensagem: `Projeto "${nomeProjeto || "Sem nome"}" salvo localmente.`,
+         tipo: TipoNotificacao.SUCESSO,
+         categoria: CategoriaNotificacao.FINANCEIRO,
+       });
     }
-  }, [nomeProjeto, descricaoProjeto, clienteProjetoId, usuario, armazem, impressoraSelecionadaId]);
+  }, [nomeProjeto, descricaoProjeto, clienteProjetoId, usuario, armazem, impressoraSelecionadaId, adicionarNotificacao]);
 
-  useAtalhosTeclado(useMemo(() => [
-    { tecla: "s", ctrlOuCmd: true, aoAcionar: () => salvarProjetoHandler() }
-  ], [salvarProjetoHandler]));
-
-  const gerarPdfExportacao = async () => {
-
+  const gerarPdfExportacao = useCallback(async () => {
     try {
       setGerandoPdf(true);
       toast.loading("Montando PDF oficial...", { id: "pdf" });
@@ -363,17 +374,23 @@ export function PaginaCalculadoraV2() {
       pdf.save(`Orcamento-${nomeProjeto || "Cliente"}.pdf`);
 
       toast.success("PDF gerado com sucesso!", { id: "pdf" });
+      adicionarNotificacao({
+        titulo: "PDF Exportado",
+        mensagem: `Documento em PDF de "${nomeProjeto || "Cliente"}" baixado com sucesso.`,
+        tipo: TipoNotificacao.SUCESSO,
+        categoria: CategoriaNotificacao.PRODUCAO,
+      });
     } catch (e) {
-      console.error(e);
+      registrar.error({ rastreioId: "gerar-pdf", servico: "CalculadoraV2" }, "Erro ao gerar PDF", e);
       toast.error("Erro ao gerar PDF.", { id: "pdf" });
     } finally {
       setGerandoPdf(false);
     }
-  };
+  }, [nomeProjeto, adicionarNotificacao]);
 
   const [explicacaoIA, setExplicacaoIA] = useState("");
 
-  const sugerirPrecoComIA = async () => {
+  const sugerirPrecoComIA = useCallback(async () => {
     try {
       toast.loading("Analisando mercado e custos...", { id: "ia" });
       
@@ -390,11 +407,23 @@ export function PaginaCalculadoraV2() {
       setExplicacaoIA(sugestao.dica || sugestao.recomendado.justificativa);
       
       toast.success("Preço sugerido pela IA!", { id: "ia" });
+      adicionarNotificacao({
+        titulo: "IA Precificação",
+        mensagem: `Sugestão inteligente de preço calculada para "${nomeProjeto || "Projeto 3D"}".`,
+        tipo: TipoNotificacao.INFO,
+        categoria: CategoriaNotificacao.FINANCEIRO,
+      });
     } catch (e) {
-      console.error(e);
+      registrar.error({ rastreioId: "sugerir-ia", servico: "CalculadoraV2" }, "Falha ao se conectar com o motor de IA", e);
       toast.error("Falha ao se conectar com o motor de IA.", { id: "ia" });
     }
-  };
+  }, [armazem, nomeProjeto, adicionarNotificacao]);
+
+  useAtalhosTeclado(useMemo(() => [
+    { tecla: "s", ctrlOuCmd: true, aoAcionar: () => salvarProjetoHandler() },
+    { tecla: "p", ctrlOuCmd: true, aoAcionar: () => { gerarPdfExportacao(); } },
+    { tecla: "i", ctrlOuCmd: true, aoAcionar: () => { sugerirPrecoComIA(); } }
+  ], [salvarProjetoHandler, gerarPdfExportacao, sugerirPrecoComIA]));
 
   const [idOrcamentoNuvem, setIdOrcamentoNuvem] = useState("");
 
@@ -435,7 +464,7 @@ export function PaginaCalculadoraV2() {
           }
           toast.dismiss("loadNuvem");
         } catch(e) {
-          console.error(e);
+          registrar.error({ rastreioId: "carregar-nuvem", servico: "CalculadoraV2" }, "Erro ao baixar orçamento da nuvem", e);
           toast.dismiss("loadNuvem");
         }
       }

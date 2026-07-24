@@ -10,17 +10,33 @@ import { BarraNavegacaoMobile } from "./BarraNavegacaoMobile";
 import { AnimatePresence, motion } from "framer-motion";
 import { LimiteDeErro } from "./LimiteDeErro";
 
+import { ModalAcessibilidade } from "./ModalAcessibilidade";
+import { BarraVocalizacaoFlutuante } from "./BarraVocalizacaoFlutuante";
+
 type PropriedadesLayout = {
   children?: ReactNode;
 };
 
 export function Layout({ children }: PropriedadesLayout) {
   const [sidebarAberta, definirSidebarAberta] = useState(false);
+  const [modalAcessibilidadeAberto, setModalAcessibilidadeAberto] = useState(false);
   const location = useLocation();
   const modoDesempenho = useArmazemDispositivo(s => s.modoDesempenho);
 
   // Segurança: logout automático após 30 min de inatividade
   useAutoLogout();
+
+  // Atalho global Alt + A para Acessibilidade (Lei 13.146/2015)
+  useEffect(() => {
+    function lidarComAcessibilidade(e: KeyboardEvent) {
+      if (e.altKey && (e.key === "a" || e.key === "A")) {
+        e.preventDefault();
+        setModalAcessibilidadeAberto(prev => !prev);
+      }
+    }
+    window.addEventListener("keydown", lidarComAcessibilidade);
+    return () => window.removeEventListener("keydown", lidarComAcessibilidade);
+  }, []);
 
   // Acionador (Trigger) do Modo Desempenho no Corpo do Site
   useEffect(() => {
@@ -71,6 +87,15 @@ export function Layout({ children }: PropriedadesLayout) {
         
         {/* Barra de Navegação Inferior (Apenas Mobile) */}
         <BarraNavegacaoMobile />
+
+        {/* Modal Global de Acessibilidade (Lei 13.146/2015) */}
+        <ModalAcessibilidade
+          aberto={modalAcessibilidadeAberto}
+          aoFechar={() => setModalAcessibilidadeAberto(false)}
+        />
+
+        {/* Player Flutuante de Vocalização de Tela em todo o Site */}
+        <BarraVocalizacaoFlutuante />
       </div>
     </ProvedorCabecalho>
   );

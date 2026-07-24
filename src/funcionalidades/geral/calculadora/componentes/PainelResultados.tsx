@@ -1,4 +1,4 @@
-import { Box, Zap, Timer, Activity, DollarSign, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Package, Mail } from "lucide-react";
+import { Box, Zap, Timer, Activity, DollarSign, ShieldCheck, FolderKanban, Download, Sparkles, MessageCircle, AlertTriangle, PenTool, TrendingDown, TrendingUp, Rocket, Crown, Ban, Link as LinkIcon, FileText, Package, Mail, Check } from "lucide-react";
 import { gerarMensagemWhatsApp, abrirWhatsAppComMensagem } from "../utilitarios/formatadorWhatsApp";
 import { motion, AnimatePresence } from "framer-motion";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
@@ -6,6 +6,8 @@ import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProces
 import { memo, useState, useRef, useEffect } from "react";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
+import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 
 
 interface PainelResultadosProps {
@@ -38,6 +40,7 @@ export const PainelResultados = memo(function PainelResultados({
   const { usuario } = useAutenticacao();
 
   const [menuExportarAberto, setMenuExportarAberto] = useState(false);
+  const [linkCopiadoLocal, setLinkCopiadoLocal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -134,8 +137,7 @@ export const PainelResultados = memo(function PainelResultados({
   };
 
   const cl = corLucroClasses[corLucro];
-
-
+  const { adicionarNotificacao } = useArmazemNotificacoes();
 
   return (
     <div className="pt-4 pb-5 px-5 rounded-2xl bg-card border border-borda-sutil shadow-[0_24px_48px_-12px_rgba(0,0,0,0.1)] flex flex-col items-center text-center overflow-y-auto xl:overflow-y-auto relative h-fit max-h-[740px] xl:max-h-[740px] w-full mx-auto animate-in fade-in duration-1000 backdrop-blur-3xl">
@@ -470,18 +472,38 @@ export const PainelResultados = memo(function PainelResultados({
                         
                         <button 
                           onClick={() => {
-                            setMenuExportarAberto(false);
-                            gerarLinkMagico();
+                            if (gerarLinkMagico) {
+                              gerarLinkMagico();
+                              setLinkCopiadoLocal(true);
+                              adicionarNotificacao({
+                                titulo: "Link Mágico Copiado",
+                                mensagem: "Link público de orçamento copiado para envio ao cliente.",
+                                tipo: TipoNotificacao.INFO,
+                                categoria: CategoriaNotificacao.PEDIDOS,
+                              });
+                              setTimeout(() => setLinkCopiadoLocal(false), 2000);
+                            }
                           }}
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left"
+                          className="flex items-center justify-between px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors text-left w-full"
                         >
-                          <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500 shrink-0">
-                            <LinkIcon size={14} />
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${linkCopiadoLocal ? 'bg-emerald-500/20 text-emerald-500' : 'bg-violet-500/10 text-violet-500'}`}>
+                              {linkCopiadoLocal ? <Check size={14} className="animate-bounce" /> : <LinkIcon size={14} />}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">
+                                {linkCopiadoLocal ? "Link Copiado!" : "Link Mágico"}
+                              </span>
+                              <span className="text-[8px] text-zinc-500">
+                                {linkCopiadoLocal ? "Copiado para a área de transferência" : "Copiar link de assinatura"}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200">Link Mágico</span>
-                            <span className="text-[8px] text-zinc-500">Copiar link de assinatura</span>
-                          </div>
+                          {linkCopiadoLocal && (
+                            <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 animate-pulse">
+                              Copiado!
+                            </span>
+                          )}
                         </button>
 
                         {abrirModalEmail && (

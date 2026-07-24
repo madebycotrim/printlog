@@ -65,6 +65,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={aoAbrirBarraLateral}
+            aria-label="Abrir menu de navegação"
             className="md:hidden p-2 -ml-2 text-zinc-500 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-colors"
           >
             <Menu size={24} strokeWidth={2} />

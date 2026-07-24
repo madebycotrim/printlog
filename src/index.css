@@ -637,3 +637,34 @@ body.modo-desempenho [class^="blur-3xl"],
 body.modo-desempenho [class*=" blur-3xl"] {
   display: none !important;
 }
+
+/* ==========================================================================
+   ACESSABILIDADE WEB (WCAG 2.1 AA)
+   ========================================================================== */
+html.destacar-links-acessibilidade a,
+html.destacar-links-acessibilidade button {
+  text-decoration: underline !important;
+  text-decoration-color: #8b5cf6 !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 4px !important;
+}
+
+html.cursor-ampliado-acessibilidade,
+html.cursor-ampliado-acessibilidade * {
+  zoom: 1.02;
+}
+
+html.reduzir-movimentos *,
+html.reduzir-movimentos *::before,
+html.reduzir-movimentos *::after {
+  animation: none !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.fonte-dislexia-ativa,
+html.fonte-dislexia-ativa * {
+  font-family: var(--font-mono), monospace, sans-serif !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1.75 !important;
+}

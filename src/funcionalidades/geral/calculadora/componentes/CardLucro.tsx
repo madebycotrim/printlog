@@ -89,16 +89,12 @@ export const CardLucro = memo(function CardLucro({
   }, [margemInterna, margem, setMargem]);
 
   const msgMargem = margemInterna === 0 
-    ? { texto: "Sem margem adicionada", cor: "text-zinc-500", corBase: "zinc", corHex: "#71717a" }
-    : margemInterna <= 2000 
-    ? { texto: "Margem de Risco (Lucro muito baixo)", cor: "text-rose-500", corBase: "rose", corHex: "#f43f5e" }
-    : margemInterna <= 6000 
-    ? { texto: "Margem Competitiva (Ideal para volume)", cor: "text-amber-500", corBase: "amber", corHex: "#f59e0b" }
-    : margemInterna <= 12000 
-    ? { texto: "Margem Saudável (Equilíbrio ideal)", cor: "text-emerald-500", corBase: "emerald", corHex: "#10b981" }
-    : margemInterna <= 25000 
-    ? { texto: "Margem Premium (Alta lucratividade)", cor: "text-sky-500", corBase: "sky", corHex: "#0ea5e9" }
-    : { texto: "Margem de Luxo (Valor agregado alto)", cor: "text-violet-500", corBase: "violet", corHex: "#8b5cf6" };
+    ? { texto: "Sem margem adicionada", cor: "text-zinc-500", corBase: "zinc", corHex: "#71717a", badgeRoi: "Sem Lucro", badgeClasse: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20" }
+    : margemInterna < 1500 
+    ? { texto: "Margem de Risco (Lucro muito baixo)", cor: "text-rose-500", corBase: "rose", corHex: "#f43f5e", badgeRoi: "⚠️ Margem Baixa (< 15%)", badgeClasse: "bg-rose-500/10 text-rose-500 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.15)]" }
+    : margemInterna <= 3000 
+    ? { texto: "Margem Competitiva (Ideal para volume)", cor: "text-amber-500", corBase: "amber", corHex: "#f59e0b", badgeRoi: "⚡ Margem Padrão (15 a 30%)", badgeClasse: "bg-amber-500/10 text-amber-500 border-amber-500/30" }
+    : { texto: "Alta Rentabilidade (Excelente lucro)", cor: "text-emerald-500", corBase: "emerald", corHex: "#10b981", badgeRoi: "🚀 Alta Rentabilidade (> 30%)", badgeClasse: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]" };
 
   return (
     <>
@@ -176,10 +172,13 @@ export const CardLucro = memo(function CardLucro({
           </div>
 
           <div className="md:col-span-8 flex flex-col w-full gap-3">
-            <div className="flex justify-between items-end mb-2">
+            <div className="flex justify-between items-center mb-2">
               <div className="flex flex-col">
                 <span className={`text-sm font-black transition-colors duration-500 ${msgMargem.cor}`}>{msgMargem.texto}</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">Use o controle deslizante ou os botões rápidos</span>
+              </div>
+              <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${msgMargem.badgeClasse}`}>
+                {msgMargem.badgeRoi}
               </div>
             </div>
 

@@ -12,3 +12,6 @@ export * from "./ModalListagemPremium";
 export * from "./AcoesDescarte";
 export * from "./BarraNavegacaoMobile";
 export * from "./LimiteDeErro";
+export * from "./ModalAcessibilidade";
+export * from "./RodapeConformidade";
+export * from "./BarraVocalizacaoFlutuante";
