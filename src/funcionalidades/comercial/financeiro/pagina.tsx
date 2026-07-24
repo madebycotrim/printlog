@@ -9,6 +9,7 @@ import { GraficoFluxoCaixa } from "./componentes/GraficoFluxoCaixa";
 import { TabelaLancamentos } from "./componentes/TabelaLancamentos";
 import { FormularioLancamento } from "./componentes/FormularioLancamento";
 import { FiltrosFinanceiro } from "./componentes/FiltrosFinanceiro";
+import { exportarLancamentosCSV } from "./utilitarios/exportadorCSV";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { BannerErro } from "@/compartilhado/componentes/ui";
 import { useFinanceiro } from "./hooks/useFinanceiro";
@@ -241,6 +242,7 @@ export function PaginaFinanceiro() {
               aoOrdenar={ordenarPor}
               ordemInvertida={ordemInvertida}
               aoInverterOrdem={inverterOrdem}
+              aoExportarCSV={() => exportarLancamentosCSV(lancamentosFiltrados)}
             />
 
             {lancamentosFiltrados.length === 0 ? (

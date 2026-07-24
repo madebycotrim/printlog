@@ -142,7 +142,13 @@ export function CardEquipamento({
 
           {abertoSeletor && (
             <>
-              <div className="fixed inset-0 z-[30]" onClick={() => setAbertoSeletor(false)} />
+              <div 
+                className="fixed inset-0 z-[30]" 
+                role="button"
+                tabIndex={-1}
+                aria-label="Fechar seletor de equipamento"
+                onClick={() => setAbertoSeletor(false)} 
+              />
               <div className="absolute bottom-[calc(100%+6px)] left-0 right-0 bg-card border border-borda-sutil rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
                 {impressoras.length === 0 ? (
                    <span className="text-[9px] font-bold text-muted-foreground uppercase py-4 text-center">Nenhuma impressora cadastrada</span>

@@ -99,7 +99,13 @@ export function CardIdentificacaoProjeto({
 
           {abertoSeletorCliente && (
             <>
-              <div className="fixed inset-0 z-[40]" onClick={() => setAbertoSeletorCliente(false)} />
+              <div 
+                className="fixed inset-0 z-[40]" 
+                role="button"
+                tabIndex={-1}
+                aria-label="Fechar seletor de cliente"
+                onClick={() => setAbertoSeletorCliente(false)} 
+              />
               <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white dark:bg-[#0c0c0e]/95 border border-borda-sutil dark:border-white/10 rounded-xl shadow-2xl p-2 z-[100] flex flex-col gap-1 max-h-60 overflow-y-auto backdrop-blur-2xl">
                 {(() => {
                   const buscaValida = (buscaCliente || "").toLowerCase();

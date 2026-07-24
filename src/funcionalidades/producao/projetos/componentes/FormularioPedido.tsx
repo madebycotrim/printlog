@@ -458,13 +458,13 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                 <ModalListagemPremium aberto={modalArmazemAberto} aoFechar={() => setModalArmazemAberto(false)} titulo="Armazém de Materiais" iconeTitulo={Box} corDestaque="amber" termoBusca={buscaMaterial} aoMudarBusca={setBuscaMaterial} temResultados={materiaisFiltrados.length > 0} totalResultados={materiaisFiltrados.length}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {materiaisFiltrados.map(m => (
-                            <div key={m.id} onClick={() => selecionarMaterial(m)} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:border-amber-500/40 cursor-pointer transition-all flex items-center gap-4 group">
+                            <button key={m.id} type="button" onClick={() => selecionarMaterial(m)} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:border-amber-500/40 cursor-pointer transition-all flex items-center gap-4 group text-left w-full focus:outline-none focus:ring-2 focus:ring-amber-500/50">
                                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><Box size={24} /></div>
                                 <div className="flex flex-col">
                                     <span className="text-xs font-black uppercase text-zinc-900 dark:text-white">{m.nome}</span>
                                     <span className="text-[10px] font-bold text-zinc-500 uppercase">{m.tipo} • {m.cor}</span>
                                 </div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </ModalListagemPremium>
@@ -472,13 +472,13 @@ export function FormularioPedido({ aberto, pedidoEdicao, aoSalvar, aoCancelar, e
                 <ModalListagemPremium aberto={modalInsumosAberto} aoFechar={() => setModalInsumosAberto(false)} titulo="Armazém de Insumos" iconeTitulo={Package} corDestaque="sky" termoBusca={buscaInsumo} aoMudarBusca={setBuscaInsumo} temResultados={insumosFiltrados.length > 0} totalResultados={insumosFiltrados.length}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {insumosFiltrados.map(i => (
-                            <div key={i.id} onClick={() => selecionarInsumo(i)} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:border-sky-500/40 cursor-pointer transition-all flex items-center gap-4 group">
+                            <button key={i.id} type="button" onClick={() => selecionarInsumo(i)} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:border-sky-500/40 cursor-pointer transition-all flex items-center gap-4 group text-left w-full focus:outline-none focus:ring-2 focus:ring-sky-500/50">
                                 <div className="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 group-hover:scale-110 transition-transform"><Package size={24} /></div>
                                 <div className="flex flex-col">
                                     <span className="text-xs font-black uppercase text-zinc-900 dark:text-white">{i.nome}</span>
                                     <span className="text-[10px] font-bold text-zinc-500 uppercase">{i.categoria} • {i.unidadeMedida}</span>
                                 </div>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </ModalListagemPremium>

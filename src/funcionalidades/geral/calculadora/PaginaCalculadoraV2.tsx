@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
+import { useAtalhosTeclado } from "@/compartilhado/hooks/useAtalhosTeclado";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { format } from "date-fns";
@@ -69,8 +70,10 @@ export function PaginaCalculadoraV2() {
   const [modalArmazemInsumosAberto, setModalArmazemInsumosAberto] = useState(false);
 
   const eProOuSuperior = useMemo(() => {
-    const plano = ((usuario as any)?.plano || '').toUpperCase();
-    const role = ((usuario as any)?.role || (usuario as any)?.cargo || '').toUpperCase();
+    if (!usuario) return false;
+    const userRecord = usuario as typeof usuario & { role?: string; cargo?: string };
+    const plano = (userRecord.plano || '').toUpperCase();
+    const role = (userRecord.role || userRecord.cargo || '').toUpperCase();
     return ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(plano) ||
       ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(role) ||
       plano.includes('FUNDADOR') || role.includes('FUNDADOR');
@@ -241,6 +244,93 @@ export function PaginaCalculadoraV2() {
   // Aprovação de orçamentos ocorre no Kanban (PaginaProjetos) — não mais na Calculadora
 
   const [gerandoPdf, setGerandoPdf] = useState(false);
+
+  const salvarProjetoHandler = useCallback(async () => {
+    if (!nomeProjeto) {
+       toast.error("Dê um nome para o projeto antes de salvar!");
+       return;
+    }
+    
+    armazem.salvarSnapshot(nomeProjeto, descricaoProjeto, clienteProjetoId);
+    
+    if (usuario?.uid) {
+       try {
+          toast.loading("Sincronizando com a nuvem...", { id: "nuvem" });
+          
+          const { apiPedidos } = await import("@/funcionalidades/producao/projetos/servicos/apiPedidos");
+          const { StatusPedido } = await import("@/compartilhado/tipos/modelos");
+
+          const idSalvo = await apiPedidos.criar({
+            descricao: nomeProjeto,
+            idCliente: clienteProjetoId || "",
+            valorCentavos: armazem.resultado.precoSugerido,
+            status: StatusPedido.ORCAMENTO,
+            idImpressora: impressoraSelecionadaId || undefined,
+            tempoMinutos: armazem.tempoMinutosMaquina,
+            materiais: armazem.materiaisSelecionados.map(m => ({
+              idMaterial: m.id,
+              nome: m.nome,
+              quantidadeGasta: m.quantidade * armazem.quantidade
+            })),
+            insumosSecundarios: armazem.insumosSelecionados.map(i => ({
+              idInsumo: i.id,
+              nome: i.nome,
+              quantidade: i.porLote ? i.quantidade : i.quantidade * armazem.quantidade,
+              custoUnitarioCentavos: i.custoCentavos
+            })),
+            configuracoes: {
+               snapshot: {
+                 id: crypto.randomUUID(),
+                 data: new Date().toISOString(),
+                 nome: nomeProjeto,
+                 descricao: descricaoProjeto,
+                 clienteId: clienteProjetoId,
+                 parametros: {
+                    materiaisSelecionados: armazem.materiaisSelecionados,
+                    insumosSelecionados: armazem.insumosSelecionados,
+                    itensPosProcesso: armazem.itensPosProcesso,
+                    tempoMinutosMaquina: armazem.tempoMinutosMaquina,
+                    potenciaWatts: armazem.potenciaWatts,
+                    precoKwhCentavos: armazem.precoKwhCentavos,
+                    custosAdicionais: armazem.custosAdicionais,
+                    depreciacaoHoraCentavos: armazem.depreciacaoHoraCentavos,
+                    margemLucroPercentual: armazem.margemLucroPercentual,
+                    cobrarEnergia: armazem.cobrarEnergia,
+                    cobrarDesgaste: armazem.cobrarDesgaste,
+                    cobrarCustosAdicionais: armazem.cobrarCustosAdicionais,
+                    cobrarInsumosFixos: armazem.cobrarInsumosFixos,
+                    cobrarLogistica: armazem.cobrarLogistica,
+                    modoEntrada: armazem.modoEntrada,
+                    quantidade: armazem.quantidade,
+                    pecasPorMesa: armazem.pecasPorMesa,
+                    tempoSetupMinutos: armazem.tempoSetupMinutos,
+                    materialPerdidoGramas: armazem.materialPerdidoGramas,
+                    tempoPerdidoMinutos: armazem.tempoPerdidoMinutos,
+                    insumosFixosCentavos: armazem.insumosFixosCentavos,
+                    freteCentavos: armazem.freteCentavos,
+                    taxaEcommercePercentual: armazem.taxaEcommercePercentual,
+                    taxaFixaVendaCentavos: armazem.taxaFixaVendaCentavos,
+                    tempoModelagemMinutos: armazem.tempoModelagemMinutos,
+                    valorHoraModelagemCentavos: armazem.valorHoraModelagemCentavos
+                 },
+                 resultado: armazem.resultado
+               }
+            }
+          }, usuario.uid);
+          
+          setIdOrcamentoNuvem(idSalvo);
+          toast.success("Orçamento salvo e sincronizado!", { id: "nuvem" });
+       } catch(e) {
+          toast.error("Salvo localmente (Erro na nuvem).", { id: "nuvem" });
+       }
+    } else {
+       toast.success("Orçamento salvo localmente!");
+    }
+  }, [nomeProjeto, descricaoProjeto, clienteProjetoId, usuario, armazem, impressoraSelecionadaId]);
+
+  useAtalhosTeclado(useMemo(() => [
+    { tecla: "s", ctrlOuCmd: true, aoAcionar: () => salvarProjetoHandler() }
+  ], [salvarProjetoHandler]));
 
   const gerarPdfExportacao = async () => {
 
@@ -795,89 +885,7 @@ export function PaginaCalculadoraV2() {
       <div className="xl:col-span-4 xl:h-full flex flex-col justify-start items-center overflow-y-visible scrollbar-hide">
         <PainelResultados
           calculo={armazem.resultado}
-          salvarProjeto={async () => {
-            if (!nomeProjeto) {
-               toast.error("Dê um nome para o projeto antes de salvar!");
-               return;
-            }
-            
-            armazem.salvarSnapshot(nomeProjeto, descricaoProjeto, clienteProjetoId);
-            
-            if (usuario?.uid) {
-               try {
-                  toast.loading("Sincronizando com a nuvem...", { id: "nuvem" });
-                  
-                  const { apiPedidos } = await import("@/funcionalidades/producao/projetos/servicos/apiPedidos");
-                  const { StatusPedido } = await import("@/compartilhado/tipos/modelos");
-
-                  const idSalvo = await apiPedidos.criar({
-                    descricao: nomeProjeto,
-                    idCliente: clienteProjetoId || "",
-                    valorCentavos: armazem.resultado.precoSugerido,
-                    status: StatusPedido.ORCAMENTO,
-                    idImpressora: impressoraSelecionadaId || undefined,
-                    tempoMinutos: armazem.tempoMinutosMaquina,
-                    materiais: armazem.materiaisSelecionados.map(m => ({
-                      idMaterial: m.id,
-                      nome: m.nome,
-                      quantidadeGasta: m.quantidade * armazem.quantidade
-                    })),
-                    insumosSecundarios: armazem.insumosSelecionados.map(i => ({
-                      idInsumo: i.id,
-                      nome: i.nome,
-                      quantidade: i.porLote ? i.quantidade : i.quantidade * armazem.quantidade,
-                      custoUnitarioCentavos: i.custoCentavos
-                    })),
-                    configuracoes: {
-                       snapshot: {
-                         id: crypto.randomUUID(),
-                         data: new Date().toISOString(),
-                         nome: nomeProjeto,
-                         descricao: descricaoProjeto,
-                         clienteId: clienteProjetoId,
-                         parametros: {
-                            materiaisSelecionados: armazem.materiaisSelecionados,
-                            insumosSelecionados: armazem.insumosSelecionados,
-                            itensPosProcesso: armazem.itensPosProcesso,
-                            tempoMinutosMaquina: armazem.tempoMinutosMaquina,
-                            potenciaWatts: armazem.potenciaWatts,
-                            precoKwhCentavos: armazem.precoKwhCentavos,
-                            custosAdicionais: armazem.custosAdicionais,
-                            depreciacaoHoraCentavos: armazem.depreciacaoHoraCentavos,
-                            margemLucroPercentual: armazem.margemLucroPercentual,
-                            cobrarEnergia: armazem.cobrarEnergia,
-                            cobrarDesgaste: armazem.cobrarDesgaste,
-                            cobrarCustosAdicionais: armazem.cobrarCustosAdicionais,
-                            cobrarInsumosFixos: armazem.cobrarInsumosFixos,
-                            cobrarLogistica: armazem.cobrarLogistica,
-                            modoEntrada: armazem.modoEntrada,
-                            quantidade: armazem.quantidade,
-                            pecasPorMesa: armazem.pecasPorMesa,
-                            tempoSetupMinutos: armazem.tempoSetupMinutos,
-                            materialPerdidoGramas: armazem.materialPerdidoGramas,
-                            tempoPerdidoMinutos: armazem.tempoPerdidoMinutos,
-                            insumosFixosCentavos: armazem.insumosFixosCentavos,
-                            freteCentavos: armazem.freteCentavos,
-                            taxaEcommercePercentual: armazem.taxaEcommercePercentual,
-                            taxaFixaVendaCentavos: armazem.taxaFixaVendaCentavos,
-                            tempoModelagemMinutos: armazem.tempoModelagemMinutos,
-                            valorHoraModelagemCentavos: armazem.valorHoraModelagemCentavos
-                         },
-                         resultado: armazem.resultado
-                       }
-                    }
-                  }, usuario.uid);
-                  
-                  setIdOrcamentoNuvem(idSalvo);
-                  toast.success("Orçamento salvo e sincronizado!", { id: "nuvem" });
-               } catch(e) {
-                  console.error(e);
-                  toast.error("Salvo localmente (Erro na nuvem).", { id: "nuvem" });
-               }
-            } else {
-               toast.success("Orçamento salvo localmente!");
-            }
-          }}
+          salvarProjeto={salvarProjetoHandler}
           gerarPdf={gerarPdfExportacao}
           gerarLinkMagico={gerarLinkPublico} obterUrlLinkMagico={() => urlLinkMagico}
           carregandoPdf={gerandoPdf}
@@ -1144,6 +1152,31 @@ export function PaginaCalculadoraV2() {
         nomeTemporario={nomeTemporario}
         setNomeTemporario={setNomeTemporario}
       />
+
+      {/* Barra Flutuante de Resumo (Sticky Footer) */}
+      <div className="xl:hidden fixed bottom-14 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-200 dark:border-white/10 px-4 py-2.5 shadow-[0_-8px_25px_rgba(0,0,0,0.1)] flex items-center justify-between gap-3">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Preço Sugerido</span>
+          <span className="text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+            {centavosParaReais(armazem.resultado?.precoSugerido || 0)}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block">
+            <span className="text-[9px] font-semibold text-zinc-400 block uppercase">Custo: {centavosParaReais(armazem.resultado?.custoTotalOperacional || 0)}</span>
+            <span className="text-[9px] font-semibold text-emerald-500 block uppercase">Lucro: {centavosParaReais(armazem.resultado?.lucroLiquido || 0)}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+            }}
+            className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold tracking-wide shadow-md transition-all active:scale-95"
+          >
+            Ver Detalhes
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -88,6 +88,11 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                 <SeloPlano plano={usuario?.plano} className="transform hover:scale-105 transition-transform cursor-default" />
               )}
 
+              <div title="Nuvem Sincronizada" className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] font-bold uppercase tracking-wider">Nuvem Ativa</span>
+              </div>
+
               <div
                 className="hidden md:block w-1.5 h-1.5 rounded-full mb-0.5 shrink-0"
                 style={{ backgroundColor: "var(--cor-primaria)" }}

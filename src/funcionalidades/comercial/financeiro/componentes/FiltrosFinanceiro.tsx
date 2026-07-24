@@ -1,4 +1,4 @@
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Download } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { OrdenacaoFinanceiro } from "../tipos";
 
@@ -9,6 +9,7 @@ interface PropriedadesFiltrosFinanceiro {
     aoOrdenar: (ordenacao: OrdenacaoFinanceiro) => void;
     ordemInvertida: boolean;
     aoInverterOrdem: () => void;
+    aoExportarCSV?: () => void;
 }
 
 export function FiltrosFinanceiro({
@@ -18,6 +19,7 @@ export function FiltrosFinanceiro({
     aoOrdenar,
     ordemInvertida,
     aoInverterOrdem,
+    aoExportarCSV,
 }: PropriedadesFiltrosFinanceiro) {
     const [seletorAberto, definirSeletorAberto] = useState(false);
     const referenciaSeletor = useRef<HTMLDivElement>(null);
@@ -79,8 +81,20 @@ export function FiltrosFinanceiro({
                 </button>
             </div>
 
-            {/* Ordenação */}
+            {/* Ordenação e Exportação */}
             <div className="flex items-center gap-2 w-full md:w-auto self-end md:self-center">
+                {aoExportarCSV && (
+                    <button
+                        type="button"
+                        onClick={aoExportarCSV}
+                        title="Exportar Lançamentos em CSV"
+                        className="h-11 px-4 flex items-center gap-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5 transition-all shadow-sm active:scale-95"
+                    >
+                        <Download size={14} className="text-zinc-500" />
+                        <span>CSV</span>
+                    </button>
+                )}
+
                 <button
                     onClick={aoInverterOrdem}
                     title={ordemInvertida ? "Ordem Descendente" : "Ordem Ascendente"}

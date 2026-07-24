@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
 import { LancamentoFinanceiro } from "../tipos";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion } from "framer-motion";
 
 interface GraficoFluxoCaixaProps {
@@ -30,7 +29,7 @@ export function GraficoFluxoCaixa({ lancamentos }: GraficoFluxoCaixaProps) {
         grupos[dataFormatada] = { data: dataFormatada, receitas: 0, despesas: 0 };
       }
       
-      if (l.tipo === "ENTRADA") {
+      if (l.tipo === TipoLancamentoFinanceiro.ENTRADA) {
         grupos[dataFormatada].receitas += l.valorCentavos / 100;
       } else {
         grupos[dataFormatada].despesas += l.valorCentavos / 100;
@@ -96,7 +95,7 @@ export function GraficoFluxoCaixa({ lancamentos }: GraficoFluxoCaixaProps) {
               contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', backgroundColor: 'var(--tw-bg-opacity, #ffffff)' }}
               itemStyle={{ fontSize: 13, fontWeight: 600, padding: '2px 0' }}
               labelStyle={{ fontSize: 11, color: '#a1a1aa', marginBottom: 8, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}
-              formatter={(value: number) => [`R$ ${value.toFixed(2)}`, undefined]}
+              formatter={(value: any) => [`R$ ${Number(value ?? 0).toFixed(2)}`, ""]}
             />
             <Area type="monotone" dataKey="receitas" name="Receitas" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#corReceita)" />
             <Area type="monotone" dataKey="despesas" name="Despesas" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#corDespesa)" />
