@@ -1,6 +1,7 @@
 import { Calculator, Clock, UserPlus, Package, Box, Wrench, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Interface para as propriedades do DockAcoes.
@@ -45,9 +46,9 @@ export function DockAcoes({
     violet: "hover:bg-violet-500/10 hover:border-violet-500/30 text-violet-500",
   };
 
-  return (
+  const conteudoDock = (
     <>
-      {/* Backdrop premium escurecido e desfocado */}
+      {/* Backdrop premium escurecido e desfocado que COBRE TODA A TELA (Portal) */}
       <AnimatePresence>
         {aberto && (
           <motion.div
@@ -55,12 +56,12 @@ export function DockAcoes({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => definirAberto(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] cursor-pointer"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9990] cursor-pointer"
           />
         )}
       </AnimatePresence>
 
-      <div className="fixed bottom-8 right-8 z-[60]">
+      <div className="fixed bottom-8 right-8 z-[9995]">
         <AnimatePresence>
           {aberto && (
             <motion.div
@@ -80,7 +81,7 @@ export function DockAcoes({
                     item.acao();
                     definirAberto(false);
                   }}
-                  className={`flex items-center justify-between w-60 bg-card/90 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl transition-all shadow-premium group/btn ${coresMap[item.cor]}`}
+                  className={`flex items-center justify-between w-60 bg-card/95 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl transition-all shadow-2xl group/btn ${coresMap[item.cor]}`}
                 >
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover/btn:text-primary dark:group-hover/btn:text-white transition-colors">
                     {item.label}
@@ -100,13 +101,12 @@ export function DockAcoes({
           animate={{ scale: aberto ? 1.1 : 1 }}
           whileHover={{ scale: aberto ? 1.1 : 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className={`p-4 rounded-[2rem] shadow-premium border transition-all duration-500 relative group overflow-hidden ${
+          className={`p-4 rounded-[2rem] shadow-2xl border transition-all duration-500 relative group overflow-hidden cursor-pointer ${
             aberto 
               ? "bg-amber-500 border-amber-400 text-white" 
               : "bg-card/90 backdrop-blur-2xl border-white/10 text-amber-500 hover:border-amber-500/30"
           }`}
         >
-          {/* Glow de fundo no hover do botão fechado */}
           {!aberto && (
             <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           )}
@@ -123,4 +123,6 @@ export function DockAcoes({
       </div>
     </>
   );
+
+  return typeof document !== "undefined" ? createPortal(conteudoDock, document.body) : null;
 }
