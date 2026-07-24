@@ -1,7 +1,7 @@
 import { Dialogo } from "@/compartilhado/componentes";
 import { Mail, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 

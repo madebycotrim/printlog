@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { RegistroManutencao, PecaDesgaste, RegistrarManutencaoInput } from "../../tipos";
 import { servicoManutencao } from "@/compartilhado/servicos/servicoManutencao";
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 export function useManutencao(idImpressora?: string) {
   const [manutencoes, setManutencoes] = useState<RegistroManutencao[]>([]);

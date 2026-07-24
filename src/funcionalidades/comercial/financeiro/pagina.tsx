@@ -5,6 +5,7 @@ import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { ResumoFinanceiroComponente } from "./componentes/ResumoFinanceiro";
+import { GraficoFluxoCaixa } from "./componentes/GraficoFluxoCaixa";
 import { TabelaLancamentos } from "./componentes/TabelaLancamentos";
 import { FormularioLancamento } from "./componentes/FormularioLancamento";
 import { FiltrosFinanceiro } from "./componentes/FiltrosFinanceiro";
@@ -94,7 +95,7 @@ export function PaginaFinanceiro() {
   }
 
   return (
-    <div className="space-y-10 min-h-[60vh] flex flex-col">
+    <div className="flex-1 w-full h-full space-y-10 flex flex-col">
       <AnimatePresence mode="wait">
         {carregando ? null : lancamentos.length === 0 ? (
           <motion.div
@@ -102,6 +103,7 @@ export function PaginaFinanceiro() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            className="flex-1 flex flex-col w-full items-center justify-center min-h-[50vh]"
           >
             <EstadoVazio
               titulo="Fluxo de caixa vazio"
@@ -120,6 +122,7 @@ export function PaginaFinanceiro() {
             className="space-y-8"
           >
             <ResumoFinanceiroComponente resumo={resumo} lucratividadePercentual={dre.lucratividadePercentual} />
+            <GraficoFluxoCaixa lancamentos={lancamentosFiltrados} />
 
             {/* Banner de Status DRE Premium */}
             <div className={`

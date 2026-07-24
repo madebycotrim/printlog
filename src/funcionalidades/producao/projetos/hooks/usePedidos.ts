@@ -2,7 +2,7 @@ import { useEffect, useCallback, useMemo, useState } from "react";
 import { CriarPedidoInput, AtualizarPedidoInput, Pedido } from "../tipos";
 import { servicoPedidos } from "../servicos/servicoPedidos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemPedidos } from "../estado/armazemPedidos";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";

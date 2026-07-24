@@ -8,7 +8,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 /** Tempo de inatividade antes do logout automático: 30 minutos */
 const TEMPO_INATIVIDADE_MS = 30 * 60 * 1000;

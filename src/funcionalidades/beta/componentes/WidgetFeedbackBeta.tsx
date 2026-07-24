@@ -2,7 +2,7 @@ import { MessageCircle, X, Send, Beaker } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 /**
  * Widget flutuante de feedback para usuários do Programa Beta.

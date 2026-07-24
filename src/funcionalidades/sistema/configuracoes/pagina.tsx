@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { Carregamento } from "@/compartilhado/componentes";
 

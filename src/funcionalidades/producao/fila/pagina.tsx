@@ -18,7 +18,7 @@ import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { centavosParaReais, formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido, StatusImpressora } from "@/compartilhado/tipos/modelos";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { BannerErro } from "@/compartilhado/componentes/ui";
 
 

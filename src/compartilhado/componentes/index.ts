@@ -10,3 +10,4 @@ export * from "./Icones3D";
 export * from "./MenuNotificacoes";
 export * from "./ModalListagemPremium";
 export * from "./AcoesDescarte";
+export * from "./BarraNavegacaoMobile";

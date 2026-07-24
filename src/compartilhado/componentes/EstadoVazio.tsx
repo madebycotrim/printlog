@@ -11,110 +11,74 @@ interface EstadoVazioProps {
 }
 
 /**
- * 🎨 EstadoVazio (Versão Premium Animada)
- * Design premium com micro-animações, glow effects e flutuação.
+ * 🎨 EstadoVazio (Premium SaaS - Linear / Vercel Style)
+ * Focado na elegância absoluta do padrão da indústria de SaaS atual.
+ * Utiliza iluminação sutil (spotlights em blur), tipografia limpa, caixas com sombras
+ * refinadas e animações extremamente suaves (sem distração geométrica).
  */
 export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoClicarBotao, children }: EstadoVazioProps) {
   return (
-    <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center py-16 px-6 overflow-hidden">
+    <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center py-20 px-6 overflow-hidden">
       
-      {/* ── Background Elements Animados ── */}
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3]
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] blur-[120px] rounded-full pointer-events-none" 
-        style={{ backgroundColor: "rgba(var(--cor-primaria-rgb), 0.1)" }}
-      />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/[0.03] rounded-full pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] border border-white/[0.01] rounded-full pointer-events-none dashed-border-spin" />
+      {/* ── Spotlight Background Ultra Suave ── */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+        <motion.div 
+          animate={{ opacity: [0.1, 0.15, 0.1], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute w-[400px] h-[400px] rounded-full bg-cyan-500/20 dark:bg-cyan-500/15 blur-[100px]"
+        />
+        <div className="absolute inset-0 bg-white/40 dark:bg-[#09090b]/40 backdrop-blur-[2px]" />
+      </div>
 
-      {/* ── Conteúdo Central ── */}
+      {/* ── Conteúdo Central Premium ── */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.8, 0.25, 1] }}
-        className="relative z-10 flex flex-col items-center max-w-md text-center"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative z-10 flex flex-col items-center max-w-[420px] text-center"
       >
         
-        {/* Container de Ícone Animado */}
-        <motion.div 
-          animate={{ y: [-5, 5, -5] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="mb-10 relative group"
-        >
-          {/* Glow Dinâmico no Hover */}
-          <div 
-            className="absolute inset-0 blur-2xl rounded-full scale-110 opacity-50 group-hover:opacity-100 transition-opacity duration-700" 
-            style={{ backgroundColor: "rgba(var(--cor-primaria-rgb), 0.2)" }}
-          />
+        {/* Ícone com Box-Shadow Refinado */}
+        <div className="mb-8 relative">
+          {/* Brilho do Ícone */}
+          <div className="absolute inset-0 bg-cyan-500/20 blur-2xl rounded-3xl translate-y-2" />
           
-          <div 
-            className="relative w-28 h-28 rounded-[2rem] bg-zinc-100/50 dark:bg-black/50 border border-borda-sutil dark:border-white/5 flex items-center justify-center shadow-2xl backdrop-blur-xl transition-colors duration-500"
-            style={{ 
-              borderColor: "var(--cor-primaria)",
-              boxShadow: "0 0 0 1px rgba(var(--cor-primaria-rgb), 0.3) inset"
-            }}
+          <motion.div 
+            animate={{ y: [-2, 2, -2] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="relative flex items-center justify-center w-20 h-20 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
           >
-            <motion.div
-              whileHover={{ rotate: 5, scale: 1.1 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Icone 
-                size={48} 
-                strokeWidth={1.5} 
-                className="drop-shadow-[0_0_15px_currentColor]" 
-                style={{ color: "var(--cor-primaria)" }}
-              />
-            </motion.div>
-          </div>
-        </motion.div>
+            {/* Detalhe de Glassmorphism Interno */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/40 dark:to-white/5 rounded-2xl pointer-events-none" />
+            <Icone size={34} strokeWidth={1.5} className="text-zinc-700 dark:text-zinc-300" />
+          </motion.div>
+        </div>
 
-        {/* Tipografia */}
-        <div className="space-y-4">
-          <h3 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-500 uppercase tracking-tighter leading-none">
+        {/* Tipografia Limpa */}
+        <div className="space-y-2.5 mb-8">
+          <h3 className="text-xl md:text-2xl font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
             {titulo}
           </h3>
-          <p className="text-sm md:text-base text-zinc-400 font-medium leading-relaxed max-w-[320px] mx-auto">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-[340px] mx-auto">
             {descricao}
           </p>
         </div>
 
         {children && (
-          <div className="mt-8 max-w-md w-full text-left">
+          <div className="w-full mb-8">
             {children}
           </div>
         )}
 
-        {/* Botão */}
+        {/* Botão Padrão Ouro UI */}
         {textoBotao && aoClicarBotao && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.15 }}
+          <button
+            onClick={aoClicarBotao}
+            className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-medium py-2.5 px-6 rounded-lg transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-sm ring-1 ring-zinc-900/5 dark:ring-white/10 active:scale-[0.98]"
           >
-            <motion.button
-              whileHover={{ y: -3, scale: 1.02 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={aoClicarBotao}
-              className="mt-12 relative overflow-hidden group flex items-center gap-3 text-white font-black py-4 px-10 rounded-2xl shadow-xl transition-all uppercase tracking-[0.2em] text-[11px]"
-              style={{ 
-                backgroundColor: "var(--cor-primaria)",
-                boxShadow: "0 10px 40px -10px rgba(var(--cor-primaria-rgb), 0.8)"
-              }}
-            >
-              <motion.div 
-                animate={{ x: ["-100%", "200%"] }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5, ease: "linear" }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" 
-              />
-              
-              <Plus size={18} strokeWidth={3} className="relative z-10" />
-              <span className="relative z-10">{textoBotao}</span>
-            </motion.button>
-          </motion.div>
+            <Plus size={16} strokeWidth={2} />
+            {textoBotao}
+          </button>
         )}
       </motion.div>
     </div>

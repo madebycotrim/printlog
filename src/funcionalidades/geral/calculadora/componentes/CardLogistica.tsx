@@ -3,7 +3,7 @@ import { Warehouse, Settings, Search, MapPin, RefreshCcw, Percent, Coins, Truck 
 import { PerfilMarketplace } from "../tipos";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 interface CardLogisticaProps {
   perfis: PerfilMarketplace[];

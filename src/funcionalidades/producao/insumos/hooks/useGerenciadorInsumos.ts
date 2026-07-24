@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import {

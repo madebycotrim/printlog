@@ -5,7 +5,7 @@ import { ErroValidacao, CodigoErro } from "@/compartilhado/utilitarios/excecoes"
 import { useMemo, useEffect, useCallback, useState } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiClientes } from "../servicos/apiClientes";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useDebounce } from "@/compartilhado/hooks/useDebounce";
 
 /**

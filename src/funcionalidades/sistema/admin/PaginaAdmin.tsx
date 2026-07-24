@@ -5,7 +5,7 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Carregamento } from "@/compartilhado/componentes";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";

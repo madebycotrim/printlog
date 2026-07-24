@@ -9,7 +9,7 @@ import { servicoRelatorios } from "@/compartilhado/servicos/servicoRelatorios";
 import { servicoExportacao } from "@/compartilhado/servicos/servicoExportacao";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 
 export function PaginaHistoricoProducao() {

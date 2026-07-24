@@ -13,7 +13,7 @@ import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsum
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
 import { servicoPedidos } from "@/funcionalidades/producao/projetos/servicos/servicoPedidos";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 export function CardMetricas() {
   const { usuario } = useAutenticacao();

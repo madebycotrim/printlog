@@ -12,7 +12,7 @@ import { CriarLancamentoInput, LancamentoFinanceiro } from "../tipos";
 import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { Combobox } from "@/compartilhado/componentes";
 import { Dialogo } from "@/compartilhado/componentes";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const esquemaLancamento = z.object({
   tipo: z.nativeEnum(TipoLancamentoFinanceiro),

@@ -6,7 +6,7 @@ import { formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useState, useMemo } from "react";
 import { usePedidos } from "../hooks/usePedidos";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 interface PropriedadesAbaWorkflow {
   pedido: Pedido;

@@ -6,6 +6,8 @@ import { useAutoLogout } from "@/compartilhado/hooks/useAutoLogout";
 import { useLocation, Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import { useArmazemDispositivo } from "@/compartilhado/estado/armazemDispositivo";
+import { BarraNavegacaoMobile } from "./BarraNavegacaoMobile";
+import { AnimatePresence, motion } from "framer-motion";
 
 type PropriedadesLayout = {
   children?: ReactNode;
@@ -47,11 +49,25 @@ export function Layout({ children }: PropriedadesLayout) {
           <Cabecalho aoAbrirBarraLateral={() => definirSidebarAberta(true)} />
 
           <main className={`flex-1 min-h-0 flex flex-col relative scroll-smooth z-10 ${scrollClasse}`}>
-            <div className="flex-1 w-full max-w-[1600px] mx-auto pt-2 px-6 pb-6 md:pt-3 md:px-8 md:pb-8 lg:pt-4 lg:px-10 lg:pb-10 flex flex-col relative min-h-0">
-              {children || <Outlet />}
+            <div className="flex-1 w-full max-w-[1600px] mx-auto pt-2 px-6 pb-20 md:pt-3 md:px-8 md:pb-8 lg:pt-4 lg:px-10 lg:pb-10 flex flex-col relative min-h-0">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="flex-1 flex flex-col min-h-0"
+                >
+                  {children || <Outlet />}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </main>
         </div>
+        
+        {/* Barra de Navegação Inferior (Apenas Mobile) */}
+        <BarraNavegacaoMobile />
       </div>
     </ProvedorCabecalho>
   );

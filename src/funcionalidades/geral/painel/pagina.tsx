@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, lazy, Suspense, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 // Hooks e Estado

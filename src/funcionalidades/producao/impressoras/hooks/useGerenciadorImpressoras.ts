@@ -8,7 +8,7 @@ import { Impressora, PecaDesgaste, RegistroManutencao } from "@/funcionalidades/
 import { obterStatusManutencao } from "../utilitarios/utilitariosManutencao";
 import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export function useGerenciadorImpressoras() {
   const { usuario } = useAutenticacao();

@@ -2,7 +2,7 @@ import { useEffect, useCallback, useMemo, useState } from "react";
 import { CriarLancamentoInput, LancamentoFinanceiro } from "../tipos";
 import { servicoFinanceiro } from "../servicos/servicoFinanceiro";
 import { apiFinanceiro } from "../servicos/apiFinanceiro";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { ErroPrintLog } from "@/compartilhado/utilitarios/excecoes";
 import { useArmazemFinanceiro } from "../estado/armazemFinanceiro";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";

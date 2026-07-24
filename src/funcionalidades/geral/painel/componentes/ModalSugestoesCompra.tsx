@@ -5,7 +5,7 @@ import { AlertCircle, ShoppingCart, ArrowRight, FileSpreadsheet, Copy, Check } f
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { servicoExportacao } from "@/compartilhado/servicos/servicoExportacao";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface ModalSugestoesCompraProps {
   aberto: boolean;

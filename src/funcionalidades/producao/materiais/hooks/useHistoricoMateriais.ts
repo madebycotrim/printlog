@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { RegistroUso } from "../tipos";
 import { servicoUsoMateriais } from "../servicos/servicoUsoMateriais";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 export function useHistoricoMateriais(idMaterial?: string) {
   const [historico, setHistorico] = useState<RegistroUso[]>([]);

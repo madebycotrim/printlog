@@ -1,6 +1,6 @@
 import { DollarSign, User, MoreVertical, Trash2, Edit3, Clock, Package, Archive } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Pedido } from "../tipos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";

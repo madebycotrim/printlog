@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, AlertTriangle, Trash2, Download } from "lucide-react";
 import { motion } from "framer-motion";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";

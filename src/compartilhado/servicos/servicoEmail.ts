@@ -1,4 +1,4 @@
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 

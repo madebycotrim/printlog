@@ -24,7 +24,7 @@ import {
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 import { Usuario } from "@/compartilhado/tipos/modelos";
 

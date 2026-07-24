@@ -7,7 +7,7 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { apiPedidos } from "@/funcionalidades/producao/projetos/servicos/apiPedidos";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 interface PropriedadesAbaHistorico {
   cliente: Cliente;

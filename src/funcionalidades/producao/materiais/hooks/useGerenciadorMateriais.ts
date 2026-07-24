@@ -11,7 +11,7 @@ import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 
 export function useGerenciadorMateriais() {

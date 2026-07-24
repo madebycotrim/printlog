@@ -3,7 +3,7 @@ import { X, ShieldCheck, Check, Loader2, Shield, Ban } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { armazenamentoSeguro } from "@/compartilhado/utilitarios/armazenamento-seguro";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 /**
  * Componente de Consentimento de Cookies (Banner LGPD).

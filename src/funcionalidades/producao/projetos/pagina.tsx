@@ -20,7 +20,7 @@ import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsum
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { apiFinanceiro } from "@/funcionalidades/comercial/financeiro/servicos/apiFinanceiro";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 export function PaginaProjetos() {
   const navigate = useNavigate();
