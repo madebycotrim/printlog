@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useArmazemDispositivo } from "@/compartilhado/estado/armazemDispositivo";
 import { BarraNavegacaoMobile } from "./BarraNavegacaoMobile";
 import { AnimatePresence, motion } from "framer-motion";
+import { LimiteDeErro } from "./LimiteDeErro";
 
 type PropriedadesLayout = {
   children?: ReactNode;
@@ -59,7 +60,9 @@ export function Layout({ children }: PropriedadesLayout) {
                   transition={{ duration: 0.2, ease: "easeOut" }}
                   className="flex-1 flex flex-col min-h-0"
                 >
-                  {children || <Outlet />}
+                  <LimiteDeErro>
+                    {children || <Outlet />}
+                  </LimiteDeErro>
                 </motion.div>
               </AnimatePresence>
             </div>

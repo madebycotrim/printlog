@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { useAtalhosTeclado } from "@/compartilhado/hooks/useAtalhosTeclado";
+import { Sliders } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { format } from "date-fns";
@@ -468,6 +469,27 @@ export function PaginaCalculadoraV2() {
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">Resetar</span>
         </button>
+
+        <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
+
+        <button 
+          onClick={() => {
+            setModoAvancado(!modoAvancado);
+            toast.success(modoAvancado ? "Modo Simplificado ativado" : "Modo Avançado ativado!");
+          }}
+          className={`h-9 px-3 rounded-xl border flex items-center justify-center transition-all shadow-sm gap-2 text-xs font-bold ${
+            modoAvancado
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
+              : 'bg-card border-borda-sutil text-zinc-400 hover:text-emerald-500 hover:border-emerald-500/30'
+          }`}
+          title={modoAvancado ? "Modo Avançado (Exibindo todos os parâmetros)" : "Modo Simplificado (Exibindo apenas o essencial)"}
+        >
+          <Sliders size={14} strokeWidth={2.5} />
+          <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">
+            {modoAvancado ? "Avançado" : "Simples"}
+          </span>
+        </button>
+
         <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
         <button 
           onClick={() => undo()} 
@@ -528,7 +550,7 @@ export function PaginaCalculadoraV2() {
         </button>
       </div>
     )
-  }), [idEdicao, pastStates.length, futureStates.length, undo, redo, autoSalvar]));
+  }), [idEdicao, pastStates.length, futureStates.length, undo, redo, autoSalvar, modoAvancado]));
 
   // Handlers para Zustand
   const alternarMaterial = useCallback((id: string) => {
@@ -606,21 +628,6 @@ export function PaginaCalculadoraV2() {
       <div className="xl:col-span-8 relative space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pb-10 xl:pb-20 px-4 pt-4 -mx-4 -mt-4 scrollbar-hide">
         
         {/* O conteúdo da calculadora começa aqui */}
-        {/* Banner Modo da Calculadora */}
-        <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/40 p-4 rounded-2xl border border-borda-sutil">
-          <div className="flex flex-col">
-            <h3 className="text-sm font-black text-primary dark:text-white uppercase tracking-widest">Modo Avançado</h3>
-            <p className="text-[10px] text-muted-foreground mt-0.5 font-bold uppercase tracking-wider">
-              {modoAvancado ? "Exibindo todos os custos, variáveis e logística" : "Exibindo apenas peças, tempo e materiais"}
-            </p>
-          </div>
-          <button 
-            onClick={() => setModoAvancado(!modoAvancado)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${modoAvancado ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}
-          >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${modoAvancado ? 'translate-x-6' : 'translate-x-1'}`} />
-          </button>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-8 h-full">

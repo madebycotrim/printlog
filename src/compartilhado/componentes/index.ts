@@ -11,3 +11,4 @@ export * from "./MenuNotificacoes";
 export * from "./ModalListagemPremium";
 export * from "./AcoesDescarte";
 export * from "./BarraNavegacaoMobile";
+export * from "./LimiteDeErro";

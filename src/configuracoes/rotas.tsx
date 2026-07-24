@@ -123,9 +123,9 @@ export function RoteadorPrincipal() {
     <ProvedorAutenticacao>
       <ProvedorBeta>
         <ProvedorEstudio>
+          <ToasterPremium />
+          <WidgetFeedbackBeta />
           <BrowserRouter>
-            <ToasterPremium />
-            <WidgetFeedbackBeta />
             <ScrollParaTopo />
             <Suspense fallback={<Carregamento />}>
               <Routes>
