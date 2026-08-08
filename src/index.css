@@ -668,3 +668,50 @@ html.fonte-dislexia-ativa * {
   letter-spacing: 0.05em !important;
   line-height: 1.75 !important;
 }
+
+/* ==========================================================================
+   OTIMIZAÇÃO MOBILE & ERGONOMIA DE TOQUE
+   ========================================================================== */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevenção de Zoom Automático no iOS Safari em Inputs Móbile */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Utilitários de Área de Segurança (Safe Area Insets iOS/Android) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.min-h-screen-dvh {
+  min-height: 100dvh;
+}
+
+.h-screen-dvh {
+  height: 100dvh;
+}
+
+/* Touch targets para acessibilidade móvel (WCAG AA - 44px min) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+

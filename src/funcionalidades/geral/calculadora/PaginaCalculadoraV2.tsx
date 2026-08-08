@@ -651,10 +651,10 @@ export function PaginaCalculadoraV2() {
   }, [undo, redo]);
 
   return (
-    <div className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-y-auto xl:overflow-hidden px-4 sm:px-6 md:px-12 pb-24 xl:pb-0 bg-background pt-8">
+    <div className="absolute inset-0 grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-y-auto xl:overflow-hidden px-4 sm:px-6 md:px-12 pb-[calc(11rem+env(safe-area-inset-bottom))] xl:pb-0 bg-background pt-8">
       
       {/* PAINEL ESQUERDO: Lista Completa */}
-      <div className="xl:col-span-8 relative space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pb-10 xl:pb-20 px-4 pt-4 -mx-4 -mt-4 scrollbar-hide">
+      <div className="xl:col-span-8 relative space-y-6 h-auto xl:h-full overflow-y-visible xl:overflow-y-auto pb-12 xl:pb-20 px-4 pt-4 -mx-4 -mt-4 scrollbar-hide">
         
         {/* O conteúdo da calculadora começa aqui */}
 
@@ -1189,27 +1189,38 @@ export function PaginaCalculadoraV2() {
         setNomeTemporario={setNomeTemporario}
       />
 
-      {/* Barra Flutuante de Resumo (Sticky Footer) */}
-      <div className="xl:hidden fixed bottom-14 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-200 dark:border-white/10 px-4 py-2.5 shadow-[0_-8px_25px_rgba(0,0,0,0.1)] flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Preço Sugerido</span>
-          <span className="text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+      {/* Barra Flutuante de Resumo (Sticky Footer Mobile/Tablet) */}
+      <div className="xl:hidden fixed bottom-[calc(3.8rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl border-t border-zinc-200/80 dark:border-white/10 px-4 py-2 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] flex items-center justify-between gap-2.5">
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400">Total Sugerido</span>
+            <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-1.5 py-0.2 rounded-md">
+              +{(armazem.resultado?.margemReal ?? Math.round(armazem.margemLucroPercentual / 100)).toFixed(0)}%
+            </span>
+          </div>
+          <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums leading-tight truncate">
             {centavosParaReais(armazem.resultado?.precoSugerido || 0)}
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <span className="text-[9px] font-semibold text-zinc-400 block uppercase">Custo: {centavosParaReais(armazem.resultado?.custoTotalOperacional || 0)}</span>
-            <span className="text-[9px] font-semibold text-emerald-500 block uppercase">Lucro: {centavosParaReais(armazem.resultado?.lucroLiquido || 0)}</span>
-          </div>
+
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => {
               window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
             }}
-            className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold tracking-wide shadow-md transition-all active:scale-95"
+            className="px-3 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all active:scale-95 touch-target"
           >
-            Ver Detalhes
+            Detalhes
+          </button>
+
+          <button
+            type="button"
+            onClick={gerarPdfExportacao}
+            disabled={gerandoPdf}
+            className="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold tracking-wide shadow-md transition-all active:scale-95 flex items-center gap-1.5 touch-target disabled:opacity-50"
+          >
+            {gerandoPdf ? "Gerando..." : "PDF / Orçamento"}
           </button>
         </div>
       </div>

@@ -76,41 +76,46 @@ export function Dialogo({
             onClick={aoFechar}
           />
 
-          {/* Container Centralizado */}
-          <div className={`fixed inset-0 z-[1000] flex items-center justify-center ${telaCheia ? "p-0" : "p-4 md:p-8"} pointer-events-none`}>
+          {/* Container Centralizado (Desktop) / Bottom Sheet (Mobile) */}
+          <div className={`fixed inset-0 z-[1000] flex items-center justify-center max-md:items-end ${telaCheia ? "p-0" : "p-0 md:p-8"} pointer-events-none`}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              initial={{ opacity: 0, scale: 0.96, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 8 }}
-              transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.8 }}
+              exit={{ opacity: 0, scale: 0.96, y: 30 }}
+              transition={{ type: "spring", stiffness: 450, damping: 32, mass: 0.8 }}
               role="dialog"
               aria-modal="true"
               aria-label={titulo || "Diálogo"}
               className={`
                 w-full pointer-events-auto flex flex-col overflow-hidden bg-card border-borda-sutil shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]
-                ${telaCheia ? "h-full w-full border-none rounded-none" : `${larguraMax} rounded-[2rem] border max-h-[90vh]`}
+                ${telaCheia ? "h-full w-full border-none rounded-none" : `${larguraMax} rounded-[2rem] max-md:rounded-t-[2.25rem] max-md:rounded-b-none border max-h-[90vh] max-md:max-h-[92dvh]`}
               `}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Alça visual de arrasto em telas mobile (Bottom Sheet indicator) */}
+              {!telaCheia && (
+                <div className="w-12 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700/80 mx-auto my-2 md:hidden shrink-0" />
+              )}
+
               {/* Cabeçalho */}
               {!esconderCabecalho && (
-                <div className={`flex items-center justify-between px-6 py-4.5 border-b border-borda-sutil bg-card backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-3xl"}`}>
+                <div className={`flex items-center justify-between px-5 md:px-6 py-3.5 md:py-4.5 border-b border-borda-sutil bg-card backdrop-blur-md z-20 ${telaCheia ? "" : "rounded-t-3xl max-md:rounded-t-none"}`}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${coresMapeamento[corBase]}`}>
+                    <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border shrink-0 ${coresMapeamento[corBase]}`}>
                       {Icone ? <Icone size={18} /> : <Settings size={18} />}
                     </div>
-                    <div className="flex flex-col text-left">
-                      <h3 className="text-sm font-black text-primary tracking-wider uppercase leading-none">
+                    <div className="flex flex-col text-left min-w-0">
+                      <h3 className="text-xs md:text-sm font-black text-primary tracking-wider uppercase leading-none truncate">
                         {titulo || "Painel"}
                       </h3>
-                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1 truncate">
                         {subtitulo || "Configurações do Sistema"}
                       </span>
                     </div>
                   </div>
                   <button
                     onClick={aoFechar}
-                    className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer active:scale-95"
+                    className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer active:scale-95 shrink-0"
                     aria-label="Fechar"
                   >
                     <X size={14} />
@@ -118,8 +123,8 @@ export function Dialogo({
                 </div>
               )}
 
-              {/* ConteÃºdo com Scroll (Opcional) */}
-              <div className={`flex-1 p-0 ${semScroll ? "overflow-hidden" : "overflow-y-auto scrollbar-fino"}`}>
+              {/* Conteúdo com Scroll */}
+              <div className={`flex-1 p-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))] ${semScroll ? "overflow-hidden" : "overflow-y-auto scrollbar-fino"}`}>
                 {children}
               </div>
             </motion.div>

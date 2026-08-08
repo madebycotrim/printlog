@@ -66,10 +66,15 @@ export function MenuNotificacoes() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-4 w-96 bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+            className="fixed inset-x-0 bottom-0 top-auto z-50 w-full max-h-[85vh] rounded-t-3xl sm:absolute sm:inset-auto sm:right-0 sm:mt-4 sm:w-96 sm:rounded-2xl bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/10 shadow-2xl overflow-hidden"
           >
+            {/* Puxador de Rodapé para Celular */}
+            <div className="sm:hidden pt-3 pb-1 flex justify-center bg-gray-50/50 dark:bg-white/2">
+              <div className="w-12 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+            </div>
+
             {/* Header do Menu */}
-            <div className="p-5 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/2">
+            <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/2">
               <div>
                 <h3 className="text-sm font-black uppercase tracking-tight">Notificações</h3>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">

@@ -283,11 +283,11 @@ export function Apresentacao() {
 
       <section
         id="apresentacao"
-        className="relative min-h-screen flex items-center pt-28 pb-24 overflow-hidden"
+        className="relative h-[100dvh] min-h-[100dvh] flex flex-col justify-between pt-16 sm:pt-20 pb-4 lg:pt-28 lg:pb-24 overflow-hidden"
       >
-        {/* Orbes de Brilho Dinâmicos (Mantidos por serem específicos do Hero) */}
+        {/* Orbes de Brilho Dinâmicos */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none hidden md:block"
           style={{
             top: "-10%",
             left: "50%",
@@ -302,41 +302,27 @@ export function Apresentacao() {
         />
 
         {/* ── Conteúdo ── */}
-        <div className="container mx-auto px-6 z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 xl:gap-32 items-center">
-          {/* ── ESQUERDA ── */}
+        <div className="container mx-auto px-4 sm:px-6 z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 xl:gap-32 items-center my-auto flex-1 flex flex-col justify-center">
+          {/* ── ESQUERDA — Apresentação Mobile Dedicada & Desktop ── */}
           <div
-            className="flex flex-col items-start"
+            className="flex flex-col items-start text-left w-full max-w-xl lg:max-w-none mx-auto lg:mx-0 pt-2 sm:pt-4 lg:pt-0"
             style={{
               animation: visivel
                 ? "surgirCimaApresentacao .8s ease both"
                 : "none",
             }}
           >
-            {/* Emblema */}
-            <div
-              className="inline-flex items-center gap-2.5 px-4 py-2 mb-10 rounded-full border"
-              style={{
-                background: "rgba(14,165,233,.08)",
-                borderColor: "rgba(14,165,233,.25)",
-                animation: visivel
-                  ? "deslizarDireitaApresentacao .7s .1s ease both"
-                  : "none",
-              }}
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-400" />
-              </span>
-              <span className="text-sky-400 text-[11px] font-bold tracking-[.2em] uppercase font-mono">
-                Oferta Lançamento: PRO 100% OFF
-              </span>
+            {/* Tag Discreta de Posicionamento */}
+            <div className="inline-flex items-center gap-2 text-sky-400/90 text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] uppercase mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+              Gestão Técnica de Impressão 3D
             </div>
 
             {/* Título Principal */}
             <h1
-              className="font-black leading-[.88] tracking-tighter mb-8 uppercase"
+              className="font-black leading-[.92] tracking-tighter mb-3 lg:mb-6 uppercase text-left"
               style={{
-                fontSize: "clamp(3.2rem, 7vw, 5.5rem)",
+                fontSize: "clamp(2.3rem, 7.5vw, 5.5rem)",
                 animation: visivel
                   ? "surgirCimaApresentacao .8s .2s ease both"
                   : "none",
@@ -352,7 +338,7 @@ export function Apresentacao() {
 
             {/* Subtítulo */}
             <p
-              className="text-zinc-400 text-lg leading-relaxed mb-10 max-w-lg"
+              className="text-zinc-400 text-xs sm:text-base lg:text-lg leading-relaxed mb-4 lg:mb-8 max-w-lg text-left"
               style={{
                 animation: visivel
                   ? "surgirCimaApresentacao .8s .35s ease both"
@@ -361,12 +347,12 @@ export function Apresentacao() {
               }}
             >
               Dê adeus ao <span className="text-white font-semibold">"chutômetro"</span>. 
-              Uma ferramenta feita por makers para ajudar a comunidade 3D a crescer com precisão e dignidade.
+              Calcule custos reais de energia, resina, filamento e margem líquida com precisão e dignidade.
             </p>
 
             {/* Chamadas para Ação (CTAs) */}
             <div
-              className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
+              className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch mb-5"
               style={{
                 animation: visivel
                   ? "surgirCimaApresentacao .8s .55s ease both"
@@ -376,7 +362,7 @@ export function Apresentacao() {
             >
               <button
                 onClick={() => navegar("/cadastro")}
-                className="group relative px-8 py-4 rounded-xl font-bold text-sm tracking-wide uppercase overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-0.5"
+                className="group relative w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-sm tracking-wide uppercase overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-95 touch-target"
                 style={{
                   background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
                   color: "#fff",
@@ -399,9 +385,25 @@ export function Apresentacao() {
               </button>
             </div>
 
+            {/* Métricas de Propaganda Discreta em Texto Puro (Exibido Apenas no Mobile) */}
+            <div className="grid lg:hidden grid-cols-3 gap-2 sm:gap-4 w-full py-3 border-y border-white/10 my-3 text-left">
+              <div>
+                <div className="text-lg sm:text-2xl font-black text-sky-400 font-mono tracking-tight">100%</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Precisão Custos</div>
+              </div>
+              <div>
+                <div className="text-lg sm:text-2xl font-black text-emerald-400 font-mono tracking-tight">+85%</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Lucro Real Médio</div>
+              </div>
+              <div>
+                <div className="text-lg sm:text-2xl font-black text-indigo-400 font-mono tracking-tight">Zero</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Chutômetro</div>
+              </div>
+            </div>
+
             {/* Selo de Confiança */}
             <div
-              className="mt-12 flex items-center gap-3"
+              className="mt-3 lg:mt-8 flex items-center gap-3 w-full justify-start"
               style={{
                 animation: visivel
                   ? "surgirCimaApresentacao .8s .65s ease both"
@@ -409,38 +411,33 @@ export function Apresentacao() {
                 opacity: 0,
               }}
             >
-              <div className="flex items-start gap-4 pl-4 border-l-2 border-emerald-500/30 hover:border-emerald-500 transition-colors duration-500 max-w-sm group">
-                <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                <div className="flex flex-col gap-1">
-                  <span className="text-white text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2">
-                    Compromisso Ético
-                    <span className="h-px w-8 bg-zinc-800" />
-                  </span>
-                  <p className="text-zinc-500 text-[11px] leading-relaxed italic">
-                    "Transparência em primeiro lugar — construindo o PrintLog de forma honesta, aberta e em constante evolução junto com a comunidade 3D brasileira."
-                  </p>
+              <div className="w-full p-3 rounded-xl bg-white/[0.02] border border-white/5 text-left">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-white text-[10px] font-bold uppercase tracking-wider">Compromisso Ético PrintLog</span>
                 </div>
+                <p className="text-zinc-500 text-[10px] sm:text-[11px] leading-relaxed italic">
+                  "Transparência em primeiro lugar — 100% gratuito e em constante evolução junto com a comunidade 3D brasileira."
+                </p>
               </div>
             </div>
           </div>
 
-          {/* ── DIREITA — Mockup ── */}
+          {/* ── DIREITA — Mockup (Exibido EXCLUSIVAMENTE em Desktop/Telas Grandes para não poluir a primeira dobra no mobile) ── */}
           <div
             ref={refEnvelope}
-            className="relative flex items-center justify-center"
+            className="hidden lg:flex relative items-center justify-center w-full px-0 lg:px-12 py-4 lg:py-16"
             style={{
               animation: visivel
                 ? "deslizarEsquerdaApresentacao .9s .3s ease both"
                 : "none",
               opacity: 0,
-              minHeight: 560,
-              padding: "60px 150px",
               overflow: "visible",
             }}
           >
             {/* Brilho atrás do cartão */}
             <div
-              className="absolute pointer-events-none"
+              className="absolute pointer-events-none hidden md:block"
               style={{
                 inset: "-40px",
                 background:
@@ -490,12 +487,10 @@ export function Apresentacao() {
             {/* ── Cartão Principal ── */}
             <div
               ref={refCartao}
-              className="relative brilho-cartao-apresentacao rounded-2xl"
+              className="relative brilho-cartao-apresentacao rounded-2xl w-full max-w-[380px] p-5 sm:p-7"
               style={{
                 background: "linear-gradient(145deg, #0e0e12, #0a0a0d)",
                 border: "1px solid rgba(255,255,255,.07)",
-                width: 380,
-                padding: "28px",
               }}
             >
               {/* Linha de varredura */}
@@ -777,9 +772,9 @@ export function Apresentacao() {
           </div>
         </div>
 
-        {/* ── Indicador de Rolagem ── */}
+        {/* ── Indicador de Rolagem Vertical (Exibido em todas as telas) ── */}
         <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-end gap-3 cursor-pointer group/scroll"
+          className="flex absolute bottom-3 lg:bottom-8 left-1/2 -translate-x-1/2 items-end gap-3 cursor-pointer group/scroll z-20 select-none"
           style={{
             animation: visivel
               ? "surgirCimaApresentacao .8s .9s ease both"

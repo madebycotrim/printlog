@@ -40,45 +40,98 @@ export function Demonstracao() {
   }, []);
 
   return (
-    <section id="centro-comando" ref={refSecao} className="py-32 relative overflow-hidden bg-[#050505]">
+    <section id="centro-comando" ref={refSecao} className="py-12 md:py-32 relative overflow-hidden bg-[#050505]">
       {/* ── Efeitos de Fundo ── */}
       <div className="absolute inset-0 bg-[#050505]" />
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-50" />
 
       {/* Brilhos Ambientais */}
-      <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] bg-sky-500/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
-      <div className="absolute bottom-1/4 right-1/4 w-[800px] h-[800px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
+      <div className="absolute top-1/4 left-1/4 w-[350px] md:w-[800px] h-[350px] md:h-[800px] bg-sky-500/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
+      <div className="absolute bottom-1/4 right-1/4 w-[350px] md:w-[800px] h-[350px] md:h-[800px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none mix-blend-screen" />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* ── Cabeçalho ── */}
         <div
-          className={`text-center max-w-4xl mx-auto mb-20 transition-all duration-1000 ${visivel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          className={`text-center max-w-4xl mx-auto mb-8 md:mb-20 transition-all duration-1000 ${visivel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/10 bg-sky-500/5 text-sky-400 mb-6 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/10 bg-sky-500/5 text-sky-400 mb-3 md:mb-6 backdrop-blur-md">
             <div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Demonstração do Sistema</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-[0.9] mb-6">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-[0.92] mb-3 md:mb-6">
             O Cérebro da sua
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
               Operação de Impressão.
             </span>
           </h2>
-          <p className="text-zinc-500 text-lg max-w-xl mx-auto font-medium">
+          <p className="text-zinc-500 text-xs sm:text-base md:text-lg max-w-xl mx-auto font-medium">
             Abandone as planilhas. Gerencie custos, prazos e hardware em uma interface industrial de alta densidade.
           </p>
         </div>
 
-        {/* ── Interface Principal do Painel ── */}
+        {/* ── Visualização Exclusiva do Mobile ── */}
+        <div className="md:hidden space-y-4 max-w-md mx-auto">
+          {/* Card Central de Operações */}
+          <div className="p-4 rounded-2xl bg-[#09090c] border border-white/10 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-white text-xs font-bold uppercase tracking-wider">Painel de Controle</span>
+              </div>
+              <span className="text-[9px] text-zinc-500 font-mono">PRINTLOG MOBILE</span>
+            </div>
+
+            {/* 4 KPIs em Grid 2x2 */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">Produção Ativa</div>
+                <div className="text-lg font-black text-white font-mono">14 Peças</div>
+              </div>
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <div className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Lucro Líquido</div>
+                <div className="text-lg font-black text-emerald-400 font-mono">R$ 7.120</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">Taxa Sucesso</div>
+                <div className="text-lg font-black text-white font-mono">98.2%</div>
+              </div>
+              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                <div className="text-[9px] text-sky-400 font-bold uppercase tracking-wider mb-1">Faturado Mês</div>
+                <div className="text-lg font-black text-sky-400 font-mono">R$ 12.840</div>
+              </div>
+            </div>
+
+            {/* Fila de Impressão Simultânea */}
+            <div className="space-y-2 pt-2">
+              <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Fila em Tempo Real</div>
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
+                <div className="flex items-center gap-2">
+                  <Printer className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="text-zinc-300 font-medium">Bambu X1C • Vaso PLA</span>
+                </div>
+                <span className="text-emerald-400 font-mono font-bold text-[10px]">68%</span>
+              </div>
+              <div className="flex justify-between items-center p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
+                <div className="flex items-center gap-2">
+                  <Printer className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="text-zinc-300 font-medium">Ender 3 S1 • Engrenagem</span>
+                </div>
+                <span className="text-amber-400 font-mono font-bold text-[10px]">42%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Interface Principal do Painel (Exibida em Desktop) ── */}
         <div
-          className={`relative transition-all duration-1000 delay-200 ${visivel ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-1 scale-95"}`}
+          className={`hidden md:block relative transition-all duration-1000 delay-200 ${visivel ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-1 scale-95"}`}
           style={{ perspective: "2000px" }}
         >
           {/* A "Janela" */}
-          <div className="relative mx-auto max-w-[1400px] bg-[#09090b] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/5 group/janela">
+          <div className="relative mx-auto max-w-[1400px] bg-[#09090b] border border-white/10 rounded-2xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/5 group/janela">
             {/* Barra de Título (MacOS Style) */}
-            <div className="h-12 bg-[#0c0c0e] border-b border-white/5 flex items-center px-6 justify-between select-none">
+            <div className="h-10 sm:h-12 bg-[#0c0c0e] border-b border-white/5 flex items-center px-4 sm:px-6 justify-between select-none">
               <div className="flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-zinc-800 border border-white/5" />
                 <div className="w-3 h-3 rounded-full bg-zinc-800 border border-white/5" />
@@ -92,9 +145,9 @@ export function Demonstracao() {
             </div>
 
             {/* Conteúdo do Dashboard Real (Simulado) */}
-            <div className="flex h-[800px] overflow-hidden">
-              {/* Barra Lateral Realista */}
-              <div className="w-[80px] bg-[#0c0c0e] border-r border-white/5 flex flex-col items-center py-8 gap-8">
+            <div className="flex h-[520px] sm:h-[650px] lg:h-[800px] overflow-hidden">
+              {/* Barra Lateral Realista (Oculta no mobile) */}
+              <div className="hidden md:flex w-[80px] bg-[#0c0c0e] border-r border-white/5 flex-col items-center py-8 gap-8 shrink-0">
                 <div className="w-10 h-10 flex items-center justify-center mb-4 relative group">
                   <div className="absolute -inset-1 bg-sky-500/20 rounded-full blur opacity-50" />
                   <img src="/logo-branca.png" alt="PrintLog" className="relative w-8 h-8 object-contain" />
@@ -112,15 +165,15 @@ export function Demonstracao() {
               </div>
 
               {/* Área do Conteúdo */}
-              <div className="flex-1 overflow-y-auto bg-[#09090b] p-8 space-y-8 barra-rolagem-personalizada">
+              <div className="flex-1 overflow-y-auto bg-[#09090b] p-4 sm:p-8 space-y-6 md:space-y-8 barra-rolagem-personalizada">
                 {/* Header do Painel */}
-                <div className="flex justify-between items-end mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 mb-4">
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tight">Olá, Maker! 👋</h3>
-                    <p className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Painel de Operações • Outubro 2026</p>
+                    <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">Olá, Maker! 👋</h3>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 uppercase font-bold tracking-widest">Painel de Operações • Outubro 2026</p>
                   </div>
                   <div className="flex gap-3">
-                    <div className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                    <div className="h-9 sm:h-10 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-zinc-400 uppercase tracking-widest">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Sistemas Online
                     </div>
@@ -128,8 +181,8 @@ export function Demonstracao() {
                 </div>
 
                 {/* 12 KPIs Grid */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-6 gap-4">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
                     <CardDemo titulo="Produção Ativa" valor="14" icone={Clock} cor="sky" />
                     <CardDemo titulo="Taxa Sucesso" valor="98.2%" icone={Percent} cor="emerald" />
                     <CardDemo titulo="Alertas Estoque" valor="3" icone={Package} cor="rose" />
@@ -137,7 +190,7 @@ export function Demonstracao() {
                     <CardDemo titulo="Faturado Mês" valor="R$ 12.840" icone={DollarSign} cor="emerald" />
                     <CardDemo titulo="Lucro Líquido" valor="R$ 7.120" icone={TrendingUp} cor="emerald" destaque />
                   </div>
-                  <div className="grid grid-cols-6 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
                     <CardDemo titulo="Ticket Médio" valor="R$ 145" icone={CreditCard} cor="indigo" mini />
                     <CardDemo titulo="Horas de Voo" valor="1.420h" icone={Timer} cor="violet" mini />
                     <CardDemo titulo="Consumo Total" valor="84kg" icone={Weight} cor="cyan" mini />

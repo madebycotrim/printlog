@@ -534,7 +534,7 @@ export const PainelResultados = memo(function PainelResultados({
             </AnimatePresence>
           </div>
         </div>
-      <p className="text-[9px] text-zinc-500 dark:text-zinc-400/60 mt-4 leading-normal select-none text-center">
+      <p className="text-[9px] text-zinc-500 dark:text-zinc-400/60 mt-4 pb-4 leading-normal select-none text-center">
         Estimativa baseada em parâmetros manuais.
       </p>
       </div>

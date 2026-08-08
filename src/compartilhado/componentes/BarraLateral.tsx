@@ -139,7 +139,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   }
 
   const classesContainer = `
-        fixed inset-y-0 left-0 z-50 flex flex-col
+        fixed top-0 bottom-[calc(3.8rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 z-50 flex flex-col
         bg-card
         border-r border-borda-sutil
         transition-all duration-300 ease-in-out md:translate-x-0

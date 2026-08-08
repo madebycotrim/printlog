@@ -54,14 +54,14 @@ export function GraficoConsumo() {
     }, []);
 
     return (
-        <div className="bg-card border border-borda-sutil rounded-3xl p-8 shadow-media relative overflow-hidden group">
+        <div className="bg-card border border-borda-sutil rounded-3xl p-5 sm:p-8 shadow-media relative overflow-hidden group">
             <div className="absolute -right-20 -top-20 w-64 h-64 bg-sky-500/5 blur-[100px] pointer-events-none group-hover:opacity-100 opacity-50 transition-opacity" />
             
-            <div className="flex items-center justify-between mb-10 relative z-10">
+            <div className="flex items-center justify-between mb-6 sm:mb-10 relative z-10">
                 <div className="flex flex-col">
                     <h3 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">Consumo Semanal</h3>
                     <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-2xl font-black text-primary tracking-tighter">Fluxo MP</span>
+                        <span className="text-xl sm:text-2xl font-black text-primary tracking-tighter">Fluxo MP</span>
                         <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase tracking-widest italic">Real-time</span>
                     </div>
                 </div>
@@ -73,7 +73,7 @@ export function GraficoConsumo() {
                 </div>
             </div>
 
-            <div className="h-[280px] w-full relative z-10">
+            <div className="h-[200px] sm:h-[280px] w-full relative z-10">
                 {isMounted && (
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={dadosGrafico} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>

@@ -302,18 +302,29 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
 
         {/* Rodapé - Contatos em Pílulas */}
         {(temTelefoneValido(cliente.telefone) || temEmailValido(cliente.email)) && (
-          <div className="flex items-center gap-2.5 pt-4 border-t border-zinc-200/50 dark:border-white/5 mt-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-4 border-t border-zinc-200/50 dark:border-white/5 mt-auto">
             {temTelefoneValido(cliente.telefone) && (
-              <>
-                <Dica texto="Chamar no WhatsApp" posicao="cima">
-                  <button
-                    onClick={abrirWhatsapp}
-                    aria-label={`Chamar o cliente ${cliente.nome} no WhatsApp`}
-                    className="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all group/btn"
-                  >
-                    <MessageCircle size={15} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
-                  </button>
-                </Dica>
+              <button
+                onClick={abrirWhatsapp}
+                className="md:hidden flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 active:scale-95 touch-target w-full"
+              >
+                <MessageCircle size={15} strokeWidth={2.5} />
+                <span>Chamar no WhatsApp</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-2.5 justify-start">
+              {temTelefoneValido(cliente.telefone) && (
+                <>
+                  <Dica texto="Chamar no WhatsApp" posicao="cima">
+                    <button
+                      onClick={abrirWhatsapp}
+                      aria-label={`Chamar o cliente ${cliente.nome} no WhatsApp`}
+                      className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all group/btn"
+                    >
+                      <MessageCircle size={15} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
+                    </button>
+                  </Dica>
 
                 <Dica texto={copiado === "Telefone" ? "Copiado!" : "Copiar Telefone"} posicao="cima">
                   <button
@@ -344,6 +355,7 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
                 </button>
               </Dica>
             )}
+            </div>
           </div>
         )}
       </div>

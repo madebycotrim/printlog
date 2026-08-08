@@ -556,6 +556,38 @@ export function PaginaOrcamentoPublico() {
 
       </div>
 
+      {/* 📱 Barra Fixa Móbile de Aprovação Direta (Exclusiva Móbile) */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-2xl border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 flex items-center justify-between gap-2.5">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Total do Orçamento</span>
+          <span className="text-base font-black text-slate-900 tabular-nums leading-tight truncate" style={{ color: "var(--cor-cliente-primaria)" }}>
+            {centavosParaReais(precoEmCentavos)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {statusAprovacao === 'pendente' ? (
+            <button
+              onClick={() => {
+                setTermoAceite(true);
+                lidarComAprovacao();
+              }}
+              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20 active:scale-95 touch-target flex items-center gap-1.5"
+            >
+              <CheckCircle2 size={14} />
+              <span>Aprovar</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => window.print()}
+              className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 touch-target flex items-center gap-1.5"
+            >
+              <Printer size={14} />
+              <span>PDF</span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

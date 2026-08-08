@@ -61,7 +61,7 @@ export function DockAcoes({
         )}
       </AnimatePresence>
 
-      <div className="fixed bottom-8 right-8 z-[9995]">
+      <div className="fixed bottom-[calc(4.8rem+env(safe-area-inset-bottom))] right-4 md:bottom-8 md:right-8 z-[9995]">
         <AnimatePresence>
           {aberto && (
             <motion.div
@@ -69,7 +69,7 @@ export function DockAcoes({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="absolute bottom-full right-0 mb-6 flex flex-col gap-2.5 pb-4"
+              className="absolute bottom-full right-0 mb-4 md:mb-6 flex flex-col gap-2.5 pb-2"
             >
               {itens.map((item, index) => (
                 <motion.button
@@ -81,7 +81,7 @@ export function DockAcoes({
                     item.acao();
                     definirAberto(false);
                   }}
-                  className={`flex items-center justify-between w-60 bg-card/95 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl transition-all shadow-2xl group/btn ${coresMap[item.cor]}`}
+                  className={`flex items-center justify-between w-56 sm:w-60 bg-card/95 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl transition-all shadow-2xl group/btn touch-target active:scale-95 ${coresMap[item.cor]}`}
                 >
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover/btn:text-primary dark:group-hover/btn:text-white transition-colors">
                     {item.label}

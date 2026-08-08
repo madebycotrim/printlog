@@ -76,7 +76,7 @@ export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLa
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -2 }}
-                className="relative flex items-center justify-between p-5 rounded-2xl border border-borda-sutil dark:border-white/5 bg-card hover:border-zinc-200 dark:hover:border-white/10 hover:shadow-premium transition-all group overflow-hidden"
+                className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-borda-sutil dark:border-white/5 bg-card hover:border-zinc-200 dark:hover:border-white/10 hover:shadow-premium transition-all group overflow-hidden"
               >
                 {/* Background Decorativo */}
                 <div className="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.05] pointer-events-none transition-transform group-hover:scale-110 group-hover:rotate-6 duration-700">
@@ -87,44 +87,44 @@ export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLa
                   )}
                 </div>
 
-                <div className="flex items-center gap-5 relative z-10">
+                <div className="flex items-start sm:items-center gap-3.5 sm:gap-5 relative z-10 w-full sm:w-auto">
                   {/* Ícone do Tipo */}
                   <div
-                    className={`p-4 rounded-xl transition-all duration-300 ${
+                    className={`p-3 sm:p-4 rounded-xl transition-all duration-300 shrink-0 ${
                       l.tipo === TipoLancamentoFinanceiro.ENTRADA
                         ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20 shadow-sm"
                         : "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 group-hover:bg-rose-100 dark:group-hover:bg-rose-500/20 shadow-sm"
                     }`}
                   >
                     {l.tipo === TipoLancamentoFinanceiro.ENTRADA ? (
-                      <ArrowUpRight size={22} strokeWidth={2.5} />
+                      <ArrowUpRight size={20} strokeWidth={2.5} />
                     ) : (
-                      <ArrowDownLeft size={22} strokeWidth={2.5} />
+                      <ArrowDownLeft size={20} strokeWidth={2.5} />
                     )}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <p className="text-[15px] font-black text-zinc-900 dark:text-zinc-100 leading-none tracking-tight">
+                  <div className="space-y-1.5 min-w-0 flex-1">
+                    <p className="text-sm sm:text-[15px] font-black text-zinc-900 dark:text-zinc-100 leading-tight tracking-tight truncate">
                       {l.descricao}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                       {l.categoria && (
-                        <span className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 text-[10px] uppercase font-black text-zinc-400 dark:text-zinc-500 tracking-widest border border-zinc-100 dark:border-white/5">
-                          <Tag size={12} strokeWidth={2.5} />
+                        <span className="flex items-center gap-1.5 py-0.5 px-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 text-[9px] sm:text-[10px] uppercase font-black text-zinc-400 dark:text-zinc-500 tracking-widest border border-zinc-100 dark:border-white/5">
+                          <Tag size={10} strokeWidth={2.5} />
                           {l.categoria}
                         </span>
                       )}
 
                       {l.idCliente && (
-                        <span className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-zinc-900 dark:bg-white text-[10px] uppercase font-black text-white dark:text-zinc-900 tracking-widest shadow-sm">
-                          <User size={12} strokeWidth={2.5} />
+                        <span className="flex items-center gap-1.5 py-0.5 px-2 rounded-lg bg-zinc-900 dark:bg-white text-[9px] sm:text-[10px] uppercase font-black text-white dark:text-zinc-900 tracking-widest shadow-sm">
+                          <User size={10} strokeWidth={2.5} />
                           {estadoClientes.clientes.find((c) => c.id === l.idCliente)?.nome || "Cliente"}
                         </span>
                       )}
 
                       {l.idPedido && (
-                        <span className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-amber-500/10 text-[9px] uppercase font-black text-amber-600 dark:text-amber-400 tracking-widest border border-amber-500/20">
+                        <span className="flex items-center gap-1.5 py-0.5 px-2 rounded-lg bg-amber-500/10 text-[9px] uppercase font-black text-amber-600 dark:text-amber-400 tracking-widest border border-amber-500/20">
                           <AlertCircle size={10} strokeWidth={3} />
                           Vinculado a Pedido
                         </span>
@@ -133,15 +133,15 @@ export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLa
                   </div>
                 </div>
 
-                <div className="flex items-center gap-8 relative z-10">
-                  {/* Ações (Aparecem no Hover) */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 duration-300">
+                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto relative z-10 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-white/5">
+                  {/* Ações (Visíveis em mobile, no hover em desktop) */}
+                  <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300">
                     <button
                       onClick={() => aoEditar(l)}
-                      className="p-2.5 rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-90"
+                      className="p-2 sm:p-2.5 rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95 touch-target"
                       title="Editar Lançamento"
                     >
-                      <Pencil size={16} strokeWidth={2.5} />
+                      <Pencil size={15} strokeWidth={2.5} />
                     </button>
                     <button
                       onClick={() => {
@@ -149,17 +149,17 @@ export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLa
                           aoExcluir(l.id);
                         }
                       }}
-                      className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all active:scale-90"
+                      className="p-2 sm:p-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all active:scale-95 touch-target"
                       title="Excluir Lançamento"
                     >
-                      <Trash2 size={16} strokeWidth={2.5} />
+                      <Trash2 size={15} strokeWidth={2.5} />
                     </button>
                   </div>
 
                   {/* Valor */}
-                  <div className="flex flex-col items-end gap-1.5 shrink-0 min-w-[120px]">
+                  <div className="flex flex-col items-end gap-0.5 shrink-0">
                     <span
-                      className={`text-xl font-black tracking-tighter ${
+                      className={`text-lg sm:text-xl font-black tracking-tighter tabular-nums ${
                         l.tipo === TipoLancamentoFinanceiro.ENTRADA
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-rose-600 dark:text-rose-400"
@@ -168,7 +168,7 @@ export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLa
                       {l.tipo === TipoLancamentoFinanceiro.ENTRADA ? "+" : "-"} {formatarMoeda(l.valorCentavos)}
                     </span>
                     <div
-                      className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${
+                      className={`px-2 py-0.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase tracking-widest border ${
                         l.tipo === TipoLancamentoFinanceiro.ENTRADA
                           ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-600/70 dark:text-emerald-400/70"
                           : "bg-rose-500/5 border-rose-500/20 text-rose-600/70 dark:text-rose-400/70"

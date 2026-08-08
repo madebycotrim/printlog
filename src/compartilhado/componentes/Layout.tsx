@@ -51,7 +51,7 @@ export function Layout({ children }: PropriedadesLayout) {
 
   return (
     <ProvedorCabecalho>
-      <div className="flex h-screen bg-page dark:bg-zinc-950 font-sans text-primary dark:text-gray-100 transition-colors duration-300 relative">
+      <div className="flex h-screen h-screen-dvh bg-page dark:bg-zinc-950 font-sans text-primary dark:text-gray-100 transition-colors duration-300 relative overflow-hidden">
         {/* Sidebar Fixa (Desktop) / Drawer (Mobile) */}
         <BarraLateral abertaMobile={sidebarAberta} aoFechar={() => definirSidebarAberta(false)} />
 
@@ -66,7 +66,7 @@ export function Layout({ children }: PropriedadesLayout) {
           <Cabecalho aoAbrirBarraLateral={() => definirSidebarAberta(true)} />
 
           <main className={`flex-1 min-h-0 flex flex-col relative scroll-smooth z-10 ${scrollClasse}`}>
-            <div className="flex-1 w-full max-w-[1600px] mx-auto pt-2 px-6 pb-20 md:pt-3 md:px-8 md:pb-8 lg:pt-4 lg:px-10 lg:pb-10 flex flex-col relative min-h-0">
+            <div className="flex-1 w-full max-w-[1600px] mx-auto pt-2 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:pt-3 md:px-8 md:pb-8 lg:pt-4 lg:px-10 lg:pb-10 flex flex-col relative min-h-0">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}
@@ -86,7 +86,7 @@ export function Layout({ children }: PropriedadesLayout) {
         </div>
         
         {/* Barra de Navegação Inferior (Apenas Mobile) */}
-        <BarraNavegacaoMobile />
+        <BarraNavegacaoMobile aoAbrirSidebar={() => definirSidebarAberta(true)} />
 
         {/* Modal Global de Acessibilidade (Lei 13.146/2015) */}
         <ModalAcessibilidade
