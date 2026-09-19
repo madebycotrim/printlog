@@ -32,38 +32,110 @@ export const TARIFAS_KWH_POR_ESTADO: Record<string, number> = {
   'TO': 0.930,
 };
 
-/**
- * Detecta a localização do usuário via IP e retorna a tarifa média de kWh.
- * @returns Promessa com o valor do kWh em Reais.
- */
-export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; tarifa: number } | null> => {
-  try {
-    let estado = null;
+export const MAPA_NOMES_UF: Record<string, string> = {
+  'AC': 'AC', 'AL': 'AL', 'AP': 'AP', 'AM': 'AM', 'BA': 'BA', 'CE': 'CE',
+  'DF': 'DF', 'ES': 'ES', 'GO': 'GO', 'MA': 'MA', 'MT': 'MT', 'MS': 'MS',
+  'MG': 'MG', 'PA': 'PA', 'PB': 'PB', 'PR': 'PR', 'PE': 'PE', 'PI': 'PI',
+  'RJ': 'RJ', 'RN': 'RN', 'RS': 'RS', 'RO': 'RO', 'RR': 'RR', 'SC': 'SC',
+  'SP': 'SP', 'SE': 'SE', 'TO': 'TO',
+  'SAO PAULO': 'SP', 'SÃO PAULO': 'SP', 'RIO DE JANEIRO': 'RJ',
+  'MINAS GERAIS': 'MG', 'DISTRITO FEDERAL': 'DF', 'BRASILIA': 'DF', 'BRASÍLIA': 'DF',
+  'PARANA': 'PR', 'PARANÁ': 'PR', 'RIO GRANDE DO SUL': 'RS',
+  'SANTA CATARINA': 'SC', 'BAHIA': 'BA', 'GOIAS': 'GO', 'GOIÁS': 'GO',
+  'ESPIRITO SANTO': 'ES', 'ESPÍRITO SANTO': 'ES', 'CEARA': 'CE', 'CEARÁ': 'CE',
+  'PERNAMBUCO': 'PE', 'MARANHAO': 'MA', 'MARANHÃO': 'MA', 'PARA': 'PA', 'PARÁ': 'PA',
+  'PARAIBA': 'PB', 'PARAÍBA': 'PB', 'AMAZONAS': 'AM', 'MATO GROSSO': 'MT',
+  'MATO GROSSO DO SUL': 'MS', 'RIO GRANDE DO NORTE': 'RN', 'PIAUI': 'PI', 'PIAUÍ': 'PI',
+  'ALAGOAS': 'AL', 'SERGIPE': 'SE', 'RONDONIA': 'RO', 'RONDÔNIA': 'RO',
+  'TOCANTINS': 'TO', 'ACRE': 'AC', 'AMAPA': 'AP', 'AMAPÁ': 'AP', 'RORAIMA': 'RR'
+};
 
-    try {
-      const res1 = await fetch('https://ipapi.co/json/');
-      const dados1 = await res1.json();
-      if (dados1.region_code) estado = dados1.region_code;
-    } catch (e1) {
-      // Fallback para ipwho.is caso ipapi falhe (ex: bloqueadores de anúncio)
-      try {
-        const res2 = await fetch('https://ipwho.is/');
-        const dados2 = await res2.json();
-        if (dados2.region_code) estado = dados2.region_code;
-      } catch (e2) {
-        // Ambas falharam
-      }
-    }
-
-    if (estado) {
-      const tarifa = TARIFAS_KWH_POR_ESTADO[estado];
-      if (tarifa) {
-        return { estado, tarifa };
-      }
-    }
-    
-    return null;
-  } catch (erro) {
-    return null;
+export function normalizarUFBrasil(val?: string | null): string | null {
+  if (!val || typeof val !== 'string') return null;
+  const limpo = val.trim().toUpperCase();
+  if (MAPA_NOMES_UF[limpo]) return MAPA_NOMES_UF[limpo];
+  for (const [k, uf] of Object.entries(MAPA_NOMES_UF)) {
+    if (limpo.includes(k)) return uf;
   }
+  return null;
+}
+
+
+export interface DadosLocalizacaoCloudflare {
+  sucesso: boolean;
+  origem: string;
+  estado: string;
+  nomeEstado: string;
+  tarifa: number;
+  cidade: string;
+  pais: string;
+  fusoHorario: string;
+  dataHoraIso: string;
+  dataHoraFormatada: string;
+}
+
+/**
+ * Consulta a geolocalização, estado, tarifa e data/hora diretamente pelo backend da Cloudflare (/api/detectar-regiao).
+ * Toda a inteligência e extração de IP roda na borda da Cloudflare, sem violar CSP e sem expor chamadas a terceiros no cliente.
+ */
+export const obterDadosLocalizacaoCloudflare = async (): Promise<DadosLocalizacaoCloudflare> => {
+  try {
+    const res = await fetch('/api/detectar-regiao');
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
+      const dados = (await res.json()) as Partial<DadosLocalizacaoCloudflare>;
+      if (dados && dados.estado && typeof dados.tarifa === 'number') {
+        return {
+          sucesso: true,
+          origem: dados.origem || 'cloudflare_backend',
+          estado: dados.estado,
+          nomeEstado: dados.nomeEstado || (NOMES_ESTADOS[dados.estado] ?? dados.estado),
+          tarifa: dados.tarifa,
+          cidade: dados.cidade || 'São Paulo',
+          pais: dados.pais || 'BR',
+          fusoHorario: dados.fusoHorario || 'America/Sao_Paulo',
+          dataHoraIso: dados.dataHoraIso || new Date().toISOString(),
+          dataHoraFormatada: dados.dataHoraFormatada || new Date().toLocaleDateString('pt-BR'),
+        };
+      }
+    }
+  } catch {
+    // Falha silenciosa de rede/proxy dev
+  }
+
+  // Fallback seguro caso o dev server não esteja conectado ao proxy da Cloudflare
+  const agora = new Date();
+  return {
+    sucesso: true,
+    origem: 'padrao_local',
+    estado: 'SP',
+    nomeEstado: 'São Paulo',
+    tarifa: TARIFAS_KWH_POR_ESTADO['SP'],
+    cidade: 'São Paulo',
+    pais: 'BR',
+    fusoHorario: 'America/Sao_Paulo',
+    dataHoraIso: agora.toISOString(),
+    dataHoraFormatada: agora.toLocaleDateString('pt-BR'),
+  };
+};
+
+export const NOMES_ESTADOS: Record<string, string> = {
+  'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas',
+  'BA': 'Bahia', 'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo',
+  'GO': 'Goiás', 'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul',
+  'MG': 'Minas Gerais', 'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná',
+  'PE': 'Pernambuco', 'PI': 'Piauí', 'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte',
+  'RS': 'Rio Grande do Sul', 'RO': 'Rondônia', 'RR': 'Roraima', 'SC': 'Santa Catarina',
+  'SP': 'São Paulo', 'SE': 'Sergipe', 'TO': 'Tocantins'
+};
+
+/**
+ * Detecta a localização do usuário e retorna a tarifa média de kWh via backend Cloudflare.
+ */
+export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; tarifa: number }> => {
+  const dados = await obterDadosLocalizacaoCloudflare();
+  return {
+    estado: dados.estado,
+    tarifa: dados.tarifa,
+  };
 };

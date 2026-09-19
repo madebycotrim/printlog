@@ -64,7 +64,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 plano: resultado.plano || "FREE",
                 cicloPagamento: resultado.ciclo_pagamento || "MENSAL",
                 vencimentoPlano: resultado.vencimento_plano || null,
-                calculadoraMeta: resultado.calculadora_meta ? JSON.parse(resultado.calculadora_meta) : null,
+                calculadoraMeta: resultado.calculadora_meta ? JSON.parse(String(resultado.calculadora_meta)) : null,
             }), { headers: { "Content-Type": "application/json" } });
         }
 

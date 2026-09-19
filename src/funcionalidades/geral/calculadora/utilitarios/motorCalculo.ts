@@ -114,3 +114,59 @@ export function executarMotorCalculo(p: ParametrosCalculo) {
     modoEntrada: p.modoEntrada
   };
 }
+
+/**
+ * Calcula qual a margem de lucro percentual (em pontos base, ex: 100% = 10000)
+ * necessária para atingir exatamente o preço alvo desejado.
+ */
+export function calcularMargemParaPrecoAlvo(precoAlvoCentavos: number, p: ParametrosCalculo): number {
+  const qtdReal = Math.max(1, p.quantidade);
+  const multiplicadorGeral = p.modoEntrada === 'lote' ? 1 : qtdReal;
+
+  const custoMaterialTotalCentavos = p.materiaisSelecionados.reduce((acc, m) => {
+    const pesoTotal = m.quantidade * multiplicadorGeral;
+    return acc + (pesoTotal / 1000) * m.precoKgCentavos;
+  }, 0);
+
+  const custoInsumosDinamicosCentavos = p.insumosSelecionados.reduce((acc, i) => {
+    const valorBase = i.quantidade * i.custoCentavos;
+    return acc + (i.porLote ? valorBase : valorBase * multiplicadorGeral);
+  }, 0);
+
+  const horasDecimaisMaquina = (p.tempoMinutosMaquina / 60) * multiplicadorGeral;
+  const custoEnergiaCentavos = p.cobrarEnergia ? Math.round((p.potenciaWatts / 1000) * horasDecimaisMaquina * p.precoKwhCentavos) : 0;
+  const custoDepreciacaoCentavos = p.cobrarDesgaste ? Math.round(horasDecimaisMaquina * p.depreciacaoHoraCentavos) : 0;
+  
+  const materialPerdidoTotal = p.materialPerdidoGramas * multiplicadorGeral;
+  const tempoPerdidoTotal = p.tempoPerdidoMinutos * multiplicadorGeral;
+  
+  const custoFilamentoPerdidoCentavos = p.materiaisSelecionados.reduce((acc, m) => acc + (materialPerdidoTotal / 1000) * m.precoKgCentavos, 0);
+  const custoTempoPerdidoCentavos = ((tempoPerdidoTotal / 60) * p.depreciacaoHoraCentavos) + (p.cobrarEnergia ? Math.round((p.potenciaWatts / 1000) * (tempoPerdidoTotal / 60) * p.precoKwhCentavos) : 0);
+  const custoFalhaRealCentavos = Math.round(custoFilamentoPerdidoCentavos + custoTempoPerdidoCentavos);
+  
+  const custoAdicionalTotalCentavos = p.cobrarCustosAdicionais 
+    ? p.custosAdicionais.reduce((acc, c) => acc + c.valorCentavos, 0) * multiplicadorGeral 
+    : 0;
+  
+  const custoPosProcessoCentavos = p.itensPosProcesso.reduce((t, i) => t + i.custoMaterialCentavos, 0) * multiplicadorGeral;
+  const totalItensFixos = p.itensCustosFixos?.reduce((sum, item) => sum + item.valorCentavos, 0) || 0;
+  const custoInsumosFixosCentavos = p.cobrarInsumosFixos ? p.insumosFixosCentavos + totalItensFixos : 0;
+  const custoFreteCentavos = p.cobrarLogistica ? p.freteCentavos : 0;
+  const custoModelagemCentavos = Math.round((p.tempoModelagemMinutos / 60) * p.valorHoraModelagemCentavos);
+  
+  const custoProducaoTotalCentavos = custoMaterialTotalCentavos + custoEnergiaCentavos + custoAdicionalTotalCentavos + custoDepreciacaoCentavos + custoPosProcessoCentavos + custoInsumosDinamicosCentavos + custoInsumosFixosCentavos + custoFalhaRealCentavos;
+
+  if (custoProducaoTotalCentavos <= 0) {
+    return 10000;
+  }
+
+  const taxaMktPercentual = p.cobrarLogistica ? p.taxaEcommercePercentual / 10000 : 0;
+  const taxaFixaVendaCentavos = p.cobrarLogistica ? p.taxaFixaVendaCentavos : 0;
+  const denominadorTaxas = 1 - taxaMktPercentual;
+
+  const precoBaseVendaCentavos = denominadorTaxas > 0.05 ? (precoAlvoCentavos * denominadorTaxas) : (precoAlvoCentavos / 1.5);
+  const valorMargemCentavos = precoBaseVendaCentavos - custoFreteCentavos - taxaFixaVendaCentavos - custoModelagemCentavos - custoProducaoTotalCentavos;
+  
+  const margemDecimal = valorMargemCentavos / custoProducaoTotalCentavos;
+  return Math.max(0, Math.round(margemDecimal * 10000));
+}

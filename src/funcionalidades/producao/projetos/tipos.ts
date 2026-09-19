@@ -50,7 +50,7 @@ export interface Pedido {
 }
 
 export interface CriarPedidoInput {
-  idCliente: string;
+  idCliente?: string | null;
   descricao: string;
   status?: StatusPedido;
   valorCentavos: Centavos;

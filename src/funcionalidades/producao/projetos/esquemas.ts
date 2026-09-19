@@ -21,7 +21,7 @@ export const itemPosProcessoSchema = z.object({
 });
 
 export const criarPedidoSchema = z.object({
-  idCliente: z.string().min(1),
+  idCliente: z.string().optional().nullable().or(z.literal("")),
   descricao: z.string().min(1),
   status: z.nativeEnum(StatusPedido).optional(),
   valorCentavos: z.number().int().min(0),

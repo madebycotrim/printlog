@@ -88,8 +88,8 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                         const matId = mat.idMaterial || mat.id;
                         const matEstoque = dbMateriais.find((m: any) => m.id === matId);
                         if (matEstoque) {
-                            const quantidadeGasta = mat.quantidadeGasta || 0;
-                            const novoPeso = Math.max(0, (matEstoque.peso_restante_gramas || 0) - quantidadeGasta);
+                            const quantidadeGasta = Number(mat.quantidadeGasta) || 0;
+                            const novoPeso = Math.max(0, Number(matEstoque.peso_restante_gramas || 0) - quantidadeGasta);
                             
                             // Query update material
                             batchQueries.push(
@@ -125,9 +125,9 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                         const insId = ins.idInsumo || ins.id;
                         const insEstoque = dbInsumos.find((i: any) => i.id === insId);
                         if (insEstoque) {
-                            const quantidadeGasta = ins.quantidade || 0;
-                            const novaQtd = Math.max(0, (insEstoque.quantidade_atual || 0) - quantidadeGasta);
-                            const custoMedio = insEstoque.custo_medio_unidade || 0;
+                            const quantidadeGasta = Number(ins.quantidade) || 0;
+                            const novaQtd = Math.max(0, Number(insEstoque.quantidade_atual || 0) - quantidadeGasta);
+                            const custoMedio = Number(insEstoque.custo_medio_unidade || 0);
 
                             // Query update insumo
                             batchQueries.push(
@@ -300,9 +300,9 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                         const matId = mat.idMaterial || mat.id;
                         const matEstoque = dbMateriais.find((m: any) => m.id === matId);
                         if (matEstoque) {
-                            const quantidadeGasta = mat.quantidadeGasta || 0;
-                            const pesoMaximo = matEstoque.peso_gramas || 1000;
-                            const novoPeso = Math.min(pesoMaximo, (matEstoque.peso_restante_gramas || 0) + quantidadeGasta);
+                            const quantidadeGasta = Number(mat.quantidadeGasta) || 0;
+                            const pesoMaximo = Number(matEstoque.peso_gramas) || 1000;
+                            const novoPeso = Math.min(pesoMaximo, Number(matEstoque.peso_restante_gramas || 0) + quantidadeGasta);
 
                             batchQueries.push(
                                 env.DB.prepare(

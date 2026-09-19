@@ -37,6 +37,9 @@ import { ModalHistoricoV2 } from "./componentes/ModalHistoricoV2";
 import { ModalCanaisVenda } from "./componentes/ModalCanaisVenda";
 import { ModalArmazemMateriais } from "./componentes/ModalArmazemMateriais";
 import { ModalArmazemInsumos } from "./componentes/ModalArmazemInsumos";
+import { ModalOtimizarPrecoIA } from "./componentes/ModalOtimizarPrecoIA";
+import { calcularMargemParaPrecoAlvo } from "./utilitarios/motorCalculo";
+import { SugestaoPrecoIA } from "./servicos/servicoIA";
 
 // Gerenciadores de Estoque
 import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/hooks/useGerenciadorMateriais";
@@ -389,11 +392,14 @@ export function PaginaCalculadoraV2() {
   }, [nomeProjeto, adicionarNotificacao]);
 
   const [explicacaoIA, setExplicacaoIA] = useState("");
+  const [modalIAAberto, setModalIAAberto] = useState(false);
+  const [sugestaoIA, setSugestaoIA] = useState<SugestaoPrecoIA | null>(null);
+  const [carregandoIA, setCarregandoIA] = useState(false);
 
   const sugerirPrecoComIA = useCallback(async () => {
+    setModalIAAberto(true);
+    setCarregandoIA(true);
     try {
-      toast.loading("Analisando mercado e custos...", { id: "ia" });
-      
       const sugestao = await servicoIA.obterSugestaoPreco({
         custoMaterial: armazem.resultado.custoMaterial / 100,
         custoEnergia: armazem.resultado.custoEnergia / 100,
@@ -404,19 +410,31 @@ export function PaginaCalculadoraV2() {
         pesoGramas: armazem.materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0),
         tempoMinutos: armazem.tempoMinutosMaquina
       });
+      setSugestaoIA(sugestao);
       setExplicacaoIA(sugestao.dica || sugestao.recomendado.justificativa);
-      
-      toast.success("Preço sugerido pela IA!", { id: "ia" });
-      adicionarNotificacao({
-        titulo: "IA Precificação",
-        mensagem: `Sugestão inteligente de preço calculada para "${nomeProjeto || "Projeto 3D"}".`,
-        tipo: TipoNotificacao.INFO,
-        categoria: CategoriaNotificacao.FINANCEIRO,
-      });
     } catch (e) {
       registrar.error({ rastreioId: "sugerir-ia", servico: "CalculadoraV2" }, "Falha ao se conectar com o motor de IA", e);
-      toast.error("Falha ao se conectar com o motor de IA.", { id: "ia" });
+      toast.error("Falha ao calcular sugestão de IA.");
+    } finally {
+      setCarregandoIA(false);
     }
+  }, [armazem, nomeProjeto]);
+
+  const aplicarPrecoIAHandler = useCallback((valorReais: number) => {
+    const precoAlvoCentavos = Math.round(valorReais * 100);
+    const parametrosAtuais = armazem.obterParametros();
+    const novaMargem = calcularMargemParaPrecoAlvo(precoAlvoCentavos, parametrosAtuais);
+    
+    armazem.setParametro('margemLucroPercentual', novaMargem);
+    armazem.atualizarCalculo();
+
+    toast.success(`Preço atualizado para ${centavosParaReais(precoAlvoCentavos)} (Margem: ${Math.round(novaMargem / 100)}%)!`);
+    adicionarNotificacao({
+      titulo: "Preço Otimizado por IA",
+      mensagem: `Preço do projeto "${nomeProjeto || "Projeto 3D"}" ajustado para ${centavosParaReais(precoAlvoCentavos)} com margem de ${Math.round(novaMargem / 100)}%.`,
+      tipo: TipoNotificacao.SUCESSO,
+      categoria: CategoriaNotificacao.FINANCEIRO,
+    });
   }, [armazem, nomeProjeto, adicionarNotificacao]);
 
   useAtalhosTeclado(useMemo(() => [
@@ -1187,6 +1205,17 @@ export function PaginaCalculadoraV2() {
         setIndiceSendoEditado={setIndiceSendoEditado}
         nomeTemporario={nomeTemporario}
         setNomeTemporario={setNomeTemporario}
+      />
+
+      <ModalOtimizarPrecoIA
+        aberto={modalIAAberto}
+        aoFechar={() => setModalIAAberto(false)}
+        precoAtualCentavos={armazem.resultado?.precoSugerido || 0}
+        margemAtual={armazem.resultado?.margemReal ?? (armazem.margemLucroPercentual / 100)}
+        sugestao={sugestaoIA}
+        carregando={carregandoIA}
+        aoRecalcularIA={sugerirPrecoComIA}
+        aoAplicarPreco={aplicarPrecoIAHandler}
       />
 
       {/* Barra Flutuante de Resumo (Sticky Footer Mobile/Tablet) */}

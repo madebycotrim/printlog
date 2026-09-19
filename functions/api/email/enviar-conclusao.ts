@@ -60,7 +60,7 @@ export async function onRequestPost(context: any) {
       }),
     });
 
-    const resendData = await resendResponse.json();
+    const resendData = (await resendResponse.json()) as any;
 
     if (!resendResponse.ok) {
       console.error("Erro do Resend:", resendData);

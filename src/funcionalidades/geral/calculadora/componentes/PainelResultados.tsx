@@ -5,10 +5,52 @@ import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { CalculoResultado, MaterialSelecionado, InsumoSelecionado, ItemPosProcesso } from "../tipos";
 import { memo, useState, useRef, useEffect } from "react";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
-import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 
+const MAPA_CORES_FILAMENTO: Record<string, string> = {
+  verde: '#10b981',
+  green: '#10b981',
+  vermelho: '#ef4444',
+  red: '#ef4444',
+  amarelo: '#eab308',
+  yellow: '#eab308',
+  azul: '#3b82f6',
+  blue: '#3b82f6',
+  preto: '#3f3f46',
+  black: '#3f3f46',
+  branco: '#f4f4f5',
+  white: '#f4f4f5',
+  cinza: '#71717a',
+  gray: '#71717a',
+  grey: '#71717a',
+  laranja: '#f97316',
+  orange: '#f97316',
+  roxo: '#a855f7',
+  purple: '#a855f7',
+  rosa: '#ec4899',
+  pink: '#ec4899',
+  marrom: '#78350f',
+  brown: '#78350f',
+  dourado: '#eab308',
+  gold: '#eab308',
+  prata: '#94a3b8',
+  silver: '#94a3b8',
+  cobre: '#b45309',
+  copper: '#b45309',
+  transparente: '#93c5fd',
+  natural: '#fef08a',
+  bege: '#d6d3d1',
+};
+
+function extrairCorMaterial(m: { cor?: string; nome?: string; nomePeca?: string }): string {
+  if (m.cor && (m.cor.startsWith('#') || m.cor.startsWith('rgb'))) return m.cor;
+  const texto = `${m.cor || ''} ${m.nome || ''} ${m.nomePeca || ''}`.toLowerCase();
+  for (const [nome, hex] of Object.entries(MAPA_CORES_FILAMENTO)) {
+    if (texto.includes(nome)) return hex;
+  }
+  return '#38bdf8';
+}
 
 interface PainelResultadosProps {
   calculo: CalculoResultado;
@@ -37,8 +79,6 @@ export const PainelResultados = memo(function PainelResultados({
   tempo = 0, modoEntrada = 'projeto', frete = 0, aoSugerirPrecoIA,
   explicacaoIA = ""
 }: PainelResultadosProps) {
-  const { usuario } = useAutenticacao();
-
   const [menuExportarAberto, setMenuExportarAberto] = useState(false);
   const [linkCopiadoLocal, setLinkCopiadoLocal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -150,14 +190,15 @@ export const PainelResultados = memo(function PainelResultados({
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
               Preço Sugerido
             </span>
-            {(usuario?.plano === 'PRO' || usuario?.plano === 'FUNDADOR') && (
+            {aoSugerirPrecoIA && (
               <button 
+                type="button"
                 onClick={aoSugerirPrecoIA}
                 title="Otimizar Preço com IA"
-                className="flex items-center gap-1.5 text-[9px] font-black text-sky-500 hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300 transition-colors uppercase tracking-wider group/ia"
+                className="flex items-center gap-1.5 text-[9px] font-black text-sky-500 hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300 transition-all uppercase tracking-wider group/ia cursor-pointer hover:scale-105 active:scale-95"
               >
                 <span>Otimizar IA</span>
-                <Sparkles size={11} className="fill-sky-500/5 group-hover/ia:fill-sky-500/20" />
+                <Sparkles size={11} className="fill-sky-500/20 group-hover/ia:rotate-12 transition-transform" />
               </button>
             )}
           </div>
@@ -245,22 +286,22 @@ export const PainelResultados = memo(function PainelResultados({
 
         {(() => {
           const itens = [
-            { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400' },
-            { label: 'Modelagem 3D', valor: calculo.custoModelagem || 0, icone: PenTool, cor: 'text-rose-400' },
-            { label: 'Perdas & Falhas', valor: calculo.custoFalha || 0, icone: AlertTriangle, cor: 'text-rose-500' },
-            { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-indigo-400' },
-            { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400' },
-            { label: 'Custos Adicionais', valor: calculo.custoAdicionalTotal, icone: Timer, cor: 'text-emerald-400' },
-            { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400' },
-            { label: 'Comissão Marketplace', valor: calculo.taxaComissao ?? 0, icone: DollarSign, cor: 'text-violet-400' },
-            { label: 'Taxa Fixa Plataforma', valor: calculo.taxaFixaVenda ?? 0, icone: DollarSign, cor: 'text-purple-400' },
-            { label: 'Frete e Envio', valor: calculo.custoFrete ?? (modoEntrada === 'lote' ? frete : frete * quantidade), icone: Package, cor: 'text-orange-400' },
+            { label: 'Materiais', valor: calculo.custoMaterial, icone: Box, cor: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20 shadow-sky-500/5' },
+            { label: 'Modelagem 3D', valor: calculo.custoModelagem || 0, icone: PenTool, cor: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20 shadow-rose-500/5' },
+            { label: 'Perdas & Falhas', valor: calculo.custoFalha || 0, icone: AlertTriangle, cor: 'text-rose-500', bg: 'bg-rose-500/10 border-rose-500/20 shadow-rose-500/5' },
+            { label: 'Insumos & Extras', valor: calculo.custoInsumos + calculo.custoPosProcesso, icone: Package, cor: 'text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20 shadow-indigo-500/5' },
+            { label: 'Energia Elétrica', valor: calculo.custoEnergia, icone: Zap, cor: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20 shadow-amber-500/5' },
+            { label: 'Custos Adicionais', valor: calculo.custoAdicionalTotal, icone: Timer, cor: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/5' },
+            { label: 'Depreciação', valor: calculo.custoDepreciacao, icone: Activity, cor: 'text-zinc-400', bg: 'bg-zinc-500/10 border-zinc-500/20 shadow-zinc-500/5' },
+            { label: 'Comissão Marketplace', valor: calculo.taxaComissao ?? 0, icone: DollarSign, cor: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20 shadow-violet-500/5' },
+            { label: 'Taxa Fixa Plataforma', valor: calculo.taxaFixaVenda ?? 0, icone: DollarSign, cor: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20 shadow-purple-500/5' },
+            { label: 'Frete e Envio', valor: calculo.custoFrete ?? (modoEntrada === 'lote' ? frete : frete * quantidade), icone: Package, cor: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20 shadow-orange-500/5' },
           ].filter(i => i.valor !== 0);
 
           const estaVazio = itens.length === 0;
 
           return (
-            <div className={`space-y-4 w-full text-left relative animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col flex-1 min-h-0 overflow-hidden ${estaVazio ? 'justify-center' : 'justify-start'}`}>
+            <div className={`space-y-3 w-full text-left relative animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col flex-1 min-h-0 overflow-hidden ${estaVazio ? 'justify-center' : 'justify-start'}`}>
               {estaVazio ? (
                 <div className="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 w-full py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50/30 dark:bg-zinc-950/10">
                   <div className="w-9 h-9 rounded-xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-2.5">
@@ -270,11 +311,11 @@ export const PainelResultados = memo(function PainelResultados({
                   <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 text-center tracking-wider uppercase mt-1">Insira pesos e tempos nos cards ao lado</span>
                 </div>
               ) : (
-                <div className="flex-1 overflow-y-auto pr-2 scrollbar-fino space-y-4 min-h-0">
+                <div className="flex-1 overflow-y-auto pr-2 scrollbar-fino space-y-2.5 min-h-0">
                   <AnimatePresence>
                   {itens.map((item) => {
                     // Calcular subitens
-                    let subitens: { nome: React.ReactNode; valor: number }[] = [];
+                    let subitens: { iconeOuCor?: React.ReactNode; nome: React.ReactNode; valor: number }[] = [];
                     
                     if (item.label === 'Materiais' && materiais.length > 0) {
                       const agrupadosMap = new Map<string, {
@@ -285,9 +326,10 @@ export const PainelResultados = memo(function PainelResultados({
                       
                       materiais.forEach(m => {
                         const chave = `${m.tipo} - ${m.nomePeca || m.nome}`;
-                        const atual = agrupadosMap.get(chave) || { corHex: '#fff', peso: 0, custo: 0 };
+                        const cor = extrairCorMaterial(m);
+                        const atual = agrupadosMap.get(chave) || { corHex: cor, peso: 0, custo: 0 };
                         agrupadosMap.set(chave, {
-                          corHex: '#fff',
+                          corHex: cor,
                           peso: atual.peso + m.quantidade,
                           custo: atual.custo + (m.quantidade * m.precoKgCentavos) / 1000
                         });
@@ -295,11 +337,22 @@ export const PainelResultados = memo(function PainelResultados({
                       
                       agrupadosMap.forEach((dados, chave) => {
                         subitens.push({
+                          iconeOuCor: (
+                            <span 
+                              className="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-white/20 shadow-sm" 
+                              style={{ 
+                                backgroundColor: dados.corHex,
+                                boxShadow: `0 0 8px ${dados.corHex}77`
+                              }} 
+                            />
+                          ),
                           nome: (
-                            <span className="flex items-center gap-1.5 font-bold text-stone-600 dark:text-stone-400 text-[9px] uppercase tracking-wider">
-                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dados.corHex }} />
-                              {chave} <span className="font-medium text-stone-400">({dados.peso}g)</span>
-                            </span>
+                            <div className="flex items-center gap-2 font-bold text-zinc-700 dark:text-zinc-300 text-[10px] uppercase tracking-wider min-w-0">
+                              <span className="truncate">{chave}</span>
+                              <span className="px-1.5 py-0.5 rounded text-[8.5px] font-extrabold bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-300/40 dark:border-zinc-700/50 tabular-nums shrink-0">
+                                {dados.peso}g
+                              </span>
+                            </div>
                           ),
                           valor: dados.custo
                         });
@@ -309,7 +362,17 @@ export const PainelResultados = memo(function PainelResultados({
                     if (item.label === 'Insumos & Extras' && insumos.length > 0) {
                       insumos.forEach(i => {
                         subitens.push({
-                          nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">{i.nome} <span className="font-medium text-stone-400">({i.quantidade}x)</span></span>,
+                          iconeOuCor: (
+                            <span className="w-2 h-2 rounded-full shrink-0 bg-indigo-400 ring-1 ring-indigo-400/30 shadow-[0_0_6px_rgba(129,140,248,0.5)]" />
+                          ),
+                          nome: (
+                            <div className="flex items-center gap-2 font-bold text-zinc-700 dark:text-zinc-300 text-[10px] uppercase tracking-wider min-w-0">
+                              <span className="truncate">{i.nome}</span>
+                              <span className="px-1.5 py-0.5 rounded text-[8.5px] font-extrabold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 tabular-nums shrink-0">
+                                {i.quantidade}x
+                              </span>
+                            </div>
+                          ),
                           valor: i.custoCentavos
                         });
                       });
@@ -318,7 +381,17 @@ export const PainelResultados = memo(function PainelResultados({
                     if (item.label === 'Insumos & Extras' && posProcesso.length > 0) {
                       posProcesso.forEach(p => {
                         subitens.push({
-                          nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">{p.nome}</span>,
+                          iconeOuCor: (
+                            <span className="w-2 h-2 rounded-full shrink-0 bg-violet-400 ring-1 ring-violet-400/30 shadow-[0_0_6px_rgba(167,139,250,0.5)]" />
+                          ),
+                          nome: (
+                            <div className="flex items-center gap-2 font-bold text-zinc-700 dark:text-zinc-300 text-[10px] uppercase tracking-wider min-w-0">
+                              <span className="truncate">{p.nome}</span>
+                              <span className="px-1.5 py-0.5 rounded text-[8.5px] font-extrabold bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
+                                Acabamento
+                              </span>
+                            </div>
+                          ),
                           valor: p.custoMaterialCentavos
                         });
                       });
@@ -326,7 +399,14 @@ export const PainelResultados = memo(function PainelResultados({
                     
                     if (item.label === 'Insumos & Extras' && insumosFixos > 0) {
                       subitens.push({
-                        nome: <span className="text-[9px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">Custos Fixos / Adicionais</span>,
+                        iconeOuCor: (
+                          <span className="w-2 h-2 rounded-full shrink-0 bg-emerald-400 ring-1 ring-emerald-400/30 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+                        ),
+                        nome: (
+                          <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                            Custos Fixos / Adicionais
+                          </span>
+                        ),
                         valor: insumosFixos
                       });
                     }
@@ -337,27 +417,30 @@ export const PainelResultados = memo(function PainelResultados({
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
-                        className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-borda-sutil relative overflow-hidden flex flex-col gap-2"
+                        className="p-3 rounded-2xl bg-zinc-50/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700/60 shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md relative overflow-hidden flex flex-col gap-2 transition-all duration-200"
                       >
                         <div className="flex justify-between items-center z-10">
                           <div className="flex items-center gap-2.5">
-                            <div className={`p-1.5 rounded-lg bg-zinc-200/50 dark:bg-zinc-800/40 ${item.cor} shrink-0`}>
-                              <item.icone size={12} />
+                            <div className={`p-2 rounded-xl border ${item.bg} ${item.cor} shrink-0 shadow-sm`}>
+                              <item.icone size={13} />
                             </div>
-                            <span className="text-[10px] font-black uppercase text-zinc-800 dark:text-zinc-200 tracking-wider">{item.label}</span>
+                            <span className="text-[10.5px] font-black uppercase text-zinc-800 dark:text-zinc-100 tracking-wider">{item.label}</span>
                           </div>
-                          <span className="text-xs font-black text-zinc-800 dark:text-zinc-200 tracking-tight">
-                            R$ {centavosParaReais(item.valor)}
+                          <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 tracking-tight tabular-nums">
+                            {centavosParaReais(item.valor)}
                           </span>
                         </div>
                         
                         {subitens.length > 0 && (
-                          <div className="pl-9 pr-1 py-1.5 border-t border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col gap-1.5 z-10">
+                          <div className="pt-2 mt-0.5 border-t border-zinc-200/60 dark:border-zinc-800/60 flex flex-col gap-1 z-10">
                             {subitens.map((sub, idx) => (
-                              <div key={idx} className="flex justify-between items-center">
-                                {sub.nome}
-                                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400">
-                                  R$ {centavosParaReais(sub.valor)}
+                              <div key={idx} className="flex justify-between items-center px-2 py-1.5 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/30 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {sub.iconeOuCor}
+                                  {sub.nome}
+                                </div>
+                                <span className="text-[10.5px] font-extrabold text-zinc-700 dark:text-zinc-200 tabular-nums shrink-0 ml-2">
+                                  {centavosParaReais(sub.valor)}
                                 </span>
                               </div>
                             ))}

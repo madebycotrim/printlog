@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Dialogo } from "@/compartilhado/componentes/ui";
 import { Sparkles, MapPin } from "lucide-react";
-import { TARIFAS_KWH_POR_ESTADO, detectarTarifaKwhAutomatico } from "@/compartilhado/utilitarios/tarifas-energia";
+import { TARIFAS_KWH_POR_ESTADO, obterDadosLocalizacaoCloudflare } from "@/compartilhado/utilitarios/tarifas-energia";
+import { toast } from "sonner";
 
 interface Props {
   aberto: boolean;
@@ -18,17 +19,23 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa }: Props
     setDetectando(true);
     setErro(null);
     try {
-      const res = await detectarTarifaKwhAutomatico();
+      const res = await obterDadosLocalizacaoCloudflare();
       if (res && res.estado && res.tarifa) {
         aoAplicarTarifa(res.estado, res.tarifa);
+        const textoLocal = res.nomeEstado ? `${res.nomeEstado} (${res.estado})` : res.estado;
+        toast.success(`Tarifa de ${textoLocal} aplicada: R$ ${res.tarifa.toFixed(3).replace('.', ',')}/kWh`);
         aoFechar();
       } else {
-        setErro("Não foi possível detectar sua localização automaticamente.");
-        setPasso('selecao');
+        const tarifaPadrao = TARIFAS_KWH_POR_ESTADO['SP'] ?? 0.759;
+        aoAplicarTarifa('SP', tarifaPadrao);
+        toast.success(`Tarifa padrão (SP) aplicada: R$ ${tarifaPadrao.toFixed(3).replace('.', ',')}/kWh`);
+        aoFechar();
       }
-    } catch (e) {
-      setErro("Erro ao buscar tarifas.");
-      setPasso('selecao');
+    } catch {
+      const tarifaPadrao = TARIFAS_KWH_POR_ESTADO['SP'] ?? 0.759;
+      aoAplicarTarifa('SP', tarifaPadrao);
+      toast.success(`Tarifa aplicada: R$ ${tarifaPadrao.toFixed(3).replace('.', ',')}/kWh`);
+      aoFechar();
     } finally {
       setDetectando(false);
     }

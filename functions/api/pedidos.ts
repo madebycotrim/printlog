@@ -18,8 +18,8 @@ const ZodPedidoCriar = z.object({
     idImpressora: z.string().nullable().optional(),
     id_impressora: z.string().nullable().optional(),
     descricao: z.string().min(1, "A descrição não pode ser vazia"),
-    valorCentavos: z.number().int().min(0).optional(),
-    valor_centavos: z.number().int().min(0).optional(),
+    valorCentavos: z.number().min(0).optional(),
+    valor_centavos: z.number().min(0).optional(),
     status: z.string().optional(),
     dataCriacao: z.string().optional(),
     data_criacao: z.string().optional(),
@@ -42,7 +42,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
     // ── Helper para atualizar LTV do Cliente ──
     const atualizarMetricasCliente = async (idCliente: string | null | undefined) => {
-        if (!idCliente || idCliente === "null") return;
+        if (!idCliente || idCliente === "null" || idCliente === "0" || idCliente === "undefined") return;
         try {
             await env.DB.prepare(`
                 UPDATE clientes 
@@ -60,13 +60,33 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 WHERE id = ?
             `).bind(idCliente, idCliente, idCliente).run();
         } catch (e) {
-            console.error("Erro ao atualizar métricas do cliente:", e);
+            console.error("[pedidos] Erro ao atualizar métricas do cliente:", e);
         }
     };
 
     try {
-        // Migração automática (garante que a coluna de criptografia existe no SQLite local)
+        // Garantir criação da tabela e colunas necessárias (Migração robusta para D1)
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS pedidos_impressao (
+                id TEXT PRIMARY KEY,
+                id_usuario TEXT NOT NULL,
+                id_cliente TEXT,
+                id_impressora TEXT,
+                descricao TEXT,
+                status TEXT NOT NULL DEFAULT 'pendente',
+                valor_centavos INTEGER NOT NULL DEFAULT 0,
+                data_criacao TEXT,
+                data_conclusao TEXT,
+                dados_extras TEXT,
+                arquivado INTEGER NOT NULL DEFAULT 0
+            )
+        `).run().catch(() => {});
+
+        await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN id_impressora TEXT DEFAULT NULL`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN arquivado INTEGER DEFAULT 0`).run().catch(() => {});
         await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN dados_extras TEXT DEFAULT NULL`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN data_conclusao TEXT DEFAULT NULL`).run().catch(() => {});
+        await env.DB.prepare(`ALTER TABLE pedidos_impressao ADD COLUMN valor_centavos INTEGER DEFAULT 0`).run().catch(() => {});
 
         // ── GET - Listar (Com Descriptografia) ──
         if (metodo === "GET") {
@@ -121,7 +141,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
             const id_cliente = limparId(dados.id_cliente ?? dados.idCliente);
             const id_impressora = limparId(dados.id_impressora ?? dados.idImpressora);
-            const valor_centavos = Number(dados.valor_centavos ?? dados.valorCentavos) || 0;
+            const valor_centavos = Math.round(Number(dados.valor_centavos ?? dados.valorCentavos) || 0);
             const data_criacao = dados.data_criacao ?? dados.dataCriacao ?? new Date().toISOString();
 
             // Monta Dados Extras e Criptografa
@@ -243,10 +263,10 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 headers: { "Content-Type": "application/json" } 
             });
         }
-        console.error("[pedidos] Erro Protegido:", erro);
+        console.error("[pedidos] Erro ao processar pedido:", erro?.message || erro, erro?.stack);
         return new Response(JSON.stringify({ 
             sucesso: false, 
-            mensagem: "Ocorreu um erro interno no servidor ao processar os pedidos." 
+            mensagem: erro?.message ? `Erro ao processar pedido: ${erro.message}` : "Ocorreu um erro interno no servidor ao processar os pedidos." 
         }), { 
             status: 500, 
             headers: { "Content-Type": "application/json" } 
