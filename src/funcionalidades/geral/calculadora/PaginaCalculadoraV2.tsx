@@ -64,6 +64,7 @@ import { useSincronizacaoCalculadora } from "./hooks/useSincronizacaoCalculadora
 import { CardLogistica } from "./componentes/CardLogistica";
 import { PainelResultados } from "./componentes/PainelResultados";
 import { ModalDetectarTarifa } from "./componentes/ModalDetectarTarifa";
+import { inferirEstadoPorTarifaCentavos } from "@/compartilhado/utilitarios/tarifas-energia";
 
 export function PaginaCalculadoraV2() {
   const armazem = useArmazemCalculadora();
@@ -201,6 +202,14 @@ export function PaginaCalculadoraV2() {
     localStorage.setItem("printlog_anos_vida_util", String(anosVidaUtil));
   }, [anosVidaUtil]);
 
+  const [estadoTarifa, setEstadoTarifa] = useState<string>(() => {
+    return localStorage.getItem("printlog_estado_tarifa") || "";
+  });
+
+  const estadoTarifaEfetivo = useMemo(() => {
+    return inferirEstadoPorTarifaCentavos(armazem.precoKwhCentavos, estadoTarifa) || estadoTarifa;
+  }, [armazem.precoKwhCentavos, estadoTarifa]);
+
   const impressoraSelecionada = useMemo(() =>
     estadoImpressoras.impressoras.find(i => i.id === impressoraSelecionadaId),
     [estadoImpressoras.impressoras, impressoraSelecionadaId]
@@ -236,10 +245,12 @@ export function PaginaCalculadoraV2() {
     nomeProjeto,
     descricaoProjeto,
     clienteProjetoId,
+    buscaClienteSeletor,
     impressoraSelecionadaId,
     setNomeProjeto,
     setDescricaoProjeto,
     setClienteProjetoId,
+    setBuscaClienteSeletor,
     setImpressoraSelecionadaId
   });
   
@@ -472,8 +483,14 @@ export function PaginaCalculadoraV2() {
                 armazem.carregarSnapshot(extras.configuracoes.snapshot);
                 setNomeProjeto(extras.configuracoes.snapshot.nome || "");
                 setDescricaoProjeto(extras.configuracoes.snapshot.descricao || "");
-                if (extras.configuracoes.snapshot.clienteId) {
-                   setClienteProjetoId(extras.configuracoes.snapshot.clienteId);
+                const cliId = extras.configuracoes.snapshot.clienteId || pedido.cliente_id || "";
+                if (cliId) {
+                   setClienteProjetoId(cliId);
+                }
+                const cli = cliId ? estadoClientes.clientes?.find(c => c.id === cliId) : null;
+                const cliNome = extras.configuracoes.snapshot.nomeCliente || cli?.nome || pedido.cliente_nome || "";
+                if (cliNome) {
+                   setBuscaClienteSeletor(cliNome);
                 }
                 setIdOrcamentoNuvem(idEdicao);
                 toast.success("Orçamento recuperado com sucesso!", { id: "loadNuvem" });
@@ -751,6 +768,7 @@ export function PaginaCalculadoraV2() {
                 setModalTarifaAberto(true);
                 return null;
               }}
+              estadoTarifa={estadoTarifaEfetivo}
             />
           </div>
           
@@ -978,14 +996,36 @@ export function PaginaCalculadoraV2() {
         aoFechar={() => setModalHistoricoAberto(false)}
         historico={armazem.historico}
         aoSalvar={(nome) => {
-          armazem.salvarSnapshot(nome, descricaoProjeto, clienteProjetoId);
+          const cli = clienteProjetoId ? estadoClientes.clientes?.find(c => c.id === clienteProjetoId) : null;
+          const nomeCli = cli?.nome || buscaClienteSeletor || "";
+          armazem.salvarSnapshot(nome, descricaoProjeto, clienteProjetoId, nomeCli, estadoTarifaEfetivo || undefined);
           toast.success("Orçamento salvo com sucesso!");
         }}
         aoCarregar={(snapshot) => {
           armazem.carregarSnapshot(snapshot);
           setNomeProjeto(snapshot.nome);
           setDescricaoProjeto(snapshot.descricao || "");
-          setClienteProjetoId(snapshot.clienteId || "");
+          const idCli = snapshot.clienteId || "";
+          setClienteProjetoId(idCli);
+
+          const cli = idCli ? estadoClientes.clientes?.find(c => c.id === idCli) : null;
+          const nomeCli = snapshot.nomeCliente || cli?.nome || "";
+          setBuscaClienteSeletor(nomeCli);
+
+          if (snapshot.estadoTarifa) {
+            setEstadoTarifa(snapshot.estadoTarifa);
+            localStorage.setItem('printlog_estado_tarifa', snapshot.estadoTarifa);
+          }
+
+          if (cli && cli.canalReferencia) {
+            const canal = perfisMarketplace.find((c: any) => c.nome === cli.canalReferencia);
+            if (canal) {
+              setPerfilAtivo(canal.nome);
+              armazem.setParametro('taxaEcommercePercentual', canal.taxaVariavel || 0);
+              armazem.setParametro('taxaFixaVendaCentavos', canal.taxaFixaCentavos || 0);
+            }
+          }
+
           toast.success("Orçamento restaurado!");
         }}
         aoRemover={(id) => {
@@ -1115,6 +1155,8 @@ export function PaginaCalculadoraV2() {
           aoFechar={() => setModalTarifaAberto(false)} 
           aoAplicarTarifa={(estado, tarifa) => {
             armazem.setParametro('precoKwhCentavos', Math.round(tarifa * 100));
+            setEstadoTarifa(estado);
+            localStorage.setItem('printlog_estado_tarifa', estado);
             toast.success(`Tarifa de ${estado} aplicada: R$ ${tarifa.toFixed(2)}/kWh`);
           }}
         />

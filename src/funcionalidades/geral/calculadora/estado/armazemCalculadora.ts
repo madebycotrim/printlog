@@ -10,6 +10,8 @@ export interface OrcamentoSnapshot {
   nome: string;
   descricao?: string;
   clienteId?: string;
+  nomeCliente?: string;
+  estadoTarifa?: string;
   parametros: ParametrosCalculo;
   resultado: CalculoResultado;
 }
@@ -81,7 +83,7 @@ export interface EstadoCalculadora extends ParametrosCalculo {
   removerCustoAdicional: (id: string) => void;
   limpar: () => void;
   historico: OrcamentoSnapshot[];
-  salvarSnapshot: (nome: string, descricao?: string, clienteId?: string) => void;
+  salvarSnapshot: (nome: string, descricao?: string, clienteId?: string, nomeCliente?: string, estadoTarifa?: string) => void;
   carregarSnapshot: (snapshot: OrcamentoSnapshot) => void;
   removerSnapshot: (id: string) => void;
   definirHistorico: (historico: OrcamentoSnapshot[]) => void;
@@ -231,7 +233,7 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
         });
       },
 
-      salvarSnapshot: (nome, descricao, clienteId) => {
+      salvarSnapshot: (nome, descricao, clienteId, nomeCliente, estadoTarifa) => {
         const estadoAtual = get();
         const parametros: ParametrosCalculo = {
           materiaisSelecionados: estadoAtual.materiaisSelecionados,
@@ -268,6 +270,8 @@ export const useArmazemCalculadora = create<EstadoCalculadora>()(
           nome,
           descricao,
           clienteId,
+          nomeCliente,
+          estadoTarifa,
           parametros,
           resultado: estadoAtual.resultado,
         };

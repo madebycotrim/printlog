@@ -1,7 +1,8 @@
-import { Zap, Plus, Minus, Sparkles } from "lucide-react";
+import { Zap, Plus, Minus, Sparkles, MapPin } from "lucide-react";
 import { useState, memo } from "react";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+import { NOMES_ESTADOS } from "@/compartilhado/utilitarios/tarifas-energia";
 
 interface CardProducaoProps {
   tempo: number;
@@ -22,11 +23,12 @@ interface CardProducaoProps {
   pecasPorMesa?: number;
   setPecasPorMesa?: (v: number) => void;
   aoDetectarTarifa?: () => Promise<any>;
+  estadoTarifa?: string | null;
 }
 
 export const CardProducao = memo(function CardProducao({
   tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia,
-  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, modoEntrada, aoDetectarTarifa
+  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, modoEntrada, aoDetectarTarifa, estadoTarifa
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
   
@@ -229,14 +231,26 @@ export const CardProducao = memo(function CardProducao({
             </div>
             <div className="flex flex-col">
               <div className="flex items-center justify-between h-4 mb-2">
-                <label className="block text-xs font-black uppercase text-muted-foreground">kWh (R$)</label>
+                <div className="flex items-center gap-1.5">
+                  <label className="block text-xs font-black uppercase text-muted-foreground">kWh (R$)</label>
+                  {estadoTarifa && (
+                    <span 
+                      onClick={lidarComDeteccao}
+                      title={`Tarifa baseada em ${NOMES_ESTADOS[estadoTarifa] || estadoTarifa} (${estadoTarifa}). Clique para alterar.`}
+                      className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 tracking-wider flex items-center gap-1 cursor-pointer hover:bg-emerald-500/25 transition-all shadow-xs"
+                    >
+                      <MapPin size={9} />
+                      <span>{estadoTarifa}</span>
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={lidarComDeteccao}
                   className="flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 bg-muted/40 border-borda-sutil text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10"
-                  title="Auto-detectar tarifa pelo IP"
+                  title="Auto-detectar tarifa pelo IP ou escolher Estado"
                 >
                   <Sparkles size={10} />
-                  <span>Auto-ajuste</span>
+                  <span>{estadoTarifa ? `${estadoTarifa} • Ajustar` : 'Auto-ajuste'}</span>
                 </button>
               </div>
               <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner overflow-hidden">
@@ -249,7 +263,31 @@ export const CardProducao = memo(function CardProducao({
                   }} 
                   className="w-full h-full px-4 bg-transparent outline-none font-black text-sm text-primary dark:text-white text-center" 
                 />
+                {estadoTarifa && (
+                  <span 
+                    onClick={lidarComDeteccao}
+                    title={`Estado: ${NOMES_ESTADOS[estadoTarifa] || estadoTarifa} (${estadoTarifa})`}
+                    className="absolute right-3 text-[10px] font-black uppercase text-emerald-600/70 dark:text-emerald-400/70 cursor-pointer hover:text-emerald-500 select-none"
+                  >
+                    {estadoTarifa}
+                  </span>
+                )}
               </div>
+              {estadoTarifa && (
+                <div className="flex items-center justify-between mt-1 px-1">
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                    <span>{NOMES_ESTADOS[estadoTarifa] || estadoTarifa} ({estadoTarifa})</span>
+                  </span>
+                  <button 
+                    type="button"
+                    onClick={lidarComDeteccao}
+                    className="text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                  >
+                    Trocar UF
+                  </button>
+                </div>
+              )}
               {precoKwh > 200 && (
                 <div className="mt-2 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 flex items-start gap-1.5">
                   <div className="text-amber-500 mt-0.5 shrink-0 text-[10px]">

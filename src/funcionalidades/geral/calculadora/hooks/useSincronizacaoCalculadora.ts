@@ -7,10 +7,12 @@ interface OpcoesSincronizacao {
   nomeProjeto: string;
   descricaoProjeto: string;
   clienteProjetoId: string;
+  buscaClienteSeletor?: string;
   impressoraSelecionadaId: string;
   setNomeProjeto: (v: string) => void;
   setDescricaoProjeto: (v: string) => void;
   setClienteProjetoId: (v: string) => void;
+  setBuscaClienteSeletor?: (v: string) => void;
   setImpressoraSelecionadaId: (v: string) => void;
 }
 
@@ -19,10 +21,12 @@ export function useSincronizacaoCalculadora({
   nomeProjeto,
   descricaoProjeto,
   clienteProjetoId,
+  buscaClienteSeletor,
   impressoraSelecionadaId,
   setNomeProjeto,
   setDescricaoProjeto,
   setClienteProjetoId,
+  setBuscaClienteSeletor,
   setImpressoraSelecionadaId
 }: OpcoesSincronizacao) {
   const config = useArmazemConfiguracoes();
@@ -51,6 +55,9 @@ export function useSincronizacaoCalculadora({
         const urlParams = new URLSearchParams(window.location.search);
         if (!urlParams.get("clienteId")) {
           setClienteProjetoId(config.calculadoraMeta.rascunho.clienteProjetoId || "");
+          if (config.calculadoraMeta.rascunho.nomeCliente && setBuscaClienteSeletor) {
+            setBuscaClienteSeletor(config.calculadoraMeta.rascunho.nomeCliente);
+          }
         }
       }
       setCarregouNuvemInicial(true);
@@ -73,6 +80,7 @@ export function useSincronizacaoCalculadora({
           nomeProjeto,
           descricaoProjeto,
           clienteProjetoId,
+          nomeCliente: buscaClienteSeletor,
           parametros: parametrosAtuais
         }
       };
@@ -93,6 +101,7 @@ export function useSincronizacaoCalculadora({
     nomeProjeto,
     descricaoProjeto,
     clienteProjetoId,
+    buscaClienteSeletor,
     impressoraSelecionadaId,
     armazem.materiaisSelecionados,
     armazem.insumosSelecionados,

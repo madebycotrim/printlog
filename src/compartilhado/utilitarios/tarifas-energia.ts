@@ -139,3 +139,26 @@ export const detectarTarifaKwhAutomatico = async (): Promise<{ estado: string; t
     tarifa: dados.tarifa,
   };
 };
+
+/**
+ * Infere o estado (UF) a partir do valor em centavos do kWh.
+ * Dá prioridade ao estado preferencial/selecionado se o valor corresponder.
+ */
+export function inferirEstadoPorTarifaCentavos(centavos: number, estadoPreferido?: string | null): string | null {
+  if (!centavos || centavos <= 0) return null;
+
+  if (estadoPreferido && TARIFAS_KWH_POR_ESTADO[estadoPreferido]) {
+    const tarifaEsperada = Math.round(TARIFAS_KWH_POR_ESTADO[estadoPreferido] * 100);
+    if (tarifaEsperada === centavos) {
+      return estadoPreferido;
+    }
+  }
+
+  for (const [uf, valor] of Object.entries(TARIFAS_KWH_POR_ESTADO)) {
+    if (Math.round(valor * 100) === centavos) {
+      return uf;
+    }
+  }
+
+  return estadoPreferido || null;
+}

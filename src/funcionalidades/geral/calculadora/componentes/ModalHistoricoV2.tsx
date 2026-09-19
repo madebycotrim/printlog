@@ -65,6 +65,7 @@ export function ModalHistoricoV2({
                     <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white mb-1">{v.nome}</span>
                     <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                       {new Date(v.data).toLocaleString('pt-BR')} • {centavosParaReais(v.resultado.precoSugerido)}
+                      {v.nomeCliente ? ` • Cliente: ${v.nomeCliente}` : ''}
                     </span>
                   </div>
                   
