@@ -1,15 +1,30 @@
 /// <reference types="@cloudflare/workers-types" />
 
 /**
- * AI de Precificação v2.0 - Cloudflare Workers AI
- * Estratégia de "Economia de Guerra": 
- * 1. Usa Modo JSON nativo do Llama-3-8B.
- * 2. Implementa Caching no D1 para evitar gastos redundantes de Neurons.
+ * AI de Precificação e Inteligência Maker v3.0 - Cloudflare Workers AI
+ * Modelo: @cf/meta/llama-3.2-3b-instruct
+ * Capacidades:
+ * 1. 4 Estratégias: Piso/Atacado, Recomendado, Premium e Express (Urgência)
+ * 2. Análise Técnica & Score de Risco de Impressão (1-10)
+ * 3. Proposta Comercial pronta para WhatsApp
+ * 4. Cache Inteligente no D1 para economia de Neurons
  */
 
 interface Env {
     AI: any;
     DB: D1Database;
+}
+
+interface ItemMaterial {
+    nome: string;
+    quantidade: number;
+    tipo?: string;
+    cor?: string;
+}
+
+interface ItemPosProcesso {
+    nome: string;
+    valor: number;
 }
 
 interface DadosPrecificacao {
@@ -19,6 +34,13 @@ interface DadosPrecificacao {
     custoDepreciacao: number;
     lucroDesejadoPercentual: number;
     nomePeca?: string;
+    pesoGramas?: number;
+    tempoMinutos?: number;
+    quantidade?: number;
+    tipoCliente?: "B2B" | "B2C";
+    bandeiraTarifaria?: string;
+    materiais?: ItemMaterial[];
+    posProcesso?: ItemPosProcesso[];
 }
 
 export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
@@ -32,9 +54,15 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     try {
         const dados = await request.json() as DadosPrecificacao;
         
-        // 1. GERAÇÃO DA CHAVE DE CACHE (Baseada nos valores numéricos)
-        // Se os custos e o lucro forem iguais, a sugestão provavelmente será a mesma.
-        const cacheKey = `v2_${dados.custoMaterial}_${dados.custoEnergia}_${dados.custoTrabalho}_${dados.custoDepreciacao}_${dados.lucroDesejadoPercentual}`;
+        const custoTotal = (dados.custoMaterial || 0) + (dados.custoEnergia || 0) + (dados.custoTrabalho || 0) + (dados.custoDepreciacao || 0);
+        const materiaisStr = (dados.materiais || []).map(m => `${m.nome} (${m.quantidade}g)`).join(", ") || `${dados.pesoGramas || 0}g de filamento/resina`;
+        const posProcessoStr = (dados.posProcesso || []).map(p => p.nome).join(", ") || "Nenhum";
+        const qtd = Math.max(1, dados.quantidade || 1);
+        const tempoH = Math.round(((dados.tempoMinutos || 0) / 60) * 10) / 10;
+
+        // 1. GERAÇÃO DA CHAVE DE CACHE (Baseada em custos, tempo e materiais)
+        const hashInputs = `${Math.round(custoTotal * 10)}_${dados.lucroDesejadoPercentual}_${Math.round(dados.tempoMinutos || 0)}_${qtd}_${dados.tipoCliente || 'B2C'}`;
+        const cacheKey = `v3_${hashInputs}`;
 
         // 2. TENTA BUSCAR NO CACHE DO D1 (Economia de Neurons)
         try {
@@ -46,48 +74,50 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 try {
                     const dadosValidados = JSON.parse(cacheExistente.resposta_json);
                     if (dadosValidados && typeof dadosValidados === "object" && dadosValidados.recomendado) {
-                        console.log("[IA] Cache Hit! Economizando Neurons.");
                         return new Response(cacheExistente.resposta_json, {
                             headers: { "Content-Type": "application/json", "X-Cache": "HIT" }
                         });
                     }
-                } catch (err) {
-                    console.warn("[IA] Cache corrompido detectado. Ignorando cache.");
+                } catch {
+                    // cache corrompido, segue para execução
                 }
             }
-        } catch (e) {
-            // Se a tabela não existir, apenas ignoramos o cache e seguimos para a IA
-            console.warn("[IA] Tabela de cache não encontrada. Rodando sem cache.");
+        } catch {
+            // Tabela opcional ou ausente, segue sem travar
         }
 
-        // 3. SE NÃO ESTIVER NO CACHE, CHAMA A IA
-        const promptSistema = `Você é um especialista em precificação para impressão 3D no Brasil.
-Responda APENAS com um objeto JSON válido.
-Os custos fornecidos estão em REAIS (R$).
+        // 3. SE NÃO ESTIVER NO CACHE, CHAMA A IA COM PROMPT ESPECIALIZADO EM IMPRESSÃO 3D
+        const promptSistema = `Você é um consultor sênior em engenharia de manufatura aditiva (impressão 3D) e precificação comercial no mercado brasileiro.
+Responda APENAS com um objeto JSON estritamente válido, sem texto antes ou depois.
+Os valores monetários devem ser números reais em REAIS (ex: 28.50).
 
-Regras de Precificação:
-1. Calcule o Custo Total = Material + Energia + Trabalho + Máquina.
-2. O valor de Piso deve ser no mínimo o Custo Total + 60%.
-3. O valor Recomendado deve ser no mínimo o Custo Total + 100%.
-4. O valor Premium deve ser no mínimo o Custo Total + 180%.
-5. Não dê valores absurdos e astronômicos. Se o custo total for pequeno (ex: R$ 3,00), os preços devem ser proporcionais (ex: R$ 5, R$ 8, R$ 12).
-6. Retorne os campos "valor" em REAIS (float, ex: 15.50).
+Diretrizes de Precificação e Risco:
+1. Custo Operacional Base = R$ ${custoTotal.toFixed(2)}. Se o custo base for muito baixo (< R$ 5,00), aplique uma taxa de setup mínima de oficina (R$ 10,00 - R$ 15,00).
+2. Estratégias:
+   - "piso": Margem conservadora (mínimo Custo + 50-60%). Ideal para lotes grandes B2B ou atacado.
+   - "recomendado": Margem de sustentabilidade saudável (Custo + 90-130%). Ideal para varejo e novos clientes.
+   - "premium": Margem de alto valor percebido (Custo + 160-220%). Para peças com pós-processo, clientes exigentes ou peças técnicas.
+   - "express": Taxa de urgência/furar fila (+35-50% sobre o Recomendado) para produção imediata.
+3. Análise Técnica:
+   - scoreRisco: Inteiro de 1 a 10 (considere: impressões longas > 6h aumentam risco térmico/queda de energia; materiais técnicos como ABS/Nylon/TPU têm maior risco de warp/entupimento).
+   - nivelComplexidade: Uma das opções: "Baixa", "Média", "Alta", "Crítica".
+   - alertas: Array de até 3 alertas técnicos concisos sobre a impressão e cuidados de pós-processo.
+4. Pitch Comercial (textoWhatsApp):
+   - Mensagem comercial educada, persuasiva e formatada com emojis e negrito markdown (*) para envio direto ao cliente via WhatsApp. Deve citar o nome da peça, material, tempo de produção estimado, cuidados inclusos e proposta de valor.`;
 
-Estrutura EXATA do JSON:
-{
-  "piso": { "valor": 0.0, "justificativa": "" },
-  "recomendado": { "valor": 0.0, "justificativa": "" },
-  "premium": { "valor": 0.0, "justificativa": "" },
-  "dica": ""
-}`;
-
-        const promptUsuario = `DADOS DA PEÇA:
-- Custo de Material: R$ ${dados.custoMaterial.toFixed(2)}
-- Custo de Energia: R$ ${dados.custoEnergia.toFixed(2)}
-- Custo de Mão de Obra: R$ ${dados.custoTrabalho.toFixed(2)}
-- Custo de Depreciação: R$ ${dados.custoDepreciacao.toFixed(2)}
-- Margem de Lucro Alvo: ${dados.lucroDesejadoPercentual}%
-- Nome do Arquivo/Peça: ${dados.nomePeca || 'Peça 3D'}`;
+        const promptUsuario = `DADOS DO PROJETO 3D:
+- Nome da Peça: ${dados.nomePeca || 'Peça Sob Medida 3D'}
+- Quantidade: ${qtd} unidade(s)
+- Tempo Estimado de Máquina: ${tempoH} horas (${dados.tempoMinutos || 0} min)
+- Materiais Envolvidos: ${materiaisStr}
+- Pós-Processamento: ${posProcessoStr}
+- Custo de Material: R$ ${(dados.custoMaterial || 0).toFixed(2)}
+- Custo de Energia Elétrica: R$ ${(dados.custoEnergia || 0).toFixed(2)} (Bandeira: ${dados.bandeiraTarifaria || 'Padrão'})
+- Custo de Mão de Obra/Setup: R$ ${(dados.custoTrabalho || 0).toFixed(2)}
+- Custo de Depreciação de Máquinas: R$ ${(dados.custoDepreciacao || 0).toFixed(2)}
+- Custo Total de Fabricação: R$ ${custoTotal.toFixed(2)}
+- Margem Alvo do Maker: ${dados.lucroDesejadoPercentual}%
+- Perfil do Cliente: ${dados.tipoCliente === 'B2B' ? 'B2B (Empresa / Comercial)' : 'B2C (Consumidor Final)'}`;
 
         const aiResult = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
             messages: [
@@ -97,7 +127,7 @@ Estrutura EXATA do JSON:
             response_format: {
                 type: 'json_schema',
                 json_schema: {
-                    name: 'precificacao',
+                    name: 'precificacao_maker_v3',
                     schema: {
                         type: 'object',
                         properties: {
@@ -125,27 +155,53 @@ Estrutura EXATA do JSON:
                                 },
                                 required: ['valor', 'justificativa']
                             },
+                            express: {
+                                type: 'object',
+                                properties: {
+                                    valor: { type: 'number' },
+                                    justificativa: { type: 'string' }
+                                },
+                                required: ['valor', 'justificativa']
+                            },
+                            analiseTecnica: {
+                                type: 'object',
+                                properties: {
+                                    scoreRisco: { type: 'number' },
+                                    nivelComplexidade: { type: 'string' },
+                                    alertas: {
+                                        type: 'array',
+                                        items: { type: 'string' }
+                                    }
+                                },
+                                required: ['scoreRisco', 'nivelComplexidade', 'alertas']
+                            },
+                            pitchComercial: {
+                                type: 'object',
+                                properties: {
+                                    textoWhatsApp: { type: 'string' }
+                                },
+                                required: ['textoWhatsApp']
+                            },
                             dica: { type: 'string' }
                         },
-                        required: ['piso', 'recomendado', 'premium', 'dica']
+                        required: ['piso', 'recomendado', 'premium', 'express', 'analiseTecnica', 'pitchComercial', 'dica']
                     }
                 }
             },
-            max_tokens: 600,
-            temperature: 0.7
+            max_tokens: 850,
+            temperature: 0.6
         });
 
-        // O Workers AI com JSON Mode pode retornar o JSON como string ou como objeto, dependendo da versão
         let respostaFinal = aiResult.response;
         if (typeof respostaFinal !== "string") {
             respostaFinal = JSON.stringify(respostaFinal);
         }
 
-        // 4. SALVA NO CACHE PARA PRÓXIMAS CONSULTAS (Background)
+        // 4. SALVA NO CACHE EM BACKGROUND
         context.waitUntil(
             env.DB.prepare(
                 "INSERT OR IGNORE INTO cache_ia_precificacao (chave_cache, resposta_json) VALUES (?, ?)"
-            ).bind(cacheKey, respostaFinal).run().catch(e => console.error("Erro ao salvar cache:", e))
+            ).bind(cacheKey, respostaFinal).run().catch(() => {})
         );
 
         return new Response(respostaFinal, {
@@ -153,8 +209,9 @@ Estrutura EXATA do JSON:
         });
 
     } catch (erro: any) {
-        return new Response(JSON.stringify({ erro: erro.message }), { 
+        return new Response(JSON.stringify({ erro: erro?.message || "Erro no processamento da IA" }), { 
             status: 500, headers: { "Content-Type": "application/json" } 
         });
     }
 };
+

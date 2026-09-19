@@ -48,7 +48,7 @@ export const apiPedidos = {
         return {
             id: dados.id,
             idUsuario: dados.id_usuario,
-            idCliente: dados.id_cliente ?? dados.idCliente,
+            idCliente: dados.id_cliente ?? dados.idCliente ?? extras.idClienteOriginal ?? extras.idCliente ?? "",
             nomeCliente: dados.nome_cliente,
             descricao: dados.descricao,
             status: dados.status,
@@ -60,7 +60,7 @@ export const apiPedidos = {
             material: dados.material,
             pesoGramas: dados.peso_gramas ?? dados.pesoGramas ?? extras.pesoGramas ?? extras.peso_gramas ?? 0,
             tempoMinutos: dados.tempo_minutos ?? dados.tempoMinutos ?? extras.tempoMinutos ?? extras.tempo_minutos ?? 0,
-            idImpressora: dados.id_impressora ?? dados.idImpressora ?? extras.idImpressora,
+            idImpressora: dados.id_impressora ?? dados.idImpressora ?? extras.idImpressoraOriginal ?? extras.idImpressora,
             insumosSecundarios: garantirArray(
                 (extras.insumosSecundarios && extras.insumosSecundarios.length > 0)
                     ? extras.insumosSecundarios
@@ -130,14 +130,18 @@ export const apiPedidos = {
         if (dados.idUsuario) mapeado.id_usuario = dados.idUsuario;
         
         // Cliente
-        const id_cliente = dados.idCliente || dados.id_cliente;
-        mapeado.id_cliente = id_cliente === "" ? null : id_cliente;
-        mapeado.idCliente = mapeado.id_cliente;
+        const id_cliente_bruto = dados.idCliente ?? dados.id_cliente;
+        const strCli = id_cliente_bruto ? String(id_cliente_bruto).trim() : "";
+        const id_cliente = (strCli === "" || strCli === "null" || strCli === "undefined" || strCli === "0" || strCli === "none" || strCli === "sem_cliente") ? null : strCli;
+        mapeado.id_cliente = id_cliente;
+        mapeado.idCliente = id_cliente;
 
         // Impressora
-        const id_impressora = dados.idImpressora || dados.id_impressora;
-        mapeado.id_impressora = (id_impressora === "" || id_impressora === null) ? null : id_impressora;
-        mapeado.idImpressora = mapeado.id_impressora;
+        const id_impressora_bruto = dados.idImpressora ?? dados.id_impressora;
+        const strImp = id_impressora_bruto ? String(id_impressora_bruto).trim() : "";
+        const id_impressora = (strImp === "" || strImp === "null" || strImp === "undefined" || strImp === "0" || strImp === "none") ? null : strImp;
+        mapeado.id_impressora = id_impressora;
+        mapeado.idImpressora = id_impressora;
         
         // Campos de Texto e Status
         if (dados.descricao) mapeado.descricao = dados.descricao;
@@ -195,6 +199,8 @@ export const apiPedidos = {
 
         if (temMetadados) {
             const dadosExtras = {
+                idClienteOriginal: strCli || undefined,
+                idImpressoraOriginal: strImp || undefined,
                 insumosSecundarios: dados.insumosSecundarios,
                 materiais: dados.materiais,
                 posProcesso: dados.posProcesso,

@@ -70,14 +70,12 @@ interface PainelResultadosProps {
   frete?: number;
   taxaFixa?: number;
   aoSugerirPrecoIA?: () => void;
-  explicacaoIA?: string;
 }
 
 export const PainelResultados = memo(function PainelResultados({
   calculo, salvarProjeto, gerarPdf, gerarLinkMagico, abrirModalEmail, obterUrlLinkMagico, carregandoPdf,
   materiais = [], insumos = [], posProcesso = [], quantidade = 1, insumosFixos = 0,
-  tempo = 0, modoEntrada = 'projeto', frete = 0, aoSugerirPrecoIA,
-  explicacaoIA = ""
+  tempo = 0, modoEntrada = 'projeto', frete = 0, aoSugerirPrecoIA
 }: PainelResultadosProps) {
   const [menuExportarAberto, setMenuExportarAberto] = useState(false);
   const [linkCopiadoLocal, setLinkCopiadoLocal] = useState(false);
@@ -458,17 +456,7 @@ export const PainelResultados = memo(function PainelResultados({
 
 
 
-        {explicacaoIA && (
-          <div className="w-full text-left p-3.5 rounded-2xl bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/20 shadow-sm mt-4 mb-4 animate-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 mb-1.5">
-              <Sparkles size={14} className="fill-violet-500/10" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Justificativa da IA</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-muted-foreground dark:text-zinc-300 font-medium">
-              {explicacaoIA}
-            </p>
-          </div>
-        )}
+
 
         {/* Botões de Ação Principais */}
         <div className="flex items-center gap-3 mt-auto pt-4 w-full">

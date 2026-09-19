@@ -2,7 +2,7 @@ import { Zap, Plus, Minus, Sparkles, MapPin } from "lucide-react";
 import { useState, memo } from "react";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
-import { NOMES_ESTADOS } from "@/compartilhado/utilitarios/tarifas-energia";
+import { NOMES_ESTADOS, BANDEIRAS_TARIFARIAS, TipoBandeiraTarifaria } from "@/compartilhado/utilitarios/tarifas-energia";
 
 interface CardProducaoProps {
   tempo: number;
@@ -24,11 +24,12 @@ interface CardProducaoProps {
   setPecasPorMesa?: (v: number) => void;
   aoDetectarTarifa?: () => Promise<any>;
   estadoTarifa?: string | null;
+  bandeiraTarifaria?: TipoBandeiraTarifaria;
 }
 
 export const CardProducao = memo(function CardProducao({
   tempo, setTempo, potencia, setPotencia, precoKwh, setPrecoKwh, custoEnergia, cobrarEnergia, setCobrarEnergia,
-  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, modoEntrada, aoDetectarTarifa, estadoTarifa
+  impressoras = [], idImpressoraSelecionada, quantidade, setQuantidade, modoEntrada, aoDetectarTarifa, estadoTarifa, bandeiraTarifaria
 }: CardProducaoProps) {
   const impressoraAtiva = impressoras.find(i => i.id === idImpressoraSelecionada);
   
@@ -243,11 +244,26 @@ export const CardProducao = memo(function CardProducao({
                       <span>{estadoTarifa}</span>
                     </span>
                   )}
+                  {bandeiraTarifaria && (
+                    <span 
+                      onClick={lidarComDeteccao}
+                      title={`Bandeira ANEEL: ${BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.nome}. Clique para alterar.`}
+                      className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all border shadow-xs"
+                      style={{
+                        backgroundColor: `${BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.corHex}15`,
+                        borderColor: `${BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.corHex}40`,
+                        color: BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.corHex,
+                      }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.corHex }} />
+                      <span>{BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.nome.replace('Bandeira ', '')}</span>
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={lidarComDeteccao}
-                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 bg-muted/40 border-borda-sutil text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10"
-                  title="Auto-detectar tarifa pelo IP ou escolher Estado"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase transition-all active:scale-95 bg-muted/40 border-borda-sutil text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                  title="Auto-detectar tarifa pelo IP, alterar Estado ou Bandeira"
                 >
                   <Sparkles size={10} />
                   <span>{estadoTarifa ? `${estadoTarifa} • Ajustar` : 'Auto-ajuste'}</span>
@@ -278,13 +294,18 @@ export const CardProducao = memo(function CardProducao({
                   <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                     <span>{NOMES_ESTADOS[estadoTarifa] || estadoTarifa} ({estadoTarifa})</span>
+                    {bandeiraTarifaria && (
+                      <span className="text-[8px] font-bold" style={{ color: BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.corHex }}>
+                        • {BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.nome}
+                      </span>
+                    )}
                   </span>
                   <button 
                     type="button"
                     onClick={lidarComDeteccao}
                     className="text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                   >
-                    Trocar UF
+                    Ajustar Tarifa
                   </button>
                 </div>
               )}

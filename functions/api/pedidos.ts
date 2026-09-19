@@ -40,6 +40,52 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const metodo = request.method;
     const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
 
+    // ── Helper para limpar e padronizar IDs ──
+    const limparId = (val: any): string | null => {
+        if (val === undefined || val === null) return null;
+        const str = String(val).trim();
+        if (
+            str === "" || 
+            str === "null" || 
+            str === "undefined" || 
+            str === "0" || 
+            str === "NaN" || 
+            str === "none" ||
+            str === "sem_cliente" ||
+            str === "false"
+        ) {
+            return null;
+        }
+        return str;
+    };
+
+    // ── Helpers para validar existência no D1 antes de persistir (Evita SQLITE_CONSTRAINT_FOREIGNKEY) ──
+    const validarClienteExiste = async (idCliente: string | null): Promise<string | null> => {
+        if (!idCliente) return null;
+        try {
+            const row = await env.DB.prepare(
+                "SELECT id FROM clientes WHERE id = ? AND id_usuario = ?"
+            ).bind(idCliente, usuarioId).first();
+            return row ? idCliente : null;
+        } catch (e) {
+            console.warn("[pedidos] Erro ao verificar FK de cliente:", e);
+            return null;
+        }
+    };
+
+    const validarImpressoraExiste = async (idImpressora: string | null): Promise<string | null> => {
+        if (!idImpressora) return null;
+        try {
+            const row = await env.DB.prepare(
+                "SELECT id FROM impressoras WHERE id = ? AND id_usuario = ?"
+            ).bind(idImpressora, usuarioId).first();
+            return row ? idImpressora : null;
+        } catch (e) {
+            console.warn("[pedidos] Erro ao verificar FK de impressora:", e);
+            return null;
+        }
+    };
+
     // ── Helper para atualizar LTV do Cliente ──
     const atualizarMetricasCliente = async (idCliente: string | null | undefined) => {
         if (!idCliente || idCliente === "null" || idCliente === "0" || idCliente === "undefined") return;
@@ -122,8 +168,6 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 };
             }));
 
-            // Ordena por data decrescente (já que o banco perde a ordem temporal se a data estivesse criptografada, 
-            // mas aqui a data está limpa, então é só um ajuste de garantia)
             processados.sort((a, b) => new Date(b.data_criacao).getTime() - new Date(a.data_criacao).getTime());
 
             return new Response(JSON.stringify(processados), { 
@@ -131,21 +175,26 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             });
         }
 
-        // ── POST - Criar (Com Criptografia) ──
+        // ── POST - Criar (Com Criptografia e Blindagem contra SQLITE_CONSTRAINT_FOREIGNKEY) ──
         if (metodo === "POST") {
             const corpoRaw = await request.json();
             const dados = ZodPedidoCriar.parse(corpoRaw) as any;
             const novoId = (corpoRaw as any).id || crypto.randomUUID();
             
-            const limparId = (val: any) => (!val || val === "null" || val === "0") ? null : String(val);
+            const idClienteBruto = limparId(dados.id_cliente ?? dados.idCliente);
+            const idImpressoraBruta = limparId(dados.id_impressora ?? dados.idImpressora);
 
-            const id_cliente = limparId(dados.id_cliente ?? dados.idCliente);
-            const id_impressora = limparId(dados.id_impressora ?? dados.idImpressora);
+            // Valida existência no D1 para não estourar FOREIGN KEY
+            const id_cliente = await validarClienteExiste(idClienteBruto);
+            const id_impressora = await validarImpressoraExiste(idImpressoraBruta);
+
             const valor_centavos = Math.round(Number(dados.valor_centavos ?? dados.valorCentavos) || 0);
             const data_criacao = dados.data_criacao ?? dados.dataCriacao ?? new Date().toISOString();
 
-            // Monta Dados Extras e Criptografa
+            // Monta Dados Extras preservando referências originais caso FK seja anulada
             const dadosExtras = {
+                idClienteOriginal: idClienteBruto,
+                idImpressoraOriginal: idImpressoraBruta,
                 material: (corpoRaw as any).material ?? (corpoRaw as any).material_base,
                 materiais: (corpoRaw as any).materiais ?? [],
                 peso_gramas: (corpoRaw as any).peso_gramas ?? (corpoRaw as any).pesoGramas,
@@ -161,29 +210,48 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 criptografar(JSON.stringify(dadosExtras), chaveMestra)
             ]);
 
-            await env.DB.prepare(`
-                INSERT INTO pedidos_impressao (
-                    id, id_usuario, id_cliente, id_impressora, descricao, 
-                    status, valor_centavos, data_criacao, dados_extras, arquivado
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-            `).bind(
-                novoId, usuarioId, id_cliente, id_impressora, 
-                descCripto, dados.status ?? 'pendente', valor_centavos, 
-                data_criacao, extrasCripto
-            ).run();
+            try {
+                await env.DB.prepare(`
+                    INSERT INTO pedidos_impressao (
+                        id, id_usuario, id_cliente, id_impressora, descricao, 
+                        status, valor_centavos, data_criacao, dados_extras, arquivado
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                `).bind(
+                    novoId, usuarioId, id_cliente, id_impressora, 
+                    descCripto, dados.status ?? 'pendente', valor_centavos, 
+                    data_criacao, extrasCripto
+                ).run();
+            } catch (insertErr: any) {
+                if (insertErr?.message?.includes("FOREIGN KEY constraint failed")) {
+                    console.warn("[pedidos] Foreign Key constraint interceptada no INSERT. Salvando com FKs nulas para resiliência.");
+                    await env.DB.prepare(`
+                        INSERT INTO pedidos_impressao (
+                            id, id_usuario, id_cliente, id_impressora, descricao, 
+                            status, valor_centavos, data_criacao, dados_extras, arquivado
+                        ) VALUES (?, ?, NULL, NULL, ?, ?, ?, ?, ?, 0)
+                    `).bind(
+                        novoId, usuarioId, 
+                        descCripto, dados.status ?? 'pendente', valor_centavos, 
+                        data_criacao, extrasCripto
+                    ).run();
+                } else {
+                    throw insertErr;
+                }
+            }
 
-            await atualizarMetricasCliente(id_cliente);
+            if (id_cliente) {
+                await atualizarMetricasCliente(id_cliente);
+            }
 
             return new Response(JSON.stringify({ id: novoId, sucesso: true }), { 
                 status: 201, headers: { "Content-Type": "application/json" } 
             });
         }
 
-        // ── PATCH / PUT - Atualizar (Com Criptografia) ──
+        // ── PATCH / PUT - Atualizar (Com Criptografia e Blindagem contra SQLITE_CONSTRAINT_FOREIGNKEY) ──
         if (metodo === "PATCH" || metodo === "PUT") {
             const corpoRaw = await request.json();
             const dados = ZodPedidoAtualizar.parse(corpoRaw) as any;
-            const limparId = (val: any) => (!val || val === "null") ? null : String(val);
 
             const descCripto = dados.descricao ? await criptografar(dados.descricao, chaveMestra) : undefined;
             const extrasCripto = (corpoRaw as any).dados_extras ? await criptografar(
@@ -191,47 +259,77 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 chaveMestra
             ) : undefined;
 
-            if (extrasCripto) {
-                await env.DB.prepare(`
-                    UPDATE pedidos_impressao SET 
-                        status = ?, 
-                        descricao = COALESCE(?, descricao),
-                        valor_centavos = COALESCE(?, valor_centavos),
-                        data_conclusao = CASE WHEN ? = 1 THEN NULL ELSE COALESCE(?, data_conclusao) END, 
-                        id_cliente = COALESCE(?, id_cliente), 
-                        id_impressora = COALESCE(?, id_impressora),
-                        dados_extras = ?
-                    WHERE id = ? AND id_usuario = ?
-                `).bind(
-                    dados.status ?? 'pendente', 
-                    descCripto ?? null,
-                    dados.valor_centavos ?? dados.valorCentavos ?? null,
-                    (corpoRaw as any).limparDataConclusao ? 1 : 0, (corpoRaw as any).data_conclusao ?? (corpoRaw as any).dataConclusao ?? null,
-                    limparId(dados.id_cliente ?? dados.idCliente),
-                    limparId(dados.id_impressora ?? dados.idImpressora),
-                    extrasCripto,
-                    dados.id, usuarioId
-                ).run();
-            } else {
-                await env.DB.prepare(`
-                    UPDATE pedidos_impressao SET 
-                        status = ?, 
-                        data_conclusao = CASE WHEN ? = 1 THEN NULL ELSE COALESCE(?, data_conclusao) END
-                    WHERE id = ? AND id_usuario = ?
-                `).bind(
-                    dados.status ?? 'pendente',
-                    (corpoRaw as any).limparDataConclusao ? 1 : 0, (corpoRaw as any).data_conclusao ?? (corpoRaw as any).dataConclusao ?? null,
-                    dados.id, usuarioId
-                ).run();
+            const temClienteDefinido = dados.idCliente !== undefined || dados.id_cliente !== undefined;
+            const temImpressoraDefinida = dados.idImpressora !== undefined || dados.id_impressora !== undefined;
+
+            const idClienteBruto = temClienteDefinido ? limparId(dados.id_cliente ?? dados.idCliente) : undefined;
+            const idImpressoraBruta = temImpressoraDefinida ? limparId(dados.id_impressora ?? dados.idImpressora) : undefined;
+
+            const id_cliente = idClienteBruto !== undefined ? await validarClienteExiste(idClienteBruto) : undefined;
+            const id_impressora = idImpressoraBruta !== undefined ? await validarImpressoraExiste(idImpressoraBruta) : undefined;
+
+            const executarAtualizacao = async (usarFKs: boolean) => {
+                const clienteParam = usarFKs ? (id_cliente !== undefined ? id_cliente : null) : null;
+                const impressoraParam = usarFKs ? (id_impressora !== undefined ? id_impressora : null) : null;
+
+                if (extrasCripto) {
+                    await env.DB.prepare(`
+                        UPDATE pedidos_impressao SET 
+                            status = ?, 
+                            descricao = COALESCE(?, descricao),
+                            valor_centavos = COALESCE(?, valor_centavos),
+                            data_conclusao = CASE WHEN ? = 1 THEN NULL ELSE COALESCE(?, data_conclusao) END, 
+                            id_cliente = CASE WHEN ? = 1 THEN ? ELSE id_cliente END, 
+                            id_impressora = CASE WHEN ? = 1 THEN ? ELSE id_impressora END,
+                            dados_extras = ?
+                        WHERE id = ? AND id_usuario = ?
+                    `).bind(
+                        dados.status ?? 'pendente', 
+                        descCripto ?? null,
+                        dados.valor_centavos ?? dados.valorCentavos ?? null,
+                        (corpoRaw as any).limparDataConclusao ? 1 : 0, (corpoRaw as any).data_conclusao ?? (corpoRaw as any).dataConclusao ?? null,
+                        temClienteDefinido ? 1 : 0, clienteParam,
+                        temImpressoraDefinida ? 1 : 0, impressoraParam,
+                        extrasCripto,
+                        dados.id, usuarioId
+                    ).run();
+                } else {
+                    await env.DB.prepare(`
+                        UPDATE pedidos_impressao SET 
+                            status = ?, 
+                            data_conclusao = CASE WHEN ? = 1 THEN NULL ELSE COALESCE(?, data_conclusao) END,
+                            id_cliente = CASE WHEN ? = 1 THEN ? ELSE id_cliente END,
+                            id_impressora = CASE WHEN ? = 1 THEN ? ELSE id_impressora END
+                        WHERE id = ? AND id_usuario = ?
+                    `).bind(
+                        dados.status ?? 'pendente',
+                        (corpoRaw as any).limparDataConclusao ? 1 : 0, (corpoRaw as any).data_conclusao ?? (corpoRaw as any).dataConclusao ?? null,
+                        temClienteDefinido ? 1 : 0, clienteParam,
+                        temImpressoraDefinida ? 1 : 0, impressoraParam,
+                        dados.id, usuarioId
+                    ).run();
+                }
+            };
+
+            try {
+                await executarAtualizacao(true);
+            } catch (patchErr: any) {
+                if (patchErr?.message?.includes("FOREIGN KEY constraint failed")) {
+                    console.warn("[pedidos] Foreign Key constraint interceptada no PATCH. Reexecutando sem FK restritiva.");
+                    await executarAtualizacao(false);
+                } else {
+                    throw patchErr;
+                }
             }
 
-            // Precisamos buscar o id_cliente atual (se não foi passado na atualização) para atualizar o LTV
-            let idClienteParaAtualizar = limparId(dados.id_cliente ?? dados.idCliente);
+            let idClienteParaAtualizar = id_cliente;
             if (!idClienteParaAtualizar) {
                 const pedidoAtual = await env.DB.prepare("SELECT id_cliente FROM pedidos_impressao WHERE id = ?").bind(dados.id).first();
                 if (pedidoAtual) idClienteParaAtualizar = (pedidoAtual as any).id_cliente;
             }
-            await atualizarMetricasCliente(idClienteParaAtualizar);
+            if (idClienteParaAtualizar) {
+                await atualizarMetricasCliente(idClienteParaAtualizar);
+            }
 
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }
@@ -241,8 +339,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         // ── DELETE ──
         if (metodo === "DELETE") {
             const pedidoAtual = await env.DB.prepare("SELECT id_cliente FROM pedidos_impressao WHERE id = ?").bind(id).first();
+            
+            // Desvincular dependências com foreign keys antes de deletar
+            await env.DB.prepare("UPDATE historico_uso_materiais SET id_pedido = NULL WHERE id_pedido = ? AND id_usuario = ?")
+                .bind(id, usuarioId).run().catch(() => {});
+
             await env.DB.prepare("DELETE FROM pedidos_impressao WHERE id = ? AND id_usuario = ?")
                 .bind(id, usuarioId).run();
+
             if (pedidoAtual && (pedidoAtual as any).id_cliente) {
                 await atualizarMetricasCliente((pedidoAtual as any).id_cliente);
             }

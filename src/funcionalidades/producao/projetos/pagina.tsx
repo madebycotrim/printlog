@@ -1,10 +1,12 @@
-import { FolderKanban, Plus, Archive } from "lucide-react";
+import { FolderKanban, Plus, Archive, Bot, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { QuadroKanban } from "./componentes/QuadroKanban";
 import { ModalArquivoProjetos } from "./componentes/ModalArquivoProjetos";
 import { ModalProjetosAtrasados } from "./componentes/ModalProjetosAtrasados";
 import { ModalConclusaoProjeto } from "./componentes/ModalConclusaoProjeto";
+import { ModalSmartDispatcher } from "./componentes/ModalSmartDispatcher";
+import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { usePedidos } from "./hooks/usePedidos";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { ResumoProjetos } from "./componentes/ResumoProjetos";
@@ -29,9 +31,11 @@ export function PaginaProjetos() {
 
   const [modalArquivoAberto, setModalArquivoAberto] = useState(false);
   const [modalAtrasadosAberto, setModalAtrasadosAberto] = useState(false);
+  const [modalDispatcherAberto, setModalDispatcherAberto] = useState(false);
 
   const [pedidoEdicao, setPedidoEdicao] = useState<Pedido | null>(null);
   const { pedidos, pedidosFiltrados, moverPedido, pesquisar, carregando, atualizarPedido, erro, recarregar } = usePedidos();
+  const { estado: { impressoras } } = useGerenciadorImpressoras();
 
   const { usuario } = useAutenticacao();
   const [pedidoSendoConcluido, setPedidoSendoConcluido] = useState<Pedido | null>(null);
@@ -57,6 +61,18 @@ export function PaginaProjetos() {
       }
     }
     await moverPedido(id, novoStatus);
+  };
+
+  const aplicarAlocacao = async (atualizacoes: Array<{ id: string; idImpressora: string; posicaoFila: number }>) => {
+    if (!usuario?.uid) return;
+    for (const item of atualizacoes) {
+      await atualizarPedido({
+        id: item.id,
+        idImpressora: item.idImpressora,
+        posicaoFila: item.posicaoFila
+      });
+    }
+    await recarregar(true);
   };
 
   const confirmarConclusaoComPerda = async (gramasPerdidas: Record<string, number>, gerarReceitaFinanceira: boolean) => {
@@ -231,6 +247,36 @@ export function PaginaProjetos() {
         aoAbrirAtrasados={() => setModalAtrasadosAberto(true)}
       />
 
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-sky-500/10 via-indigo-500/5 to-transparent border border-sky-500/20 shadow-sm gap-3 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-sky-500/20 text-sky-600 dark:text-sky-400 shrink-0">
+            <Bot size={18} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-100">
+                Smart Dispatcher • Alocador de Fila IA
+              </h4>
+              <span className="bg-sky-500 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                Novo
+              </span>
+            </div>
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
+              Agrupe pedidos pelo mesmo filamento e distribua a carga horária nas impressoras ativas.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setModalDispatcherAberto(true)}
+          className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-sky-500/20 active:scale-95 cursor-pointer shrink-0"
+        >
+          <Sparkles size={13} />
+          <span>Otimizar Fila IA</span>
+        </button>
+      </div>
+
       <div className="flex-1 min-h-0 flex flex-col space-y-6 overflow-hidden">
         <div className="flex-1 min-h-0">
           <QuadroKanban
@@ -257,6 +303,13 @@ export function PaginaProjetos() {
       <ModalArquivoProjetos aberto={modalArquivoAberto} aoFechar={() => setModalArquivoAberto(false)} pedidos={pedidos} abrirFormularioEdicao={abrirFormularioEdicao} />
       <ModalProjetosAtrasados aberto={modalAtrasadosAberto} aoFechar={() => setModalAtrasadosAberto(false)} pedidos={pedidos} abrirFormularioEdicao={abrirFormularioEdicao} />
       <ModalConclusaoProjeto aberto={!!pedidoSendoConcluido} aoFechar={() => setPedidoSendoConcluido(null)} pedido={pedidoSendoConcluido} aoConfirmar={confirmarConclusaoComPerda} />
+      <ModalSmartDispatcher
+        aberto={modalDispatcherAberto}
+        aoFechar={() => setModalDispatcherAberto(false)}
+        pedidos={pedidos}
+        impressoras={impressoras}
+        aoAplicarAlocacao={aplicarAlocacao}
+      />
       <FormularioPedido
         aberto={!!pedidoEdicao}
         pedidoEdicao={pedidoEdicao}

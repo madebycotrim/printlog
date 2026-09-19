@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Printer, 
@@ -10,21 +10,23 @@ import {
   Trash2, 
   LayoutGrid,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Sparkles
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
+import { ModalSmartDispatcher } from "@/funcionalidades/producao/projetos/componentes/ModalSmartDispatcher";
 import { centavosParaReais, formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 import { StatusPedido, StatusImpressora } from "@/compartilhado/tipos/modelos";
 import { toast } from "sonner";
 import { BannerErro } from "@/compartilhado/componentes/ui";
 
-
 export function PaginaFila() {
   const { estado: { impressoras, erro: erroImpressoras }, acoes: { salvarImpressora, carregarImpressoras } } = useGerenciadorImpressoras();
   const { pedidos, erro: erroPedidos, recarregar: recarregarPedidos, atualizarPedido } = usePedidos();
+  const [modalDispatcherAberto, setModalDispatcherAberto] = useState(false);
 
 
 
@@ -198,6 +200,17 @@ export function PaginaFila() {
     }
   };
 
+  const lidarComAplicacaoDispatcher = async (atualizacoes: Array<{ id: string; idImpressora: string; posicaoFila: number }>) => {
+    for (const item of atualizacoes) {
+      await atualizarPedido({
+        id: item.id,
+        idImpressora: item.idImpressora,
+        posicaoFila: item.posicaoFila
+      });
+    }
+    recarregarPedidos(true);
+  };
+
   return (
     <AnimatePresence mode="wait">
         <motion.div
@@ -212,7 +225,7 @@ export function PaginaFila() {
             
             {/* Painel Lateral: Pedidos a Alocar */}
             <div className="xl:col-span-1 space-y-6 bg-card border border-borda-sutil rounded-[2rem] p-6 shadow-sm relative overflow-hidden">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-2">
                 <LayoutGrid size={16} className="text-primaria" />
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-200">
                   Backlog de Projetos
@@ -221,6 +234,16 @@ export function PaginaFila() {
                   {pedidosPendentes.length}
                 </span>
               </div>
+
+              {/* Botão Smart Dispatcher IA */}
+              <button
+                type="button"
+                onClick={() => setModalDispatcherAberto(true)}
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 hover:from-sky-600 hover:to-purple-700 text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer"
+              >
+                <Sparkles size={13} className="animate-pulse" />
+                <span>Smart Dispatcher IA</span>
+              </button>
 
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {pedidosPendentes.length === 0 ? (
@@ -448,6 +471,13 @@ export function PaginaFila() {
           </div>
         </motion.div>
 
+        <ModalSmartDispatcher
+          aberto={modalDispatcherAberto}
+          aoFechar={() => setModalDispatcherAberto(false)}
+          pedidos={pedidos}
+          impressoras={impressorasAtivas}
+          aoAplicarAlocacao={lidarComAplicacaoDispatcher}
+        />
     </AnimatePresence>
   );
 }

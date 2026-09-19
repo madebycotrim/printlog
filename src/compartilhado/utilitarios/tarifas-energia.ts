@@ -162,3 +162,66 @@ export function inferirEstadoPorTarifaCentavos(centavos: number, estadoPreferido
 
   return estadoPreferido || null;
 }
+
+export type TipoBandeiraTarifaria = 'verde' | 'amarela' | 'vermelha1' | 'vermelha2' | 'escassez';
+
+export interface DadosBandeiraTarifaria {
+  id: TipoBandeiraTarifaria;
+  nome: string;
+  corHex: string;
+  adicionalCentavos: number;
+  adicionalReais: number;
+  descricao: string;
+}
+
+export const BANDEIRAS_TARIFARIAS: Record<TipoBandeiraTarifaria, DadosBandeiraTarifaria> = {
+  verde: {
+    id: 'verde',
+    nome: 'Bandeira Verde',
+    corHex: '#10b981',
+    adicionalCentavos: 0,
+    adicionalReais: 0.0,
+    descricao: 'Sem acréscimo tarifário (condições normais)',
+  },
+  amarela: {
+    id: 'amarela',
+    nome: 'Bandeira Amarela',
+    corHex: '#f59e0b',
+    adicionalCentavos: 1.89,
+    adicionalReais: 0.01885,
+    descricao: 'Acréscimo de +R$ 0,019/kWh',
+  },
+  vermelha1: {
+    id: 'vermelha1',
+    nome: 'Bandeira Vermelha 1',
+    corHex: '#ef4444',
+    adicionalCentavos: 4.46,
+    adicionalReais: 0.04463,
+    descricao: 'Acréscimo de +R$ 0,045/kWh',
+  },
+  vermelha2: {
+    id: 'vermelha2',
+    nome: 'Bandeira Vermelha 2',
+    corHex: '#b91c1c',
+    adicionalCentavos: 7.88,
+    adicionalReais: 0.07877,
+    descricao: 'Acréscimo de +R$ 0,079/kWh',
+  },
+  escassez: {
+    id: 'escassez',
+    nome: 'Escassez Hídrica',
+    corHex: '#6b21a8',
+    adicionalCentavos: 14.2,
+    adicionalReais: 0.142,
+    descricao: 'Acréscimo de +R$ 0,142/kWh (seca severa)',
+  },
+};
+
+/**
+ * Retorna a tarifa base de um estado somada ao adicional da bandeira tarifária escolhida.
+ */
+export function calcularTarifaComBandeira(uf: string, bandeira: TipoBandeiraTarifaria = 'verde'): number {
+  const tarifaBase = TARIFAS_KWH_POR_ESTADO[uf] || 0.759;
+  const adicional = BANDEIRAS_TARIFARIAS[bandeira]?.adicionalReais || 0;
+  return tarifaBase + adicional;
+}

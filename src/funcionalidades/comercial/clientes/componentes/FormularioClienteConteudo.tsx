@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Save, User, Mail, Phone, FileText, Star } from "lucide-react";
+import { Save, User, Mail, Phone, FileText, Star, Building2, Sparkles, Loader2 } from "lucide-react";
 import { CampoTexto } from "@/compartilhado/componentes";
 import { AcoesDescarte } from "@/compartilhado/componentes";
 import { SecaoFormulario, GradeCampos } from "@/compartilhado/componentes";
@@ -12,6 +12,8 @@ import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { formatarTelefone } from "@/compartilhado/utilitarios/formatadores";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
+import { consultarCnpj } from "@/compartilhado/servicos/servicoBrasilApi";
+import { toast } from "sonner";
 
 interface PropriedadesFormularioClienteConteudo {
   clienteEditando: Cliente | null;
@@ -22,6 +24,8 @@ interface PropriedadesFormularioClienteConteudo {
 export function FormularioClienteConteudo({ clienteEditando, aoSalvar, aoCancelar }: PropriedadesFormularioClienteConteudo) {
   const estaEditando = Boolean(clienteEditando);
   const [confirmarDescarte, definirConfirmarDescarte] = useState(false);
+  const [cnpjBusca, setCnpjBusca] = useState("");
+  const [buscandoCnpj, setBuscandoCnpj] = useState(false);
 
   const {
     register,
@@ -135,6 +139,80 @@ export function FormularioClienteConteudo({ clienteEditando, aoSalvar, aoCancela
                 </button>
               </div>
             </div>
+
+            {watch("tipo") === "B2B" && (
+              <div className="md:col-span-2 p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 size={16} className="text-indigo-500" />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Preenchimento Automático via CNPJ</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500">BrasilAPI Oficial</span>
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Digite o CNPJ da empresa..."
+                      value={cnpjBusca}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/\D/g, "");
+                        if (val.length > 14) val = val.slice(0, 14);
+                        val = val.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+                        setCnpjBusca(val);
+                      }}
+                      className="w-full h-11 px-3 rounded-xl bg-white dark:bg-black/30 border border-borda-sutil font-bold text-xs text-primary dark:text-white outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={buscandoCnpj || cnpjBusca.replace(/\D/g, "").length !== 14}
+                    onClick={async () => {
+                      setBuscandoCnpj(true);
+                      try {
+                        const res = await consultarCnpj(cnpjBusca);
+                        if (res.sucesso) {
+                          setValue("nome", res.razaoSocial, { shouldDirty: true, shouldValidate: true });
+                          if (res.email) setValue("email", res.email, { shouldDirty: true });
+                          if (res.telefone) setValue("telefone", res.telefone, { shouldDirty: true });
+                          
+                          const partesEnd = [
+                            res.endereco.logradouro,
+                            res.endereco.numero,
+                            res.endereco.bairro,
+                            res.endereco.municipio,
+                            res.endereco.uf,
+                            res.endereco.cep ? `CEP ${res.endereco.cep}` : ''
+                          ].filter(Boolean).join(", ");
+
+                          const obsAtual = getValues("observacoesCRM") || "";
+                          const novaObs = [
+                            `CNPJ: ${res.cnpj}`,
+                            res.nomeFantasia ? `Fantasia: ${res.nomeFantasia}` : null,
+                            res.cnaeDescricao ? `Atividade: ${res.cnaeDescricao}` : null,
+                            partesEnd ? `Endereço: ${partesEnd}` : null,
+                            obsAtual ? `\n${obsAtual}` : null
+                          ].filter(Boolean).join(" | ");
+
+                          setValue("observacoesCRM", novaObs, { shouldDirty: true });
+                          toast.success(`Empresa "${res.razaoSocial}" localizada! Dados preenchidos.`);
+                        } else {
+                          toast.error(res.erro || "CNPJ não encontrado na base oficial.");
+                        }
+                      } catch {
+                        toast.error("Erro ao consultar CNPJ via BrasilAPI.");
+                      } finally {
+                        setBuscandoCnpj(false);
+                      }
+                    }}
+                    className="px-4 h-11 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-indigo-500/20 shrink-0"
+                  >
+                    {buscandoCnpj ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    <span>{buscandoCnpj ? "Buscando..." : "Consultar CNPJ"}</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="md:col-span-2">
               <CampoTexto

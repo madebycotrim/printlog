@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, PackageSearch, Sparkles } from "lucide-react";
+import { Plus, PackageSearch } from "lucide-react";
 import { useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
@@ -16,15 +16,16 @@ import { ModalReposicaoEstoque } from "./componentes/ModalReposicaoEstoque";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
 import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
-import { ALERTA_ESTOQUE_FILAMENTO_GRAMAS } from "@/compartilhado/constantes/constantesNegocio";
 import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
 import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { useState } from "react";
-
+import { CardPrevisaoEstoqueIA } from "./componentes/CardPrevisaoEstoqueIA";
+import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 
 export function PaginaMateriais() {
   const { estado, acoes } = useGerenciadorMateriais();
   const { insumos, definirInsumos } = useArmazemInsumos();
+  const { pedidos } = usePedidos();
   const { usuario } = useAutenticacao();
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
 
@@ -95,31 +96,13 @@ export function PaginaMateriais() {
               alertasBaixoEstoque={metricasConsolidadas.itensEmAlerta}
             />
 
-            {(usuario?.plano === "PRO" || usuario?.plano === "FUNDADOR") && estado.metricas.alertasBaixoEstoque > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6 p-5 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/5 border border-indigo-500/20 flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none text-indigo-500">
-                   <PackageSearch size={100} />
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-600 dark:text-indigo-400 mt-1">
-                    <Sparkles size={24} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                       <h3 className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Alerta Preditivo (Em Breve)</h3>
-                       <span className="bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">IA Lab</span>
-                    </div>
-                    <p className="text-xs text-indigo-600/80 dark:text-indigo-300/80 mt-1 leading-relaxed max-w-xl">
-                      Historicamente, você consome rolos similares muito rápido. Seu estoque atual tem <strong className="text-indigo-700 dark:text-indigo-200">{estado.metricas.alertasBaixoEstoque} material(is)</strong> abaixo do seu limite de <strong className="text-indigo-700 dark:text-indigo-200">{ALERTA_ESTOQUE_FILAMENTO_GRAMAS}g</strong>. Sugerimos preparar uma ordem de compra nos próximos <strong>5 dias</strong> para não travar a linha de produção.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+            <div className="mt-6">
+              <CardPrevisaoEstoqueIA
+                materiais={estado.materiais}
+                pedidos={pedidos}
+                aoRepor={(m) => acoes.abrirRepor(m.id)}
+              />
+            </div>
 
             <div className="mt-8">
               <FiltrosMaterial

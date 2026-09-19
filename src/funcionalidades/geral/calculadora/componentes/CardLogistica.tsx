@@ -1,8 +1,10 @@
 import { memo, useState } from "react";
-import { Warehouse, Settings, Search, MapPin, RefreshCcw, Percent, Coins, Truck } from "lucide-react";
+import { Warehouse, Settings, Search, MapPin, RefreshCcw, Percent, Coins, Truck, Check, PackageCheck } from "lucide-react";
 import { PerfilMarketplace } from "../tipos";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+import { consultarCep } from "@/compartilhado/servicos/servicoBrasilApi";
+import { cotarFrete, OpcaoFrete } from "@/compartilhado/servicos/servicoFrete";
 import { toast } from "sonner";
 
 interface CardLogisticaProps {
@@ -26,26 +28,40 @@ export const CardLogistica = memo(function CardLogistica({
   const [cep, setCep] = useState("");
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [localidadeCEP, setLocalidadeCEP] = useState("");
-  const estadoLogista = "SP"; // Para efeito de simulação, logista é de SP
+  const [opcoesFrete, setOpcoesFrete] = useState<OpcaoFrete[]>([]);
+  const [opcaoSelecionadaId, setOpcaoSelecionadaId] = useState<string>("");
 
-  const consultarCep = async () => {
+  const consultarCepEFrete = async () => {
     const cepLimpo = cep.replace(/\D/g, "");
-    if (cepLimpo.length !== 8) return toast.error("CEP incompleto");
+    if (cepLimpo.length !== 8) return toast.error("Digite um CEP com 8 dígitos");
     
     setBuscandoCep(true);
     try {
-      const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-      const dados = await resp.json();
-      if (dados.erro) throw new Error("CEP não encontrado");
+      const [resCep, resFrete] = await Promise.all([
+        consultarCep(cepLimpo),
+        cotarFrete(cepLimpo)
+      ]);
+
+      if (!resCep.sucesso) {
+        throw new Error(resCep.erro || "CEP não encontrado");
+      }
       
-      const freteSimulado = dados.uf === estadoLogista ? 1500 : 3500;
-      setFrete(freteSimulado);
-      setLocalidadeCEP(`${dados.localidade} - ${dados.uf}`);
-      toast.success(`Frete calculado para ${dados.localidade}-${dados.uf}!`);
+      const local = `${resCep.cidade} - ${resCep.estado}`;
+      setLocalidadeCEP(local);
+
+      if (resFrete.sucesso && resFrete.opcoes.length > 0) {
+        setOpcoesFrete(resFrete.opcoes);
+        const preferida = resFrete.opcoes.find(o => o.destaque) || resFrete.opcoes[0];
+        setOpcaoSelecionadaId(preferida.id);
+        setFrete(preferida.valorCentavos);
+        toast.success(`Frete calculado para ${local}!`);
+      } else {
+        toast.success(`Destino ${local} identificado!`);
+      }
     } catch {
-      toast.error("Erro ao buscar CEP");
+      toast.error("Erro ao buscar CEP via BrasilAPI");
       setLocalidadeCEP("");
-      setFrete(0);
+      setOpcoesFrete([]);
     } finally {
       setBuscandoCep(false);
     }
@@ -195,16 +211,17 @@ export const CardLogistica = memo(function CardLogistica({
                       />
                     </div>
                     <button 
-                      onClick={consultarCep}
+                      onClick={consultarCepEFrete}
                       disabled={!cep || buscandoCep || !cobrarLogistica}
-                      className="h-12 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-muted disabled:text-muted-foreground text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center transition-all shadow-lg shadow-cyan-500/20 active:scale-95 shrink-0"
-                      title="Calcular frete automático"
+                      className="h-12 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-muted disabled:text-muted-foreground text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center transition-all shadow-lg shadow-cyan-500/20 active:scale-95 shrink-0 cursor-pointer"
+                      title="Calcular frete automático (BrasilAPI)"
                     >
                       {buscandoCep ? <RefreshCcw className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
                     </button>
                   </div>
                   {localidadeCEP && (
-                    <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400/80 px-1 animate-in fade-in slide-in-from-top-1">
+                    <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400/80 px-1 animate-in fade-in slide-in-from-top-1 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
                       Destino: {localidadeCEP}
                     </span>
                   )}
@@ -219,12 +236,64 @@ export const CardLogistica = memo(function CardLogistica({
                   <InputBancario 
                     placeholder="0.00" 
                     value={frete === 0 ? "" : frete / 100} 
-                    onChange={(e) => setFrete(Math.round(extrairValorNumerico(e.target.value) * 100))} 
+                    onChange={(e) => {
+                      setFrete(Math.round(extrairValorNumerico(e.target.value) * 100));
+                      setOpcaoSelecionadaId(""); // Manual
+                    }} 
                     className={`w-full h-12 pl-10 pr-4 rounded-xl bg-cyan-500/5 dark:bg-cyan-500/10 border border-cyan-500/20 focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 outline-none font-bold text-xs text-cyan-700 dark:text-cyan-400 transition-all shadow-inner ${!cobrarLogistica ? "opacity-50" : ""}`} 
                   />
                 </div>
               </div>
             </div>
+
+            {/* Comparativo de Opções de Frete (SEDEX, PAC, Jadlog) */}
+            {opcoesFrete.length > 0 && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 pt-1 border-t border-borda-sutil">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
+                    <PackageCheck size={13} />
+                    <span>Cotação de Frete em Tempo Real</span>
+                  </span>
+                  <span className="text-[8px] font-bold text-zinc-400">Selecione para aplicar</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {opcoesFrete.map((op) => {
+                    const estaAtivo = opcaoSelecionadaId === op.id;
+                    return (
+                      <button
+                        key={op.id}
+                        type="button"
+                        onClick={() => {
+                          setOpcaoSelecionadaId(op.id);
+                          setFrete(op.valorCentavos);
+                          toast.success(`Frete ${op.transportadora} ${op.servico} (${op.valorFormatado}) selecionado!`);
+                        }}
+                        className={`p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
+                          estaAtivo
+                            ? 'bg-cyan-500/15 border-cyan-500/60 shadow-md shadow-cyan-500/10 scale-[1.01]'
+                            : 'bg-muted/30 dark:bg-zinc-800/30 border-borda-sutil hover:border-cyan-500/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-primary dark:text-white">
+                            {op.transportadora} {op.servico}
+                          </span>
+                          {estaAtivo && <Check size={12} className="text-cyan-500" />}
+                        </div>
+                        <div className="flex items-end justify-between mt-1">
+                          <span className="text-[8px] font-medium text-zinc-400 dark:text-zinc-500">
+                            {op.prazoTexto}
+                          </span>
+                          <span className={`text-[11px] font-black ${estaAtivo ? 'text-cyan-600 dark:text-cyan-400' : 'text-primary dark:text-white'}`}>
+                            {op.valorFormatado}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

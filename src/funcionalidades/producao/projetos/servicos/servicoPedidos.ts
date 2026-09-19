@@ -64,7 +64,8 @@ class ServicoPedidos {
       id,
       idUsuario: usuarioId,
       status: StatusPedido.A_FAZER,
-      dataCriacao
+      dataCriacao,
+      idCliente: dados.idCliente ? String(dados.idCliente) : "",
     };
 
     await apiPedidos.criar(novoPedido, usuarioId);

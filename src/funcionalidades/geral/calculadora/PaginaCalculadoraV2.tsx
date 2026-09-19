@@ -64,7 +64,7 @@ import { useSincronizacaoCalculadora } from "./hooks/useSincronizacaoCalculadora
 import { CardLogistica } from "./componentes/CardLogistica";
 import { PainelResultados } from "./componentes/PainelResultados";
 import { ModalDetectarTarifa } from "./componentes/ModalDetectarTarifa";
-import { inferirEstadoPorTarifaCentavos } from "@/compartilhado/utilitarios/tarifas-energia";
+import { inferirEstadoPorTarifaCentavos, TipoBandeiraTarifaria } from "@/compartilhado/utilitarios/tarifas-energia";
 
 export function PaginaCalculadoraV2() {
   const armazem = useArmazemCalculadora();
@@ -204,6 +204,10 @@ export function PaginaCalculadoraV2() {
 
   const [estadoTarifa, setEstadoTarifa] = useState<string>(() => {
     return localStorage.getItem("printlog_estado_tarifa") || "";
+  });
+
+  const [bandeiraTarifaria, setBandeiraTarifaria] = useState<TipoBandeiraTarifaria>(() => {
+    return (localStorage.getItem("printlog_bandeira_tarifaria") as TipoBandeiraTarifaria) || "amarela";
   });
 
   const estadoTarifaEfetivo = useMemo(() => {
@@ -402,7 +406,6 @@ export function PaginaCalculadoraV2() {
     }
   }, [nomeProjeto, adicionarNotificacao]);
 
-  const [explicacaoIA, setExplicacaoIA] = useState("");
   const [modalIAAberto, setModalIAAberto] = useState(false);
   const [sugestaoIA, setSugestaoIA] = useState<SugestaoPrecoIA | null>(null);
   const [carregandoIA, setCarregandoIA] = useState(false);
@@ -411,6 +414,7 @@ export function PaginaCalculadoraV2() {
     setModalIAAberto(true);
     setCarregandoIA(true);
     try {
+      const clienteAtual = estadoClientes.clientes?.find(c => c.id === clienteProjetoId);
       const sugestao = await servicoIA.obterSugestaoPreco({
         custoMaterial: armazem.resultado.custoMaterial / 100,
         custoEnergia: armazem.resultado.custoEnergia / 100,
@@ -419,17 +423,29 @@ export function PaginaCalculadoraV2() {
         lucroDesejadoPercentual: armazem.margemLucroPercentual,
         nomePeca: nomeProjeto || "Projeto 3D",
         pesoGramas: armazem.materiaisSelecionados.reduce((acc, m) => acc + m.quantidade, 0),
-        tempoMinutos: armazem.tempoMinutosMaquina
+        tempoMinutos: armazem.tempoMinutosMaquina,
+        quantidade: armazem.quantidade || 1,
+        tipoCliente: clienteAtual?.tipo || "B2C",
+        bandeiraTarifaria: bandeiraTarifaria,
+        materiais: armazem.materiaisSelecionados.map(m => ({
+          nome: m.nome,
+          quantidade: m.quantidade,
+          tipo: (m as any).tipo,
+          cor: (m as any).cor
+        })),
+        posProcesso: armazem.itensPosProcesso.map(p => ({
+          nome: p.nome,
+          valor: p.custoMaterialCentavos / 100
+        }))
       });
       setSugestaoIA(sugestao);
-      setExplicacaoIA(sugestao.dica || sugestao.recomendado.justificativa);
     } catch (e) {
       registrar.error({ rastreioId: "sugerir-ia", servico: "CalculadoraV2" }, "Falha ao se conectar com o motor de IA", e);
       toast.error("Falha ao calcular sugestão de IA.");
     } finally {
       setCarregandoIA(false);
     }
-  }, [armazem, nomeProjeto]);
+  }, [armazem, nomeProjeto, estadoClientes.clientes, clienteProjetoId, bandeiraTarifaria]);
 
   const aplicarPrecoIAHandler = useCallback((valorReais: number) => {
     const precoAlvoCentavos = Math.round(valorReais * 100);
@@ -769,6 +785,7 @@ export function PaginaCalculadoraV2() {
                 return null;
               }}
               estadoTarifa={estadoTarifaEfetivo}
+              bandeiraTarifaria={bandeiraTarifaria}
             />
           </div>
           
@@ -966,7 +983,6 @@ export function PaginaCalculadoraV2() {
           insumosFixos={armazem.insumosFixosCentavos} tempo={armazem.tempoMinutosMaquina}
           modoEntrada={armazem.modoEntrada} frete={armazem.freteCentavos}
           taxaFixa={armazem.taxaFixaVendaCentavos} aoSugerirPrecoIA={sugerirPrecoComIA}
-          explicacaoIA={explicacaoIA}
         />
       </div>
 
@@ -1153,11 +1169,16 @@ export function PaginaCalculadoraV2() {
       <ModalDetectarTarifa 
           aberto={modalTarifaAberto} 
           aoFechar={() => setModalTarifaAberto(false)} 
-          aoAplicarTarifa={(estado, tarifa) => {
+          estadoAtual={estadoTarifaEfetivo || "SP"}
+          bandeiraAtual={bandeiraTarifaria}
+          aoAplicarTarifa={(estado, tarifa, bandeira) => {
             armazem.setParametro('precoKwhCentavos', Math.round(tarifa * 100));
             setEstadoTarifa(estado);
             localStorage.setItem('printlog_estado_tarifa', estado);
-            toast.success(`Tarifa de ${estado} aplicada: R$ ${tarifa.toFixed(2)}/kWh`);
+            if (bandeira) {
+              setBandeiraTarifaria(bandeira);
+              localStorage.setItem('printlog_bandeira_tarifaria', bandeira);
+            }
           }}
         />
 
@@ -1253,9 +1274,12 @@ export function PaginaCalculadoraV2() {
         aberto={modalIAAberto}
         aoFechar={() => setModalIAAberto(false)}
         precoAtualCentavos={armazem.resultado?.precoSugerido || 0}
+        custoTotalCentavos={armazem.resultado?.custoTotalOperacional || 0}
         margemAtual={armazem.resultado?.margemReal ?? (armazem.margemLucroPercentual / 100)}
         sugestao={sugestaoIA}
         carregando={carregandoIA}
+        nomeProjeto={nomeProjeto || "Projeto 3D"}
+        clienteTelefone={estadoClientes.clientes?.find(c => c.id === clienteProjetoId)?.telefone}
         aoRecalcularIA={sugerirPrecoComIA}
         aoAplicarPreco={aplicarPrecoIAHandler}
       />
