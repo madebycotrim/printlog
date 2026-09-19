@@ -161,15 +161,15 @@ export function CardMetricas() {
     }
   };
   return (
-    <div className="h-full rounded-2xl border border-borda-sutil bg-card p-4 md:p-5 flex flex-col gap-4 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
-      <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
+    <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] to-cyan-500/[0.01] dark:from-cyan-500/[0.05] dark:to-cyan-500/[0.02] pointer-events-none" />
       <CabecalhoCard
         titulo="Painel do Estúdio"
         descricao="Resumo geral e exportação de dados"
         icone={Database}
         corIcone="text-cyan-500"
       />
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {[
           { val: totalClientes, lab: "Clientes", icone: User, cor: "text-sky-500", fundo: "bg-sky-500/10" },
           { val: totalMateriais, lab: "Filamentos", icone: Database, cor: "text-violet-500", fundo: "bg-violet-500/10" },
@@ -179,44 +179,44 @@ export function CardMetricas() {
         ].map((item) => (
           <div
             key={item.lab}
-            className="rounded-xl border border-borda-sutil dark:border-white/10 py-2 bg-gray-50/70 dark:bg-white/[0.02] flex flex-col items-center justify-center text-center"
+            className="rounded-xl border border-borda-sutil dark:border-white/10 py-3 px-2 bg-gray-50/70 dark:bg-white/[0.02] flex flex-col items-center justify-center text-center transition-all hover:border-cyan-500/30 hover:bg-gray-50 dark:hover:bg-white/[0.04]"
           >
-            <span className={`rounded-lg p-1.5 ${item.fundo} ${item.cor} mb-1`}>
-              <item.icone size={13} />
+            <span className={`rounded-lg p-1.5 ${item.fundo} ${item.cor} mb-1.5`}>
+              <item.icone size={14} />
             </span>
             {carregandoMetricas ? (
-              <div className="w-8 h-4 bg-zinc-200 dark:bg-zinc-800 animate-pulse rounded-md my-0.5" />
+              <div className="w-8 h-5 bg-zinc-200 dark:bg-zinc-800 animate-pulse rounded-md my-0.5" />
             ) : (
-              <p className="text-sm font-black text-gray-900 dark:text-white leading-none">{item.val}</p>
+              <p className="text-base font-black text-gray-900 dark:text-white leading-none">{item.val}</p>
             )}
-            <p className="mt-1 text-[9px] uppercase tracking-[0.14em] font-black text-gray-500 dark:text-zinc-500 truncate w-full px-1">
+            <p className="mt-1.5 text-[9px] uppercase tracking-[0.14em] font-black text-gray-500 dark:text-zinc-400 truncate w-full px-1">
               {item.lab}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="mt-auto bg-gray-50/70 dark:bg-white/[0.02] border border-borda-sutil dark:border-white/10 p-3 rounded-xl flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-500 shrink-0">
-            {mensagemSucesso ? <CheckCircle2 size={15} className="text-emerald-500" /> : <Download size={15} />}
+      <div className="mt-auto bg-gray-50/70 dark:bg-white/[0.02] border border-borda-sutil dark:border-white/10 p-3.5 sm:p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:w-auto">
+          <span className="w-9 h-9 flex items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-500 shrink-0">
+            {mensagemSucesso ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Download size={16} />}
           </span>
           <div className="truncate">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-gray-900 dark:text-white leading-tight truncate">
               {mensagemSucesso || "Exportação de Dados"}
             </p>
-            <p className="text-[9px] text-gray-500 dark:text-zinc-500 leading-tight truncate">
+            <p className="text-[10px] text-gray-500 dark:text-zinc-400 leading-tight truncate mt-0.5">
               Exportar todos os dados do estúdio
             </p>
           </div>
         </div>
-        <div className="flex gap-1.5 shrink-0">
+        <div className="flex gap-2 shrink-0 w-full sm:w-auto justify-end">
           {["PLANILHA (CSV)", "PDF", "JSON"].map((tipo) => (
             <button
               key={tipo}
               onClick={() => lidarComExportacao(tipo)}
               disabled={exportando}
-              className="h-8 px-3 rounded-xl bg-white dark:bg-card-fundo border border-borda-sutil dark:border-white/10 text-[10px] font-black uppercase text-gray-700 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-white/20 transition-all shadow-sm disabled:opacity-50 disabled:cursor-wait"
+              className="h-9 px-3.5 rounded-xl bg-white dark:bg-card-fundo border border-borda-sutil dark:border-white/10 text-[10px] font-black uppercase tracking-wider text-gray-700 dark:text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-500/5 transition-all shadow-sm disabled:opacity-50 disabled:cursor-wait cursor-pointer"
             >
               {tipo}
             </button>

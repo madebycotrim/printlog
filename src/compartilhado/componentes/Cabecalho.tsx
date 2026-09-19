@@ -66,7 +66,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           <button
             onClick={aoAbrirBarraLateral}
             aria-label="Abrir menu de navegação"
-            className="md:hidden p-1.5 -ml-1 text-zinc-500 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-colors touch-target shrink-0"
+            className="flex md:!hidden p-2 -ml-1 text-zinc-500 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-colors shrink-0"
           >
             <Menu size={20} strokeWidth={2} />
           </button>

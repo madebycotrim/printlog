@@ -49,7 +49,7 @@ export function CardPerfil({
     aoMudarPlano
 }: PropsCardPerfil) {
     return (
-        <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-700">
+        <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-700">
             <div className="absolute inset-0 bg-gradient-to-br from-muted-foreground/[0.03] to-transparent pointer-events-none" />
             <CabecalhoCard titulo="Perfil Maker" descricao="Sua conta de acesso e segurança" icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
 

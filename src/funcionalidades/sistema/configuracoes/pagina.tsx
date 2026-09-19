@@ -9,7 +9,6 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { Carregamento } from "@/compartilhado/componentes";
 
 import { CardPerfil } from "./componentes/CardPerfil";
-import { CardOperacional } from "./componentes/CardOperacional";
 import { CardPlanoPremium } from "./componentes/CardPlanoPremium";
 import { CardAparencia } from "./componentes/CardAparencia";
 import { CardMetricas } from "./componentes/CardMetricas";
@@ -38,10 +37,6 @@ export function PaginaConfiguracoes() {
    * Os valores iniciais vêm do nosso novo Armazém de Configurações (Zustand + Persist).
    */
   const [nome, definirNome] = useState(usuario?.nome || "");
-  const [custoEnergia, definirCustoEnergia] = useState(config.custoEnergia);
-  const [horaMaquina, definirHoraMaquina] = useState(config.horaMaquina);
-  const [horaOperador, definirHoraOperador] = useState(config.horaOperador);
-  const [margemLucro, definirMargemLucro] = useState(config.margemLucro);
   const [plano, definirPlano] = useState<PlanoUsuario>(config.plano);
   const [nomeEstudio, definirNomeEstudio] = useState(config.nomeEstudio);
   const [sloganEstudio, definirSloganEstudio] = useState(config.sloganEstudio);
@@ -75,10 +70,6 @@ export function PaginaConfiguracoes() {
   useEffect(() => {
     if (config.carregando) return;
 
-    definirCustoEnergia(config.custoEnergia);
-    definirHoraMaquina(config.horaMaquina);
-    definirHoraOperador(config.horaOperador);
-    definirMargemLucro(config.margemLucro);
     definirPlano(config.plano);
     definirNomeEstudio(config.nomeEstudio);
     definirSloganEstudio(config.sloganEstudio);
@@ -89,7 +80,7 @@ export function PaginaConfiguracoes() {
     }
     
     definirInicializado(true);
-  }, [config.carregando, config.custoEnergia, config.horaMaquina, config.horaOperador, config.margemLucro, config.plano, config.nomeEstudio, config.sloganEstudio, config.logoEstudio, usuario?.nome]);
+  }, [config.carregando, config.plano, config.nomeEstudio, config.sloganEstudio, config.logoEstudio, usuario?.nome]);
 
   // Redirecionamento de seção via URL
   useEffect(() => {
@@ -111,13 +102,7 @@ export function PaginaConfiguracoes() {
 
 
   // Detecção de Alterações Pendentes
-  const perfilPendente = nome !== (usuario?.nome || "");
-  const operacionalPendente =
-    custoEnergia !== config.custoEnergia || 
-    horaMaquina !== config.horaMaquina || 
-    horaOperador !== config.horaOperador || 
-    margemLucro !== config.margemLucro ||
-    plano !== config.plano;
+  const perfilPendente = nome !== (usuario?.nome || "") || plano !== config.plano;
 
   const identidadePendente =
     nomeEstudio !== config.nomeEstudio ||
@@ -138,7 +123,7 @@ export function PaginaConfiguracoes() {
     templateOrcamento !== beta.templateOrcamento ||
     limiteAlertaEstoque !== beta.limiteAlertaEstoque;
 
-  const totalAlteracoes = [perfilPendente, operacionalPendente, identidadePendente, aparenciaPendente, estudioPendente].filter(
+  const totalAlteracoes = [perfilPendente, identidadePendente, aparenciaPendente, estudioPendente].filter(
     Boolean,
   ).length;
   const temAlteracoes = totalAlteracoes > 0;
@@ -182,10 +167,6 @@ export function PaginaConfiguracoes() {
       });
 
       // 2. Atualiza o estado local do armazém e persiste no D1
-      config.definirCustoEnergia(custoEnergia);
-      config.definirHoraMaquina(horaMaquina);
-      config.definirHoraOperador(horaOperador);
-      config.definirMargemLucro(margemLucro);
       config.definirPlano(plano);
       config.definirIdentidadeEstudio(nomeEstudio, sloganEstudio, logoEstudio);
       await config.salvarNoD1(usuario!.uid);
@@ -218,8 +199,7 @@ export function PaginaConfiguracoes() {
       definirSalvando(false);
     }
   }, [
-    atualizarPerfil, nome, usuario, config, custoEnergia, horaMaquina, horaOperador,
-    margemLucro, plano, nomeEstudio, sloganEstudio, logoEstudio, contextoTema,
+    atualizarPerfil, nome, usuario, config, plano, nomeEstudio, sloganEstudio, logoEstudio, contextoTema,
     beta, participarPrototipos, betaMultiEstudio, betaOrcamentosMagicos,
     betaEstoqueInteligente, betaSimuladorMargem, templateOrcamento, limiteAlertaEstoque
   ]);
@@ -264,8 +244,8 @@ export function PaginaConfiguracoes() {
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }} className="h-full">
             <CardPerfil
               usuario={usuario}
               nome={nome}
@@ -279,25 +259,8 @@ export function PaginaConfiguracoes() {
               aoMudarPlano={definirPlano}
             />
           </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.08 }}>
-            <CardOperacional
-              custoEnergia={custoEnergia}
-              definirCustoEnergia={definirCustoEnergia}
-              horaMaquina={horaMaquina}
-              definirHoraMaquina={definirHoraMaquina}
-              horaOperador={horaOperador}
-              definirHoraOperador={definirHoraOperador}
-              margemLucro={margemLucro}
-              definirMargemLucro={definirMargemLucro}
-              pendente={operacionalPendente}
-            />
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.16 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.08 }} className="h-full">
             <CardAparencia pendente={aparenciaPendente} />
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.24 }}>
-            <CardMetricas />
           </motion.div>
         </div>
 
@@ -312,6 +275,10 @@ export function PaginaConfiguracoes() {
             eProOuSuperior={eProOuSuperior}
             pendente={identidadePendente}
           />
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.16 }}>
+          <CardMetricas />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.32 }}>

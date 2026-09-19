@@ -707,7 +707,7 @@ html.fonte-dislexia-ativa * {
 }
 
 /* Touch targets para acessibilidade móvel (WCAG AA - 44px min) */
-.touch-target {
+@utility touch-target {
   min-height: 44px;
   min-width: 44px;
   display: inline-flex;
