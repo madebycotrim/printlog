@@ -42,15 +42,41 @@ export function useClimaLocal(): EstadoClima {
           }
         }
 
-        // 2. Se não tem cache ou expirou, busca a localização pelo IP
-        // Usando ip-api (gratuito, sem necessidade de chave)
-        const resIp = await fetch('http://ip-api.com/json/');
-        if (!resIp.ok) throw new Error('Falha ao obter localização');
-        const dadosIp = await resIp.json();
-        
-        const lat = dadosIp.lat;
-        const lon = dadosIp.lon;
-        const cidade = dadosIp.city;
+        // 2. Se não tem cache ou expirou, busca a localização de forma segura (HTTPS / Same-Origin)
+        let lat: number | null = null;
+        let lon: number | null = null;
+        let cidade: string | null = null;
+
+        try {
+          const resLocal = await fetch('/api/detectar-regiao');
+          if (resLocal.ok) {
+            const dadosLocal = await resLocal.json();
+            if (dadosLocal.sucesso && dadosLocal.dados) {
+              lat = dadosLocal.dados.latitude;
+              lon = dadosLocal.dados.longitude;
+              cidade = dadosLocal.dados.cidade;
+            }
+          }
+        } catch {
+          // Ignora e tenta fallback HTTPS
+        }
+
+        if (!lat || !lon) {
+          try {
+            const resFallback = await fetch('https://ipwho.is/');
+            if (resFallback.ok) {
+              const dadosFallback = await resFallback.json();
+              lat = dadosFallback.latitude;
+              lon = dadosFallback.longitude;
+              cidade = dadosFallback.city;
+            }
+          } catch {
+            // Se falhar, usa coordenadas padrão (São Paulo - BR)
+            lat = -23.5505;
+            lon = -46.6333;
+            cidade = "São Paulo";
+          }
+        }
 
         if (!lat || !lon) {
           throw new Error('Coordenadas não encontradas');

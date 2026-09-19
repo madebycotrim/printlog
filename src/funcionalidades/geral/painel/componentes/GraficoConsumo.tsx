@@ -73,9 +73,9 @@ export function GraficoConsumo() {
                 </div>
             </div>
 
-            <div className="h-[200px] sm:h-[280px] w-full relative z-10">
+            <div className="h-[200px] sm:h-[280px] w-full min-w-0 min-h-[200px] relative z-10">
                 {isMounted && (
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200} debounce={50}>
                         <AreaChart data={dadosGrafico} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorConsumo" x1="0" y1="0" x2="0" y2="1">
