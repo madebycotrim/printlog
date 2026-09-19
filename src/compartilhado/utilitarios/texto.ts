@@ -18,18 +18,3 @@ export const mascararEmail = (email?: string): string => {
     
   return `${mascara}@${dominio}`;
 };
-
-/**
- * Remove acentos e caracteres especiais de uma string.
- */
-export const removerAcentos = (texto: string): string => {
-  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-};
-
-/**
- * Transforma a primeira letra em maiúscula.
- */
-export const capitalizar = (texto: string): string => {
-  if (!texto) return "";
-  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-};

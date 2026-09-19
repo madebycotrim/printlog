@@ -11,24 +11,6 @@ export function centavosParaReais(centavos: number): string {
 }
 
 /**
- * Converte centavos ou valor decimal para string formatada de Reais com precisão variável.
- * @param valor - Valor numérico
- * @param decimais - Quantidade de casas decimais (padrão 2)
- */
-export function formatarMoedaFinancas(valor: number, decimais = 2): string {
-    return valor.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        minimumFractionDigits: decimais,
-        maximumFractionDigits: decimais,
-    });
-}
-
-/**
- * Extrai o valor numérico de uma string formatada (R$, %, etc)
- * Suporta vírgula decimal brasileira.
- */
-/**
  * Extrai o valor numérico de uma string formatada (R$, %, etc)
  * Suporta vírgula decimal brasileira e ponto decimal americano.
  * Detecta automaticamente o separador decimal em casos como "1.234,56" ou "0,30".
@@ -60,26 +42,6 @@ export function extrairValorNumerico(valor: any): number {
 }
 
 /**
- * Formata um valor numérico para porcentagem (00,00%)
- * @param valor - String de dígitos
- * @returns String formatada com %
- */
-export function formatarPorcentagem(valor: string): string {
-    if (!valor) return "0,00%";
-    
-    let limpo = valor.replace("%", "").trim().replace(",", ".");
-    const valorNumerico = Number(limpo);
-    
-    if (isNaN(valorNumerico)) return "0,00%";
- 
-    return valorNumerico.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }) + "%";
-}
-
-
-/**
  * Formata um objeto Date para o padrão brasileiro (dd/mm/aaaa)
  */
 export function formatarData(data: Date | string | number): string {
@@ -95,20 +57,6 @@ export function formatarDataCurta(data: Date | string | number): string {
     return d.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
-    });
-}
-
-/**
- * Formata um objeto Date para o padrão brasileiro com hora (dd/mm/aaaa HH:mm)
- */
-export function formatarDataHora(data: Date | string | number): string {
-    const d = new Date(data);
-    return d.toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
     });
 }
 

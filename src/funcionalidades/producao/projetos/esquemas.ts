@@ -1,20 +1,20 @@
 import { z } from "zod";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
-export const insumoProjetoSchema = z.object({
+const insumoProjetoSchema = z.object({
   idInsumo: z.string().uuid().or(z.string()),
   nome: z.string().min(1),
   quantidade: z.number().min(0),
   custoUnitarioCentavos: z.number().int().min(0),
 });
 
-export const materialProjetoSchema = z.object({
+const materialProjetoSchema = z.object({
   idMaterial: z.string().uuid().or(z.string()),
   nome: z.string().min(1),
   quantidadeGasta: z.number().min(0),
 });
 
-export const itemPosProcessoSchema = z.object({
+const itemPosProcessoSchema = z.object({
   id: z.string().uuid().or(z.string()),
   nome: z.string().min(1),
   valor: z.number().min(0),
