@@ -40,7 +40,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
         // GET — Lista todos os usuários e seus planos
         if (metodo === "GET") {
             const { results } = await env.DB.prepare(
-                "SELECT id_usuario, email, nome_estudio, plano, ciclo_pagamento, vencimento_plano, atualizado_em FROM configuracoes_usuario ORDER BY atualizado_em DESC"
+                "SELECT id_usuario, email, nome_estudio, slogan_estudio, custo_energia, hora_maquina, hora_operador, margem_lucro, plano, ciclo_pagamento, vencimento_plano, atualizado_em FROM configuracoes_usuario ORDER BY atualizado_em DESC"
             ).all();
 
             return new Response(JSON.stringify(results), {
@@ -50,7 +50,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
 
         // PATCH — Altera o plano/ciclo de um usuário específico
         if (metodo === "PATCH") {
-            const { idUsuario, novoPlano, novoCiclo, acao } = await request.json() as any;
+            const { idUsuario, novoPlano, novoCiclo, acao, dias } = await request.json() as any;
 
             if (!idUsuario) {
                 return new Response("ID inválido", { status: 400 });
@@ -59,47 +59,61 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             const campos = [];
             const valores = [];
 
-            let cicloParaVencimento = novoCiclo;
+            // Ação rápida: Degustação PRO gratuita por N dias (Bootstrap)
+            if (acao === "DEGUSTACAO") {
+                const diasTrial = Math.max(1, Math.min(90, Number(dias) || 7));
+                const dataExp = new Date();
+                dataExp.setDate(dataExp.getDate() + diasTrial);
 
-            if (novoPlano) {
                 campos.push("plano = ?");
-                valores.push(novoPlano);
-                // Se mudou pra FREE, limpa vencimento
-                if (novoPlano === "FREE") {
-                    campos.push("vencimento_plano = ?");
-                    valores.push(null);
-                    campos.push("ciclo_pagamento = ?");
-                    valores.push(null);
-                }
-            }
-            
-            if (novoCiclo && novoPlano !== "FREE") {
+                valores.push("PRO");
                 campos.push("ciclo_pagamento = ?");
-                valores.push(novoCiclo);
-            }
+                valores.push("TRIAL");
+                campos.push("vencimento_plano = ?");
+                valores.push(dataExp.toISOString());
+            } else {
+                let cicloParaVencimento = novoCiclo;
 
-            // Tratamento de renovação ou mudança de ciclo/plano que exige novo vencimento
-            if (acao === "RENOVAR" || (novoCiclo && novoPlano !== "FREE") || (novoPlano && novoPlano !== "FREE")) {
-                // Precisamos saber o ciclo atual se não foi passado um novo
-                if (!cicloParaVencimento) {
-                    const atual = await env.DB.prepare("SELECT ciclo_pagamento, vencimento_plano FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario).first() as any;
-                    cicloParaVencimento = atual?.ciclo_pagamento || "MENSAL";
-                    
-                    if (acao === "RENOVAR") {
-                        const dataVencimentoAtual = atual?.vencimento_plano ? new Date(atual.vencimento_plano) : new Date();
-                        // Se já venceu, renova a partir de hoje. Se não, adiciona ao vencimento atual.
-                        const dataBase = dataVencimentoAtual < new Date() ? new Date() : dataVencimentoAtual;
-                        const novoVencimento = calcularVencimento(cicloParaVencimento, dataBase);
+                if (novoPlano) {
+                    campos.push("plano = ?");
+                    valores.push(novoPlano);
+                    // Se mudou pra FREE, limpa vencimento
+                    if (novoPlano === "FREE") {
+                        campos.push("vencimento_plano = ?");
+                        valores.push(null);
+                        campos.push("ciclo_pagamento = ?");
+                        valores.push(null);
+                    }
+                }
+                
+                if (novoCiclo && novoPlano !== "FREE") {
+                    campos.push("ciclo_pagamento = ?");
+                    valores.push(novoCiclo);
+                }
+
+                // Tratamento de renovação ou mudança de ciclo/plano que exige novo vencimento
+                if (acao === "RENOVAR" || (novoCiclo && novoPlano !== "FREE") || (novoPlano && novoPlano !== "FREE")) {
+                    // Precisamos saber o ciclo atual se não foi passado um novo
+                    if (!cicloParaVencimento) {
+                        const atual = await env.DB.prepare("SELECT ciclo_pagamento, vencimento_plano FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario).first() as any;
+                        cicloParaVencimento = atual?.ciclo_pagamento || "MENSAL";
+                        
+                        if (acao === "RENOVAR") {
+                            const dataVencimentoAtual = atual?.vencimento_plano ? new Date(atual.vencimento_plano) : new Date();
+                            // Se já venceu, renova a partir de hoje. Se não, adiciona ao vencimento atual.
+                            const dataBase = dataVencimentoAtual < new Date() ? new Date() : dataVencimentoAtual;
+                            const novoVencimento = calcularVencimento(cicloParaVencimento, dataBase);
+                            campos.push("vencimento_plano = ?");
+                            valores.push(novoVencimento);
+                        }
+                    }
+
+                    // Se mudou plano ou ciclo e não é só RENOVAR
+                    if (acao !== "RENOVAR" && cicloParaVencimento) {
+                        const novoVencimento = calcularVencimento(cicloParaVencimento, new Date());
                         campos.push("vencimento_plano = ?");
                         valores.push(novoVencimento);
                     }
-                }
-
-                // Se mudou plano ou ciclo e não é só RENOVAR
-                if (acao !== "RENOVAR" && cicloParaVencimento) {
-                    const novoVencimento = calcularVencimento(cicloParaVencimento, new Date());
-                    campos.push("vencimento_plano = ?");
-                    valores.push(novoVencimento);
                 }
             }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   ShieldCheck, 
   Users, 
@@ -10,7 +10,16 @@ import {
   Search,
   Sparkles,
   Layers,
-  Clock
+  Clock,
+  Download,
+  Mail,
+  Gift,
+  AlertTriangle,
+  X,
+  ExternalLink,
+  Sliders,
+  DollarSign,
+  Activity
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -26,28 +35,35 @@ interface UsuarioAdmin {
   id_usuario: string;
   email?: string;
   nome_estudio: string;
+  slogan_estudio?: string;
+  custo_energia?: string;
+  hora_maquina?: string;
+  hora_operador?: string;
+  margem_lucro?: string;
   plano: PlanoUsuario;
-  ciclo_pagamento?: "MENSAL" | "TRIMESTRAL" | "SEMESTRAL" | "ANUAL" | "VITALICIO";
+  ciclo_pagamento?: "MENSAL" | "TRIMESTRAL" | "SEMESTRAL" | "ANUAL" | "VITALICIO" | "TRIAL";
   vencimento_plano?: string;
   atualizado_em: string;
 }
 
+const LIMITE_VAGAS_FUNDADOR = 51;
+
 const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
-  if (ciclo === "VITALICIO") return { texto: "Vitalício", cor: "text-blue-500", bg: "bg-blue-500/10" };
-  if (!dataStr) return { texto: "Sem data", cor: "text-zinc-400", bg: "bg-zinc-500/10" };
+  if (ciclo === "VITALICIO") return { texto: "Vitalício", cor: "text-blue-500", bg: "bg-blue-500/10", dias: 99999 };
+  if (!dataStr) return { texto: "Sem vencimento", cor: "text-zinc-400", bg: "bg-zinc-500/10", dias: 99999 };
   
   const hoje = new Date();
   const venc = new Date(dataStr);
   const diffDias = Math.ceil((venc.getTime() - hoje.getTime()) / (1000 * 3600 * 24));
 
-  if (diffDias < 0) return { texto: `Expirou há ${Math.abs(diffDias)}d`, cor: "text-rose-500", bg: "bg-rose-500/10" };
-  if (diffDias <= 7) return { texto: `Expira em ${diffDias}d`, cor: "text-amber-500", bg: "bg-amber-500/10" };
-  return { texto: `Expira: ${formatarData(venc)}`, cor: "text-emerald-500", bg: "bg-emerald-500/10" };
+  if (diffDias < 0) return { texto: `Expirou há ${Math.abs(diffDias)}d`, cor: "text-rose-500", bg: "bg-rose-500/10", dias: diffDias };
+  if (diffDias <= 7) return { texto: `Expira em ${diffDias}d`, cor: "text-amber-500", bg: "bg-amber-500/10", dias: diffDias };
+  return { texto: `Expira: ${formatarData(venc)}`, cor: "text-emerald-500", bg: "bg-emerald-500/10", dias: diffDias };
 };
 
 /**
- * Console de Administração - Acesso exclusivo do Dono (Bootstrap da plataforma).
- * Gerenciamento centralizado de todos os usuários cadastrados e seus planos.
+ * Console do Dono — Bootstrap da plataforma.
+ * Monitoramento completo, métricas de tração, raio-x do usuário e gestão de acessos.
  */
 export function PaginaAdmin() {
   const { usuario } = useAutenticacao();
@@ -57,6 +73,7 @@ export function PaginaAdmin() {
   const [filtroPlano, definirFiltroPlano] = useState<string>("TODOS");
   const [salvando, definirSalvando] = useState<string | null>(null);
   const [itemCopiado, definirItemCopiado] = useState<string | null>(null);
+  const [usuarioSelecionado, definirUsuarioSelecionado] = useState<UsuarioAdmin | null>(null);
 
   const acessoPermitido = ehAdmin(usuario?.email);
 
@@ -65,12 +82,18 @@ export function PaginaAdmin() {
     try {
       const dados = await servicoBaseApi.get<UsuarioAdmin[]>("/api/admin/usuarios");
       definirUsuarios(dados);
+      
+      // Atualiza usuário selecionado no modal se estiver aberto
+      if (usuarioSelecionado) {
+        const atualizado = dados.find(u => u.id_usuario === usuarioSelecionado.id_usuario);
+        if (atualizado) definirUsuarioSelecionado(atualizado);
+      }
     } catch {
       toast.error("Erro ao carregar lista de usuários da base.");
     } finally {
       definirCarregando(false);
     }
-  }, []);
+  }, [usuarioSelecionado]);
 
   useEffect(() => {
     if (acessoPermitido) {
@@ -129,12 +152,106 @@ export function PaginaAdmin() {
     }
   };
 
+  const concederDegustacao = async (idUsuario: string, dias: number) => {
+    definirSalvando(idUsuario);
+    try {
+      await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, acao: "DEGUSTACAO", dias });
+      toast.success(`Concedidos ${dias} dias de PRO gratuito com sucesso!`);
+      buscarUsuarios();
+    } catch {
+      toast.error("Falha ao conceder degustação.");
+    } finally {
+      definirSalvando(null);
+    }
+  };
+
+  const exportarCSV = () => {
+    if (usuarios.length === 0) {
+      toast.error("Nenhum usuário para exportar.");
+      return;
+    }
+
+    const cabecalhos = ["E-mail", "ID_Usuario", "Estudio", "Plano", "Ciclo", "Vencimento", "Ultima_Atividade"];
+    const linhas = usuarios.map(u => [
+      `"${u.email || ''}"`,
+      `"${u.id_usuario}"`,
+      `"${(u.nome_estudio || '').replace(/"/g, '""')}"`,
+      `"${u.plano}"`,
+      `"${u.ciclo_pagamento || ''}"`,
+      `"${u.vencimento_plano || ''}"`,
+      `"${u.atualizado_em || ''}"`
+    ]);
+
+    const csvContent = "\uFEFF" + [cabecalhos.join(";"), ...linhas.map(e => e.join(";"))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `printlog-usuarios-bootstrap-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Base de usuários exportada em CSV!");
+  };
+
+  const abrirEmailBoasVindas = (u: UsuarioAdmin) => {
+    if (!u.email) {
+      toast.error("Este usuário não possui e-mail cadastrado.");
+      return;
+    }
+    const nome = u.nome_estudio || "Maker";
+    const assunto = encodeURIComponent(`Boas-vindas ao PrintLog — Como está sendo a experiência?`);
+    const corpo = encodeURIComponent(
+      `Olá, tudo bem?\n\nSou o Mateus, criador do PrintLog!\n\nVi que você se cadastrou com o estúdio "${nome}". Conseguiu simular seus custos de impressão 3D ou cadastrar suas impressoras e filamentos?\n\nSe tiver qualquer dúvida de precificação ou precisar de ajuda para configurar sua máquina, me responda por aqui. Estou à disposição para ajudar no que for preciso!\n\nAbraços,\nMateus | PrintLog`
+    );
+    window.open(`mailto:${u.email}?subject=${assunto}&body=${corpo}`, "_blank");
+  };
+
   useDefinirCabecalho({
     titulo: "Console do Dono",
-    subtitulo: "Bootstrap — Monitoramento e Gestão de Usuários da Plataforma",
+    subtitulo: "Bootstrap — Central de Comando e Gestão de Usuários",
     placeholderBusca: "Buscar e-mail, ID ou estúdio...",
     aoBuscar: (t) => definirBusca(t),
   });
+
+  // Estatísticas calculadas
+  const totalUsuarios = usuarios.length;
+  const totalFundadores = usuarios.filter((u) => u.plano === "FUNDADOR").length;
+  const vagasRestantesFundador = Math.max(0, LIMITE_VAGAS_FUNDADOR - totalFundadores);
+  const progressoFundadorPct = Math.min(100, Math.round((totalFundadores / LIMITE_VAGAS_FUNDADOR) * 100));
+  
+  const totalPro = usuarios.filter((u) => u.plano === "PRO").length;
+  const totalFree = usuarios.filter((u) => u.plano === "FREE").length;
+
+  const usuariosAlertas = useMemo(() => {
+    return usuarios.filter(u => {
+      if (u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
+      const status = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
+      return status.dias <= 7;
+    });
+  }, [usuarios]);
+
+  // Filtragem
+  const usuariosFiltrados = useMemo(() => {
+    const termo = busca.toLowerCase();
+    return usuarios.filter((u) => {
+      const bateBusca = 
+        !busca ||
+        u.id_usuario.toLowerCase().includes(termo) ||
+        (u.email && u.email.toLowerCase().includes(termo)) ||
+        (u.nome_estudio && u.nome_estudio.toLowerCase().includes(termo));
+
+      if (filtroPlano === "ALERTAS") {
+        if (u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
+        const status = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
+        return bateBusca && status.dias <= 7;
+      }
+
+      const batePlano = filtroPlano === "TODOS" || u.plano === filtroPlano;
+      return bateBusca && batePlano;
+    });
+  }, [usuarios, busca, filtroPlano]);
 
   if (!acessoPermitido) {
     return (
@@ -152,25 +269,6 @@ export function PaginaAdmin() {
     );
   }
 
-  // Filtragem combinada por busca e plano
-  const usuariosFiltrados = usuarios.filter((u) => {
-    const termo = busca.toLowerCase();
-    const bateBusca = 
-      !busca ||
-      u.id_usuario.toLowerCase().includes(termo) ||
-      (u.email && u.email.toLowerCase().includes(termo)) ||
-      (u.nome_estudio && u.nome_estudio.toLowerCase().includes(termo));
-
-    const batePlano = filtroPlano === "TODOS" || u.plano === filtroPlano;
-
-    return bateBusca && batePlano;
-  });
-
-  const totalUsuarios = usuarios.length;
-  const totalFundadores = usuarios.filter((u) => u.plano === "FUNDADOR").length;
-  const totalPro = usuarios.filter((u) => u.plano === "PRO").length;
-  const totalFree = usuarios.filter((u) => u.plano === "FREE").length;
-
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
@@ -183,7 +281,7 @@ export function PaginaAdmin() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white">
-                Console Master
+                Console Master — Bootstrap
               </span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
                 Dono Ativo
@@ -195,15 +293,26 @@ export function PaginaAdmin() {
           </div>
         </div>
 
-        <button
-          onClick={buscarUsuarios}
-          disabled={carregando}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:text-primaria bg-muted hover:bg-muted/80 border border-borda-sutil transition-all active:scale-95 disabled:opacity-50"
-          title="Recarregar base de dados"
-        >
-          <RefreshCw size={14} className={carregando ? "animate-spin text-primaria" : ""} />
-          Atualizar Dados
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={exportarCSV}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-primaria bg-muted hover:bg-muted/80 border border-borda-sutil transition-all active:scale-95"
+            title="Exportar base de usuários para planilha CSV"
+          >
+            <Download size={14} />
+            Exportar CSV
+          </button>
+
+          <button
+            onClick={buscarUsuarios}
+            disabled={carregando}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-primaria hover:bg-primaria/90 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+            title="Recarregar base de dados"
+          >
+            <RefreshCw size={14} className={carregando ? "animate-spin" : ""} />
+            Atualizar
+          </button>
+        </div>
       </div>
 
       {/* METRICAS DO BOOTSTRAP */}
@@ -219,17 +328,27 @@ export function PaginaAdmin() {
           </div>
         </div>
 
-        {/* Fundadores */}
-        <div className="p-5 rounded-2xl bg-card border border-borda-sutil flex items-center gap-3.5 shadow-sm">
-          <div className="w-11 h-11 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 shrink-0">
-            <Crown size={22} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none mb-1">Fundadores</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-sky-600 dark:text-sky-400 leading-tight">{totalFundadores}</span>
-              <span className="text-xs text-zinc-400 font-bold">/ 51</span>
+        {/* Fundadores com Progresso */}
+        <div className="p-5 rounded-2xl bg-card border border-borda-sutil flex flex-col justify-between shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 shrink-0">
+              <Crown size={22} />
             </div>
+            <div>
+              <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none mb-1">Fundadores (Clube 51)</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-black text-sky-600 dark:text-sky-400 leading-tight">{totalFundadores}</span>
+                <span className="text-xs text-zinc-400 font-bold">/ {LIMITE_VAGAS_FUNDADOR}</span>
+                <span className="text-[10px] font-bold text-zinc-400 ml-1">({vagasRestantesFundador} restantes)</span>
+              </div>
+            </div>
+          </div>
+          {/* Barra de progresso */}
+          <div className="w-full bg-zinc-100 dark:bg-white/5 rounded-full h-1.5 mt-3 overflow-hidden">
+            <div 
+              className="bg-sky-500 h-1.5 rounded-full transition-all duration-500" 
+              style={{ width: `${progressoFundadorPct}%` }}
+            />
           </div>
         </div>
 
@@ -244,14 +363,25 @@ export function PaginaAdmin() {
           </div>
         </div>
 
-        {/* Makers Free */}
-        <div className="p-5 rounded-2xl bg-card border border-borda-sutil flex items-center gap-3.5 shadow-sm">
-          <div className="w-11 h-11 rounded-xl bg-zinc-500/10 flex items-center justify-center text-zinc-400 shrink-0">
-            <Layers size={22} />
+        {/* Alertas de Vencimento */}
+        <div 
+          onClick={() => definirFiltroPlano(filtroPlano === "ALERTAS" ? "TODOS" : "ALERTAS")}
+          className={`p-5 rounded-2xl border flex items-center gap-3.5 shadow-sm cursor-pointer transition-all ${
+            filtroPlano === "ALERTAS"
+              ? "bg-amber-500/10 border-amber-500/40 ring-2 ring-amber-500/20"
+              : "bg-card border-borda-sutil hover:border-amber-500/30"
+          }`}
+          title="Clique para filtrar usuários que expiram em até 7 dias"
+        >
+          <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+            <AlertTriangle size={22} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none mb-1">Makers Free</p>
-            <p className="text-2xl font-black text-zinc-700 dark:text-zinc-300 leading-tight">{totalFree}</p>
+            <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none mb-1">A Vencer / Expirados</p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-amber-600 dark:text-amber-400 leading-tight">{usuariosAlertas.length}</span>
+              <span className="text-[10px] font-bold text-zinc-400">em até 7d</span>
+            </div>
           </div>
         </div>
       </div>
@@ -265,6 +395,7 @@ export function PaginaAdmin() {
             { id: "FUNDADOR", rotulo: "Fundador", contagem: totalFundadores },
             { id: "PRO", rotulo: "Pro", contagem: totalPro },
             { id: "FREE", rotulo: "Free", contagem: totalFree },
+            { id: "ALERTAS", rotulo: "A Vencer (7d)", contagem: usuariosAlertas.length },
           ].map((item) => (
             <button
               key={item.id}
@@ -314,11 +445,11 @@ export function PaginaAdmin() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-borda-sutil bg-muted/40 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                  <th className="px-5 py-3.5">Usuário (E-mail & ID)</th>
+                  <th className="px-5 py-3.5">Maker (E-mail & ID)</th>
                   <th className="px-5 py-3.5">Estúdio</th>
                   <th className="px-5 py-3.5">Plano / Vencimento</th>
                   <th className="px-5 py-3.5">Última Atividade</th>
-                  <th className="px-5 py-3.5 text-right">Ações do Console</th>
+                  <th className="px-5 py-3.5 text-right">Ações Rápidas</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-borda-sutil text-xs">
@@ -329,13 +460,17 @@ export function PaginaAdmin() {
                   return (
                     <tr 
                       key={u.id_usuario} 
-                      className="hover:bg-muted/30 transition-colors group"
+                      className="hover:bg-muted/30 transition-colors group cursor-pointer"
+                      onClick={() => definirUsuarioSelecionado(u)}
                     >
                       {/* E-MAIL E ID */}
-                      <td className="px-5 py-3.5">
+                      <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-zinc-900 dark:text-white select-all">
+                            <span 
+                              onClick={() => definirUsuarioSelecionado(u)}
+                              className="font-bold text-zinc-900 dark:text-white hover:text-primaria transition-colors cursor-pointer select-all"
+                            >
                               {u.email || <span className="text-zinc-400 italic font-normal">Sem e-mail registrado</span>}
                             </span>
                             
@@ -372,9 +507,14 @@ export function PaginaAdmin() {
 
                       {/* ESTÚDIO */}
                       <td className="px-5 py-3.5">
-                        <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                          {u.nome_estudio ? u.nome_estudio : <span className="text-zinc-400 italic text-[11px]">Não configurado</span>}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                            {u.nome_estudio ? u.nome_estudio : <span className="text-zinc-400 italic text-[11px]">Não configurado</span>}
+                          </span>
+                          {u.slogan_estudio && (
+                            <span className="text-[10px] text-zinc-400 truncate max-w-[150px]">{u.slogan_estudio}</span>
+                          )}
+                        </div>
                       </td>
 
                       {/* PLANO E VENCIMENTO */}
@@ -415,15 +555,39 @@ export function PaginaAdmin() {
                       </td>
 
                       {/* AÇÕES DE GESTÃO */}
-                      <td className="px-5 py-3.5 text-right">
-                        <div className="flex justify-end items-center gap-2">
+                      <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end items-center gap-1.5">
                           
+                          {/* Botão de Contato E-mail */}
+                          {u.email && (
+                            <button
+                              onClick={() => abrirEmailBoasVindas(u)}
+                              className="p-1.5 rounded-lg text-zinc-400 hover:text-primaria hover:bg-muted border border-transparent hover:border-borda-sutil transition-all"
+                              title="Enviar e-mail de contato / boas-vindas"
+                            >
+                              <Mail size={14} />
+                            </button>
+                          )}
+
+                          {/* Botão Conceder Degustação 7 dias se for FREE */}
+                          {u.plano === "FREE" && (
+                            <button
+                              disabled={salvando === u.id_usuario}
+                              onClick={() => concederDegustacao(u.id_usuario, 7)}
+                              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500 hover:text-white transition-all"
+                              title="Conceder 7 dias de PRO gratuito (Degustação)"
+                            >
+                              <Gift size={11} />
+                              +7d PRO
+                            </button>
+                          )}
+
                           {/* Botão de Renovar */}
                           {u.plano === "PRO" && (
                             <button
                               disabled={salvando === u.id_usuario}
                               onClick={() => renovarPlano(u.id_usuario)}
-                              className="px-2.5 py-1.5 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
+                              className="px-2 py-1 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
                               title="Renovar ciclo"
                             >
                               {salvando === u.id_usuario ? "..." : "Renovar"}
@@ -436,13 +600,14 @@ export function PaginaAdmin() {
                               disabled={salvando === u.id_usuario}
                               value={u.ciclo_pagamento || "MENSAL"}
                               onChange={(e) => mudarCiclo(u.id_usuario, e.target.value)}
-                              className="bg-card text-[9px] font-black tracking-widest uppercase text-zinc-600 dark:text-zinc-300 border border-borda-sutil rounded-lg px-2 py-1.5 hover:border-primaria transition-colors outline-none cursor-pointer"
+                              className="bg-card text-[9px] font-black tracking-widest uppercase text-zinc-600 dark:text-zinc-300 border border-borda-sutil rounded-lg px-1.5 py-1 hover:border-primaria transition-colors outline-none cursor-pointer"
                             >
                               <option value="MENSAL">Mensal</option>
                               <option value="TRIMESTRAL">Trimestral</option>
                               <option value="SEMESTRAL">Semestral</option>
                               <option value="ANUAL">Anual</option>
                               <option value="VITALICIO">Vitalício</option>
+                              <option value="TRIAL">Degustação</option>
                             </select>
                           )}
 
@@ -454,7 +619,7 @@ export function PaginaAdmin() {
                                 disabled={salvando === u.id_usuario || u.plano === p}
                                 onClick={() => mudarPlano(u.id_usuario, p)}
                                 className={`
-                                  px-2.5 py-1.5 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all
+                                  px-2 py-1 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all
                                   ${u.plano === p 
                                     ? "bg-muted text-zinc-400 cursor-default opacity-50" 
                                     : "bg-card border border-borda-sutil text-zinc-600 dark:text-zinc-300 hover:border-primaria hover:text-primaria"}
@@ -464,6 +629,15 @@ export function PaginaAdmin() {
                               </button>
                             ))}
                           </div>
+
+                          {/* Ver Detalhes (Raio-X) */}
+                          <button
+                            onClick={() => definirUsuarioSelecionado(u)}
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-primaria hover:bg-muted transition-colors"
+                            title="Abrir Raio-X do Maker"
+                          >
+                            <ExternalLink size={13} />
+                          </button>
 
                         </div>
                       </td>
@@ -475,6 +649,179 @@ export function PaginaAdmin() {
           </div>
         )}
       </div>
+
+      {/* MODAL RAIO-X DO MAKER */}
+      {usuarioSelecionado && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-borda-sutil rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Header Modal */}
+            <div className="p-6 border-b border-borda-sutil flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-primaria/10 border border-primaria/20 flex items-center justify-center text-primaria">
+                  <Activity size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-zinc-900 dark:text-white">
+                    Raio-X do Maker
+                  </h3>
+                  <p className="text-xs text-zinc-500">
+                    UID: <code className="font-mono text-[10px]">{usuarioSelecionado.id_usuario}</code>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => definirUsuarioSelecionado(null)}
+                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Conteúdo do Raio-X */}
+            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              
+              {/* Card Maker Info */}
+              <div className="p-4 rounded-2xl bg-muted/30 border border-borda-sutil space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Identificação</span>
+                  {usuarioSelecionado.email && (
+                    <button
+                      onClick={() => abrirEmailBoasVindas(usuarioSelecionado)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-primaria hover:underline"
+                    >
+                      <Mail size={12} />
+                      Enviar Mensagem
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-[11px] text-zinc-400 block">E-mail</span>
+                    <span className="font-bold text-zinc-900 dark:text-white select-all">
+                      {usuarioSelecionado.email || "Não informado"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-zinc-400 block">Nome do Estúdio</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">
+                      {usuarioSelecionado.nome_estudio || "Não configurado"}
+                    </span>
+                  </div>
+                  {usuarioSelecionado.slogan_estudio && (
+                    <div className="col-span-2">
+                      <span className="text-[11px] text-zinc-400 block">Slogan</span>
+                      <span className="text-zinc-600 dark:text-zinc-300 font-medium">
+                        "{usuarioSelecionado.slogan_estudio}"
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Status do Plano & Assinatura */}
+              <div className="p-4 rounded-2xl bg-muted/30 border border-borda-sutil space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Assinatura & Acesso</span>
+                
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <span className="text-[11px] text-zinc-400 block">Plano Atual</span>
+                    <span className="font-black text-primaria text-sm">{usuarioSelecionado.plano}</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-zinc-400 block">Ciclo</span>
+                    <span className="font-bold text-zinc-700 dark:text-zinc-300">{usuarioSelecionado.ciclo_pagamento || "MENSAL"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-zinc-400 block">Vencimento</span>
+                    <span className="font-bold text-zinc-700 dark:text-zinc-300">
+                      {obterStatusVencimento(usuarioSelecionado.vencimento_plano, usuarioSelecionado.ciclo_pagamento).texto}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ações de Teste / Degustação */}
+                <div className="pt-2 border-t border-borda-sutil flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold text-zinc-500">Conceder Degustação PRO:</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => concederDegustacao(usuarioSelecionado.id_usuario, 7)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500 hover:text-white transition-all"
+                    >
+                      +7 Dias
+                    </button>
+                    <button
+                      onClick={() => concederDegustacao(usuarioSelecionado.id_usuario, 14)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500 hover:text-white transition-all"
+                    >
+                      +14 Dias
+                    </button>
+                    <button
+                      onClick={() => mudarPlano(usuarioSelecionado.id_usuario, "FUNDADOR")}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500 hover:text-white transition-all"
+                    >
+                      Virar Fundador
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Parâmetros Operacionais Salvos no Estúdio */}
+              <div className="p-4 rounded-2xl bg-muted/30 border border-borda-sutil space-y-3">
+                <div className="flex items-center gap-1.5">
+                  <Sliders size={14} className="text-zinc-400" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                    Parâmetros Operacionais Cadastrados
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block">Energia (kWh)</span>
+                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                      {usuarioSelecionado.custo_energia || "R$ 0,00"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block">Hora Máquina</span>
+                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                      {usuarioSelecionado.hora_maquina || "R$ 0,00"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block">Hora Operador</span>
+                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                      {usuarioSelecionado.hora_operador || "R$ 0,00"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block">Margem Padrão</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {usuarioSelecionado.margem_lucro || "0%"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-4 bg-muted/40 border-t border-borda-sutil flex items-center justify-between">
+              <span className="text-[10px] text-zinc-400 font-medium">
+                Última sincronização: {formatarData(usuarioSelecionado.atualizado_em)}
+              </span>
+              <button
+                onClick={() => definirUsuarioSelecionado(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-muted hover:bg-muted/80 text-zinc-700 dark:text-zinc-200 border border-borda-sutil transition-all"
+              >
+                Fechar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* AVISO DO BOOTSTRAP */}
       <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/15 flex items-start gap-3">
