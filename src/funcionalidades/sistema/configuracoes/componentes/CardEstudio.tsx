@@ -1,9 +1,31 @@
-import { Beaker, Building2, Settings2, ChevronDown, AlertTriangle, ShieldCheck, Zap, Share2, PackageSearch, TrendingUp, MessageCircle, Lock, ArrowRight } from "lucide-react";
+import { 
+  Beaker, 
+  Building2, 
+  Settings2, 
+  ChevronDown, 
+  AlertTriangle, 
+  ShieldCheck, 
+  Zap, 
+  Share2, 
+  PackageSearch, 
+  TrendingUp, 
+  MessageCircle, 
+  Lock, 
+  ArrowRight,
+  Plus,
+  Users,
+  Trash2,
+  ExternalLink,
+  Send,
+  UserPlus
+} from "lucide-react";
 import { useState } from "react";
 import { CabecalhoCard } from "./Compartilhados";
 import { useEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useArmazemConfiguracoes } from "../estado/armazemConfiguracoes";
+import { CorPrimaria } from "@/compartilhado/tipos/modelos";
+import { toast } from "sonner";
 
 
 interface PropsCardEstudio {
@@ -41,11 +63,30 @@ export function CardEstudio({
   definirLimiteAlertaEstoque,
   pendente,
 }: PropsCardEstudio) {
-  const { estudioAtivo, estudios, definirEstudioAtivo } = useEstudio();
+  const { 
+    estudioAtivo, 
+    estudios, 
+    definirEstudioAtivo, 
+    criarEstudio, 
+    removerEstudio, 
+    adicionarMembro, 
+    removerMembro 
+  } = useEstudio();
   const [mostrarConfigEstudio, setMostrarConfigEstudio] = useState(false);
   const [mostrarConfigOrcamento, setMostrarConfigOrcamento] = useState(false);
   const [mostrarConfigEstoque, setMostrarConfigEstoque] = useState(false);
   const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false);
+
+  // Estados Multi-Estúdios
+  const [modalCriarEstudioAberto, setModalCriarEstudioAberto] = useState(false);
+  const [nomeNovoEstudio, setNomeNovoEstudio] = useState("");
+  const [corNovoEstudio, setCorNovoEstudio] = useState<CorPrimaria>("sky");
+  const [modalMembrosAberto, setModalMembrosAberto] = useState(false);
+  const [emailNovoMembro, setEmailNovoMembro] = useState("");
+  const [papelNovoMembro, setPapelNovoMembro] = useState<"OPERADOR" | "ADMIN">("OPERADOR");
+
+  // Estado Orçamentos Mágicos
+  const [telefoneWhatsApp, setTelefoneWhatsApp] = useState("");
 
   const plano = useArmazemConfiguracoes((s) => s.plano);
   const temAcessoBeta = plano === "PRO" || plano === "FUNDADOR";
@@ -221,36 +262,81 @@ export function CardEstudio({
 
                 {/* SE MULTI ESTUDIO CONFIG ABERTA */}
                 {betaMultiEstudio && mostrarConfigEstudio && (
-                  <div className="mx-2 p-4 rounded-xl bg-muted/30 border border-borda-sutil animate-in zoom-in-95 duration-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Configurações: Selecione o Estúdio
-                      </label>
-                      <ChevronDown size={14} className="text-muted-foreground" />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {estudios.map((estudio) => (
+                  <div className="mx-2 p-4 rounded-xl bg-muted/30 border border-borda-sutil animate-in zoom-in-95 duration-200 space-y-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          Selecione o Estúdio Ativo
+                        </label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Estúdio atual: <strong className="text-primary">{estudioAtivo?.nome}</strong>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
                         <button
-                          key={estudio.id}
-                          onClick={() => definirEstudioAtivo(estudio.id)}
-                          className={`
-                                                        flex items-center gap-3 p-3 rounded-xl border text-sm transition-all text-left
-                                                        ${
-                                                          estudio.id === estudioAtivo?.id
-                                                            ? "border-indigo-500 bg-card text-indigo-600 dark:text-indigo-300 shadow-sm"
-                                                            : "border-borda-sutil bg-transparent text-muted-foreground hover:border-indigo-500/30"
-                                                        }
-                                                    `}
+                          onClick={() => setModalMembrosAberto(true)}
+                          className="h-8 px-3 rounded-lg border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm"
                         >
-                          <div
-                            className={`w-3 h-3 rounded-full shrink-0 ${estudio.id === estudioAtivo?.id ? "bg-indigo-500" : "bg-muted"}`}
-                          />
-                          <span className="font-bold truncate">{estudio.nome}</span>
+                          <Users size={12} />
+                          Operadores ({estudioAtivo?.membros?.length || 0})
                         </button>
-                      ))}
+                        <button
+                          onClick={() => {
+                            setNomeNovoEstudio("");
+                            setCorNovoEstudio("sky");
+                            setModalCriarEstudioAberto(true);
+                          }}
+                          className="h-8 px-3 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all active:scale-95"
+                        >
+                          <Plus size={12} />
+                          Novo Estúdio
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-[10px] text-muted-foreground/70 mt-4 leading-relaxed">
-                      * A troca de estúdio exige recarregamento para segurança dos dados.
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {estudios.map((estudio) => {
+                        const ehAtivo = estudio.id === estudioAtivo?.id;
+                        return (
+                          <div
+                            key={estudio.id}
+                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                              ehAtivo
+                                ? "border-indigo-500 bg-card text-indigo-600 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-500/30"
+                                : "border-borda-sutil bg-card/60 text-muted-foreground hover:border-indigo-500/30"
+                            }`}
+                          >
+                            <button
+                              onClick={() => definirEstudioAtivo(estudio.id)}
+                              className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer"
+                            >
+                              <div
+                                className={`w-3 h-3 rounded-full shrink-0 ${ehAtivo ? "bg-indigo-500 ring-2 ring-indigo-500/20" : "bg-muted-foreground/30"}`}
+                              />
+                              <div className="truncate">
+                                <span className="font-bold text-xs truncate block text-primary">{estudio.nome}</span>
+                                <span className="text-[9px] text-muted-foreground block">
+                                  {estudio.membros?.length || 0} membros
+                                </span>
+                              </div>
+                            </button>
+
+                            {!ehAtivo && estudios.length > 1 && (
+                              <button
+                                onClick={() => removerEstudio(estudio.id)}
+                                className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-rose-500 hover:bg-rose-500/10 transition-all ml-1 shrink-0"
+                                title="Excluir estúdio"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                      * Cada estúdio mantém clientes, estoque e fila de impressão totalmente segmentados.
                     </p>
                   </div>
                 )}
@@ -287,7 +373,7 @@ export function CardEstudio({
                       <p
                         className={`text-[11px] mt-0.5 leading-relaxed ${betaOrcamentosMagicos ? "text-indigo-700 dark:text-indigo-300/80" : "text-muted-foreground"}`}
                       >
-                        Links dinâmicos para WhatsApp otimizando a venda direta ao cliente (em breve).
+                        Gere mensagens dinâmicas e links instantâneos para fechamento de vendas via WhatsApp.
                       </p>
                     </div>
                   </label>
@@ -304,20 +390,87 @@ export function CardEstudio({
 
                 {/* CONFIG ORÇAMENTO */}
                 {betaOrcamentosMagicos && mostrarConfigOrcamento && (
-                  <div className="mx-2 p-4 rounded-xl bg-muted/30 border border-borda-sutil animate-in zoom-in-95 duration-200 space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      Personalizar Mensagem WhatsApp
-                    </label>
-                    <textarea 
-                      value={templateOrcamento}
-                      onChange={(e) => definirTemplateOrcamento(e.target.value)}
-                      rows={5}
-                      className="w-full p-3 rounded-lg bg-card border border-borda-sutil text-xs text-primary focus:border-indigo-500 transition-all resize-none"
-                      placeholder="Use {estudio} e {valor} como variáveis..."
-                    />
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase tracking-wider">{`{estudio}`}</span>
-                      <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase tracking-wider">{`{valor}`}</span>
+                  <div className="mx-2 p-4 rounded-xl bg-muted/30 border border-borda-sutil animate-in zoom-in-95 duration-200 space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        WhatsApp do Estúdio (opcional para envio direto)
+                      </label>
+                      <input 
+                        type="text"
+                        value={telefoneWhatsApp}
+                        onChange={(e) => setTelefoneWhatsApp(e.target.value)}
+                        placeholder="Ex: 5511999999999"
+                        className="h-10 w-full max-w-sm px-3 rounded-lg bg-card border border-borda-sutil text-xs text-primary outline-none focus:border-indigo-500 transition-all font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          Template da Mensagem WhatsApp
+                        </label>
+                        <span className="text-[9px] text-muted-foreground">Clique nas tags para copiar</span>
+                      </div>
+                      <textarea 
+                        value={templateOrcamento}
+                        onChange={(e) => definirTemplateOrcamento(e.target.value)}
+                        rows={4}
+                        className="w-full p-3 rounded-lg bg-card border border-borda-sutil text-xs text-primary focus:border-indigo-500 transition-all resize-none font-sans leading-relaxed"
+                        placeholder="Olá {cliente}, seu orçamento do projeto {projeto} ficou em {valor}..."
+                      />
+                      <div className="flex gap-1.5 flex-wrap">
+                        {["{estudio}", "{cliente}", "{projeto}", "{valor}", "{link}"].map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => definirTemplateOrcamento(`${templateOrcamento} ${tag}`)}
+                            className="px-2 py-0.5 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer"
+                          >
+                            + {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* PRÉVIA AO VIVO DA MENSAGEM */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">
+                        Prévia da Mensagem (Exemplo Real):
+                      </label>
+                      <div className="p-3.5 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed font-sans whitespace-pre-wrap">
+                        {(templateOrcamento || "Olá {cliente}, aqui é do {estudio}! Seu orçamento para {projeto} ficou em {valor}. Veja o pedido completo: {link}")
+                          .replace("{estudio}", estudioAtivo?.nome || "Estúdio Maker")
+                          .replace("{cliente}", "João Silva")
+                          .replace("{projeto}", "Luminária Voronoi 3D")
+                          .replace("{valor}", "R$ 85,00")
+                          .replace("{link}", "https://printlog.com.br/o/exemplo")}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const msgPronta = (templateOrcamento || "Olá {cliente}, aqui é do {estudio}! Seu orçamento para {projeto} ficou em {valor}. Veja o pedido completo: {link}")
+                            .replace("{estudio}", estudioAtivo?.nome || "Estúdio Maker")
+                            .replace("{cliente}", "Cliente Teste")
+                            .replace("{projeto}", "Protótipo 3D")
+                            .replace("{valor}", "R$ 120,00")
+                            .replace("{link}", "https://printlog.com.br/o/teste");
+                          
+                          const numeroLimpo = telefoneWhatsApp.replace(/\D/g, "");
+                          const url = numeroLimpo 
+                            ? `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(msgPronta)}`
+                            : `https://wa.me/?text=${encodeURIComponent(msgPronta)}`;
+                          window.open(url, "_blank");
+                          toast.success("Abrindo prévia no WhatsApp!");
+                        }}
+                        className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-2 shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
+                      >
+                        <Send size={12} />
+                        Testar no WhatsApp
+                        <ExternalLink size={11} />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -512,6 +665,192 @@ export function CardEstudio({
               className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
             >
               Entendi e Quero Ativar
+            </button>
+          </div>
+        </div>
+      </Dialogo>
+
+      {/* MODAL CRIAR NOVO ESTÚDIO */}
+      <Dialogo
+        aberto={modalCriarEstudioAberto}
+        aoFechar={() => setModalCriarEstudioAberto(false)}
+        titulo="Criar Novo Estúdio"
+        larguraMax="max-w-md"
+      >
+        <div className="p-6 space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              Nome do Estúdio
+            </label>
+            <input
+              type="text"
+              value={nomeNovoEstudio}
+              onChange={(e) => setNomeNovoEstudio(e.target.value)}
+              placeholder="Ex: PrintLog Filial Sul"
+              className="h-11 w-full px-3 rounded-xl bg-card border border-borda-sutil text-sm font-bold text-primary outline-none focus:border-indigo-500 transition-all"
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              Cor de Destaque
+            </label>
+            <div className="flex gap-2">
+              {[
+                { id: "sky" as CorPrimaria, bg: "bg-sky-500" },
+                { id: "emerald" as CorPrimaria, bg: "bg-emerald-500" },
+                { id: "indigo" as CorPrimaria, bg: "bg-indigo-500" },
+                { id: "violet" as CorPrimaria, bg: "bg-violet-500" },
+                { id: "amber" as CorPrimaria, bg: "bg-amber-500" },
+                { id: "rose" as CorPrimaria, bg: "bg-rose-500" },
+              ].map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCorNovoEstudio(c.id)}
+                  className={`w-7 h-7 rounded-full ${c.bg} transition-all hover:scale-110 active:scale-95 ${
+                    corNovoEstudio === c.id ? "ring-2 ring-offset-2 ring-indigo-500 scale-110" : ""
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setModalCriarEstudioAberto(false)}
+              className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!nomeNovoEstudio.trim()) {
+                  toast.error("Insira o nome do estúdio.");
+                  return;
+                }
+                await criarEstudio(nomeNovoEstudio, corNovoEstudio);
+                setModalCriarEstudioAberto(false);
+              }}
+              className="h-11 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-indigo-500/25 active:scale-95"
+            >
+              Criar Estúdio
+            </button>
+          </div>
+        </div>
+      </Dialogo>
+
+      {/* MODAL OPERADORES E MEMBROS */}
+      <Dialogo
+        aberto={modalMembrosAberto}
+        aoFechar={() => setModalMembrosAberto(false)}
+        titulo={`Equipe & Operadores: ${estudioAtivo?.nome || "Estúdio"}`}
+        larguraMax="max-w-lg"
+      >
+        <div className="p-6 space-y-6">
+          {/* Adicionar Membro */}
+          <div className="p-4 rounded-xl bg-muted/30 border border-borda-sutil space-y-3">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">
+              Convidar Novo Operador
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                value={emailNovoMembro}
+                onChange={(e) => setEmailNovoMembro(e.target.value)}
+                placeholder="email.do.operador@exemplo.com"
+                className="h-10 flex-1 px-3 rounded-xl bg-card border border-borda-sutil text-xs text-primary outline-none focus:border-indigo-500 transition-all font-mono"
+              />
+              <select
+                value={papelNovoMembro}
+                onChange={(e) => setPapelNovoMembro(e.target.value as "OPERADOR" | "ADMIN")}
+                className="h-10 px-3 rounded-xl bg-card border border-borda-sutil text-xs font-bold text-primary outline-none"
+              >
+                <option value="OPERADOR">Operador</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!emailNovoMembro.trim() || !emailNovoMembro.includes("@")) {
+                    toast.error("Insira um e-mail válido.");
+                    return;
+                  }
+                  if (!estudioAtivo?.id) return;
+                  try {
+                    await adicionarMembro(estudioAtivo.id, emailNovoMembro, papelNovoMembro);
+                    setEmailNovoMembro("");
+                  } catch (err: any) {
+                    toast.error(err?.message || "Falha ao adicionar membro.");
+                  }
+                }}
+                className="h-10 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 shadow-md shadow-indigo-500/20 active:scale-95 transition-all"
+              >
+                <UserPlus size={13} />
+                Adicionar
+              </button>
+            </div>
+          </div>
+
+          {/* Lista de Membros */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">
+              Membros Cadastrados ({estudioAtivo?.membros?.length || 0})
+            </label>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {(estudioAtivo?.membros && estudioAtivo.membros.length > 0) ? (
+                estudioAtivo.membros.map((m) => (
+                  <div
+                    key={m.email}
+                    className="p-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="truncate">
+                      <p className="font-bold text-primary truncate font-mono text-[11px]">{m.email}</p>
+                      <p className="text-[9px] text-muted-foreground">
+                        Adicionado em {new Date(m.dataEntrada).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                        m.papel === "ADMIN" 
+                          ? "bg-amber-500/10 text-amber-600 border border-amber-500/20" 
+                          : "bg-indigo-500/10 text-indigo-600 border border-indigo-500/20"
+                      }`}>
+                        {m.papel}
+                      </span>
+                      {estudioAtivo && (
+                        <button
+                          type="button"
+                          onClick={() => removerMembro(estudioAtivo.id, m.email)}
+                          className="p-1 rounded text-muted-foreground hover:text-rose-500 transition-colors"
+                          title="Remover operador"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 rounded-xl bg-muted/20 border border-dashed border-borda-sutil text-center text-xs text-muted-foreground">
+                  Nenhum operador adicional cadastrado neste estúdio.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setModalMembrosAberto(false)}
+              className="w-full h-11 rounded-xl bg-card border border-borda-sutil hover:bg-muted/40 text-primary text-xs font-bold transition-all uppercase tracking-wider"
+            >
+              Fechar
             </button>
           </div>
         </div>

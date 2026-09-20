@@ -78,6 +78,12 @@ export interface Usuario {
  * Interface de Estúdio (Tenant) para arquitetura multi-sessão.
  * @fase 3 - Roadmap
  */
+export interface MembroEstudio {
+  email: string;
+  papel: "OPERADOR" | "ADMIN";
+  dataEntrada: string;
+}
+
 export interface Estudio {
   id: string;
   nome: string;
@@ -85,4 +91,5 @@ export interface Estudio {
   corPrimaria: CorPrimaria;
   logoUrl?: string;
   dataCriacao: Date;
+  membros?: MembroEstudio[];
 }

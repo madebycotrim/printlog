@@ -15,6 +15,7 @@ import { CardMetricas } from "./componentes/CardMetricas";
 import { CardPrivacidade } from "./componentes/CardPrivacidade";
 import { CardEstudio } from "./componentes/CardEstudio";
 import { CardIdentidade } from "./componentes/CardIdentidade";
+import { CardSeguranca } from "./componentes/CardSeguranca";
 
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -279,6 +280,10 @@ export function PaginaConfiguracoes() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.16 }}>
           <CardMetricas />
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.22 }}>
+          <CardSeguranca />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.32 }}>
