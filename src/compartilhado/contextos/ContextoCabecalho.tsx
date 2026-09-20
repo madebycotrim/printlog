@@ -6,6 +6,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useMemo,
 } from "react";
 
 type AcaoCabecalho = {
@@ -45,12 +46,8 @@ const ContextoCabecalho = createContext<ContextoCabecalhoTipo | undefined>(
 export function ProvedorCabecalho({ children }: { children: ReactNode }) {
   const [dados, setDados] = useState<DadosCabecalho>(DADOS_PADRAO);
 
-  const definirDados = (novosDados: DadosCabecalho) => {
+  const definirDados = useCallback((novosDados: DadosCabecalho) => {
     setDados((prev) => {
-      // Comparamos propriedades básicas para evitar loop infinito
-      // Se as propriedades fundamentais forem iguais, não atualizamos
-      // Nota: elementoAcao é difícil de comparar profundamente, 
-      // então dependemos da estabilidade no chamador ou ignoramos se o resto for igual.
       const basicoIgual = 
         prev.titulo === novosDados.titulo &&
         prev.subtitulo === novosDados.subtitulo &&
@@ -66,14 +63,19 @@ export function ProvedorCabecalho({ children }: { children: ReactNode }) {
       if (basicoIgual) return prev;
       return novosDados;
     });
-  };
+  }, []);
 
-  const limparDados = () => {
+  const limparDados = useCallback(() => {
     setDados(DADOS_PADRAO);
-  };
+  }, []);
+
+  const valorContexto = useMemo(
+    () => ({ dados, definirDados, limparDados }),
+    [dados, definirDados, limparDados]
+  );
 
   return (
-    <ContextoCabecalho.Provider value={{ dados, definirDados, limparDados }}>
+    <ContextoCabecalho.Provider value={valorContexto}>
       {children}
     </ContextoCabecalho.Provider>
   );

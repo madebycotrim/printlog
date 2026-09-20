@@ -14,7 +14,6 @@ import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/
 import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
 import { servicoPedidos } from "@/funcionalidades/producao/projetos/servicos/servicoPedidos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
-import jsPDF from "jspdf";
 import { toast } from "sonner";
 
 export function CardMetricas() {
@@ -185,8 +184,9 @@ export function CardMetricas() {
     URL.revokeObjectURL(url);
   };
 
-  // Gerador de Documento PDF Corporativo real com jsPDF
-  const gerarPdfCompleto = (nomeArquivo: string) => {
+  // Gerador de Documento PDF Corporativo real com jsPDF (importado sob demanda)
+  const gerarPdfCompleto = async (nomeArquivo: string) => {
+    const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",

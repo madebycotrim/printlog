@@ -16,6 +16,39 @@ export default defineConfig({
       "@testes": path.resolve(__dirname, "./src/testes"),
     },
   },
+  build: {
+    target: "esnext",
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react-dom") || id.includes("/react/") || id.includes("react-router-dom")) {
+              return "vendor-react";
+            }
+            if (id.includes("firebase")) {
+              return "vendor-firebase";
+            }
+            if (id.includes("recharts")) {
+              return "vendor-charts";
+            }
+            if (id.includes("framer-motion")) {
+              return "vendor-motion";
+            }
+            if (id.includes("lucide-react") || id.includes("sonner")) {
+              return "vendor-ui";
+            }
+            if (id.includes("jspdf") || id.includes("html2canvas")) {
+              return "vendor-pdf";
+            }
+            if (id.includes("zod")) {
+              return "vendor-zod";
+            }
+          }
+        },
+      },
+    },
+  },
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",

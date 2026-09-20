@@ -15,7 +15,6 @@ import {
   Beaker,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
   Terminal,
 } from "lucide-react";
 
@@ -62,23 +61,23 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
   const { participarPrototipos, betaMultiEstudio, resetarTudo } = useBeta();
   const { modoEfetivo } = useContextoTema();
 
-  const config = useArmazemConfiguracoes();
-
-  // Estado de colapso da Barra Lateral (Desktop) persistido via D1 (Metadados)
-  const colapsada = config.calculadoraMeta?.ui?.sidebarColapsada ?? false;
+  const colapsada = useArmazemConfiguracoes((s) => s.calculadoraMeta?.ui?.sidebarColapsada ?? false);
+  const calculadoraMeta = useArmazemConfiguracoes((s) => s.calculadoraMeta);
+  const definirCalculadoraMeta = useArmazemConfiguracoes((s) => s.definirCalculadoraMeta);
+  const salvarNoD1 = useArmazemConfiguracoes((s) => s.salvarNoD1);
 
   const setColapsada = async (novoValor: boolean | ((prev: boolean) => boolean)) => {
     const proximoValor = typeof novoValor === "function" ? novoValor(colapsada) : novoValor;
     const novaMeta = {
-      ...config.calculadoraMeta,
+      ...calculadoraMeta,
       ui: {
-        ...(config.calculadoraMeta?.ui || {}),
+        ...(calculadoraMeta?.ui || {}),
         sidebarColapsada: proximoValor
       }
     };
-    config.definirCalculadoraMeta(novaMeta);
+    definirCalculadoraMeta(novaMeta);
     if (usuario?.uid) {
-      await config.salvarNoD1(usuario.uid);
+      await salvarNoD1(usuario.uid);
     }
   };
   // Removido useEffect com localStorage

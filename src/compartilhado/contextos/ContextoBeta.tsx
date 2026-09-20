@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useMemo, useCallback } from "react";
 
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -43,50 +43,52 @@ export function useBeta() {
   return useContext(ContextoBeta);
 }
 
+const PADRAO_BETA = {
+  participarPrototipos: false,
+  betaMultiEstudio: false,
+  betaOrcamentosMagicos: false,
+  betaEstoqueInteligente: false,
+  betaSimuladorMargem: false,
+  templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
+  limiteAlertaEstoque: 500,
+};
 
 export function ProvedorBeta({ children }: { children: ReactNode }) {
   const { usuario } = useAutenticacao();
-  const config = useArmazemConfiguracoes();
+  const betaConfig = useArmazemConfiguracoes((s) => s.calculadoraMeta?.beta);
+  const calculadoraMeta = useArmazemConfiguracoes((s) => s.calculadoraMeta);
+  const definirCalculadoraMeta = useArmazemConfiguracoes((s) => s.definirCalculadoraMeta);
+  const salvarNoD1 = useArmazemConfiguracoes((s) => s.salvarNoD1);
 
-  const padrao = {
-    participarPrototipos: false,
-    betaMultiEstudio: false,
-    betaOrcamentosMagicos: false,
-    betaEstoqueInteligente: false,
-    betaSimuladorMargem: false,
-    templateOrcamento: "Olá, tudo bem? 👋\n\nAqui está o orçamento do seu projeto:\n\n*Serviço:* Impressão 3D de Alta Qualidade 🖨️\n*Estúdio:* {estudio}\n*Investimento:* {valor}\n\n_Prazo de produção e entrega sob consulta._\n\nFico à disposição para fecharmos! 🚀",
-    limiteAlertaEstoque: 500,
-  };
+  const preferencias = useMemo(() => ({
+    ...PADRAO_BETA,
+    ...(betaConfig || {})
+  }), [betaConfig]);
 
-  const preferencias = {
-    ...padrao,
-    ...(config.calculadoraMeta?.beta || {})
-  };
-
-  const atualizar = async (novas: Partial<typeof preferencias>) => {
+  const atualizar = useCallback(async (novas: Partial<typeof PADRAO_BETA>) => {
     const atualizado = { ...preferencias, ...novas };
     const novaMeta = {
-      ...config.calculadoraMeta,
+      ...calculadoraMeta,
       beta: atualizado
     };
-    config.definirCalculadoraMeta(novaMeta);
+    definirCalculadoraMeta(novaMeta);
     if (usuario?.uid) {
-      await config.salvarNoD1(usuario.uid);
+      await salvarNoD1(usuario.uid);
     }
-  };
+  }, [preferencias, calculadoraMeta, definirCalculadoraMeta, salvarNoD1, usuario?.uid]);
 
-  const resetarTudo = async () => {
+  const resetarTudo = useCallback(async () => {
     const novaMeta = {
-      ...config.calculadoraMeta,
-      beta: padrao
+      ...calculadoraMeta,
+      beta: PADRAO_BETA
     };
-    config.definirCalculadoraMeta(novaMeta);
+    definirCalculadoraMeta(novaMeta);
     if (usuario?.uid) {
-      await config.salvarNoD1(usuario.uid);
+      await salvarNoD1(usuario.uid);
     }
-  };
+  }, [calculadoraMeta, definirCalculadoraMeta, salvarNoD1, usuario?.uid]);
 
-  const valor: ContextoBetaProps = {
+  const valor: ContextoBetaProps = useMemo(() => ({
     participarPrototipos: preferencias.participarPrototipos,
     betaMultiEstudio: preferencias.betaMultiEstudio,
     betaOrcamentosMagicos: preferencias.betaOrcamentosMagicos,
@@ -102,7 +104,7 @@ export function ProvedorBeta({ children }: { children: ReactNode }) {
     definirTemplateOrcamento: (v) => atualizar({ templateOrcamento: v }),
     definirLimiteAlertaEstoque: (v) => atualizar({ limiteAlertaEstoque: v }),
     resetarTudo,
-  };
+  }), [preferencias, atualizar, resetarTudo]);
 
   return <ContextoBeta.Provider value={valor}>{children}</ContextoBeta.Provider>;
 }

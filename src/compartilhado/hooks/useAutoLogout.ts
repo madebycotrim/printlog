@@ -63,8 +63,15 @@ export function useAutoLogout() {
     // Inicia o temporizador
     reiniciarTemporizador();
 
-    // Reinicia a cada interação do usuário
-    const lidarComAtividade = () => reiniciarTemporizador();
+    // Reinicia a cada interação do usuário com throttle de 10s para não sobrecarregar a thread principal
+    let ultimaAtividade = Date.now();
+    const lidarComAtividade = () => {
+      const agora = Date.now();
+      if (agora - ultimaAtividade > 10000) {
+        ultimaAtividade = agora;
+        reiniciarTemporizador();
+      }
+    };
 
     for (const evento of EVENTOS_ATIVIDADE) {
       document.addEventListener(evento, lidarComAtividade, { passive: true });

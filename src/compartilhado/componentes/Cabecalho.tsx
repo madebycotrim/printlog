@@ -4,7 +4,6 @@ import { useLocation } from "react-router-dom";
 import { useCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";
 import { useProcessadorNotificacoes } from "../hooks/useProcessadorNotificacoes";
-import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { SeloPlano } from "./ui";
@@ -15,9 +14,9 @@ type PropriedadesCabecalho = {
 
 export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const { dados } = useCabecalho();
-  const { participarPrototipos } = useBeta();
   const { usuario } = useAutenticacao();
-  const { vencimentoPlano, plano } = useArmazemConfiguracoes();
+  const vencimentoPlano = useArmazemConfiguracoes((s) => s.vencimentoPlano);
+  const plano = useArmazemConfiguracoes((s) => s.plano);
   const localizacao = useLocation();
 
   // Rotas onde o selo de elite deve aparecer

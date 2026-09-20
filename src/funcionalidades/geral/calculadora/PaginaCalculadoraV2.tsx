@@ -3,8 +3,6 @@ import { toast } from "sonner";
 import { useAtalhosTeclado } from "@/compartilhado/hooks/useAtalhosTeclado";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { Sliders } from "lucide-react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { format } from "date-fns";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
@@ -370,6 +368,11 @@ export function PaginaCalculadoraV2() {
 
       const elemento = document.getElementById("recibo-pdf-oculto");
       if (!elemento) throw new Error("Template de PDF não encontrado");
+
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
 
       const canvas = await html2canvas(elemento, {
         scale: 2,

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import { Estudio, CorPrimaria, MembroEstudio } from "@/compartilhado/tipos/modelos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { toast } from "sonner";
@@ -189,7 +189,7 @@ export function ProvedorEstudio({ children }: { children: ReactNode }) {
     toast.success(`Membro ${email} removido do estúdio.`);
   };
 
-  const valor = {
+  const valor = useMemo(() => ({
     estudioAtivo,
     estudios,
     definirEstudioAtivo: selecionarEstudio,
@@ -198,7 +198,7 @@ export function ProvedorEstudio({ children }: { children: ReactNode }) {
     adicionarMembro,
     removerMembro,
     carregando,
-  };
+  }), [estudioAtivo, estudios, selecionarEstudio, criarEstudio, removerEstudio, adicionarMembro, removerMembro, carregando]);
 
   return <ContextoEstudio.Provider value={valor}>{children}</ContextoEstudio.Provider>;
 }

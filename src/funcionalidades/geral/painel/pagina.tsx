@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, lazy, Suspense, useCallback } from "react";
+import { useState, useEffect, lazy, Suspense, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 
@@ -166,11 +166,16 @@ export function PaginaInicial() {
     sincronizarTudo();
   }, [usuario?.uid, sincronizarTudo]);
 
-  // 🧮 CÁLCULOS DE KPI
-  const metricasInventario = servicoInventario.gerarRelatorioConsolidado(materiais, insumos);
-  const pedidosAtivos = pedidos.filter(
-    (p) => p.status !== StatusPedido.CONCLUIDO && p.status !== StatusPedido.ARQUIVADO,
-  ).length;
+  // 🧮 CÁLCULOS DE KPI (Memoizados para evitar recálculo na thread principal)
+  const metricasInventario = useMemo(() => {
+    return servicoInventario.gerarRelatorioConsolidado(materiais, insumos);
+  }, [materiais, insumos]);
+
+  const pedidosAtivos = useMemo(() => {
+    return pedidos.filter(
+      (p) => p.status !== StatusPedido.CONCLUIDO && p.status !== StatusPedido.ARQUIVADO,
+    ).length;
+  }, [pedidos]);
 
   // 👑 LÓGICA DE UPGRADE PRO
   const plano = useArmazemConfiguracoes((s) => s.plano);

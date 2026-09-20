@@ -7,7 +7,6 @@ import { useLocation, Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import { useArmazemDispositivo } from "@/compartilhado/estado/armazemDispositivo";
 import { BarraNavegacaoMobile } from "./BarraNavegacaoMobile";
-import { AnimatePresence, motion } from "framer-motion";
 import { LimiteDeErro } from "./LimiteDeErro";
 
 import { ModalAcessibilidade } from "./ModalAcessibilidade";
@@ -69,20 +68,14 @@ export function Layout({ children }: PropriedadesLayout) {
 
           <main className={`flex-1 min-h-0 flex flex-col relative scroll-smooth z-10 ${scrollClasse}`}>
             <div className="flex-1 w-full max-w-[1600px] mx-auto pt-2 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:pt-3 md:px-8 md:pb-8 lg:pt-4 lg:px-10 lg:pb-10 flex flex-col relative min-h-0">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="flex-1 flex flex-col min-h-0"
-                >
-                  <LimiteDeErro>
-                    {children || <Outlet />}
-                  </LimiteDeErro>
-                </motion.div>
-              </AnimatePresence>
+              <div
+                key={location.pathname}
+                className="flex-1 flex flex-col min-h-0 animate-in fade-in duration-150"
+              >
+                <LimiteDeErro>
+                  {children || <Outlet />}
+                </LimiteDeErro>
+              </div>
             </div>
           </main>
         </div>
