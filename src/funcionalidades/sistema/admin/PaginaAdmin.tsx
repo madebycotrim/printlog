@@ -18,8 +18,12 @@ import {
   X,
   ExternalLink,
   Sliders,
-  DollarSign,
-  Activity
+  Activity,
+  Megaphone,
+  Radio,
+  Send,
+  Eye,
+  Power
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -46,6 +50,8 @@ interface UsuarioAdmin {
   atualizado_em: string;
 }
 
+type TipoAviso = "INFO" | "ALERTA" | "SUCESSO" | "MANUTENCAO";
+
 const LIMITE_VAGAS_FUNDADOR = 51;
 
 const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
@@ -63,7 +69,7 @@ const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
 
 /**
  * Console do Dono — Bootstrap da plataforma.
- * Monitoramento completo, métricas de tração, raio-x do usuário e gestão de acessos.
+ * Monitoramento completo, métricas de tração, raio-x do usuário, broadcast global e gestão de acessos.
  */
 export function PaginaAdmin() {
   const { usuario } = useAutenticacao();
@@ -74,6 +80,15 @@ export function PaginaAdmin() {
   const [salvando, definirSalvando] = useState<string | null>(null);
   const [itemCopiado, definirItemCopiado] = useState<string | null>(null);
   const [usuarioSelecionado, definirUsuarioSelecionado] = useState<UsuarioAdmin | null>(null);
+
+  // Estados do Aviso Global (Broadcast)
+  const [avisoMensagem, setAvisoMensagem] = useState("");
+  const [avisoTipo, setAvisoTipo] = useState<TipoAviso>("INFO");
+  const [avisoLinkRotulo, setAvisoLinkRotulo] = useState("");
+  const [avisoLinkUrl, setAvisoLinkUrl] = useState("");
+  const [avisoAtivo, setAvisoAtivo] = useState(false);
+  const [salvandoAviso, setSalvandoAviso] = useState(false);
+  const [painelAvisoAberto, setPainelAvisoAberto] = useState(false);
 
   const acessoPermitido = ehAdmin(usuario?.email);
 
@@ -95,11 +110,60 @@ export function PaginaAdmin() {
     }
   }, [usuarioSelecionado]);
 
+  const buscarAvisoGlobal = useCallback(async () => {
+    try {
+      const res = await servicoBaseApi.get<any>("/api/admin/aviso-global");
+      if (res) {
+        setAvisoMensagem(res.mensagem || "");
+        setAvisoTipo(res.tipo || "INFO");
+        setAvisoLinkRotulo(res.linkRotulo || "");
+        setAvisoLinkUrl(res.linkUrl || "");
+        setAvisoAtivo(Boolean(res.ativo));
+        if (res.ativo) {
+          setPainelAvisoAberto(true);
+        }
+      }
+    } catch {
+      // Silencioso
+    }
+  }, []);
+
   useEffect(() => {
     if (acessoPermitido) {
       buscarUsuarios();
+      buscarAvisoGlobal();
     }
-  }, [acessoPermitido, buscarUsuarios]);
+  }, [acessoPermitido, buscarUsuarios, buscarAvisoGlobal]);
+
+  const salvarAvisoGlobal = async (forcarAtivo?: boolean) => {
+    const proximoAtivo = forcarAtivo !== undefined ? forcarAtivo : avisoAtivo;
+
+    if (proximoAtivo && !avisoMensagem.trim()) {
+      toast.error("Por favor, digite a mensagem do aviso antes de publicar.");
+      return;
+    }
+
+    setSalvandoAviso(true);
+    try {
+      await servicoBaseApi.post("/api/admin/aviso-global", {
+        mensagem: avisoMensagem,
+        tipo: avisoTipo,
+        linkRotulo: avisoLinkRotulo,
+        linkUrl: avisoLinkUrl,
+        ativo: proximoAtivo,
+      });
+      setAvisoAtivo(proximoAtivo);
+      toast.success(
+        proximoAtivo 
+          ? "Aviso global publicado no topo do app para todos os usuários!" 
+          : "Aviso global desativado com sucesso."
+      );
+    } catch {
+      toast.error("Falha ao salvar aviso global.");
+    } finally {
+      setSalvandoAviso(false);
+    }
+  };
 
   const copiarTexto = async (texto: string, chave: string, mensagem: string) => {
     try {
@@ -294,6 +358,23 @@ export function PaginaAdmin() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Botão de Toggle do Aviso Global */}
+          <button
+            onClick={() => setPainelAvisoAberto(prev => !prev)}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
+              avisoAtivo
+                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                : "bg-muted text-zinc-700 dark:text-zinc-300 hover:text-primaria border-borda-sutil"
+            }`}
+            title="Configurar Banner de Notificação no topo do app"
+          >
+            <Radio size={14} className={avisoAtivo ? "text-amber-500 animate-pulse" : ""} />
+            <span>Aviso Global</span>
+            {avisoAtivo && (
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+            )}
+          </button>
+
           <button
             onClick={exportarCSV}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-primaria bg-muted hover:bg-muted/80 border border-borda-sutil transition-all active:scale-95"
@@ -314,6 +395,163 @@ export function PaginaAdmin() {
           </button>
         </div>
       </div>
+
+      {/* PAINEL DE GESTÃO DO AVISO GLOBAL (BROADCAST NO TOPO DO APP) */}
+      {painelAvisoAberto && (
+        <div className="p-5 rounded-2xl bg-card border border-borda-sutil shadow-md space-y-4 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-primaria/10 text-primaria">
+                <Megaphone size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-zinc-900 dark:text-white flex items-center gap-2">
+                  Aviso Global da Plataforma (Banner de Notificação)
+                  {avisoAtivo ? (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                      Ao Vivo no App
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 text-[10px] font-black uppercase tracking-widest border border-zinc-500/20">
+                      Desativado
+                    </span>
+                  )}
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Defina um anúncio ou aviso que será exibido no topo da tela para todos os usuários logados no PrintLog.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPainelAvisoAberto(false)}
+              className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2">
+            
+            {/* Campo Mensagem */}
+            <div className="md:col-span-8 space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
+                Texto do Aviso
+              </label>
+              <input
+                type="text"
+                value={avisoMensagem}
+                onChange={(e) => setAvisoMensagem(e.target.value)}
+                placeholder='Ex: "Nova calculadora de resina disponível!" ou "Manutenção preventiva amanhã às 23h"'
+                className="w-full px-3.5 py-2 text-xs rounded-xl bg-muted/40 border border-borda-sutil placeholder:text-zinc-400 focus:outline-none focus:border-primaria transition-all"
+              />
+            </div>
+
+            {/* Estilo / Tipo */}
+            <div className="md:col-span-4 space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
+                Estilo Visual
+              </label>
+              <select
+                value={avisoTipo}
+                onChange={(e) => setAvisoTipo(e.target.value as TipoAviso)}
+                className="w-full px-3 py-2 text-xs rounded-xl bg-card border border-borda-sutil text-zinc-700 dark:text-zinc-200 outline-none focus:border-primaria transition-all cursor-pointer"
+              >
+                <option value="INFO">ℹ️ Informação / Novidade (Cyan)</option>
+                <option value="ALERTA">⚠️ Alerta / Manutenção (Âmbar)</option>
+                <option value="SUCESSO">🚀 Lançamento / Sucesso (Esmeralda)</option>
+                <option value="MANUTENCAO">🔧 Manutenção Técnica (Índigo)</option>
+              </select>
+            </div>
+
+            {/* Link Opcional: Rótulo */}
+            <div className="md:col-span-4 space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
+                Rótulo do Link (Opcional)
+              </label>
+              <input
+                type="text"
+                value={avisoLinkRotulo}
+                onChange={(e) => setAvisoLinkRotulo(e.target.value)}
+                placeholder='Ex: "Ver calculadora" ou "Saiba mais"'
+                className="w-full px-3.5 py-2 text-xs rounded-xl bg-muted/40 border border-borda-sutil placeholder:text-zinc-400 focus:outline-none focus:border-primaria transition-all"
+              />
+            </div>
+
+            {/* Link Opcional: URL */}
+            <div className="md:col-span-8 space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
+                Destino do Link (Opcional)
+              </label>
+              <input
+                type="text"
+                value={avisoLinkUrl}
+                onChange={(e) => setAvisoLinkUrl(e.target.value)}
+                placeholder='Ex: "/calculadora" ou "https://instagram.com/..."'
+                className="w-full px-3.5 py-2 text-xs rounded-xl bg-muted/40 border border-borda-sutil placeholder:text-zinc-400 focus:outline-none focus:border-primaria transition-all"
+              />
+            </div>
+
+          </div>
+
+          {/* Pré-visualização ao vivo */}
+          {avisoMensagem.trim() && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                <Eye size={12} />
+                <span>Pré-visualização do Banner</span>
+              </div>
+              <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                avisoTipo === 'ALERTA' ? 'bg-amber-500/10 border-amber-500/25 text-amber-950 dark:text-amber-100' :
+                avisoTipo === 'SUCESSO' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-100' :
+                avisoTipo === 'MANUTENCAO' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-950 dark:text-indigo-100' :
+                'bg-cyan-500/10 border-cyan-500/20 text-cyan-900 dark:text-cyan-100'
+              }`}>
+                <div className="flex items-center gap-2 truncate">
+                  <Megaphone size={14} className="shrink-0" />
+                  <span className="font-semibold truncate">{avisoMensagem}</span>
+                  {avisoLinkRotulo && (
+                    <span className="underline font-bold ml-1 shrink-0">{avisoLinkRotulo} →</span>
+                  )}
+                </div>
+                <X size={14} className="shrink-0 opacity-60" />
+              </div>
+            </div>
+          )}
+
+          {/* Botões de Ação */}
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-borda-sutil">
+            <div className="text-[11px] text-zinc-400">
+              * Atualizações entram em vigor no app para todos os usuários imediatamente.
+            </div>
+
+            <div className="flex items-center gap-2">
+              {avisoAtivo && (
+                <button
+                  type="button"
+                  disabled={salvandoAviso}
+                  onClick={() => salvarAvisoGlobal(false)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition-all disabled:opacity-50"
+                >
+                  <Power size={13} />
+                  Desativar Aviso
+                </button>
+              )}
+
+              <button
+                type="button"
+                disabled={salvandoAviso}
+                onClick={() => salvarAvisoGlobal(true)}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-primaria hover:bg-primaria/90 shadow-sm transition-all disabled:opacity-50"
+              >
+                <Send size={13} />
+                {salvandoAviso ? "Salvando..." : (avisoAtivo ? "Atualizar no App" : "Publicar no Topo do App")}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      )}
 
       {/* METRICAS DO BOOTSTRAP */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -12,6 +12,7 @@ import { LimiteDeErro } from "./LimiteDeErro";
 
 import { ModalAcessibilidade } from "./ModalAcessibilidade";
 import { BarraVocalizacaoFlutuante } from "./BarraVocalizacaoFlutuante";
+import { BannerAvisoGlobal } from "./BannerAvisoGlobal";
 
 type PropriedadesLayout = {
   children?: ReactNode;
@@ -63,6 +64,7 @@ export function Layout({ children }: PropriedadesLayout) {
             <div className="absolute inset-0 bg-grid-printlog opacity-[0.05] dark:opacity-[0.1]" />
           </div>
 
+          <BannerAvisoGlobal />
           <Cabecalho aoAbrirBarraLateral={() => definirSidebarAberta(true)} />
 
           <main className={`flex-1 min-h-0 flex flex-col relative scroll-smooth z-10 ${scrollClasse}`}>
