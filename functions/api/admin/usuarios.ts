@@ -36,11 +36,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
 
     const metodo = request.method;
 
+    const PLANOS_VALIDOS = ["FREE", "PRO", "FUNDADOR"];
+    const CICLOS_VALIDOS = ["MENSAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL", "VITALICIO", "TRIAL"];
+
     try {
-        // GET — Lista todos os usuários e seus planos
+        // GET — Lista todos os usuários e seus planos (estritamente o essencial conforme LGPD Art. 6º, III)
         if (metodo === "GET") {
             const { results } = await env.DB.prepare(
-                "SELECT id_usuario, email, nome_estudio, slogan_estudio, custo_energia, hora_maquina, hora_operador, margem_lucro, plano, ciclo_pagamento, vencimento_plano, atualizado_em FROM configuracoes_usuario ORDER BY atualizado_em DESC"
+                "SELECT id_usuario, email, nome_estudio, plano, ciclo_pagamento, vencimento_plano, atualizado_em FROM configuracoes_usuario ORDER BY atualizado_em DESC"
             ).all();
 
             return new Response(JSON.stringify(results), {
@@ -52,8 +55,16 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
         if (metodo === "PATCH") {
             const { idUsuario, novoPlano, novoCiclo, acao, dias } = await request.json() as any;
 
-            if (!idUsuario) {
+            if (!idUsuario || typeof idUsuario !== "string") {
                 return new Response("ID inválido", { status: 400 });
+            }
+
+            if (novoPlano && !PLANOS_VALIDOS.includes(novoPlano)) {
+                return new Response("Plano inválido", { status: 400 });
+            }
+
+            if (novoCiclo && !CICLOS_VALIDOS.includes(novoCiclo)) {
+                return new Response("Ciclo inválido", { status: 400 });
             }
 
             const campos = [];

@@ -7,23 +7,24 @@ import {
   RefreshCw, 
   Copy, 
   Check, 
-  Search,
-  Sparkles,
-  Layers,
-  Clock,
-  Download,
-  Mail,
-  Gift,
-  AlertTriangle,
-  X,
-  ExternalLink,
-  Sliders,
-  Activity,
-  Megaphone,
-  Radio,
-  Send,
-  Eye,
-  Power
+  Search, 
+  Sparkles, 
+  Clock, 
+  Download, 
+  Mail, 
+  Gift, 
+  AlertTriangle, 
+  X, 
+  ExternalLink, 
+  Activity, 
+  Megaphone, 
+  Radio, 
+  Send, 
+  Eye, 
+  EyeOff, 
+  Power, 
+  Lock, 
+  Trash2 
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -34,16 +35,18 @@ import { toast } from "sonner";
 import { Carregamento } from "@/compartilhado/componentes";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";
+import { mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 
+/**
+ * Interface estritamente essencial para administração de acessos,
+ * em total conformidade com o princípio da Minimização de Dados (LGPD Art. 6º, III).
+ * Dados sensíveis de negócio (custos operacionais, taxas de máquina e margem de lucro)
+ * são preservados sob sigilo comercial e isolados na conta do cliente.
+ */
 interface UsuarioAdmin {
   id_usuario: string;
   email?: string;
   nome_estudio: string;
-  slogan_estudio?: string;
-  custo_energia?: string;
-  hora_maquina?: string;
-  hora_operador?: string;
-  margem_lucro?: string;
   plano: PlanoUsuario;
   ciclo_pagamento?: "MENSAL" | "TRIMESTRAL" | "SEMESTRAL" | "ANUAL" | "VITALICIO" | "TRIAL";
   vencimento_plano?: string;
@@ -68,11 +71,11 @@ const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
 };
 
 /**
- * Console do Dono — Bootstrap da plataforma.
- * Monitoramento completo, métricas de tração, raio-x do usuário, broadcast global e gestão de acessos.
+ * Console do Dono — Painel Administrativo de Gestão da Plataforma.
+ * Gerenciamento de planos, métricas de adoção, aviso global e conformidade LGPD.
  */
 export function PaginaAdmin() {
-  const { usuario } = useAutenticacao();
+  const { usuario, carregando: carregandoAuth } = useAutenticacao();
   const [usuarios, definirUsuarios] = useState<UsuarioAdmin[]>([]);
   const [carregando, definirCarregando] = useState(true);
   const [busca, definirBusca] = useState("");
@@ -80,6 +83,10 @@ export function PaginaAdmin() {
   const [salvando, definirSalvando] = useState<string | null>(null);
   const [itemCopiado, definirItemCopiado] = useState<string | null>(null);
   const [usuarioSelecionado, definirUsuarioSelecionado] = useState<UsuarioAdmin | null>(null);
+
+  // Modo Privacidade (Privacy by Default) — Mascaramento visual de PII
+  const [modoPrivacidade, setModoPrivacidade] = useState(true);
+  const [executandoLimpeza, setExecutandoLimpeza] = useState(false);
 
   // Estados do Aviso Global (Broadcast)
   const [avisoMensagem, setAvisoMensagem] = useState("");
@@ -92,23 +99,24 @@ export function PaginaAdmin() {
 
   const acessoPermitido = ehAdmin(usuario?.email);
 
+  // Busca de usuários com atualização atômica do usuário selecionado (sem dependência de ciclo)
   const buscarUsuarios = useCallback(async () => {
     definirCarregando(true);
     try {
       const dados = await servicoBaseApi.get<UsuarioAdmin[]>("/api/admin/usuarios");
       definirUsuarios(dados);
       
-      // Atualiza usuário selecionado no modal se estiver aberto
-      if (usuarioSelecionado) {
-        const atualizado = dados.find(u => u.id_usuario === usuarioSelecionado.id_usuario);
-        if (atualizado) definirUsuarioSelecionado(atualizado);
-      }
+      // Atualiza o modal de detalhes caso esteja aberto, sem disparar recriação de callbacks
+      definirUsuarioSelecionado((prev) => {
+        if (!prev) return null;
+        return dados.find((u) => u.id_usuario === prev.id_usuario) || null;
+      });
     } catch {
       toast.error("Erro ao carregar lista de usuários da base.");
     } finally {
       definirCarregando(false);
     }
-  }, [usuarioSelecionado]);
+  }, []);
 
   const buscarAvisoGlobal = useCallback(async () => {
     try {
@@ -124,7 +132,7 @@ export function PaginaAdmin() {
         }
       }
     } catch {
-      // Silencioso
+      // Falha silenciosa na leitura inicial do aviso
     }
   }, []);
 
@@ -182,7 +190,7 @@ export function PaginaAdmin() {
       const novoCiclo = novoPlano === "FUNDADOR" ? "VITALICIO" : undefined;
       await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, novoPlano, novoCiclo });
       toast.success(`Plano atualizado para ${novoPlano}!`);
-      buscarUsuarios();
+      await buscarUsuarios();
     } catch {
       toast.error("Falha ao atualizar plano.");
     } finally {
@@ -195,7 +203,7 @@ export function PaginaAdmin() {
     try {
       await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, novoCiclo });
       toast.success("Ciclo de pagamento atualizado!");
-      buscarUsuarios();
+      await buscarUsuarios();
     } catch {
       toast.error("Falha ao atualizar ciclo.");
     } finally {
@@ -208,7 +216,7 @@ export function PaginaAdmin() {
     try {
       await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, acao: "RENOVAR" });
       toast.success("Plano renovado com sucesso!");
-      buscarUsuarios();
+      await buscarUsuarios();
     } catch {
       toast.error("Falha ao renovar plano.");
     } finally {
@@ -221,11 +229,31 @@ export function PaginaAdmin() {
     try {
       await servicoBaseApi.patch("/api/admin/usuarios", { idUsuario, acao: "DEGUSTACAO", dias });
       toast.success(`Concedidos ${dias} dias de PRO gratuito com sucesso!`);
-      buscarUsuarios();
+      await buscarUsuarios();
     } catch {
       toast.error("Falha ao conceder degustação.");
     } finally {
       definirSalvando(null);
+    }
+  };
+
+  const executarLimpezaLegal = async () => {
+    const confirmar = window.confirm(
+      "Deseja executar a Limpeza Legal de Logs conforme o Art. 15 do Marco Civil da Internet?\n\nRegistros de acesso com mais de 180 dias serão purgados definitivamente para respeitar os limites de retenção."
+    );
+    if (!confirmar) return;
+
+    setExecutandoLimpeza(true);
+    try {
+      const res = await servicoBaseApi.get<{ sucesso: boolean; detalhes?: { registros_removidos?: number } }>(
+        "/api/admin/limpeza-legal"
+      );
+      const removidos = res?.detalhes?.registros_removidos ?? 0;
+      toast.success(`Limpeza legal concluída! ${removidos} registro(s) com mais de 180 dias foram purgados.`);
+    } catch {
+      toast.error("Falha ao executar limpeza legal de logs.");
+    } finally {
+      setExecutandoLimpeza(false);
     }
   };
 
@@ -236,27 +264,30 @@ export function PaginaAdmin() {
     }
 
     const cabecalhos = ["E-mail", "ID_Usuario", "Estudio", "Plano", "Ciclo", "Vencimento", "Ultima_Atividade"];
-    const linhas = usuarios.map(u => [
-      `"${u.email || ''}"`,
-      `"${u.id_usuario}"`,
-      `"${(u.nome_estudio || '').replace(/"/g, '""')}"`,
-      `"${u.plano}"`,
-      `"${u.ciclo_pagamento || ''}"`,
-      `"${u.vencimento_plano || ''}"`,
-      `"${u.atualizado_em || ''}"`
-    ]);
+    const linhas = usuarios.map((u) => {
+      const emailFinal = modoPrivacidade && u.email ? mascararDadoPessoal(u.email, "email") : (u.email || "");
+      return [
+        `"${emailFinal}"`,
+        `"${u.id_usuario}"`,
+        `"${(u.nome_estudio || "").replace(/"/g, '""')}"`,
+        `"${u.plano}"`,
+        `"${u.ciclo_pagamento || ""}"`,
+        `"${u.vencimento_plano || ""}"`,
+        `"${u.atualizado_em || ""}"`
+      ];
+    });
 
-    const csvContent = "\uFEFF" + [cabecalhos.join(";"), ...linhas.map(e => e.join(";"))].join("\n");
+    const csvContent = "\uFEFF" + [cabecalhos.join(";"), ...linhas.map((e) => e.join(";"))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `printlog-usuarios-bootstrap-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `printlog-usuarios-${modoPrivacidade ? "anonimizado" : "completo"}-${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success("Base de usuários exportada em CSV!");
+    toast.success("Base de usuários exportada em CSV com dados essenciais.");
   };
 
   const abrirEmailBoasVindas = (u: UsuarioAdmin) => {
@@ -265,7 +296,7 @@ export function PaginaAdmin() {
       return;
     }
     const nome = u.nome_estudio || "Maker";
-    const assunto = encodeURIComponent(`Boas-vindas ao PrintLog — Como está sendo a experiência?`);
+    const assunto = encodeURIComponent("Boas-vindas ao PrintLog — Como está sendo a experiência?");
     const corpo = encodeURIComponent(
       `Olá, tudo bem?\n\nSou o Mateus, criador do PrintLog!\n\nVi que você se cadastrou com o estúdio "${nome}". Conseguiu simular seus custos de impressão 3D ou cadastrar suas impressoras e filamentos?\n\nSe tiver qualquer dúvida de precificação ou precisar de ajuda para configurar sua máquina, me responda por aqui. Estou à disposição para ajudar no que for preciso!\n\nAbraços,\nMateus | PrintLog`
     );
@@ -274,7 +305,7 @@ export function PaginaAdmin() {
 
   useDefinirCabecalho({
     titulo: "Console do Dono",
-    subtitulo: "Bootstrap — Central de Comando e Gestão de Usuários",
+    subtitulo: "Central de Comando, Gestão de Acessos e Conformidade LGPD",
     placeholderBusca: "Buscar e-mail, ID ou estúdio...",
     aoBuscar: (t) => definirBusca(t),
   });
@@ -289,7 +320,7 @@ export function PaginaAdmin() {
   const totalFree = usuarios.filter((u) => u.plano === "FREE").length;
 
   const usuariosAlertas = useMemo(() => {
-    return usuarios.filter(u => {
+    return usuarios.filter((u) => {
       if (u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
       const status = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
       return status.dias <= 7;
@@ -298,10 +329,10 @@ export function PaginaAdmin() {
 
   // Filtragem
   const usuariosFiltrados = useMemo(() => {
-    const termo = busca.toLowerCase();
+    const termo = busca.toLowerCase().trim();
     return usuarios.filter((u) => {
       const bateBusca = 
-        !busca ||
+        !termo ||
         u.id_usuario.toLowerCase().includes(termo) ||
         (u.email && u.email.toLowerCase().includes(termo)) ||
         (u.nome_estudio && u.nome_estudio.toLowerCase().includes(termo));
@@ -317,6 +348,16 @@ export function PaginaAdmin() {
     });
   }, [usuarios, busca, filtroPlano]);
 
+  // Se a autenticação estiver carregando a sessão do Firebase, exibe carregamento em vez de erro prematuro
+  if (carregandoAuth) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 p-8">
+        <Carregamento texto="Verificando credenciais do Dono..." />
+      </div>
+    );
+  }
+
+  // Verificação de Acesso
   if (!acessoPermitido) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8 text-center animate-in fade-in">
@@ -357,10 +398,35 @@ export function PaginaAdmin() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Alternador de Modo Privacidade (LGPD) */}
+          <button
+            onClick={() => setModoPrivacidade((prev) => !prev)}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
+              modoPrivacidade
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shadow-sm"
+                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+            }`}
+            title={modoPrivacidade ? "Modo Privacidade LGPD Ativo (E-mails Mascarados). Clique para revelar." : "E-mails Visíveis. Clique para mascarar."}
+          >
+            {modoPrivacidade ? <Lock size={14} /> : <Eye size={14} />}
+            <span>{modoPrivacidade ? "Privacidade Ativa" : "E-mails Visíveis"}</span>
+          </button>
+
+          {/* Botão de Limpeza Legal (Marco Civil / LGPD) */}
+          <button
+            onClick={executarLimpezaLegal}
+            disabled={executandoLimpeza}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-rose-600 hover:bg-rose-500/10 border border-borda-sutil transition-all active:scale-95 disabled:opacity-50"
+            title="Limpeza Legal de Logs com mais de 180 dias (Marco Civil Art. 15)"
+          >
+            <Trash2 size={14} className={executandoLimpeza ? "animate-spin text-rose-500" : ""} />
+            <span>{executandoLimpeza ? "Purgando..." : "Limpeza Legal"}</span>
+          </button>
+
           {/* Botão de Toggle do Aviso Global */}
           <button
-            onClick={() => setPainelAvisoAberto(prev => !prev)}
+            onClick={() => setPainelAvisoAberto((prev) => !prev)}
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
               avisoAtivo
                 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
@@ -378,7 +444,7 @@ export function PaginaAdmin() {
           <button
             onClick={exportarCSV}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-primaria bg-muted hover:bg-muted/80 border border-borda-sutil transition-all active:scale-95"
-            title="Exportar base de usuários para planilha CSV"
+            title="Exportar base de usuários essencial para planilha CSV"
           >
             <Download size={14} />
             Exportar CSV
@@ -694,6 +760,9 @@ export function PaginaAdmin() {
                 {usuariosFiltrados.map((u) => {
                   const ehODono = u.email && EMAIL_DONO && u.email.toLowerCase().trim() === EMAIL_DONO.toLowerCase().trim();
                   const statusVenc = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
+                  const emailVisual = u.email 
+                    ? (modoPrivacidade ? mascararDadoPessoal(u.email, "email") : u.email)
+                    : null;
 
                   return (
                     <tr 
@@ -709,14 +778,14 @@ export function PaginaAdmin() {
                               onClick={() => definirUsuarioSelecionado(u)}
                               className="font-bold text-zinc-900 dark:text-white hover:text-primaria transition-colors cursor-pointer select-all"
                             >
-                              {u.email || <span className="text-zinc-400 italic font-normal">Sem e-mail registrado</span>}
+                              {emailVisual || <span className="text-zinc-400 italic font-normal">Sem e-mail registrado</span>}
                             </span>
                             
                             {u.email && (
                               <button
                                 onClick={() => copiarTexto(u.email!, `email-${u.id_usuario}`, "E-mail copiado!")}
                                 className="p-1 rounded text-zinc-400 hover:text-primaria hover:bg-muted transition-colors"
-                                title="Copiar e-mail"
+                                title="Copiar e-mail real"
                               >
                                 {itemCopiado === `email-${u.id_usuario}` ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
                               </button>
@@ -749,9 +818,6 @@ export function PaginaAdmin() {
                           <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                             {u.nome_estudio ? u.nome_estudio : <span className="text-zinc-400 italic text-[11px]">Não configurado</span>}
                           </span>
-                          {u.slogan_estudio && (
-                            <span className="text-[10px] text-zinc-400 truncate max-w-[150px]">{u.slogan_estudio}</span>
-                          )}
                         </div>
                       </td>
 
@@ -801,7 +867,7 @@ export function PaginaAdmin() {
                             <button
                               onClick={() => abrirEmailBoasVindas(u)}
                               className="p-1.5 rounded-lg text-zinc-400 hover:text-primaria hover:bg-muted border border-transparent hover:border-borda-sutil transition-all"
-                              title="Enviar e-mail de contato / boas-vindas"
+                              title="Enviar e-mail de contato / suporte"
                             >
                               <Mail size={14} />
                             </button>
@@ -826,7 +892,7 @@ export function PaginaAdmin() {
                               disabled={salvando === u.id_usuario}
                               onClick={() => renovarPlano(u.id_usuario)}
                               className="px-2 py-1 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
-                              title="Renovar ciclo"
+                              title="Renovar ciclo atual"
                             >
                               {salvando === u.id_usuario ? "..." : "Renovar"}
                             </button>
@@ -888,7 +954,7 @@ export function PaginaAdmin() {
         )}
       </div>
 
-      {/* MODAL RAIO-X DO MAKER */}
+      {/* MODAL RAIO-X DO MAKER (ESSENCIAL E CONFORME À LGPD) */}
       {usuarioSelecionado && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-borda-sutil rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -938,7 +1004,9 @@ export function PaginaAdmin() {
                   <div>
                     <span className="text-[11px] text-zinc-400 block">E-mail</span>
                     <span className="font-bold text-zinc-900 dark:text-white select-all">
-                      {usuarioSelecionado.email || "Não informado"}
+                      {usuarioSelecionado.email 
+                        ? (modoPrivacidade ? mascararDadoPessoal(usuarioSelecionado.email, "email") : usuarioSelecionado.email)
+                        : "Não informado"}
                     </span>
                   </div>
                   <div>
@@ -947,14 +1015,6 @@ export function PaginaAdmin() {
                       {usuarioSelecionado.nome_estudio || "Não configurado"}
                     </span>
                   </div>
-                  {usuarioSelecionado.slogan_estudio && (
-                    <div className="col-span-2">
-                      <span className="text-[11px] text-zinc-400 block">Slogan</span>
-                      <span className="text-zinc-600 dark:text-zinc-300 font-medium">
-                        "{usuarioSelecionado.slogan_estudio}"
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1005,41 +1065,17 @@ export function PaginaAdmin() {
                 </div>
               </div>
 
-              {/* Parâmetros Operacionais Salvos no Estúdio */}
-              <div className="p-4 rounded-2xl bg-muted/30 border border-borda-sutil space-y-3">
-                <div className="flex items-center gap-1.5">
-                  <Sliders size={14} className="text-zinc-400" />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                    Parâmetros Operacionais Cadastrados
+              {/* Minimização de Dados e Proteção LGPD (Substitui a espionagem de custos/margens) */}
+              <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck size={16} />
+                  <span className="text-[11px] font-black uppercase tracking-wider">
+                    Privacidade & Sigilo Comercial Ativos (LGPD Art. 6º, III)
                   </span>
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block">Energia (kWh)</span>
-                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
-                      {usuarioSelecionado.custo_energia || "R$ 0,00"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block">Hora Máquina</span>
-                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
-                      {usuarioSelecionado.hora_maquina || "R$ 0,00"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block">Hora Operador</span>
-                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
-                      {usuarioSelecionado.hora_operador || "R$ 0,00"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-400 block">Margem Padrão</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      {usuarioSelecionado.margem_lucro || "0%"}
-                    </span>
-                  </div>
-                </div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  Os parâmetros operacionais do usuário (custos de energia, hora máquina, hora operador e margens de precificação) são protegidos por sigilo de negócio e isolados no banco de dados. O Console do Dono retém apenas os dados estritamente essenciais para a governança de contas e planos.
+                </p>
               </div>
 
             </div>
@@ -1061,15 +1097,15 @@ export function PaginaAdmin() {
         </div>
       )}
 
-      {/* AVISO DO BOOTSTRAP */}
-      <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/15 flex items-start gap-3">
-        <ShieldCheck className="text-amber-500 shrink-0 mt-0.5" size={18} />
+      {/* AVISO DE CONFORMIDADE LGPD & MARCO CIVIL */}
+      <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 flex items-start gap-3">
+        <ShieldCheck className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" size={18} />
         <div className="space-y-0.5 text-xs">
-          <h4 className="font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            Console de Bootstrap — Acesso Confidencial
+          <h4 className="font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+            Console do Dono — Conformidade LGPD & Marco Civil da Internet
           </h4>
-          <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 leading-relaxed font-medium">
-            Esta visualização consolida todos os usuários cadastrados no banco D1 da Cloudflare. As mudanças de plano e ciclo entram em vigor instantaneamente para as contas selecionadas.
+          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium">
+            Este ambiente opera sob o princípio da <strong>Minimização de Dados</strong> (Art. 6º, III da LGPD). Dados comerciais privados dos makers não são coletados neste painel. Logs de acesso contam com política de retenção e expurgo programado (Art. 15 do Marco Civil da Internet).
           </p>
         </div>
       </div>
