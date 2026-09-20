@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Download, Database, User, PackageSearch, Activity, FolderKanban, CheckCircle2 } from "lucide-react";
+import { Download, Database, User, PackageSearch, Activity, FolderKanban, CheckCircle2, Loader2 } from "lucide-react";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { CabecalhoCard } from "./Compartilhados";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -13,11 +13,14 @@ import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsum
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
 import { servicoPedidos } from "@/funcionalidades/producao/projetos/servicos/servicoPedidos";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import jsPDF from "jspdf";
 import { toast } from "sonner";
 
 export function CardMetricas() {
   const { usuario } = useAutenticacao();
   const [exportando, definirExportando] = useState(false);
+  const [tipoExportando, setTipoExportando] = useState<string | null>(null);
   const [mensagemSucesso, definirMensagemSucesso] = useState("");
   const [carregandoMetricas, definirCarregandoMetricas] = useState(true);
 
@@ -63,29 +66,366 @@ export function CardMetricas() {
   }, [usuario?.uid]);
 
   const gerarLogBackend = (formato: string) => {
-    // [Art. 37 - ROA] Simulando log em um sistema de auditoria (D1/Logs).
     registrar.info(
       {
-        rastreioId: "auditoria-portabilidade", // No futuro viria do contexto de req
+        rastreioId: "auditoria-portabilidade",
         titularId: usuario?.uid || "Desconhecido",
         formato,
       },
-      `Exercício do Direito de Portabilidade (Art. 18, V)`,
+      `Exercício do Direito de Portabilidade (Art. 18, V - LGPD)`,
     );
   };
 
-  const exibirSucesso = () => {
-    definirMensagemSucesso("Exportação concluída com sucesso!");
+  const exibirSucesso = (tipo: string) => {
+    definirMensagemSucesso(`Arquivo ${tipo} baixado com sucesso!`);
+    toast.success(`Exportação em ${tipo} concluída com sucesso!`);
     setTimeout(() => definirMensagemSucesso(""), 4000);
   };
 
-  const lidarComExportacao = (tipo: string) => {
+  // Gerador de Planilha CSV completa e com encoding UTF-8 BOM
+  const gerarCsvCompleto = (nomeArquivo: string) => {
+    const clientes = useArmazemClientes.getState().clientes;
+    const materiais = useArmazemMateriais.getState().materiais;
+    const insumos = useArmazemInsumos.getState().insumos;
+    const impressoras = useArmazemImpressoras.getState().impressoras;
+    const pedidos = useArmazemPedidos.getState().pedidos;
+
+    let csv = "\ufeff"; // UTF-8 BOM para compatibilidade 100% com Excel
+
+    // 1. Resumo do Estúdio
+    csv += "PRINTLOG - RELATÓRIO E EXPORTAÇÃO COMPLETA DO ESTÚDIO\n";
+    csv += `Titular;${usuario?.nome || "Maker"}\n`;
+    csv += `E-mail;${usuario?.email || ""}\n`;
+    csv += `Data da Exportação;${new Date().toLocaleDateString("pt-BR")} ${new Date().toLocaleTimeString("pt-BR")}\n`;
+    csv += `Base Legal;Direito de Portabilidade - Art. 18 V da Lei 13.709/2018 (LGPD)\n\n`;
+
+    csv += "RESUMO GERAL\n";
+    csv += "Entidade;Quantidade Cadastrada\n";
+    csv += `Clientes;${clientes.length}\n`;
+    csv += `Filamentos / Materiais;${materiais.length}\n`;
+    csv += `Insumos de Produção;${insumos.length}\n`;
+    csv += `Máquinas / Impressoras 3D;${impressoras.length}\n`;
+    csv += `Projetos / Pedidos;${pedidos.length}\n\n`;
+
+    // 2. Clientes
+    csv += "--- CLIENTES CADASTRADOS ---\n";
+    csv += "Nome;E-mail;Telefone;Tipo;Status;Faturamento LTV;Projetos Produzidos;Canal de Origem;Observações CRM\n";
+    clientes.forEach((c) => {
+      const nome = `"${(c.nome || "").replace(/"/g, '""')}"`;
+      const email = `"${(c.email || "").replace(/"/g, '""')}"`;
+      const tel = `"${(c.telefone || "").replace(/"/g, '""')}"`;
+      const tipo = c.tipo || "B2C";
+      const status = c.historico && c.historico.length > 0 ? "Ativo" : "Lead";
+      const ltv = centavosParaReais(c.ltvCentavos);
+      const projs = c.totalProdutos || 0;
+      const canal = `"${(c.canalReferencia || "").replace(/"/g, '""')}"`;
+      const obs = `"${(c.observacoesCRM || "").replace(/"/g, '""')}"`;
+      csv += `${nome};${email};${tel};${tipo};${status};${ltv};${projs};${canal};${obs}\n`;
+    });
+    csv += "\n";
+
+    // 3. Filamentos
+    csv += "--- ESTOQUE DE FILAMENTOS E MATERIAIS ---\n";
+    csv += "Nome;Marca;Tipo de Material;Cor;Preço por Kg;Estoque Restante (g)\n";
+    materiais.forEach((m: any) => {
+      const nome = `"${(m.nome || m.descricao || "").replace(/"/g, '""')}"`;
+      const marca = `"${(m.marca || "").replace(/"/g, '""')}"`;
+      const tipo = m.tipo || m.material || "PLA";
+      const cor = `"${(m.cor || "").replace(/"/g, '""')}"`;
+      const preco = m.precoKgCentavos ? centavosParaReais(m.precoKgCentavos) : (m.precoPorQuilo ? `R$ ${m.precoPorQuilo.toFixed(2)}` : "R$ 0,00");
+      const estoque = m.estoqueGramas || m.pesoRestanteGramas || 0;
+      csv += `${nome};${marca};${tipo};${cor};${preco};${estoque}\n`;
+    });
+    csv += "\n";
+
+    // 4. Insumos
+    csv += "--- INSUMOS DE PRODUÇÃO ---\n";
+    csv += "Nome;Categoria;Custo Unitário;Unidade de Medida;Quantidade em Estoque\n";
+    insumos.forEach((i: any) => {
+      const nome = `"${(i.nome || i.descricao || "").replace(/"/g, '""')}"`;
+      const cat = `"${(i.categoria || "").replace(/"/g, '""')}"`;
+      const preco = i.custoCentavos ? centavosParaReais(i.custoCentavos) : (i.custoUnitario ? `R$ ${i.custoUnitario.toFixed(2)}` : "R$ 0,00");
+      const unid = i.unidadeMedida || "un";
+      const qtd = i.quantidade || 0;
+      csv += `${nome};${cat};${preco};${unid};${qtd}\n`;
+    });
+    csv += "\n";
+
+    // 5. Máquinas
+    csv += "--- MÁQUINAS E IMPRESSORAS 3D ---\n";
+    csv += "Nome;Modelo;Marca;Potência (Watts);Diâmetro do Bico (mm);Status\n";
+    impressoras.forEach((imp: any) => {
+      const nome = `"${(imp.nome || "").replace(/"/g, '""')}"`;
+      const modelo = `"${(imp.modelo || "").replace(/"/g, '""')}"`;
+      const marca = `"${(imp.marca || "").replace(/"/g, '""')}"`;
+      const pot = imp.potenciaWatts || 200;
+      const bico = imp.diametroBicoMm || 0.4;
+      const status = imp.status || "Ativa";
+      csv += `${nome};${modelo};${marca};${pot};${bico};${status}\n`;
+    });
+    csv += "\n";
+
+    // 6. Pedidos
+    csv += "--- PROJETOS E PEDIDOS ---\n";
+    csv += "ID Pedido;Data;Status;Valor Total\n";
+    pedidos.forEach((p: any) => {
+      const id = p.id || "";
+      const data = p.dataCriacao ? new Date(p.dataCriacao).toLocaleDateString("pt-BR") : "";
+      const status = p.status || "Concluído";
+      const valor = p.valorCentavos ? centavosParaReais(p.valorCentavos) : (p.valorTotal ? `R$ ${p.valorTotal.toFixed(2)}` : "R$ 0,00");
+      csv += `${id};${data};${status};${valor}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${nomeArquivo}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Gerador de Documento PDF Corporativo real com jsPDF
+  const gerarPdfCompleto = (nomeArquivo: string) => {
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const clientes = useArmazemClientes.getState().clientes;
+    const materiais = useArmazemMateriais.getState().materiais;
+    const insumos = useArmazemInsumos.getState().insumos;
+    const impressoras = useArmazemImpressoras.getState().impressoras;
+    const pedidos = useArmazemPedidos.getState().pedidos;
+
+    let y = 15;
+
+    const verificarQuebraPagina = (espacoNecessario: number) => {
+      if (y + espacoNecessario > 275) {
+        doc.addPage();
+        y = 18;
+      }
+    };
+
+    // 1. Faixa Superior de Cabeçalho
+    doc.setFillColor(15, 23, 42); // slate-900
+    doc.rect(0, 0, 210, 24, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("PRINTLOG 3D  |  RELATÓRIO DO ESTÚDIO", 14, 11);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text(`Data: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 18);
+    doc.text(`Titular: ${usuario?.nome || "Maker"} (${usuario?.email || ""})`, 115, 18);
+
+    y = 32;
+
+    // 2. Quadro de Métricas Gerais
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text("RESUMO OPERACIONAL", 14, y);
+    y += 5;
+
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(14, y, 182, 16, 2, 2, "FD");
+
+    const colWidth = 182 / 5;
+    const resumo = [
+      { label: "Clientes", val: clientes.length },
+      { label: "Filamentos", val: materiais.length },
+      { label: "Insumos", val: insumos.length },
+      { label: "Máquinas", val: impressoras.length },
+      { label: "Projetos", val: pedidos.length },
+    ];
+
+    resumo.forEach((item, idx) => {
+      const x = 14 + idx * colWidth;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text(String(item.val), x + colWidth / 2, y + 6.5, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(item.label, x + colWidth / 2, y + 12, { align: "center" });
+    });
+
+    y += 24;
+
+    // 3. Seção Clientes
+    verificarQuebraPagina(20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text(`CLIENTES CADASTRADOS (${clientes.length})`, 14, y);
+    y += 5;
+
+    if (clientes.length === 0) {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(148, 163, 184);
+      doc.text("Nenhum cliente cadastrado no momento.", 14, y);
+      y += 8;
+    } else {
+      clientes.slice(0, 30).forEach((c) => {
+        verificarQuebraPagina(7);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(15, 23, 42);
+        doc.text(`• ${c.nome}`, 14, y);
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 116, 139);
+        const detalhes = `${c.telefone || "Sem tel"} | ${c.email || "Sem email"} | LTV: ${centavosParaReais(c.ltvCentavos)} | ${c.totalProdutos || 0} Proj.`;
+        doc.text(detalhes, 72, y);
+        y += 5.5;
+      });
+      if (clientes.length > 30) {
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`... e mais ${clientes.length - 30} clientes exportados no arquivo CSV/JSON.`, 14, y);
+        y += 6;
+      }
+    }
+
+    y += 4;
+
+    // 4. Seção Filamentos
+    verificarQuebraPagina(20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text(`ESTOQUE DE FILAMENTOS (${materiais.length})`, 14, y);
+    y += 5;
+
+    if (materiais.length === 0) {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(148, 163, 184);
+      doc.text("Nenhum filamento cadastrado no momento.", 14, y);
+      y += 8;
+    } else {
+      materiais.slice(0, 30).forEach((m: any) => {
+        verificarQuebraPagina(7);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(15, 23, 42);
+        doc.text(`• ${m.nome || m.descricao || "Filamento"}`, 14, y);
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 116, 139);
+        const precoStr = m.precoKgCentavos ? centavosParaReais(m.precoKgCentavos) + "/kg" : (m.precoPorQuilo ? `R$ ${m.precoPorQuilo.toFixed(2)}/kg` : "Preço n/d");
+        const estoqueStr = `${m.estoqueGramas || m.pesoRestanteGramas || 0}g`;
+        const tipoStr = m.tipo || m.material || "PLA";
+        const marcaStr = m.marca || "Genérico";
+        doc.text(`${marcaStr} (${tipoStr}) | Preço: ${precoStr} | Estoque: ${estoqueStr}`, 72, y);
+        y += 5.5;
+      });
+      if (materiais.length > 30) {
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`... e mais ${materiais.length - 30} filamentos exportados no arquivo CSV/JSON.`, 14, y);
+        y += 6;
+      }
+    }
+
+    y += 4;
+
+    // 5. Seção Insumos
+    verificarQuebraPagina(20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text(`INSUMOS DE PRODUÇÃO (${insumos.length})`, 14, y);
+    y += 5;
+
+    if (insumos.length === 0) {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(148, 163, 184);
+      doc.text("Nenhum insumo cadastrado no momento.", 14, y);
+      y += 8;
+    } else {
+      insumos.slice(0, 30).forEach((i: any) => {
+        verificarQuebraPagina(7);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(15, 23, 42);
+        doc.text(`• ${i.nome || i.descricao || "Insumo"}`, 14, y);
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 116, 139);
+        const qtdStr = `${i.quantidade || 0} ${i.unidadeMedida || "un"}`;
+        const precoStr = i.custoCentavos ? centavosParaReais(i.custoCentavos) : (i.custoUnitario ? `R$ ${i.custoUnitario.toFixed(2)}` : "R$ 0,00");
+        doc.text(`${i.categoria || "Geral"} | Custo: ${precoStr} | Quantidade: ${qtdStr}`, 72, y);
+        y += 5.5;
+      });
+    }
+
+    y += 4;
+
+    // 6. Seção Máquinas
+    verificarQuebraPagina(20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text(`MÁQUINAS & IMPRESSORAS 3D (${impressoras.length})`, 14, y);
+    y += 5;
+
+    if (impressoras.length === 0) {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(148, 163, 184);
+      doc.text("Nenhuma máquina cadastrada no momento.", 14, y);
+      y += 8;
+    } else {
+      impressoras.slice(0, 20).forEach((imp: any) => {
+        verificarQuebraPagina(7);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(15, 23, 42);
+        doc.text(`• ${imp.nome || "Impressora"}`, 14, y);
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 116, 139);
+        const statusStr = imp.status || "Ativa";
+        const potenciaStr = imp.potenciaWatts ? `${imp.potenciaWatts}W` : "200W";
+        const bicoStr = imp.diametroBicoMm ? `Bico ${imp.diametroBicoMm}mm` : "";
+        doc.text(`${imp.modelo || imp.marca || "3D"} | Status: ${statusStr} | ${potenciaStr} ${bicoStr}`, 72, y);
+        y += 5.5;
+      });
+    }
+
+    // Rodapé de Conformidade LGPD em todas as páginas
+    const totalPaginas = doc.getNumberOfPages();
+    for (let p = 1; p <= totalPaginas; p++) {
+      doc.setPage(p);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 284, 196, 284);
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text("PrintLog 3D Studio · Em conformidade com o Art. 18, V da Lei 13.709/2018 (LGPD)", 14, 289);
+      doc.text(`Página ${p} de ${totalPaginas}`, 196, 289, { align: "right" });
+    }
+
+    doc.save(`${nomeArquivo}.pdf`);
+  };
+
+  const lidarComExportacao = async (tipo: string) => {
     if (!usuario) {
-      alert("Acesso Negado: Sessão expirada. Faça login novamente para exportar seus dados.");
+      toast.error("Acesso Negado: Faça login novamente para exportar seus dados.");
       return;
     }
 
     definirExportando(true);
+    setTipoExportando(tipo);
     gerarLogBackend(tipo);
 
     const dataHora = new Date().toISOString().split("T")[0];
@@ -95,15 +435,22 @@ export function CardMetricas() {
       if (tipo === "JSON") {
         const dados = {
           metadata: {
-            titular: usuario.nome || "Usuário não identificado",
+            titular: usuario.nome || "Maker",
             usuario_id: usuario.uid,
             dataExportacao: new Date().toISOString(),
-            versaoSistema: "BETA",
+            versaoSistema: "1.0",
             referenciaLegal: "Direito de Portabilidade - Art. 18, V, LGPD",
             politicaPrivacidade: "https://printlog.com.br/politica-de-privacidade",
-            isolamento: "Dados restritos ao UID logado (Art. 6º, I).",
+            isolamento: "Dados restritos ao estúdio do titular autenticado.",
           },
-          dados_pessoais: {
+          estatisticas: {
+            totalClientes,
+            totalMateriais,
+            totalInsumos,
+            totalMaquinas,
+            totalProjetos,
+          },
+          dados_estudio: {
             clientes: useArmazemClientes.getState().clientes,
             projetos: useArmazemPedidos.getState().pedidos,
             filamentos: useArmazemMateriais.getState().materiais,
@@ -118,36 +465,13 @@ export function CardMetricas() {
         link.download = `${nomeArquivo}.json`;
         link.click();
         URL.revokeObjectURL(url);
-        exibirSucesso();
+        exibirSucesso("JSON");
       } else if (tipo === "PLANILHA (CSV)") {
-        let csvContent = "";
-        csvContent += `Titular:,${usuario.nome || "Usuário"}\n`;
-        csvContent += `ID Titular:,${usuario.uid}\n`;
-        csvContent += `Data de Exportacao:,${new Date().toISOString()}\n`;
-        csvContent += `Versão do Sistema:,BETA\n`;
-        csvContent += `Referencia Legal:,Direito de Portabilidade - Art. 18 V LGPD\n`;
-        csvContent += `Politica de Privacidade:,https://printlog.com.br/politica-de-privacidade\n\n`;
-        csvContent += `Tipo de Dado,Quantidade,Nota de Isolamento\n`;
-        csvContent += `Filamentos,${totalMateriais},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Insumos,${totalInsumos},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Máquinas,${totalMaquinas},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Clientes,${totalClientes},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-        csvContent += `Projetos,${totalProjetos},Dados confidenciais e restritos ao UID ${usuario.uid}\n`;
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${nomeArquivo}.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
-        exibirSucesso();
+        gerarCsvCompleto(nomeArquivo);
+        exibirSucesso("Planilha (CSV)");
       } else if (tipo === "PDF") {
-        alert(
-          "Para salvar a portabilidade em PDF, selecione 'Salvar como PDF' na aba de destino da sua impressora na janela a seguir.",
-        );
-        window.print();
-        exibirSucesso();
+        gerarPdfCompleto(nomeArquivo);
+        exibirSucesso("PDF");
       }
     } catch (e) {
       registrar.error(
@@ -158,8 +482,10 @@ export function CardMetricas() {
       toast.error("Falha ao exportar dados.");
     } finally {
       definirExportando(false);
+      setTipoExportando(null);
     }
   };
+
   return (
     <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
@@ -216,8 +542,9 @@ export function CardMetricas() {
               key={tipo}
               onClick={() => lidarComExportacao(tipo)}
               disabled={exportando}
-              className="h-9 px-3.5 rounded-xl bg-card border border-borda-sutil text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-muted/40 transition-all shadow-sm disabled:opacity-50 disabled:cursor-wait cursor-pointer"
+              className="h-9 px-3.5 rounded-xl bg-card border border-borda-sutil text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-muted/40 transition-all shadow-sm disabled:opacity-50 disabled:cursor-wait cursor-pointer flex items-center gap-1.5"
             >
+              {tipoExportando === tipo && <Loader2 size={12} className="animate-spin text-cyan-500" />}
               {tipo}
             </button>
           ))}

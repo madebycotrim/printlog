@@ -20,10 +20,17 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   sendEmailVerification,
+  multiFactor,
+  TotpMultiFactorGenerator,
+  getMultiFactorResolver,
+  MultiFactorResolver,
 } from "firebase/auth";
+import { Dialogo } from "@/compartilhado/componentes";
+import { KeyRound, ShieldAlert } from "lucide-react";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { validarCodigoTotp } from "@/compartilhado/utilitarios/totp";
 import { toast } from "sonner";
 
 import { Usuario } from "@/compartilhado/tipos/modelos";
@@ -44,6 +51,9 @@ interface ContextoAutenticacaoProps {
   enviarLinkMagicoLogin: (email: string) => Promise<void>;
   enviarEmailVerificacao: () => Promise<void>;
   recarregarUsuario: () => Promise<void>;
+  mfaPendente: boolean;
+  resolver2FA: (codigo: string) => Promise<boolean>;
+  cancelar2FA: () => void;
 }
 
 const ContextoAutenticacao = createContext<ContextoAutenticacaoProps>({} as ContextoAutenticacaoProps);
@@ -93,6 +103,11 @@ const registrarAceiteTermos = async (uid: string) => {
 export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const [usuario, definirUsuario] = useState<Usuario | null>(null);
   const [carregando, definirCarregando] = useState(true);
+  const [resolverMfa, setResolverMfa] = useState<MultiFactorResolver | null>(null);
+  const [exigindo2FA, setExigindo2FA] = useState(false);
+  const [codigoMfa, setCodigoMfa] = useState("");
+  const [resolvendoMfa, setResolvendoMfa] = useState(false);
+  const [erroMfa, setErroMfa] = useState<string | null>(null);
   const inicializadoRef = useRef(false);
   const logoutIntencionalRef = useRef(false);
   const usuarioAnteriorRef = useRef<Usuario | null>(null);
@@ -302,13 +317,106 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         { rastreioId: credencial.user.uid, servico: "Autenticacao", evento: "LOGIN_SUCESSO" },
         "Login realizado com sucesso via email/senha"
       );
+
+      // Checa se o 2FA está ativo para esta conta
+      const status2FA = localStorage.getItem("printlog:2fa_ativo") === "true";
+      const sessaoValidada = sessionStorage.getItem("printlog:2fa_sessao_validada") === "true";
+      if (status2FA && !sessaoValidada) {
+        setExigindo2FA(true);
+        setCodigoMfa("");
+        setErroMfa(null);
+      }
     } catch (erro: unknown) {
+      if ((erro as any)?.code === "auth/multi-factor-auth-required") {
+        const resolver = getMultiFactorResolver(autenticacao, erro as AuthError);
+        setResolverMfa(resolver);
+        setExigindo2FA(true);
+        setCodigoMfa("");
+        setErroMfa(null);
+        registrar.info(
+          { rastreioId: "desconhecido", servico: "Autenticacao", evento: "2FA_EXIGIDO" },
+          "Segundo fator TOTP exigido pelo Firebase"
+        );
+        return;
+      }
       registrar.warn(
         { rastreioId: "desconhecido", servico: "Autenticacao", evento: "LOGIN_FALHA", metodo: "email" },
         "Tentativa de login falhou"
       );
       traduzirErroFirebase(erro);
     }
+  };
+
+  const resolver2FA = async (codigo: string): Promise<boolean> => {
+    const digitosLimpos = codigo.trim().replace(/\D/g, "");
+    setResolvendoMfa(true);
+    setErroMfa(null);
+
+    try {
+      // 1. Se veio via resolver nativo do Firebase Auth
+      if (resolverMfa) {
+        const totpHint = resolverMfa.hints.find(
+          (h) => h.factorId === TotpMultiFactorGenerator.FACTOR_ID
+        );
+        if (totpHint) {
+          const assertion = TotpMultiFactorGenerator.assertionForSignIn(
+            totpHint.uid,
+            digitosLimpos
+          );
+          await resolverMfa.resolveSignIn(assertion);
+          setResolverMfa(null);
+          setExigindo2FA(false);
+          setCodigoMfa("");
+          toast.success("Login com 2FA validado com sucesso!");
+          return true;
+        }
+      }
+
+      // 2. Validação matemática oficial TOTP (RFC 6238 com Web Crypto)
+      const segredoSalvo = localStorage.getItem("printlog:2fa_segredo");
+      if (segredoSalvo) {
+        const valido = await validarCodigoTotp(digitosLimpos, segredoSalvo);
+        if (valido) {
+          sessionStorage.setItem("printlog:2fa_sessao_validada", "true");
+          setExigindo2FA(false);
+          setResolverMfa(null);
+          setCodigoMfa("");
+          toast.success("Segundo fator confirmado com sucesso!");
+          return true;
+        }
+
+        // Validação de código de backup / recuperação
+        const backups: string[] = JSON.parse(localStorage.getItem("printlog:2fa_codigos_backup") || "[]");
+        const codigoFormatado = codigo.trim().toUpperCase();
+        if (backups.includes(codigoFormatado)) {
+          const restantes = backups.filter((b) => b !== codigoFormatado);
+          localStorage.setItem("printlog:2fa_codigos_backup", JSON.stringify(restantes));
+          sessionStorage.setItem("printlog:2fa_sessao_validada", "true");
+          setExigindo2FA(false);
+          setResolverMfa(null);
+          setCodigoMfa("");
+          toast.success("Entrada autorizada com código de recuperação!");
+          return true;
+        }
+      }
+
+      setErroMfa("Código de 6 dígitos incorreto ou expirado. Tente novamente.");
+      return false;
+    } catch (erro: any) {
+      registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha no 2FA", erro);
+      setErroMfa("Erro ao validar o código. Tente novamente.");
+      return false;
+    } finally {
+      setResolvendoMfa(false);
+    }
+  };
+
+  const cancelar2FA = () => {
+    setResolverMfa(null);
+    setExigindo2FA(false);
+    setCodigoMfa("");
+    setErroMfa(null);
+    sair(false);
   };
 
   /**
@@ -671,7 +779,75 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     enviarLinkMagicoLogin,
     enviarEmailVerificacao,
     recarregarUsuario,
+    mfaPendente: !!resolverMfa,
+    resolver2FA,
+    cancelar2FA,
   };
 
-  return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;
+  return (
+    <ContextoAutenticacao.Provider value={valor}>
+      {children}
+
+      {/* Modal Global de Validação 2FA (RFC 6238 TOTP) */}
+      {(exigindo2FA || !!resolverMfa) && (
+        <Dialogo
+          aberto={exigindo2FA || !!resolverMfa}
+          aoFechar={cancelar2FA}
+          titulo="Autenticação em Duas Etapas (2FA)"
+          subtitulo="Sua conta está protegida com Google Authenticator / Authy"
+          icone={KeyRound}
+          larguraMax="max-w-sm"
+          corBase="emerald"
+        >
+          <div className="p-6 space-y-5 text-center">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Digite o código de 6 dígitos do seu aplicativo autenticador (ou um dos seus códigos de recuperação):
+            </p>
+
+            <div className="max-w-[200px] mx-auto">
+              <input
+                type="text"
+                maxLength={9}
+                value={codigoMfa}
+                onChange={(e) => setCodigoMfa(e.target.value)}
+                placeholder="000000"
+                autoFocus
+                disabled={resolvendoMfa}
+                className="w-full text-center tracking-[0.3em] font-mono text-xl font-bold h-12 rounded-xl bg-card border-2 border-borda-sutil focus:border-emerald-500 outline-none text-primary transition-all shadow-inner"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && codigoMfa.trim().length >= 6) {
+                    resolver2FA(codigoMfa);
+                  }
+                }}
+              />
+            </div>
+
+            {erroMfa && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-left">
+                <ShieldAlert size={16} className="shrink-0" />
+                <span>{erroMfa}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={cancelar2FA}
+                disabled={resolvendoMfa}
+                className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => resolver2FA(codigoMfa)}
+                disabled={resolvendoMfa || codigoMfa.trim().length < 6}
+                className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+              >
+                {resolvendoMfa ? "Validando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </Dialogo>
+      )}
+    </ContextoAutenticacao.Provider>
+  );
 }

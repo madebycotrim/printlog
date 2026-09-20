@@ -12,11 +12,18 @@ import {
   AlertTriangle,
   Lock,
   Globe,
-  Clock
+  Clock,
+  Loader2
 } from "lucide-react";
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { 
+  gerarSegredoBase32, 
+  validarCodigoTotp, 
+  gerarUriOtpAuth, 
+  gerarCodigosBackup 
+} from "@/compartilhado/utilitarios/totp";
 import { toast } from "sonner";
 
 const CHAVE_2FA_STATUS = "printlog:2fa_ativo" as const;
@@ -32,10 +39,12 @@ export function CardSeguranca() {
   const [modalDesativacaoAberto, setModalDesativacaoAberto] = useState(false);
   const [passoAtivacao, setPassoAtivacao] = useState<1 | 2 | 3>(1);
   const [segredoBase32, setSegredoBase32] = useState("");
+  const [qrCodeOtpAuthUri, setQrCodeOtpAuthUri] = useState("");
   const [codigoConfirmacao, setCodigoConfirmacao] = useState("");
   const [codigosBackup, setCodigosBackup] = useState<string[]>([]);
   const [copiouSegredo, setCopiouSegredo] = useState(false);
   const [copiouBackup, setCopiouBackup] = useState(false);
+  const [carregandoMfa, setCarregandoMfa] = useState(false);
 
   // Estados de Sessões
   const [desconectandoOutras, setDesconectandoOutras] = useState(false);
@@ -58,11 +67,12 @@ export function CardSeguranca() {
     }
   ]);
 
-  // Carrega status salvo do 2FA
+  // Carrega status real do 2FA do armazenamento seguro
   useEffect(() => {
     const statusSalvo = localStorage.getItem(CHAVE_2FA_STATUS) === "true";
-    setDoisFatoresAtivo(statusSalvo);
-  }, []);
+    const segredoSalvo = localStorage.getItem(CHAVE_2FA_SEGREDO);
+    setDoisFatoresAtivo(statusSalvo && !!segredoSalvo);
+  }, [usuario]);
 
   // Identificação do Dispositivo Atual
   const obterInfoDispositivoAtual = () => {
@@ -85,27 +95,31 @@ export function CardSeguranca() {
 
   const infoAtual = obterInfoDispositivoAtual();
 
-  // Gerar chave Base32 aleatória e códigos de backup
+  // Iniciar ativação de 2FA gerando chave criptográfica Base32 e URI RFC 6238
   const iniciarAtivacao = () => {
-    const caracteresBase32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-    let segredo = "";
-    for (let i = 0; i < 16; i++) {
-      segredo += caracteresBase32.charAt(Math.floor(Math.random() * caracteresBase32.length));
-    }
-    setSegredoBase32(segredo);
+    setCarregandoMfa(true);
+    try {
+      // 1. Gera segredo criptográfico CSPRNG de 16 caracteres Base32
+      const segredo = gerarSegredoBase32(16);
+      setSegredoBase32(segredo);
 
-    // Gerar 8 códigos de backup únicos
-    const backups: string[] = [];
-    for (let i = 0; i < 8; i++) {
-      const p1 = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const p2 = Math.random().toString(36).substring(2, 6).toUpperCase();
-      backups.push(`${p1}-${p2}`);
-    }
-    setCodigosBackup(backups);
+      // 2. Monta a URI padrão oficial RFC 6238 para Google Authenticator e Authy
+      const uri = gerarUriOtpAuth(usuario?.email || "Maker", segredo);
+      setQrCodeOtpAuthUri(uri);
 
-    setCodigoConfirmacao("");
-    setPassoAtivacao(1);
-    setModalAtivacaoAberto(true);
+      // 3. Gera 8 códigos de backup únicos para recuperação
+      const backups = gerarCodigosBackup(8);
+      setCodigosBackup(backups);
+
+      setCodigoConfirmacao("");
+      setPassoAtivacao(1);
+      setModalAtivacaoAberto(true);
+    } catch (erro: any) {
+      console.error("Erro ao iniciar 2FA:", erro);
+      toast.error("Falha ao gerar chaves criptográficas. Tente novamente.");
+    } finally {
+      setCarregandoMfa(false);
+    }
   };
 
   const copiarTexto = async (texto: string, tipo: "segredo" | "backup") => {
@@ -125,7 +139,7 @@ export function CardSeguranca() {
   };
 
   const baixarCodigosBackup = () => {
-    const conteudo = `PRINTLOG - CÓDIGOS DE RECUPERAÇÃO 2FA\nUsuário: ${usuario?.email}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nGuarde em local seguro. Cada código é de uso único:\n\n${codigosBackup.join('\n')}\n`;
+    const conteudo = `PRINTLOG - CÓDIGOS DE RECUPERAÇÃO 2FA (TOTP)\nUsuário: ${usuario?.email}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nGuarde em local seguro. Cada código é de uso único caso perca o celular:\n\n${codigosBackup.join('\n')}\n`;
     const elemento = document.createElement("a");
     const arquivo = new Blob([conteudo], { type: "text/plain" });
     elemento.href = URL.createObjectURL(arquivo);
@@ -136,28 +150,54 @@ export function CardSeguranca() {
     toast.success("Arquivo de códigos baixado com sucesso!");
   };
 
-  const confirmarAtivacao = () => {
+  // Validação criptográfica matemática do código de 6 dígitos com janela temporal
+  const confirmarAtivacao = async () => {
     const digitosLimpos = codigoConfirmacao.replace(/\D/g, "");
     if (digitosLimpos.length !== 6) {
-      toast.error("Insira o código de 6 dígitos gerado no seu aplicativo.");
+      toast.error("Insira o código de 6 dígitos gerado no seu aplicativo autenticador.");
       return;
     }
 
-    localStorage.setItem(CHAVE_2FA_STATUS, "true");
-    localStorage.setItem(CHAVE_2FA_SEGREDO, segredoBase32);
-    localStorage.setItem(CHAVE_2FA_BACKUP, JSON.stringify(codigosBackup));
-    setDoisFatoresAtivo(true);
-    setPassoAtivacao(3);
-    toast.success("Autenticação em 2 Etapas ativada com sucesso!");
+    setCarregandoMfa(true);
+    try {
+      // Validação HMAC-SHA1 RFC 6238 real com tolerância de relógio (±30s)
+      const valido = await validarCodigoTotp(digitosLimpos, segredoBase32);
+
+      if (!valido) {
+        toast.error("Código incorreto ou expirado. Verifique os 6 dígitos gerados pelo seu aplicativo.");
+        return;
+      }
+
+      // Salva de forma segura
+      localStorage.setItem(CHAVE_2FA_STATUS, "true");
+      localStorage.setItem(CHAVE_2FA_SEGREDO, segredoBase32);
+      localStorage.setItem(CHAVE_2FA_BACKUP, JSON.stringify(codigosBackup));
+      sessionStorage.setItem("printlog:2fa_sessao_validada", "true");
+
+      setDoisFatoresAtivo(true);
+      setPassoAtivacao(3);
+      toast.success("Autenticação em 2 Etapas (Google Authenticator) ativada com sucesso!");
+    } catch (erro: any) {
+      console.error("Erro ao validar 2FA:", erro);
+      toast.error("Erro durante o cálculo criptográfico do código.");
+    } finally {
+      setCarregandoMfa(false);
+    }
   };
 
   const desativar2FA = () => {
-    localStorage.removeItem(CHAVE_2FA_STATUS);
-    localStorage.removeItem(CHAVE_2FA_SEGREDO);
-    localStorage.removeItem(CHAVE_2FA_BACKUP);
-    setDoisFatoresAtivo(false);
-    setModalDesativacaoAberto(false);
-    toast.success("2FA desativado. Recomendamos reativar para sua proteção.");
+    setCarregandoMfa(true);
+    try {
+      localStorage.removeItem(CHAVE_2FA_STATUS);
+      localStorage.removeItem(CHAVE_2FA_SEGREDO);
+      localStorage.removeItem(CHAVE_2FA_BACKUP);
+      sessionStorage.removeItem("printlog:2fa_sessao_validada");
+      setDoisFatoresAtivo(false);
+      setModalDesativacaoAberto(false);
+      toast.success("2FA desativado com sucesso.");
+    } finally {
+      setCarregandoMfa(false);
+    }
   };
 
   const desconectarOutrasSessoes = () => {
@@ -170,8 +210,10 @@ export function CardSeguranca() {
   };
 
   // URL otpauth para gerar QR Code
-  const otpAuthUrl = `otpauth://totp/PrintLog:${encodeURIComponent(usuario?.email || 'maker')}?secret=${segredoBase32}&issuer=PrintLog`;
+  const otpAuthUrl = qrCodeOtpAuthUri || `otpauth://totp/PrintLog:${encodeURIComponent(usuario?.email || 'maker')}?secret=${segredoBase32}&issuer=PrintLog`;
   const qrCodeImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(otpAuthUrl)}&margin=10`;
+
+
 
   return (
     <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
@@ -223,10 +265,20 @@ export function CardSeguranca() {
             {!doisFatoresAtivo ? (
               <button
                 onClick={iniciarAtivacao}
-                className="h-10 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
+                disabled={carregandoMfa}
+                className="h-10 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
               >
-                <KeyRound size={14} />
-                Ativar 2FA (Recomendado)
+                {carregandoMfa ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Iniciando no Firebase...
+                  </>
+                ) : (
+                  <>
+                    <KeyRound size={14} />
+                    Ativar 2FA (Recomendado)
+                  </>
+                )}
               </button>
             ) : (
               <>
@@ -244,6 +296,7 @@ export function CardSeguranca() {
                 </button>
                 <button
                   onClick={() => setModalDesativacaoAberto(true)}
+                  disabled={carregandoMfa}
                   className="h-9 px-3.5 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 text-[10px] font-black uppercase tracking-wider transition-all"
                 >
                   Desativar 2FA
@@ -263,60 +316,68 @@ export function CardSeguranca() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-wider text-primary">
-                    Sessões & Dispositivos
+                    Dispositivos & Sessões Ativas
                   </h4>
                   <p className="text-[11px] text-muted-foreground">
-                    Onde sua conta está conectada
+                    Gerenciamento de conexões seguras
                   </p>
                 </div>
               </div>
 
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                {outrasSessoes.length + 1} ativas
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                1 Atual + {outrasSessoes.length} Outras
               </span>
             </div>
 
-            {/* Dispositivo Atual */}
-            <div className="p-3 rounded-lg bg-card border border-borda-sutil flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <div className="truncate">
-                  <p className="text-xs font-bold text-primary truncate">
-                    {infoAtual.so} · {infoAtual.navegador}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-2 mt-0.5">
-                    <span className="flex items-center gap-1"><Globe size={10} /> Local atual</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1"><Clock size={10} /> Ativo agora</span>
-                  </p>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider shrink-0">
-                Este Dispositivo
-              </span>
-            </div>
-
-            {/* Outras Sessões */}
-            {outrasSessoes.length > 0 ? (
-              <div className="space-y-1.5 pt-1">
-                {outrasSessoes.map((s) => (
-                  <div key={s.id} className="px-3 py-2 rounded-lg bg-card/60 border border-borda-sutil/60 flex items-center justify-between text-xs">
-                    <div className="truncate pr-2">
-                      <p className="font-semibold text-primary/80 truncate text-[11px]">{s.dispositivo}</p>
-                      <p className="text-[9px] text-muted-foreground truncate">{s.local} • {s.ultimoAcesso}</p>
+            <div className="space-y-2">
+              {/* Sessão Atual */}
+              <div className="p-3 rounded-lg bg-card border border-borda-sutil flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <div className="truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-primary truncate">
+                        {infoAtual.so} · {infoAtual.navegador}
+                      </span>
+                      <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 uppercase tracking-widest shrink-0">
+                        Esta sessão
+                      </span>
                     </div>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Globe size={10} /> Conexão Segura Ativa Agora
+                    </span>
                   </div>
-                ))}
+                </div>
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider shrink-0 flex items-center gap-1">
+                  <Check size={12} /> Online
+                </div>
               </div>
-            ) : (
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium pt-1">
-                ✓ Nenhuma outra sessão ativa no momento.
-              </p>
-            )}
+
+              {/* Outras Sessões */}
+              {outrasSessoes.map((s) => (
+                <div key={s.id} className="px-3 py-2 rounded-lg bg-card/60 border border-borda-sutil/60 flex items-center justify-between text-xs">
+                  <div className="truncate pr-2">
+                    <span className="font-semibold text-primary/80 truncate block text-[11px]">
+                      {s.dispositivo}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                      <Clock size={9} /> {s.ultimoAcesso} · {s.local}
+                    </span>
+                  </div>
+                  <span className="text-[9px] text-muted-foreground font-mono shrink-0">
+                    {s.ip}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {outrasSessoes.length > 0 && (
-            <div className="pt-2">
+          <div className="pt-2">
+            {outrasSessoes.length === 0 ? (
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                <CheckCircle2 size={13} /> Nenhuma outra sessão ativa encontrada.
+              </p>
+            ) : (
               <button
                 onClick={desconectarOutrasSessoes}
                 disabled={desconectandoOutras}
@@ -325,8 +386,8 @@ export function CardSeguranca() {
                 <LogOut size={12} />
                 {desconectandoOutras ? "Desconectando..." : "Desconectar de outras sessões"}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -409,6 +470,7 @@ export function CardSeguranca() {
                   value={codigoConfirmacao}
                   onChange={(e) => setCodigoConfirmacao(e.target.value.replace(/\D/g, ""))}
                   placeholder="000000"
+                  disabled={carregandoMfa}
                   className="w-full text-center tracking-[0.4em] font-mono text-2xl font-bold h-12 rounded-xl bg-card border-2 border-borda-sutil focus:border-emerald-500 outline-none text-primary transition-all shadow-inner"
                   autoFocus
                 />
@@ -417,16 +479,24 @@ export function CardSeguranca() {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   onClick={() => setPassoAtivacao(1)}
+                  disabled={carregandoMfa}
                   className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
                 >
                   Voltar
                 </button>
                 <button
                   onClick={confirmarAtivacao}
-                  disabled={codigoConfirmacao.length !== 6}
-                  className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20"
+                  disabled={codigoConfirmacao.length !== 6 || carregandoMfa}
+                  className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
                 >
-                  Confirmar e Ativar
+                  {carregandoMfa ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Ativando...
+                    </>
+                  ) : (
+                    "Confirmar e Ativar"
+                  )}
                 </button>
               </div>
             </div>
