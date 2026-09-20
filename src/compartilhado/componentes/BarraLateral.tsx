@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  Terminal,
 } from "lucide-react";
 
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -124,15 +125,8 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     },
   ];
 
-  // Adiciona grupo administrativo se for o dono
-  if (ehAdmin(usuario?.email)) {
-    grupos.push({
-      titulo: "Administração",
-      itens: [
-        { nome: "Gestão Master", icone: ShieldCheck, caminho: "/admin/gestao-fundadores" },
-      ],
-    });
-  }
+  const ehDono = ehAdmin(usuario?.email);
+  const consoleAtivo = localizacao.pathname.startsWith("/admin");
 
   function itemAtivo(caminho: string, exato?: boolean) {
     return exato ? localizacao.pathname === caminho : localizacao.pathname.startsWith(caminho);
@@ -297,6 +291,39 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
             {/* Elegant Faded Separator */}
             <div className={`absolute top-0 h-[1px] bg-gradient-to-r from-transparent via-borda-sutil to-transparent ${colapsada ? "left-2 right-2" : "left-6 right-6"}`} />
             
+            {/* Botão Console (Exclusivo Dono / Bootstrap) - Antes da Linha do Usuário */}
+            {ehDono && (
+              <div className={colapsada ? "mb-2 flex justify-center" : "mb-2"}>
+                <Link
+                  to="/admin/console"
+                  title={colapsada ? "Console Administrativo" : undefined}
+                  onClick={() => aoFechar?.()}
+                  className={`
+                    group flex items-center rounded-xl transition-all duration-200 relative overflow-hidden
+                    ${colapsada 
+                      ? "justify-center w-10 h-10 p-0" 
+                      : "gap-2.5 px-3 py-2 w-full"}
+                    ${consoleAtivo 
+                      ? "text-primaria bg-primaria/10 border border-primaria/30 shadow-sm" 
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-muted/30 hover:bg-muted/60 dark:hover:bg-white/[0.04] border border-borda-sutil hover:border-primaria/30"}
+                  `}
+                >
+                  <div className={`flex items-center justify-center p-1 rounded-lg shrink-0 transition-colors ${consoleAtivo ? "bg-primaria text-white" : "bg-zinc-200/50 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 group-hover:text-primaria"}`}>
+                    <Terminal size={colapsada ? 16 : 14} strokeWidth={consoleAtivo ? 2.5 : 2} />
+                  </div>
+
+                  {!colapsada && (
+                    <>
+                      <span className="text-xs font-bold leading-none tracking-tight flex-1">Console</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-primaria/10 text-primaria border border-primaria/20 shrink-0">
+                        Dono
+                      </span>
+                    </>
+                  )}
+                </Link>
+              </div>
+            )}
+
             <div className={`flex items-center gap-3 p-2 rounded-xl bg-muted/40 dark:bg-white/[0.02] transition-all group overflow-hidden ${colapsada ? "justify-center p-1.5 bg-transparent" : "hover:bg-muted/60 dark:hover:bg-white/[0.04]"}`}>
               <div 
                 title={colapsada ? "Sair da plataforma" : undefined} 

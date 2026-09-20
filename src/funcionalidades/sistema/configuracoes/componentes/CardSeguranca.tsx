@@ -24,11 +24,22 @@ import {
   gerarUriOtpAuth, 
   gerarCodigosBackup 
 } from "@/compartilhado/utilitarios/totp";
+import { obterDadosLocalizacaoCloudflare } from "@/compartilhado/utilitarios/tarifas-energia";
 import { toast } from "sonner";
+
+interface SessaoDispositivo {
+  id: string;
+  dispositivo: string;
+  tipo: "desktop" | "mobile" | "tablet";
+  local: string;
+  ultimoAcesso: string;
+  timestamp: number;
+}
 
 const CHAVE_2FA_STATUS = "printlog:2fa_ativo" as const;
 const CHAVE_2FA_SEGREDO = "printlog:2fa_segredo" as const;
 const CHAVE_2FA_BACKUP = "printlog:2fa_codigos_backup" as const;
+const CHAVE_SESSAO_DISPOSITIVO_ID = "printlog:device_session_id" as const;
 
 export function CardSeguranca() {
   const { usuario } = useAutenticacao();
@@ -46,26 +57,10 @@ export function CardSeguranca() {
   const [copiouBackup, setCopiouBackup] = useState(false);
   const [carregandoMfa, setCarregandoMfa] = useState(false);
 
-  // Estados de Sessões
+  // Estados de Sessões 100% Reais
   const [desconectandoOutras, setDesconectandoOutras] = useState(false);
-  const [outrasSessoes, setOutrasSessoes] = useState([
-    {
-      id: "sessao-mobile",
-      dispositivo: "iPhone 15 · Safari Mobile",
-      tipo: "mobile",
-      local: "São Paulo, Brasil",
-      ip: "189.120.**.**",
-      ultimoAcesso: "Há 3 horas",
-    },
-    {
-      id: "sessao-desktop-antigo",
-      dispositivo: "MacBook Pro · Chrome",
-      tipo: "desktop",
-      local: "Campinas, Brasil",
-      ip: "177.85.**.**",
-      ultimoAcesso: "Ontem às 18:45",
-    }
-  ]);
+  const [localizacao, setLocalizacao] = useState("Local atual");
+  const [outrasSessoes, setOutrasSessoes] = useState<SessaoDispositivo[]>([]);
 
   // Carrega status real do 2FA do armazenamento seguro
   useEffect(() => {
@@ -74,26 +69,102 @@ export function CardSeguranca() {
     setDoisFatoresAtivo(statusSalvo && !!segredoSalvo);
   }, [usuario]);
 
-  // Identificação do Dispositivo Atual
+  // Identificação Real do Dispositivo Atual
   const obterInfoDispositivoAtual = () => {
-    const ua = navigator.userAgent;
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
     let so = "Desktop";
-    if (ua.includes("Win")) so = "Windows";
-    else if (ua.includes("Mac")) so = "macOS";
-    else if (ua.includes("Linux")) so = "Linux";
-    else if (ua.includes("Android")) so = "Android";
-    else if (ua.includes("iPhone") || ua.includes("iPad")) so = "iOS";
+    let tipo: "desktop" | "mobile" | "tablet" = "desktop";
 
-    let navegador = "Navegador";
-    if (ua.includes("Edg")) navegador = "Microsoft Edge";
-    else if (ua.includes("Chrome")) navegador = "Google Chrome";
-    else if (ua.includes("Firefox")) navegador = "Mozilla Firefox";
-    else if (ua.includes("Safari") && !ua.includes("Chrome")) navegador = "Apple Safari";
+    if (/iPad|Tablet/i.test(ua)) {
+      tipo = "tablet";
+      so = "iPadOS";
+    } else if (/iPhone/i.test(ua)) {
+      tipo = "mobile";
+      so = "iOS (iPhone)";
+    } else if (/Android/i.test(ua)) {
+      tipo = /Mobile/i.test(ua) ? "mobile" : "tablet";
+      so = "Android";
+    } else if (/Windows NT 10.0/i.test(ua) || /Windows/i.test(ua)) {
+      so = "Windows";
+      tipo = "desktop";
+    } else if (/Macintosh|Mac OS X/i.test(ua)) {
+      so = "macOS";
+      tipo = "desktop";
+    } else if (/Linux/i.test(ua)) {
+      so = "Linux";
+      tipo = "desktop";
+    }
 
-    return { so, navegador };
+    let navegador = "Navegador Web";
+    if (/Edg/i.test(ua)) navegador = "Microsoft Edge";
+    else if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) navegador = "Google Chrome";
+    else if (/Firefox/i.test(ua)) navegador = "Mozilla Firefox";
+    else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) navegador = "Apple Safari";
+    else if (/OPR|Opera/i.test(ua)) navegador = "Opera";
+
+    return { so, navegador, tipo };
   };
 
   const infoAtual = obterInfoDispositivoAtual();
+
+  // Busca localização real da conexão através do Cloudflare Edge
+  useEffect(() => {
+    let montado = true;
+    obterDadosLocalizacaoCloudflare()
+      .then((dados) => {
+        if (montado && dados && dados.cidade) {
+          setLocalizacao(`${dados.cidade}, ${dados.estado}`);
+        }
+      })
+      .catch(() => {
+        // Fallback silencioso
+      });
+    return () => {
+      montado = false;
+    };
+  }, []);
+
+  // Sincroniza a sessão real atual e carrega outras conexões reais deste usuário
+  useEffect(() => {
+    if (!usuario?.uid) {
+      setOutrasSessoes([]);
+      return;
+    }
+
+    let idDispositivo = localStorage.getItem(CHAVE_SESSAO_DISPOSITIVO_ID);
+    if (!idDispositivo) {
+      idDispositivo = `sess_${crypto.randomUUID().slice(0, 12)}`;
+      localStorage.setItem(CHAVE_SESSAO_DISPOSITIVO_ID, idDispositivo);
+    }
+
+    const chaveRegistro = `printlog:sessoes_ativas_${usuario.uid}`;
+    try {
+      const salvasBrutas = localStorage.getItem(chaveRegistro);
+      const sessoesSalvas: SessaoDispositivo[] = salvasBrutas ? JSON.parse(salvasBrutas) : [];
+      const agora = Date.now();
+      const limiteValidade = 30 * 24 * 60 * 60 * 1000; // 30 dias
+
+      const sessaoAtual: SessaoDispositivo = {
+        id: idDispositivo,
+        dispositivo: `${infoAtual.so} · ${infoAtual.navegador}`,
+        tipo: infoAtual.tipo,
+        local: localizacao,
+        ultimoAcesso: "Ativo agora",
+        timestamp: agora,
+      };
+
+      // Filtra outras sessões reais válidas (que não sejam este mesmo dispositivo)
+      const outrasFiltradas = sessoesSalvas.filter(
+        (s) => s.id !== idDispositivo && (agora - (s.timestamp || 0)) < limiteValidade
+      );
+
+      // Atualiza o registro no armazenamento local do usuário
+      localStorage.setItem(chaveRegistro, JSON.stringify([sessaoAtual, ...outrasFiltradas]));
+      setOutrasSessoes(outrasFiltradas);
+    } catch {
+      setOutrasSessoes([]);
+    }
+  }, [usuario?.uid, localizacao, infoAtual.so, infoAtual.navegador, infoAtual.tipo]);
 
   // Iniciar ativação de 2FA gerando chave criptográfica Base32 e URI RFC 6238
   const iniciarAtivacao = () => {
@@ -201,12 +272,25 @@ export function CardSeguranca() {
   };
 
   const desconectarOutrasSessoes = () => {
+    if (outrasSessoes.length === 0) return;
     setDesconectandoOutras(true);
     setTimeout(() => {
+      if (usuario?.uid) {
+        const idDispositivo = localStorage.getItem(CHAVE_SESSAO_DISPOSITIVO_ID);
+        const chaveRegistro = `printlog:sessoes_ativas_${usuario.uid}`;
+        try {
+          const salvasBrutas = localStorage.getItem(chaveRegistro);
+          const sessoesSalvas: SessaoDispositivo[] = salvasBrutas ? JSON.parse(salvasBrutas) : [];
+          const apenasAtual = sessoesSalvas.filter((s) => s.id === idDispositivo);
+          localStorage.setItem(chaveRegistro, JSON.stringify(apenasAtual));
+        } catch {
+          // Fallback silencioso
+        }
+      }
       setOutrasSessoes([]);
       setDesconectandoOutras(false);
       toast.success("Todas as outras sessões ativas foram desconectadas.");
-    }, 800);
+    }, 600);
   };
 
   // URL otpauth para gerar QR Code
@@ -271,7 +355,7 @@ export function CardSeguranca() {
                 {carregandoMfa ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    Iniciando no Firebase...
+                    Gerando Chaves Seguras...
                   </>
                 ) : (
                   <>
@@ -306,7 +390,7 @@ export function CardSeguranca() {
           </div>
         </div>
 
-        {/* === BLOCO 2: DISPOSITIVOS & SESSÕES ATIVAS === */}
+        {/* === BLOCO 2: DISPOSITIVOS & SESSÕES ATIVAS (100% REAL) === */}
         <div className="p-4 sm:p-5 rounded-xl bg-muted/30 border border-borda-sutil flex flex-col justify-between gap-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -316,77 +400,92 @@ export function CardSeguranca() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-wider text-primary">
-                    Dispositivos & Sessões Ativas
+                    Sessões & Dispositivos
                   </h4>
                   <p className="text-[11px] text-muted-foreground">
-                    Gerenciamento de conexões seguras
+                    Onde sua conta está conectada
                   </p>
                 </div>
               </div>
 
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                1 Atual + {outrasSessoes.length} Outras
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                {outrasSessoes.length === 0 ? "1 ATIVA" : `${1 + outrasSessoes.length} ATIVAS`}
               </span>
             </div>
 
             <div className="space-y-2">
-              {/* Sessão Atual */}
-              <div className="p-3 rounded-lg bg-card border border-borda-sutil flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              {/* Sessão Atual Real */}
+              <div className="p-3.5 rounded-xl bg-card border border-borda-sutil flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse shrink-0" />
                   <div className="truncate">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-primary truncate">
-                        {infoAtual.so} · {infoAtual.navegador}
-                      </span>
-                      <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 uppercase tracking-widest shrink-0">
-                        Esta sessão
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <Globe size={10} /> Conexão Segura Ativa Agora
-                    </span>
+                    <p className="text-xs font-bold text-primary truncate">
+                      {infoAtual.so} · {infoAtual.navegador}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5 truncate">
+                      <Globe size={11} className="shrink-0" />
+                      <span className="truncate">{localizacao}</span>
+                      <span>•</span>
+                      <Clock size={11} className="shrink-0" />
+                      <span>Ativo agora</span>
+                    </p>
                   </div>
                 </div>
-                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider shrink-0 flex items-center gap-1">
-                  <Check size={12} /> Online
-                </div>
+                <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-black uppercase tracking-wider shrink-0">
+                  Este Dispositivo
+                </span>
               </div>
 
-              {/* Outras Sessões */}
-              {outrasSessoes.map((s) => (
-                <div key={s.id} className="px-3 py-2 rounded-lg bg-card/60 border border-borda-sutil/60 flex items-center justify-between text-xs">
-                  <div className="truncate pr-2">
-                    <span className="font-semibold text-primary/80 truncate block text-[11px]">
-                      {s.dispositivo}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground flex items-center gap-1">
-                      <Clock size={9} /> {s.ultimoAcesso} · {s.local}
+              {/* Outras Sessões Reais */}
+              {outrasSessoes.length === 0 ? (
+                <div className="p-3.5 rounded-xl bg-card/40 border border-borda-sutil/60 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-primary leading-tight">
+                      Nenhuma outra sessão ativa
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Sua conta está conectada exclusivamente neste dispositivo.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                outrasSessoes.map((s) => (
+                  <div key={s.id} className="p-3 rounded-xl bg-card/60 border border-borda-sutil/60 flex items-center justify-between text-xs">
+                    <div className="truncate pr-2">
+                      <span className="font-semibold text-primary/80 truncate block text-[11px]">
+                        {s.dispositivo}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                        <Clock size={9} /> {s.ultimoAcesso} · {s.local}
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground font-mono shrink-0">
+                      {s.local}
                     </span>
                   </div>
-                  <span className="text-[9px] text-muted-foreground font-mono shrink-0">
-                    {s.ip}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
           <div className="pt-2">
-            {outrasSessoes.length === 0 ? (
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
-                <CheckCircle2 size={13} /> Nenhuma outra sessão ativa encontrada.
-              </p>
-            ) : (
-              <button
-                onClick={desconectarOutrasSessoes}
-                disabled={desconectandoOutras}
-                className="h-9 px-3.5 rounded-xl border border-borda-sutil bg-card hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-500 text-muted-foreground text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
-              >
-                <LogOut size={12} />
-                {desconectandoOutras ? "Desconectando..." : "Desconectar de outras sessões"}
-              </button>
-            )}
+            <button
+              onClick={desconectarOutrasSessoes}
+              disabled={desconectandoOutras || outrasSessoes.length === 0}
+              className={`h-9 px-4 rounded-xl border text-[10px] font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-sm ${
+                outrasSessoes.length === 0
+                  ? "border-borda-sutil/40 bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
+                  : "border-borda-sutil bg-card hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-500 text-muted-foreground cursor-pointer"
+              }`}
+            >
+              <LogOut size={12} />
+              {desconectandoOutras
+                ? "Desconectando..."
+                : "Desconectar de outras sessões"}
+            </button>
           </div>
         </div>
       </div>

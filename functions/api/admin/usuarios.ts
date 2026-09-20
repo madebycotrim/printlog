@@ -28,9 +28,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
     const usuarioId = data.uid;
     if (!usuarioId) return new Response("Não autorizado", { status: 401 });
 
-    const userEmail = data.email;
-    const donoEmail = env.EMAIL_DONO;
-    if (!userEmail || !donoEmail || userEmail.toLowerCase() !== donoEmail.toLowerCase()) {
+    const userEmail = (data.email || "").trim().toLowerCase();
+    const donoEmail = (env.EMAIL_DONO || "").trim().toLowerCase();
+    if (!userEmail || !donoEmail || userEmail !== donoEmail) {
         return new Response("Não autorizado", { status: 403 });
     }
 

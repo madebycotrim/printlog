@@ -37,7 +37,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             }
 
             if (!resultado) {
-                // Retorna valores padrão sem criar o registro ainda
+                // Se for o primeiro acesso do usuário, cria o registro inicial no banco para aparecer no Console
+                if (usuarioId) {
+                    context.waitUntil(
+                        env.DB.prepare(`
+                            INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, logo_estudio, plano, ciclo_pagamento, atualizado_em)
+                            VALUES (?, ?, 'R$ 0,00', 'R$ 0,00', 'R$ 0,00', '0,00%', '', '', '', 'FREE', 'MENSAL', ?)
+                            ON CONFLICT(id_usuario) DO UPDATE SET email = COALESCE(configuracoes_usuario.email, excluded.email)
+                        `).bind(usuarioId, emailUsuario || null, new Date().toISOString()).run()
+                    );
+                }
+
+                // Retorna valores padrão sem bloquear
                 return new Response(JSON.stringify({
                     custoEnergia: "R$ 0,00",
                     horaMaquina: "R$ 0,00",

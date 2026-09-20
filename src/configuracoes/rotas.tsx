@@ -165,6 +165,7 @@ export function RoteadorPrincipal() {
                   <Route path="/financeiro" element={<PaginaFinanceiro />} />
                   <Route path="/configuracoes" element={<PaginaConfiguracoes />} />
                   <Route path="/central-maker" element={<PaginaAjuda />} />
+                  <Route path="/admin/console" element={<PaginaAdmin />} />
                   <Route path="/admin/gestao-fundadores" element={<PaginaAdmin />} />
                   <Route path="/meus-dados" element={<PaginaGestaoDados />} />
                 </Route>
