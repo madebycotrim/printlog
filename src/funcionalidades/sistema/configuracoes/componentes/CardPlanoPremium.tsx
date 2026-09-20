@@ -38,10 +38,10 @@ export function CardPlanoPremium({
     const ehFundador = plano === "FUNDADOR";
 
     return (
-        <div className="relative rounded-[24px] overflow-hidden border border-gray-200/50 dark:border-white/[0.03] bg-white dark:bg-[#0c0c0e] p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_40px_80px_-16px_rgba(0,0,0,0.6)] group transition-all duration-700">
+        <div className="relative rounded-2xl overflow-hidden border border-borda-sutil bg-card p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-premium group transition-all duration-700">
             {/* Gradientes e Efeitos de Luz Premium */}
-            <div className="absolute top-[-50%] left-[-20%] w-[80%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.08),transparent_50%)] dark:bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.15),transparent_50%)] pointer-events-none blur-3xl animate-pulse duration-[10s]" />
-            <div className="absolute bottom-[-50%] right-[-20%] w-[80%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.12),transparent_50%)] pointer-events-none blur-3xl" />
+            <div className="absolute top-[-50%] left-[-20%] w-[80%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.06),transparent_50%)] pointer-events-none blur-3xl animate-pulse duration-[10s]" />
+            <div className="absolute bottom-[-50%] right-[-20%] w-[80%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_50%)] pointer-events-none blur-3xl" />
 
             {/* Coluna Esquerda: Badge e Destaque do Plano */}
             <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4 z-10 w-full md:w-1/3 shrink-0">
@@ -50,10 +50,10 @@ export function CardPlanoPremium({
                         {ehFundador ? <Crown size={20} className="fill-current" /> : <Zap size={20} className="fill-current" />}
                     </div>
                     <div>
-                        <span className="text-[9px] font-black tracking-[0.2em] uppercase text-zinc-500">
+                        <span className="text-[9px] font-black tracking-[0.2em] uppercase text-muted-foreground">
                             Nível de Acesso
                         </span>
-                        <h3 className="text-xl font-black tracking-tight mt-0.5 text-zinc-900 dark:text-white">
+                        <h3 className="text-xl font-black tracking-tight mt-0.5 text-primary">
                             {ehFundador ? 'Maker Fundador' : 'Maker Pro'}
                         </h3>
                     </div>
@@ -67,28 +67,28 @@ export function CardPlanoPremium({
             </div>
 
             {/* Divisor vertical em telas grandes */}
-            <div className="hidden md:block w-px h-32 bg-gradient-to-b from-transparent via-gray-200 dark:via-white/5 to-transparent shrink-0" />
+            <div className="hidden md:block w-px h-32 bg-borda-sutil shrink-0" />
 
             {/* Coluna Direita: Métricas de Assinatura */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 z-10 w-full flex-1">
                 {!ehFundador && (
                     <>
                         <div className="flex flex-col gap-1 items-center md:items-start">
-                            <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                                <RotateCcw size={14} className="text-gray-400 dark:text-zinc-600" />
+                            <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
+                                <RotateCcw size={14} className="text-muted-foreground" />
                                 Faturamento
                             </div>
-                            <span className="text-xl font-black text-gray-800 dark:text-zinc-200 mt-1 uppercase tracking-tight">
+                            <span className="text-xl font-black text-primary mt-1 uppercase tracking-tight">
                                 {cicloPagamento || "MENSAL"}
                             </span>
                         </div>
 
                         <div className="flex flex-col gap-1 items-center md:items-start">
-                            <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                                <Calendar size={14} className="text-gray-400 dark:text-zinc-600" />
+                            <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
+                                <Calendar size={14} className="text-muted-foreground" />
                                 Renovação
                             </div>
-                            <span className="text-xl font-black text-gray-800 dark:text-zinc-200 mt-1 tracking-tight">
+                            <span className="text-xl font-black text-primary mt-1 tracking-tight">
                                 {obterDataVencimentoFormatada()}
                             </span>
                         </div>
@@ -96,8 +96,8 @@ export function CardPlanoPremium({
                 )}
 
                 <div className={`flex flex-col gap-1 items-center md:items-start ${ehFundador ? 'sm:col-start-3' : ''}`}>
-                    <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                        <Sparkles size={14} className="text-gray-400 dark:text-zinc-600" />
+                    <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
+                        <Sparkles size={14} className="text-muted-foreground" />
                         Tempo Restante
                     </div>
                     <span className={`text-xl font-black mt-1 tracking-tight uppercase ${obterDiasRestantes().includes("Expirado") ? "text-red-500 animate-pulse" : "text-emerald-500"}`}>

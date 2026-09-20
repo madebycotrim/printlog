@@ -75,9 +75,9 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
           repeat: destaque ? 4 : 0,
           ease: "easeInOut",
         }}
-        className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-5 md:p-6 flex flex-col gap-4 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-700"
+        className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-4 relative overflow-hidden group hover:shadow-premium transition-all duration-700"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
         <CabecalhoCard
           titulo="Privacidade (LGPD)"
           descricao="Lei nº 13.709/2018 — Sua privacidade é um direito"
@@ -86,7 +86,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
         />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2">
-          <p className="text-xs leading-relaxed text-gray-600 dark:text-zinc-400">
+          <p className="text-xs leading-relaxed text-muted-foreground">
             Seus dados são tratados com transparência e responsabilidade, conforme nossa{" "}
             <a
               href="/politica-de-privacidade"
@@ -99,7 +99,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
             Para exercer seus direitos ou tirar dúvidas, fale com nosso DPO:{" "}
             <a
               href="mailto:privacidade@printlog.com.br"
-              className="font-bold text-gray-900 dark:text-white hover:underline transition-colors"
+              className="font-bold text-primary hover:underline transition-colors"
             >
               privacidade@printlog.com.br
             </a>
@@ -115,7 +115,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
             </button>
             <button
               onClick={abrirModal}
-              className="h-10 px-4 rounded-xl border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:border-rose-300 dark:hover:border-rose-500/30 text-[10px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"
+              className="h-10 px-4 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 text-[10px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"
             >
               <Trash2 size={13} /> Excluir Conta
             </button>
@@ -135,7 +135,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
             {[1, 2].map((s) => (
               <div key={s} className="flex-1 flex flex-col gap-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-all ${s <= passo ? "bg-gradient-to-r from-rose-500 to-rose-600" : "bg-gray-200 dark:bg-white/10"}`}
+                  className={`h-1.5 rounded-full transition-all ${s <= passo ? "bg-gradient-to-r from-rose-500 to-rose-600" : "bg-muted"}`}
                 />
                 <p
                   className={`text-[10px] font-bold uppercase tracking-wider ${s <= passo ? "text-rose-600 dark:text-rose-400" : "text-gray-400 dark:text-zinc-600"}`}
@@ -173,7 +173,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   onClick={() => definirModalAberto(false)}
-                  className="h-11 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-xs font-bold text-gray-700 dark:text-zinc-300 transition-all font-mono uppercase tracking-wider"
+                  className="h-11 rounded-xl bg-muted border border-borda-sutil hover:bg-muted/80 text-xs font-bold text-muted-foreground transition-all font-mono uppercase tracking-wider"
                 >
                   Cancelar
                 </button>
@@ -188,21 +188,21 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
           ) : (
             <div className="space-y-6">
               <div className="text-center px-2">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">Quase lá...</h3>
-                <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-primary mb-2">Quase lá...</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Para sua segurança, confirme pela última vez se deseja encerrar sua conta.
                 </p>
               </div>
 
-              <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-white/10 hover:border-rose-300 dark:hover:border-rose-500/30 bg-gray-50 dark:bg-white/[0.02] cursor-pointer transition-all">
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-borda-sutil hover:border-rose-300 dark:hover:border-rose-500/30 bg-muted/30 cursor-pointer transition-all">
                 <input
                   type="checkbox"
                   checked={confirmouEliminacao}
                   onChange={(e) => definirConfirmouEliminacao(e.target.checked)}
-                  className="mt-0.5 h-4.5 w-4.5 rounded text-zinc-900 dark:text-white focus:ring-zinc-800 dark:focus:ring-white border-gray-300 bg-white dark:border-white/20 dark:bg-zinc-800 cursor-pointer transition-all"
+                  className="mt-0.5 h-4.5 w-4.5 rounded text-zinc-900 dark:text-white focus:ring-zinc-800 dark:focus:ring-white border-gray-300 bg-card dark:border-borda-sutil cursor-pointer transition-all"
                 />
-                <span className="text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                  <strong>Concordo:</strong> Entendo que meus dados serão apagados permanentemente (salvo retenções
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  <strong className="text-primary">Concordo:</strong> Entendo que meus dados serão apagados permanentemente (salvo retenções
                   legais) e quero excluir minha conta.
                 </span>
               </label>
@@ -213,7 +213,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
                     definirPasso(1);
                     definirConfirmouEliminacao(false);
                   }}
-                  className="h-11 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-xs font-bold text-gray-700 dark:text-zinc-300 transition-all uppercase tracking-wider"
+                  className="h-11 rounded-xl bg-muted border border-borda-sutil hover:bg-muted/80 text-xs font-bold text-muted-foreground transition-all uppercase tracking-wider"
                 >
                   Voltar
                 </button>

@@ -38,8 +38,8 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
   const alternarModoDesempenho = useArmazemDispositivo((s) => s.alternarModoDesempenho);
 
   return (
-    <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-700">
-      <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/[0.03] to-zinc-500/[0.01] dark:from-zinc-500/[0.05] dark:to-zinc-500/[0.02] pointer-events-none" />
+    <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
       <CabecalhoCard
         titulo="Aparência Visual"
         descricao="Tema, cores e tipografia"
@@ -61,7 +61,7 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
             className={`rounded-xl border p-2.5 flex flex-col items-center gap-1.5 transition-all outline-none ${
               modoTema === modo.id
                 ? "border-[var(--cor-primaria)] bg-[var(--cor-primaria)]/5"
-                : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                : "border-borda-sutil bg-muted/30 hover:bg-muted/50"
             }`}
             style={modoTema === modo.id ? { borderColor: "var(--cor-primaria)" } : {}}
           >
@@ -69,7 +69,7 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
               <modo.icone size={14} className={modo.corIcone} />
               {modoTema === modo.id && <Check size={10} className="text-emerald-500" />}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-tight text-gray-900 dark:text-white text-center">
+            <span className="text-[10px] font-black uppercase tracking-tight text-primary text-center">
               {modo.label}
             </span>
           </button>
@@ -77,13 +77,13 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
       </div>
 
       {/* PALETA DE CORES */}
-      <div className="bg-gray-50/70 dark:bg-white/[0.02] p-3 rounded-xl border border-gray-200 dark:border-white/10">
+      <div className="bg-muted/30 p-3 rounded-xl border border-borda-sutil">
         <div className="flex flex-wrap justify-center gap-1.5">
           {coresDisponiveis.map((cor) => (
             <button
               key={cor.id}
               onClick={() => definirCorPrimaria(cor.id as CorPrimaria)}
-              className={`relative w-7 h-7 rounded-full ${cor.class} border-[3px] border-white dark:border-card-fundo transition-all hover:scale-110 active:scale-95 shadow-sm ${corPrimaria === cor.id ? "outline outline-offset-1 scale-110" : ""}`}
+              className={`relative w-7 h-7 rounded-full ${cor.class} border-[3px] border-white dark:border-card transition-all hover:scale-110 active:scale-95 shadow-sm ${corPrimaria === cor.id ? "outline outline-offset-1 scale-110" : ""}`}
               style={corPrimaria === cor.id ? { outlineColor: "var(--cor-primaria)", outlineWidth: "2px" } : undefined}
               aria-label={`Selecionar Tema ${cor.nome}`}
             >
@@ -97,8 +97,8 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
 
       {/* TIPOGRAFIA - LAYOUT ORIGINAL */}
       <div className="flex items-center gap-2">
-        <Type size={12} className="text-gray-400 shrink-0" />
-        <p className="text-xs uppercase tracking-[0.16em] font-black text-gray-500 dark:text-zinc-500 shrink-0">
+        <Type size={12} className="text-muted-foreground shrink-0" />
+        <p className="text-xs uppercase tracking-[0.16em] font-black text-muted-foreground shrink-0">
           Fonte
         </p>
         <div className="flex gap-1.5 flex-1">
@@ -109,7 +109,7 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
               className={`flex-1 h-7 rounded-xl border text-[10px] font-black uppercase transition-all ${
                 fonte === f.id
                   ? "text-white shadow-sm"
-                  : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-zinc-500 hover:border-gray-300"
+                  : "border-borda-sutil bg-muted/30 text-muted-foreground hover:bg-muted/50"
               }`}
               style={
                 fonte === f.id ? { backgroundColor: "var(--cor-primaria)", borderColor: "var(--cor-primaria)" } : {}
@@ -122,14 +122,14 @@ export function CardAparencia({ pendente }: CardAparenciaProps) {
       </div>
 
       {/* MODO DESEMPENHO */}
-      <div className="mt-2 p-4 rounded-xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 flex items-center justify-between gap-4">
+      <div className="mt-2 p-4 rounded-xl bg-muted/30 border border-borda-sutil flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-zinc-500">
+          <div className="w-8 h-8 rounded-lg bg-muted border border-borda-sutil flex items-center justify-center text-muted-foreground">
             <Activity size={14} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-900 dark:text-zinc-200">Modo Desempenho</span>
-            <span className="text-[7px] font-bold text-gray-500 dark:text-zinc-500">Desativa desfoque e física gráfica em tempo real</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Modo Desempenho</span>
+            <span className="text-[7px] font-bold text-muted-foreground">Desativa desfoque e física gráfica em tempo real</span>
           </div>
         </div>
         <button

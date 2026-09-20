@@ -49,12 +49,12 @@ export function CardPerfil({
     aoMudarPlano
 }: PropsCardPerfil) {
     return (
-        <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-muted-foreground/[0.03] to-transparent pointer-events-none" />
+        <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
             <CabecalhoCard titulo="Perfil Maker" descricao="Sua conta de acesso e segurança" icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-muted/40">
+                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-muted/30 border border-borda-sutil">
                     <div className="relative group/avatar">
                         <Avatar 
                             plano={usuario?.plano}
@@ -130,7 +130,7 @@ export function CardPerfil({
                                         className={`px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all border
                                             ${ativo 
                                                 ? "bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-500/20" 
-                                                : "bg-white dark:bg-white/5 border-amber-500/20 text-amber-600 dark:text-amber-500 hover:border-amber-500/40"
+                                                : "bg-card border-amber-500/20 text-amber-600 dark:text-amber-500 hover:border-amber-500/40"
                                             }
                                         `}
                                     >
@@ -146,7 +146,7 @@ export function CardPerfil({
             {!sucessoEmail && (
                 <button
                     onClick={lidarComTrocaSenha}
-                    className="mt-auto h-11 w-full rounded-xl border border-borda-sutil bg-muted/20 text-muted-foreground hover:border-primary/20 hover:bg-muted/40 hover:text-primary flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.12em] transition-all shadow-sm active:scale-[0.98]"
+                    className="mt-auto h-11 w-full rounded-xl border border-borda-sutil bg-muted/30 text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-primary flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.12em] transition-all shadow-sm active:scale-[0.98]"
                 >
                     <Lock size={14} className="text-[var(--cor-primaria)]" />
                     Redefinir Senha

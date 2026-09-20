@@ -162,7 +162,7 @@ export function CardMetricas() {
   };
   return (
     <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] to-cyan-500/[0.01] dark:from-cyan-500/[0.05] dark:to-cyan-500/[0.02] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
       <CabecalhoCard
         titulo="Painel do Estúdio"
         descricao="Resumo geral e exportação de dados"
@@ -179,33 +179,33 @@ export function CardMetricas() {
         ].map((item) => (
           <div
             key={item.lab}
-            className="rounded-xl border border-borda-sutil dark:border-white/10 py-3 px-2 bg-gray-50/70 dark:bg-white/[0.02] flex flex-col items-center justify-center text-center transition-all hover:border-cyan-500/30 hover:bg-gray-50 dark:hover:bg-white/[0.04]"
+            className="rounded-xl border border-borda-sutil py-3 px-2 bg-muted/30 flex flex-col items-center justify-center text-center transition-all hover:bg-muted/50"
           >
             <span className={`rounded-lg p-1.5 ${item.fundo} ${item.cor} mb-1.5`}>
               <item.icone size={14} />
             </span>
             {carregandoMetricas ? (
-              <div className="w-8 h-5 bg-zinc-200 dark:bg-zinc-800 animate-pulse rounded-md my-0.5" />
+              <div className="w-8 h-5 bg-muted animate-pulse rounded-md my-0.5" />
             ) : (
-              <p className="text-base font-black text-gray-900 dark:text-white leading-none">{item.val}</p>
+              <p className="text-base font-black text-primary leading-none">{item.val}</p>
             )}
-            <p className="mt-1.5 text-[9px] uppercase tracking-[0.14em] font-black text-gray-500 dark:text-zinc-400 truncate w-full px-1">
+            <p className="mt-1.5 text-[9px] uppercase tracking-[0.14em] font-black text-muted-foreground truncate w-full px-1">
               {item.lab}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="mt-auto bg-gray-50/70 dark:bg-white/[0.02] border border-borda-sutil dark:border-white/10 p-3.5 sm:p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="mt-auto bg-muted/30 border border-borda-sutil p-3.5 sm:p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:w-auto">
           <span className="w-9 h-9 flex items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-500 shrink-0">
             {mensagemSucesso ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Download size={16} />}
           </span>
           <div className="truncate">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-gray-900 dark:text-white leading-tight truncate">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-primary leading-tight truncate">
               {mensagemSucesso || "Exportação de Dados"}
             </p>
-            <p className="text-[10px] text-gray-500 dark:text-zinc-400 leading-tight truncate mt-0.5">
+            <p className="text-[10px] text-muted-foreground leading-tight truncate mt-0.5">
               Exportar todos os dados do estúdio
             </p>
           </div>
@@ -216,7 +216,7 @@ export function CardMetricas() {
               key={tipo}
               onClick={() => lidarComExportacao(tipo)}
               disabled={exportando}
-              className="h-9 px-3.5 rounded-xl bg-white dark:bg-card-fundo border border-borda-sutil dark:border-white/10 text-[10px] font-black uppercase tracking-wider text-gray-700 dark:text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-500/5 transition-all shadow-sm disabled:opacity-50 disabled:cursor-wait cursor-pointer"
+              className="h-9 px-3.5 rounded-xl bg-card border border-borda-sutil text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-muted/40 transition-all shadow-sm disabled:opacity-50 disabled:cursor-wait cursor-pointer"
             >
               {tipo}
             </button>

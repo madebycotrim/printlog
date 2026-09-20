@@ -23,8 +23,8 @@ export function CardIdentidade({
     pendente,
 }: PropsCardIdentidade) {
     return (
-        <div className="rounded-2xl border border-gray-100 dark:border-white/[0.04] bg-white dark:bg-[#121214] p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.03] to-indigo-500/[0.01] dark:from-indigo-500/[0.05] dark:to-indigo-500/[0.02] pointer-events-none" />
+        <div className="rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
 
             <div className="flex items-center justify-between">
                 <CabecalhoCard
@@ -50,20 +50,20 @@ export function CardIdentidade({
 
             {/* === PAINEL BLOQUEADO (FREE) === */}
             {!eProOuSuperior ? (
-                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 bg-gradient-to-r from-indigo-50/60 to-purple-50/40 dark:from-indigo-500/[0.04] dark:to-purple-500/[0.02] overflow-hidden w-full">
+                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.03] overflow-hidden w-full">
                     {/* Glows */}
                     <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-400/20 dark:bg-indigo-500/10 blur-[40px] pointer-events-none rounded-full" />
 
                     <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-4 text-center md:text-left flex-1">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
                             <Store size={22} className="text-indigo-500" />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
+                            <h3 className="text-sm font-black text-primary flex items-center gap-2 justify-center md:justify-start">
                                 Identidade Visual Exclusiva
                                 <span className="text-[8px] font-black uppercase tracking-widest bg-amber-400/15 text-amber-500 px-2 py-0.5 rounded border border-amber-400/30">PRO</span>
                             </h3>
-                            <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-lg leading-relaxed">
+                            <p className="text-xs text-muted-foreground max-w-lg leading-relaxed">
                                 Personalize o nome, slogan e logo do seu estúdio. Disponível nos planos <strong className="text-indigo-600 dark:text-indigo-400">Maker Pro</strong> e <strong className="text-sky-500">Maker Fundador</strong>.
                             </p>
                         </div>
@@ -115,12 +115,12 @@ export function CardIdentidade({
 
                     <div className="md:col-span-1 h-11 w-full flex items-center justify-center">
                         {logoEstudio ? (
-                            <div className="h-11 w-full bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil rounded-lg flex items-center justify-center overflow-hidden p-1 tooltip-trigger" title="Preview da Logo">
+                            <div className="h-11 w-full bg-muted/30 border border-borda-sutil rounded-lg flex items-center justify-center overflow-hidden p-1 tooltip-trigger" title="Preview da Logo">
                                 <img src={logoEstudio} alt="Logo do Estúdio" className="max-h-full w-auto object-contain" />
                             </div>
                         ) : (
-                            <div className="h-11 w-full bg-zinc-50/50 dark:bg-white/[0.01] border border-dashed border-borda-sutil rounded-lg flex items-center justify-center" title="Preview da Logo">
-                                <ImageIcon size={16} className="text-zinc-400 opacity-50" />
+                            <div className="h-11 w-full bg-muted/20 border border-dashed border-borda-sutil rounded-lg flex items-center justify-center" title="Preview da Logo">
+                                <ImageIcon size={16} className="text-muted-foreground opacity-50" />
                             </div>
                         )}
                     </div>
