@@ -22,16 +22,7 @@ interface PropsCardPerfil {
     lidarComVerificacaoEmail?: () => void;
     /** Indica se há uma operação pendente (carregando) */
     pendente?: boolean;
-    /** Oculta ferramentas administrativas */
-    esconderFerramentasAdmin?: boolean;
-    /** Plano selecionado no estado pai */
-    planoSelecionado?: PlanoUsuario;
-    /** Callback para mudar o plano */
-    aoMudarPlano?: (p: PlanoUsuario) => void;
 }
-
-import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
-import { ShieldCheck } from "lucide-react";
 
 /**
  * Componente para exibição e edição do perfil do usuário.
@@ -43,10 +34,7 @@ export function CardPerfil({
     sucessoEmail, 
     lidarComTrocaSenha,
     lidarComVerificacaoEmail,
-    pendente,
-    esconderFerramentasAdmin = true,
-    planoSelecionado,
-    aoMudarPlano
+    pendente
 }: PropsCardPerfil) {
     return (
         <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
@@ -109,39 +97,6 @@ export function CardPerfil({
                     </div>
                 </div>
             </div>
-
-            {/* FERRAMENTAS ADMIN (Visíveis apenas para o dono) */}
-            {!esconderFerramentasAdmin && (
-                <div className="mt-2 p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.03] space-y-3">
-                    <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
-                        <ShieldCheck size={14} strokeWidth={3} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Painel Administrativo (Dono)</span>
-                    </div>
-                    
-                    <div className="space-y-1.5">
-                        <label className="block text-[9px] font-bold text-amber-700/60 dark:text-amber-500/40 uppercase tracking-wider ml-1">Atribuir Cargo/Plano</label>
-                        <div className="flex flex-wrap gap-2">
-                            {(["FREE", "PRO", "FUNDADOR"] as PlanoUsuario[]).map((p) => {
-                                const ativo = planoSelecionado === p;
-                                return (
-                                    <button
-                                        key={p}
-                                        onClick={() => aoMudarPlano?.(p)}
-                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all border
-                                            ${ativo 
-                                                ? "bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-500/20" 
-                                                : "bg-card border-amber-500/20 text-amber-600 dark:text-amber-500 hover:border-amber-500/40"
-                                            }
-                                        `}
-                                    >
-                                        {p}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {!sucessoEmail && (
                 <button

@@ -20,8 +20,6 @@ import { CardSeguranca } from "./componentes/CardSeguranca";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useArmazemConfiguracoes } from "./estado/armazemConfiguracoes";
-import { ehAdmin } from "@/compartilhado/constantes/admin";
-import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 
 export function PaginaConfiguracoes() {
   const { usuario, atualizarPerfil, recuperarSenha, enviarEmailVerificacao } = useAutenticacao();
@@ -38,7 +36,6 @@ export function PaginaConfiguracoes() {
    * Os valores iniciais vêm do nosso novo Armazém de Configurações (Zustand + Persist).
    */
   const [nome, definirNome] = useState(usuario?.nome || "");
-  const [plano, definirPlano] = useState<PlanoUsuario>(config.plano);
   const [nomeEstudio, definirNomeEstudio] = useState(config.nomeEstudio);
   const [sloganEstudio, definirSloganEstudio] = useState(config.sloganEstudio);
   const [logoEstudio, definirLogoEstudio] = useState(config.logoEstudio);
@@ -71,7 +68,6 @@ export function PaginaConfiguracoes() {
   useEffect(() => {
     if (config.carregando) return;
 
-    definirPlano(config.plano);
     definirNomeEstudio(config.nomeEstudio);
     definirSloganEstudio(config.sloganEstudio);
     definirLogoEstudio(config.logoEstudio);
@@ -103,7 +99,7 @@ export function PaginaConfiguracoes() {
 
 
   // Detecção de Alterações Pendentes
-  const perfilPendente = nome !== (usuario?.nome || "") || plano !== config.plano;
+  const perfilPendente = nome !== (usuario?.nome || "");
 
   const identidadePendente =
     nomeEstudio !== config.nomeEstudio ||
@@ -168,7 +164,6 @@ export function PaginaConfiguracoes() {
       });
 
       // 2. Atualiza o estado local do armazém e persiste no D1
-      config.definirPlano(plano);
       config.definirIdentidadeEstudio(nomeEstudio, sloganEstudio, logoEstudio);
       await config.salvarNoD1(usuario!.uid);
 
@@ -200,7 +195,7 @@ export function PaginaConfiguracoes() {
       definirSalvando(false);
     }
   }, [
-    atualizarPerfil, nome, usuario, config, plano, nomeEstudio, sloganEstudio, logoEstudio, contextoTema,
+    atualizarPerfil, nome, usuario, config, nomeEstudio, sloganEstudio, logoEstudio, contextoTema,
     beta, participarPrototipos, betaMultiEstudio, betaOrcamentosMagicos,
     betaEstoqueInteligente, betaSimuladorMargem, templateOrcamento, limiteAlertaEstoque
   ]);
@@ -255,9 +250,6 @@ export function PaginaConfiguracoes() {
               lidarComTrocaSenha={lidarComTrocaSenha}
               lidarComVerificacaoEmail={lidarComVerificacaoEmail}
               pendente={perfilPendente}
-              esconderFerramentasAdmin={!ehAdmin(usuario?.email)}
-              planoSelecionado={plano}
-              aoMudarPlano={definirPlano}
             />
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.08 }} className="h-full">

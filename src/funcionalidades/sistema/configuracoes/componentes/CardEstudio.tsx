@@ -2,7 +2,6 @@ import {
   Beaker, 
   Building2, 
   Settings2, 
-  ChevronDown, 
   AlertTriangle, 
   ShieldCheck, 
   Zap, 

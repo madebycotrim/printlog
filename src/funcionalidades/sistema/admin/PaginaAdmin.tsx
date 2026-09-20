@@ -21,7 +21,6 @@ import {
   Radio, 
   Send, 
   Eye, 
-  EyeOff, 
   Power, 
   Lock, 
   Trash2 

@@ -5,6 +5,7 @@ import { useCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";
 import { useProcessadorNotificacoes } from "../hooks/useProcessadorNotificacoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { SeloPlano } from "./ui";
 
@@ -15,6 +16,7 @@ type PropriedadesCabecalho = {
 export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const { dados } = useCabecalho();
   const { usuario } = useAutenticacao();
+  const { participarPrototipos } = useBeta();
   const vencimentoPlano = useArmazemConfiguracoes((s) => s.vencimentoPlano);
   const plano = useArmazemConfiguracoes((s) => s.plano);
   const localizacao = useLocation();

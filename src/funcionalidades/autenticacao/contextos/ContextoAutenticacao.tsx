@@ -11,7 +11,7 @@ import {
   signInWithRedirect,
   signInWithPopup,
   getRedirectResult,
-  AuthError,
+  type AuthError,
 
   deleteUser,
   linkWithCredential,
@@ -20,7 +20,6 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   sendEmailVerification,
-  multiFactor,
   TotpMultiFactorGenerator,
   getMultiFactorResolver,
   MultiFactorResolver,
@@ -328,7 +327,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
       }
     } catch (erro: unknown) {
       if ((erro as any)?.code === "auth/multi-factor-auth-required") {
-        const resolver = getMultiFactorResolver(autenticacao, erro as AuthError);
+        const resolver = getMultiFactorResolver(autenticacao, erro as any);
         setResolverMfa(resolver);
         setExigindo2FA(true);
         setCodigoMfa("");
