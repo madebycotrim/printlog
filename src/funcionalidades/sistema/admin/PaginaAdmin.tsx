@@ -37,6 +37,7 @@ import { EstadoVazio } from "@/compartilhado/componentes";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { AbaAdminSuporte } from "./componentes/AbaAdminSuporte";
+import { AbaAdminBroadcast, TipoAviso } from "./componentes/AbaAdminBroadcast";
 
 /**
  * Interface estritamente essencial para administração de acessos,
@@ -53,8 +54,6 @@ interface UsuarioAdmin {
   vencimento_plano?: string;
   atualizado_em: string;
 }
-
-type TipoAviso = "INFO" | "ALERTA" | "SUCESSO" | "MANUTENCAO";
 
 const LIMITE_VAGAS_FUNDADOR = 51;
 
@@ -96,7 +95,6 @@ export function PaginaAdmin() {
   const [avisoLinkUrl, setAvisoLinkUrl] = useState("");
   const [avisoAtivo, setAvisoAtivo] = useState(false);
   const [salvandoAviso, setSalvandoAviso] = useState(false);
-  const [painelAvisoAberto, setPainelAvisoAberto] = useState(false);
 
   // Navegação por Abas no Console Admin
   const [abaAtiva, setAbaAtiva] = useState<"usuarios" | "suporte" | "avisos">("usuarios");
@@ -132,9 +130,6 @@ export function PaginaAdmin() {
         setAvisoLinkRotulo(res.linkRotulo || "");
         setAvisoLinkUrl(res.linkUrl || "");
         setAvisoAtivo(Boolean(res.ativo));
-        if (res.ativo) {
-          setPainelAvisoAberto(true);
-        }
       }
     } catch {
       // Falha silenciosa na leitura inicial do aviso
@@ -394,39 +389,60 @@ export function PaginaAdmin() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
-      {/* BARRA SUPERIOR DE AÇÕES & STATUS DO DONO */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-borda-sutil shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primaria/10 border border-primaria/20 flex items-center justify-center text-primaria">
-            <Sparkles size={20} />
+      {/* 🚀 BARRA SUPERIOR DE AÇÕES & STATUS DO DONO (MISSION CONTROL) */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-5 rounded-3xl bg-card border border-borda-sutil shadow-sm relative overflow-hidden">
+        {/* Identidade do Console Master */}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primaria/10 border border-primaria/20 flex items-center justify-center text-primaria shadow-sm shrink-0">
+            <Sparkles size={24} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white">
-                Console Master — Bootstrap
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-black uppercase tracking-wider text-primary">
+                Console Master — Dono
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Dono Ativo
               </span>
+              <span className="text-[10px] font-mono text-muted-foreground border border-borda-sutil px-2 py-0.5 rounded-md bg-muted/30">
+                Edge GRU • Cloudflare D1
+              </span>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-xs sm:max-w-md">
-              Conectado como: <strong className="text-zinc-700 dark:text-zinc-300">{usuario?.email || EMAIL_DONO}</strong>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Conectado como: <strong className="text-primary font-bold">{usuario?.email || EMAIL_DONO}</strong>
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        {/* Telemetria Rápida e Ações Master */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Status Rápido Broadcast (Atalho para a aba de broadcast) */}
+          <button
+            onClick={() => setAbaAtiva("avisos")}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              avisoAtivo
+                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20"
+                : "bg-muted/40 text-muted-foreground border-borda-sutil hover:text-primary hover:bg-muted"
+            }`}
+            title="Clique para gerenciar o Broadcast no topo do app"
+          >
+            <Radio size={13} className={avisoAtivo ? "text-emerald-500 animate-pulse" : ""} />
+            <span>Broadcast:</span>
+            <span className="font-black text-[10px] uppercase">{avisoAtivo ? "Ao Vivo" : "Inativo"}</span>
+          </button>
+
           {/* Alternador de Modo Privacidade (LGPD) */}
           <button
             onClick={() => setModoPrivacidade((prev) => !prev)}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer ${
               modoPrivacidade
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shadow-sm"
                 : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
             }`}
             title={modoPrivacidade ? "Modo Privacidade LGPD Ativo (E-mails Mascarados). Clique para revelar." : "E-mails Visíveis. Clique para mascarar."}
           >
-            {modoPrivacidade ? <Lock size={14} /> : <Eye size={14} />}
+            {modoPrivacidade ? <Lock size={13} /> : <Eye size={13} />}
             <span>{modoPrivacidade ? "Privacidade Ativa" : "E-mails Visíveis"}</span>
           </button>
 
@@ -434,65 +450,50 @@ export function PaginaAdmin() {
           <button
             onClick={executarLimpezaLegal}
             disabled={executandoLimpeza}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-rose-600 hover:bg-rose-500/10 border border-borda-sutil transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 border border-borda-sutil transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Limpeza Legal de Logs com mais de 180 dias (Marco Civil Art. 15)"
           >
-            <Trash2 size={14} className={executandoLimpeza ? "animate-spin text-rose-500" : ""} />
+            <Trash2 size={13} className={executandoLimpeza ? "animate-spin text-rose-500" : ""} />
             <span>{executandoLimpeza ? "Purgando..." : "Limpeza Legal"}</span>
           </button>
 
-          {/* Botão de Toggle do Aviso Global */}
-          <button
-            onClick={() => setPainelAvisoAberto((prev) => !prev)}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
-              avisoAtivo
-                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
-                : "bg-muted text-zinc-700 dark:text-zinc-300 hover:text-primaria border-borda-sutil"
-            }`}
-            title="Configurar Banner de Notificação no topo do app"
-          >
-            <Radio size={14} className={avisoAtivo ? "text-amber-500 animate-pulse" : ""} />
-            <span>Aviso Global</span>
-            {avisoAtivo && (
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-            )}
-          </button>
-
+          {/* Exportar CSV */}
           <button
             onClick={exportarCSV}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-primaria bg-muted hover:bg-muted/80 border border-borda-sutil transition-all active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-primary bg-muted hover:bg-muted/80 border border-borda-sutil transition-all active:scale-95 cursor-pointer"
             title="Exportar base de usuários essencial para planilha CSV"
           >
-            <Download size={14} />
-            Exportar CSV
+            <Download size={13} />
+            <span>Exportar CSV</span>
           </button>
 
+          {/* Atualizar */}
           <button
             onClick={buscarUsuarios}
             disabled={carregando}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-primaria hover:bg-primaria/90 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-primaria hover:bg-primaria/90 shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Recarregar base de dados"
           >
-            <RefreshCw size={14} className={carregando ? "animate-spin" : ""} />
-            Atualizar
+            <RefreshCw size={13} className={carregando ? "animate-spin" : ""} />
+            <span>Atualizar</span>
           </button>
         </div>
       </div>
 
-      {/* NAVEGAÇÃO POR ABAS NO CONSOLE ADMIN */}
+      {/* 🧭 NAVEGAÇÃO POR ABAS NO CONSOLE ADMIN */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-card border border-borda-sutil shadow-sm overflow-x-auto">
         <button
           onClick={() => setAbaAtiva("usuarios")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             abaAtiva === "usuarios"
               ? "bg-primaria text-white shadow-md shadow-primaria/20"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted/50"
+              : "text-muted-foreground hover:text-primary hover:bg-muted/50"
           }`}
         >
           <Users size={15} />
           <span>Makers & Planos</span>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-            abaAtiva === "usuarios" ? "bg-white/20 text-white" : "bg-muted text-zinc-600 dark:text-zinc-400"
+            abaAtiva === "usuarios" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
           }`}>
             {totalUsuarios}
           </span>
@@ -503,7 +504,7 @@ export function PaginaAdmin() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap relative ${
             abaAtiva === "suporte"
               ? "bg-primaria text-white shadow-md shadow-primaria/20"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted/50"
+              : "text-muted-foreground hover:text-primary hover:bg-muted/50"
           }`}
         >
           <Headphones size={15} />
@@ -514,9 +515,9 @@ export function PaginaAdmin() {
             </span>
           ) : (
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-              abaAtiva === "suporte" ? "bg-white/20 text-white" : "bg-muted text-zinc-600 dark:text-zinc-400"
+              abaAtiva === "suporte" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
             }`}>
-              Atendimento
+              Em dia
             </span>
           )}
         </button>
@@ -526,13 +527,21 @@ export function PaginaAdmin() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
             abaAtiva === "avisos"
               ? "bg-primaria text-white shadow-md shadow-primaria/20"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted/50"
+              : "text-muted-foreground hover:text-primary hover:bg-muted/50"
           }`}
         >
-          <Radio size={15} className={avisoAtivo ? "text-amber-500 animate-pulse" : ""} />
+          <Radio size={15} className={avisoAtivo ? "text-emerald-500 animate-pulse" : ""} />
           <span>Avisos Globais & Broadcast</span>
-          {avisoAtivo && (
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          {avisoAtivo ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
+              Ao Vivo
+            </span>
+          ) : (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              abaAtiva === "avisos" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+            }`}>
+              Inativo
+            </span>
           )}
         </button>
       </div>
@@ -542,161 +551,22 @@ export function PaginaAdmin() {
         <AbaAdminSuporte modoPrivacidade={modoPrivacidade} />
       )}
 
-      {/* PAINEL DE GESTÃO DO AVISO GLOBAL (BROADCAST NO TOPO DO APP) */}
-      {(abaAtiva === "avisos" || (abaAtiva === "usuarios" && painelAvisoAberto)) && (
-        <div className="p-5 rounded-2xl bg-card border border-borda-sutil shadow-md space-y-4 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-primaria/10 text-primaria">
-                <Megaphone size={18} />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-zinc-900 dark:text-white flex items-center gap-2">
-                  Aviso Global da Plataforma (Banner de Notificação)
-                  {avisoAtivo ? (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-                      Ao Vivo no App
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 text-[10px] font-black uppercase tracking-widest border border-zinc-500/20">
-                      Desativado
-                    </span>
-                  )}
-                </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Defina um anúncio ou aviso que será exibido no topo da tela para todos os usuários logados no PrintLog.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setPainelAvisoAberto(false)}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2">
-            
-            {/* Campo Mensagem */}
-            <div className="md:col-span-8 space-y-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-                Texto do Aviso
-              </label>
-              <input
-                type="text"
-                value={avisoMensagem}
-                onChange={(e) => setAvisoMensagem(e.target.value)}
-                placeholder='Ex: "Nova calculadora de resina disponível!" ou "Manutenção preventiva amanhã às 23h"'
-                className="w-full px-3.5 py-2 text-xs rounded-xl bg-muted/40 border border-borda-sutil placeholder:text-zinc-400 focus:outline-none focus:border-primaria transition-all"
-              />
-            </div>
-
-            {/* Estilo / Tipo */}
-            <div className="md:col-span-4 space-y-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-                Estilo Visual
-              </label>
-              <select
-                value={avisoTipo}
-                onChange={(e) => setAvisoTipo(e.target.value as TipoAviso)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-card border border-borda-sutil text-zinc-700 dark:text-zinc-200 outline-none focus:border-primaria transition-all cursor-pointer"
-              >
-                <option value="INFO">ℹ️ Informação / Novidade (Cyan)</option>
-                <option value="ALERTA">⚠️ Alerta / Manutenção (Âmbar)</option>
-                <option value="SUCESSO">🚀 Lançamento / Sucesso (Esmeralda)</option>
-                <option value="MANUTENCAO">🔧 Manutenção Técnica (Índigo)</option>
-              </select>
-            </div>
-
-            {/* Link Opcional: Rótulo */}
-            <div className="md:col-span-4 space-y-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-                Rótulo do Link (Opcional)
-              </label>
-              <input
-                type="text"
-                value={avisoLinkRotulo}
-                onChange={(e) => setAvisoLinkRotulo(e.target.value)}
-                placeholder='Ex: "Ver calculadora" ou "Saiba mais"'
-                className="w-full px-3.5 py-2 text-xs rounded-xl bg-muted/40 border border-borda-sutil placeholder:text-zinc-400 focus:outline-none focus:border-primaria transition-all"
-              />
-            </div>
-
-            {/* Link Opcional: URL */}
-            <div className="md:col-span-8 space-y-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-                Destino do Link (Opcional)
-              </label>
-              <input
-                type="text"
-                value={avisoLinkUrl}
-                onChange={(e) => setAvisoLinkUrl(e.target.value)}
-                placeholder='Ex: "/calculadora" ou "https://instagram.com/..."'
-                className="w-full px-3.5 py-2 text-xs rounded-xl bg-muted/40 border border-borda-sutil placeholder:text-zinc-400 focus:outline-none focus:border-primaria transition-all"
-              />
-            </div>
-
-          </div>
-
-          {/* Pré-visualização ao vivo */}
-          {avisoMensagem.trim() && (
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                <Eye size={12} />
-                <span>Pré-visualização do Banner</span>
-              </div>
-              <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
-                avisoTipo === 'ALERTA' ? 'bg-amber-500/10 border-amber-500/25 text-amber-950 dark:text-amber-100' :
-                avisoTipo === 'SUCESSO' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-100' :
-                avisoTipo === 'MANUTENCAO' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-950 dark:text-indigo-100' :
-                'bg-cyan-500/10 border-cyan-500/20 text-cyan-900 dark:text-cyan-100'
-              }`}>
-                <div className="flex items-center gap-2 truncate">
-                  <Megaphone size={14} className="shrink-0" />
-                  <span className="font-semibold truncate">{avisoMensagem}</span>
-                  {avisoLinkRotulo && (
-                    <span className="underline font-bold ml-1 shrink-0">{avisoLinkRotulo} →</span>
-                  )}
-                </div>
-                <X size={14} className="shrink-0 opacity-60" />
-              </div>
-            </div>
-          )}
-
-          {/* Botões de Ação */}
-          <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-borda-sutil">
-            <div className="text-[11px] text-zinc-400">
-              * Atualizações entram em vigor no app para todos os usuários imediatamente.
-            </div>
-
-            <div className="flex items-center gap-2">
-              {avisoAtivo && (
-                <button
-                  type="button"
-                  disabled={salvandoAviso}
-                  onClick={() => salvarAvisoGlobal(false)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition-all disabled:opacity-50"
-                >
-                  <Power size={13} />
-                  Desativar Aviso
-                </button>
-              )}
-
-              <button
-                type="button"
-                disabled={salvandoAviso}
-                onClick={() => salvarAvisoGlobal(true)}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-primaria hover:bg-primaria/90 shadow-sm transition-all disabled:opacity-50"
-              >
-                <Send size={13} />
-                {salvandoAviso ? "Salvando..." : (avisoAtivo ? "Atualizar no App" : "Publicar no Topo do App")}
-              </button>
-            </div>
-          </div>
-
-        </div>
+      {/* ABA DE AVISO GLOBAL (BROADCAST NO TOPO DO APP) */}
+      {abaAtiva === "avisos" && (
+        <AbaAdminBroadcast
+          avisoMensagem={avisoMensagem}
+          setAvisoMensagem={setAvisoMensagem}
+          avisoTipo={avisoTipo}
+          setAvisoTipo={setAvisoTipo}
+          avisoLinkRotulo={avisoLinkRotulo}
+          setAvisoLinkRotulo={setAvisoLinkRotulo}
+          avisoLinkUrl={avisoLinkUrl}
+          setAvisoLinkUrl={setAvisoLinkUrl}
+          avisoAtivo={avisoAtivo}
+          salvandoAviso={salvandoAviso}
+          salvarAvisoGlobal={salvarAvisoGlobal}
+          buscarAvisoGlobal={buscarAvisoGlobal}
+        />
       )}
 
       {/* ABA DE USUÁRIOS E PLANOS */}

@@ -158,11 +158,11 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
   const chamadosComRespostaNaoLida = chamados.filter(c => c.status === "respondido").length;
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} esconderCabecalho={true} larguraMax="max-w-4xl">
-      <div className="bg-white dark:bg-[#121217] flex flex-col h-[85vh] max-h-[750px] overflow-hidden rounded-2xl border border-gray-100 dark:border-white/10 shadow-2xl">
+    <Dialogo aberto={aberto} aoFechar={aoFechar} esconderCabecalho={true} larguraMax="max-w-4xl" semScroll={true}>
+      <div className="flex flex-col h-[85vh] max-h-[750px] overflow-hidden w-full">
         
         {/* CABEÇALHO PADRÃO PRINTLOG */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
+        <div className="px-6 py-4 flex items-center justify-between border-b border-borda-sutil bg-card shrink-0">
           <div className="flex items-center gap-3.5">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center border"
@@ -176,14 +176,14 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-black uppercase tracking-tight text-gray-900 dark:text-white">
+                <h3 className="text-sm font-black uppercase tracking-tight text-primary">
                   Suporte Interno PrintLog
                 </h3>
                 <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20">
                   Online
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-zinc-400">
+              <p className="text-[11px] text-muted-foreground">
                 Fale diretamente com os fundadores e engenheiros da plataforma.
               </p>
             </div>
@@ -191,20 +191,21 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
 
           <button
             onClick={aoFechar}
-            className="p-2 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+            className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer active:scale-95"
+            aria-label="Fechar"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
 
         {/* NAVEGAÇÃO POR ABAS INTERNAS */}
-        <div className="px-6 pt-3 flex items-center gap-2 border-b border-gray-100 dark:border-white/5 bg-white dark:bg-[#121217]">
+        <div className="px-6 pt-3 flex items-center gap-2 border-b border-borda-sutil bg-card shrink-0">
           <button
             onClick={() => { setAbaAtiva("novo"); setChamadoSelecionado(null); }}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 ${
               abaAtiva === "novo"
                 ? "border-sky-500 text-sky-500 bg-sky-500/5"
-                : "border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                : "border-transparent text-muted-foreground hover:text-primary"
             }`}
           >
             <MessageSquarePlus size={15} />
@@ -216,13 +217,13 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 relative ${
               abaAtiva === "meus_chamados"
                 ? "border-sky-500 text-sky-500 bg-sky-500/5"
-                : "border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                : "border-transparent text-muted-foreground hover:text-primary"
             }`}
           >
             <Inbox size={15} />
             <span>Meus Chamados</span>
             {chamados.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-zinc-300">
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
                 {chamados.length}
               </span>
             )}
@@ -233,7 +234,7 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
         </div>
 
         {/* CONTEÚDO PRINCIPAL */}
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50/30 dark:bg-black/15">
+        <div className="flex-1 overflow-y-auto p-6 bg-zinc-50/50 dark:bg-black/20">
           {abaAtiva === "novo" && (
             <form onSubmit={enviarChamado} className="max-w-2xl mx-auto space-y-5">
               

@@ -124,7 +124,7 @@ export function Dialogo({
               )}
 
               {/* Conteúdo com Scroll */}
-              <div className={`flex-1 p-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))] ${semScroll ? "overflow-hidden" : "overflow-y-auto scrollbar-fino"}`}>
+              <div className={`flex-1 p-0 ${semScroll ? "overflow-hidden flex flex-col" : esconderCabecalho ? "overflow-y-auto scrollbar-fino flex flex-col" : "overflow-y-auto scrollbar-fino pb-[calc(1.5rem+env(safe-area-inset-bottom))]"}`}>
                 {children}
               </div>
             </motion.div>
