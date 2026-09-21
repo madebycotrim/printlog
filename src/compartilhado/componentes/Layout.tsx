@@ -3,6 +3,7 @@ import { BarraLateral } from "./BarraLateral";
 import { Cabecalho } from "./Cabecalho";
 import { ProvedorCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutoLogout } from "@/compartilhado/hooks/useAutoLogout";
+import { useConectividade } from "@/compartilhado/hooks/useConectividade";
 import { useLocation, Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import { useArmazemDispositivo } from "@/compartilhado/estado/armazemDispositivo";
@@ -23,7 +24,10 @@ export function Layout({ children }: PropriedadesLayout) {
   const location = useLocation();
   const modoDesempenho = useArmazemDispositivo(s => s.modoDesempenho);
 
-  // Segurança: logout automático após 30 min de inatividade
+  // Resiliência de rede e conectividade
+  useConectividade();
+
+  // Segurança: logout automático após 30 min de inatividade (com pré-aviso aos 29 min)
   useAutoLogout();
 
   // Atalho global Alt + A para Acessibilidade (Lei 13.146/2015)

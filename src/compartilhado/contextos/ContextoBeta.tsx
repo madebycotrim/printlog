@@ -65,6 +65,8 @@ export function ProvedorBeta({ children }: { children: ReactNode }) {
     ...(betaConfig || {})
   }), [betaConfig]);
 
+  const usuarioUid = usuario?.uid;
+
   const atualizar = useCallback(async (novas: Partial<typeof PADRAO_BETA>) => {
     const atualizado = { ...preferencias, ...novas };
     const novaMeta = {
@@ -72,10 +74,10 @@ export function ProvedorBeta({ children }: { children: ReactNode }) {
       beta: atualizado
     };
     definirCalculadoraMeta(novaMeta);
-    if (usuario?.uid) {
-      await salvarNoD1(usuario.uid);
+    if (usuarioUid) {
+      await salvarNoD1(usuarioUid);
     }
-  }, [preferencias, calculadoraMeta, definirCalculadoraMeta, salvarNoD1, usuario?.uid]);
+  }, [preferencias, calculadoraMeta, definirCalculadoraMeta, salvarNoD1, usuarioUid]);
 
   const resetarTudo = useCallback(async () => {
     const novaMeta = {
@@ -83,10 +85,10 @@ export function ProvedorBeta({ children }: { children: ReactNode }) {
       beta: PADRAO_BETA
     };
     definirCalculadoraMeta(novaMeta);
-    if (usuario?.uid) {
-      await salvarNoD1(usuario.uid);
+    if (usuarioUid) {
+      await salvarNoD1(usuarioUid);
     }
-  }, [calculadoraMeta, definirCalculadoraMeta, salvarNoD1, usuario?.uid]);
+  }, [calculadoraMeta, definirCalculadoraMeta, salvarNoD1, usuarioUid]);
 
   const valor: ContextoBetaProps = useMemo(() => ({
     participarPrototipos: preferencias.participarPrototipos,

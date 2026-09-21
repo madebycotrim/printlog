@@ -59,19 +59,22 @@ export const CardLucro = memo(function CardLucro({
 
   const salvarPresets = async () => {
     try {
-      const meta = config.calculadoraMeta || {};
-      meta.presets_lucro = presetsEditados.map(p => ({
-        valor: Math.round(Number(p.valor) * 100),
-        rotulo: p.rotulo || `${p.valor}%`
-      }));
-      meta.templates_rapidos = templatesEditados;
-      config.definirCalculadoraMeta(meta);
+      const metaAtual = config.calculadoraMeta || {};
+      const novaMeta = {
+        ...metaAtual,
+        presets_lucro: presetsEditados.map(p => ({
+          valor: Math.round(Number(p.valor) * 100),
+          rotulo: p.rotulo || `${p.valor}%`
+        })),
+        templates_rapidos: templatesEditados
+      };
+      config.definirCalculadoraMeta(novaMeta);
       
       if (usuario?.uid) {
         await config.salvarNoD1(usuario.uid);
       }
     } catch (e) {
-      console.error("Erro ao salvar configurações");
+      console.error("Erro ao salvar configurações", e);
     }
   };
 
