@@ -49,26 +49,7 @@ export async function consultarCep(cep: string): Promise<RespostaCepBrasilApi> {
       return (await res.json()) as RespostaCepBrasilApi;
     }
   } catch {
-    // Fallback silencioso
-  }
-
-  // Fallback direto via BrasilAPI pública caso o proxy local esteja desligado
-  try {
-    const fallback = await fetch(`https://brasilapi.com.br/api/cep/v2/${limpo}`);
-    if (fallback.ok) {
-      const d = (await fallback.json()) as any;
-      return {
-        sucesso: true,
-        cep: d.cep || limpo,
-        logradouro: d.street || '',
-        bairro: d.neighborhood || '',
-        cidade: d.city || '',
-        estado: d.state || '',
-        ddd: d.ddd,
-      };
-    }
-  } catch {
-    // Falha em ambos
+    // Falha de rede ou servidor
   }
 
   return { sucesso: false, cep, logradouro: '', bairro: '', cidade: '', estado: '', erro: 'Não foi possível encontrar o CEP.' };
@@ -95,36 +76,7 @@ export async function consultarCnpj(cnpj: string): Promise<RespostaCnpjBrasilApi
       return (await res.json()) as RespostaCnpjBrasilApi;
     }
   } catch {
-    // Fallback silencioso
-  }
-
-  // Fallback direto via BrasilAPI pública
-  try {
-    const fallback = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${limpo}`);
-    if (fallback.ok) {
-      const d = (await fallback.json()) as any;
-      return {
-        sucesso: true,
-        cnpj: d.cnpj || limpo,
-        razaoSocial: d.razao_social || '',
-        nomeFantasia: d.nome_fantasia || d.razao_social || '',
-        cnaeDescricao: d.cnae_fiscal_descricao || '',
-        situacaoCadastral: d.descricao_situacao_cadastral || 'ATIVA',
-        email: d.email || '',
-        telefone: d.ddd_telefone_1 ? `(${d.ddd_telefone_1.slice(0, 2)}) ${d.ddd_telefone_1.slice(2)}` : '',
-        endereco: {
-          cep: d.cep || '',
-          logradouro: d.logradouro || '',
-          numero: d.numero || '',
-          complemento: d.complemento || '',
-          bairro: d.bairro || '',
-          municipio: d.municipio || '',
-          uf: d.uf || '',
-        },
-      };
-    }
-  } catch {
-    // Falha
+    // Falha de rede ou servidor
   }
 
   return {
@@ -135,6 +87,6 @@ export async function consultarCnpj(cnpj: string): Promise<RespostaCnpjBrasilApi
     cnaeDescricao: '',
     situacaoCadastral: '',
     endereco: { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', municipio: '', uf: '' },
-    erro: 'Não foi possível encontrar os dados do CNPJ.',
+    erro: 'Não foi possível consultar o CNPJ na base oficial.',
   };
 }

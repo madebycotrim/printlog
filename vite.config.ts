@@ -16,8 +16,12 @@ export default defineConfig({
       "@testes": path.resolve(__dirname, "./src/testes"),
     },
   },
+  esbuild: {
+    drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+  },
   build: {
     target: "esnext",
+    sourcemap: false,
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {

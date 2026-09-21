@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { criptografar, descriptografar } from "./utilitarios/criptografia";
+import { criptografar, descriptografar, obterChaveMestra } from "./utilitarios/criptografia";
 
 /**
  * API Financeira - v6.0 Blindagem Total (AES-GCM)
@@ -9,6 +9,7 @@ import { criptografar, descriptografar } from "./utilitarios/criptografia";
 interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
+    ENVIRONMENT?: string;
 }
 
 export const onRequest: PagesFunction<Env, any, { uid: string }> = async (context) => {
@@ -19,7 +20,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     const metodo = request.method;
-    const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+    const chaveMestra = obterChaveMestra(env);
 
     try {
         // ── GET - Listar (Com Descriptografia) ──
@@ -46,10 +47,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         if (metodo === "POST") {
             const dados = await request.json() as any;
             const novoId = dados.id || crypto.randomUUID();
+            const tipoNormalizado = dados.tipo === "DESPESA" ? "DESPESA" : "RECEITA";
+            const valorCentavosInteiro = Math.round(Math.abs(Number(dados.valorCentavos) || 0));
+            const descricaoSanitizada = String(dados.descricao || "Lançamento").trim().slice(0, 300);
+            const categoriaSanitizada = String(dados.categoria || "Geral").trim().slice(0, 100);
 
             const [descCripto, catCripto] = await Promise.all([
-                criptografar(dados.descricao, chaveMestra),
-                criptografar(dados.categoria || 'Geral', chaveMestra)
+                criptografar(descricaoSanitizada, chaveMestra),
+                criptografar(categoriaSanitizada, chaveMestra)
             ]);
 
             await env.DB.prepare(`
@@ -59,7 +64,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
             `).bind(
                 novoId, usuarioId, dados.idPedido || dados.idReferencia || null, dados.idCliente || null,
-                dados.tipo, Math.abs(dados.valorCentavos), 
+                tipoNormalizado, valorCentavosInteiro, 
                 descCripto, catCripto,
                 dados.data || new Date().toISOString()
             ).run();
@@ -75,8 +80,11 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
             const dados = await request.json() as any;
             if (!dados.id) return new Response(JSON.stringify({ erro: "ID necessário" }), { status: 400 });
 
-            const descCripto = dados.descricao ? await criptografar(dados.descricao, chaveMestra) : undefined;
-            const catCripto = dados.categoria ? await criptografar(dados.categoria, chaveMestra) : undefined;
+            const descCripto = dados.descricao ? await criptografar(String(dados.descricao).trim().slice(0, 300), chaveMestra) : undefined;
+            const catCripto = dados.categoria ? await criptografar(String(dados.categoria).trim().slice(0, 100), chaveMestra) : undefined;
+            const valorCentavosAtualizado = dados.valorCentavos !== undefined && dados.valorCentavos !== null
+                ? Math.round(Math.abs(Number(dados.valorCentavos) || 0))
+                : null;
 
             await env.DB.prepare(`
                 UPDATE lancamentos_financeiros SET 
@@ -88,7 +96,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                 WHERE id = ? AND id_usuario = ?
             `).bind(
                 descCripto ?? null,
-                dados.valorCentavos ?? null,
+                valorCentavosAtualizado,
                 catCripto ?? null,
                 dados.idCliente ?? null,
                 dados.dataCriacao ?? null,

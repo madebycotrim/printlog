@@ -1,15 +1,32 @@
-export async function onRequestPost(context: any) {
-  const { request, env } = context;
+/// <reference types="@cloudflare/workers-types" />
+import { aplicarHeadersCors } from "../utilitarios/cors";
+import { escaparHtml } from "../utilitarios/sanitizacao";
 
-  // CORS handling
-  const headers = new Headers();
-  headers.set("Access-Control-Allow-Origin", "*");
-  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+interface Env {
+  RESEND_API_KEY: string;
+}
+
+export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (context) => {
+  const { request, env, data } = context;
+
+  // CORS handling seguro e restritivo
+  const headers = aplicarHeadersCors(new Headers(), request, "POST, OPTIONS");
+
+  // Bloqueio de Segurança: Apenas operadores autenticados podem disparar e-mails de conclusão
+  const usuarioId = data?.uid;
+  if (!usuarioId) {
+    headers.set("Content-Type", "application/json");
+    return new Response(JSON.stringify({ error: "Não autorizado" }), {
+      status: 401,
+      headers,
+    });
+  }
 
   try {
-    const data = await request.json();
-    const { emailCliente, nomeCliente, nomeProjeto } = data;
+    const corpo = await request.json() as any;
+    const { emailCliente } = corpo;
+    const nomeCliente = escaparHtml(corpo.nomeCliente);
+    const nomeProjeto = escaparHtml(corpo.nomeProjeto);
 
     if (!emailCliente) {
       return new Response(JSON.stringify({ error: "Faltam campos obrigatórios." }), {
@@ -20,7 +37,7 @@ export async function onRequestPost(context: any) {
 
     const resendApiKey = env.RESEND_API_KEY;
 
-    const subject = `Seu pedido está pronto! - ${nomeProjeto}`;
+    const subject = `Seu pedido está pronto! - ${nomeProjeto || "Projeto"}`;
     const htmlBody = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <h2 style="color: #10b981;">Olá${nomeCliente ? ", " + nomeCliente : ""}! 🎉</h2>
@@ -80,10 +97,7 @@ export async function onRequestPost(context: any) {
   }
 }
 
-export async function onRequestOptions() {
-  const headers = new Headers();
-  headers.set("Access-Control-Allow-Origin", "*");
-  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+export const onRequestOptions: PagesFunction = async (context) => {
+  const headers = aplicarHeadersCors(new Headers(), context.request, "POST, OPTIONS");
   return new Response(null, { headers });
-}
+};

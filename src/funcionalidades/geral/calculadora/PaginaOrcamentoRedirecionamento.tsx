@@ -25,9 +25,18 @@ export function PaginaOrcamentoRedirecionamento() {
         return res.json();
       })
       .then((dados) => {
-        if (dados.urlOriginal) {
-          // Faz o redirecionamento limpo substituindo o histórico de navegação
-          window.location.replace(dados.urlOriginal);
+        if (dados.urlOriginal && typeof dados.urlOriginal === "string") {
+          const url = dados.urlOriginal.trim();
+          const ehCaminhoInterno = url.startsWith("/") && !url.startsWith("//");
+          const ehDominioPrintlog = url.startsWith("https://printlog.com.br/") || url.startsWith("https://www.printlog.com.br/") || url.startsWith(window.location.origin + "/");
+          const ehEsquemaPerigoso = /^(javascript:|data:|vbscript:)/i.test(url);
+
+          if (!ehEsquemaPerigoso && (ehCaminhoInterno || ehDominioPrintlog)) {
+            // Faz o redirecionamento limpo substituindo o histórico de navegação
+            window.location.replace(url);
+          } else {
+            throw new Error("Endereço de redirecionamento não autorizado ou inseguro.");
+          }
         } else {
           throw new Error("Endereço original inválido.");
         }

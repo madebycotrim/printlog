@@ -21,24 +21,48 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const metodo = request.method;
 
     try {
-        // GET - Listar (Com Fallback para Esquemas Antigos e Nomes Diferentes de Tabela)
+        // GET - Listar (Com Fallback Seguro para Esquemas Antigos e Nomes Diferentes de Tabela)
         if (metodo === "GET") {
-            const tentarBusca = async (tabela: string) => {
-                let queryBase = `SELECT * FROM ${tabela} WHERE id_usuario = ?`;
-                let params = [usuarioId];
-                if (idImpressora) {
-                    queryBase += " AND id_impressora = ?";
-                    params.push(idImpressora);
-                }
-
-                // Tenta com filtro de arquivamento
-                try {
-                    const { results } = await env.DB.prepare(queryBase + " AND arquivado = 0").bind(...params).all();
-                    return results;
-                } catch (e) {
-                    // Tenta sem filtro de arquivamento
-                    const { results } = await env.DB.prepare(queryBase).bind(...params).all();
-                    return results;
+            const tentarBusca = async (tabela: "registro_manutencao" | "manutencoes") => {
+                const params = [usuarioId];
+                if (tabela === "registro_manutencao") {
+                    if (idImpressora) {
+                        params.push(idImpressora);
+                        try {
+                            const { results } = await env.DB.prepare("SELECT * FROM registro_manutencao WHERE id_usuario = ? AND id_impressora = ? AND arquivado = 0").bind(...params).all();
+                            return results;
+                        } catch {
+                            const { results } = await env.DB.prepare("SELECT * FROM registro_manutencao WHERE id_usuario = ? AND id_impressora = ?").bind(...params).all();
+                            return results;
+                        }
+                    } else {
+                        try {
+                            const { results } = await env.DB.prepare("SELECT * FROM registro_manutencao WHERE id_usuario = ? AND arquivado = 0").bind(...params).all();
+                            return results;
+                        } catch {
+                            const { results } = await env.DB.prepare("SELECT * FROM registro_manutencao WHERE id_usuario = ?").bind(...params).all();
+                            return results;
+                        }
+                    }
+                } else {
+                    if (idImpressora) {
+                        params.push(idImpressora);
+                        try {
+                            const { results } = await env.DB.prepare("SELECT * FROM manutencoes WHERE id_usuario = ? AND id_impressora = ? AND arquivado = 0").bind(...params).all();
+                            return results;
+                        } catch {
+                            const { results } = await env.DB.prepare("SELECT * FROM manutencoes WHERE id_usuario = ? AND id_impressora = ?").bind(...params).all();
+                            return results;
+                        }
+                    } else {
+                        try {
+                            const { results } = await env.DB.prepare("SELECT * FROM manutencoes WHERE id_usuario = ? AND arquivado = 0").bind(...params).all();
+                            return results;
+                        } catch {
+                            const { results } = await env.DB.prepare("SELECT * FROM manutencoes WHERE id_usuario = ?").bind(...params).all();
+                            return results;
+                        }
+                    }
                 }
             };
 

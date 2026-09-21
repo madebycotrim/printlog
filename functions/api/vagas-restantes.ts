@@ -4,7 +4,7 @@ interface Env {
     DB: D1Database;
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+export const onRequestGet: PagesFunction<Env> = async (context) => {
     const { env } = context;
 
     try {

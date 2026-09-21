@@ -40,6 +40,10 @@ export default tseslint.config(
       "react-hooks/set-state-in-effect": "off",
       "prefer-const": "off",
       "no-case-declarations": "off",
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "no-new-func": "error",
+      "no-script-url": "error",
     },
   }
 );

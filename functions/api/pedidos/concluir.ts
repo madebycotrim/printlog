@@ -1,9 +1,10 @@
 /// <reference types="@cloudflare/workers-types" />
-import { criptografar, descriptografar } from "../utilitarios/criptografia";
+import { criptografar, descriptografar, obterChaveMestra } from "../utilitarios/criptografia";
 
 interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
+    ENVIRONMENT?: string;
 }
 
 export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (context) => {
@@ -11,7 +12,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
     const usuarioId = data.uid;
     if (!usuarioId) return new Response("Não autorizado", { status: 401 });
 
-    const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+    const chaveMestra = obterChaveMestra(env);
 
     try {
         const body = await request.json() as any;
@@ -68,6 +69,14 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
             (extras.configuracoes ? ((extras.configuracoes.tempoHoras || 0) * 60 + (extras.configuracoes.tempoMinutos || 0)) : 0) || 0;
         const valorCentavos = pedido.valor_centavos || 0;
 
+        // Helper para sanitizar lista de IDs (garante string, comprimento e limite maximo)
+        const sanitizarIds = (lista: any[]): string[] => {
+            return lista
+                .map((item) => String(item || "").trim())
+                .filter((id) => id.length > 0 && id.length <= 64)
+                .slice(0, 100);
+        };
+
         const batchQueries: D1PreparedStatement[] = [];
 
         if (paraConcluido && !deConcluido) {
@@ -77,7 +86,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
             
             // 1.1 Desconto de Materiais
             if (materiais.length > 0) {
-                const idsMateriais = materiais.map((m: any) => m.idMaterial || m.id).filter(Boolean);
+                const idsMateriais = sanitizarIds(materiais.map((m: any) => m.idMaterial || m.id));
                 if (idsMateriais.length > 0) {
                     const placeholders = idsMateriais.map(() => "?").join(",");
                     const { results: dbMateriais } = await env.DB.prepare(
@@ -114,7 +123,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
 
             // 1.2 Desconto de Insumos
             if (insumosSecundarios.length > 0) {
-                const idsInsumos = insumosSecundarios.map((ins: any) => ins.idInsumo || ins.id).filter(Boolean);
+                const idsInsumos = sanitizarIds(insumosSecundarios.map((ins: any) => ins.idInsumo || ins.id));
                 if (idsInsumos.length > 0) {
                     const placeholders = idsInsumos.map(() => "?").join(",");
                     const { results: dbInsumos } = await env.DB.prepare(
@@ -289,7 +298,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
 
             // 2.2 Estornar Materiais
             if (materiais.length > 0) {
-                const idsMateriais = materiais.map((m: any) => m.idMaterial || m.id).filter(Boolean);
+                const idsMateriais = sanitizarIds(materiais.map((m: any) => m.idMaterial || m.id));
                 if (idsMateriais.length > 0) {
                     const placeholders = idsMateriais.map(() => "?").join(",");
                     const { results: dbMateriais } = await env.DB.prepare(
@@ -323,7 +332,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
 
             // 2.3 Estornar Insumos
             if (insumosSecundarios.length > 0) {
-                const idsInsumos = insumosSecundarios.map((ins: any) => ins.idInsumo || ins.id).filter(Boolean);
+                const idsInsumos = sanitizarIds(insumosSecundarios.map((ins: any) => ins.idInsumo || ins.id));
                 if (idsInsumos.length > 0) {
                     const placeholders = idsInsumos.map(() => "?").join(",");
                     const { results: dbInsumos } = await env.DB.prepare(

@@ -1,4 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
+import { ehUrlSegura } from "../utilitarios/sanitizacao";
 
 interface Env {
   DB: D1Database;
@@ -83,6 +84,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
       const linkUrl = (corpo.linkUrl || "").trim();
       const ativo = corpo.ativo ? 1 : 0;
       const agora = new Date().toISOString();
+
+      if (linkUrl && !ehUrlSegura(linkUrl)) {
+        return new Response(JSON.stringify({ mensagem: "A URL do link é inválida ou contém protocolo não seguro." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
 
       await env.DB.prepare(`
         INSERT INTO aviso_global (id, mensagem, tipo, link_rotulo, link_url, ativo, atualizado_em)

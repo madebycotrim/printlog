@@ -1,10 +1,11 @@
 /// <reference types="@cloudflare/workers-types" />
-import { criptografar } from "./utilitarios/criptografia";
+import { criptografar, obterChaveMestra } from "./utilitarios/criptografia";
 
 interface Env {
   DB: D1Database;
   JWT_SECRET: string;
   ENCRYPTION_KEY: string;
+  ENVIRONMENT?: string;
   FIREBASE_PROJECT_ID?: string;
 }
 
@@ -131,6 +132,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
     context.data.uid = "";
     context.data.email = "";
 
+    // 0. Bloqueio de Sobrecarga de Payload (Mitigação de DoS e exaustão de Isolate - Máx 2MB)
+    const tamanhoCorpo = request.headers.get("content-length");
+    if (tamanhoCorpo && parseInt(tamanhoCorpo, 10) > 2 * 1024 * 1024) {
+        return new Response(
+            JSON.stringify({ erro: "Payload excede o limite máximo permitido de 2MB." }),
+            {
+                status: 413,
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            }
+        );
+    }
+
     try {
         // 1. Extração de Identidade (JWT)
         const authHeader = request.headers.get("Authorization");
@@ -150,8 +163,9 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             }
         }
 
-        // Fallback para header de dev apenas localmente
-        if (!authenticated && isLocal) {
+        // Fallback para header de dev apenas localmente e se NAO for producao
+        const isDev = isLocal && env.ENVIRONMENT !== "production";
+        if (!authenticated && isDev) {
             context.data.uid = request.headers.get("x-user-uid") || "";
             context.data.email = request.headers.get("x-user-email") || "";
         }
@@ -168,7 +182,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
         if (uid && url.pathname.startsWith("/api") && aceitouPrivacidade && !jaRegistrado) {
             const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") || "127.0.0.1";
             const ua = request.headers.get("user-agent") || "desconhecido";
-            const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+            const chaveMestra = obterChaveMestra(env);
 
             context.waitUntil((async () => {
                 try {

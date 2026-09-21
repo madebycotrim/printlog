@@ -1,18 +1,44 @@
-export async function onRequestPost(context: any) {
-  const { request, env } = context;
+/// <reference types="@cloudflare/workers-types" />
+import { aplicarHeadersCors } from "../utilitarios/cors";
+import { escaparHtml, ehUrlSegura } from "../utilitarios/sanitizacao";
 
-  // CORS handling
-  const headers = new Headers();
-  headers.set("Access-Control-Allow-Origin", "*");
-  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+interface Env {
+  RESEND_API_KEY: string;
+}
+
+export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (context) => {
+  const { request, env, data } = context;
+
+  // CORS handling seguro e restritivo
+  const headers = aplicarHeadersCors(new Headers(), request, "POST, OPTIONS");
+
+  // Bloqueio de Segurança: Apenas operadores autenticados podem disparar e-mails de orçamento
+  const usuarioId = data?.uid;
+  if (!usuarioId) {
+    headers.set("Content-Type", "application/json");
+    return new Response(JSON.stringify({ error: "Não autorizado" }), {
+      status: 401,
+      headers,
+    });
+  }
 
   try {
-    const data = await request.json();
-    const { emailDestino, nomeCliente, nomeEstudio, linkMagico, valorTotal, nomeProjeto } = data;
+    const corpo = await request.json() as any;
+    const { emailDestino, linkMagico } = corpo;
+    const nomeCliente = escaparHtml(corpo.nomeCliente);
+    const nomeEstudio = escaparHtml(corpo.nomeEstudio);
+    const nomeProjeto = escaparHtml(corpo.nomeProjeto);
+    const valorTotal = escaparHtml(corpo.valorTotal);
 
     if (!emailDestino || !linkMagico || !nomeEstudio) {
       return new Response(JSON.stringify({ error: "Faltam campos obrigatórios." }), {
+        status: 400,
+        headers,
+      });
+    }
+
+    if (!ehUrlSegura(linkMagico)) {
+      return new Response(JSON.stringify({ error: "Link de orçamento inválido ou inseguro." }), {
         status: 400,
         headers,
       });
@@ -83,10 +109,7 @@ export async function onRequestPost(context: any) {
   }
 }
 
-export async function onRequestOptions() {
-  const headers = new Headers();
-  headers.set("Access-Control-Allow-Origin", "*");
-  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+export const onRequestOptions: PagesFunction = async (context) => {
+  const headers = aplicarHeadersCors(new Headers(), context.request, "POST, OPTIONS");
   return new Response(null, { headers });
-}
+};

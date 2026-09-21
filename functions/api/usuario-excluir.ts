@@ -39,6 +39,35 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
             env.DB.prepare("DELETE FROM cache_ia_precificacao WHERE id_usuario = ?").bind(usuarioId),
         ]);
 
+        // Garante que a tabela logs_auditoria exista
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS logs_auditoria (
+                id TEXT PRIMARY KEY,
+                id_operador TEXT NOT NULL,
+                email_operador TEXT,
+                acao TEXT NOT NULL,
+                alvo_id TEXT,
+                detalhes TEXT,
+                criado_em TEXT NOT NULL
+            )
+        `).run().catch(() => {});
+
+        // Registra o evento de purga (anonimizado conforme LGPD)
+        context.waitUntil(
+            env.DB.prepare(`
+                INSERT INTO logs_auditoria (id, id_operador, email_operador, acao, alvo_id, detalhes, criado_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                crypto.randomUUID(),
+                usuarioId,
+                "anonimizado_lgpd",
+                "PURGA_TOTAL_CONTA_LGPD",
+                usuarioId,
+                JSON.stringify({ motivo: "Direito ao Esquecimento Art. 18 LGPD" }),
+                new Date().toISOString()
+            ).run()
+        );
+
         return new Response(JSON.stringify({ 
             sucesso: true, 
             mensagem: "Dados de negócio excluídos com sucesso das bases operacionais." 

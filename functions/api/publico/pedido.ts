@@ -1,9 +1,10 @@
 /// <reference types="@cloudflare/workers-types" />
-import { descriptografar } from "../utilitarios/criptografia";
+import { descriptografar, obterChaveMestra } from "../utilitarios/criptografia";
 
 interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
+    ENVIRONMENT?: string;
 }
 
 export const onRequest: PagesFunction<Env, any> = async (context) => {
@@ -11,7 +12,7 @@ export const onRequest: PagesFunction<Env, any> = async (context) => {
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     const metodo = request.method;
-    const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+    const chaveMestra = obterChaveMestra(env);
 
     if (metodo !== "GET") {
         return new Response("Método não permitido", { status: 405 });

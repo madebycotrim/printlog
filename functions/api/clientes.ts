@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { criptografar, descriptografar } from "./utilitarios/criptografia";
+import { criptografar, descriptografar, obterChaveMestra } from "./utilitarios/criptografia";
 import { z } from "zod";
 
 /**
@@ -10,14 +10,15 @@ import { z } from "zod";
 interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
+    ENVIRONMENT?: string;
 }
 
 const ZodClienteCriar = z.object({
-    nome: z.string().min(1, "O nome do cliente é obrigatório"),
-    email: z.string().email("E-mail inválido").nullable().optional().or(z.literal("")),
-    telefone: z.string().nullable().optional(),
-    observacoesCRM: z.string().nullable().optional(),
-    tipo: z.string().optional(),
+    nome: z.string().trim().min(1, "O nome do cliente é obrigatório").max(150, "Nome excede 150 caracteres"),
+    email: z.string().trim().email("E-mail inválido").max(150, "E-mail excede 150 caracteres").nullable().optional().or(z.literal("")),
+    telefone: z.string().trim().max(30, "Telefone excede 30 caracteres").nullable().optional(),
+    observacoesCRM: z.string().max(5000, "Observações excedem 5.000 caracteres").nullable().optional(),
+    tipo: z.string().max(20).optional(),
     fiel: z.boolean().optional()
 });
 
@@ -33,7 +34,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     const metodo = request.method;
-    const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+    const chaveMestra = obterChaveMestra(env);
 
     try {
         // Migração automática (garante que as colunas existem no SQLite local)

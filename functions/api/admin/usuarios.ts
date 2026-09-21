@@ -132,6 +132,15 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 return new Response(JSON.stringify({ sucesso: true }), { status: 200 });
             }
 
+            // Whitelist estrita de colunas permitidas para evitar qualquer injeção de colunas dinâmicas
+            const COLUNAS_PERMITIDAS = new Set(["plano", "ciclo_pagamento", "vencimento_plano", "atualizado_em"]);
+            for (const campo of campos) {
+                const coluna = campo.split("=")[0].trim();
+                if (!COLUNAS_PERMITIDAS.has(coluna)) {
+                    return new Response("Tentativa de mutação em coluna não autorizada", { status: 400 });
+                }
+            }
+
             campos.push("atualizado_em = ?");
             valores.push(new Date().toISOString());
             valores.push(idUsuario);
@@ -141,6 +150,34 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 SET ${campos.join(", ")} 
                 WHERE id_usuario = ?
             `).bind(...valores).run();
+
+            // Garante que a tabela logs_auditoria exista e registra o evento
+            await env.DB.prepare(`
+                CREATE TABLE IF NOT EXISTS logs_auditoria (
+                    id TEXT PRIMARY KEY,
+                    id_operador TEXT NOT NULL,
+                    email_operador TEXT,
+                    acao TEXT NOT NULL,
+                    alvo_id TEXT,
+                    detalhes TEXT,
+                    criado_em TEXT NOT NULL
+                )
+            `).run().catch(() => {});
+
+            context.waitUntil(
+                env.DB.prepare(`
+                    INSERT INTO logs_auditoria (id, id_operador, email_operador, acao, alvo_id, detalhes, criado_em)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `).bind(
+                    crypto.randomUUID(),
+                    usuarioId,
+                    userEmail,
+                    `ALTERAR_PLANO_${acao || "ATUALIZAR"}`,
+                    idUsuario,
+                    JSON.stringify({ novoPlano, novoCiclo, acao }),
+                    new Date().toISOString()
+                ).run()
+            );
 
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }

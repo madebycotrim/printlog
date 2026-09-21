@@ -111,12 +111,23 @@ export function BannerAvisoGlobal() {
   const renderizarLink = () => {
     if (!aviso.linkUrl || !aviso.linkRotulo) return null;
 
-    const ehExterno = aviso.linkUrl.startsWith("http://") || aviso.linkUrl.startsWith("https://");
+    const urlLimpa = aviso.linkUrl.trim();
+    // Bloqueia protocolos executáveis ou esquemas perigosos
+    if (
+      urlLimpa.toLowerCase().startsWith("javascript:") ||
+      urlLimpa.toLowerCase().startsWith("data:") ||
+      urlLimpa.toLowerCase().startsWith("vbscript:") ||
+      urlLimpa.startsWith("//")
+    ) {
+      return null;
+    }
+
+    const ehExterno = urlLimpa.startsWith("http://") || urlLimpa.startsWith("https://");
 
     if (ehExterno) {
       return (
         <a
-          href={aviso.linkUrl}
+          href={urlLimpa}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 font-bold underline underline-offset-2 hover:opacity-80 transition-opacity ml-1.5 shrink-0"
@@ -127,15 +138,20 @@ export function BannerAvisoGlobal() {
       );
     }
 
-    return (
-      <Link
-        to={aviso.linkUrl}
-        className="inline-flex items-center gap-1 font-bold underline underline-offset-2 hover:opacity-80 transition-opacity ml-1.5 shrink-0"
-      >
-        <span>{aviso.linkRotulo}</span>
-        <ArrowRight size={12} />
-      </Link>
-    );
+    // Apenas rotas relativas internas estritas
+    if (urlLimpa.startsWith("/")) {
+      return (
+        <Link
+          to={urlLimpa}
+          className="inline-flex items-center gap-1 font-bold underline underline-offset-2 hover:opacity-80 transition-opacity ml-1.5 shrink-0"
+        >
+          <span>{aviso.linkRotulo}</span>
+          <ArrowRight size={12} />
+        </Link>
+      );
+    }
+
+    return null;
   };
 
   return (

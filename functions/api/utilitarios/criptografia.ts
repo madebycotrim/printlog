@@ -3,6 +3,24 @@
  * Utiliza AES-GCM com vetores de inicialização (IV) únicos por registro.
  */
 
+/**
+ * Obtém e valida a chave mestra de criptografia.
+ * Falha obrigatoriamente se a chave não estiver configurada no ambiente de produção.
+ */
+export function obterChaveMestra(env: { ENCRYPTION_KEY?: string; ENVIRONMENT?: string }): string {
+  const chave = env.ENCRYPTION_KEY?.trim();
+  if (chave && chave.length >= 16) {
+    return chave;
+  }
+
+  // Permite fallback apenas se explicitamente em ambiente de desenvolvimento local
+  if (env.ENVIRONMENT === "development") {
+    return "dev-local-printlog-2026-key-32b!";
+  }
+
+  throw new Error("Erro de Segurança Crítico: ENCRYPTION_KEY não configurada ou com entropia insuficiente (mínimo 16 caracteres).");
+}
+
 function arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
   let binary = '';
   const bytes = new Uint8Array(buffer);

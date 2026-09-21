@@ -1,4 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
+import { verificarRateLimit } from './utilitarios/rate-limit';
 
 export interface OpcaoFrete {
   id: string;
@@ -49,6 +50,22 @@ function obterUfPorCep(cep: string): string {
 }
 
 export const onRequestGet: PagesFunction = async (context) => {
+  const ip = context.request.headers.get('cf-connecting-ip') || '127.0.0.1';
+  const limitCheck = verificarRateLimit(ip, 'cotar-frete', 30, 60_000);
+
+  if (!limitCheck.permitido) {
+    return new Response(
+      JSON.stringify({ sucesso: false, erro: 'Muitas cotações de frete consecutivas. Aguarde alguns instantes.' }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Retry-After': String(limitCheck.segundosParaReset),
+        },
+      }
+    );
+  }
+
   const url = new URL(context.request.url);
   const cepDestino = (url.searchParams.get('destino') || '').replace(/\D/g, '');
   const cepOrigem = (url.searchParams.get('origem') || '01001000').replace(/\D/g, '');

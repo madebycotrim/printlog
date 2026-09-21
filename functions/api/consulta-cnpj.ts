@@ -1,6 +1,22 @@
-/// <reference types="@cloudflare/workers-types" />
+import { verificarRateLimit } from './utilitarios/rate-limit';
 
 export const onRequestGet: PagesFunction = async (context) => {
+  const ip = context.request.headers.get('cf-connecting-ip') || '127.0.0.1';
+  const limitCheck = verificarRateLimit(ip, 'consulta-cnpj', 20, 60_000);
+
+  if (!limitCheck.permitido) {
+    return new Response(
+      JSON.stringify({ sucesso: false, erro: 'Muitas consultas de CNPJ consecutivas. Aguarde alguns instantes.' }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Retry-After': String(limitCheck.segundosParaReset),
+        },
+      }
+    );
+  }
+
   const url = new URL(context.request.url);
   const cnpjParam = url.searchParams.get('cnpj') || '';
   const cnpjLimpo = cnpjParam.replace(/\D/g, '');

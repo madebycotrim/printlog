@@ -1,4 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
+import { aplicarHeadersCors } from "./utilitarios/cors";
 
 /**
  * API de Histórico de Cálculos (Snapshots) - Cloudflare Pages Functions
@@ -14,16 +15,10 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
 
     const metodo = request.method;
 
-    // Tratamento de CORS Preflight (OPTIONS)
+    // Tratamento de CORS Preflight (OPTIONS) restritivo
     if (metodo === "OPTIONS") {
-        return new Response(null, {
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "Access-Control-Max-Age": "86400"
-            }
-        });
+        const headers = aplicarHeadersCors(new Headers(), request, "GET, POST, DELETE, OPTIONS");
+        return new Response(null, { headers });
     }
 
     const usuarioId = data.uid;

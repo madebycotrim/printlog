@@ -1,6 +1,22 @@
-/// <reference types="@cloudflare/workers-types" />
+import { verificarRateLimit } from './utilitarios/rate-limit';
 
 export const onRequestGet: PagesFunction = async (context) => {
+  const ip = context.request.headers.get('cf-connecting-ip') || '127.0.0.1';
+  const limitCheck = verificarRateLimit(ip, 'consulta-cep', 30, 60_000);
+
+  if (!limitCheck.permitido) {
+    return new Response(
+      JSON.stringify({ sucesso: false, erro: 'Muitas consultas consecutivas. Aguarde alguns instantes.' }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Retry-After': String(limitCheck.segundosParaReset),
+        },
+      }
+    );
+  }
+
   const url = new URL(context.request.url);
   const cepParam = url.searchParams.get('cep') || '';
   const cepLimpo = cepParam.replace(/\D/g, '');

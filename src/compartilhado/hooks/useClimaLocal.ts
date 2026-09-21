@@ -50,36 +50,22 @@ export function useClimaLocal(): EstadoClima {
         try {
           const resLocal = await fetch('/api/detectar-regiao');
           if (resLocal.ok) {
-            const dadosLocal = await resLocal.json();
-            if (dadosLocal.sucesso && dadosLocal.dados) {
-              lat = dadosLocal.dados.latitude;
-              lon = dadosLocal.dados.longitude;
-              cidade = dadosLocal.dados.cidade;
+            const dadosLocal = await resLocal.json() as any;
+            if (dadosLocal.sucesso) {
+              lat = dadosLocal.latitude || dadosLocal.dados?.latitude;
+              lon = dadosLocal.longitude || dadosLocal.dados?.longitude;
+              cidade = dadosLocal.cidade || dadosLocal.dados?.cidade;
             }
           }
         } catch {
-          // Ignora e tenta fallback HTTPS
+          // Ignora e usa fallback seguro local
         }
 
+        // Se não conseguir resolver via edge, usa coordenadas padrão da capital (São Paulo - BR)
         if (!lat || !lon) {
-          try {
-            const resFallback = await fetch('https://ipwho.is/');
-            if (resFallback.ok) {
-              const dadosFallback = await resFallback.json();
-              lat = dadosFallback.latitude;
-              lon = dadosFallback.longitude;
-              cidade = dadosFallback.city;
-            }
-          } catch {
-            // Se falhar, usa coordenadas padrão (São Paulo - BR)
-            lat = -23.5505;
-            lon = -46.6333;
-            cidade = "São Paulo";
-          }
-        }
-
-        if (!lat || !lon) {
-          throw new Error('Coordenadas não encontradas');
+          lat = -23.5505;
+          lon = -46.6333;
+          cidade = "São Paulo";
         }
 
         // 3. Busca o clima baseado nas coordenadas

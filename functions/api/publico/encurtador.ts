@@ -4,7 +4,7 @@ interface Env {
   DB: D1Database;
 }
 
-export const onRequest: PagesFunction<Env, any> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid?: string }> = async (context) => {
   const { env, request } = context;
   const metodo = request.method;
   const url = new URL(request.url);
@@ -46,12 +46,36 @@ export const onRequest: PagesFunction<Env, any> = async (context) => {
 
   // === POST: Cria um novo link encurtado ===
   if (metodo === "POST") {
+    // Bloqueio de Segurança: Apenas operadores autenticados podem encurtar links
+    const usuarioId = context.data?.uid;
+    if (!usuarioId) {
+      return new Response(
+        JSON.stringify({ erro: "Não autorizado" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     try {
       const { url: urlOriginal } = await request.json() as { url: string };
 
       if (!urlOriginal) {
         return new Response(
           JSON.stringify({ erro: "URL original não fornecida" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Bloqueio Anti Open Redirect: permitir apenas links internos estritos (sem //) ou domínio oficial
+      const ehRotaInterna = urlOriginal.startsWith("/") && !urlOriginal.startsWith("//");
+      const ehDominioOficial = urlOriginal.startsWith("https://printlog.com.br/") || 
+                               urlOriginal.startsWith("https://www.printlog.com.br/") ||
+                               urlOriginal.startsWith("http://localhost:") || 
+                               urlOriginal.startsWith("http://127.0.0.1:");
+      const ehValida = ehRotaInterna || ehDominioOficial;
+
+      if (!ehValida) {
+        return new Response(
+          JSON.stringify({ erro: "URL de destino inválida. Apenas links internos são permitidos." }),
           { status: 400, headers: { "Content-Type": "application/json" } }
         );
       }

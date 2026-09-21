@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { criptografar, descriptografar } from "./utilitarios/criptografia";
+import { criptografar, descriptografar, obterChaveMestra } from "./utilitarios/criptografia";
 import { z } from "zod";
 
 /**
@@ -10,20 +10,21 @@ import { z } from "zod";
 interface Env {
     DB: D1Database;
     ENCRYPTION_KEY: string;
+    ENVIRONMENT?: string;
 }
 
 const ZodPedidoCriar = z.object({
-    idCliente: z.string().nullable().optional(),
-    id_cliente: z.string().nullable().optional(),
-    idImpressora: z.string().nullable().optional(),
-    id_impressora: z.string().nullable().optional(),
-    descricao: z.string().min(1, "A descrição não pode ser vazia"),
-    valorCentavos: z.number().min(0).optional(),
-    valor_centavos: z.number().min(0).optional(),
-    status: z.string().optional(),
-    dataCriacao: z.string().optional(),
-    data_criacao: z.string().optional(),
-    dados_extras: z.string().optional()
+    idCliente: z.string().trim().max(100).nullable().optional(),
+    id_cliente: z.string().trim().max(100).nullable().optional(),
+    idImpressora: z.string().trim().max(100).nullable().optional(),
+    id_impressora: z.string().trim().max(100).nullable().optional(),
+    descricao: z.string().trim().min(1, "A descrição não pode ser vazia").max(500, "A descrição não pode exceder 500 caracteres"),
+    valorCentavos: z.number().int("O valor deve ser um número inteiro em centavos").min(0).max(100_000_000).optional(),
+    valor_centavos: z.number().int("O valor deve ser um número inteiro em centavos").min(0).max(100_000_000).optional(),
+    status: z.string().trim().max(50).optional(),
+    dataCriacao: z.string().max(50).optional(),
+    data_criacao: z.string().max(50).optional(),
+    dados_extras: z.string().max(50000).optional()
 });
 
 const ZodPedidoAtualizar = ZodPedidoCriar.partial().extend({
@@ -38,7 +39,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     const metodo = request.method;
-    const chaveMestra = env.ENCRYPTION_KEY || "chave-temporaria-printlog-2026";
+    const chaveMestra = obterChaveMestra(env);
 
     // ── Helper para limpar e padronizar IDs ──
     const limparId = (val: any): string | null => {

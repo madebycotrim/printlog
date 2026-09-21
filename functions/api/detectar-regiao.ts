@@ -130,10 +130,30 @@ export const onRequestGet: PagesFunction = async (context) => {
         }
 
         // 3. Fallback no servidor via IP do cliente caso o edge não tenha populado a região
-        const clientIp = headers.get("cf-connecting-ip") || headers.get("x-real-ip");
-        if (!estado && clientIp && clientIp !== "127.0.0.1" && !clientIp.startsWith("192.168.") && !clientIp.startsWith("10.")) {
+        // Confia exclusivamente no cabeçalho protegido cf-connecting-ip gerenciado pela Cloudflare
+        const rawIp = headers.get("cf-connecting-ip");
+        const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$|^([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}$/;
+        const clientIp = rawIp && IP_REGEX.test(rawIp) ? rawIp : null;
+
+        const ehIpPrivado = clientIp && (
+            clientIp === "127.0.0.1" || 
+            clientIp.startsWith("192.168.") || 
+            clientIp.startsWith("10.") ||
+            clientIp.startsWith("172.16.") ||
+            clientIp === "::1"
+        );
+
+        if (!estado && clientIp && !ehIpPrivado) {
             try {
-                const resGeo = await fetch(`https://get.geojs.io/v1/ip/geo/${clientIp}.json`);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                const resGeo = await fetch(`https://get.geojs.io/v1/ip/geo/${encodeURIComponent(clientIp)}.json`, {
+                    signal: controller.signal,
+                    headers: { "User-Agent": "PrintLog-Edge/1.0" }
+                });
+                clearTimeout(timeoutId);
+
                 if (resGeo.ok) {
                     const dados = await resGeo.json() as any;
                     estado = extrairUF(dados.region || dados.region_code);
@@ -143,17 +163,7 @@ export const onRequestGet: PagesFunction = async (context) => {
                     if (dados.longitude && !longitude) longitude = dados.longitude;
                 }
             } catch {
-                // Tenta segundo provedor no servidor
-                try {
-                    const resWho = await fetch(`https://ipwho.is/${clientIp}`);
-                    if (resWho.ok) {
-                        const dados = await resWho.json() as any;
-                        estado = extrairUF(dados.region_code || dados.region);
-                        if (dados.city && !cidade) cidade = dados.city;
-                    }
-                } catch {
-                    // Ignora
-                }
+                // Em caso de falha de rede ou timeout, fallback seguro sem quebrar
             }
         }
 
