@@ -268,29 +268,122 @@ O PrintLog adota o padrão de **Segurança por Design e por Padrão (*Privacy by
 
 ### 2.6 Modelo de Dados Relacional (Cloudflare D1 / SQLite)
 
-O banco de dados relacional utiliza o **Cloudflare D1**. Todas as tabelas são criadas de forma defensiva com UUIDs v4 como chave primária:
+O banco de dados relacional utiliza o **Cloudflare D1** (banco SQLite distribuído na Edge). A base de dados ativa em produção é composta exatamente pelas **16 tabelas oficiais** listadas abaixo (em ordem alfabética conforme exibido no Cloudflare Dashboard):
+
+| # | Tabela D1 | Finalidade e Descrição |
+|---|---|---|
+| 1 | `aviso_global` | Broadcast de alertas e mensagens no topo do app para todos os usuários. |
+| 2 | `chamados_suporte` | Central de tickets e suporte interno entre usuários e o Console do Dono. |
+| 3 | `clientes` | CRM de clientes B2B/B2C com dados sensíveis (PII) criptografados com AES-GCM. |
+| 4 | `configuracoes_usuario` | Parâmetros de custos (energia, hora máquina/técnica, margem), dados do estúdio e planos. |
+| 5 | `historico_calculos` | Snapshots e simulações de orçamentos salvas pelo usuário na Calculadora Maker. |
+| 6 | `historico_uso_materiais` | Auditoria de gramas de filamento/resina debitadas a cada peça produzida. |
+| 7 | `impressoras` | Parque de máquinas FDM/Resina com horímetro digital, custo elétrico acumulado e ROI. |
+| 8 | `insumos` | Estoque de consumíveis secundários (parafusos, inserts roscados, ímãs, caixas). |
+| 9 | `lancamentos_financeiros` | Fluxo de caixa de entradas e saídas com valores monetários em centavos inteiros. |
+| 10 | `links_encurtados` | Slugs de redirecionamento curto para orçamentos e rastreamentos públicos (`/o/:id`). |
+| 11 | `logs_acesso` | Registro de acessos para conformidade LGPD/Marco Civil com IP e User-Agent criptografados. |
+| 12 | `materiais` | Estoque de bobinas de filamentos e resinas com peso restante em gramas. |
+| 13 | `movimentacoes_insumo` | Kardex de entradas (compras) e saídas (consumo em pedidos) de consumíveis. |
+| 14 | `pecas_desgaste` | Componentes de vida útil finita por impressora (nozzles, correias, guias). |
+| 15 | `pedidos_impressao` | Fila Kanban de pedidos e orçamentos com status e liquidação atômica. |
+| 16 | `registro_manutencao` | Histórico de manutenções preventivas e corretivas executadas nas impressoras. |
+
+---
+
+#### Esquemas DDL SQL das 16 Tabelas Oficiais:
 
 ```sql
--- 1. Pedidos de Impressão e Orçamentos
-CREATE TABLE IF NOT EXISTS pedidos_impressao (
-    id TEXT PRIMARY KEY,
-    id_usuario TEXT NOT NULL,
-    id_cliente TEXT,
-    id_impressora TEXT,
-    descricao TEXT,                      -- Criptografado AES-GCM
-    status TEXT NOT NULL DEFAULT 'pendente', -- orcamento | a_fazer | em_producao | acabamento | concluido | arquivado
-    valor_centavos INTEGER NOT NULL DEFAULT 0,
-    data_criacao TEXT,                  -- ISO 8601 UTC
-    data_conclusao TEXT,                -- ISO 8601 UTC
-    dados_extras TEXT,                  -- JSON Criptografado (pesos, tempos, materiais)
-    arquivado INTEGER NOT NULL DEFAULT 0
+-- 1. aviso_global (Banner de Broadcast)
+CREATE TABLE IF NOT EXISTS aviso_global (
+    id TEXT PRIMARY KEY,                 -- Ex: 'GLOBAL'
+    mensagem TEXT NOT NULL,
+    tipo TEXT DEFAULT 'INFO',            -- INFO | ALERTA | SUCESSO | MANUTENCAO
+    link_rotulo TEXT,
+    link_url TEXT,
+    ativo INTEGER DEFAULT 0,             -- 0 = Inativo, 1 = Ao Vivo
+    atualizado_em TEXT
 );
 
--- 2. Parque de Impressoras
-CREATE TABLE IF NOT EXISTS impressoras (
-    id TEXT PRIMARY KEY,
+-- 2. chamados_suporte (Suporte Interno Nativo)
+CREATE TABLE IF NOT EXISTS chamados_suporte (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_usuario TEXT NOT NULL,            -- UID Firebase do solicitante
+    email_usuario TEXT,                  -- E-mail do solicitante
+    nome_usuario TEXT,                   -- Nome do estúdio ou usuário
+    assunto TEXT NOT NULL,               -- Título da solicitação
+    categoria TEXT NOT NULL,             -- bug | duvida | sugestao | financeiro | emergencia | outro
+    prioridade TEXT NOT NULL DEFAULT 'normal', -- baixa | normal | alta | urgente
+    status TEXT NOT NULL DEFAULT 'aberto',     -- aberto | em_analise | respondido | resolvido | fechado
+    mensagem TEXT NOT NULL,              -- Descrição detalhada do chamado
+    anexo_contexto TEXT,                 -- JSON opcional com diagnóstico do navegador
+    resposta_admin TEXT,                 -- Resposta oficial da equipe técnica / admin
+    respondido_por TEXT,                 -- E-mail do administrador que respondeu
+    data_criacao TEXT NOT NULL,          -- ISO 8601 UTC
+    data_resposta TEXT,                  -- ISO 8601 UTC
+    data_atualizacao TEXT NOT NULL       -- ISO 8601 UTC
+);
+
+-- 3. clientes (CRM com PII Criptografada AES-GCM)
+CREATE TABLE IF NOT EXISTS clientes (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_usuario TEXT NOT NULL,            -- UID Firebase do proprietário
+    nome TEXT NOT NULL,                  -- Criptografado AES-GCM
+    email TEXT,                          -- Criptografado AES-GCM
+    telefone TEXT,                       -- Criptografado AES-GCM
+    observacoes_crm TEXT,                -- Criptografado AES-GCM
+    tipo TEXT DEFAULT 'B2C',             -- B2C | B2B
+    fiel INTEGER DEFAULT 0,              -- 1 = Cliente Fiel
+    ltv_centavos INTEGER DEFAULT 0,      -- Lifetime Value acumulado
+    total_produtos INTEGER DEFAULT 0,    -- Quantidade de pedidos finalizados
+    historico TEXT DEFAULT '[]',         -- JSON com histórico de transações
+    arquivado INTEGER NOT NULL DEFAULT 0,
+    data_cadastro TEXT
+);
+
+-- 4. configuracoes_usuario (Custos Operacionais e Identidade do Estúdio)
+CREATE TABLE IF NOT EXISTS configuracoes_usuario (
+    id_usuario TEXT PRIMARY KEY,         -- UID Firebase
+    email TEXT,
+    custo_energia TEXT DEFAULT 'R$ 0,00',
+    hora_maquina TEXT DEFAULT 'R$ 0,00',
+    hora_operador TEXT DEFAULT 'R$ 0,00',
+    margem_lucro TEXT DEFAULT '0,00%',
+    nome_estudio TEXT DEFAULT '',
+    slogan_estudio TEXT DEFAULT '',
+    logo_estudio TEXT DEFAULT '',
+    plano TEXT DEFAULT 'FREE',           -- FREE | PRO | FUNDADOR
+    ciclo_pagamento TEXT DEFAULT 'MENSAL', -- MENSAL | TRIMESTRAL | SEMESTRAL | ANUAL | VITALICIO | TRIAL
+    vencimento_plano TEXT,
+    calculadora_meta TEXT,               -- JSON de metadados da calculadora
+    atualizado_em TEXT
+);
+
+-- 5. historico_calculos (Snapshots Salvos da Calculadora)
+CREATE TABLE IF NOT EXISTS historico_calculos (
+    id TEXT PRIMARY KEY,                 -- UUID ou 'rascunho_ativo'
     id_usuario TEXT NOT NULL,
-    nome TEXT NOT NULL,
+    nome TEXT NOT NULL,                  -- Nome do projeto / simulação
+    dados_json TEXT NOT NULL,            -- JSON completo dos parâmetros de cálculo
+    criado_em TEXT NOT NULL              -- ISO 8601 UTC
+);
+
+-- 6. historico_uso_materiais (Consumo de Filamentos)
+CREATE TABLE IF NOT EXISTS historico_uso_materiais (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_material TEXT NOT NULL,           -- UUID do carretel
+    id_usuario TEXT NOT NULL,
+    data TEXT NOT NULL,                  -- ISO 8601 UTC
+    nome_peca TEXT,
+    quantidade_gasta_gramas REAL NOT NULL,
+    status TEXT NOT NULL DEFAULT 'SUCESSO' -- SUCESSO | FALHA
+);
+
+-- 7. impressoras (Parque de Máquinas)
+CREATE TABLE IF NOT EXISTS impressoras (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_usuario TEXT NOT NULL,
+    nome TEXT NOT NULL,                  -- Ex: "Bambu Lab P1S"
     marca TEXT,
     modelo TEXT,
     tipo TEXT NOT NULL DEFAULT 'FDM',     -- FDM | SLA | DLP
@@ -298,53 +391,75 @@ CREATE TABLE IF NOT EXISTS impressoras (
     diametro_bico_mm REAL DEFAULT 0.4,
     potencia_watts INTEGER DEFAULT 250,
     valor_compra_centavos INTEGER DEFAULT 0,
-    horimetro_total_minutos INTEGER DEFAULT 0,
-    custo_energia_centavos INTEGER DEFAULT 0,
+    horimetro_total_minutos INTEGER DEFAULT 0, -- Horímetro total digital
+    custo_energia_centavos INTEGER DEFAULT 0,  -- Custo elétrico acumulado
     total_projetos_concluidos INTEGER DEFAULT 0,
     receita_acumulada_centavos INTEGER DEFAULT 0,
     roi_percentual INTEGER DEFAULT 0,
-    historico_producao TEXT DEFAULT '[]',
+    historico_producao TEXT DEFAULT '[]', -- JSON com últimas impressões
     arquivado INTEGER NOT NULL DEFAULT 0,
     data_criacao TEXT
 );
 
--- 3. Peças de Desgaste e Manutenção Preditiva
-CREATE TABLE IF NOT EXISTS pecas_desgaste (
-    id TEXT PRIMARY KEY,
-    id_impressora TEXT NOT NULL,
+-- 8. insumos (Consumíveis Secundários)
+CREATE TABLE IF NOT EXISTS insumos (
+    id TEXT PRIMARY KEY,                 -- UUID v4
     id_usuario TEXT NOT NULL,
-    nome TEXT NOT NULL,
-    horas_uso_atual_minutos INTEGER DEFAULT 0,
-    vida_util_minutos INTEGER NOT NULL,
-    data_ultima_troca TEXT,
+    nome TEXT NOT NULL,                  -- Ex: "Insert Latão M3", "Caixa Papelão P"
+    categoria TEXT NOT NULL,             -- fixacao | acabamento | embalagem | eletrica
+    unidade_medida TEXT NOT NULL,        -- un | pacote | metro | ml
+    quantidade_atual REAL NOT NULL,      -- Saldo em estoque
+    estoque_minimo REAL DEFAULT 0,       -- Ponto de reposição
+    custo_medio_unidade INTEGER DEFAULT 0, -- Em centavos
+    fornecedor TEXT,
+    arquivado INTEGER NOT NULL DEFAULT 0,
+    data_atualizacao TEXT
+);
+
+-- 9. lancamentos_financeiros (Fluxo de Caixa)
+CREATE TABLE IF NOT EXISTS lancamentos_financeiros (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_usuario TEXT NOT NULL,
+    id_pedido TEXT,                      -- Opcional: vinculado a um pedido
+    id_cliente TEXT,                     -- Opcional: vinculado a um cliente
+    tipo TEXT NOT NULL,                  -- Entrada | Saída
+    valor_centavos INTEGER NOT NULL,     -- Valor monetário em centavos
+    descricao TEXT,                      -- Criptografado AES-GCM
+    categoria TEXT,                      -- Criptografado AES-GCM
+    data_criacao TEXT NOT NULL,          -- ISO 8601 UTC
     arquivado INTEGER NOT NULL DEFAULT 0
 );
 
--- 4. Registros de Manutenções
-CREATE TABLE IF NOT EXISTS manutencoes (
-    id TEXT PRIMARY KEY,
-    id_impressora TEXT NOT NULL,
-    id_usuario TEXT NOT NULL,
-    tipo TEXT NOT NULL,                  -- preventiva | corretiva
-    descricao TEXT NOT NULL,
-    custo_centavos INTEGER DEFAULT 0,
-    pecas_trocadas TEXT,
-    data TEXT NOT NULL
+-- 10. links_encurtados (Redirecionador Público /o/:id)
+CREATE TABLE IF NOT EXISTS links_encurtados (
+    id TEXT PRIMARY KEY,                 -- Slug curto (ex: aB3xZ)
+    url_destino TEXT NOT NULL,
+    cliques INTEGER DEFAULT 0,
+    data_criacao TEXT NOT NULL           -- ISO 8601 UTC
 );
 
--- 5. Estoque de Materiais (Filamentos e Resinas)
-CREATE TABLE IF NOT EXISTS materiais (
-    id TEXT PRIMARY KEY,
+-- 11. logs_acesso (Auditoria e Sessões LGPD)
+CREATE TABLE IF NOT EXISTS logs_acesso (
+    id TEXT PRIMARY KEY,                 -- UUID v4
     id_usuario TEXT NOT NULL,
-    nome TEXT NOT NULL,
+    data_acesso TEXT NOT NULL,          -- ISO 8601 UTC
+    ip_acesso TEXT NOT NULL,             -- Criptografado AES-GCM
+    user_agent TEXT NOT NULL             -- Criptografado AES-GCM
+);
+
+-- 12. materiais (Estoque de Bobinas e Resinas)
+CREATE TABLE IF NOT EXISTS materiais (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_usuario TEXT NOT NULL,
+    nome TEXT NOT NULL,                  -- Ex: "PLA Premium Preto"
     tipo TEXT NOT NULL,                  -- PLA, ABS, PETG, TPU, ASA, RESINA
     marca TEXT,
     cor TEXT,
-    cor_hex TEXT,
-    preco_kg_centavos INTEGER NOT NULL,
-    peso_gramas INTEGER NOT NULL,
-    peso_restante_gramas REAL NOT NULL,
-    densidade REAL DEFAULT 1.24,
+    cor_hex TEXT,                        -- Código Hexadecimal para a UI
+    preco_kg_centavos INTEGER NOT NULL,  -- Preço do quilo em centavos
+    peso_gramas INTEGER NOT NULL,        -- Peso líquido inicial
+    peso_restante_gramas REAL NOT NULL,  -- Saldo físico em estoque
+    densidade REAL DEFAULT 1.24,         -- g/cm³ para cálculos volumétricos
     diametro_mm REAL DEFAULT 1.75,
     temperatura_bico INTEGER,
     temperatura_mesa INTEGER,
@@ -352,124 +467,61 @@ CREATE TABLE IF NOT EXISTS materiais (
     data_cadastro TEXT
 );
 
--- 6. Histórico de Consumo de Materiais
-CREATE TABLE IF NOT EXISTS historico_uso_materiais (
-    id TEXT PRIMARY KEY,
-    id_material TEXT NOT NULL,
-    id_usuario TEXT NOT NULL,
-    data TEXT NOT NULL,
-    nome_peca TEXT,
-    quantidade_gasta_gramas REAL NOT NULL,
-    status TEXT NOT NULL DEFAULT 'SUCESSO'
-);
-
--- 7. Insumos Secundários Operacionais
-CREATE TABLE IF NOT EXISTS insumos (
-    id TEXT PRIMARY KEY,
-    id_usuario TEXT NOT NULL,
-    nome TEXT NOT NULL,
-    categoria TEXT NOT NULL,             -- fixacao | acabamento | embalagem | eletrica
-    unidade_medida TEXT NOT NULL,        -- un | pacote | metro | ml
-    quantidade_atual REAL NOT NULL,
-    estoque_minimo REAL DEFAULT 0,
-    custo_medio_unidade INTEGER DEFAULT 0,
-    fornecedor TEXT,
-    arquivado INTEGER NOT NULL DEFAULT 0,
-    data_atualizacao TEXT
-);
-
--- 8. Movimentações de Estoque de Insumos (Kardex)
+-- 13. movimentacoes_insumo (Kardex de Consumíveis)
 CREATE TABLE IF NOT EXISTS movimentacoes_insumo (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,                 -- UUID v4
     insumo_id TEXT NOT NULL,
     id_usuario TEXT NOT NULL,
-    data TEXT NOT NULL,
+    data TEXT NOT NULL,                  -- ISO 8601 UTC
     tipo TEXT NOT NULL,                  -- Entrada | Saída
     quantidade REAL NOT NULL,
-    valor_total INTEGER DEFAULT 0,
-    motivo TEXT,
+    valor_total INTEGER DEFAULT 0,       -- Em centavos
+    motivo TEXT,                         -- Compra | Consumo | Descarte | Ajuste
     observacao TEXT
 );
 
--- 9. Clientes CRM (Protegidos com Criptografia)
-CREATE TABLE IF NOT EXISTS clientes (
-    id TEXT PRIMARY KEY,
+-- 14. pecas_desgaste (Manutenção Preditiva)
+CREATE TABLE IF NOT EXISTS pecas_desgaste (
+    id TEXT PRIMARY KEY,                 -- UUID v4
+    id_impressora TEXT NOT NULL,
     id_usuario TEXT NOT NULL,
-    nome TEXT NOT NULL,                  -- Criptografado
-    email TEXT,                          -- Criptografado
-    telefone TEXT,                       -- Criptografado
-    observacoes_crm TEXT,                -- Criptografado
-    tipo TEXT DEFAULT 'B2C',             -- B2C | B2B
-    fiel INTEGER DEFAULT 0,
-    ltv_centavos INTEGER DEFAULT 0,
-    total_produtos INTEGER DEFAULT 0,
-    historico TEXT DEFAULT '[]',
-    arquivado INTEGER NOT NULL DEFAULT 0,
-    data_cadastro TEXT
-);
-
--- 10. Lançamentos Financeiros (Fluxo de Caixa)
-CREATE TABLE IF NOT EXISTS lancamentos_financeiros (
-    id TEXT PRIMARY KEY,
-    id_usuario TEXT NOT NULL,
-    id_pedido TEXT,
-    id_cliente TEXT,
-    tipo TEXT NOT NULL,                  -- Entrada | Saída
-    valor_centavos INTEGER NOT NULL,
-    descricao TEXT,                      -- Criptografado
-    categoria TEXT,                      -- Criptografado
-    data_criacao TEXT NOT NULL,
+    nome TEXT NOT NULL,                   -- Ex: "Nozzle de Latão 0.4mm", "Correia X"
+    horas_uso_atual_minutos INTEGER DEFAULT 0,
+    vida_util_minutos INTEGER NOT NULL,   -- Vida útil nominal (em minutos)
+    data_ultima_troca TEXT,
     arquivado INTEGER NOT NULL DEFAULT 0
 );
 
--- 11. Configurações Globais do Estúdio
-CREATE TABLE IF NOT EXISTS configuracoes (
-    id_usuario TEXT PRIMARY KEY,
-    custo_kwh_centavos INTEGER DEFAULT 85,
-    bandeira_tarifaria TEXT DEFAULT 'verde',
-    margem_lucro_padrao INTEGER DEFAULT 10000,
-    depreciacao_padrao_hora INTEGER DEFAULT 50,
-    valor_hora_modelagem INTEGER DEFAULT 6000,
-    taxa_falha_padrao INTEGER DEFAULT 500,
-    taxa_lucro_atacado INTEGER DEFAULT 4000,
-    taxa_lucro_express INTEGER DEFAULT 15000,
-    tema TEXT DEFAULT 'sistema',
-    cor_primaria TEXT DEFAULT 'sky'
-);
-
--- 12. Canais de Venda e Taxas de Marketplace
-CREATE TABLE IF NOT EXISTS canais_venda (
-    id TEXT PRIMARY KEY,
+-- 15. pedidos_impressao (Pipeline Kanban de Produção)
+CREATE TABLE IF NOT EXISTS pedidos_impressao (
+    id TEXT PRIMARY KEY,                 -- UUID v4
     id_usuario TEXT NOT NULL,
-    nome TEXT NOT NULL,
-    taxa_percentual INTEGER NOT NULL,    -- 1800 = 18.00%
-    taxa_fixa_centavos INTEGER NOT NULL,
-    ativo INTEGER DEFAULT 1
+    id_cliente TEXT,                     -- UUID do cliente ou 'avulso'
+    id_impressora TEXT,                  -- UUID da máquina designada
+    descricao TEXT,                      -- Criptografado AES-GCM
+    status TEXT NOT NULL DEFAULT 'pendente', -- orcamento | a_fazer | em_producao | acabamento | concluido | arquivado
+    valor_centavos INTEGER NOT NULL DEFAULT 0, -- Valor final da peça em centavos
+    data_criacao TEXT,                  -- ISO 8601 UTC
+    data_conclusao TEXT,                -- ISO 8601 UTC
+    dados_extras TEXT,                  -- JSON Criptografado (pesos, tempos, insumos)
+    arquivado INTEGER NOT NULL DEFAULT 0
 );
 
--- 13. Auditoria LGPD e Sessões
-CREATE TABLE IF NOT EXISTS logs_acesso (
-    id TEXT PRIMARY KEY,
+-- 16. registro_manutencao (Histórico de Intervenções Técnicas)
+CREATE TABLE IF NOT EXISTS registro_manutencao (
+    id TEXT PRIMARY KEY,                 -- UUID v4
     id_usuario TEXT NOT NULL,
-    data_acesso TEXT NOT NULL,
-    ip_acesso TEXT NOT NULL,             -- Criptografado
-    user_agent TEXT NOT NULL             -- Criptografado
-);
-
-CREATE TABLE IF NOT EXISTS logs_auditoria (
-    id TEXT PRIMARY KEY,
-    hash_usuario TEXT NOT NULL,          -- SHA-256(uid)
-    acao TEXT NOT NULL,
-    data TEXT NOT NULL,
-    metadados TEXT
-);
-
--- 14. Encurtador de Links Públicos
-CREATE TABLE IF NOT EXISTS links_encurtados (
-    id TEXT PRIMARY KEY,                 -- Slug curto (ex: aB3xZ)
-    url_destino TEXT NOT NULL,
-    cliques INTEGER DEFAULT 0,
-    data_criacao TEXT NOT NULL
+    id_impressora TEXT NOT NULL,
+    data TEXT NOT NULL,                  -- ISO 8601 UTC
+    tipo TEXT NOT NULL,                  -- preventiva | corretiva
+    descricao TEXT NOT NULL,             -- Detalhes do serviço executado
+    custo_centavos INTEGER DEFAULT 0,    -- Custo em centavos de peças/serviço
+    observacoes TEXT,
+    tempo_parada_minutos INTEGER DEFAULT 0,
+    pecas_trocadas TEXT,                 -- Nomes dos componentes substituídos
+    responsavel TEXT,
+    horas_maquina_atualmente INTEGER DEFAULT 0,
+    arquivado INTEGER NOT NULL DEFAULT 0
 );
 ```
 
@@ -580,6 +632,80 @@ Acompanhamento público de status de pedido pelo cliente final.
 Cria link curto de redirecionamento para orçamentos e rastreios.
 - **Entrada:** `{"url": "https://printlog.com.br/orcamento?id=123"}`
 - **Saída:** `{"sucesso": true, "slug": "x8K2pQ", "urlCurta": "https://printlog.com.br/o/x8K2pQ"}`
+
+---
+
+#### `POST /api/suporte`
+Abertura de chamado de suporte técnico pelo usuário diretamente dentro do app.
+- **Entrada (Request Body):**
+```json
+{
+  "assunto": "Dúvida sobre taxa de comissão de marketplace",
+  "categoria": "duvida",
+  "prioridade": "normal",
+  "mensagem": "Gostaria de saber como a taxa da Shopee é deduzida no cálculo de lucro líquido...",
+  "anexoContexto": "{\"tela\": \"1920x1080\", \"urlAtual\": \"/calculadora\"}"
+}
+```
+- **Saída (Response 201 Created):**
+```json
+{
+  "sucesso": true,
+  "id": "f1e2d3c4-b5a6-7890-1234-56789abcdef0",
+  "mensagem": "Chamado registrado com sucesso! Nossa equipe técnica responderá em breve."
+}
+```
+
+---
+
+#### `GET /api/admin/suporte` (Admin)
+Listagem consolidada de chamados de suporte e KPIs para a aba Suporte do Console Administrativo.
+- **Query Params:** `status` (opcional), `categoria` (opcional), `busca` (opcional).
+- **Saída (Response 200 OK):**
+```json
+{
+  "estatisticas": {
+    "total": 14,
+    "abertos": 3,
+    "emAnalise": 2,
+    "respondidos": 6,
+    "resolvidos": 3
+  },
+  "chamados": [
+    {
+      "id": "f1e2d3c4-b5a6-7890-1234-56789abcdef0",
+      "nome_usuario": "Estúdio Criativo 3D",
+      "email_usuario": "maker@estudio3d.com",
+      "assunto": "Dúvida sobre taxa de comissão de marketplace",
+      "categoria": "duvida",
+      "prioridade": "normal",
+      "status": "aberto",
+      "mensagem": "Gostaria de saber como a taxa da Shopee é deduzida...",
+      "data_criacao": "2026-09-20T22:30:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+#### `PATCH /api/admin/suporte` (Admin)
+Envio de resposta oficial da equipe técnica ao chamado com atualização de status.
+- **Entrada (Request Body):**
+```json
+{
+  "idChamado": "f1e2d3c4-b5a6-7890-1234-56789abcdef0",
+  "respostaAdmin": "Olá! A taxa de comissão é aplicada sobre o valor final bruto de venda...",
+  "novoStatus": "respondido"
+}
+```
+- **Saída (Response 200 OK):**
+```json
+{
+  "sucesso": true,
+  "mensagem": "Resposta gravada e status do chamado atualizado com sucesso!"
+}
+```
 
 ---
 

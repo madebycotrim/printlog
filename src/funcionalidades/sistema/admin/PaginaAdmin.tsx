@@ -23,7 +23,8 @@ import {
   Eye, 
   Power, 
   Lock, 
-  Trash2 
+  Trash2,
+  Headphones
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -35,6 +36,7 @@ import { Carregamento } from "@/compartilhado/componentes";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
+import { AbaAdminSuporte } from "./componentes/AbaAdminSuporte";
 
 /**
  * Interface estritamente essencial para administração de acessos,
@@ -96,6 +98,10 @@ export function PaginaAdmin() {
   const [salvandoAviso, setSalvandoAviso] = useState(false);
   const [painelAvisoAberto, setPainelAvisoAberto] = useState(false);
 
+  // Navegação por Abas no Console Admin
+  const [abaAtiva, setAbaAtiva] = useState<"usuarios" | "suporte" | "avisos">("usuarios");
+  const [chamadosAbertosCount, setChamadosAbertosCount] = useState(0);
+
   const acessoPermitido = ehAdmin(usuario?.email);
 
   // Busca de usuários com atualização atômica do usuário selecionado (sem dependência de ciclo)
@@ -135,12 +141,24 @@ export function PaginaAdmin() {
     }
   }, []);
 
+  const carregarStatsSuporteRapido = useCallback(async () => {
+    try {
+      const res = await servicoBaseApi.get<any>("/api/admin/suporte");
+      if (res?.estatisticas?.abertos !== undefined) {
+        setChamadosAbertosCount(res.estatisticas.abertos);
+      }
+    } catch {
+      // Silencioso
+    }
+  }, []);
+
   useEffect(() => {
     if (acessoPermitido) {
       buscarUsuarios();
       buscarAvisoGlobal();
+      carregarStatsSuporteRapido();
     }
-  }, [acessoPermitido, buscarUsuarios, buscarAvisoGlobal]);
+  }, [acessoPermitido, buscarUsuarios, buscarAvisoGlobal, carregarStatsSuporteRapido]);
 
   const salvarAvisoGlobal = async (forcarAtivo?: boolean) => {
     const proximoAtivo = forcarAtivo !== undefined ? forcarAtivo : avisoAtivo;
@@ -461,8 +479,71 @@ export function PaginaAdmin() {
         </div>
       </div>
 
+      {/* NAVEGAÇÃO POR ABAS NO CONSOLE ADMIN */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-card border border-borda-sutil shadow-sm overflow-x-auto">
+        <button
+          onClick={() => setAbaAtiva("usuarios")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            abaAtiva === "usuarios"
+              ? "bg-primaria text-white shadow-md shadow-primaria/20"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted/50"
+          }`}
+        >
+          <Users size={15} />
+          <span>Makers & Planos</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+            abaAtiva === "usuarios" ? "bg-white/20 text-white" : "bg-muted text-zinc-600 dark:text-zinc-400"
+          }`}>
+            {totalUsuarios}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setAbaAtiva("suporte")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap relative ${
+            abaAtiva === "suporte"
+              ? "bg-primaria text-white shadow-md shadow-primaria/20"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted/50"
+          }`}
+        >
+          <Headphones size={15} />
+          <span>Central de Suporte</span>
+          {chamadosAbertosCount > 0 ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
+              {chamadosAbertosCount} novos
+            </span>
+          ) : (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              abaAtiva === "suporte" ? "bg-white/20 text-white" : "bg-muted text-zinc-600 dark:text-zinc-400"
+            }`}>
+              Atendimento
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setAbaAtiva("avisos")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            abaAtiva === "avisos"
+              ? "bg-primaria text-white shadow-md shadow-primaria/20"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted/50"
+          }`}
+        >
+          <Radio size={15} className={avisoAtivo ? "text-amber-500 animate-pulse" : ""} />
+          <span>Avisos Globais & Broadcast</span>
+          {avisoAtivo && (
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          )}
+        </button>
+      </div>
+
+      {/* ABA SUPORTE */}
+      {abaAtiva === "suporte" && (
+        <AbaAdminSuporte modoPrivacidade={modoPrivacidade} />
+      )}
+
       {/* PAINEL DE GESTÃO DO AVISO GLOBAL (BROADCAST NO TOPO DO APP) */}
-      {painelAvisoAberto && (
+      {(abaAtiva === "avisos" || (abaAtiva === "usuarios" && painelAvisoAberto)) && (
         <div className="p-5 rounded-2xl bg-card border border-borda-sutil shadow-md space-y-4 animate-in fade-in duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -618,8 +699,11 @@ export function PaginaAdmin() {
         </div>
       )}
 
-      {/* METRICAS DO BOOTSTRAP */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* ABA DE USUÁRIOS E PLANOS */}
+      {abaAtiva === "usuarios" && (
+        <>
+          {/* METRICAS DO BOOTSTRAP */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Total Usuários */}
         <div className="p-5 rounded-2xl bg-card border border-borda-sutil flex items-center gap-3.5 shadow-sm">
           <div className="w-11 h-11 rounded-xl bg-zinc-500/10 flex items-center justify-center text-zinc-500 shrink-0">
@@ -952,8 +1036,10 @@ export function PaginaAdmin() {
           </div>
         )}
       </div>
+    </>
+  )}
 
-      {/* MODAL RAIO-X DO MAKER (ESSENCIAL E CONFORME À LGPD) */}
+  {/* MODAL RAIO-X DO MAKER (ESSENCIAL E CONFORME À LGPD) */}
       {usuarioSelecionado && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-borda-sutil rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">

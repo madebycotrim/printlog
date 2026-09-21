@@ -707,3 +707,14 @@ html.fonte-dislexia-ativa * {
   justify-content: center;
 }
 
+/* Fix definitivo de z-index e clique para o botão fechar do Toast (Sonner) */
+[data-sonner-toaster] {
+  z-index: 999999 !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  z-index: 99999 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+

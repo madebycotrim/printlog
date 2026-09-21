@@ -20,6 +20,7 @@ export function ToasterPremium() {
       closeButton
       visibleToasts={4}
       duration={4000}
+      style={{ zIndex: 999999 }}
       toastOptions={{
         style: {
           borderRadius: '1.1rem',
@@ -27,11 +28,11 @@ export function ToasterPremium() {
           minWidth: '320px',
         },
         classNames: {
-          toast: '!relative !overflow-hidden !flex !items-center !gap-4 !rounded-2xl !border !border-zinc-200/90 dark:!border-white/10 !bg-white/95 dark:!bg-[#121217]/95 !backdrop-blur-2xl !shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:!shadow-[0_20px_50px_rgba(0,0,0,0.7)] !font-sans group-data-[type=success]:before:!bg-gradient-to-r group-data-[type=success]:before:!from-emerald-500 group-data-[type=success]:before:!via-teal-400 group-data-[type=success]:before:!to-emerald-300 group-data-[type=error]:before:!bg-gradient-to-r group-data-[type=error]:before:!from-rose-500 group-data-[type=error]:before:!via-pink-500 group-data-[type=error]:before:!to-red-400 group-data-[type=warning]:before:!bg-gradient-to-r group-data-[type=warning]:before:!from-amber-500 group-data-[type=warning]:before:!via-orange-400 group-data-[type=warning]:before:!to-yellow-400 group-data-[type=info]:before:!bg-gradient-to-r group-data-[type=info]:before:!from-cyan-500 group-data-[type=info]:before:!via-sky-400 group-data-[type=info]:before:!to-blue-400 before:!absolute before:!top-0 before:!left-0 before:!right-0 before:!h-[3px]',
+          toast: '!relative !overflow-visible !flex !items-center !gap-4 !rounded-2xl !border !border-zinc-200/90 dark:!border-white/10 !bg-white/95 dark:!bg-[#121217]/95 !backdrop-blur-2xl !shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:!shadow-[0_20px_50px_rgba(0,0,0,0.7)] !font-sans group-data-[type=success]:before:!bg-gradient-to-r group-data-[type=success]:before:!from-emerald-500 group-data-[type=success]:before:!via-teal-400 group-data-[type=success]:before:!to-emerald-300 group-data-[type=error]:before:!bg-gradient-to-r group-data-[type=error]:before:!from-rose-500 group-data-[type=error]:before:!via-pink-500 group-data-[type=error]:before:!to-red-400 group-data-[type=warning]:before:!bg-gradient-to-r group-data-[type=warning]:before:!from-amber-500 group-data-[type=warning]:before:!via-orange-400 group-data-[type=warning]:before:!to-yellow-400 group-data-[type=info]:before:!bg-gradient-to-r group-data-[type=info]:before:!from-cyan-500 group-data-[type=info]:before:!via-sky-400 group-data-[type=info]:before:!to-blue-400 before:!absolute before:!top-0 before:!left-0 before:!right-0 before:!h-[3px] before:!rounded-t-2xl',
           title: '!text-zinc-900 dark:!text-zinc-100 !font-bold !text-xs !tracking-tight !ml-2',
           description: '!text-zinc-500 dark:!text-zinc-400 !text-[11px] !font-medium !mt-0.5 !leading-relaxed !ml-2',
           content: '!ml-2',
-          closeButton: '!border !border-zinc-200 dark:!border-white/10 !bg-white/90 dark:!bg-zinc-800/90 !text-zinc-600 dark:!text-zinc-300 hover:!bg-zinc-100 dark:hover:!bg-zinc-700 !transition-colors',
+          closeButton: '!z-[99999] !cursor-pointer !pointer-events-auto !border !border-zinc-200 dark:!border-white/10 !bg-white/90 dark:!bg-zinc-800/90 !text-zinc-600 dark:!text-zinc-300 hover:!bg-zinc-100 dark:hover:!bg-zinc-700 !transition-colors shadow-sm',
           actionButton: '!bg-sky-500 hover:!bg-sky-600 !text-white !font-bold !text-xs !rounded-xl !px-3 !py-1.5 !transition-all !shadow-sm active:!scale-95',
           cancelButton: '!bg-zinc-200 dark:!bg-zinc-800 hover:!bg-zinc-300 dark:hover:!bg-zinc-700 !text-zinc-700 dark:!text-zinc-200 !font-medium !text-xs !rounded-xl !px-3 !py-1.5 !transition-all',
         },
