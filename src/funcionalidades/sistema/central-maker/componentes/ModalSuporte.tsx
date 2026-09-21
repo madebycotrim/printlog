@@ -158,8 +158,8 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
   const chamadosComRespostaNaoLida = chamados.filter(c => c.status === "respondido").length;
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} esconderCabecalho={true} larguraMax="max-w-4xl" semScroll={true}>
-      <div className="flex flex-col h-[85vh] max-h-[750px] overflow-hidden w-full">
+    <Dialogo aberto={aberto} aoFechar={aoFechar} esconderCabecalho={true} larguraMax="max-w-2xl" semScroll={true}>
+      <div className="flex flex-col w-full max-h-[85vh] overflow-hidden">
         
         {/* CABEÇALHO PADRÃO PRINTLOG */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-borda-sutil bg-card shrink-0">
@@ -234,9 +234,9 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
         </div>
 
         {/* CONTEÚDO PRINCIPAL */}
-        <div className="flex-1 overflow-y-auto p-6 bg-zinc-50/50 dark:bg-black/20">
+        <div className="overflow-y-auto max-h-[calc(85vh-115px)] p-6 bg-zinc-50/50 dark:bg-black/20">
           {abaAtiva === "novo" && (
-            <form onSubmit={enviarChamado} className="max-w-2xl mx-auto space-y-5">
+            <form onSubmit={enviarChamado} className="w-full space-y-4">
               
               {/* Assunto */}
               <div>
@@ -299,7 +299,7 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
                 <textarea
                   value={mensagem}
                   onChange={(e) => setMensagem(e.target.value)}
-                  rows={6}
+                  rows={4}
                   placeholder="Descreva com detalhes o que aconteceu, o que esperava ou sua sugestão. Se for um erro, informe os passos que executou..."
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181e] text-gray-900 dark:text-white text-xs placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all resize-none"
                   required
