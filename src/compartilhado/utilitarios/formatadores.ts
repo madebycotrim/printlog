@@ -19,7 +19,7 @@ export function extrairValorNumerico(valor: any): number {
     if (valor === null || valor === undefined) return 0;
     if (typeof valor === "number") return valor;
 
-    let str = String(valor).trim().replace("R$", "").replace("%", "").replace(/\s/g, "");
+    let str = String(valor).trim().replace(/R\$/g, "").replace(/%/g, "").replace(/\s/g, "");
     if (!str) return 0;
 
     // Detecta se o padrão é BR (1.234,56) ou US (1,234.56)

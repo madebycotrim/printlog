@@ -247,8 +247,8 @@ ENCRYPTION_KEY=sua_chave_mestra_secreta_hex_ou_string_muito_longa_32_bytes
 # Ambiente de execução (development | production)
 ENVIRONMENT=production
 
-# Chave de API do Resend para envio de e-mails transacionais
-RESEND_API_KEY=re_123456789_abcdef
+# Chave de API do Resend para envio de e-mails transacionais (configurada via Cloudflare Secrets)
+RESEND_API_KEY=sua_chave_api_resend_aqui
 ```
 
 ### 2.5 Segurança, Criptografia AES-GCM e Conformidade LGPD

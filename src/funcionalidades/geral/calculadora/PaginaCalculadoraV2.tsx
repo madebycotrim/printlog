@@ -645,7 +645,7 @@ export function PaginaCalculadoraV2() {
       if (mat) {
         armazem.adicionarMaterial({
           id: mat.id,
-          instanceId: Math.random().toString(36).substring(2, 15),
+          instanceId: crypto.randomUUID(),
           nome: mat.nome,
           cor: mat.cor,
           tipo: mat.tipo,
@@ -681,7 +681,7 @@ export function PaginaCalculadoraV2() {
     if (mat) {
       armazem.adicionarMaterial({
         id: mat.id,
-        instanceId: Math.random().toString(36).substring(2, 15),
+        instanceId: crypto.randomUUID(),
         nome: mat.nome,
         cor: mat.cor,
         tipo: mat.tipo,

@@ -85,8 +85,12 @@ export const onRequest: PagesFunction<Env, any, { uid?: string }> = async (conte
       let existe = true;
       let tentativas = 0;
 
+      const caracteres = "abcdefghijklmnopqrstuvwxyz0123456789";
+      const bufferAleatorio = new Uint8Array(6);
+
       while (existe && tentativas < 10) {
-        id = Math.random().toString(36).substring(2, 8); // 6 caracteres alfanuméricos
+        crypto.getRandomValues(bufferAleatorio);
+        id = Array.from(bufferAleatorio, (byte) => caracteres[byte % caracteres.length]).join(""); // 6 caracteres alfanuméricos
         const registro = await env.DB.prepare(
           "SELECT id FROM links_encurtados WHERE id = ?"
         ).bind(id).first();

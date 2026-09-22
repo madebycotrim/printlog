@@ -22,6 +22,12 @@ interface PropriedadesCartaoPedido {
 
 
 // 🎉 Mini-componente de Confetes Vibrantes
+function aleatorioSeguro(): number {
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return buf[0] / (0xffffffff + 1);
+}
+
 function EfeitoConfeteVibrante() {
   const particulas = Array.from({ length: 25 });
   const cores = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#ffffff'];
@@ -33,20 +39,20 @@ function EfeitoConfeteVibrante() {
           key={i}
           initial={{ x: "50%", y: "50%", scale: 0, opacity: 1 }}
           animate={{ 
-            x: `${Math.random() * 300 - 150}%`, 
-            y: `${Math.random() * -200 - 50}%`, 
+            x: `${aleatorioSeguro() * 300 - 150}%`, 
+            y: `${aleatorioSeguro() * -200 - 50}%`, 
             scale: [0, 1.2, 0.8, 0],
             opacity: [1, 1, 0.8, 0],
-            rotate: Math.random() * 720 
+            rotate: aleatorioSeguro() * 720 
           }}
           transition={{ 
             duration: 1.8, 
             ease: [0.23, 1, 0.32, 1],
-            delay: Math.random() * 0.2
+            delay: aleatorioSeguro() * 0.2
           }}
           className="absolute w-1.5 h-1.5 rounded-sm"
           style={{ 
-            backgroundColor: cores[Math.floor(Math.random() * cores.length)] 
+            backgroundColor: cores[Math.floor(aleatorioSeguro() * cores.length)] 
           }}
         />
       ))}

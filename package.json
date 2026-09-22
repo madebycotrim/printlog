@@ -34,6 +34,13 @@
     "zundo": "^2.3.0",
     "zustand": "^5.0.11"
   },
+  "overrides": {
+    "websocket-driver": "0.7.5",
+    "@grpc/grpc-js": "1.9.16",
+    "react-router": "8.3.0",
+    "protobufjs": "7.6.5",
+    "dompurify": "3.4.12"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260417.1",
     "@eslint/config-array": "^0.23.5",

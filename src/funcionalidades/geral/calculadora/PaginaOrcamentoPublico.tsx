@@ -72,7 +72,9 @@ export function PaginaOrcamentoPublico() {
 
   const estudioNomeExibicao = estudioNome || "Estúdio de Impressão 3D";
   const nomeClienteExibicao = nomeCliente || "Consumidor Final";
-  const numeroProposta = pedidoId ? pedidoId.split('-')[0].toUpperCase() : Math.floor(100000 + Math.random() * 900000).toString();
+  const numeroProposta = pedidoId 
+    ? pedidoId.split('-')[0].toUpperCase() 
+    : (100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000)).toString();
 
   const hoje = new Date();
   const dataValidade = new Date(hoje);
