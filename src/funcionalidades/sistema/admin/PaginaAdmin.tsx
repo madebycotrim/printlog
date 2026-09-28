@@ -385,6 +385,7 @@ export function PaginaAdmin() {
     }
 
     for (const u of listaUsuarios) {
+      if (!u) continue;
       const emailLower = u.email?.toLowerCase().trim();
       if (!emailLower) continue;
       if (!mapa.has(emailLower)) {
@@ -397,6 +398,7 @@ export function PaginaAdmin() {
   // Classifica cada registro como Ativo no Firebase Auth ou Órfão (duplicado/antigo)
   const classificarUsuario = useCallback(
     (u: UsuarioAdmin) => {
+      if (!u) return { ativoFirebase: false, orfao: true, motivo: "Registro inválido" };
       const emailLower = u.email?.toLowerCase().trim();
       if (!emailLower || !emailLower.includes("@")) {
         return { ativoFirebase: false, orfao: true, motivo: "Sem e-mail registrado" };
@@ -596,7 +598,7 @@ export function PaginaAdmin() {
             }`}
             title={ocultarSemFirebase ? "Apenas usuários com conta ativa no Firebase Auth estão visíveis. Clique para revelar todos." : "Exibindo todos os registros, inclusive órfãos sem Firebase. Clique para ocultar."}
           >
-            <UserCheck size={13} className={verificandoFirebase ? "animate-spin text-sky-500" : ""} />
+            <UserCheck size={13} className={carregando ? "animate-spin text-sky-500" : ""} />
             <span>{ocultarSemFirebase ? "Apenas Ativos no Firebase" : "Todos os Registros"}</span>
           </button>
 

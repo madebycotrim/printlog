@@ -26,9 +26,7 @@ export class LimiteDeErro extends Component<PropriedadesLimiteDeErro, EstadoLimi
   }
 
   public componentDidCatch(erro: Error, erroInfo: ErrorInfo) {
-    if (import.meta.env.DEV) {
-      console.error("Erro capturado pelo LimiteDeErro:", erro, erroInfo);
-    }
+    console.error("Erro capturado pelo LimiteDeErro:", erro, erroInfo);
   }
 
   private recarregarPagina = () => {
@@ -60,13 +58,17 @@ export class LimiteDeErro extends Component<PropriedadesLimiteDeErro, EstadoLimi
               "Ocorreu uma falha temporária ao carregar esta área do sistema. Seus dados continuam seguros."}
           </p>
 
-          {import.meta.env.DEV && this.state.erro && (
-            <div className="mb-6 p-4 max-w-xl text-left bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-500 font-mono break-all overflow-auto max-h-48">
-              <strong className="block mb-1">{this.state.erro.name}: {this.state.erro.message}</strong>
+          {this.state.erro && (
+            <details className="mb-6 p-3 max-w-xl w-full text-left bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-500 font-mono break-all cursor-pointer">
+              <summary className="font-bold select-none text-rose-600 dark:text-rose-400">
+                Detalhes do erro: {this.state.erro.name} ({this.state.erro.message})
+              </summary>
               {this.state.erro.stack && (
-                <pre className="text-[10px] text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap">{this.state.erro.stack}</pre>
+                <div className="mt-2 pt-2 border-t border-rose-500/20 max-h-48 overflow-auto">
+                  <pre className="text-[10px] text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap">{this.state.erro.stack}</pre>
+                </div>
               )}
-            </div>
+            </details>
           )}
 
           <div className="flex items-center gap-3">

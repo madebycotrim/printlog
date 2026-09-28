@@ -42,18 +42,33 @@ export function extrairValorNumerico(valor: any): number {
 }
 
 /**
+ * Converte com segurança qualquer entrada de data para Date válida ou null.
+ */
+function parseDataSegura(data?: Date | string | number | null): Date | null {
+    if (!data) return null;
+    try {
+        const d = typeof data === "number" && data < 10000000000 ? new Date(data * 1000) : new Date(data);
+        return isNaN(d.getTime()) ? null : d;
+    } catch {
+        return null;
+    }
+}
+
+/**
  * Formata um objeto Date para o padrão brasileiro (dd/mm/aaaa)
  */
-export function formatarData(data: Date | string | number): string {
-    const d = new Date(data);
+export function formatarData(data?: Date | string | number | null): string {
+    const d = parseDataSegura(data);
+    if (!d) return "—";
     return d.toLocaleDateString("pt-BR");
 }
 
 /**
  * Formata um objeto Date para dd/mm (utilizado em cards/listas compactas)
  */
-export function formatarDataCurta(data: Date | string | number): string {
-    const d = new Date(data);
+export function formatarDataCurta(data?: Date | string | number | null): string {
+    const d = parseDataSegura(data);
+    if (!d) return "—";
     return d.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
@@ -63,8 +78,9 @@ export function formatarDataCurta(data: Date | string | number): string {
 /**
  * Formata um objeto Date para o padrão brasileiro completo (Ex: 15 de março de 2024)
  */
-export function formatarDataCompleta(data: Date | string | number): string {
-    const d = new Date(data);
+export function formatarDataCompleta(data?: Date | string | number | null): string {
+    const d = parseDataSegura(data);
+    if (!d) return "—";
     return d.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "long",
@@ -95,8 +111,10 @@ export function formatarTelefone(valor: string): string {
 /**
  * Formata uma data de forma amigável (Hoje, Ontem ou Data completa)
  */
-export function formatarDataOuRelativa(data: Date | string | number): string {
-    const d = new Date(data);
+export function formatarDataOuRelativa(data?: Date | string | number | null): string {
+    const d = parseDataSegura(data);
+    if (!d) return "—";
+
     const hoje = new Date();
     const ontem = new Date();
     ontem.setDate(hoje.getDate() - 1);
