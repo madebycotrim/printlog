@@ -184,6 +184,47 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             });
         }
 
+        // DELETE — Remove um registro órfão da tabela configuracoes_usuario
+        if (metodo === "DELETE") {
+            const url = new URL(request.url);
+            let idUsuario = url.searchParams.get("idUsuario");
+            if (!idUsuario) {
+                const corpo = (await request.json().catch(() => ({}))) as any;
+                idUsuario = corpo?.idUsuario;
+            }
+
+            if (!idUsuario || typeof idUsuario !== "string") {
+                return new Response("ID de usuário inválido", { status: 400 });
+            }
+
+            // Não permite apagar o próprio dono atual
+            if (idUsuario === usuarioId) {
+                return new Response("Não é permitido excluir o usuário autenticado atualmente.", { status: 400 });
+            }
+
+            await env.DB.prepare("DELETE FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario).run();
+
+            // Auditoria
+            context.waitUntil(
+                env.DB.prepare(`
+                    INSERT INTO logs_auditoria (id, id_operador, email_operador, acao, alvo_id, detalhes, criado_em)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `).bind(
+                    crypto.randomUUID(),
+                    usuarioId,
+                    userEmail,
+                    "EXCLUIR_USUARIO_ORFAO",
+                    idUsuario,
+                    JSON.stringify({ motivo: "Limpeza de registro órfão/sem conta ativa no Firebase" }),
+                    new Date().toISOString()
+                ).run().catch(() => {})
+            );
+
+            return new Response(JSON.stringify({ sucesso: true, mensagem: "Registro órfão excluído com sucesso." }), {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+
         return new Response("Método não permitido", { status: 405 });
     } catch (erro: any) {
         return new Response(JSON.stringify({ mensagem: erro.message }), {

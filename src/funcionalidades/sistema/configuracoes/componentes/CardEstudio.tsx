@@ -25,6 +25,7 @@ import { Dialogo } from "@/compartilhado/componentes";
 import { useArmazemConfiguracoes } from "../estado/armazemConfiguracoes";
 import { CorPrimaria } from "@/compartilhado/tipos/modelos";
 import { toast } from "sonner";
+import { ModalSuporte } from "@/funcionalidades/sistema/central-maker/componentes/ModalSuporte";
 
 
 interface PropsCardEstudio {
@@ -86,6 +87,9 @@ export function CardEstudio({
 
   // Estado Orçamentos Mágicos
   const [telefoneWhatsApp, setTelefoneWhatsApp] = useState("");
+
+  // Estado Feedback Beta / Suporte Console
+  const [modalFeedbackAberto, setModalFeedbackAberto] = useState(false);
 
   const plano = useArmazemConfiguracoes((s) => s.plano);
   const temAcessoBeta = plano === "PRO" || plano === "FUNDADOR";
@@ -589,12 +593,13 @@ export function CardEstudio({
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1"><MessageCircle size={12}/> Seu Feedback é Ouro</span>
                   <p className="text-xs text-muted-foreground mt-0.5">Encontrou um erro ou tem uma ideia para o LAB? Fale direto com o desenvolvedor.</p>
                </div>
-               <a 
-                 href="mailto:suporte@printlog.com.br?subject=[BETA]%20Feedback%20do%20Laborat%C3%B3rio"
-                 className="px-6 py-2.5 rounded-xl border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shrink-0"
+               <button 
+                 type="button"
+                 onClick={() => setModalFeedbackAberto(true)}
+                 className="px-6 py-2.5 rounded-xl border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shrink-0 cursor-pointer"
                >
                  Enviar Feedback
-               </a>
+               </button>
             </div>
           </div>
         )}
@@ -854,6 +859,14 @@ export function CardEstudio({
           </div>
         </div>
       </Dialogo>
+
+      {/* MODAL DE FEEDBACK / SUPORTE BETA ENVIADO DIRETAMENTE AO CONSOLE */}
+      <ModalSuporte
+        aberto={modalFeedbackAberto}
+        aoFechar={() => setModalFeedbackAberto(false)}
+        assuntoInicial="[BETA] Feedback do Laboratório"
+        categoriaInicial="sugestao"
+      />
     </div>
   );
 }

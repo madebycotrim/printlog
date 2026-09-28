@@ -21,8 +21,12 @@ import {
   Trash2,
   Headphones,
   Gift,
-  Activity
+  Activity,
+  UserCheck,
+  UserX
 } from "lucide-react";
+import { fetchSignInMethodsForEmail } from "firebase/auth";
+import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ehAdmin, EMAIL_DONO } from "@/compartilhado/constantes/admin";
@@ -87,6 +91,12 @@ export function PaginaAdmin() {
   const [modoPrivacidade, setModoPrivacidade] = useState(true);
   const [executandoLimpeza, setExecutandoLimpeza] = useState(false);
 
+  // Verificação e Ocultação de registros sem Firebase Authentication
+  const [emailsValidosFirebase, setEmailsValidosFirebase] = useState<Record<string, boolean>>({});
+  const [verificandoFirebase, setVerificandoFirebase] = useState(false);
+  const [ocultarSemFirebase, setOcultarSemFirebase] = useState(true);
+  const [limpandoOrfaos, setLimpandoOrfaos] = useState(false);
+
   // Estados do Aviso Global (Broadcast)
   const [avisoMensagem, setAvisoMensagem] = useState("");
   const [avisoTipo, setAvisoTipo] = useState<TipoAviso>("INFO");
@@ -101,6 +111,40 @@ export function PaginaAdmin() {
 
   const acessoPermitido = ehAdmin(usuario?.email);
 
+  // Validação em segundo plano no Firebase Auth para saber quem realmente usa a plataforma
+  const verificarUsuariosFirebase = useCallback(async (lista: UsuarioAdmin[]) => {
+    if (!lista || lista.length === 0) return;
+    setVerificandoFirebase(true);
+
+    const emailDonoAtual = usuario?.email?.toLowerCase().trim();
+    const emailsParaChecar = Array.from(
+      new Set(
+        lista
+          .map((u) => u.email?.trim().toLowerCase())
+          .filter((e): e is string => Boolean(e && e.includes("@")))
+      )
+    );
+
+    const mapaStatus: Record<string, boolean> = {};
+    if (emailDonoAtual) {
+      mapaStatus[emailDonoAtual] = true;
+    }
+
+    const promessas = emailsParaChecar.map(async (email) => {
+      if (email === emailDonoAtual) return;
+      try {
+        const metodos = await fetchSignInMethodsForEmail(autenticacao, email);
+        mapaStatus[email] = Array.isArray(metodos) && metodos.length > 0;
+      } catch {
+        mapaStatus[email] = false;
+      }
+    });
+
+    await Promise.allSettled(promessas);
+    setEmailsValidosFirebase((prev) => ({ ...prev, ...mapaStatus }));
+    setVerificandoFirebase(false);
+  }, [usuario?.email]);
+
   // Busca de usuários com atualização atômica do usuário selecionado (sem dependência de ciclo)
   const buscarUsuarios = useCallback(async () => {
     definirCarregando(true);
@@ -108,6 +152,7 @@ export function PaginaAdmin() {
       const dados = await servicoBaseApi.get<UsuarioAdmin[]>("/api/admin/usuarios");
       const listaValida = Array.isArray(dados) ? dados : [];
       definirUsuarios(listaValida);
+      verificarUsuariosFirebase(listaValida);
       
       // Atualiza o modal de detalhes caso esteja aberto, sem disparar recriação de callbacks
       definirUsuarioSelecionado((prev) => {
@@ -120,7 +165,7 @@ export function PaginaAdmin() {
     } finally {
       definirCarregando(false);
     }
-  }, []);
+  }, [verificarUsuariosFirebase]);
 
   const buscarAvisoGlobal = useCallback(async () => {
     try {
@@ -316,6 +361,37 @@ export function PaginaAdmin() {
     window.open(`mailto:${u.email}?subject=${assunto}&body=${corpo}`, "_blank");
   };
 
+  const excluirUsuarioOrfao = async (idUsuario: string) => {
+    if (!confirm("Tem certeza que deseja excluir permanentemente este registro órfão do banco de dados D1?")) return;
+    try {
+      await servicoBaseApi.delete(`/api/admin/usuarios?idUsuario=${idUsuario}`);
+      toast.success("Registro órfão excluído com sucesso.");
+      await buscarUsuarios();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao excluir registro órfão.");
+    }
+  };
+
+  const purgarTodosOrfaos = async (orfaos: UsuarioAdmin[]) => {
+    if (orfaos.length === 0) return;
+    if (!confirm(`Deseja excluir permanentemente todos os ${orfaos.length} registros órfãos sem conta ativa do banco D1? Esta ação não pode ser desfeita.`)) return;
+    setLimpandoOrfaos(true);
+    try {
+      let excluidos = 0;
+      for (const u of orfaos) {
+        if (u.id_usuario === usuario?.uid) continue;
+        await servicoBaseApi.delete(`/api/admin/usuarios?idUsuario=${u.id_usuario}`);
+        excluidos++;
+      }
+      toast.success(`${excluidos} registros órfãos foram excluídos com sucesso do banco!`);
+      await buscarUsuarios();
+    } catch {
+      toast.error("Erro durante a exclusão de registros órfãos.");
+    } finally {
+      setLimpandoOrfaos(false);
+    }
+  };
+
   useDefinirCabecalho({
     titulo: "Console do Dono",
     subtitulo: "Central de Comando, Gestão de Acessos e Conformidade LGPD",
@@ -323,28 +399,106 @@ export function PaginaAdmin() {
     aoBuscar: (t) => definirBusca(t),
   });
 
-  // Estatísticas calculadas
   const listaUsuarios = Array.isArray(usuarios) ? usuarios : [];
-  const totalUsuarios = listaUsuarios.length;
-  const totalFundadores = listaUsuarios.filter((u) => u?.plano === "FUNDADOR").length;
+
+  // Mapeia o UID ativo de cada e-mail único:
+  // - Para o Dono logado: o UID do token da sessão atual (`usuario.uid`)
+  // - Para outros e-mails: o primeiro registro da lista (mais recente por `atualizado_em DESC`)
+  const uidAtivoPorEmail = useMemo(() => {
+    const mapa = new Map<string, string>();
+    const emailDonoAtual = usuario?.email?.toLowerCase().trim();
+
+    if (emailDonoAtual && usuario?.uid) {
+      mapa.set(emailDonoAtual, usuario.uid);
+    }
+
+    for (const u of listaUsuarios) {
+      const emailLower = u.email?.toLowerCase().trim();
+      if (!emailLower) continue;
+      if (!mapa.has(emailLower)) {
+        mapa.set(emailLower, u.id_usuario);
+      }
+    }
+    return mapa;
+  }, [listaUsuarios, usuario?.email, usuario?.uid]);
+
+  // Classifica cada registro como Ativo no Firebase Auth ou Órfão
+  const classificarUsuario = useCallback(
+    (u: UsuarioAdmin) => {
+      const emailLower = u.email?.toLowerCase().trim();
+      if (!emailLower || !emailLower.includes("@")) {
+        return { ativoFirebase: false, orfao: true, motivo: "Sem e-mail registrado" };
+      }
+      const uidAtivo = uidAtivoPorEmail.get(emailLower);
+      const ehUIDDuplicadoAntigo = uidAtivo ? uidAtivo !== u.id_usuario : false;
+
+      const emailDonoAtual = usuario?.email?.toLowerCase().trim();
+      if (emailLower === emailDonoAtual) {
+        return {
+          ativoFirebase: !ehUIDDuplicadoAntigo,
+          orfao: ehUIDDuplicadoAntigo,
+          motivo: ehUIDDuplicadoAntigo ? "UID anterior duplicado do dono" : "Dono ativo",
+        };
+      }
+
+      // Verificação no Firebase Auth
+      const statusNoFirebase = emailsValidosFirebase[emailLower];
+      const existeNoFirebase = statusNoFirebase !== false;
+      const ehAtivo = existeNoFirebase && !ehUIDDuplicadoAntigo;
+
+      return {
+        ativoFirebase: ehAtivo,
+        orfao: !ehAtivo,
+        motivo: ehUIDDuplicadoAntigo
+          ? "UID antigo duplicado de conta recriada"
+          : statusNoFirebase === false
+          ? "E-mail não cadastrado no Firebase Auth"
+          : "Ativo",
+      };
+    },
+    [uidAtivoPorEmail, usuario?.email, emailsValidosFirebase]
+  );
+
+  const usuariosValidos = useMemo(() => {
+    return listaUsuarios.filter((u) => classificarUsuario(u).ativoFirebase);
+  }, [listaUsuarios, classificarUsuario]);
+
+  const usuariosOrfaos = useMemo(() => {
+    return listaUsuarios.filter((u) => classificarUsuario(u).orfao);
+  }, [listaUsuarios, classificarUsuario]);
+
+  // Estatísticas calculadas — reflete quem REALMENTE existe no Firebase
+  const baseParaCalculo = ocultarSemFirebase ? usuariosValidos : listaUsuarios;
+  const totalUsuarios = usuariosValidos.length;
+  const totalOrfaos = usuariosOrfaos.length;
+  const totalFundadores = baseParaCalculo.filter((u) => u?.plano === "FUNDADOR").length;
   const vagasRestantesFundador = Math.max(0, LIMITE_VAGAS_FUNDADOR - totalFundadores);
   const progressoFundadorPct = Math.min(100, Math.round((totalFundadores / LIMITE_VAGAS_FUNDADOR) * 100));
   
-  const totalPro = listaUsuarios.filter((u) => u?.plano === "PRO").length;
-  const totalFree = listaUsuarios.filter((u) => u?.plano === "FREE").length;
+  const totalPro = baseParaCalculo.filter((u) => u?.plano === "PRO").length;
+  const totalFree = baseParaCalculo.filter((u) => u?.plano === "FREE").length;
 
   const usuariosAlertas = useMemo(() => {
-    return (Array.isArray(usuarios) ? usuarios : []).filter((u) => {
+    return baseParaCalculo.filter((u) => {
       if (!u || u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
       const status = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
       return status.dias <= 7;
     });
-  }, [usuarios]);
+  }, [baseParaCalculo]);
 
-  // Filtragem
+  // Filtragem da tabela
   const usuariosFiltrados = useMemo(() => {
     const termo = (busca || "").toLowerCase().trim();
-    return (Array.isArray(usuarios) ? usuarios : []).filter((u) => {
+    
+    // Se selecionou a aba ORFAOS, lista apenas os órfãos
+    // Caso contrário, respeita a ocultação de quem não está no Firebase Auth
+    const base = filtroPlano === "ORFAOS" 
+      ? usuariosOrfaos 
+      : ocultarSemFirebase 
+      ? usuariosValidos 
+      : listaUsuarios;
+
+    return base.filter((u) => {
       if (!u) return false;
       const idUsuario = u.id_usuario || "";
       const email = u.email || "";
@@ -361,10 +515,14 @@ export function PaginaAdmin() {
         return bateBusca && status.dias <= 7;
       }
 
+      if (filtroPlano === "ORFAOS") {
+        return bateBusca;
+      }
+
       const batePlano = filtroPlano === "TODOS" || u.plano === filtroPlano;
       return bateBusca && batePlano;
     });
-  }, [usuarios, busca, filtroPlano]);
+  }, [listaUsuarios, usuariosValidos, usuariosOrfaos, busca, filtroPlano, ocultarSemFirebase]);
 
   // Se a autenticação estiver carregando a sessão do Firebase, exibe carregamento em vez de erro prematuro
   if (carregandoAuth) {
@@ -461,6 +619,20 @@ export function PaginaAdmin() {
           >
             <Trash2 size={13} className={executandoLimpeza ? "animate-spin text-rose-500" : ""} />
             <span>{executandoLimpeza ? "Purgando..." : "Limpeza Legal"}</span>
+          </button>
+
+          {/* Alternador de Ocultação sem Firebase Auth */}
+          <button
+            onClick={() => setOcultarSemFirebase((prev) => !prev)}
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 cursor-pointer ${
+              ocultarSemFirebase
+                ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 shadow-sm"
+                : "bg-muted/40 text-muted-foreground border-borda-sutil hover:text-primary"
+            }`}
+            title={ocultarSemFirebase ? "Apenas usuários com conta ativa no Firebase Auth estão visíveis. Clique para revelar todos." : "Exibindo todos os registros, inclusive órfãos sem Firebase. Clique para ocultar."}
+          >
+            <UserCheck size={13} className={verificandoFirebase ? "animate-spin text-sky-500" : ""} />
+            <span>{ocultarSemFirebase ? "Apenas Ativos no Firebase" : "Todos os Registros"}</span>
           </button>
 
           {/* Exportar CSV */}
@@ -654,11 +826,12 @@ export function PaginaAdmin() {
         {/* Pílulas de filtro por plano */}
         <div className="flex items-center gap-1.5 p-1 rounded-xl bg-card border border-borda-sutil overflow-x-auto custom-scrollbar">
           {[
-            { id: "TODOS", rotulo: "Todos", contagem: totalUsuarios },
+            { id: "TODOS", rotulo: "Ativos Firebase", contagem: totalUsuarios },
             { id: "FUNDADOR", rotulo: "Fundador", contagem: totalFundadores },
             { id: "PRO", rotulo: "Pro", contagem: totalPro },
             { id: "FREE", rotulo: "Free", contagem: totalFree },
             { id: "ALERTAS", rotulo: "A Vencer (7d)", contagem: usuariosAlertas.length },
+            { id: "ORFAOS", rotulo: "Órfãos / Sem Firebase", contagem: totalOrfaos },
           ].map((item) => (
             <button
               key={item.id}
@@ -666,12 +839,22 @@ export function PaginaAdmin() {
               className={`
                 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap
                 ${filtroPlano === item.id 
-                  ? "bg-primaria text-white shadow-sm" 
+                  ? item.id === "ORFAOS"
+                    ? "bg-rose-500 text-white shadow-sm"
+                    : "bg-primaria text-white shadow-sm" 
+                  : item.id === "ORFAOS" && totalOrfaos > 0
+                  ? "text-rose-500 hover:bg-rose-500/10"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-muted"}
               `}
             >
               <span>{item.rotulo}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${filtroPlano === item.id ? "bg-white/20 text-white" : "bg-muted text-zinc-400"}`}>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                filtroPlano === item.id 
+                  ? "bg-white/20 text-white" 
+                  : item.id === "ORFAOS" && totalOrfaos > 0
+                  ? "bg-rose-500/20 text-rose-600 dark:text-rose-400"
+                  : "bg-muted text-zinc-400"
+              }`}>
                 {item.contagem}
               </span>
             </button>
@@ -690,6 +873,34 @@ export function PaginaAdmin() {
           />
         </div>
       </div>
+
+      {/* BANNER INFORMATIVO QUANDO A FILTRAGEM FOR REGISTROS ÓRFÃOS */}
+      {filtroPlano === "ORFAOS" && totalOrfaos > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <UserX size={20} />
+            </div>
+            <div>
+              <p className="font-bold text-amber-900 dark:text-amber-200">
+                Registros Órfãos Ocultos ({totalOrfaos})
+              </p>
+              <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">
+                Estes registros não possuem conta ativa no Firebase Authentication ou são UIDs antigos de logins/testes passados.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => purgarTodosOrfaos(usuariosOrfaos)}
+            disabled={limpandoOrfaos}
+            className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-bold text-xs shadow-sm transition-all disabled:opacity-50 cursor-pointer whitespace-nowrap flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <Trash2 size={13} className={limpandoOrfaos ? "animate-spin" : ""} />
+            <span>{limpandoOrfaos ? "Excluindo..." : "Limpar Todos os Órfãos do D1"}</span>
+          </button>
+        </div>
+      )}
 
       {/* LISTAGEM PRINCIPAL */}
       <div className="rounded-2xl border border-borda-sutil overflow-hidden bg-card shadow-sm">
@@ -719,6 +930,7 @@ export function PaginaAdmin() {
                 {usuariosFiltrados.map((u) => {
                   const ehODono = u.email && EMAIL_DONO && u.email.toLowerCase().trim() === EMAIL_DONO.toLowerCase().trim();
                   const statusVenc = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
+                  const { ativoFirebase, orfao, motivo } = classificarUsuario(u);
                   const emailVisual = u.email 
                     ? (modoPrivacidade ? mascararDadoPessoal(u.email, "email") : u.email)
                     : null;
@@ -726,13 +938,13 @@ export function PaginaAdmin() {
                   return (
                     <tr 
                       key={u.id_usuario} 
-                      className="hover:bg-muted/30 transition-colors group cursor-pointer"
+                      className={`hover:bg-muted/30 transition-colors group cursor-pointer ${orfao ? "opacity-75 bg-rose-500/[0.02]" : ""}`}
                       onClick={() => definirUsuarioSelecionado(u)}
                     >
                       {/* E-MAIL E ID */}
                       <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span 
                               onClick={() => definirUsuarioSelecionado(u)}
                               className="font-bold text-zinc-900 dark:text-white hover:text-primaria transition-colors cursor-pointer select-all"
@@ -753,6 +965,24 @@ export function PaginaAdmin() {
                             {ehODono && (
                               <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-primaria/10 text-primaria border border-primaria/20">
                                 Você / Dono
+                              </span>
+                            )}
+
+                            {ativoFirebase && !ehODono && (
+                              <span 
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                title="Conta ativa e confirmada no Firebase Authentication"
+                              >
+                                <UserCheck size={10} /> Firebase Auth
+                              </span>
+                            )}
+
+                            {orfao && (
+                              <span 
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                                title={motivo}
+                              >
+                                <UserX size={10} /> Órfão
                               </span>
                             )}
                           </div>
@@ -901,6 +1131,18 @@ export function PaginaAdmin() {
                           >
                             <ExternalLink size={13} />
                           </button>
+
+                          {/* Excluir Registro Órfão */}
+                          {orfao && u.id_usuario !== usuario?.uid && (
+                            <button
+                              disabled={salvando === u.id_usuario}
+                              onClick={() => excluirUsuarioOrfao(u.id_usuario)}
+                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 border border-rose-500/20 transition-all cursor-pointer"
+                              title="Excluir este registro órfão permanentemente do banco D1"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
 
                         </div>
                       </td>

@@ -24,6 +24,8 @@ import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 interface Propriedades {
   aberto: boolean;
   aoFechar: () => void;
+  assuntoInicial?: string;
+  categoriaInicial?: string;
 }
 
 export interface ChamadoSuporte {
@@ -40,15 +42,20 @@ export interface ChamadoSuporte {
   data_atualizacao: string;
 }
 
-export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
+export function ModalSuporte({ 
+  aberto, 
+  aoFechar,
+  assuntoInicial = "",
+  categoriaInicial = "duvida"
+}: Propriedades) {
   const [abaAtiva, setAbaAtiva] = useState<"novo" | "meus_chamados">("novo");
   const [chamados, setChamados] = useState<ChamadoSuporte[]>([]);
   const [carregandoChamados, setCarregandoChamados] = useState(false);
   const [chamadoSelecionado, setChamadoSelecionado] = useState<ChamadoSuporte | null>(null);
 
   // Form State
-  const [assunto, setAssunto] = useState("");
-  const [categoria, setCategoria] = useState<string>("duvida");
+  const [assunto, setAssunto] = useState(assuntoInicial);
+  const [categoria, setCategoria] = useState<string>(categoriaInicial);
   const [prioridade, setPrioridade] = useState<string>("normal");
   const [mensagem, setMensagem] = useState("");
   const [incluirDiagnostico, setIncluirDiagnostico] = useState(true);
@@ -70,8 +77,13 @@ export function ModalSuporte({ aberto, aoFechar }: Propriedades) {
   useEffect(() => {
     if (aberto) {
       carregarChamados();
+      setAssunto(assuntoInicial || "");
+      setCategoria(categoriaInicial || "duvida");
+      setMensagem("");
+      setAbaAtiva("novo");
+      setChamadoSelecionado(null);
     }
-  }, [aberto]);
+  }, [aberto, assuntoInicial, categoriaInicial]);
 
   const enviarChamado = async (e: React.FormEvent) => {
     e.preventDefault();
