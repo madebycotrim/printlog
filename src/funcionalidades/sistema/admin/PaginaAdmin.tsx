@@ -25,8 +25,6 @@ import {
   UserCheck,
   UserX
 } from "lucide-react";
-import { fetchSignInMethodsForEmail } from "firebase/auth";
-import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ehAdmin, EMAIL_DONO } from "@/compartilhado/constantes/admin";
@@ -36,9 +34,20 @@ import { toast } from "sonner";
 import { Carregamento } from "@/compartilhado/componentes";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";
-import { mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { AbaAdminSuporte } from "./componentes/AbaAdminSuporte";
 import { AbaAdminBroadcast, TipoAviso } from "./componentes/AbaAdminBroadcast";
+
+/**
+ * Mascara de e-mail personalizada para o Console do Dono.
+ * Mantém os primeiros 4 caracteres legíveis (ex: made***@... vs mate***@...)
+ * para não causar confusão entre contas similares quando o modo privacidade estiver ligado.
+ */
+const mascararEmailAdmin = (email: string): string => {
+  const [usuario, dominio] = email.split("@");
+  if (!dominio) return email;
+  const visivel = usuario.slice(0, Math.min(4, usuario.length));
+  return `${visivel}***@${dominio}`;
+};
 
 /**
  * Interface estritamente essencial para administração de acessos,
@@ -87,13 +96,11 @@ export function PaginaAdmin() {
   const [itemCopiado, definirItemCopiado] = useState<string | null>(null);
   const [usuarioSelecionado, definirUsuarioSelecionado] = useState<UsuarioAdmin | null>(null);
 
-  // Modo Privacidade (Privacy by Default) — Mascaramento visual de PII
-  const [modoPrivacidade, setModoPrivacidade] = useState(true);
+  // Modo Privacidade (Privacy by Default no cliente, mas desligado por padrão no Console do Dono para clareza)
+  const [modoPrivacidade, setModoPrivacidade] = useState(false);
   const [executandoLimpeza, setExecutandoLimpeza] = useState(false);
 
-  // Verificação e Ocultação de registros sem Firebase Authentication
-  const [emailsValidosFirebase, setEmailsValidosFirebase] = useState<Record<string, boolean>>({});
-  const [verificandoFirebase, setVerificandoFirebase] = useState(false);
+  // Ocultação de UIDs órfãos/antigos
   const [ocultarSemFirebase, setOcultarSemFirebase] = useState(true);
   const [limpandoOrfaos, setLimpandoOrfaos] = useState(false);
 
@@ -111,40 +118,6 @@ export function PaginaAdmin() {
 
   const acessoPermitido = ehAdmin(usuario?.email);
 
-  // Validação em segundo plano no Firebase Auth para saber quem realmente usa a plataforma
-  const verificarUsuariosFirebase = useCallback(async (lista: UsuarioAdmin[]) => {
-    if (!lista || lista.length === 0) return;
-    setVerificandoFirebase(true);
-
-    const emailDonoAtual = usuario?.email?.toLowerCase().trim();
-    const emailsParaChecar = Array.from(
-      new Set(
-        lista
-          .map((u) => u.email?.trim().toLowerCase())
-          .filter((e): e is string => Boolean(e && e.includes("@")))
-      )
-    );
-
-    const mapaStatus: Record<string, boolean> = {};
-    if (emailDonoAtual) {
-      mapaStatus[emailDonoAtual] = true;
-    }
-
-    const promessas = emailsParaChecar.map(async (email) => {
-      if (email === emailDonoAtual) return;
-      try {
-        const metodos = await fetchSignInMethodsForEmail(autenticacao, email);
-        mapaStatus[email] = Array.isArray(metodos) && metodos.length > 0;
-      } catch {
-        mapaStatus[email] = false;
-      }
-    });
-
-    await Promise.allSettled(promessas);
-    setEmailsValidosFirebase((prev) => ({ ...prev, ...mapaStatus }));
-    setVerificandoFirebase(false);
-  }, [usuario?.email]);
-
   // Busca de usuários com atualização atômica do usuário selecionado (sem dependência de ciclo)
   const buscarUsuarios = useCallback(async () => {
     definirCarregando(true);
@@ -152,7 +125,6 @@ export function PaginaAdmin() {
       const dados = await servicoBaseApi.get<UsuarioAdmin[]>("/api/admin/usuarios");
       const listaValida = Array.isArray(dados) ? dados : [];
       definirUsuarios(listaValida);
-      verificarUsuariosFirebase(listaValida);
       
       // Atualiza o modal de detalhes caso esteja aberto, sem disparar recriação de callbacks
       definirUsuarioSelecionado((prev) => {
@@ -165,7 +137,7 @@ export function PaginaAdmin() {
     } finally {
       definirCarregando(false);
     }
-  }, [verificarUsuariosFirebase]);
+  }, []);
 
   const buscarAvisoGlobal = useCallback(async () => {
     try {
@@ -323,7 +295,7 @@ export function PaginaAdmin() {
 
     const cabecalhos = ["E-mail", "ID_Usuario", "Estudio", "Plano", "Ciclo", "Vencimento", "Ultima_Atividade"];
     const linhas = usuarios.map((u) => {
-      const emailFinal = modoPrivacidade && u.email ? mascararDadoPessoal(u.email, "email") : (u.email || "");
+      const emailFinal = modoPrivacidade && u.email ? mascararEmailAdmin(u.email) : (u.email || "");
       return [
         `"${emailFinal}"`,
         `"${u.id_usuario}"`,
@@ -422,7 +394,7 @@ export function PaginaAdmin() {
     return mapa;
   }, [listaUsuarios, usuario?.email, usuario?.uid]);
 
-  // Classifica cada registro como Ativo no Firebase Auth ou Órfão
+  // Classifica cada registro como Ativo no Firebase Auth ou Órfão (duplicado/antigo)
   const classificarUsuario = useCallback(
     (u: UsuarioAdmin) => {
       const emailLower = u.email?.toLowerCase().trim();
@@ -441,22 +413,15 @@ export function PaginaAdmin() {
         };
       }
 
-      // Verificação no Firebase Auth
-      const statusNoFirebase = emailsValidosFirebase[emailLower];
-      const existeNoFirebase = statusNoFirebase !== false;
-      const ehAtivo = existeNoFirebase && !ehUIDDuplicadoAntigo;
-
       return {
-        ativoFirebase: ehAtivo,
-        orfao: !ehAtivo,
+        ativoFirebase: !ehUIDDuplicadoAntigo,
+        orfao: ehUIDDuplicadoAntigo,
         motivo: ehUIDDuplicadoAntigo
-          ? "UID antigo duplicado de conta recriada"
-          : statusNoFirebase === false
-          ? "E-mail não cadastrado no Firebase Auth"
-          : "Ativo",
+          ? "UID antigo duplicado de login anterior"
+          : "Conta ativa no Firebase",
       };
     },
-    [uidAtivoPorEmail, usuario?.email, emailsValidosFirebase]
+    [uidAtivoPorEmail, usuario?.email]
   );
 
   const usuariosValidos = useMemo(() => {
@@ -932,7 +897,7 @@ export function PaginaAdmin() {
                   const statusVenc = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
                   const { ativoFirebase, orfao, motivo } = classificarUsuario(u);
                   const emailVisual = u.email 
-                    ? (modoPrivacidade ? mascararDadoPessoal(u.email, "email") : u.email)
+                    ? (modoPrivacidade ? mascararEmailAdmin(u.email) : u.email)
                     : null;
 
                   return (
@@ -1208,7 +1173,7 @@ export function PaginaAdmin() {
                     <span className="text-[11px] text-zinc-400 block">E-mail</span>
                     <span className="font-bold text-zinc-900 dark:text-white select-all">
                       {usuarioSelecionado.email 
-                        ? (modoPrivacidade ? mascararDadoPessoal(usuarioSelecionado.email, "email") : usuarioSelecionado.email)
+                        ? (modoPrivacidade ? mascararEmailAdmin(usuarioSelecionado.email) : usuarioSelecionado.email)
                         : "Não informado"}
                     </span>
                   </div>
