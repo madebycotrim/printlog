@@ -19,7 +19,9 @@ import {
   Eye, 
   Lock, 
   Trash2,
-  Headphones
+  Headphones,
+  Gift,
+  Activity
 } from "lucide-react";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -56,8 +58,10 @@ const obterStatusVencimento = (dataStr?: string, ciclo?: string) => {
   if (ciclo === "VITALICIO") return { texto: "Vitalício", cor: "text-blue-500", bg: "bg-blue-500/10", dias: 99999 };
   if (!dataStr) return { texto: "Sem vencimento", cor: "text-zinc-400", bg: "bg-zinc-500/10", dias: 99999 };
   
-  const hoje = new Date();
   const venc = new Date(dataStr);
+  if (isNaN(venc.getTime())) return { texto: "Sem vencimento", cor: "text-zinc-400", bg: "bg-zinc-500/10", dias: 99999 };
+
+  const hoje = new Date();
   const diffDias = Math.ceil((venc.getTime() - hoje.getTime()) / (1000 * 3600 * 24));
 
   if (diffDias < 0) return { texto: `Expirou há ${Math.abs(diffDias)}d`, cor: "text-rose-500", bg: "bg-rose-500/10", dias: diffDias };
@@ -102,15 +106,17 @@ export function PaginaAdmin() {
     definirCarregando(true);
     try {
       const dados = await servicoBaseApi.get<UsuarioAdmin[]>("/api/admin/usuarios");
-      definirUsuarios(dados);
+      const listaValida = Array.isArray(dados) ? dados : [];
+      definirUsuarios(listaValida);
       
       // Atualiza o modal de detalhes caso esteja aberto, sem disparar recriação de callbacks
       definirUsuarioSelecionado((prev) => {
         if (!prev) return null;
-        return dados.find((u) => u.id_usuario === prev.id_usuario) || null;
+        return listaValida.find((u) => u.id_usuario === prev.id_usuario) || null;
       });
     } catch {
       toast.error("Erro ao carregar lista de usuários da base.");
+      definirUsuarios([]);
     } finally {
       definirCarregando(false);
     }
@@ -318,17 +324,18 @@ export function PaginaAdmin() {
   });
 
   // Estatísticas calculadas
-  const totalUsuarios = usuarios.length;
-  const totalFundadores = usuarios.filter((u) => u.plano === "FUNDADOR").length;
+  const listaUsuarios = Array.isArray(usuarios) ? usuarios : [];
+  const totalUsuarios = listaUsuarios.length;
+  const totalFundadores = listaUsuarios.filter((u) => u?.plano === "FUNDADOR").length;
   const vagasRestantesFundador = Math.max(0, LIMITE_VAGAS_FUNDADOR - totalFundadores);
   const progressoFundadorPct = Math.min(100, Math.round((totalFundadores / LIMITE_VAGAS_FUNDADOR) * 100));
   
-  const totalPro = usuarios.filter((u) => u.plano === "PRO").length;
-  const totalFree = usuarios.filter((u) => u.plano === "FREE").length;
+  const totalPro = listaUsuarios.filter((u) => u?.plano === "PRO").length;
+  const totalFree = listaUsuarios.filter((u) => u?.plano === "FREE").length;
 
   const usuariosAlertas = useMemo(() => {
-    return usuarios.filter((u) => {
-      if (u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
+    return (Array.isArray(usuarios) ? usuarios : []).filter((u) => {
+      if (!u || u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
       const status = obterStatusVencimento(u.vencimento_plano, u.ciclo_pagamento);
       return status.dias <= 7;
     });
@@ -336,13 +343,17 @@ export function PaginaAdmin() {
 
   // Filtragem
   const usuariosFiltrados = useMemo(() => {
-    const termo = busca.toLowerCase().trim();
-    return usuarios.filter((u) => {
+    const termo = (busca || "").toLowerCase().trim();
+    return (Array.isArray(usuarios) ? usuarios : []).filter((u) => {
+      if (!u) return false;
+      const idUsuario = u.id_usuario || "";
+      const email = u.email || "";
+      const nomeEstudio = u.nome_estudio || "";
       const bateBusca = 
         !termo ||
-        u.id_usuario.toLowerCase().includes(termo) ||
-        (u.email && u.email.toLowerCase().includes(termo)) ||
-        (u.nome_estudio && u.nome_estudio.toLowerCase().includes(termo));
+        idUsuario.toLowerCase().includes(termo) ||
+        email.toLowerCase().includes(termo) ||
+        nomeEstudio.toLowerCase().includes(termo);
 
       if (filtroPlano === "ALERTAS") {
         if (u.plano === "FREE" || u.ciclo_pagamento === "VITALICIO") return false;
@@ -748,7 +759,7 @@ export function PaginaAdmin() {
 
                           <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
                             <span>UID:</span>
-                            <span className="font-mono">{u.id_usuario.slice(0, 14)}...</span>
+                            <span className="font-mono">{(u.id_usuario || "").slice(0, 14)}...</span>
                             <button
                               onClick={() => copiarTexto(u.id_usuario, `uid-${u.id_usuario}`, "ID do usuário copiado!")}
                               className="p-0.5 rounded text-zinc-400 hover:text-primaria transition-colors"
@@ -802,7 +813,7 @@ export function PaginaAdmin() {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
                           <Clock size={12} className="text-zinc-400" />
-                          <span className="text-[11px] font-medium">{formatarData(u.atualizado_em)}</span>
+                          <span className="text-[11px] font-medium">{u.atualizado_em ? formatarData(u.atualizado_em) : "—"}</span>
                         </div>
                       </td>
 
@@ -1033,7 +1044,7 @@ export function PaginaAdmin() {
             {/* Footer Modal */}
             <div className="p-4 bg-muted/40 border-t border-borda-sutil flex items-center justify-between">
               <span className="text-[10px] text-zinc-400 font-medium">
-                Última sincronização: {formatarData(usuarioSelecionado.atualizado_em)}
+                Última sincronização: {usuarioSelecionado.atualizado_em ? formatarData(usuarioSelecionado.atualizado_em) : "—"}
               </span>
               <button
                 onClick={() => definirUsuarioSelecionado(null)}

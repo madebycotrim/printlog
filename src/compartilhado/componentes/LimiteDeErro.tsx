@@ -60,6 +60,15 @@ export class LimiteDeErro extends Component<PropriedadesLimiteDeErro, EstadoLimi
               "Ocorreu uma falha temporária ao carregar esta área do sistema. Seus dados continuam seguros."}
           </p>
 
+          {import.meta.env.DEV && this.state.erro && (
+            <div className="mb-6 p-4 max-w-xl text-left bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-500 font-mono break-all overflow-auto max-h-48">
+              <strong className="block mb-1">{this.state.erro.name}: {this.state.erro.message}</strong>
+              {this.state.erro.stack && (
+                <pre className="text-[10px] text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap">{this.state.erro.stack}</pre>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <button
               onClick={this.recarregarPagina}
