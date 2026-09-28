@@ -371,7 +371,7 @@ export function PaginaAdmin() {
     aoBuscar: (t) => definirBusca(t),
   });
 
-  const listaUsuarios = Array.isArray(usuarios) ? usuarios : [];
+  const listaUsuarios = useMemo(() => (Array.isArray(usuarios) ? usuarios : []), [usuarios]);
 
   // Mapeia o UID ativo de cada e-mail único:
   // - Para o Dono logado: o UID do token da sessão atual (`usuario.uid`)

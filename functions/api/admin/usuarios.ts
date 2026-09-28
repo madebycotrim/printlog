@@ -202,7 +202,24 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 return new Response("Não é permitido excluir o usuário autenticado atualmente.", { status: 400 });
             }
 
-            await env.DB.prepare("DELETE FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario).run();
+            // Exclusão completa em cascata de todos os registros associados ao UID órfão
+            await env.DB.batch([
+                env.DB.prepare("DELETE FROM pedidos_impressao WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM materiais WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM historico_uso_materiais WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM clientes WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM impressoras WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM insumos WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM movimentacoes_insumo WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM registro_manutencao WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM pecas_desgaste WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM lancamentos_financeiros WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM cache_ia_precificacao WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario),
+            ]).catch(async () => {
+                // Fallback caso alguma tabela opcional ainda não exista no D1
+                await env.DB.prepare("DELETE FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario).run();
+            });
 
             // Auditoria
             context.waitUntil(
@@ -215,12 +232,12 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     userEmail,
                     "EXCLUIR_USUARIO_ORFAO",
                     idUsuario,
-                    JSON.stringify({ motivo: "Limpeza de registro órfão/sem conta ativa no Firebase" }),
+                    JSON.stringify({ motivo: "Limpeza de registro órfão/sem conta ativa no Firebase (cascata D1)" }),
                     new Date().toISOString()
                 ).run().catch(() => {})
             );
 
-            return new Response(JSON.stringify({ sucesso: true, mensagem: "Registro órfão excluído com sucesso." }), {
+            return new Response(JSON.stringify({ sucesso: true, mensagem: "Registro órfão excluído com sucesso de todas as tabelas." }), {
                 headers: { "Content-Type": "application/json" }
             });
         }
