@@ -9,6 +9,7 @@ import { ProvedorEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/
 import { ProvedorBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { ToasterPremium } from "@/compartilhado/componentes";
 import { WidgetFeedbackBeta } from "@/funcionalidades/beta/componentes/WidgetFeedbackBeta";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 // Landing Page Publica
 const PaginaLanding = lazy(() => import("@/funcionalidades/landing_page/PaginaLanding"));
@@ -119,6 +120,8 @@ const PaginaAdmin = lazy(() =>
 );
 
 export function RoteadorPrincipal() {
+  const { idiomaAtual } = useIdioma();
+
   return (
     <ProvedorAutenticacao>
       <ProvedorBeta>
@@ -128,7 +131,7 @@ export function RoteadorPrincipal() {
           <BrowserRouter>
             <ScrollParaTopo />
             <Suspense fallback={<Carregamento />}>
-              <Routes>
+              <Routes key={idiomaAtual}>
                 <Route path="/" element={<PaginaLanding />} />
                 <Route path="/seguranca-e-privacidade" element={<SegurancaPrivacidade />} />
                 <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />

@@ -3,9 +3,7 @@ import { useState, useEffect, lazy, Suspense, useCallback, useMemo } from "react
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 
-import { autenticacao } from "@/compartilhado/servicos/firebase";
 // Hooks e Estado
-import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
@@ -27,7 +25,6 @@ import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/ho
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
 // Componentes do Painel
-import { ShowcaseMedalhasMaker } from "./componentes/ShowcaseMedalhasMaker";
 import { MetricasPainel } from "./componentes/MetricasPainel";
 
 import { StatusTempoReal } from "./componentes/StatusTempoReal";
@@ -178,12 +175,6 @@ export function PaginaInicial() {
     ).length;
   }, [pedidos]);
 
-  // 👑 LÓGICA DE UPGRADE PRO
-  const plano = useArmazemConfiguracoes((s) => s.plano);
-  const definirPlano = useArmazemConfiguracoes((s) => s.definirPlano);
-  const salvarConfiguracoes = useArmazemConfiguracoes((s) => s.salvarNoD1);
-  const [carregandoUpgrade, definirCarregandoUpgrade] = useState(false);
-
   // Estados de Modais
   const [modalPatrimonioAberto, definirModalPatrimonioAberto] = useState(false);
   const [modalClienteAberto, definirModalClienteAberto] = useState(false);
@@ -197,31 +188,6 @@ export function PaginaInicial() {
   const [materialSelecionado, definirMaterialSelecionado] = useState<any>(null);
   const [insumoSelecionado, definirInsumoSelecionado] = useState<any>(null);
 
-  const realizarUpgradeGratis = async () => {
-    if (!usuario?.uid) return;
-
-    definirCarregandoUpgrade(true);
-    
-    try {
-      if (autenticacao.currentUser) {
-        await autenticacao.currentUser.reload();
-        if (!autenticacao.currentUser.emailVerified) {
-          toast.error("Você precisa verificar seu e-mail no Perfil antes de ativar este plano.");
-          definirCarregandoUpgrade(false);
-          return;
-        }
-      }
-
-      definirPlano("FUNDADOR");
-      await salvarConfiguracoes(usuario.uid);
-      toast.success("Parabéns! Agora você é um MAKER FUNDADOR vitalício ✨");
-    } catch (erro) {
-      toast.error("Não foi possível ativar seu plano agora.");
-    } finally {
-      definirCarregandoUpgrade(false);
-    }
-  };
-
   const { t } = useIdioma();
 
   useDefinirCabecalho({
@@ -234,11 +200,6 @@ export function PaginaInicial() {
     <div className="space-y-8 pb-10 relative">
       {/* BACKGROUND PATTERN DISCRETO */}
       <div className="absolute inset-0 -top-20 bg-grid-printlog opacity-[0.03] pointer-events-none -z-10" />
-
-      {/* SHOWCASE DE MEDALHAS & CONQUISTAS MAKER */}
-      <div>
-        <ShowcaseMedalhasMaker />
-      </div>
 
       {erroDados && (
         <div className="bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/30 rounded-[2rem] p-8 text-center space-y-4">

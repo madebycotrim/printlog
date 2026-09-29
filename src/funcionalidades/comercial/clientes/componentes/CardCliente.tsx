@@ -321,11 +321,11 @@ export function CardCliente({ cliente, aoEditar, aoRemover, aoVerHistorico }: Pr
             {obterIniciais(cliente.nome)}
           </div>
 
-          {/* Badge VIP se cliente for fiel */}
+          {/* Destaque se cliente for recorrente */}
           {cliente.fiel && (
             <div
-              className="absolute -top-0.5 -right-0.5 w-6 h-6 bg-gradient-to-tr from-amber-400 to-yellow-500 rounded-full ring-2 ring-card flex items-center justify-center shadow-md animate-pulse"
-              title="Cliente Frequente / VIP"
+              className="absolute -top-0.5 -right-0.5 w-6 h-6 bg-gradient-to-tr from-amber-400 to-yellow-500 rounded-full ring-2 ring-card flex items-center justify-center shadow-md"
+              title="Cliente Recorrente"
             >
               <Star size={11} className="fill-white text-white" />
             </div>

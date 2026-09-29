@@ -576,7 +576,7 @@ export const dicionarioBase: DicionarioTraducao = {
   "Status das Máquinas": { en: "Machine Status", es: "Estado de las Máquinas" },
   "Status de Matéria-Prima": { en: "Raw Material Status", es: "Estado de Materias Primas" },
   "Studio": { en: "Studio", es: "Estudio" },
-  "Sua base de clientes está vazia. Comece cadastrando um cliente VIP para iniciar seu ecossistema.": { en: "Your customer base is empty. Start by registering a VIP customer to kick off your ecosystem.", es: "Su base de clientes está vacía. Comience registrando un cliente VIP para iniciar su ecosistema." },
+  "Sua base de clientes está vazia. Comece cadastrando um novo cliente para iniciar seu ecossistema.": { en: "Your customer base is empty. Start by registering a new customer to kick off your ecosystem.", es: "Su base de clientes está vacía. Comience registrando un nuevo cliente para iniciar su ecosistema." },
   "Sua Farm,": { en: "Your Print Farm,", es: "Su Print Farm," },
   "Sua sessão expirou por inatividade (30 min).": { en: "Your session expired due to inactivity (30 min).", es: "Su sesión ha caducado por inactividad (30 min)." },
   "Sua sessão irá expirar em 1 minuto por inatividade.": { en: "Your session will expire in 1 minute due to inactivity.", es: "Su sesión caducará en 1 minuto por inactividad." },

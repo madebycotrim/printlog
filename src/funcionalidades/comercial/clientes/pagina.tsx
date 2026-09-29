@@ -8,14 +8,12 @@ import { FiltrosCliente } from "./componentes/FiltrosCliente";
 import { ModalRemocaoCliente } from "./componentes/ModalRemocaoCliente";
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
-import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { BannerErro } from "@/compartilhado/componentes/ui";
 import { useState, useEffect } from "react";
 import { useVirtualizacao } from "@/compartilhado/hooks/useVirtualizacao";
 
 export function PaginaClientes() {
   const { estado, acoes } = useGerenciadorClientes();
-  const { usuario } = useAutenticacao();
 
   const [colunas, setColunas] = useState(4);
   useEffect(() => {
@@ -75,7 +73,7 @@ export function PaginaClientes() {
           >
             <EstadoVazio
               titulo="Nenhum cliente no radar"
-              descricao="Sua base de clientes está vazia. Comece cadastrando um cliente VIP para iniciar seu ecossistema."
+              descricao="Sua base de clientes está vazia. Comece cadastrando um novo cliente para iniciar seu ecossistema."
               icone={Users}
               textoBotao="Novo Cadastro Manual"
               aoClicarBotao={tentarNovoCliente}

@@ -144,6 +144,130 @@ const PADROES_DINAMICOS: PadraoDinamico[] = [
   },
 ];
 
+interface PadraoDinamicoReverso {
+  regex: RegExp;
+  pt: (match: RegExpMatchArray) => string;
+}
+
+const PADROES_DINAMICOS_REVERSOS: PadraoDinamicoReverso[] = [
+  // Interações
+  {
+    regex: /^(?:Last|Últimas?)\s+(\d+)\s+inter(?:actions|acciones)$/i,
+    pt: (m) => `Últimas ${m[1]} interações`,
+  },
+  // Falha registrada com descarte
+  {
+    regex: /^(?:Failure recorded\. Deducted|Fallo registrado\. Se descontaron)\s+(\d+(?:[.,]\d+)?)\s*g\s+(?:of material|de material)\.?$/i,
+    pt: (m) => `Falha registrada. Descontado ${m[1]}g de material.`,
+  },
+  // Abatimento de gramas
+  {
+    regex: /^¡?(\d+(?:[.,]\d+)?)\s*g\s+(?:deducted from|deducidos del)\s+stock!?$/i,
+    pt: (m) => `${m[1]}g abatidos do estoque!`,
+  },
+  // Dias restantes
+  {
+    regex: /^(\d+)\s+(?:day|days|día|días)\s+(?:remaining|restantes)$/i,
+    pt: (m) => `${m[1]} ${m[1] === "1" ? "dia restante" : "dias restantes"}`,
+  },
+  // Expirado há X dias
+  {
+    regex: /^(?:Expired\s+(\d+)\s+(?:day|days)\s+ago|Expirado\s+hace\s+(\d+)\s+(?:día|días))$/i,
+    pt: (m) => `Expirado há ${m[1] || m[2]} ${(m[1] || m[2]) === "1" ? "dia" : "dias"}`,
+  },
+  // Paginação
+  {
+    regex: /^(?:Page|Página)\s+(\d+)\s+(?:of|de)\s+(\d+)$/i,
+    pt: (m) => `Página ${m[1]} de ${m[2]}`,
+  },
+  // Exportação em formato
+  {
+    regex: /^¡?Export(?:ación)?\s+(?:in|en)\s+(\w+)\s+(?:completed successfully|completada con éxito)!?$/i,
+    pt: (m) => `Exportação em ${m[1]} concluída com sucesso!`,
+  },
+  // Download de arquivo
+  {
+    regex: /^¡?(?:File|Archivo)\s+(\w+)\s+(?:downloaded successfully|descargado con éxito)!?$/i,
+    pt: (m) => `Arquivo ${m[1]} baixado com sucesso!`,
+  },
+  // Limite de itens/impressoras
+  {
+    regex: /^(?:You have reached the limit of|Ha alcanzado el límite de)\s+(\d+)\s+(.+)\s+(?:on the Free plan|en el plan Gratuito)$/i,
+    pt: (m) => `Você atingiu o limite de ${m[1]} ${m[2]} no plano Gratuito`,
+  },
+  // Limite de X atingido
+  {
+    regex: /^(?:Limit of|Límite de)\s+(.+)\s+(?:reached|alcanzado)$/i,
+    pt: (m) => `Limite de ${m[1]} atingido`,
+  },
+  // Quantidade de peças
+  {
+    regex: /^(\d+)\s+(?:part|parts|pieza|piezas)$/i,
+    pt: (m) => `${m[1]} ${m[1] === "1" ? "peça" : "peças"}`,
+  },
+  // Vagas restantes
+  {
+    regex: /^(\d+)\s+(?:spot|spots|cupo|cupos)\s+(?:remaining|restantes)$/i,
+    pt: (m) => `${m[1]} ${m[1] === "1" ? "vaga restante" : "vagas restantes"}`,
+  },
+  // Combobox Criar / Usar
+  {
+    regex: /^(?:Create|Crear)\s+"([^"]+)"$/i,
+    pt: (m) => `Criar "${m[1]}"`,
+  },
+  {
+    regex: /^(?:Use|Usar)\s+"([^"]+)"$/i,
+    pt: (m) => `Usar "${m[1]}"`,
+  },
+  // Diâmetro do Bico
+  {
+    regex: /^(?:Nozzle|Boquilla)\s+(\d+(?:[.,]\d+)?)\s*mm$/i,
+    pt: (m) => `Bico ${m[1]}mm`,
+  },
+  // Sessão inativa
+  {
+    regex: /^(?:Your session will expire in|Su sesión expirará en)\s+(\d+)\s+minute\(s\)\s+(?:due to inactivity|por inactividad)\.?$/i,
+    pt: (m) => `Sua sessão irá expirar em ${m[1]} minuto(s) por inatividade.`,
+  },
+  // Clientes / Filamentos exportados no arquivo
+  {
+    regex: /^\.\.\.\s*(?:and|y)\s+(\d+)\s+(?:more|más)\s+(.+)\s+exported in the\s+(.+)\s+file\.?$/i,
+    pt: (m) => `... e mais ${m[1]} ${m[2]} exportados no arquivo ${m[3]}`,
+  },
+  // Tempo atrás (horas, minutos)
+  {
+    regex: /^(?:(\d+)\s+(?:hour|hours)\s+ago|hace\s+(\d+)\s+(?:hora|horas))$/i,
+    pt: (m) => `${m[1] || m[2]} ${(m[1] || m[2]) === "1" ? "hora" : "horas"} atrás`,
+  },
+  {
+    regex: /^(?:(\d+)\s+(?:minute|minutes)\s+ago|hace\s+(\d+)\s+(?:minuto|minutos))$/i,
+    pt: (m) => `${m[1] || m[2]} ${(m[1] || m[2]) === "1" ? "minuto" : "minutos"} atrás`,
+  },
+];
+
+// Dicionários reversos construídos uma única vez em memória para performance máxima O(1)
+const DICIONARIO_REVERSO_EN = new Map<string, string>();
+const DICIONARIO_REVERSO_ES = new Map<string, string>();
+const DICIONARIO_REVERSO_EN_LOWER = new Map<string, string>();
+const DICIONARIO_REVERSO_ES_LOWER = new Map<string, string>();
+
+for (const [pt, traducoes] of Object.entries(DICIONARIO_GLOBAL)) {
+  const ptLimpo = pt.trim();
+  if (!ptLimpo) continue;
+
+  const en = traducoes.en?.trim();
+  const es = traducoes.es?.trim();
+
+  if (en && en !== ptLimpo) {
+    DICIONARIO_REVERSO_EN.set(en, ptLimpo);
+    DICIONARIO_REVERSO_EN_LOWER.set(en.toLowerCase(), ptLimpo);
+  }
+  if (es && es !== ptLimpo) {
+    DICIONARIO_REVERSO_ES.set(es, ptLimpo);
+    DICIONARIO_REVERSO_ES_LOWER.set(es.toLowerCase(), ptLimpo);
+  }
+}
+
 class MotorTradutorUniversalDOM {
   private idiomaAtivo: string = "pt-BR";
   private mapaNosOriginais = new WeakMap<Node, string>();
@@ -183,7 +307,8 @@ class MotorTradutorUniversalDOM {
   }
 
   /**
-   * Define o idioma ativo e traduz ou restaura o DOM
+   * Define o idioma ativo e traduz ou restaura o DOM com múltiplas passagens
+   * garantindo que re-renderizações assíncronas do React sejam capturadas.
    */
   public definirIdioma(idioma: string) {
     this.idiomaAtivo = idioma;
@@ -191,30 +316,69 @@ class MotorTradutorUniversalDOM {
     if (idioma === "pt-BR") {
       this.ativo = false;
       this.restaurar();
+      if (typeof window !== "undefined") {
+        requestAnimationFrame(() => this.restaurar());
+        setTimeout(() => this.restaurar(), 40);
+        setTimeout(() => this.restaurar(), 120);
+        setTimeout(() => this.restaurar(), 250);
+        setTimeout(() => this.restaurar(), 500);
+      }
     } else if (idioma === "en-US" || idioma === "es-ES") {
       this.ativo = true;
       this.traduzirTudo();
+      if (typeof window !== "undefined") {
+        requestAnimationFrame(() => this.traduzirTudo());
+        setTimeout(() => this.traduzirTudo(), 40);
+        setTimeout(() => this.traduzirTudo(), 120);
+        setTimeout(() => this.traduzirTudo(), 250);
+        setTimeout(() => this.traduzirTudo(), 500);
+      }
     }
   }
 
   /**
-   * Restaura todos os textos e atributos para a versão original em português
+   * Restaura todos os textos e atributos para a versão original em português,
+   * utilizando tanto o mapa de nós originais quanto o dicionário reverso EN/ES -> PT.
    */
   public restaurar() {
-    if (!document.body) return;
+    if (typeof document === "undefined" || !document.body) return;
+
     const walker = document.createTreeWalker(
       document.body,
       NodeFilter.SHOW_TEXT,
-      null
+      {
+        acceptNode: (node) => {
+          const pai = node.parentElement;
+          if (!pai || TAGS_IGNORADAS.has(pai.tagName)) return NodeFilter.FILTER_REJECT;
+          if (pai.isContentEditable) return NodeFilter.FILTER_REJECT;
+          if (
+            pai.closest("#btn-seletor-idioma") ||
+            pai.closest('[data-seletor-idioma="true"]') ||
+            pai.closest('[data-sonner-toaster]')
+          ) return NodeFilter.FILTER_REJECT;
+          const texto = node.textContent?.trim();
+          if (!texto || texto.length < 2) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      }
     );
 
     let no: Node | null;
     while ((no = walker.nextNode())) {
+      const atual = no.textContent || "";
+      let textoParaRestaurar = "";
+
       if (this.mapaNosOriginais.has(no)) {
-        const textoOriginal = this.mapaNosOriginais.get(no)!;
-        if (no.textContent !== textoOriginal) {
-          no.textContent = textoOriginal;
-        }
+        const salvo = this.mapaNosOriginais.get(no)!;
+        textoParaRestaurar = this.reverterParaPortugues(salvo);
+      } else {
+        textoParaRestaurar = this.reverterParaPortugues(atual);
+      }
+
+      if (textoParaRestaurar && textoParaRestaurar !== atual) {
+        no.textContent = textoParaRestaurar;
+        this.mapaNosOriginais.set(no, textoParaRestaurar);
+        this.mapaUltimasTraducoes.delete(no);
       }
     }
 
@@ -222,17 +386,25 @@ class MotorTradutorUniversalDOM {
     const elementosComInput = document.querySelectorAll<HTMLElement>("input, textarea, button, a, [aria-label]");
     elementosComInput.forEach((el) => {
       const originais = this.mapaAttrOriginais.get(el);
-      if (originais) {
-        const elInput = el as HTMLInputElement | HTMLTextAreaElement;
-        if (originais.placeholder && elInput.placeholder !== undefined) {
-          elInput.placeholder = originais.placeholder;
-        }
-        if (originais.title && el.title !== undefined) {
-          el.title = originais.title;
-        }
-        if (originais.ariaLabel) {
-          el.setAttribute("aria-label", originais.ariaLabel);
-        }
+      const elInput = el as HTMLInputElement | HTMLTextAreaElement;
+
+      if (elInput.placeholder !== undefined && elInput.placeholder) {
+        const val = originais?.placeholder || elInput.placeholder;
+        const revertido = this.reverterParaPortugues(val);
+        if (elInput.placeholder !== revertido) elInput.placeholder = revertido;
+      }
+
+      if (el.title !== undefined && el.title) {
+        const val = originais?.title || el.title;
+        const revertido = this.reverterParaPortugues(val);
+        if (el.title !== revertido) el.title = revertido;
+      }
+
+      const aria = el.getAttribute("aria-label");
+      if (aria) {
+        const val = originais?.ariaLabel || aria;
+        const revertido = this.reverterParaPortugues(val);
+        if (el.getAttribute("aria-label") !== revertido) el.setAttribute("aria-label", revertido);
       }
     });
   }
@@ -288,8 +460,16 @@ class MotorTradutorUniversalDOM {
 
     // Se o nó ainda não foi mapeado OU o React renderizou um novo texto diferente da nossa tradução
     if (!original || (atual && atual !== ultimaTrad && atual !== original)) {
-      original = atual;
+      // Normaliza para português caso o nó tenha sido criado já em inglês/espanhol
+      original = this.reverterParaPortugues(atual);
       this.mapaNosOriginais.set(no, original);
+    } else {
+      // Garante que o texto guardado no mapa de originais esteja sempre em português
+      const verificadoPt = this.reverterParaPortugues(original);
+      if (verificadoPt !== original) {
+        original = verificadoPt;
+        this.mapaNosOriginais.set(no, original);
+      }
     }
 
     const traduzido = this.traduzirTexto(original, subChave);
@@ -308,14 +488,14 @@ class MotorTradutorUniversalDOM {
       guardados = {};
       const elInput = el as HTMLInputElement | HTMLTextAreaElement;
       if (elInput.placeholder) {
-        guardados.placeholder = elInput.placeholder;
+        guardados.placeholder = this.reverterParaPortugues(elInput.placeholder);
       }
       if (el.title) {
-        guardados.title = el.title;
+        guardados.title = this.reverterParaPortugues(el.title);
       }
       const aria = el.getAttribute("aria-label");
       if (aria) {
-        guardados.ariaLabel = aria;
+        guardados.ariaLabel = this.reverterParaPortugues(aria);
       }
       this.mapaAttrOriginais.set(el, guardados);
     }
@@ -341,6 +521,97 @@ class MotorTradutorUniversalDOM {
         el.setAttribute("aria-label", traduzido);
       }
     }
+  }
+
+  /**
+   * Reverte um texto do inglês ou espanhol de volta para o português brasileiro nativo.
+   * Utiliza o dicionário reverso e os padrões dinâmicos inversos preservando prefixos,
+   * sufixos e formatação de maiúsculas.
+   */
+  public reverterParaPortugues(textoOriginal: string): string {
+    if (!textoOriginal) return textoOriginal;
+    const textoAparado = textoOriginal.trim();
+    if (!textoAparado) return textoOriginal;
+
+    // Se já é uma chave em português no dicionário global, preserva imediatamente
+    if (DICIONARIO_GLOBAL[textoAparado]) {
+      return textoOriginal;
+    }
+
+    // 1. Busca direta completa no mapa reverso EN ou ES
+    const ptDireto = DICIONARIO_REVERSO_EN.get(textoAparado) || DICIONARIO_REVERSO_ES.get(textoAparado);
+    if (ptDireto) {
+      const formatada = textoAparado === textoAparado.toUpperCase() && textoAparado.length > 2
+        ? ptDireto.toUpperCase()
+        : ptDireto;
+      return textoOriginal.replace(textoAparado, formatada);
+    }
+
+    // 2. Busca case-insensitive completa
+    const minusculoCompleto = textoAparado.toLowerCase();
+    const ptLower = DICIONARIO_REVERSO_EN_LOWER.get(minusculoCompleto) || DICIONARIO_REVERSO_ES_LOWER.get(minusculoCompleto);
+    if (ptLower) {
+      const formatada = textoAparado === textoAparado.toUpperCase() && textoAparado.length > 2
+        ? ptLower.toUpperCase()
+        : ptLower;
+      return textoOriginal.replace(textoAparado, formatada);
+    }
+
+    // 3. Extração de prefixos e sufixos
+    let prefixo = "";
+    let sufixo = "";
+    let conteudo = textoAparado;
+
+    const matchPrefixo = conteudo.match(/^(\d+(?:\.\d+)*\.?|Ej:?\s*|Ex:?\s*|[+•\->."“'()=\s–—*~#]+)\s*/i);
+    if (matchPrefixo && matchPrefixo[0].length < conteudo.length) {
+      prefixo = matchPrefixo[0];
+      conteudo = conteudo.substring(prefixo.length).trim();
+    }
+
+    const matchSufixo = conteudo.match(/\s*([:\-!?>."”')]+|\.{3})$/);
+    if (matchSufixo && matchSufixo[0].length < conteudo.length) {
+      sufixo = matchSufixo[0];
+      conteudo = conteudo.substring(0, conteudo.length - sufixo.length).trim();
+    }
+
+    // Ajusta prefixo Ej: de volta para Ex:
+    let prefixoAjustado = prefixo;
+    if (/^Ej:?\s*/i.test(prefixo)) {
+      prefixoAjustado = prefixo.replace(/^Ej:?/i, "Ex:");
+    }
+
+    // 4. Busca direta no conteúdo sem prefixo/sufixo
+    const ptConteudo = DICIONARIO_REVERSO_EN.get(conteudo) || DICIONARIO_REVERSO_ES.get(conteudo);
+    if (ptConteudo) {
+      const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+        ? ptConteudo.toUpperCase()
+        : ptConteudo;
+      return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
+    }
+
+    // 5. Busca case-insensitive no conteúdo sem prefixo/sufixo
+    const minusculoConteudo = conteudo.toLowerCase();
+    const ptConteudoLower = DICIONARIO_REVERSO_EN_LOWER.get(minusculoConteudo) || DICIONARIO_REVERSO_ES_LOWER.get(minusculoConteudo);
+    if (ptConteudoLower) {
+      const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+        ? ptConteudoLower.toUpperCase()
+        : ptConteudoLower;
+      return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
+    }
+
+    // 6. Padrões dinâmicos reversos
+    for (const padrao of PADROES_DINAMICOS_REVERSOS) {
+      const match = conteudo.match(padrao.regex);
+      if (match) {
+        const traducao = padrao.pt(match);
+        const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+          ? traducao.toUpperCase()
+          : traducao;
+        return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
+      }
+    }
+
+    return textoOriginal;
   }
 
   /**
@@ -483,17 +754,19 @@ export const tradutorUniversalDOM = new MotorTradutorUniversalDOM();
 export function traduzirTextoGlobal(texto?: string | null): string {
   if (!texto) return texto || "";
   let idioma = tradutorUniversalDOM.getIdiomaAtivo();
-  if (!idioma || idioma === "pt-BR") {
+  if (!idioma) {
     try {
       const salvo = typeof localStorage !== "undefined" ? localStorage.getItem("printlog_idioma") : null;
-      if (salvo && (salvo === "en-US" || salvo === "es-ES")) {
+      if (salvo && (salvo === "en-US" || salvo === "es-ES" || salvo === "pt-BR")) {
         idioma = salvo;
       }
     } catch {
       // Ignora erro
     }
   }
-  if (!idioma || idioma === "pt-BR") return texto;
+  if (!idioma || idioma === "pt-BR") {
+    return tradutorUniversalDOM.reverterParaPortugues(texto);
+  }
   const subChave: "en" | "es" = idioma.startsWith("es") ? "es" : "en";
   return tradutorUniversalDOM.traduzirTexto(texto, subChave);
 }

@@ -40,6 +40,10 @@ export function useIdioma() {
       await i18n.changeLanguage(novoIdioma);
       document.documentElement.lang = novoIdioma;
 
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("printlog_idioma_alterado", { detail: novoIdioma }));
+      }
+
       // 3. Aplica tradução dinâmica no DOM de todas as telas
       tradutorUniversalDOM.definirIdioma(novoIdioma);
 

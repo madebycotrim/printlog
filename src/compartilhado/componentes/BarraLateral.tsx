@@ -21,9 +21,7 @@ import {
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
 import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
-import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { Avatar, SeloPlano } from "./ui";
-import { ehAdmin } from "@/compartilhado/constantes/admin";
+import { Avatar } from "./ui";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
@@ -351,12 +349,12 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
               {!colapsada && (
                 <>
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <p className="text-xs font-black text-primary dark:text-white truncate leading-tight mb-0.5">
+                    <p className="text-xs font-black text-primary dark:text-white truncate leading-tight">
                       {usuario?.nome?.split(" ")[0] || "Usuário"}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <SeloPlano plano={usuario?.plano} tamanho="pequeno" exibirSempre />
-                    </div>
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium truncate mt-0.5">
+                      {usuario?.email || "Maker"}
+                    </span>
                   </div>
 
                   <button

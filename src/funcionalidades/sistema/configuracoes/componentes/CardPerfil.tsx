@@ -2,7 +2,6 @@ import { User, Mail, Lock } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { Usuario } from "@/compartilhado/tipos/modelos";
 import { Avatar } from "@/compartilhado/componentes";
-import { BadgeMaker } from "@/compartilhado/componentes/ui";
 
 /**
  * Propriedades para o componente CardPerfil.
@@ -53,7 +52,6 @@ export function CardPerfil({
                             className="text-3xl transition-transform duration-500 group-hover/avatar:rotate-3 group-hover/avatar:scale-105"
                         />
                     </div>
-                    <BadgeMaker tamanho="pequeno" />
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">

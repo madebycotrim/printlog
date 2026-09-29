@@ -271,7 +271,7 @@ export function FormularioClienteConteudo({ clienteEditando, aoSalvar, aoCancela
                 }`}
               >
                 <Star size={14} className={watch("fiel") ? "fill-amber-500 text-amber-500" : "text-zinc-500"} />
-                <span>{watch("fiel") ? "Cliente VIP / Fiel Ativado" : "Marcar como Cliente VIP / Fiel"}</span>
+                <span>{watch("fiel") ? "Cliente Frequente Ativado" : "Marcar como Cliente Frequente"}</span>
               </button>
             </div>
           </div>

@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
-import { Menu, Search, Beaker, AlertTriangle, X } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Menu, Search, Beaker, X } from "lucide-react";
 import { useCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";
 import { useProcessadorNotificacoes } from "../hooks/useProcessadorNotificacoes";
-import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
-import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { BadgeMaker } from "./ui";
 import { SeletorIdioma } from "./SeletorIdioma";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
@@ -18,16 +14,8 @@ type PropriedadesCabecalho = {
 
 export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const { dados } = useCabecalho();
-  const { usuario } = useAutenticacao();
   const { participarPrototipos } = useBeta();
   const { t } = useIdioma();
-  const vencimentoPlano = useArmazemConfiguracoes((s) => s.vencimentoPlano);
-  const plano = useArmazemConfiguracoes((s) => s.plano);
-  const localizacao = useLocation();
-
-  // Rotas onde o selo de elite deve aparecer
-  const rotasElite = ["/dashboard", "/configuracoes", "/central-maker"];
-  const exibirSeloElite = rotasElite.some(rota => localizacao.pathname.startsWith(rota));
 
   // Inicializa o processador de notificações globais (pedidos atrasados, manutenção, etc.)
   useProcessadorNotificacoes();
@@ -49,23 +37,8 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
     return () => clearTimeout(temporizador);
   }, [termoBusca, dados.aoBuscar]);
 
-  // Verificação de expiração
-  const estaExpirado = () => {
-    if (plano !== "PRO" || !vencimentoPlano) return false;
-    return new Date(vencimentoPlano) < new Date();
-  };
-
-  const vencido = estaExpirado();
-
   return (
-    <>
-      {vencido && (
-        <div className="bg-red-500 text-white px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2">
-          <AlertTriangle size={14} />
-          <span>{t("cabecalho.planoExpirado")}</span>
-        </div>
-      )}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 md:px-12 py-2 md:py-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-2xl border-b border-borda-sutil transition-all duration-300 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.02)]">
+    <header className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 md:px-12 py-2 md:py-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-2xl border-b border-borda-sutil transition-all duration-300 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.02)]">
         {/* Esquerda: Menu Mobile + Título */}
         <div className="flex items-center gap-1.5 sm:gap-4 min-w-0 shrink">
           <button
@@ -89,8 +62,6 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                   <span className="text-[8px] font-black uppercase tracking-widest">{t("cabecalho.laboratorio")}</span>
                 </div>
               )}
-
-              <BadgeMaker className="hidden sm:inline-flex shrink-0" />
 
               <div
                 className="hidden md:block w-1.5 h-1.5 rounded-full mb-0.5 shrink-0"
@@ -195,6 +166,5 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           </div>
         </div>
       </header>
-    </>
   );
 }
