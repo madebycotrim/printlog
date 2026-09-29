@@ -1,37 +1,36 @@
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 
 /**
- * Limites operacionais para contas do plano GRATUITO.
- * Usado para aplicar restrições e exibir o paywall.
+ * Limites operacionais do sistema.
+ * O PrintLog é 100% gratuito e ilimitado para toda a comunidade Maker.
  */
 export const LIMITES_PLANO_FREE = {
-  IMPRESSORAS: 2,
-  MATERIAIS: 15,
-  INSUMOS: 15,
-  CLIENTES: 10,
+  IMPRESSORAS: Infinity,
+  MATERIAIS: Infinity,
+  INSUMOS: Infinity,
+  CLIENTES: Infinity,
 };
 
 /**
- * Retorna o limite de um determinado recurso com base no plano do usuário.
- * Se o plano for PRO ou FUNDADOR, retorna Infinity.
+ * Retorna o limite de um determinado recurso.
+ * Sempre retorna Infinity para garantir acesso livre e irrestrito.
  */
 export function obterLimite(
-  recurso: keyof typeof LIMITES_PLANO_FREE,
-  plano: PlanoUsuario = "FREE"
+  _recurso: keyof typeof LIMITES_PLANO_FREE,
+  _plano: PlanoUsuario = "FREE"
 ): number {
-  if (plano === "PRO" || plano === "FUNDADOR") {
-    return Infinity;
-  }
-  return LIMITES_PLANO_FREE[recurso];
+  return Infinity;
 }
 
 /**
  * Verifica se um limite foi atingido.
+ * Sempre retorna false (sistema 100% gratuito e sem restrições de cota).
  */
 export function atingiuLimite(
-  recurso: keyof typeof LIMITES_PLANO_FREE,
-  quantidadeAtual: number,
-  plano: PlanoUsuario = "FREE"
+  _recurso: keyof typeof LIMITES_PLANO_FREE,
+  _quantidadeAtual: number,
+  _plano: PlanoUsuario = "FREE"
 ): boolean {
-  return quantidadeAtual >= obterLimite(recurso, plano);
+  return false;
 }
+

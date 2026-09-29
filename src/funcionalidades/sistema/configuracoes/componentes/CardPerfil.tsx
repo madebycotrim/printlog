@@ -1,8 +1,8 @@
-import { User, Mail, Lock, Crown } from "lucide-react";
+import { User, Mail, Lock } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { Usuario } from "@/compartilhado/tipos/modelos";
 import { Avatar } from "@/compartilhado/componentes";
-import { Zap } from "lucide-react";
+import { BadgeMaker } from "@/compartilhado/componentes/ui";
 
 /**
  * Propriedades para o componente CardPerfil.
@@ -42,7 +42,7 @@ export function CardPerfil({
             <CabecalhoCard titulo="Perfil Maker" descricao="Sua conta de acesso e segurança" icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                <div className="flex flex-col items-center justify-center shrink-0 w-32 rounded-xl p-4 bg-muted/30 border border-borda-sutil">
+                <div className="flex flex-col items-center justify-center shrink-0 w-36 rounded-xl p-4 bg-muted/30 border border-borda-sutil gap-3">
                     <div className="relative group/avatar">
                         <Avatar 
                             plano={usuario?.plano}
@@ -52,19 +52,8 @@ export function CardPerfil({
                             tamanho="w-20 h-20" 
                             className="text-3xl transition-transform duration-500 group-hover/avatar:rotate-3 group-hover/avatar:scale-105"
                         />
-                        
-                        {usuario?.plano === "FUNDADOR" && (
-                            <div className="absolute -top-5 -right-4 rotate-[15deg] z-10 drop-shadow-[0_0_15px_rgba(14,165,233,0.8)] transition-transform duration-700 group-hover/avatar:rotate-[25deg] group-hover/avatar:scale-110">
-                                <Crown size={32} className="text-sky-500 fill-sky-500/20 stroke-[1.5px]" />
-                            </div>
-                        )}
-
-                        {usuario?.plano === "PRO" && (
-                            <div className="absolute -top-5 -right-4 rotate-[15deg] z-10 drop-shadow-[0_0_15px_rgba(99,102,241,0.8)] transition-transform duration-700 group-hover/avatar:rotate-[25deg] group-hover/avatar:scale-110">
-                                <Zap size={32} className="text-indigo-500 fill-indigo-500/20 stroke-[1.5px]" />
-                            </div>
-                        )}
                     </div>
+                    <BadgeMaker tamanho="pequeno" />
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">

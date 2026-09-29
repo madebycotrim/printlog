@@ -7,7 +7,7 @@ import { useProcessadorNotificacoes } from "../hooks/useProcessadorNotificacoes"
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { SeloPlano } from "./ui";
+import { BadgeMaker } from "./ui";
 import { SeletorIdioma } from "./SeletorIdioma";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
@@ -90,9 +90,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                 </div>
               )}
 
-              {exibirSeloElite && (
-                <SeloPlano plano={usuario?.plano} className="hidden sm:inline-flex transform hover:scale-105 transition-transform cursor-default shrink-0" />
-              )}
+              <BadgeMaker className="hidden sm:inline-flex shrink-0" />
 
               <div
                 className="hidden md:block w-1.5 h-1.5 rounded-full mb-0.5 shrink-0"

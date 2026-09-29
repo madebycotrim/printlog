@@ -12,24 +12,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
-import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
-import { useState } from "react";
-
 
 export function PaginaImpressoras() {
   const { estado, acoes } = useGerenciadorImpressoras();
   const { usuario } = useAutenticacao();
-  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
-
-
 
   const tentarNovaMaquina = () => {
-    if (atingiuLimite("IMPRESSORAS", estado.totais.total, usuario?.plano)) {
-      setModalPaywallAberto(true);
-    } else {
-      acoes.abrirEditar();
-    }
+    acoes.abrirEditar();
   };
 
   useDefinirCabecalho({
@@ -203,18 +192,6 @@ export function PaginaImpressoras() {
         impressora={estado.impressoraParaAposentar}
         aoFechar={acoes.fecharAposentar}
         aoConfirmar={acoes.confirmarAposentadoria}
-      />
-
-      <ModalUpgradePaywall
-        aberto={modalPaywallAberto}
-        aoFechar={() => setModalPaywallAberto(false)}
-        recurso="Impressoras"
-        aoFazerUpgrade={() => {
-          // TODO: Direcionar para checkout real. 
-          // Por enquanto simulamos chamando algo ou apenas fechando,
-          // o BannerPro no Dashboard também faz isso.
-          window.location.href = "/dashboard";
-        }}
       />
     </div>
   );

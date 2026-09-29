@@ -15,9 +15,6 @@ import { ModalArquivamentoMaterial } from "./componentes/ModalArquivamentoMateri
 import { ModalReposicaoEstoque } from "./componentes/ModalReposicaoEstoque";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
-import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
-import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
-import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { useState } from "react";
 import { CardPrevisaoEstoqueIA } from "./componentes/CardPrevisaoEstoqueIA";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
@@ -27,16 +24,9 @@ export function PaginaMateriais() {
   const { insumos, definirInsumos } = useArmazemInsumos();
   const { pedidos } = usePedidos();
   const { usuario } = useAutenticacao();
-  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
-
-
 
   const tentarNovoMaterial = () => {
-    if (atingiuLimite("MATERIAIS", estado.materiais.length, usuario?.plano)) {
-      setModalPaywallAberto(true);
-    } else {
-      acoes.abrirEditar(null as unknown as Material);
-    }
+    acoes.abrirEditar(null as unknown as Material);
   };
 
   // 🔄 SINCRONIZAÇÃO DE INSUMOS PARA CÁLCULO CONSOLIDADO
@@ -165,15 +155,6 @@ export function PaginaMateriais() {
           if (estado.materialParaRepor) {
             acoes.confirmarReposicaoMaterial(estado.materialParaRepor.id, qtd, preco);
           }
-        }}
-      />
-
-      <ModalUpgradePaywall
-        aberto={modalPaywallAberto}
-        aoFechar={() => setModalPaywallAberto(false)}
-        recurso="Materiais"
-        aoFazerUpgrade={() => {
-          window.location.href = "/dashboard";
         }}
       />
     </div>

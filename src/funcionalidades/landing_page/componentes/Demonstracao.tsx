@@ -27,7 +27,7 @@ import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function Demonstracao() {
-  useIdioma();
+  const { formatarMoeda } = useIdioma();
   const refSecao = useRef<HTMLElement>(null);
   const [visivel, definirVisivel] = useState(false);
 
@@ -93,7 +93,7 @@ export function Demonstracao() {
               </div>
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                 <div className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Lucro Líquido")}</div>
-                <div className="text-lg font-black text-emerald-400 font-mono">R$ 7.120</div>
+                <div className="text-lg font-black text-emerald-400 font-mono">{formatarMoeda(712000)}</div>
               </div>
               <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
                 <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Taxa Sucesso")}</div>
@@ -101,7 +101,7 @@ export function Demonstracao() {
               </div>
               <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
                 <div className="text-[9px] text-sky-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Faturado Mês")}</div>
-                <div className="text-lg font-black text-sky-400 font-mono">R$ 12.840</div>
+                <div className="text-lg font-black text-sky-400 font-mono">{formatarMoeda(1284000)}</div>
               </div>
             </div>
 
@@ -189,16 +189,16 @@ export function Demonstracao() {
                     <CardDemo titulo={traduzirTextoGlobal("Produção Ativa")} valor="14" icone={Clock} cor="sky" />
                     <CardDemo titulo={traduzirTextoGlobal("Taxa Sucesso")} valor="98.2%" icone={Percent} cor="emerald" />
                     <CardDemo titulo={traduzirTextoGlobal("Alertas Estoque")} valor="3" icone={Package} cor="rose" />
-                    <CardDemo titulo={traduzirTextoGlobal("Patrimônio")} valor="R$ 4.250" icone={Activity} cor="amber" />
-                    <CardDemo titulo={traduzirTextoGlobal("Faturado Mês")} valor="R$ 12.840" icone={DollarSign} cor="emerald" />
-                    <CardDemo titulo={traduzirTextoGlobal("Lucro Líquido")} valor="R$ 7.120" icone={TrendingUp} cor="emerald" destaque />
+                    <CardDemo titulo={traduzirTextoGlobal("Patrimônio")} valor={formatarMoeda(425000)} icone={Activity} cor="amber" />
+                    <CardDemo titulo={traduzirTextoGlobal("Faturado Mês")} valor={formatarMoeda(1284000)} icone={DollarSign} cor="emerald" />
+                    <CardDemo titulo={traduzirTextoGlobal("Lucro Líquido")} valor={formatarMoeda(712000)} icone={TrendingUp} cor="emerald" destaque />
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
-                    <CardDemo titulo={traduzirTextoGlobal("Ticket Médio")} valor="R$ 145" icone={CreditCard} cor="indigo" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Ticket Médio")} valor={formatarMoeda(14500)} icone={CreditCard} cor="indigo" mini />
                     <CardDemo titulo={traduzirTextoGlobal("Horas de Voo")} valor="1.420h" icone={Timer} cor="violet" mini />
                     <CardDemo titulo={traduzirTextoGlobal("Consumo Total")} valor="84kg" icone={Weight} cor="cyan" mini />
                     <CardDemo titulo={traduzirTextoGlobal("Clientes")} valor="142" icone={Users} cor="fuchsia" mini />
-                    <CardDemo titulo={traduzirTextoGlobal("Potencial")} valor="R$ 22.400" icone={Target} cor="blue" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Potencial")} valor={formatarMoeda(2240000)} icone={Target} cor="blue" mini />
                     <CardDemo titulo={traduzirTextoGlobal("ROI")} valor="320%" icone={BarChart3} cor="emerald" mini />
                   </div>
                 </div>
@@ -214,10 +214,10 @@ export function Demonstracao() {
                     </div>
                     <div className="p-2 relative z-10">
                       {[
-                        { id: 1, nome: "Protótipo Drone V4", cliente: "Tech Aerospace", valor: "R$ 1.450", status: "Aprovado" },
-                        { id: 2, nome: "Case Gaming Custom", cliente: "Lucas Pereira", valor: "R$ 420", status: "Pendente" },
-                        { id: 3, nome: "Peças Industriais", cliente: "Metalúrgica JR", valor: "R$ 2.890", status: "Produção" },
-                        { id: 4, nome: "Action Figure 30cm", cliente: "Ana Silva", valor: "R$ 180", status: "Rascunho" },
+                        { id: 1, nome: traduzirTextoGlobal("Protótipo Drone V4"), cliente: "Tech Aerospace", valor: formatarMoeda(145000), status: traduzirTextoGlobal("Aprovado") },
+                        { id: 2, nome: traduzirTextoGlobal("Case Gaming Custom"), cliente: "Lucas Pereira", valor: formatarMoeda(42000), status: traduzirTextoGlobal("Pendente") },
+                        { id: 3, nome: traduzirTextoGlobal("Peças Industriais"), cliente: "Metalúrgica JR", valor: formatarMoeda(289000), status: traduzirTextoGlobal("Produção") },
+                        { id: 4, nome: traduzirTextoGlobal("Action Figure 30cm"), cliente: "Ana Silva", valor: formatarMoeda(18000), status: traduzirTextoGlobal("Rascunho") },
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center p-5 border-b border-white/[0.02] last:border-0 hover:bg-white/[0.03] transition-all rounded-2xl group/item">
                           <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-white/5 flex items-center justify-center text-zinc-500 group-hover/item:text-sky-500 transition-colors mr-4">

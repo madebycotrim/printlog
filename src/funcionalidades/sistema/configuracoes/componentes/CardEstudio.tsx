@@ -93,7 +93,7 @@ export function CardEstudio({
   const [modalFeedbackAberto, setModalFeedbackAberto] = useState(false);
 
   const plano = useArmazemConfiguracoes((s) => s.plano);
-  const temAcessoBeta = plano === "PRO" || plano === "FUNDADOR";
+  const temAcessoBeta = true;
 
 
   const lidarComMudancaBeta = (ativo: boolean) => {
@@ -120,18 +120,13 @@ export function CardEstudio({
       <div className="flex items-center justify-between">
         <CabecalhoCard
           titulo="Programa Beta"
-          descricao="Acesso antecipado a novas funcionalidades experimentais"
+          descricao="Acesso a novas funcionalidades experimentais do laboratório Maker"
           icone={Beaker}
           corIcone="text-indigo-500"
           pendente={pendente}
         />
 
-        {!temAcessoBeta ? (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
-            <Lock size={13} strokeWidth={2.5} />
-            <span className="text-[10px] font-black uppercase tracking-wider">Exclusivo</span>
-          </div>
-        ) : participarPrototipos ? (
+        {participarPrototipos ? (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 animate-pulse">
             <Beaker size={14} strokeWidth={2.5} />
             <span className="text-[10px] font-black uppercase tracking-wider">Lab Ativo</span>
@@ -139,41 +134,6 @@ export function CardEstudio({
         ) : null}
       </div>
 
-      {/* === PAINEL DE ACESSO BLOQUEADO (FREE) === */}
-      {!temAcessoBeta ? (
-        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.03] overflow-hidden w-full">
-          {/* Glow de fundo */}
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-400/20 dark:bg-indigo-500/10 blur-[40px] pointer-events-none rounded-full" />
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-4 text-center md:text-left flex-1">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
-              <Beaker size={22} className="text-indigo-500" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-black text-primary flex items-center gap-2 justify-center md:justify-start">
-                Programa Beta Exclusivo
-                <span className="text-[8px] font-black uppercase tracking-widest bg-amber-400/15 text-amber-500 px-2 py-0.5 rounded border border-amber-400/30">PRO</span>
-              </h3>
-              <p className="text-xs text-muted-foreground max-w-lg leading-relaxed">
-                Acesse funcionalidades experimentais antecipadas. Disponível nos planos <strong className="text-indigo-600 dark:text-indigo-400">Maker Pro</strong> e <strong className="text-sky-500">Maker Fundador</strong>.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full md:w-auto">
-            <a
-              href="https://printlog.com.br/planos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/10 transition-all active:scale-95 whitespace-nowrap"
-            >
-              <Zap size={13} className="fill-white" />
-              Upgrade de Plano
-              <ArrowRight size={13} />
-            </a>
-          </div>
-        </div>
-      ) : (
       <div className="space-y-6">
         <div>
           <label className="flex items-start gap-4 cursor-pointer group">
@@ -600,7 +560,6 @@ export function CardEstudio({
           </div>
         )}
       </div>
-      )}
 
       {/* MODAL DE CONFIRMAÇÃO BETA */}
       <Dialogo

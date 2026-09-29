@@ -16,26 +16,15 @@ import { useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
-import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
-import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
-import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { useState } from "react";
-
 
 export function PaginaInsumos() {
   const { estado, acoes } = useGerenciadorInsumos();
   const { materiais, definirMateriais } = useArmazemMateriais();
   const { usuario } = useAutenticacao();
-  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
-
-
 
   const tentarNovoInsumo = () => {
-    if (atingiuLimite("INSUMOS", estado.insumos.length, usuario?.plano)) {
-      setModalPaywallAberto(true);
-    } else {
-      acoes.abrirEditar();
-    }
+    acoes.abrirEditar();
   };
 
   // 🔄 SINCRONIZAÇÃO DE MATERIAIS PARA CÁLCULO CONSOLIDADO
@@ -231,15 +220,6 @@ export function PaginaInsumos() {
         insumo={estado.insumoArquivamento}
         aoFechar={acoes.fecharArquivamento}
         aoConfirmar={acoes.confirmarArquivamento}
-      />
-
-      <ModalUpgradePaywall
-        aberto={modalPaywallAberto}
-        aoFechar={() => setModalPaywallAberto(false)}
-        recurso="Insumos"
-        aoFazerUpgrade={() => {
-          window.location.href = "/dashboard";
-        }}
       />
     </div>
   );

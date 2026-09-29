@@ -16,7 +16,6 @@ import { useSearchParams } from "react-router-dom";
 import { useStore } from "zustand";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
-import { ModalUpgradePaywall } from "@/compartilhado/componentes/ui";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useShallow } from "zustand/react/shallow";
 import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/estado/armazemImpressoras";
@@ -75,16 +74,6 @@ export function PaginaCalculadoraV2() {
   const [modalArmazemMateriaisAberto, setModalArmazemMateriaisAberto] = useState(false);
   const [modalArmazemInsumosAberto, setModalArmazemInsumosAberto] = useState(false);
 
-  const eProOuSuperior = useMemo(() => {
-    if (!usuario) return false;
-    const userRecord = usuario as typeof usuario & { role?: string; cargo?: string };
-    const plano = (userRecord.plano || '').toUpperCase();
-    const role = (userRecord.role || userRecord.cargo || '').toUpperCase();
-    return ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(plano) ||
-      ['PRO', 'FUNDADOR', 'MAKER_FUNDADOR', 'ADMIN'].includes(role) ||
-      plano.includes('FUNDADOR') || role.includes('FUNDADOR');
-  }, [usuario]);
-
   const [searchParams] = useSearchParams();
   const idEdicao = searchParams.get("id") || searchParams.get("edicao");
   const [modalTarifaAberto, setModalTarifaAberto] = useState(false);
@@ -131,9 +120,7 @@ export function PaginaCalculadoraV2() {
   const { adicionarNotificacao } = useArmazemNotificacoes();
   const [modalConfigAberto, setModalConfigAberto] = useState(false);
   const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
-  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
   const [modalConfirmarReset, setModalConfirmarReset] = useState(false);
-  const [recursoPaywall, setRecursoPaywall] = useState("Recurso VIP");
   const [modoAvancado, setModoAvancado] = useState(false);
 
   // Canais de Venda / Perfis Marketplace
@@ -993,7 +980,6 @@ export function PaginaCalculadoraV2() {
       <ModalConfiguracoesV2
         aberto={modalConfigAberto}
         aoFechar={() => setModalConfigAberto(false)}
-        eProOuSuperior={eProOuSuperior}
         config={config}
         armazem={armazem}
         aoSalvar={async () => {
@@ -1002,11 +988,6 @@ export function PaginaCalculadoraV2() {
             setModalConfigAberto(false);
             toast.success("Configurações sincronizadas!");
           }
-        }}
-        aoClicarPaywall={() => {
-          setRecursoPaywall("Orçamento PDF White-label");
-          setModalConfigAberto(false);
-          setModalPaywallAberto(true);
         }}
       />
 
@@ -1050,17 +1031,6 @@ export function PaginaCalculadoraV2() {
         aoRemover={(id) => {
           armazem.removerSnapshot(id);
           toast.success("Snapshot removido!");
-        }}
-      />
-      
-      <ModalUpgradePaywall
-        aberto={modalPaywallAberto}
-        aoFechar={() => setModalPaywallAberto(false)}
-        recurso={recursoPaywall}
-        aoFazerUpgrade={() => {
-          setModalPaywallAberto(false);
-          toast("Redirecionando para a tela de Upgrade...", { icon: 'ℹ️' });
-          // window.location.href = '/assinatura'; 
         }}
       />
 

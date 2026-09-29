@@ -72,13 +72,13 @@ export function ChamadaAcao() {
               className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-sky-600 text-white rounded-xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-sky-500/20 hover:bg-sky-500 transition-all duration-300 active:scale-95 touch-target"
             >
               <span className="flex items-center justify-center gap-2">
-                {traduzirTextoGlobal("Ser um Maker Fundador")}
+                {traduzirTextoGlobal("Começar Gratuitamente")}
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </button>
 
             <p className="text-xs sm:text-sm text-sky-400 font-black uppercase tracking-[0.1em]">
-              {traduzirTextoGlobal("Acesso total gratuito para quem apoia o início do projeto")}
+              {traduzirTextoGlobal("Sistema 100% Gratuito e Ilimitado para Todos os Makers")}
             </p>
           </motion.div>
         </div>

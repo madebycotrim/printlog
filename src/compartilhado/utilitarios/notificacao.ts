@@ -5,6 +5,7 @@
  */
 
 import { toast, type ExternalToast } from "sonner";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export interface OpcoesNotificacao extends Omit<ExternalToast, "action"> {
   acao?: {
@@ -20,7 +21,7 @@ function normalizarOpcoes(opcoes?: OpcoesNotificacao): ExternalToast {
     return {
       ...resto,
       action: {
-        label: acao.rotulo,
+        label: traduzirTextoGlobal(acao.rotulo),
         onClick: acao.aoClicar,
       },
     };
@@ -31,35 +32,35 @@ function normalizarOpcoes(opcoes?: OpcoesNotificacao): ExternalToast {
 export const notificar = {
   /** Notificação de sucesso (verde esmeralda neon) */
   sucesso(mensagem: string, opcoes?: OpcoesNotificacao) {
-    return toast.success(mensagem, normalizarOpcoes(opcoes));
+    return toast.success(traduzirTextoGlobal(mensagem), normalizarOpcoes(opcoes));
   },
 
   /** Notificação de erro ou falha crítica (rosa/vermelho neon) */
   erro(mensagem: string, opcoes?: OpcoesNotificacao) {
-    return toast.error(mensagem, normalizarOpcoes(opcoes));
+    return toast.error(traduzirTextoGlobal(mensagem), normalizarOpcoes(opcoes));
   },
 
   /** Notificação de aviso ou alerta operacional (âmbar/laranja neon) */
   aviso(mensagem: string, opcoes?: OpcoesNotificacao) {
-    return toast.warning(mensagem, normalizarOpcoes(opcoes));
+    return toast.warning(traduzirTextoGlobal(mensagem), normalizarOpcoes(opcoes));
   },
 
   /** Notificação informativa geral (azul/ciano neon) */
   info(mensagem: string, opcoes?: OpcoesNotificacao) {
-    return toast.info(mensagem, normalizarOpcoes(opcoes));
+    return toast.info(traduzirTextoGlobal(mensagem), normalizarOpcoes(opcoes));
   },
 
   /** Notificação de operação em andamento com spinner */
   carregando(mensagem: string, opcoes?: OpcoesNotificacao) {
-    return toast.loading(mensagem, normalizarOpcoes(opcoes));
+    return toast.loading(traduzirTextoGlobal(mensagem), normalizarOpcoes(opcoes));
   },
 
   /** Disparo de notificação genérica ou personalizada com ação rápida (ex: Desfazer) */
   acao(mensagem: string, acao: { rotulo: string; aoClicar: () => void }, opcoes?: Omit<OpcoesNotificacao, "acao">) {
-    return toast(mensagem, {
+    return toast(traduzirTextoGlobal(mensagem), {
       ...normalizarOpcoes(opcoes),
       action: {
-        label: acao.rotulo,
+        label: traduzirTextoGlobal(acao.rotulo),
         onClick: acao.aoClicar,
       },
     });

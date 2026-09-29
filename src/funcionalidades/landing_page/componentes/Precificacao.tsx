@@ -7,7 +7,7 @@ import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUnivers
 const planos = [
   {
     nome: "Gratuito",
-    preco: "R$ 0",
+    precoCentavos: 0,
     periodo: "sempre",
     descricao: "Ideal para hobbistas e quem está começando agora.",
     recursos: [
@@ -23,8 +23,8 @@ const planos = [
   },
   {
     nome: "Membro Fundador",
-    precoOriginal: "R$ 19,90",
-    preco: "R$ 0",
+    precoOriginalCentavos: 1990,
+    precoCentavos: 0,
     periodo: "tempo limitado",
     descricao: "Para profissionais que querem escalar seu estúdio 3D.",
     recursos: [
@@ -43,7 +43,7 @@ const planos = [
 ];
 
 export function Precificacao() {
-  useIdioma();
+  const { formatarMoeda } = useIdioma();
   const navegar = useNavigate();
   return (
     <section id="planos" className="py-16 md:py-24 relative overflow-hidden bg-[#050505]">
@@ -99,12 +99,14 @@ export function Precificacao() {
 
               <div className="mb-6 sm:mb-10">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-black tracking-tighter">{plano.preco}</span>
+                  <span className="text-4xl sm:text-5xl font-black tracking-tighter">
+                    {formatarMoeda(plano.precoCentavos)}
+                  </span>
                   <span className="text-zinc-500 text-xs sm:text-sm uppercase font-bold tracking-widest">/ {traduzirTextoGlobal(plano.periodo)}</span>
                 </div>
-                {plano.precoOriginal && (
+                {Boolean(plano.precoOriginalCentavos) && (
                   <span className="text-zinc-600 text-xs sm:text-sm line-through block mt-1 font-bold">
-                    {traduzirTextoGlobal("de")} {plano.precoOriginal}
+                    {traduzirTextoGlobal("de")} {formatarMoeda(plano.precoOriginalCentavos!)}
                   </span>
                 )}
               </div>

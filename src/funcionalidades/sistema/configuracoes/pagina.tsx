@@ -9,7 +9,7 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { Carregamento } from "@/compartilhado/componentes";
 
 import { CardPerfil } from "./componentes/CardPerfil";
-import { CardPlanoPremium } from "./componentes/CardPlanoPremium";
+import { CardMedalhasMaker } from "./componentes/CardMedalhasMaker";
 import { CardAparencia } from "./componentes/CardAparencia";
 import { CardMetricas } from "./componentes/CardMetricas";
 import { CardPrivacidade } from "./componentes/CardPrivacidade";
@@ -230,16 +230,9 @@ export function PaginaConfiguracoes() {
         <Carregamento texto={"Enviando E-mail de Segurança..."} />
       )}
       <div className="relative mx-auto w-full max-w-6xl space-y-6">
-        {config.plano !== "FREE" && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }}>
-            <CardPlanoPremium
-              plano={config.plano}
-              cicloPagamento={config.cicloPagamento}
-              vencimentoPlano={config.vencimentoPlano}
-              emailVerificado={usuario?.emailVerified || false}
-            />
-          </motion.div>
-        )}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }}>
+          <CardMedalhasMaker />
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.0 }} className="h-full">

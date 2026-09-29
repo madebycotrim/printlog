@@ -73,7 +73,7 @@ function rectRel(el: HTMLElement, pai: HTMLElement) {
 /* ─── Apresentação Principal ────────────────────────────────────────────────────────── */
 export function Apresentacao() {
   const navegar = useNavigate();
-  useIdioma();
+  const { formatarMoeda } = useIdioma();
   const [visivel, definirVisivel] = useState(false);
   const [rolagemY, definirRolagemY] = useState(0);
   const [tick, definirTick] = useState(0);
@@ -188,8 +188,8 @@ export function Apresentacao() {
     };
   }, [calcularLinhas]);
 
-  const precos = ["R$ 38,50", "R$ 42,00", "R$ 35,90", "R$ 51,20"];
-  const precoAtual = precos[tick % precos.length];
+  const precosCentavos = [3850, 4200, 3590, 5120];
+  const precoAtual = formatarMoeda(precosCentavos[tick % precosCentavos.length]);
 
   return (
     <>
@@ -232,7 +232,6 @@ export function Apresentacao() {
                     15%  { opacity:1; transform:translateY(0); }
                     85%  { opacity:1; transform:translateY(0); }
                     100% { opacity:0; transform:translateY(12px); }
-                }
                 }
                 @keyframes feixeApresentacao {
                     0%   { transform: translateX(-100%) skewX(-15deg); opacity:0; }
@@ -552,7 +551,7 @@ export function Apresentacao() {
                   {
                     Icon: Zap,
                     label: traduzirTextoGlobal("Energia"),
-                    value: "R$ 5,20",
+                    value: formatarMoeda(520),
                     color: "#0ea5e9",
                     bg: "rgba(14,165,233,.1)",
                     border: "rgba(14,165,233,.2)",
@@ -560,7 +559,7 @@ export function Apresentacao() {
                   {
                     Icon: Box,
                     label: traduzirTextoGlobal("Material"),
-                    value: "R$ 12,80",
+                    value: formatarMoeda(1280),
                     color: "#f97316",
                     bg: "rgba(249,115,22,.1)",
                     border: "rgba(249,115,22,.2)",
@@ -568,7 +567,7 @@ export function Apresentacao() {
                   {
                     Icon: Clock,
                     label: traduzirTextoGlobal("Setup"),
-                    value: "R$ 3,00",
+                    value: formatarMoeda(300),
                     color: "#a78bfa",
                     bg: "rgba(167,139,250,.1)",
                     border: "rgba(167,139,250,.2)",

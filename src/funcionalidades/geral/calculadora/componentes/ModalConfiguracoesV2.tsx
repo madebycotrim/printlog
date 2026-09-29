@@ -5,21 +5,17 @@ import { EstadoCalculadora } from "../estado/armazemCalculadora";
 interface PropriedadesModalConfiguracoesV2 {
   aberto: boolean;
   aoFechar: () => void;
-  eProOuSuperior: boolean;
   config: any;
   armazem: EstadoCalculadora;
   aoSalvar: () => Promise<void>;
-  aoClicarPaywall?: () => void;
 }
 
 export function ModalConfiguracoesV2({
   aberto,
   aoFechar,
-  eProOuSuperior,
   config,
   armazem,
   aoSalvar,
-  aoClicarPaywall
 }: PropriedadesModalConfiguracoesV2) {
   return (
     <Dialogo 
@@ -41,7 +37,7 @@ export function ModalConfiguracoesV2({
                 <h3 className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Personalizar Orçamento</h3>
               </div>
 
-              <div className={`space-y-4 transition-all ${!eProOuSuperior ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+              <div className="space-y-4">
                 <div className="flex flex-col gap-1.5 group">
                   <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-1">Nome do Estúdio</label>
                   <input
@@ -77,27 +73,25 @@ export function ModalConfiguracoesV2({
               </div>
             </div>
 
-            {/* Preview Dinâmico do Rodapé PRO */}
-            {eProOuSuperior && (
-              <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/40 border border-borda-sutil flex flex-col gap-1 mt-6">
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-borda-sutil pb-1.5 mb-1">
-                  Pré-Visualização
-                </span>
-                <div className="flex items-center gap-3 mt-1">
-                  {config.logoEstudio && (
-                    <img src={config.logoEstudio} alt="Logo" className="max-h-8 w-auto object-contain rounded" />
-                  )}
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-xs font-bold text-primary dark:text-zinc-200 truncate">
-                      {config.nomeEstudio || "Seu Estúdio"}
-                    </span>
-                    <span className="text-[10px] font-bold text-zinc-500 italic truncate">
-                      {config.sloganEstudio || "Seu slogan aqui"}
-                    </span>
-                  </div>
+            {/* Preview Dinâmico do Rodapé */}
+            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900/40 border border-borda-sutil flex flex-col gap-1 mt-6">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-borda-sutil pb-1.5 mb-1">
+                Pré-Visualização
+              </span>
+              <div className="flex items-center gap-3 mt-1">
+                {config.logoEstudio && (
+                  <img src={config.logoEstudio} alt="Logo" className="max-h-8 w-auto object-contain rounded" />
+                )}
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-bold text-primary dark:text-zinc-200 truncate">
+                    {config.nomeEstudio || "Seu Estúdio"}
+                  </span>
+                  <span className="text-[10px] font-bold text-zinc-500 italic truncate">
+                    {config.sloganEstudio || "Seu slogan aqui"}
+                  </span>
                 </div>
               </div>
-            )}
+            </div>
 
           </div>
           
@@ -105,21 +99,6 @@ export function ModalConfiguracoesV2({
             <span>PrintLog OS</span>
             <span>2026</span>
           </div>
-
-          {!eProOuSuperior && (
-            <div 
-              className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-100/80 dark:bg-zinc-950/80 backdrop-blur-sm text-center gap-2 cursor-pointer"
-              onClick={aoClicarPaywall}
-            >
-              <Crown size={24} className="text-zinc-400 dark:text-zinc-500" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-white">Exclusivo PRO</span>
-                <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                  Personalize seus orçamentos
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* PAINEL DIREITO: MOTORES OPERACIONAIS */}

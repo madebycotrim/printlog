@@ -23,6 +23,127 @@ const TAGS_IGNORADAS = new Set([
   "TEXTAREA",
 ]);
 
+interface PadraoDinamico {
+  regex: RegExp;
+  en: (match: RegExpMatchArray) => string;
+  es: (match: RegExpMatchArray) => string;
+}
+
+const PADROES_DINAMICOS: PadraoDinamico[] = [
+  // Interações
+  {
+    regex: /^últimas?\s+(\d+)\s+interações?$/i,
+    en: (m) => `Last ${m[1]} interactions`,
+    es: (m) => `Últimas ${m[1]} interacciones`,
+  },
+  // Falha registrada com descarte
+  {
+    regex: /^Falha registrada\. Descontado (\d+(?:[.,]\d+)?)\s*g de material\.?$/i,
+    en: (m) => `Failure recorded. Deducted ${m[1]}g of material.`,
+    es: (m) => `Fallo registrado. Se descontaron ${m[1]}g de material.`,
+  },
+  // Abatimento de gramas
+  {
+    regex: /^(\d+(?:[.,]\d+)?)\s*g\s+abatidos?\s+do\s+estoque!?$/i,
+    en: (m) => `${m[1]}g deducted from stock!`,
+    es: (m) => `¡${m[1]}g deducidos del stock!`,
+  },
+  // Dias restantes
+  {
+    regex: /^(\d+)\s+dias?\s+restantes?$/i,
+    en: (m) => `${m[1]} ${m[1] === "1" ? "day" : "days"} remaining`,
+    es: (m) => `${m[1]} ${m[1] === "1" ? "día" : "días"} restantes`,
+  },
+  // Expirado há X dias
+  {
+    regex: /^Expirado há (\d+)\s+dias?$/i,
+    en: (m) => `Expired ${m[1]} ${m[1] === "1" ? "day" : "days"} ago`,
+    es: (m) => `Expirado hace ${m[1]} ${m[1] === "1" ? "día" : "días"}`,
+  },
+  // Paginação
+  {
+    regex: /^Página (\d+) de (\d+)$/i,
+    en: (m) => `Page ${m[1]} of ${m[2]}`,
+    es: (m) => `Página ${m[1]} de ${m[2]}`,
+  },
+  // Exportação em formato
+  {
+    regex: /^Exportação em (\w+) concluída com sucesso!?$/i,
+    en: (m) => `Export in ${m[1]} completed successfully!`,
+    es: (m) => `¡Exportación en ${m[1]} completada con éxito!`,
+  },
+  // Download de arquivo
+  {
+    regex: /^Arquivo (\w+) baixado com sucesso!?$/i,
+    en: (m) => `File ${m[1]} downloaded successfully!`,
+    es: (m) => `¡Archivo ${m[1]} descargado con éxito!`,
+  },
+  // Limite de itens/impressoras
+  {
+    regex: /^Você atingiu o limite de (\d+)\s+(.+)\s+no plano Gratuito$/i,
+    en: (m) => `You have reached the limit of ${m[1]} ${m[2]} on the Free plan`,
+    es: (m) => `Ha alcanzado el límite de ${m[1]} ${m[2]} en el plan Gratuito`,
+  },
+  // Limite de X atingido
+  {
+    regex: /^Limite de\s*(.+)\s*atingido$/i,
+    en: (m) => `Limit of ${m[1]} reached`,
+    es: (m) => `Límite de ${m[1]} alcanzado`,
+  },
+  // Quantidade de peças
+  {
+    regex: /^(\d+)\s+peças?$/i,
+    en: (m) => `${m[1]} ${m[1] === "1" ? "part" : "parts"}`,
+    es: (m) => `${m[1]} ${m[1] === "1" ? "pieza" : "piezas"}`,
+  },
+  // Vagas restantes
+  {
+    regex: /^(\d+)\s+vagas?\s+restantes?$/i,
+    en: (m) => `${m[1]} ${m[1] === "1" ? "spot" : "spots"} remaining`,
+    es: (m) => `${m[1]} ${m[1] === "1" ? "cupo" : "cupos"} restantes`,
+  },
+  // Combobox Criar / Usar
+  {
+    regex: /^Criar "([^"]+)"$/i,
+    en: (m) => `Create "${m[1]}"`,
+    es: (m) => `Crear "${m[1]}"`,
+  },
+  {
+    regex: /^Usar "([^"]+)"$/i,
+    en: (m) => `Use "${m[1]}"`,
+    es: (m) => `Usar "${m[1]}"`,
+  },
+  // Diâmetro do Bico
+  {
+    regex: /^Bico\s+(\d+(?:[.,]\d+)?)\s*mm$/i,
+    en: (m) => `Nozzle ${m[1]}mm`,
+    es: (m) => `Boquilla ${m[1]}mm`,
+  },
+  // Sessão inativa
+  {
+    regex: /^Sua sessão irá expirar em (\d+)\s+minuto\(s\) por inatividade\.?$/i,
+    en: (m) => `Your session will expire in ${m[1]} minute(s) due to inactivity.`,
+    es: (m) => `Su sesión expirará en ${m[1]} minuto(s) por inactividad.`,
+  },
+  // Clientes / Filamentos exportados no arquivo
+  {
+    regex: /^\.\.\.\s*e mais (\d+)\s+(.+)\s+exportados? no arquivo (.+)\.?$/i,
+    en: (m) => `... and ${m[1]} more ${m[2]} exported in the ${m[3]} file.`,
+    es: (m) => `... y ${m[1]} más ${m[2]} exportados en el archivo ${m[3]}.`,
+  },
+  // Tempo atrás (horas, minutos)
+  {
+    regex: /^(\d+)\s+horas?\s+atrás$/i,
+    en: (m) => `${m[1]} ${m[1] === "1" ? "hour" : "hours"} ago`,
+    es: (m) => `hace ${m[1]} ${m[1] === "1" ? "hora" : "horas"}`,
+  },
+  {
+    regex: /^(\d+)\s+minutos?\s+atrás$/i,
+    en: (m) => `${m[1]} ${m[1] === "1" ? "minute" : "minutes"} ago`,
+    es: (m) => `hace ${m[1]} ${m[1] === "1" ? "minuto" : "minutos"}`,
+  },
+];
+
 class MotorTradutorUniversalDOM {
   private idiomaAtivo: string = "pt-BR";
   private mapaNosOriginais = new WeakMap<Node, string>();
@@ -40,6 +161,15 @@ class MotorTradutorUniversalDOM {
         if (salvo && (salvo === "en-US" || salvo === "es-ES")) {
           this.idiomaAtivo = salvo;
           this.ativo = true;
+        } else if (!salvo && typeof navigator !== "undefined") {
+          const nav = navigator.language?.toLowerCase() || "";
+          if (nav.startsWith("es")) {
+            this.idiomaAtivo = "es-ES";
+            this.ativo = true;
+          } else if (nav.startsWith("en")) {
+            this.idiomaAtivo = "en-US";
+            this.ativo = true;
+          }
         }
       } catch {
         // Fallback seguro em ambientes restritos
@@ -291,15 +421,16 @@ class MotorTradutorUniversalDOM {
       }
     }
 
-    // 6. Tratamento de padrões numéricos dinâmicos (ex: "Últimas 5 interações")
-    const matchInteracoes = conteudo.match(/^últimas?\s+(\d+)\s+interações?$/i);
-    if (matchInteracoes) {
-      const n = matchInteracoes[1];
-      const trad = subChave === "es" 
-        ? `Últimas ${n} interacciones` 
-        : `Last ${n} interactions`;
-      const formatada = conteudo === conteudo.toUpperCase() ? trad.toUpperCase() : trad;
-      return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
+    // 6. Tratamento de padrões dinâmicos com variáveis e números intercalados
+    for (const padrao of PADROES_DINAMICOS) {
+      const match = conteudo.match(padrao.regex);
+      if (match) {
+        const traducao = subChave === "es" ? padrao.es(match) : padrao.en(match);
+        const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+          ? traducao.toUpperCase()
+          : traducao;
+        return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
+      }
     }
 
     // 7. Se não encontrou correspondência no dicionário, JAMAIS quebra ou mutila a frase.

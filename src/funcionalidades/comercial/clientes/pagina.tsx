@@ -9,19 +9,13 @@ import { ModalRemocaoCliente } from "./componentes/ModalRemocaoCliente";
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { atingiuLimite } from "@/compartilhado/constantes/limites-plano";
-import { ModalUpgradePaywall, BannerErro } from "@/compartilhado/componentes/ui";
+import { BannerErro } from "@/compartilhado/componentes/ui";
 import { useState, useEffect } from "react";
 import { useVirtualizacao } from "@/compartilhado/hooks/useVirtualizacao";
-
-
 
 export function PaginaClientes() {
   const { estado, acoes } = useGerenciadorClientes();
   const { usuario } = useAutenticacao();
-  const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
-
-
 
   const [colunas, setColunas] = useState(4);
   useEffect(() => {
@@ -43,14 +37,8 @@ export function PaginaClientes() {
     colunas
   );
 
-
-
   const tentarNovoCliente = () => {
-    if (atingiuLimite("CLIENTES", estado.clientes.length, usuario?.plano)) {
-      setModalPaywallAberto(true);
-    } else {
-      acoes.abrirEditar();
-    }
+    acoes.abrirEditar();
   };
 
   useDefinirCabecalho({
@@ -188,15 +176,6 @@ export function PaginaClientes() {
         cliente={estado.clienteSendoRemovido}
         aoFechar={acoes.fecharRemover}
         aoConfirmar={() => estado.clienteSendoRemovido && acoes.removerCliente(estado.clienteSendoRemovido.id)}
-      />
-
-      <ModalUpgradePaywall
-        aberto={modalPaywallAberto}
-        aoFechar={() => setModalPaywallAberto(false)}
-        recurso="Clientes (CRM)"
-        aoFazerUpgrade={() => {
-          window.location.href = "/dashboard";
-        }}
       />
     </div>
   );

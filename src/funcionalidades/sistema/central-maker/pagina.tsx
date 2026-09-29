@@ -15,11 +15,6 @@ import { useIdioma } from "@/compartilhado/hooks/useIdioma";
  */
 export function PaginaAjuda() {
   const { idiomaAtual } = useIdioma();
-
-  if (idiomaAtual !== "pt-BR") {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const {
     busca,
     definirBusca,
@@ -31,6 +26,10 @@ export function PaginaAjuda() {
     faqsFiltradas,
     todosTopicosEncontrados,
   } = useCentralMaker();
+
+  if (idiomaAtual !== "pt-BR") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">

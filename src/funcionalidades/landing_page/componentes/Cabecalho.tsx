@@ -59,12 +59,6 @@ export function Cabecalho() {
             >
               {traduzirTextoGlobal("Demonstração")}
             </button>
-            <button 
-              onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
-            >
-              {traduzirTextoGlobal("Preços")}
-            </button>
           </nav>
 
           {/* Ações Desktop */}
@@ -138,12 +132,6 @@ export function Cabecalho() {
               className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
               {traduzirTextoGlobal("Demonstração")}
-            </button>
-            <button 
-              onClick={() => { document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
-              className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
-            >
-              {traduzirTextoGlobal("Preços")}
             </button>
           </nav>
 

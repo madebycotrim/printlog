@@ -9,6 +9,8 @@ export * from "./Dica";
 export * from "./Carregamento";
 export * from "./Avatar";
 export * from "./SeloPlano";
+export * from "./BadgeMaker";
+export * from "./ModalSalaTrofeus";
 export * from "./ToasterPremium";
 export * from "./ContadorAnimado";
 export * from "./InputBancario";

@@ -27,7 +27,7 @@ import { useGerenciadorMateriais } from "@/funcionalidades/producao/materiais/ho
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 
 // Componentes do Painel
-import { BannerPro } from "./componentes/BannerPro";
+import { ShowcaseMedalhasMaker } from "./componentes/ShowcaseMedalhasMaker";
 import { MetricasPainel } from "./componentes/MetricasPainel";
 
 import { StatusTempoReal } from "./componentes/StatusTempoReal";
@@ -235,16 +235,10 @@ export function PaginaInicial() {
       {/* BACKGROUND PATTERN DISCRETO */}
       <div className="absolute inset-0 -top-20 bg-grid-printlog opacity-[0.03] pointer-events-none -z-10" />
 
-      {/* BANNER DE UPGRADE - Oculto para Founders */}
-      {plano !== "FUNDADOR" && (
-        <div>
-          <BannerPro 
-            plano={plano} 
-            aoRealizarUpgrade={realizarUpgradeGratis} 
-            carregandoUpgrade={carregandoUpgrade} 
-          />
-        </div>
-      )}
+      {/* SHOWCASE DE MEDALHAS & CONQUISTAS MAKER */}
+      <div>
+        <ShowcaseMedalhasMaker />
+      </div>
 
       {erroDados && (
         <div className="bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/30 rounded-[2rem] p-8 text-center space-y-4">
