@@ -139,12 +139,54 @@ class ServicoCambio {
           }
 
           this.notificarOuvintes();
+          this.buscando = false;
+          return this.taxas;
+        }
+      }
+    } catch (erro) {
+      console.warn("[ServicoCambio] AwesomeAPI direto falhou, tentando BCB SGS:", erro);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    // 3. Fallback direto para Banco Central do Brasil SGS Oficial (permitido no CSP)
+    try {
+      const [resUSD, resEUR] = await Promise.all([
+        fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/1?formato=json"),
+        fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.21619/dados/ultimos/1?formato=json"),
+      ]);
+
+      if (resUSD.ok && resEUR.ok) {
+        const [dadosUSD, dadosEUR] = (await Promise.all([
+          resUSD.json(),
+          resEUR.json(),
+        ])) as any[];
+
+        const usdBrl = parseFloat(dadosUSD?.[0]?.valor);
+        const eurBrl = parseFloat(dadosEUR?.[0]?.valor);
+
+        if (usdBrl > 0 && eurBrl > 0) {
+          this.taxas = {
+            USDBRL: usdBrl,
+            EURBRL: eurBrl,
+            atualizadoEm: Date.now(),
+            origem: "online",
+          };
+
+          try {
+            localStorage.setItem(CHAVE_STORAGE_CAMBIO, JSON.stringify(this.taxas));
+          } catch {
+            // LocalStorage indisponível
+          }
+
+          this.notificarOuvintes();
+          this.buscando = false;
+          return this.taxas;
         }
       }
     } catch (erro) {
       console.warn("[ServicoCambio] Utilizando taxas de contingência/cache:", erro);
     } finally {
-      clearTimeout(timeoutId);
       this.buscando = false;
     }
 
