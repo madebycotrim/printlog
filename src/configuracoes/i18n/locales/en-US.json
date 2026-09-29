@@ -68,7 +68,8 @@
     "adaptacaoFormatos": "Automatic Format Adaptation",
     "exemploMoeda": "Currency Example:",
     "exemploData": "Date Example:",
-    "notaExplicativa": "When switching languages, dates, currencies, and operational terms are instantly adjusted without reloading and saved to your browser.",
+    "exemploTemperatura": "Temp. Example:",
+    "notaExplicativa": "When switching languages, dates, currencies, temperatures (°C/°F), and operational terms are instantly adjusted without reloading and saved to your browser.",
     "pt-BR": "Português (Brasil)",
     "en-US": "English (US)",
     "es-ES": "Español"

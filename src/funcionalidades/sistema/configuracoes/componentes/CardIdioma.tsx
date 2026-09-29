@@ -8,7 +8,7 @@ interface CardIdiomaProps {
 }
 
 export function CardIdioma({ pendente }: CardIdiomaProps) {
-  const { t, formatarMoeda, formatarData, idiomaAtual, taxasCambio } = useIdioma();
+  const { t, formatarMoeda, formatarData, formatarTemperatura, idiomaAtual, taxasCambio } = useIdioma();
 
   const exemploData = new Date();
   const exemploCentavos = 14990; // R$ 149,90 ou $ 149.90
@@ -35,7 +35,7 @@ export function CardIdioma({ pendente }: CardIdiomaProps) {
             <span>{t("idiomas.adaptacaoFormatos")}</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div className="p-2.5 rounded-lg bg-card border border-borda-sutil flex items-center justify-between">
               <span className="text-zinc-400 font-medium">{t("idiomas.exemploMoeda")}</span>
               <span className="font-mono font-bold text-primary dark:text-white">
@@ -45,8 +45,15 @@ export function CardIdioma({ pendente }: CardIdiomaProps) {
 
             <div className="p-2.5 rounded-lg bg-card border border-borda-sutil flex items-center justify-between">
               <span className="text-zinc-400 font-medium">{t("idiomas.exemploData")}</span>
-              <span className="font-mono font-bold text-primary dark:text-white">
+              <span className="font-mono font-bold text-primary dark:text-white truncate ml-2">
                 {formatarData(exemploData, "completa")}
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-card border border-borda-sutil flex items-center justify-between">
+              <span className="text-zinc-400 font-medium">{t("idiomas.exemploTemperatura")}</span>
+              <span className="font-mono font-bold text-primary dark:text-white">
+                {formatarTemperatura(25)}
               </span>
             </div>
           </div>

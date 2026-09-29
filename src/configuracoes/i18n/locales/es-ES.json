@@ -68,7 +68,8 @@
     "adaptacaoFormatos": "Adaptación Automática de Formatos",
     "exemploMoeda": "Ejemplo de Moneda:",
     "exemploData": "Ejemplo de Fecha:",
-    "notaExplicativa": "Al cambiar de idioma, las fechas, monedas y términos operativos se ajustan instantáneamente sin recargar la página y quedan guardados en su navegador.",
+    "exemploTemperatura": "Ejemplo de Temp.:",
+    "notaExplicativa": "Al cambiar de idioma, las fechas, monedas, temperaturas (°C/°F) y términos operativos se ajustan instantáneamente sin recargar la página y quedan guardados en su navegador.",
     "pt-BR": "Português (Brasil)",
     "en-US": "English (US)",
     "es-ES": "Español"

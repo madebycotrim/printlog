@@ -118,6 +118,27 @@ export function useIdioma() {
     [idiomaAtual]
   );
 
+  /**
+   * Formata temperatura em Celsius para a unidade do idioma:
+   * en-US -> Fahrenheit (°F)
+   * pt-BR / es-ES -> Celsius (°C)
+   */
+  const formatarTemperatura = useCallback(
+    (celsius: number = 25): string => {
+      const usaFahrenheit = idiomaAtual.startsWith("en");
+      if (usaFahrenheit) {
+        const f = Math.round((celsius * 9) / 5 + 32);
+        return `${f}°F`;
+      }
+      return `${Math.round(celsius)}°C`;
+    },
+    [idiomaAtual]
+  );
+
+  const unidadeTemperatura = useMemo<"°C" | "°F">(() => {
+    return idiomaAtual.startsWith("en") ? "°F" : "°C";
+  }, [idiomaAtual]);
+
   return {
     t,
     i18n,
@@ -126,6 +147,8 @@ export function useIdioma() {
     mudarIdioma,
     formatarMoeda,
     formatarData,
+    formatarTemperatura,
+    unidadeTemperatura,
     taxasCambio: servicoCambio.getTaxas(),
     moedaAtual: obterLocaleAtivo().currency,
     idiomas: IDIOMAS_SUPORTADOS,

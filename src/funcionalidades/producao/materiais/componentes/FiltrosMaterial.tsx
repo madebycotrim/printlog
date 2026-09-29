@@ -1,6 +1,7 @@
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useClimaLocal } from "@/compartilhado/hooks/useClimaLocal";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export type FiltroTipoMaterial = "TODOS" | "FDM" | "SLA";
 export type OrdenacaoMaterial = "NOME" | "MAIOR_PRECO" | "MENOR_ESTOQUE";
@@ -61,7 +62,7 @@ export function FiltrosMaterial({
             : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
             }`}
         >
-          Todos
+          {traduzirTextoGlobal("Todos")}
         </button>
         <button
           onClick={() => aoFiltrar("FDM")}
@@ -70,7 +71,7 @@ export function FiltrosMaterial({
             : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
             }`}
         >
-          Filamentos (FDM)
+          {traduzirTextoGlobal("Filamentos (FDM)")}
         </button>
         <button
           onClick={() => aoFiltrar("SLA")}
@@ -79,7 +80,7 @@ export function FiltrosMaterial({
             : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
             }`}
         >
-          Resinas (SLA)
+          {traduzirTextoGlobal("Resinas (SLA)")}
         </button>
       </div>
 
@@ -87,7 +88,7 @@ export function FiltrosMaterial({
         {/* Pílula de Ambiente (Temperatura e Umidade) */}
         <div
           className="flex items-center gap-4 px-4 h-10 bg-transparent border border-gray-200 dark:border-white/10 rounded-xl shadow-sm cursor-help hover:border-gray-300 dark:hover:border-white/20 transition-colors"
-          title={clima.erro ? "Erro ao carregar clima local" : `Condições do Ambiente de Impressão (${clima.cidade || 'Buscando...'})`}
+          title={clima.erro ? traduzirTextoGlobal("Erro ao carregar clima local") : `${traduzirTextoGlobal("Condições do Ambiente de Impressão")} (${clima.cidade || traduzirTextoGlobal("Buscando...")})`}
         >
           <div className="flex items-center gap-1.5">
             <svg
@@ -105,8 +106,8 @@ export function FiltrosMaterial({
               <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
               <path d="M12 7v4" />
             </svg>
-            <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight w-10 text-center">
-              {clima.carregando ? "..." : clima.erro ? "--" : `${clima.temperatura}°C`}
+            <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 font-mono tracking-tight min-w-10 text-center">
+              {clima.carregando ? "..." : clima.erro ? "--" : clima.temperaturaFormatada}
             </span>
           </div>
           <div className="w-[1px] h-4 bg-gray-200 dark:bg-white/10" />
