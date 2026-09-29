@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { LayoutDashboard } from "lucide-react";
 import { SeletorIdioma } from "@/compartilhado/componentes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function Cabecalho() {
+  useIdioma();
   const { usuario, carregando } = useAutenticacao();
   const [rolouTela, definirRolouTela] = useState(false);
   const [menuMobileAberto, definirMenuMobileAberto] = useState(false);

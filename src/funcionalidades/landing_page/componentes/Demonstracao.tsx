@@ -23,8 +23,11 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function Demonstracao() {
+  useIdioma();
   const refSecao = useRef<HTMLElement>(null);
   const [visivel, definirVisivel] = useState(false);
 
@@ -56,17 +59,17 @@ export function Demonstracao() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/10 bg-sky-500/5 text-sky-400 mb-3 md:mb-6 backdrop-blur-md">
             <div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Demonstração do Sistema</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">{traduzirTextoGlobal("Demonstração do Sistema")}</span>
           </div>
           <h2 className="text-2xl sm:text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-[0.92] mb-3 md:mb-6">
-            O Cérebro da sua
+            {traduzirTextoGlobal("O Cérebro da sua")}
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
-              Operação de Impressão.
+              {traduzirTextoGlobal("Operação de Impressão.")}
             </span>
           </h2>
           <p className="text-zinc-500 text-xs sm:text-base md:text-lg max-w-xl mx-auto font-medium">
-            Abandone as planilhas. Gerencie custos, prazos e hardware em uma interface industrial de alta densidade.
+            {traduzirTextoGlobal("Abandone as planilhas. Gerencie custos, prazos e hardware em uma interface industrial de alta densidade.")}
           </p>
         </div>
 
@@ -77,7 +80,7 @@ export function Demonstracao() {
             <div className="flex justify-between items-center pb-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-white text-xs font-bold uppercase tracking-wider">Painel de Controle</span>
+                <span className="text-white text-xs font-bold uppercase tracking-wider">{traduzirTextoGlobal("Painel de Controle")}</span>
               </div>
               <span className="text-[9px] text-zinc-500 font-mono">PRINTLOG MOBILE</span>
             </div>
@@ -85,26 +88,26 @@ export function Demonstracao() {
             {/* 4 KPIs em Grid 2x2 */}
             <div className="grid grid-cols-2 gap-2.5">
               <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">Produção Ativa</div>
-                <div className="text-lg font-black text-white font-mono">14 Peças</div>
+                <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Produção Ativa")}</div>
+                <div className="text-lg font-black text-white font-mono">14 {traduzirTextoGlobal("Peças")}</div>
               </div>
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <div className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Lucro Líquido</div>
+                <div className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Lucro Líquido")}</div>
                 <div className="text-lg font-black text-emerald-400 font-mono">R$ 7.120</div>
               </div>
               <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">Taxa Sucesso</div>
+                <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Taxa Sucesso")}</div>
                 <div className="text-lg font-black text-white font-mono">98.2%</div>
               </div>
               <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
-                <div className="text-[9px] text-sky-400 font-bold uppercase tracking-wider mb-1">Faturado Mês</div>
+                <div className="text-[9px] text-sky-400 font-bold uppercase tracking-wider mb-1">{traduzirTextoGlobal("Faturado Mês")}</div>
                 <div className="text-lg font-black text-sky-400 font-mono">R$ 12.840</div>
               </div>
             </div>
 
             {/* Fila de Impressão Simultânea */}
             <div className="space-y-2 pt-2">
-              <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Fila em Tempo Real</div>
+              <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">{traduzirTextoGlobal("Fila em Tempo Real")}</div>
               <div className="flex justify-between items-center p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
                 <div className="flex items-center gap-2">
                   <Printer className="w-3.5 h-3.5 text-sky-400" />
@@ -169,13 +172,13 @@ export function Demonstracao() {
                 {/* Header do Painel */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 mb-4">
                   <div className="space-y-1">
-                    <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">Olá, Maker! 👋</h3>
-                    <p className="text-[10px] sm:text-xs text-zinc-500 uppercase font-bold tracking-widest">Painel de Operações • Outubro 2026</p>
+                    <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">{traduzirTextoGlobal("Olá, Maker! 👋")}</h3>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 uppercase font-bold tracking-widest">{traduzirTextoGlobal("Painel de Operações • Outubro 2026")}</p>
                   </div>
                   <div className="flex gap-3">
                     <div className="h-9 sm:h-10 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-zinc-400 uppercase tracking-widest">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Sistemas Online
+                      {traduzirTextoGlobal("Sistemas Online")}
                     </div>
                   </div>
                 </div>
@@ -183,20 +186,20 @@ export function Demonstracao() {
                 {/* 12 KPIs Grid */}
                 <div className="space-y-3 sm:space-y-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
-                    <CardDemo titulo="Produção Ativa" valor="14" icone={Clock} cor="sky" />
-                    <CardDemo titulo="Taxa Sucesso" valor="98.2%" icone={Percent} cor="emerald" />
-                    <CardDemo titulo="Alertas Estoque" valor="3" icone={Package} cor="rose" />
-                    <CardDemo titulo="Patrimônio" valor="R$ 4.250" icone={Activity} cor="amber" />
-                    <CardDemo titulo="Faturado Mês" valor="R$ 12.840" icone={DollarSign} cor="emerald" />
-                    <CardDemo titulo="Lucro Líquido" valor="R$ 7.120" icone={TrendingUp} cor="emerald" destaque />
+                    <CardDemo titulo={traduzirTextoGlobal("Produção Ativa")} valor="14" icone={Clock} cor="sky" />
+                    <CardDemo titulo={traduzirTextoGlobal("Taxa Sucesso")} valor="98.2%" icone={Percent} cor="emerald" />
+                    <CardDemo titulo={traduzirTextoGlobal("Alertas Estoque")} valor="3" icone={Package} cor="rose" />
+                    <CardDemo titulo={traduzirTextoGlobal("Patrimônio")} valor="R$ 4.250" icone={Activity} cor="amber" />
+                    <CardDemo titulo={traduzirTextoGlobal("Faturado Mês")} valor="R$ 12.840" icone={DollarSign} cor="emerald" />
+                    <CardDemo titulo={traduzirTextoGlobal("Lucro Líquido")} valor="R$ 7.120" icone={TrendingUp} cor="emerald" destaque />
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
-                    <CardDemo titulo="Ticket Médio" valor="R$ 145" icone={CreditCard} cor="indigo" mini />
-                    <CardDemo titulo="Horas de Voo" valor="1.420h" icone={Timer} cor="violet" mini />
-                    <CardDemo titulo="Consumo Total" valor="84kg" icone={Weight} cor="cyan" mini />
-                    <CardDemo titulo="Clientes" valor="142" icone={Users} cor="fuchsia" mini />
-                    <CardDemo titulo="Potencial" valor="R$ 22.400" icone={Target} cor="blue" mini />
-                    <CardDemo titulo="ROI" valor="320%" icone={BarChart3} cor="emerald" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Ticket Médio")} valor="R$ 145" icone={CreditCard} cor="indigo" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Horas de Voo")} valor="1.420h" icone={Timer} cor="violet" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Consumo Total")} valor="84kg" icone={Weight} cor="cyan" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Clientes")} valor="142" icone={Users} cor="fuchsia" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("Potencial")} valor="R$ 22.400" icone={Target} cor="blue" mini />
+                    <CardDemo titulo={traduzirTextoGlobal("ROI")} valor="320%" icone={BarChart3} cor="emerald" mini />
                   </div>
                 </div>
 
@@ -206,8 +209,8 @@ export function Demonstracao() {
                   <div className="col-span-8 bg-[#0c0c0e] border border-white/5 rounded-[2rem] overflow-hidden flex flex-col shadow-xl relative group transition-all">
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
                     <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.01] relative z-10">
-                      <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Fila de Orçamentos</h4>
-                      <span className="text-[10px] font-black text-sky-500 uppercase tracking-widest">Ver Todos</span>
+                      <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{traduzirTextoGlobal("Fila de Orçamentos")}</h4>
+                      <span className="text-[10px] font-black text-sky-500 uppercase tracking-widest">{traduzirTextoGlobal("Ver Todos")}</span>
                     </div>
                     <div className="p-2 relative z-10">
                       {[
@@ -242,33 +245,33 @@ export function Demonstracao() {
                     <div className="flex items-center justify-between mb-8 relative z-10">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Monitor Live</h4>
+                        <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{traduzirTextoGlobal("Monitor Live")}</h4>
                       </div>
                       <span className="text-[10px] font-black text-sky-500 uppercase tracking-widest">Farm</span>
                     </div>
                     <div className="space-y-8 flex-1 relative z-10">
                       {[
-                        { nome: "Viper Core 01", progresso: 85, status: "Imprimindo" },
-                        { nome: "Atlas Mega 02", progresso: 42, status: "Imprimindo" },
-                        { nome: "Viper Core 03", progresso: 0, status: "Livre" },
+                        { nome: "Viper Core 01", progresso: 85, status: traduzirTextoGlobal("Imprimindo") },
+                        { nome: "Atlas Mega 02", progresso: 42, status: traduzirTextoGlobal("Imprimindo") },
+                        { nome: "Viper Core 03", progresso: 0, status: traduzirTextoGlobal("Livre") },
                       ].map((maq, idx) => (
                         <div key={idx} className="space-y-3">
                           <div className="flex justify-between items-end">
                             <div className="text-[11px] font-black text-white uppercase tracking-tight">{maq.nome}</div>
-                            <div className={`text-[9px] font-black uppercase tracking-widest ${maq.status === 'Livre' ? 'text-zinc-500' : 'text-sky-400'}`}>{maq.status}</div>
+                            <div className={`text-[9px] font-black uppercase tracking-widest ${maq.status === traduzirTextoGlobal('Livre') ? 'text-zinc-500' : 'text-sky-400'}`}>{maq.status}</div>
                           </div>
                           <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${maq.progresso}%` }}
-                              className={`h-full rounded-full ${maq.status === 'Livre' ? 'bg-zinc-800' : 'bg-gradient-to-r from-sky-600 to-indigo-600 shadow-[0_0_10px_rgba(56,189,248,0.3)]'}`} 
+                              className={`h-full rounded-full ${maq.status === traduzirTextoGlobal('Livre') ? 'bg-zinc-800' : 'bg-gradient-to-r from-sky-600 to-indigo-600 shadow-[0_0_10px_rgba(56,189,248,0.3)]'}`} 
                             />
                           </div>
                         </div>
                       ))}
                     </div>
                     <button className="mt-8 flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-[10px] font-black text-white uppercase tracking-widest relative z-10 hover:bg-white/[0.04] transition-all">
-                      Painel Completo
+                      {traduzirTextoGlobal("Painel Completo")}
                       <ChevronRight size={14} />
                     </button>
                   </div>
@@ -279,16 +282,16 @@ export function Demonstracao() {
                   {/* Insumos */}
                   <div className="bg-[#0c0c0e] border border-white/5 rounded-[2rem] p-8 shadow-xl relative overflow-hidden">
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
-                    <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-8 relative z-10">Insumos Críticos</h4>
+                    <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-8 relative z-10">{traduzirTextoGlobal("Insumos Críticos")}</h4>
                     <div className="space-y-4 relative z-10">
-                      <ItemEstoque icone={Box} nome="Caixa de Envio G" progresso={15} cor="rose" />
-                      <ItemEstoque icone={SprayCan} nome="Adesivo de Mesa" progresso={45} cor="sky" />
+                      <ItemEstoque icone={Box} nome={traduzirTextoGlobal("Caixa de Envio G")} progresso={15} cor="rose" />
+                      <ItemEstoque icone={SprayCan} nome={traduzirTextoGlobal("Adesivo de Mesa")} progresso={45} cor="sky" />
                     </div>
                   </div>
                   {/* Materiais */}
                   <div className="bg-[#0c0c0e] border border-white/5 rounded-[2rem] p-8 shadow-xl relative overflow-hidden">
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
-                    <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-8 relative z-10">Fios e Resinas</h4>
+                    <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-8 relative z-10">{traduzirTextoGlobal("Fios e Resinas")}</h4>
                     <div className="flex gap-6 relative z-10">
                       <div className="flex flex-col items-center gap-2">
                         <Carretel cor="#0ea5e9" porcentagem={25} tamanho={40} id="demo-mat-1" />
@@ -303,14 +306,14 @@ export function Demonstracao() {
                   {/* Avisos */}
                   <div className="bg-[#0c0c0e] border border-white/5 rounded-[2rem] p-8 shadow-xl relative overflow-hidden">
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
-                    <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-8 relative z-10">Quadro de Avisos</h4>
+                    <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-8 relative z-10">{traduzirTextoGlobal("Quadro de Avisos")}</h4>
                     <div className="flex gap-4 p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10 relative z-10">
                       <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
                         <Wrench size={18} />
                       </div>
                       <div>
-                        <div className="text-[10px] font-black text-white uppercase tracking-tight mb-1">Manutenção Preditiva</div>
-                        <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">Atlas Mega 02 precisa de lubrificação em 2h de uso.</div>
+                        <div className="text-[10px] font-black text-white uppercase tracking-tight mb-1">{traduzirTextoGlobal("Manutenção Preditiva")}</div>
+                        <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">{traduzirTextoGlobal("Atlas Mega 02 precisa de lubrificação em 2h de uso.")}</div>
                       </div>
                     </div>
                   </div>

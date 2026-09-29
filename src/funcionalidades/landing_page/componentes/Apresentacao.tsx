@@ -17,6 +17,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 /* ─── Tipos ────────────────────────────────────────────────────────────── */
 interface Linha {
@@ -71,6 +73,7 @@ function rectRel(el: HTMLElement, pai: HTMLElement) {
 /* ─── Apresentação Principal ────────────────────────────────────────────────────────── */
 export function Apresentacao() {
   const navegar = useNavigate();
+  useIdioma();
   const [visivel, definirVisivel] = useState(false);
   const [rolagemY, definirRolagemY] = useState(0);
   const [tick, definirTick] = useState(0);
@@ -315,7 +318,7 @@ export function Apresentacao() {
             {/* Tag Discreta de Posicionamento */}
             <div className="inline-flex items-center gap-2 text-sky-400/90 text-[10px] sm:text-xs font-mono font-bold tracking-[0.18em] uppercase mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-              Gestão Técnica de Impressão 3D
+              {traduzirTextoGlobal("Gestão Técnica de Impressão 3D")}
             </div>
 
             {/* Título Principal */}
@@ -329,11 +332,11 @@ export function Apresentacao() {
                 opacity: 0,
               }}
             >
-              <span className="text-white block">Transforme</span>
+              <span className="text-white block">{traduzirTextoGlobal("Transforme")}</span>
               <span className="texto-cintilante-apresentacao block italic">
-                Filamento
+                {traduzirTextoGlobal("Filamento")}
               </span>
-              <span className="text-white block">em Lucro.</span>
+              <span className="text-white block">{traduzirTextoGlobal("em Lucro.")}</span>
             </h1>
 
             {/* Subtítulo */}
@@ -346,8 +349,9 @@ export function Apresentacao() {
                 opacity: 0,
               }}
             >
-              Dê adeus ao <span className="text-white font-semibold">"chutômetro"</span>. 
-              Calcule custos reais de energia, resina, filamento e margem líquida com precisão e dignidade.
+              {traduzirTextoGlobal("Dê adeus ao")}{" "}
+              <span className="text-white font-semibold">"{traduzirTextoGlobal("chutômetro")}"</span>.{" "}
+              {traduzirTextoGlobal("Calcule custos reais de energia, resina, filamento e margem líquida com precisão e dignidade.")}
             </p>
 
             {/* Chamadas para Ação (CTAs) */}
@@ -379,7 +383,7 @@ export function Apresentacao() {
                   }}
                 />
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  Começar Grátis
+                  {traduzirTextoGlobal("Começar Grátis")}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </button>
@@ -389,15 +393,15 @@ export function Apresentacao() {
             <div className="grid lg:hidden grid-cols-3 gap-2 sm:gap-4 w-full py-3 border-y border-white/10 my-3 text-left">
               <div>
                 <div className="text-lg sm:text-2xl font-black text-sky-400 font-mono tracking-tight">100%</div>
-                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Precisão Custos</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{traduzirTextoGlobal("Precisão Custos")}</div>
               </div>
               <div>
                 <div className="text-lg sm:text-2xl font-black text-emerald-400 font-mono tracking-tight">+85%</div>
-                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Lucro Real Médio</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{traduzirTextoGlobal("Lucro Real Médio")}</div>
               </div>
               <div>
-                <div className="text-lg sm:text-2xl font-black text-indigo-400 font-mono tracking-tight">Zero</div>
-                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Chutômetro</div>
+                <div className="text-lg sm:text-2xl font-black text-indigo-400 font-mono tracking-tight">{traduzirTextoGlobal("Zero")}</div>
+                <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{traduzirTextoGlobal("Chutômetro")}</div>
               </div>
             </div>
 
@@ -414,10 +418,10 @@ export function Apresentacao() {
               <div className="w-full p-3 rounded-xl bg-white/[0.02] border border-white/5 text-left">
                 <div className="flex items-center gap-2 mb-0.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span className="text-white text-[10px] font-bold uppercase tracking-wider">Compromisso Ético PrintLog</span>
+                  <span className="text-white text-[10px] font-bold uppercase tracking-wider">{traduzirTextoGlobal("Compromisso Ético PrintLog")}</span>
                 </div>
                 <p className="text-zinc-500 text-[10px] sm:text-[11px] leading-relaxed italic">
-                  "Transparência em primeiro lugar — 100% gratuito e em constante evolução junto com a comunidade 3D brasileira."
+                  "{traduzirTextoGlobal("Transparência em primeiro lugar — 100% gratuito e em constante evolução junto com a comunidade 3D brasileira.")}"
                 </p>
               </div>
             </div>
@@ -518,15 +522,15 @@ export function Apresentacao() {
               >
                 <div>
                   <div className="text-white font-bold text-base tracking-tight">
-                    Peça Final
+                    {traduzirTextoGlobal("Peça Final")}
                   </div>
                   <div className="text-zinc-500 text-xs mt-0.5">
-                    Vaso Decorativo (PLA)
+                    {traduzirTextoGlobal("Vaso Decorativo (PLA)")}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">
-                    Preço Final
+                    {traduzirTextoGlobal("Preço Final")}
                   </div>
                   <div
                     key={precoAtual}
@@ -547,7 +551,7 @@ export function Apresentacao() {
                 {[
                   {
                     Icon: Zap,
-                    label: "Energia",
+                    label: traduzirTextoGlobal("Energia"),
                     value: "R$ 5,20",
                     color: "#0ea5e9",
                     bg: "rgba(14,165,233,.1)",
@@ -555,7 +559,7 @@ export function Apresentacao() {
                   },
                   {
                     Icon: Box,
-                    label: "Material",
+                    label: traduzirTextoGlobal("Material"),
                     value: "R$ 12,80",
                     color: "#f97316",
                     bg: "rgba(249,115,22,.1)",
@@ -563,7 +567,7 @@ export function Apresentacao() {
                   },
                   {
                     Icon: Clock,
-                    label: "Setup",
+                    label: traduzirTextoGlobal("Setup"),
                     value: "R$ 3,00",
                     color: "#a78bfa",
                     bg: "rgba(167,139,250,.1)",
@@ -617,7 +621,7 @@ export function Apresentacao() {
                 <div className="flex justify-between items-center mb-3">
                   <div>
                     <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-0.5">
-                      Lucro Real
+                      {traduzirTextoGlobal("Lucro Real")}
                     </div>
                     <div className="text-2xl font-black text-emerald-400 font-mono tracking-tighter">
                       85%
@@ -627,7 +631,7 @@ export function Apresentacao() {
                     className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all duration-300 hover:scale-105"
                     style={{ background: "#fff", color: "#000" }}
                   >
-                    Ver Detalhes
+                    {traduzirTextoGlobal("Ver Detalhes")}
                   </button>
                 </div>
                 <div
@@ -665,10 +669,10 @@ export function Apresentacao() {
               </div>
               <div>
                 <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5">
-                  Status
+                  {traduzirTextoGlobal("Status")}
                 </div>
                 <div className="text-white font-bold text-sm">
-                  Lucro Garantido
+                  {traduzirTextoGlobal("Lucro Garantido")}
                 </div>
               </div>
             </EmblemaFlutuante>
@@ -701,10 +705,10 @@ export function Apresentacao() {
                   </div>
                   <div>
                     <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest">
-                      Alerta
+                      {traduzirTextoGlobal("Alerta")}
                     </div>
                     <div className="text-white font-bold text-sm">
-                      Rolo no Fim
+                      {traduzirTextoGlobal("Rolo no Fim")}
                     </div>
                   </div>
                 </div>
@@ -721,7 +725,7 @@ export function Apresentacao() {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-zinc-400">PLA Silk Dourado</span>
+                  <span className="text-zinc-400">{traduzirTextoGlobal("PLA Silk Dourado")}</span>
                   <span className="text-white font-mono font-bold">150g</span>
                 </div>
                 <div
@@ -739,7 +743,7 @@ export function Apresentacao() {
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
                   <Check className="w-3 h-3 text-emerald-400" strokeWidth={2} />
-                  Suficiente para esta impressão (112g)
+                  {traduzirTextoGlobal("Suficiente para esta impressão (112g)")}
                 </div>
               </div>
             </EmblemaFlutuante>
@@ -762,10 +766,10 @@ export function Apresentacao() {
               </div>
               <div>
                 <div className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5">
-                  Otimização
+                  {traduzirTextoGlobal("Otimização")}
                 </div>
                 <div className="text-white font-semibold text-xs">
-                  Preço Sugerido
+                  {traduzirTextoGlobal("Preço Sugerido")}
                 </div>
               </div>
             </EmblemaFlutuante>
@@ -795,7 +799,7 @@ export function Apresentacao() {
               transform: "rotate(180deg)",
             }}
           >
-            Role para descobrir
+            {traduzirTextoGlobal("Role para descobrir")}
           </span>
 
           {/* Linha vertical animada */}

@@ -1,9 +1,11 @@
 import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeletorIdioma } from "@/compartilhado/componentes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function Rodape() {
+  useIdioma();
   return (
     <>
       {/* Rodapé */}

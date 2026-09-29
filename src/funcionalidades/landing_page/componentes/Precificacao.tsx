@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Check, Sparkles, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 const planos = [
   {
@@ -41,6 +43,7 @@ const planos = [
 ];
 
 export function Precificacao() {
+  useIdioma();
   const navegar = useNavigate();
   return (
     <section id="planos" className="py-16 md:py-24 relative overflow-hidden bg-[#050505]">
@@ -53,7 +56,7 @@ export function Precificacao() {
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter mb-4 md:mb-6 uppercase"
           >
-            Escolha o Plano Ideal para sua <span className="text-sky-500">Gestão</span>
+            {traduzirTextoGlobal("Escolha o Plano Ideal para sua")} <span className="text-sky-500">{traduzirTextoGlobal("Gestão")}</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -62,7 +65,7 @@ export function Precificacao() {
             transition={{ delay: 0.2 }}
             className="text-zinc-400 max-w-2xl text-sm sm:text-base md:text-lg"
           >
-            O PrintLog é um projeto independente. Comece grátis e, se precisar de mais recursos, assine o plano PRO para ajudar a manter o servidor online.
+            {traduzirTextoGlobal("O PrintLog é um projeto independente. Comece grátis e, se precisar de mais recursos, assine o plano PRO para ajudar a manter o servidor online.")}
           </motion.p>
         </div>
 
@@ -82,25 +85,27 @@ export function Precificacao() {
             >
               {plano.destaque && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-sky-600 to-blue-600 px-4 sm:px-6 py-1 rounded-full text-[9px] sm:text-[10px] font-black text-white uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-lg truncate max-w-[90%] text-center">
-                  Oferta de Lançamento
+                  {traduzirTextoGlobal("Oferta de Lançamento")}
                 </div>
               )}
 
               <div className="mb-6 sm:mb-8 mt-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-widest">{plano.nome}</h3>
+                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-widest">{traduzirTextoGlobal(plano.nome)}</h3>
                   {plano.destaque && <Crown className="text-sky-400 shrink-0" size={18} />}
                 </div>
-                <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed">{plano.descricao}</p>
+                <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed">{traduzirTextoGlobal(plano.descricao)}</p>
               </div>
 
               <div className="mb-6 sm:mb-10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl sm:text-5xl font-black tracking-tighter">{plano.preco}</span>
-                  <span className="text-zinc-500 text-xs sm:text-sm uppercase font-bold tracking-widest">/ {plano.periodo}</span>
+                  <span className="text-zinc-500 text-xs sm:text-sm uppercase font-bold tracking-widest">/ {traduzirTextoGlobal(plano.periodo)}</span>
                 </div>
                 {plano.precoOriginal && (
-                  <span className="text-zinc-600 text-xs sm:text-sm line-through block mt-1 font-bold">de {plano.precoOriginal}</span>
+                  <span className="text-zinc-600 text-xs sm:text-sm line-through block mt-1 font-bold">
+                    {traduzirTextoGlobal("de")} {plano.precoOriginal}
+                  </span>
                 )}
               </div>
 
@@ -111,7 +116,7 @@ export function Precificacao() {
                       <Check size={12} strokeWidth={4} />
                     </div>
                     <span className="text-xs sm:text-sm text-zinc-400 font-medium group-hover:text-zinc-200 transition-colors uppercase tracking-tight">
-                      {recurso}
+                      {traduzirTextoGlobal(recurso)}
                     </span>
                   </div>
                 ))}
@@ -126,7 +131,7 @@ export function Precificacao() {
                 }`}
               >
                 {plano.destaque && <Sparkles size={16} />}
-                {plano.botao}
+                {traduzirTextoGlobal(plano.botao)}
               </button>
             </motion.div>
           ))}
@@ -140,7 +145,7 @@ export function Precificacao() {
            className="mt-16 text-center"
         >
           <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em]">
-            * Plano 100% OFF válido por tempo limitado.
+            {traduzirTextoGlobal("* Plano 100% OFF válido por tempo limitado.")}
           </p>
         </motion.div>
       </div>

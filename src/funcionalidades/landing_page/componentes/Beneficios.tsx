@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { AlertTriangle, Zap, OctagonAlert, Hourglass, Wrench, Recycle, Crown, LayoutGrid } from "lucide-react";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 type Beneficio = {
   Icone: React.ElementType;
@@ -68,6 +70,7 @@ const beneficios: Beneficio[] = [
 ];
 
 export function Beneficios() {
+  useIdioma();
   const [visivel, definirVisivel] = useState(false);
   const refSecao = useRef<HTMLElement>(null);
 
@@ -101,18 +104,17 @@ export function Beneficios() {
           className={`text-center mb-20 transition-all duration-1000 ${visivel ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-gradient-to-r from-rose-950/50 to-rose-950/30 border border-rose-500/30 text-rose-400 text-xs font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(244,63,94,0.15)]">
-            Pare de perder dinheiro
+            {traduzirTextoGlobal("Pare de perder dinheiro")}
           </div>
 
           <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter italic uppercase leading-tight mb-6">
-            PARE DE JOGAR <br />
+            {traduzirTextoGlobal("PARE DE JOGAR")} <br />
             <span className="bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 bg-clip-text text-transparent">
-              DINHEIRO FORA
+              {traduzirTextoGlobal("DINHEIRO FORA")}
             </span>
           </h2>
           <p className="text-zinc-400 mt-6 max-w-xl mx-auto text-lg">
-            Pequenos erros de cálculo destroem sua margem de lucro. O PrintLog
-            elimina as variáveis invisíveis.
+            {traduzirTextoGlobal("Pequenos erros de cálculo destroem sua margem de lucro. O PrintLog elimina as variáveis invisíveis.")}
           </p>
         </div>
 
@@ -127,10 +129,10 @@ export function Beneficios() {
                 <beneficio.Icone className="w-6 h-6" strokeWidth={2} />
               </div>
               <h3 className="text-white font-bold text-xl mb-3 group-hover:text-rose-400 transition-colors">
-                {beneficio.titulo}
+                {traduzirTextoGlobal(beneficio.titulo)}
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed group-hover:text-zinc-300 transition-colors">
-                {beneficio.descricao}
+                {traduzirTextoGlobal(beneficio.descricao)}
               </p>
             </div>
           ))}

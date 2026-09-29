@@ -92,7 +92,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     }
   };
 
-  const { t, idiomaAtual } = useIdioma();
+  const { t } = useIdioma();
 
   const grupos: GrupoNavegacao[] = [
     {
@@ -122,9 +122,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
       titulo: t("navegacao.grupos.sistema"),
       itens: [
         { nome: t("navegacao.itens.configuracoes"), icone: Settings, caminho: "/configuracoes" },
-        ...(idiomaAtual === "pt-BR"
-          ? [{ nome: t("navegacao.itens.centralMaker"), icone: HelpCircle, caminho: "/central-maker" }]
-          : []),
+        { nome: t("navegacao.itens.centralMaker"), icone: HelpCircle, caminho: "/central-maker" },
       ],
     },
   ];
