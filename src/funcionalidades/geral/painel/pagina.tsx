@@ -13,6 +13,7 @@ import { useArmazemImpressoras } from "@/funcionalidades/producao/impressoras/es
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 // Serviços e Utilitários
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
@@ -221,10 +222,12 @@ export function PaginaInicial() {
     }
   };
 
+  const { t } = useIdioma();
+
   useDefinirCabecalho({
-    titulo: `Olá, ${usuario?.nome?.split(" ")[0] || "Maker"}! 👋`,
-    subtitulo: "Seu centro de comando para custos reais e gestão profissional.",
-    placeholderBusca: "PESQUISAR EM TODA A PLATAFORMA...",
+    titulo: t("dashboard.saudacao", { nome: usuario?.nome?.split(" ")[0] || "Maker" }),
+    subtitulo: t("dashboard.subtitulo"),
+    placeholderBusca: t("cabecalho.buscarPlaceholder"),
   });
 
   return (
@@ -245,15 +248,15 @@ export function PaginaInicial() {
 
       {erroDados && (
         <div className="bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/30 rounded-[2rem] p-8 text-center space-y-4">
-          <div className="text-rose-500 font-semibold">Falha na sincronização dos dados do painel</div>
+          <div className="text-rose-500 font-semibold">{t("dashboard.erroSincronizacao")}</div>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Não foi possível carregar as informações do servidor. Verifique sua conexão com a internet e tente novamente.
+            {t("dashboard.erroSincronizacaoDesc")}
           </p>
           <button
             onClick={() => sincronizarTudo(true)}
             className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all uppercase tracking-wider shadow-md hover:shadow-lg"
           >
-            Tentar Novamente
+            {t("dashboard.tentarNovamente")}
           </button>
         </div>
       )}

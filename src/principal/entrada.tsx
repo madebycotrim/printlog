@@ -7,6 +7,7 @@ import { CONFIGURACAO_INVALIDA } from "@/compartilhado/servicos/firebase";
 
 import "@/index.css";
 import "@/configuracoes/tema/tema.css";
+import "@/configuracoes/i18n";
 import { gerenciadorConsentimento } from "@/compartilhado/utilitarios/gerenciador-consentimento";
 
 // Inicializa o bloqueio de serviços baseado no consentimento salvo

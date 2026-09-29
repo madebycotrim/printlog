@@ -1,12 +1,21 @@
+import i18n from "@/configuracoes/i18n";
+
+function obterLocaleAtivo(): { lang: string; currency: string } {
+    const lang = i18n?.language || "pt-BR";
+    if (lang.startsWith("en")) return { lang: "en-US", currency: "USD" };
+    if (lang.startsWith("es")) return { lang: "es-ES", currency: "EUR" };
+    return { lang: "pt-BR", currency: "BRL" };
+}
 
 /**
- * Converte centavos (inteiro) para string formatada de Reais.
+ * Converte centavos (inteiro) para string formatada de moeda conforme locale ativo.
  * Conforme Regra 6.0 do ecossistema PrintLog.
  */
-export function centavosParaReais(centavos: number): string {
-    return (centavos / 100).toLocaleString("pt-BR", {
+export function centavosParaReais(centavos: number, moedaForcada?: string): string {
+    const { lang, currency } = obterLocaleAtivo();
+    return (centavos / 100).toLocaleString(lang, {
         style: "currency",
-        currency: "BRL",
+        currency: moedaForcada || currency,
     });
 }
 
@@ -55,12 +64,13 @@ function parseDataSegura(data?: Date | string | number | null): Date | null {
 }
 
 /**
- * Formata um objeto Date para o padrão brasileiro (dd/mm/aaaa)
+ * Formata um objeto Date para o padrão local (dd/mm/aaaa ou mm/dd/yyyy)
  */
 export function formatarData(data?: Date | string | number | null): string {
     const d = parseDataSegura(data);
     if (!d) return "—";
-    return d.toLocaleDateString("pt-BR");
+    const { lang } = obterLocaleAtivo();
+    return d.toLocaleDateString(lang);
 }
 
 /**
@@ -69,19 +79,21 @@ export function formatarData(data?: Date | string | number | null): string {
 export function formatarDataCurta(data?: Date | string | number | null): string {
     const d = parseDataSegura(data);
     if (!d) return "—";
-    return d.toLocaleDateString("pt-BR", {
+    const { lang } = obterLocaleAtivo();
+    return d.toLocaleDateString(lang, {
         day: "2-digit",
         month: "2-digit",
     });
 }
 
 /**
- * Formata um objeto Date para o padrão brasileiro completo (Ex: 15 de março de 2024)
+ * Formata um objeto Date para o padrão completo local
  */
 export function formatarDataCompleta(data?: Date | string | number | null): string {
     const d = parseDataSegura(data);
     if (!d) return "—";
-    return d.toLocaleDateString("pt-BR", {
+    const { lang } = obterLocaleAtivo();
+    return d.toLocaleDateString(lang, {
         day: "2-digit",
         month: "long",
         year: "numeric",

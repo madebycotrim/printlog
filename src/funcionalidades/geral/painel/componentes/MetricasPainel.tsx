@@ -20,6 +20,7 @@ import { useArmazemClientes } from "@/funcionalidades/comercial/clientes/estado/
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
 import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { useNavigate } from "react-router-dom";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 interface PropriedadesMetricasPainel {
   pedidos: Pedido[];
@@ -85,6 +86,8 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
     show: { y: 0, opacity: 1 }
   };
 
+  const { t } = useIdioma();
+
   return (
     <motion.div 
       variants={container}
@@ -94,22 +97,22 @@ export function MetricasPainel({ pedidos, impressoras, pedidosAtivos, metricasIn
     >
       {/* LINHA 1: OPERACIONAL E IMEDIATO */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        <CardMetrica variants={item} titulo="Produção Ativa" valor={pedidosAtivos} icone={Clock} cor="sky" dica="Quantidade de projetos que estão sendo impressos ou aguardando produção atualmente." aoClicar={() => navegar("/projetos")} />
-        <CardMetrica variants={item} titulo="Taxa Sucesso" valor={`${taxaSucesso.toFixed(0)}%`} icone={Percent} cor="emerald" dica="Percentual de impressões concluídas com êxito em relação ao total de tentativas registradas." aoClicar={() => navegar("/impressoras")} />
-        <CardMetrica variants={item} titulo="Alertas Estoque" valor={metricasInventario.itensEmAlerta} icone={Package} cor="rose" dica="Número de materiais ou insumos que atingiram o limite mínimo configurado para reposição." aoClicar={() => navegar("/insumos")} />
-        <CardMetrica variants={item} titulo="Patrimônio" valor={centavosParaReais(metricasInventario.valorTotalEstoqueCentavos)} icone={Activity} cor="amber" dica="Valor financeiro total investido nos materiais e insumos que você possui em estoque atualmente." aoClicar={() => navegar("/materiais")} />
-        <CardMetrica variants={item} titulo="Total Impresso" valor={`${horasTotais}h`} icone={Timer} cor="indigo" dica="Soma das horas totais acumuladas no horímetro de todas as impressoras cadastradas." aoClicar={() => navegar("/impressoras")} />
-        <CardMetrica variants={item} titulo="Consumo Filamento" valor={`${consumoTotalKg} kg`} icone={Weight} cor="violet" dica="Quantidade total em quilos de material consumido na produção de todos os pedidos." aoClicar={() => navegar("/materiais")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.pedidosAtivos")} valor={pedidosAtivos} icone={Clock} cor="sky" dica={t("dashboard.dicas.pedidosAtivos")} aoClicar={() => navegar("/projetos")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.taxaSucesso")} valor={`${taxaSucesso.toFixed(0)}%`} icone={Percent} cor="emerald" dica={t("dashboard.dicas.taxaSucesso")} aoClicar={() => navegar("/impressoras")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.alertaEstoque")} valor={metricasInventario.itensEmAlerta} icone={Package} cor="rose" dica={t("dashboard.dicas.alertaEstoque")} aoClicar={() => navegar("/insumos")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.patrimonio")} valor={centavosParaReais(metricasInventario.valorTotalEstoqueCentavos)} icone={Activity} cor="amber" dica={t("dashboard.dicas.patrimonio")} aoClicar={() => navegar("/materiais")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.totalImpresso")} valor={`${horasTotais}h`} icone={Timer} cor="indigo" dica={t("dashboard.dicas.totalImpresso")} aoClicar={() => navegar("/impressoras")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.consumoFilamento")} valor={`${consumoTotalKg} kg`} icone={Weight} cor="violet" dica={t("dashboard.dicas.consumoFilamento")} aoClicar={() => navegar("/materiais")} />
       </div>
 
       {/* LINHA 2: FINANCEIRO E ESTRATÉGICO */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        <CardMetrica variants={item} titulo="Faturamento Total" valor={centavosParaReais(totalFaturadoCentavos)} icone={DollarSign} cor="emerald" destaque mini dica="Valor bruto acumulado gerado pelas vendas executadas no estúdio." aoClicar={() => navegar("/financeiro")} />
-        <CardMetrica variants={item} titulo="Lucro Acumulado" valor={centavosParaReais(lucroTotalCentavos)} icone={TrendingUp} cor="cyan" mini dica="Estimativa de receita líquida obtida após dedução de materiais e custos de energia." aoClicar={() => navegar("/financeiro")} />
-        <CardMetrica variants={item} titulo="Ticket Médio" valor={centavosParaReais(ticketMedioCentavos)} icone={CreditCard} cor="amber" mini dica="Valor médio gasto pelos clientes em cada compra ou projeto realizado." aoClicar={() => navegar("/financeiro")} />
-        <CardMetrica variants={item} titulo="Base Clientes" valor={clientesUnicos} icone={Users} cor="fuchsia" mini dica="Quantidade de clientes cadastrados que já realizaram pedidos no seu estúdio." aoClicar={() => navegar("/clientes")} />
-        <CardMetrica variants={item} titulo="Potencial" valor={centavosParaReais(potencialVendaCentavos)} icone={Target} cor="blue" mini dica="Soma do valor estimado de todos os projetos que estão ativos em fila de produção." aoClicar={() => navegar("/projetos")} />
-        <CardMetrica variants={item} titulo="ROI Estimado" valor={`${roiEstimado.toFixed(0)}%`} icone={BarChart3} cor="emerald" mini dica="Retorno sobre o Investimento calculado a partir do custo base de compra das máquinas." aoClicar={() => navegar("/financeiro")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.faturamentoTotal")} valor={centavosParaReais(totalFaturadoCentavos)} icone={DollarSign} cor="emerald" destaque mini dica={t("dashboard.dicas.faturamentoTotal")} aoClicar={() => navegar("/financeiro")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.lucroAcumulado")} valor={centavosParaReais(lucroTotalCentavos)} icone={TrendingUp} cor="cyan" mini dica={t("dashboard.dicas.lucroAcumulado")} aoClicar={() => navegar("/financeiro")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.ticketMedio")} valor={centavosParaReais(ticketMedioCentavos)} icone={CreditCard} cor="amber" mini dica={t("dashboard.dicas.ticketMedio")} aoClicar={() => navegar("/financeiro")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.baseClientes")} valor={clientesUnicos} icone={Users} cor="fuchsia" mini dica={t("dashboard.dicas.baseClientes")} aoClicar={() => navegar("/clientes")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.potencial")} valor={centavosParaReais(potencialVendaCentavos)} icone={Target} cor="blue" mini dica={t("dashboard.dicas.potencial")} aoClicar={() => navegar("/projetos")} />
+        <CardMetrica variants={item} titulo={t("dashboard.metricas.roiEstimado")} valor={`${roiEstimado.toFixed(0)}%`} icone={BarChart3} cor="emerald" mini dica={t("dashboard.dicas.roiEstimado")} aoClicar={() => navegar("/financeiro")} />
       </div>
     </motion.div>
   );

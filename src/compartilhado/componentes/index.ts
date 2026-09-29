@@ -15,3 +15,4 @@ export * from "./LimiteDeErro";
 export * from "./ModalAcessibilidade";
 export * from "./BarraVocalizacaoFlutuante";
 export * from "./BannerAvisoGlobal";
+export * from "./SeletorIdioma";

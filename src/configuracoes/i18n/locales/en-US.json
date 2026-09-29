@@ -1,0 +1,153 @@
+{
+  "comum": {
+    "salvar": "Save",
+    "salvando": "Saving...",
+    "cancelar": "Cancel",
+    "excluir": "Delete",
+    "editar": "Edit",
+    "novo": "New",
+    "buscar": "Search...",
+    "limpar": "Clear",
+    "voltar": "Back",
+    "carregando": "Loading...",
+    "sucesso": "Operation completed successfully!",
+    "erro": "An error occurred. Please try again.",
+    "confirmar": "Confirm",
+    "descartar": "Discard",
+    "fechar": "Close",
+    "pro": "PRO",
+    "lab": "LAB",
+    "ativo": "Active",
+    "inativo": "Inactive",
+    "acoes": "Actions",
+    "detalhes": "Details",
+    "visualizar": "View",
+    "exportar": "Export",
+    "filtrar": "Filter",
+    "adicionar": "Add",
+    "remover": "Remove",
+    "concluir": "Complete",
+    "pendente": "Pending",
+    "total": "Total"
+  },
+  "navegacao": {
+    "grupos": {
+      "geral": "General",
+      "producao": "Production",
+      "comercial": "Sales & Billing",
+      "sistema": "System"
+    },
+    "itens": {
+      "dashboard": "Dashboard",
+      "calculadora": "Calculator",
+      "projetos": "Projects",
+      "impressoras": "3D Printers",
+      "materiais": "Filaments & Resins",
+      "insumos": "Supplies",
+      "clientes": "Clients",
+      "financeiro": "Financial",
+      "configuracoes": "Settings",
+      "centralMaker": "Maker Hub",
+      "admin": "Master Panel",
+      "sair": "Sign Out"
+    }
+  },
+  "cabecalho": {
+    "buscarPlaceholder": "SEARCH ACROSS ENTIRE PLATFORM...",
+    "limparBusca": "Clear search",
+    "abrirMenu": "Open navigation menu",
+    "planoExpirado": "YOUR PRO PLAN HAS EXPIRED. CONTACT SUPPORT TO RENEW AND PREVENT ACCOUNT SUSPENSION.",
+    "laboratorio": "Lab",
+    "notificacoes": "Notifications"
+  },
+  "idiomas": {
+    "titulo": "System Language",
+    "descricao": "Choose the interface display language for PrintLog",
+    "selecionar": "Select language",
+    "pt-BR": "Português (Brasil)",
+    "en-US": "English (US)",
+    "es-ES": "Español"
+  },
+  "autenticacao": {
+    "titulo": "Sign In or Create Account",
+    "subtitulo": "PrintLog uses secure Google and GitHub authentication for simple sign-in in just a few clicks.",
+    "continuarGoogle": "Continue with Google",
+    "continuarGithub": "Continue with GitHub",
+    "ou": "or",
+    "placeholderEmail": "Your business email address",
+    "continuarEmail": "Continue with Email",
+    "preparandoFarm": "Preparing your Print Farm...",
+    "verifiqueEmail": "Check your Email",
+    "linkMagicoEnviado": "We sent a secure magic link to",
+    "termosUso": "Terms of Service",
+    "politicaPrivacidade": "Privacy Policy",
+    "concordanciaTermos": "By continuing, you agree to our"
+  },
+  "dashboard": {
+    "saudacao": "Hello, {{nome}}! 👋",
+    "subtitulo": "Your command center for real costs and professional farm management.",
+    "erroSincronizacao": "Dashboard data sync failure",
+    "erroSincronizacaoDesc": "Could not load data from server. Please check your internet connection and try again.",
+    "tentarNovamente": "Try Again",
+    "metricas": {
+      "pedidosAtivos": "Active Orders",
+      "taxaSucesso": "Success Rate",
+      "alertaEstoque": "Stock Alerts",
+      "patrimonio": "Asset Value",
+      "totalImpresso": "Total Print Hours",
+      "consumoFilamento": "Material Consumed",
+      "faturamentoTotal": "Total Revenue",
+      "lucroAcumulado": "Accumulated Profit",
+      "ticketMedio": "Average Ticket",
+      "baseClientes": "Customer Base",
+      "potencial": "Pipeline Potential",
+      "roiEstimado": "Estimated ROI"
+    },
+    "dicas": {
+      "pedidosAtivos": "Number of print jobs currently running or queued for production.",
+      "taxaSucesso": "Percentage of print jobs completed without hardware or slicing failures.",
+      "alertaEstoque": "Filament spools or supplies that have reached minimum stock threshold.",
+      "patrimonio": "Total capital invested in inventory materials currently in stock.",
+      "totalImpresso": "Total print hours accumulated across all registered 3D printers.",
+      "consumoFilamento": "Total weight in kilograms of material consumed across all orders.",
+      "faturamentoTotal": "Gross cumulative revenue generated from customer orders.",
+      "lucroAcumulado": "Estimated net earnings after deducting filament, resin, and electricity costs.",
+      "ticketMedio": "Average revenue generated per customer transaction.",
+      "baseClientes": "Total number of registered clients who have placed orders.",
+      "potencial": "Sum of estimated value of all active orders in production queue.",
+      "roiEstimado": "Return on Investment calculated based on machine purchase costs."
+    }
+  },
+  "clientes": {
+    "titulo": "Customer Management",
+    "subtitulo": "Register, manage contacts, and track customer lifetime value (LTV)",
+    "novoCliente": "New Client",
+    "buscarPlaceholder": "SEARCH BY NAME, EMAIL OR PHONE...",
+    "nenhumCliente": "No clients registered yet",
+    "nenhumClienteDesc": "Add your first client to link quotes and production orders."
+  },
+  "financeiro": {
+    "titulo": "Financial Flow",
+    "subtitulo": "Revenue tracking, operational costs, expenses, and P&L statement",
+    "novoLancamento": "New Transaction",
+    "receitas": "Revenue",
+    "despesas": "Expenses",
+    "lucroLiquido": "Net Profit",
+    "margemOperacional": "Operating Margin",
+    "filtroPeriodo": "Filter by period"
+  },
+  "configuracoes": {
+    "titulo": "Settings",
+    "subtitulo": "Customize your studio, visual preferences, language and integrations",
+    "abas": {
+      "perfil": "Profile",
+      "estudio": "Studio",
+      "aparencia": "Appearance",
+      "idioma": "Language",
+      "financeiro": "Costs & Margins",
+      "seguranca": "Security",
+      "privacidade": "Privacy",
+      "planos": "Subscription"
+    }
+  }
+}

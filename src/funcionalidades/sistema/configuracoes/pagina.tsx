@@ -16,6 +16,7 @@ import { CardPrivacidade } from "./componentes/CardPrivacidade";
 import { CardEstudio } from "./componentes/CardEstudio";
 import { CardIdentidade } from "./componentes/CardIdentidade";
 import { CardSeguranca } from "./componentes/CardSeguranca";
+import { CardIdioma } from "./componentes/CardIdioma";
 
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
@@ -257,7 +258,11 @@ export function PaginaConfiguracoes() {
           </motion.div>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.12 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.10 }}>
+          <CardIdioma />
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.14 }}>
           <CardIdentidade
             nomeEstudio={nomeEstudio}
             definirNomeEstudio={definirNomeEstudio}

@@ -26,6 +26,7 @@ import { Avatar, SeloPlano } from "./ui";
 import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { TemaInterface, StatusPedido } from "@/compartilhado/tipos/modelos";
 import { useArmazemPedidos } from "@/funcionalidades/producao/projetos/estado/armazemPedidos";
 
@@ -91,35 +92,37 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     }
   };
 
+  const { t } = useIdioma();
+
   const grupos: GrupoNavegacao[] = [
     {
-      titulo: "Geral",
+      titulo: t("navegacao.grupos.geral"),
       itens: [
-        { nome: "Dashboard", icone: LayoutDashboard, caminho: "/dashboard", exato: true },
-        { nome: "Calculadora", icone: Calculator, caminho: "/calculadora" },
+        { nome: t("navegacao.itens.dashboard"), icone: LayoutDashboard, caminho: "/dashboard", exato: true },
+        { nome: t("navegacao.itens.calculadora"), icone: Calculator, caminho: "/calculadora" },
       ],
     },
     {
-      titulo: "Produção",
+      titulo: t("navegacao.grupos.producao"),
       itens: [
-        { nome: "Projetos", icone: FolderKanban, caminho: "/projetos" },
-        { nome: "Impressoras", icone: Printer, caminho: "/impressoras" },
-        { nome: "Materiais", icone: Package, caminho: "/materiais" },
-        { nome: "Insumos", icone: Layers, caminho: "/insumos" },
+        { nome: t("navegacao.itens.projetos"), icone: FolderKanban, caminho: "/projetos" },
+        { nome: t("navegacao.itens.impressoras"), icone: Printer, caminho: "/impressoras" },
+        { nome: t("navegacao.itens.materiais"), icone: Package, caminho: "/materiais" },
+        { nome: t("navegacao.itens.insumos"), icone: Layers, caminho: "/insumos" },
       ],
     },
     {
-      titulo: "Comercial",
+      titulo: t("navegacao.grupos.comercial"),
       itens: [
-        { nome: "Clientes", icone: Users, caminho: "/clientes" },
-        { nome: "Financeiro", icone: Wallet, caminho: "/financeiro" },
+        { nome: t("navegacao.itens.clientes"), icone: Users, caminho: "/clientes" },
+        { nome: t("navegacao.itens.financeiro"), icone: Wallet, caminho: "/financeiro" },
       ],
     },
     {
-      titulo: "Sistema",
+      titulo: t("navegacao.grupos.sistema"),
       itens: [
-        { nome: "Configurações", icone: Settings, caminho: "/configuracoes" },
-        { nome: "Central Maker", icone: HelpCircle, caminho: "/central-maker" },
+        { nome: t("navegacao.itens.configuracoes"), icone: Settings, caminho: "/configuracoes" },
+        { nome: t("navegacao.itens.centralMaker"), icone: HelpCircle, caminho: "/central-maker" },
       ],
     },
   ];
@@ -358,8 +361,8 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
 
                   <button
                     onClick={lidarComSair}
-                    title="Sair"
-                    aria-label="Sair da conta"
+                    title={t("navegacao.itens.sair")}
+                    aria-label={t("navegacao.itens.sair")}
                     className="shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                   >
                     <LogOut size={16} />

@@ -1,0 +1,153 @@
+{
+  "comum": {
+    "salvar": "Guardar",
+    "salvando": "Guardando...",
+    "cancelar": "Cancelar",
+    "excluir": "Eliminar",
+    "editar": "Editar",
+    "novo": "Nuevo",
+    "buscar": "Buscar...",
+    "limpar": "Limpiar",
+    "voltar": "Volver",
+    "carregando": "Cargando...",
+    "sucesso": "¡Operación realizada con éxito!",
+    "erro": "Ocurrió un error. Intente nuevamente.",
+    "confirmar": "Confirmar",
+    "descartar": "Descartar",
+    "fechar": "Cerrar",
+    "pro": "PRO",
+    "lab": "LAB",
+    "ativo": "Activo",
+    "inativo": "Inactivo",
+    "acoes": "Acciones",
+    "detalhes": "Detalles",
+    "visualizar": "Visualizar",
+    "exportar": "Exportar",
+    "filtrar": "Filtrar",
+    "adicionar": "Añadir",
+    "remover": "Eliminar",
+    "concluir": "Concluir",
+    "pendente": "Pendiente",
+    "total": "Total"
+  },
+  "navegacao": {
+    "grupos": {
+      "geral": "General",
+      "producao": "Producción",
+      "comercial": "Comercial",
+      "sistema": "Sistema"
+    },
+    "itens": {
+      "dashboard": "Panel de Control",
+      "calculadora": "Calculadora",
+      "projetos": "Proyectos",
+      "impressoras": "Impresoras 3D",
+      "materiais": "Materiales",
+      "insumos": "Insumos",
+      "clientes": "Clientes",
+      "financeiro": "Financiero",
+      "configuracoes": "Configuración",
+      "centralMaker": "Centro Maker",
+      "admin": "Panel Master",
+      "sair": "Cerrar Sesión"
+    }
+  },
+  "cabecalho": {
+    "buscarPlaceholder": "BUSCAR EN TODA LA PLATAFORMA...",
+    "limparBusca": "Limpiar búsqueda",
+    "abrirMenu": "Abrir menú de navegación",
+    "planoExpirado": "SU PLAN PRO HA EXPIRADO. CONTACTE AL SOPORTE PARA RENOVAR Y EVITAR EL BLOQUEO DE LA CUENTA.",
+    "laboratorio": "Lab",
+    "notificacoes": "Notificaciones"
+  },
+  "idiomas": {
+    "titulo": "Idioma del Sistema",
+    "descricao": "Elija el idioma de visualización de la interfaz de PrintLog",
+    "selecionar": "Seleccionar idioma",
+    "pt-BR": "Português (Brasil)",
+    "en-US": "English (US)",
+    "es-ES": "Español"
+  },
+  "autenticacao": {
+    "titulo": "Inicie Sesión o Cree su Cuenta",
+    "subtitulo": "PrintLog utiliza autenticación segura de Google y GitHub para iniciar sesión o registrarse en pocos clics.",
+    "continuarGoogle": "Continuar con Google",
+    "continuarGithub": "Continuar con GitHub",
+    "ou": "o",
+    "placeholderEmail": "Su mejor correo electrónico",
+    "continuarEmail": "Continuar con Correo",
+    "preparandoFarm": "Preparando su Print Farm...",
+    "verifiqueEmail": "Verifique su Correo",
+    "linkMagicoEnviado": "Enviamos un enlace mágico seguro a",
+    "termosUso": "Términos de Servicio",
+    "politicaPrivacidade": "Política de Privacidad",
+    "concordanciaTermos": "Al continuar, usted acepta nuestros"
+  },
+  "dashboard": {
+    "saudacao": "¡Hola, {{nome}}! 👋",
+    "subtitulo": "Su centro de comando para costes reales y gestión profesional.",
+    "erroSincronizacao": "Error de sincronización de datos",
+    "erroSincronizacaoDesc": "No fue posible cargar la información del servidor. Verifique su conexión y vuelva a intentarlo.",
+    "tentarNovamente": "Intentar de Nuevo",
+    "metricas": {
+      "pedidosAtivos": "Pedidos Activos",
+      "taxaSucesso": "Tasa de Éxito",
+      "alertaEstoque": "Alerta de Stock",
+      "patrimonio": "Patrimonio",
+      "totalImpresso": "Total Impreso",
+      "consumoFilamento": "Consumo de Material",
+      "faturamentoTotal": "Facturación Total",
+      "lucroAcumulado": "Beneficio Acumulado",
+      "ticketMedio": "Ticket Medio",
+      "baseClientes": "Base de Clientes",
+      "potencial": "Potencial",
+      "roiEstimado": "ROI Estimado"
+    },
+    "dicas": {
+      "pedidosAtivos": "Cantidad de proyectos en impresión o en cola de producción.",
+      "taxaSucesso": "Porcentaje de impresiones completadas con éxito sin fallos mecánicos.",
+      "alertaEstoque": "Bobinas de filamento o insumos que alcanzaron el límite mínimo.",
+      "patrimonio": "Valor total invertido en materiales e insumos actualmente en stock.",
+      "totalImpresso": "Horas totales acumuladas en todas las impresoras 3D.",
+      "consumoFilamento": "Peso total en kilos de material consumido en todos los pedidos.",
+      "faturamentoTotal": "Ingresos brutos acumulados generados por las ventas.",
+      "lucroAcumulado": "Beneficio neto estimado tras deducir materiales y electricidad.",
+      "ticketMedio": "Gasto promedio por cliente en cada compra o proyecto.",
+      "baseClientes": "Cantidad de clientes registrados que ya han realizado pedidos.",
+      "potencial": "Suma del valor estimado de todos los pedidos activos en cola.",
+      "roiEstimado": "Retorno de inversión calculado a partir del coste de las máquinas."
+    }
+  },
+  "clientes": {
+    "titulo": "Gestión de Clientes",
+    "subtitulo": "Registre, gestione contactos y visualice el LTV de su base",
+    "novoCliente": "Nuevo Cliente",
+    "buscarPlaceholder": "BUSCAR POR NOMBRE, CORREO O TELÉFONO...",
+    "nenhumCliente": "Ningún cliente registrado",
+    "nenhumClienteDesc": "Añada su primer cliente para vincular presupuestos y pedidos."
+  },
+  "financeiro": {
+    "titulo": "Flujo Financiero",
+    "subtitulo": "Gestión de ingresos, costes operativos, gastos y estado de resultados",
+    "novoLancamento": "Nuevo Movimiento",
+    "receitas": "Ingresos",
+    "despesas": "Gastos",
+    "lucroLiquido": "Beneficio Neto",
+    "margemOperacional": "Margen Operativo",
+    "filtroPeriodo": "Filtrar por período"
+  },
+  "configuracoes": {
+    "titulo": "Configuración",
+    "subtitulo": "Personalice el estudio, preferencias visuales, idioma e integraciones",
+    "abas": {
+      "perfil": "Perfil",
+      "estudio": "Estudio",
+      "aparencia": "Apariencia",
+      "idioma": "Idioma",
+      "financeiro": "Costes y Márgenes",
+      "seguranca": "Seguridad",
+      "privacidade": "Privacidad",
+      "planos": "Suscripción"
+    }
+  }
+}

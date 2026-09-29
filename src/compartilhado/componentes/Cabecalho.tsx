@@ -8,6 +8,8 @@ import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/Contex
 import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { SeloPlano } from "./ui";
+import { SeletorIdioma } from "./SeletorIdioma";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 type PropriedadesCabecalho = {
   aoAbrirBarraLateral: () => void;
@@ -17,6 +19,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const { dados } = useCabecalho();
   const { usuario } = useAutenticacao();
   const { participarPrototipos } = useBeta();
+  const { t } = useIdioma();
   const vencimentoPlano = useArmazemConfiguracoes((s) => s.vencimentoPlano);
   const plano = useArmazemConfiguracoes((s) => s.plano);
   const localizacao = useLocation();
@@ -58,7 +61,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
       {vencido && (
         <div className="bg-red-500 text-white px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2">
           <AlertTriangle size={14} />
-          <span>SEU PLANO PRO ESTÁ EXPIRADO. ENTRE EM CONTATO COM O SUPORTE PARA RENOVAR E EVITAR O BLOQUEIO DA CONTA.</span>
+          <span>{t("cabecalho.planoExpirado")}</span>
         </div>
       )}
       <header className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 md:px-12 py-2 md:py-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-2xl border-b border-borda-sutil transition-all duration-300 shadow-sm dark:shadow-[0_1px_0_rgba(255,255,255,0.02)]">
@@ -66,7 +69,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
         <div className="flex items-center gap-1.5 sm:gap-4 min-w-0 shrink">
           <button
             onClick={aoAbrirBarraLateral}
-            aria-label="Abrir menu de navegação"
+            aria-label={t("cabecalho.abrirMenu")}
             className="flex md:!hidden p-2 -ml-1 text-zinc-500 hover:text-primary dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-colors shrink-0"
           >
             <Menu size={20} strokeWidth={2} />
@@ -82,7 +85,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               {participarPrototipos && (
                 <div className="hidden xs:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0">
                   <Beaker size={10} className="animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Lab</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">{t("cabecalho.laboratorio")}</span>
                 </div>
               )}
 
@@ -115,7 +118,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               />
               <input
                 type="text"
-                placeholder={dados.placeholderBusca || "BUSCAR..."}
+                placeholder={dados.placeholderBusca || t("cabecalho.buscarPlaceholder")}
                 value={termoBusca}
                 onChange={(e) => setTermoBusca(e.target.value)}
                 className="w-full h-8 md:h-10 pl-4 md:pl-8 pr-5 bg-transparent border-0 border-b-2 border-zinc-100 dark:border-white/10 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-primary dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-primary dark:focus:border-white"
@@ -127,13 +130,16 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                     dados.aoBuscar?.("");
                   }}
                   className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-white rounded-full transition-colors"
-                  aria-label="Limpar busca"
+                  aria-label={t("cabecalho.limparBusca")}
                 >
                   <X size={12} strokeWidth={2.5} />
                 </button>
               )}
             </div>
           )}
+
+          {/* Seletor de Idioma Compacto */}
+          <SeletorIdioma variante="compacto" />
 
           {!dados.ocultarNotificacoes && <MenuNotificacoes />}
 

@@ -4,12 +4,14 @@ import { AlertCircle, CheckCircle2, Github, Mail, ArrowRight } from "lucide-reac
 import { LayoutAutenticacao } from "./componentes/LayoutAutenticacao";
 import { PainelBranding } from "./componentes/PainelBranding";
 import { useAutenticacao } from "./contextos/ContextoAutenticacao";
-import { Carregamento } from "@/compartilhado/componentes";
+import { Carregamento, SeletorIdioma } from "@/compartilhado/componentes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 export function PaginaAcesso() {
   const navegar = useNavigate();
   const localizacao = useLocation();
   const { loginGoogle, loginGithub, enviarLinkMagicoLogin, usuario, carregando } = useAutenticacao();
+  const { t } = useIdioma();
   const [erro, definirErro] = useState<string | null>(null);
   
   // States do Magic Link
@@ -62,7 +64,7 @@ export function PaginaAcesso() {
     return (
       <LayoutAutenticacao variante="sky">
         <div className="w-full min-h-[450px] flex items-center justify-center">
-          <Carregamento texto="Preparando sua Farm..." tipo="ponto" />
+          <Carregamento texto={t("autenticacao.preparandoFarm")} tipo="ponto" />
         </div>
       </LayoutAutenticacao>
     );
@@ -112,14 +114,19 @@ export function PaginaAcesso() {
       />
 
       <div className="w-full lg:w-1/2 p-8 lg:p-14 flex flex-col justify-center relative bg-black/20">
+        {/* Seletor de Idioma no canto superior da tela de login */}
+        <div className="absolute top-5 right-5 z-20">
+          <SeletorIdioma variante="compacto" />
+        </div>
+
         <div className="lg:hidden flex items-center gap-2 mb-8">
           <img src="/logo-azul.png" alt="Logo" className="w-10 h-10 object-contain" />
           <span className="text-white font-black tracking-tighter text-xl">PRINTLOG</span>
         </div>
 
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Acesse ou Crie sua conta</h2>
-          <p className="text-zinc-400 text-sm">O PrintLog utiliza a autenticação segura do Google e GitHub para login ou cadastro simplificado em poucos cliques.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">{t("autenticacao.titulo")}</h2>
+          <p className="text-zinc-400 text-sm">{t("autenticacao.subtitulo")}</p>
         </div>
 
         {erro && (
@@ -153,7 +160,7 @@ export function PaginaAcesso() {
                 fill="#EA4335"
               />
             </svg>
-            Continuar com Google
+            {t("autenticacao.continuarGoogle")}
           </button>
 
           <button
@@ -162,12 +169,12 @@ export function PaginaAcesso() {
             className="w-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-zinc-300 font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-sm backdrop-blur-sm shadow-[0_4px_20px_-5px_rgba(255,255,255,0.05)]"
           >
             <Github size={18} />
-            Continuar com GitHub
+            {t("autenticacao.continuarGithub")}
           </button>
 
           <div className="flex items-center my-2">
             <div className="flex-1 border-t border-white/5"></div>
-            <span className="px-3 text-xs text-zinc-500 font-medium">ou</span>
+            <span className="px-3 text-xs text-zinc-500 font-medium">{t("autenticacao.ou")}</span>
             <div className="flex-1 border-t border-white/5"></div>
           </div>
 
@@ -181,7 +188,7 @@ export function PaginaAcesso() {
                   type="email"
                   value={email}
                   onChange={(e) => definirEmail(e.target.value)}
-                  placeholder="Seu melhor e-mail corporativo"
+                  placeholder={t("autenticacao.placeholderEmail")}
                   className="w-full bg-black/20 border border-white/10 text-white text-sm rounded-xl pl-11 pr-4 py-4 focus:outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] transition-all placeholder:text-zinc-600"
                   required
                 />
@@ -195,7 +202,7 @@ export function PaginaAcesso() {
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    Continuar com E-mail
+                    {t("autenticacao.continuarEmail")}
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -204,9 +211,9 @@ export function PaginaAcesso() {
           ) : (
             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 text-center animate-in fade-in zoom-in duration-300">
               <Mail size={32} className="text-emerald-400 mx-auto mb-3" />
-              <h3 className="text-white font-bold mb-1">Verifique seu E-mail</h3>
+              <h3 className="text-white font-bold mb-1">{t("autenticacao.verifiqueEmail")}</h3>
               <p className="text-sm text-zinc-400">
-                Enviamos um link mágico seguro para <br/>
+                {t("autenticacao.linkMagicoEnviado")} <br/>
                 <strong className="text-zinc-200">{email}</strong>
               </p>
             </div>
@@ -214,13 +221,13 @@ export function PaginaAcesso() {
         </div>
 
         <p className="mt-8 text-center text-xs text-zinc-500 leading-relaxed max-w-sm mx-auto">
-          Ao continuar, você concorda com nossos{" "}
+          {t("autenticacao.concordanciaTermos")}{" "}
           <a href="/termos-de-servico" className="text-[#0ea5e9] hover:underline">
-            Termos de Serviço
+            {t("autenticacao.termosUso")}
           </a>{" "}
           e com a{" "}
           <a href="/politica-de-privacidade" className="text-[#0ea5e9] hover:underline">
-            Política de Privacidade
+            {t("autenticacao.politicaPrivacidade")}
           </a>{" "}
           em conformidade com a LGPD (Art. 7º, V).
         </p>
