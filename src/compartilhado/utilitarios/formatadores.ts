@@ -1,6 +1,7 @@
 import i18n from "@/configuracoes/i18n";
+import { servicoCambio, MoedaSuportada } from "@/compartilhado/servicos/servicoCambio";
 
-export function obterLocaleAtivo(): { lang: string; currency: string } {
+export function obterLocaleAtivo(): { lang: string; currency: MoedaSuportada } {
     const lang = i18n?.language || "pt-BR";
     if (lang.startsWith("en")) return { lang: "en-US", currency: "USD" };
     if (lang.startsWith("es")) return { lang: "es-ES", currency: "EUR" };
@@ -8,23 +9,32 @@ export function obterLocaleAtivo(): { lang: string; currency: string } {
 }
 
 /**
- * Converte centavos (inteiro) para string formatada de moeda conforme locale ativo.
+ * Converte centavos (inteiro) para string formatada de moeda conforme locale ativo,
+ * aplicando conversão cambial oficial se a moeda de destino for diferente da moeda base (BRL).
  * Conforme Regra 6.0 do ecossistema PrintLog.
  */
-export function centavosParaReais(centavos: number, moedaForcada?: string): string {
+export function centavosParaReais(centavos: number, moedaForcada?: MoedaSuportada): string {
     const { lang, currency } = obterLocaleAtivo();
-    return (centavos / 100).toLocaleString(lang, {
+    const moedaFinal = moedaForcada || currency;
+    
+    // Converte de centavos BRL para a moeda de exibição (USD, EUR ou BRL) pela cotação oficial
+    const centavosConvertidos = servicoCambio.converterCentavos(centavos, "BRL", moedaFinal);
+
+    return (centavosConvertidos / 100).toLocaleString(lang, {
         style: "currency",
-        currency: moedaForcada || currency,
+        currency: moedaFinal,
     });
 }
 
 /**
- * Formata valores que exigem precisão decimal de até 4 dígitos (ex: insumos fracionados).
+ * Formata valores que exigem precisão decimal de até 4 dígitos (ex: insumos fracionados),
+ * aplicando a conversão cambial oficial.
  */
 export function formatarMoedaFracionada(centavos: number, digitosMax = 4): string {
     const { lang, currency } = obterLocaleAtivo();
-    return (centavos / 100).toLocaleString(lang, {
+    const centavosConvertidos = servicoCambio.converterCentavos(centavos, "BRL", currency);
+    
+    return (centavosConvertidos / 100).toLocaleString(lang, {
         style: "currency",
         currency,
         minimumFractionDigits: 2,

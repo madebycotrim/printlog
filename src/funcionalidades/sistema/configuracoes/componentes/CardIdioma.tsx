@@ -8,7 +8,7 @@ interface CardIdiomaProps {
 }
 
 export function CardIdioma({ pendente }: CardIdiomaProps) {
-  const { t, formatarMoeda, formatarData, idiomaAtual } = useIdioma();
+  const { t, formatarMoeda, formatarData, idiomaAtual, taxasCambio } = useIdioma();
 
   const exemploData = new Date();
   const exemploCentavos = 14990; // R$ 149,90 ou $ 149.90
@@ -54,6 +54,13 @@ export function CardIdioma({ pendente }: CardIdiomaProps) {
           <p className="text-[10px] text-zinc-400 leading-relaxed">
             {t("idiomas.notaExplicativa")}
           </p>
+
+          <div className="pt-2 flex flex-wrap items-center justify-between text-[9px] text-zinc-400 dark:text-zinc-500 font-mono border-t border-borda-sutil/40 gap-1">
+            <span>Câmbio Comercial Oficial:</span>
+            <span className="font-bold text-zinc-700 dark:text-zinc-300">
+              1 USD = R$ {taxasCambio.USDBRL.toFixed(2)} • 1 EUR = R$ {taxasCambio.EURBRL.toFixed(2)}
+            </span>
+          </div>
         </div>
       </div>
     </div>

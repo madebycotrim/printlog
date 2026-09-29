@@ -300,6 +300,7 @@ const DICIONARIO_GLOBAL: Record<string, EntradaDicionario> = {
     en: "When switching languages, dates, currencies, and operational terms are instantly adjusted without reloading and saved to your browser.",
     es: "Al cambiar el idioma, las fechas, monedas y términos operativos se ajustan instantáneamente sin recargar la página y se guardan en su navegador."
   },
+  "Câmbio Comercial Oficial:": { en: "Official Exchange Rate:", es: "Tipo de Cambio Oficial:" },
 
   // === CABEÇALHOS DE PÁGINAS ===
   "Fluxo de Produção": { en: "Production Flow", es: "Flujo de Producción" },

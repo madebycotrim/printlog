@@ -4,6 +4,8 @@ import { IDIOMAS_SUPORTADOS, CodigoIdioma, CHAVE_STORAGE_IDIOMA } from "@/config
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { tradutorUniversalDOM } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
+import { centavosParaReais, obterLocaleAtivo } from "@/compartilhado/utilitarios/formatadores";
+import { servicoCambio, MoedaSuportada } from "@/compartilhado/servicos/servicoCambio";
 
 export function useIdioma() {
   const { t, i18n } = useTranslation();
@@ -66,33 +68,8 @@ export function useIdioma() {
    * Regra 6.0: Moeda sempre inteiro em centavos, sem imprecisões de float.
    */
   const formatarMoeda = useCallback(
-    (centavos: number, moedaEspecifica?: string): string => {
-      const valor = centavos / 100;
-      let moeda = moedaEspecifica;
-
-      if (!moeda) {
-        switch (idiomaAtual) {
-          case "en-US":
-            moeda = "USD";
-            break;
-          case "es-ES":
-            moeda = "EUR";
-            break;
-          case "pt-BR":
-          default:
-            moeda = "BRL";
-            break;
-        }
-      }
-
-      try {
-        return new Intl.NumberFormat(idiomaAtual, {
-          style: "currency",
-          currency: moeda,
-        }).format(valor);
-      } catch {
-        return `${moeda} ${valor.toFixed(2)}`;
-      }
+    (centavos: number, moedaEspecifica?: MoedaSuportada): string => {
+      return centavosParaReais(centavos, moedaEspecifica);
     },
     [idiomaAtual]
   );
@@ -149,6 +126,8 @@ export function useIdioma() {
     mudarIdioma,
     formatarMoeda,
     formatarData,
+    taxasCambio: servicoCambio.getTaxas(),
+    moedaAtual: obterLocaleAtivo().currency,
     idiomas: IDIOMAS_SUPORTADOS,
   };
 }
