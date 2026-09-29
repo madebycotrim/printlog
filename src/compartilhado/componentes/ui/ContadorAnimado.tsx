@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { obterLocaleAtivo } from "@/compartilhado/utilitarios/formatadores";
 
 interface ContadorAnimadoProps {
   valor: number;
@@ -52,10 +53,12 @@ export const ContadorAnimado = ({
     return () => cancelAnimationFrame(frame);
   }, [valor]);
 
+  const { lang } = obterLocaleAtivo();
+
   return (
     <span className={className}>
       {prefixo}
-      {exibido.toLocaleString('pt-BR', { 
+      {exibido.toLocaleString(lang, { 
         minimumFractionDigits: casasDecimais, 
         maximumFractionDigits: casasDecimais 
       })}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, AlertCircle, HelpCircle } from "lucide-react";
 import { Dica } from "@/compartilhado/componentes/ui";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 /**
  * Interface para as propriedades do CardPerdas.
@@ -83,9 +84,8 @@ export function CardPerdas({
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>
                  <div className="flex items-baseline gap-1">
-                   <span className="text-xs font-black text-muted-foreground">R$</span>
                    <span className="text-lg font-black text-red-600 dark:text-red-400 tracking-tight leading-none">
-                     {((custoFalha || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                     {centavosParaReais(custoFalha || 0)}
                    </span>
                  </div>
               </div>

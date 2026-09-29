@@ -13,7 +13,7 @@ import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsum
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 import { apiClientes } from "@/funcionalidades/comercial/clientes/servicos/apiClientes";
 import { servicoPedidos } from "@/funcionalidades/producao/projetos/servicos/servicoPedidos";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarData, formatarDataHora } from "@/compartilhado/utilitarios/formatadores";
 import { toast } from "sonner";
 
 export function CardMetricas() {
@@ -95,7 +95,7 @@ export function CardMetricas() {
     csv += "PRINTLOG - RELATÓRIO E EXPORTAÇÃO COMPLETA DO ESTÚDIO\n";
     csv += `Titular;${usuario?.nome || "Maker"}\n`;
     csv += `E-mail;${usuario?.email || ""}\n`;
-    csv += `Data da Exportação;${new Date().toLocaleDateString("pt-BR")} ${new Date().toLocaleTimeString("pt-BR")}\n`;
+    csv += `Data da Exportação;${formatarDataHora(new Date())}\n`;
     csv += `Base Legal;Direito de Portabilidade - Art. 18 V da Lei 13.709/2018 (LGPD)\n\n`;
 
     csv += "RESUMO GERAL\n";
@@ -169,9 +169,9 @@ export function CardMetricas() {
     csv += "ID Pedido;Data;Status;Valor Total\n";
     pedidos.forEach((p: any) => {
       const id = p.id || "";
-      const data = p.dataCriacao ? new Date(p.dataCriacao).toLocaleDateString("pt-BR") : "";
+      const data = p.dataCriacao ? formatarData(p.dataCriacao) : "";
       const status = p.status || "Concluído";
-      const valor = p.valorCentavos ? centavosParaReais(p.valorCentavos) : (p.valorTotal ? `R$ ${p.valorTotal.toFixed(2)}` : "R$ 0,00");
+      const valor = p.valorCentavos ? centavosParaReais(p.valorCentavos) : (p.valorTotal ? centavosParaReais(Math.round(p.valorTotal * 100)) : centavosParaReais(0));
       csv += `${id};${data};${status};${valor}\n`;
     });
 
@@ -220,7 +220,7 @@ export function CardMetricas() {
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(148, 163, 184); // slate-400
-    doc.text(`Data: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 18);
+    doc.text(`Data: ${formatarDataHora(new Date())}`, 14, 18);
     doc.text(`Titular: ${usuario?.nome || "Maker"} (${usuario?.email || ""})`, 115, 18);
 
     y = 32;

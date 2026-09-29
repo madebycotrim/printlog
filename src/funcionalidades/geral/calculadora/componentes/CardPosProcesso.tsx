@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, Brush, HelpCircle } from "lucide-react";
 import { ItemPosProcesso } from "../tipos";
 import { InputBancario, Dica } from "@/compartilhado/componentes/ui";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardPosProcessoProps {
   posProcesso: ItemPosProcesso[];
@@ -97,9 +98,8 @@ export const CardPosProcesso = memo(function CardPosProcesso({
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>
                  <div className="flex items-baseline gap-1">
-                   <span className="text-xs font-black text-muted-foreground">R$</span>
                    <span className="text-lg font-black text-rose-600 dark:text-rose-400 tracking-tight leading-none">
-                     {(calcularCustoTotalPosProcesso() / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                     {centavosParaReais(calcularCustoTotalPosProcesso())}
                    </span>
                  </div>
               </div>

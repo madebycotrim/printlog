@@ -1,6 +1,7 @@
 import { Carretel, GarrafaResina } from "@/compartilhado/componentes";
 import { Material } from "@/funcionalidades/producao/materiais/tipos";
 import { ArrowRight } from "lucide-react";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface PropriedadesWidgetMateriais {
   materiais: Material[];
@@ -24,14 +25,18 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
 
       <div className="flex justify-between items-center mb-8 relative z-10">
         <div className="flex flex-col">
-          <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">Materiais Críticos</h4>
-          <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Status de Matéria-Prima</span>
+          <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">
+            {traduzirTextoGlobal("Materiais Críticos")}
+          </h4>
+          <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
+            {traduzirTextoGlobal("Status de Matéria-Prima")}
+          </span>
         </div>
         <button 
           onClick={aoVerTodos}
           className="group/btn flex items-center gap-2 text-[10px] text-sky-500 font-black hover:opacity-80 transition-all tracking-widest uppercase"
         >
-          REPOR
+          {traduzirTextoGlobal("REPOR")}
           <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
       </div>
@@ -40,7 +45,9 @@ export function WidgetMateriais({ materiais, aoVerTodos }: PropriedadesWidgetMat
         {criticos.length === 0 ? (
           <div className="col-span-2 text-center py-8 flex flex-col items-center opacity-20">
             <Carretel cor="#ccc" porcentagem={0} tamanho={24} id="empty-mat" />
-            <span className="text-[10px] font-black uppercase tracking-widest mt-2">Estoque em dia</span>
+            <span className="text-[10px] font-black uppercase tracking-widest mt-2">
+              {traduzirTextoGlobal("Estoque em dia")}
+            </span>
           </div>
         ) : (
           criticos.map((material, idx) => (

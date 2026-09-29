@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { obterImagemImpressora } from "@/funcionalidades/producao/impressoras/utilitarios/obter-imagem-simplyprint";
 import { useState } from "react";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function StatusTempoReal() {
     const { impressoras } = useArmazemImpressoras();
@@ -118,7 +119,7 @@ export function StatusTempoReal() {
                                         </span>
                                         <span>•</span>
                                         <span className="tabular-nums font-medium truncate">
-                                            {config.label}
+                                            {traduzirTextoGlobal(config.label)}
                                         </span>
                                     </div>
                                 </div>
@@ -129,7 +130,9 @@ export function StatusTempoReal() {
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-borda-sutil rounded-3xl">
                     <Printer size={32} className="text-zinc-300 dark:text-zinc-700 mb-4" />
-                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Sem máquinas ativas</p>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                        {traduzirTextoGlobal("Sem máquinas ativas")}
+                    </p>
                 </div>
             )}
 

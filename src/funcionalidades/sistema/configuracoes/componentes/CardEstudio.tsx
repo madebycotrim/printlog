@@ -23,6 +23,7 @@ import { CabecalhoCard } from "./Compartilhados";
 import { useEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useArmazemConfiguracoes } from "../estado/armazemConfiguracoes";
+import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { CorPrimaria } from "@/compartilhado/tipos/modelos";
 import { toast } from "sonner";
 import { ModalSuporte } from "@/funcionalidades/sistema/central-maker/componentes/ModalSuporte";
@@ -815,7 +816,7 @@ export function CardEstudio({
                     <div className="truncate">
                       <p className="font-bold text-primary truncate font-mono text-[11px]">{m.email}</p>
                       <p className="text-[9px] text-muted-foreground">
-                        Adicionado em {new Date(m.dataEntrada).toLocaleDateString("pt-BR")}
+                        Adicionado em {formatarData(m.dataEntrada)}
                       </p>
                     </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Insumo } from "../tipos";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { formatarMoedaFracionada } from "@/compartilhado/utilitarios/formatadores";
 
 interface ConfigHookInsumo {
   aberto: boolean;
@@ -53,15 +54,8 @@ export function useFormularioInsumo({ aberto, insumoEditando, aoSalvar, aoCancel
 
   // Cálculo de custo efetivo (unidade de consumo) com precisão extra para valores pequenos
   const calcularCustoEfetivo = () => {
-    if (!itemFracionavelAtivo || rendimentoAtivo <= 0) return "R$ 0,00";
-    const valorCalculado = (custoMedioAtivo / 100) / rendimentoAtivo;
-    
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    }).format(valorCalculado);
+    if (!itemFracionavelAtivo || rendimentoAtivo <= 0) return formatarMoedaFracionada(0);
+    return formatarMoedaFracionada(custoMedioAtivo / rendimentoAtivo, 4);
   };
   
   const custoEfetivo = calcularCustoEfetivo();

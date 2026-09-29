@@ -8,13 +8,13 @@ interface CardIdiomaProps {
 }
 
 export function CardIdioma({ pendente }: CardIdiomaProps) {
-  const { t, formatarMoeda, formatarData } = useIdioma();
+  const { t, formatarMoeda, formatarData, idiomaAtual } = useIdioma();
 
   const exemploData = new Date();
   const exemploCentavos = 14990; // R$ 149,90 ou $ 149.90
 
   return (
-    <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
+    <div key={idiomaAtual} className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
 
       <CabecalhoCard

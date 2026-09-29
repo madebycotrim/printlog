@@ -1,5 +1,7 @@
 import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SeletorIdioma } from "@/compartilhado/componentes";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function Rodape() {
   return (
@@ -27,8 +29,7 @@ export function Rodape() {
                 </span>
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed max-w-sm">
-                Sistema de gestão para makers 3D. Calcule com
-                precisão seus custos de impressão e maximize seus lucros.
+                {traduzirTextoGlobal("Sistema de gestão para makers 3D. Calcule com precisão seus custos de impressão e maximize seus lucros.")}
               </p>
             </div>
 
@@ -36,7 +37,7 @@ export function Rodape() {
             <div>
               <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-5 flex items-center gap-2">
                 <div className="w-4 h-px bg-gradient-to-r from-sky-400 to-blue-600"></div>
-                Contato
+                {traduzirTextoGlobal("Contato")}
               </h4>
               <a
                 href="mailto:contato@printlog.com.br"
@@ -51,10 +52,9 @@ export function Rodape() {
           </div>
 
           {/* Barra Inferior */}
-
           <div className="pt-8 mt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col md:flex-row items-center gap-6 text-zinc-500 text-xs">
-              <span>© 2026 PrintLog. Todos os direitos reservados.</span>
+              <span>© 2026 PrintLog. {traduzirTextoGlobal("Todos os direitos reservados.")}</span>
 
               {/* Separador Desktop - Oculto em mobile */}
               <span className="hidden md:block w-px h-3 bg-white/10 mx-2"></span>
@@ -64,39 +64,42 @@ export function Rodape() {
                   to="/seguranca-e-privacidade"
                   className="hover:text-sky-400 transition-colors duration-300"
                 >
-                  Segurança e Privacidade
+                  {traduzirTextoGlobal("Segurança e Privacidade")}
                 </Link>
                 <Link
                   to="/politica-de-privacidade"
                   className="hover:text-sky-400 transition-colors duration-300"
                 >
-                  Política de Privacidade
+                  {traduzirTextoGlobal("Política de Privacidade")}
                 </Link>
                 <Link
                   to="/politica-de-cookies"
                   className="hover:text-sky-400 transition-colors duration-300"
                 >
-                  Política de Cookies
+                  {traduzirTextoGlobal("Política de Cookies")}
                 </Link>
                 <Link
                   to="/termos-de-servico"
                   className="hover:text-sky-400 transition-colors duration-300"
                 >
-                  Termos de Serviço
+                  {traduzirTextoGlobal("Termos de Serviço")}
                 </Link>
               </div>
             </div>
 
-            <a
-              href="https://madebycotrim.com.br"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-white/10"
-            >
-              <span className="text-[10px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors">
-                MADEBYCOTRIM
-              </span>
-            </a>
+            <div className="flex items-center gap-4">
+              <SeletorIdioma variante="compacto" />
+              <a
+                href="https://madebycotrim.com.br"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-white/10"
+              >
+                <span className="text-[10px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors">
+                  MADEBYCOTRIM
+                </span>
+              </a>
+            </div>
           </div>
         </div>
       </footer>

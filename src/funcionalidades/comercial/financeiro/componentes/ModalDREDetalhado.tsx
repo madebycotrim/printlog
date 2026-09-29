@@ -156,7 +156,7 @@ export function ModalDREDetalhado({ aberto, aoFechar, dre }: ModalDREDetalhadoPr
                     <Tooltip 
                       cursor={{ fill: "rgba(255,255,255,0.05)" }}
                       contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "12px", color: "#fff", fontWeight: "bold" }}
-                      formatter={(valor: any) => [`R$ ${Number(valor ?? 0).toFixed(2)}`, "Valor"]}
+                      formatter={(valor: any) => [centavosParaReais(Math.round(Number(valor ?? 0) * 100)), "Valor"]}
                     />
                     <Bar dataKey="valor" radius={[6, 6, 0, 0]}>
                       {dadosGrafico.map((entry, index) => (

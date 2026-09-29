@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { History, Package, DollarSign, Plus } from "lucide-react";
 import { Cliente } from "../tipos";
 import { StatusPedido } from "@/compartilhado/tipos/modelos";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiPedidos } from "@/funcionalidades/producao/projetos/servicos/apiPedidos";
 import { Pedido } from "@/funcionalidades/producao/projetos/tipos";
@@ -176,11 +176,7 @@ export function AbaHistoricoCliente({ cliente }: PropriedadesAbaHistorico) {
                     <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500">
                       <History size={12} strokeWidth={2.5} />
                       <span className="text-[10px] font-bold uppercase tracking-widest">
-                        {new Date(pedido.dataCriacao).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })}
+                        {formatarDataCompleta(pedido.dataCriacao)}
                       </span>
                     </div>
                   </div>

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Box, CheckCircle2, XCircle, Clock, DollarSign, Zap, Gauge } from "lucide-react";
 import { Impressora } from "@/funcionalidades/producao/impressoras/tipos";
 import { motion } from "framer-motion";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesAbaProducao {
   impressora: Impressora;
@@ -182,7 +182,7 @@ export function AbaProducaoImpressora({ impressora }: PropriedadesAbaProducao) {
                       </td>
                       <td className="px-8 py-5 text-right whitespace-nowrap">
                          <span className="text-[10px] font-black text-zinc-400 tabular-nums tracking-widest uppercase">
-                            {new Date(reg.dataConclusao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })}
+                            {formatarDataCurta(reg.dataConclusao)}
                          </span>
                       </td>
                     </tr>

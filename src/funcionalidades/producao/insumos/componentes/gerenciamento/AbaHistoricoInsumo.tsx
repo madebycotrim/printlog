@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Package, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { Insumo } from "../../tipos";
+import { obterLocaleAtivo } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesAbaHistorico {
   insumo: Insumo;
@@ -21,7 +22,8 @@ export function AbaHistoricoInsumo({ insumo }: PropriedadesAbaHistorico) {
   }, [registrosRaw, busca]);
 
   const formatarData = (dataISO: string) => {
-    return new Date(dataISO).toLocaleDateString("pt-BR", {
+    const { lang } = obterLocaleAtivo();
+    return new Date(dataISO).toLocaleDateString(lang, {
       day: "2-digit",
       month: "short",
       year: "numeric",

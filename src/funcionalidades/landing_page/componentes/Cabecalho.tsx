@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { LayoutDashboard } from "lucide-react";
+import { SeletorIdioma } from "@/compartilhado/componentes";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function Cabecalho() {
   const { usuario, carregando } = useAutenticacao();
@@ -47,66 +49,71 @@ export function Cabecalho() {
               onClick={() => document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' })}
               className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
-              Benefícios
+              {traduzirTextoGlobal("Benefícios")}
             </button>
             <button 
               onClick={() => document.getElementById('centro-comando')?.scrollIntoView({ behavior: 'smooth' })}
               className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
-              Demonstração
+              {traduzirTextoGlobal("Demonstração")}
             </button>
             <button 
               onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
               className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
-              Preços
+              {traduzirTextoGlobal("Preços")}
             </button>
           </nav>
 
           {/* Ações Desktop */}
           <div className="hidden lg:flex items-center gap-4">
+            <SeletorIdioma variante="compacto" />
+
             {!carregando && usuario ? (
               <Link
                 to="/dashboard"
                 className="relative px-6 py-2.5 bg-white text-zinc-950 font-bold rounded-lg text-sm transition-all duration-300 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_-3px_rgba(255,255,255,0.5)] uppercase tracking-wide transform hover:-translate-y-0.5 hover:scale-105 flex items-center gap-2 group"
               >
                 <LayoutDashboard size={16} className="text-sky-500" />
-                <span className="relative z-10">Ir para o Dashboard</span>
+                <span className="relative z-10">{traduzirTextoGlobal("Ir para o Dashboard")}</span>
               </Link>
             ) : (
               <>
                 <Link
                   to="/autenticacao"
-                  className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-white transition-colors mr-4"
+                  className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-white transition-colors mr-2"
                 >
-                  Entrar
+                  {traduzirTextoGlobal("Entrar")}
                 </Link>
                 <Link
                   to="/autenticacao"
                   className="relative px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-black rounded-lg text-xs transition-all duration-300 shadow-lg shadow-sky-500/20 uppercase tracking-[0.15em] transform hover:-translate-y-0.5"
                 >
-                  Criar Conta
+                  {traduzirTextoGlobal("Criar Conta")}
                 </Link>
               </>
             )}
           </div>
 
-          {/* Botão Menu Mobile */}
-          <button
-            onClick={() => definirMenuMobileAberto(!menuMobileAberto)}
-            className="lg:hidden relative z-50 w-10 h-10 flex flex-col items-center justify-center gap-1.5 transition-all duration-300"
-            aria-label="Alternar menu"
-          >
-            <span
-              className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${menuMobileAberto ? "rotate-45 translate-y-2" : ""}`}
-            ></span>
-            <span
-              className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${menuMobileAberto ? "opacity-0" : ""}`}
-            ></span>
-            <span
-              className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${menuMobileAberto ? "-rotate-45 -translate-y-2" : ""}`}
-            ></span>
-          </button>
+          {/* Mobile Right (Seletor de Idioma + Menu Hambúrguer) */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <SeletorIdioma variante="compacto" />
+            <button
+              onClick={() => definirMenuMobileAberto(!menuMobileAberto)}
+              className="relative z-50 w-10 h-10 flex flex-col items-center justify-center gap-1.5 transition-all duration-300"
+              aria-label="Alternar menu"
+            >
+              <span
+                className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${menuMobileAberto ? "rotate-45 translate-y-2" : ""}`}
+              ></span>
+              <span
+                className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${menuMobileAberto ? "opacity-0" : ""}`}
+              ></span>
+              <span
+                className={`w-6 h-0.5 bg-white rounded-full transition-all duration-300 ${menuMobileAberto ? "-rotate-45 -translate-y-2" : ""}`}
+              ></span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -117,26 +124,30 @@ export function Cabecalho() {
         <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => definirMenuMobileAberto(false)} />
 
         <div className="relative h-full flex flex-col items-center justify-center gap-8 p-6">
-          <nav className="flex flex-col items-center gap-6 mb-8">
+          <nav className="flex flex-col items-center gap-6 mb-4">
             <button 
               onClick={() => { document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
               className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
-              Benefícios
+              {traduzirTextoGlobal("Benefícios")}
             </button>
             <button 
               onClick={() => { document.getElementById('centro-comando')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
               className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
-              Demonstração
+              {traduzirTextoGlobal("Demonstração")}
             </button>
             <button 
               onClick={() => { document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
               className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
             >
-              Preços
+              {traduzirTextoGlobal("Preços")}
             </button>
           </nav>
+
+          <div className="w-full max-w-xs mb-2">
+            <SeletorIdioma variante="completo" />
+          </div>
 
           <div
             className={`flex flex-col items-center gap-4 w-full max-w-xs transition-all duration-500 ${menuMobileAberto ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
@@ -147,14 +158,14 @@ export function Cabecalho() {
               onClick={() => definirMenuMobileAberto(false)}
               className="w-full text-center px-8 py-4 bg-sky-500 text-white font-black rounded-lg text-xs uppercase tracking-widest shadow-lg shadow-sky-500/20"
             >
-              Criar Conta
+              {traduzirTextoGlobal("Criar Conta")}
             </Link>
             <Link
               to="/autenticacao"
               onClick={() => definirMenuMobileAberto(false)}
               className="w-full text-center px-8 py-4 border border-white/10 text-white font-black rounded-lg text-xs uppercase tracking-widest"
             >
-              Entrar
+              {traduzirTextoGlobal("Entrar")}
             </Link>
           </div>
 

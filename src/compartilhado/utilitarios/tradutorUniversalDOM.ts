@@ -51,8 +51,8 @@ const DICIONARIO_GLOBAL: Record<string, EntradaDicionario> = {
   "e com a": { en: "and our", es: "y la" },
   "Política de Privacidade": { en: "Privacy Policy", es: "Política de Privacidad" },
   "em conformidade com a LGPD (Art. 7º, V).": {
-    en: "in compliance with privacy regulations (GDPR / LGPD).",
-    es: "en conformidad con las normas de privacidad (LGPD)."
+    en: "in compliance with LGPD (Art. 7, V).",
+    es: "en conformidad con la LGPD (Art. 7º, V)."
   },
   "Voltar ao site": { en: "Back to website", es: "Volver al sitio web" },
   "Preparando sua Farm...": { en: "Preparing your Print Farm...", es: "Preparando su Print Farm..." },
@@ -290,6 +290,183 @@ const DICIONARIO_GLOBAL: Record<string, EntradaDicionario> = {
   "Membro Fundador": { en: "Founder Member", es: "Miembro Fundador" },
   "Alterar Senha": { en: "Change Password", es: "Cambiar Contraseña" },
   "Verificar E-mail": { en: "Verify Email", es: "Verificar Correo" },
+  "Adaptação Automática de Formatos": { en: "Automatic Format Adaptation", es: "Adaptación Automática de Formatos" },
+  "ADAPTAÇÃO AUTOMÁTICA DE FORMATOS": { en: "AUTOMATIC FORMAT ADAPTATION", es: "ADAPTACIÓN AUTOMÁTICA DE FORMATOS" },
+  "Exemplo de Moeda:": { en: "Currency Example:", es: "Ejemplo de Moneda:" },
+  "Exemplo de Moeda": { en: "Currency Example", es: "Ejemplo de Moneda" },
+  "Exemplo de Data:": { en: "Date Example:", es: "Ejemplo de Fecha:" },
+  "Exemplo de Data": { en: "Date Example", es: "Ejemplo de Fecha" },
+  "Ao alternar o idioma, datas, moedas e termos operacionais são ajustados instantaneamente sem recarregar a página e ficam salvos no seu navegador.": {
+    en: "When switching languages, dates, currencies, and operational terms are instantly adjusted without reloading and saved to your browser.",
+    es: "Al cambiar el idioma, las fechas, monedas y términos operativos se ajustan instantáneamente sin recargar la página y se guardan en su navegador."
+  },
+
+  // === CABEÇALHOS DE PÁGINAS ===
+  "Fluxo de Produção": { en: "Production Flow", es: "Flujo de Producción" },
+  "Gerencie seus pedidos no Kanban": {
+    en: "Manage your orders in the Kanban board",
+    es: "Gestione sus pedidos en el tablero Kanban"
+  },
+  "Fila de Produção": { en: "Print Queue", es: "Cola de Producción" },
+  "Sequenciamento visual e planejamento de impressões por máquina": {
+    en: "Visual sequencing and machine print job scheduling",
+    es: "Secuenciación visual y planificación de impresiones por máquina"
+  },
+  "Minhas Impressoras": { en: "My 3D Printers", es: "Mis Impresoras 3D" },
+  "Gerencie seu parque de máquinas": {
+    en: "Manage your printer fleet and maintenance",
+    es: "Gestione su parque de máquinas y mantenimiento"
+  },
+  "Meus Materiais": { en: "My Materials", es: "Mis Materiales" },
+  "Gestão de filamentos, resinas e patrimônio técnico": {
+    en: "Filament, resin and technical asset inventory",
+    es: "Gestión de filamentos, resinas y patrimonio técnico"
+  },
+  "Meus Insumos": { en: "My Supplies", es: "Mis Insumos" },
+  "Gerencie peças e outros materiais logísticos": {
+    en: "Manage parts and logistics materials",
+    es: "Gestione piezas y otros materiales logísticos"
+  },
+  "Fluxo de Caixa": { en: "Cash Flow", es: "Flujo de Caja" },
+  "Acompanhamento detalhado de rentabilidade e saúde financeira": {
+    en: "Detailed profitability and financial health tracking",
+    es: "Seguimiento detallado de rentabilidad y salud financiera"
+  },
+  "Agenda de Manutenção Preditiva": { en: "Predictive Maintenance Schedule", es: "Agenda de Mantenimiento Predictivo" },
+  "Evite paradas não planejadas monitorando a saúde do seu parque.": {
+    en: "Prevent unplanned downtime by monitoring fleet health.",
+    es: "Evite paradas no planificadas monitoreando la salud de su parque."
+  },
+  "Gestão operacional e proteção de dados (LGPD)": {
+    en: "Operational management and data privacy (LGPD)",
+    es: "Gestión operativa y protección de datos (LGPD)"
+  },
+  "Salvando alterações em background...": {
+    en: "Saving changes in background...",
+    es: "Guardando cambios en segundo plano..."
+  },
+  "Todas as alterações foram salvas automaticamente": {
+    en: "All changes were automatically saved",
+    es: "Todos los cambios se guardaron automáticamente"
+  },
+  "Calculadora de Custos": { en: "Cost Calculator", es: "Calculadora de Costes" },
+  "Editando Precificação": { en: "Editing Pricing", es: "Editando Precios" },
+  "Motor de Orçamentação Avançado": { en: "Advanced Quotation Engine", es: "Motor de Presupuestos Avanzado" },
+  "Visão Geral e Métricas em Tempo Real": { en: "Overview & Real-Time Metrics", es: "Visión General y Métricas en Tiempo Real" },
+
+  // === BOTÕES DE AÇÃO DO CABEÇALHO ===
+  "Novo Cadastro": { en: "New Client", es: "Nuevo Registro" },
+  "Novo Cadastro Manual": { en: "New Manual Client", es: "Nuevo Registro Manual" },
+  "Nova Máquina": { en: "New Printer", es: "Nueva Máquina" },
+  "Novo Material": { en: "New Material", es: "Nuevo Material" },
+  "Novo Insumo": { en: "New Supply", es: "Nuevo Insumo" },
+  "Novo Pedido": { en: "New Order", es: "Nuevo Pedido" },
+  "Registrar Transação": { en: "Record Transaction", es: "Registrar Transacción" },
+
+  // === ESTADOS VAZIOS (EMPTY STATES) ===
+  "Nenhum cliente no radar": { en: "No clients on radar", es: "Ningún cliente en el radar" },
+  "Sua base de clientes está vazia. Comece cadastrando um cliente VIP para iniciar seu ecossistema.": {
+    en: "Your customer base is empty. Start by registering a VIP customer to kick off your ecosystem.",
+    es: "Su base de clientes está vacía. Comience registrando un cliente VIP para iniciar su ecosistema."
+  },
+  "Nenhum pedido na fila": { en: "No orders in queue", es: "Ningún pedido en cola" },
+  "Nenhuma impressora cadastrada": { en: "No 3D printers registered", es: "Ninguna impresora registrada" },
+  "Cadastre sua primeira impressora para calcular custos reais de depreciação e energia.": {
+    en: "Register your first printer to calculate real depreciation and energy costs.",
+    es: "Registre su primera impresora para calcular costes reales de depreciación y energía."
+  },
+  "Nenhum material cadastrado": { en: "No materials registered", es: "Ningún material registrado" },
+  "Cadastre seus filamentos e resinas para controle automático de estoque e precificação.": {
+    en: "Register your filaments and resins for automated inventory and pricing control.",
+    es: "Registre sus filamentos y resinas para control automático de stock y precios."
+  },
+  "Nenhum insumo cadastrado": { en: "No supplies registered", es: "Ningún insumo registrado" },
+  "Nenhuma transação encontrada": { en: "No transactions found", es: "Ninguna transacción encontrada" },
+  "Nenhum registro": { en: "No records", es: "Ningún registro" },
+
+  // === DASHBOARD WIDGETS ===
+  "Orçamentos Recentes": { en: "Recent Quotes", es: "Presupuestos Recientes" },
+  "VER TODOS": { en: "VIEW ALL", es: "VER TODOS" },
+  "Ver Todos": { en: "View All", es: "Ver Todos" },
+  "Ver todos": { en: "View all", es: "Ver todos" },
+  "Quadro de Avisos": { en: "Notice Board", es: "Tablón de Anuncios" },
+  "Tudo sob controle.": { en: "All under control.", es: "Todo bajo control." },
+  "Nenhum aviso no quadro.": { en: "No notices on board.", es: "Ningún aviso en el tablón." },
+  "Tudo sob controle. Nenhum aviso no quadro.": { en: "All under control. No notices on the board.", es: "Todo bajo control. Ningún aviso en el tablón." },
+  "VERIFICAR AGORA": { en: "CHECK NOW", es: "VERIFICAR AHORA" },
+  "MAKER FUNDADOR": { en: "FOUNDER MAKER", es: "CREADOR FUNDADOR" },
+  "Maker Fundador": { en: "Founder Maker", es: "Creador Fundador" },
+  "Manutenção Necessária": { en: "Maintenance Required", es: "Mantenimiento Requerido" },
+  "AGENDAR AGORA": { en: "SCHEDULE NOW", es: "PROGRAMAR AHORA" },
+  "Insumos Críticos": { en: "Critical Supplies", es: "Insumos Críticos" },
+  "Monitor de Reposição": { en: "Replenishment Monitor", es: "Monitor de Reposición" },
+  "Materiais Críticos": { en: "Critical Materials", es: "Materiales Críticos" },
+  "Status de Matéria-Prima": { en: "Raw Material Status", es: "Estado de Materias Primas" },
+  "REPOR": { en: "RESTOCK", es: "REPONER" },
+  "Repor": { en: "Restock", es: "Reponer" },
+  "Estoque em dia": { en: "Stock up to date", es: "Stock al día" },
+  "Sem máquinas ativas": { en: "No active machines", es: "Sin máquinas activas" },
+  "PRONTA": { en: "READY", es: "LISTA" },
+  "EM CURSO": { en: "IN PROGRESS", es: "EN CURSO" },
+  "EM REVISÃO": { en: "UNDER REVIEW", es: "EN REVISIÓN" },
+  "Novo Orçamento": { en: "New Quote", es: "Nuevo Presupuesto" },
+  "Ver Fila de Produção": { en: "View Print Queue", es: "Ver Cola de Producción" },
+  "Repor Material (Filamento)": { en: "Restock Material (Filament)", es: "Reponer Material (Filamento)" },
+  "Repor Insumo (Resina/Peças)": { en: "Restock Supply (Resin/Parts)", es: "Reponer Insumo (Resina/Piezas)" },
+  "Status das Máquinas": { en: "Machine Status", es: "Estado de las Máquinas" },
+  "Registrar Lançamento": { en: "Record Transaction", es: "Registrar Movimiento" },
+
+  // === LANDING PAGE ===
+  "Benefícios": { en: "Benefits", es: "Beneficios" },
+  "Demonstração": { en: "Demo", es: "Demostración" },
+  "Preços": { en: "Pricing", es: "Precios" },
+  "Ir para o Dashboard": { en: "Go to Dashboard", es: "Ir al Panel" },
+  "Entrar": { en: "Sign In", es: "Iniciar Sesión" },
+  "Criar Conta": { en: "Create Account", es: "Crear Cuenta" },
+  "Contato": { en: "Contact", es: "Contacto" },
+  "Começar Grátis": { en: "Start Free", es: "Comenzar Gratis" },
+  "Começar Agora": { en: "Get Started Now", es: "Comenzar Ahora" },
+  "Assinar Plano PRO": { en: "Subscribe to PRO Plan", es: "Suscribirse al Plan PRO" },
+  "DINHEIRO FORA": { en: "MONEY AWAY", es: "EL DINERO" },
+  "Demonstração do Sistema": { en: "System Demo", es: "Demostración del Sistema" },
+  "O Cérebro da sua": { en: "The Brain Behind Your", es: "El Cerebro de su" },
+  "Operação de Impressão.": { en: "3D Printing Operations.", es: "Operación de Impresión." },
+  "Painel de Controle": { en: "Control Panel", es: "Panel de Control" },
+  "Faturado Mês": { en: "Monthly Revenue", es: "Facturado Mes" },
+  "Precisão Custos": { en: "Cost Accuracy", es: "Precisión de Costes" },
+  "Lucro Real Médio": { en: "Avg Real Profit", es: "Beneficio Real Medio" },
+  "Zero": { en: "Zero", es: "Cero" },
+  "Chutômetro": { en: "Guesswork", es: "Estimaciones a ojo" },
+  "Compromisso Ético PrintLog": { en: "PrintLog Ethical Commitment", es: "Compromiso Ético PrintLog" },
+  "Oferta de Lançamento": { en: "Launch Offer", es: "Oferta de Lanzamiento" },
+  "Gratuito": { en: "Free", es: "Gratuito" },
+  "sempre": { en: "forever", es: "siempre" },
+  "tempo limitado": { en: "limited time", es: "tiempo limitado" },
+  "Escolha o Plano Ideal para sua": { en: "Choose the Ideal Plan for Your", es: "Elija el Plan Ideal para su" },
+  "MAIS QUE UM SOFTWARE,": { en: "MORE THAN SOFTWARE,", es: "MÁS QUE UN SOFTWARE," },
+  "UMA MISSÃO.": { en: "A MISSION.", es: "UNA MISIÓN." },
+  "Feito por Makers, Para Makers — Junte-se à Missão": {
+    en: "Made by Makers, For Makers — Join the Mission",
+    es: "Hecho por Makers, Para Makers — Únase a la Misión"
+  },
+  "Acesso total gratuito para quem apoia o início do projeto": {
+    en: "Full free access for everyone supporting the launch",
+    es: "Acceso total gratuito para quienes apoyan el inicio del proyecto"
+  },
+  "Precificação Errada": { en: "Wrong Pricing", es: "Precios Incorrectos" },
+  "Energia Ignorada": { en: "Ignored Energy", es: "Energía Ignorada" },
+  "Falhas de Impressão": { en: "Print Failures", es: "Fallos de Impresión" },
+  "Estoque Parado": { en: "Idle Inventory", es: "Stock Parado" },
+  "Manutenção Reativa": { en: "Reactive Maintenance", es: "Mantenimiento Reactivo" },
+  "Desperdício Oculto": { en: "Hidden Waste", es: "Desperdicio Oculto" },
+  "Branding de Estúdio": { en: "Studio Branding", es: "Branding de Estudio" },
+  "Gestão Manual": { en: "Manual Management", es: "Gestión Manual" },
+  "Todos os direitos reservados.": { en: "All rights reserved.", es: "Todos los derechos reservados." },
+  "Sistema de gestão para makers 3D. Calcule com precisão seus custos de impressão e maximize seus lucros.": {
+    en: "Management platform for 3D makers. Accurately calculate printing costs and maximize your profits.",
+    es: "Sistema de gestión para makers 3D. Calcule con precisión sus costes de impresión y maximice sus beneficios."
+  },
+  "Política de Cookies": { en: "Cookie Policy", es: "Política de Cookies" },
 
   // === PLACEHOLDERS COMUNS ===
   "PESQUISAR EM TODA A PLATAFORMA...": {
@@ -320,15 +497,21 @@ const TAGS_IGNORADAS = new Set([
 class MotorTradutorUniversalDOM {
   private idiomaAtivo: string = "pt-BR";
   private mapaNosOriginais = new WeakMap<Node, string>();
+  private mapaUltimasTraducoes = new WeakMap<Node, string>();
   private mapaAttrOriginais = new WeakMap<Element, Record<string, string>>();
   private observer: MutationObserver | null = null;
   private agendamentoId: number | null = null;
   private ativo: boolean = false;
+  private processandoMutacao: boolean = false;
 
   constructor() {
     if (typeof window !== "undefined") {
       this.iniciarObserver();
     }
+  }
+
+  public getIdiomaAtivo(): string {
+    return this.idiomaAtivo;
   }
 
   /**
@@ -398,7 +581,11 @@ class MotorTradutorUniversalDOM {
           const pai = node.parentElement;
           if (!pai || TAGS_IGNORADAS.has(pai.tagName)) return NodeFilter.FILTER_REJECT;
           if (pai.isContentEditable) return NodeFilter.FILTER_REJECT;
-          if (pai.closest("#btn-seletor-idioma")) return NodeFilter.FILTER_REJECT;
+          if (
+            pai.closest("#btn-seletor-idioma") ||
+            pai.closest('[data-seletor-idioma="true"]') ||
+            pai.closest('[data-sonner-toaster]')
+          ) return NodeFilter.FILTER_REJECT;
           const texto = node.textContent?.trim();
           if (!texto || texto.length < 2) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
@@ -423,13 +610,18 @@ class MotorTradutorUniversalDOM {
    */
   private processarNoTexto(no: Node, subChave: "en" | "es") {
     let original = this.mapaNosOriginais.get(no);
-    if (!original) {
-      original = no.textContent || "";
+    const atual = no.textContent || "";
+    const ultimaTrad = this.mapaUltimasTraducoes.get(no);
+
+    // Se o nó ainda não foi mapeado OU o React renderizou um novo texto diferente da nossa tradução
+    if (!original || (atual && atual !== ultimaTrad && atual !== original)) {
+      original = atual;
       this.mapaNosOriginais.set(no, original);
     }
 
     const traduzido = this.traduzirTexto(original, subChave);
     if (traduzido !== original && no.textContent !== traduzido) {
+      this.mapaUltimasTraducoes.set(no, traduzido);
       no.textContent = traduzido;
     }
   }
@@ -466,75 +658,117 @@ class MotorTradutorUniversalDOM {
   }
 
   /**
-   * Aplica matching inteligente: busca exata, case insensitive e substituição de termos
+   * Aplica matching inteligente: busca exata, case insensitive e tratamento de prefixos/sufixos
+   * NUNCA substitui termos parciais dentro de frases para evitar misturas bizarras (ex: "Back ao site" ou "+ New Cadastro")
    */
-  private traduzirTexto(textoOriginal: string, subChave: "en" | "es"): string {
+  public traduzirTexto(textoOriginal: string, subChave: "en" | "es"): string {
+    if (!textoOriginal) return textoOriginal;
     const textoAparado = textoOriginal.trim();
     if (!textoAparado) return textoOriginal;
 
-    // 1. Busca direta exata
-    const direto = DICIONARIO_GLOBAL[textoAparado];
-    if (direto) {
-      return textoOriginal.replace(textoAparado, direto[subChave]);
+    // 1. Identificar e extrair decoradores/prefixos e sufixos comuns (ex: "+ ", "-> ", "...", ":")
+    let prefixo = "";
+    let sufixo = "";
+    let conteudo = textoAparado;
+
+    // Prefixo tipo "+ ", "• ", "- ", "> "
+    const matchPrefixo = conteudo.match(/^([+•\->\s]+)\s*/);
+    if (matchPrefixo && matchPrefixo[1].length < conteudo.length) {
+      prefixo = matchPrefixo[0];
+      conteudo = conteudo.substring(prefixo.length).trim();
     }
 
-    // 2. Busca ignorando maiúsculas/minúsculas
-    const minusculo = textoAparado.toLowerCase();
+    // Sufixo tipo " ->", "...", ":", "!", "?"
+    const matchSufixo = conteudo.match(/\s*([:\-!?>]+|\.{3})$/);
+    if (matchSufixo && matchSufixo[0].length < conteudo.length) {
+      sufixo = matchSufixo[0];
+      conteudo = conteudo.substring(0, conteudo.length - sufixo.length).trim();
+    }
+
+    // 2. Busca direta exata no dicionário
+    const direto = DICIONARIO_GLOBAL[conteudo];
+    if (direto) {
+      const traducao = direto[subChave];
+      const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+        ? traducao.toUpperCase()
+        : traducao;
+      return textoOriginal.replace(textoAparado, `${prefixo}${formatada}${sufixo}`);
+    }
+
+    // 3. Busca case-insensitive
+    const minusculo = conteudo.toLowerCase();
     for (const [pt, traducoes] of Object.entries(DICIONARIO_GLOBAL)) {
       if (pt.toLowerCase() === minusculo) {
         const subst = traducoes[subChave];
-        // Preserva se era todo maiúsculo (ex: "NOVO CLIENTE" -> "NEW CLIENT")
-        if (textoAparado === textoAparado.toUpperCase() && textoAparado.length > 2) {
-          return textoOriginal.replace(textoAparado, subst.toUpperCase());
-        }
-        return textoOriginal.replace(textoAparado, subst);
+        const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+          ? subst.toUpperCase()
+          : subst;
+        return textoOriginal.replace(textoAparado, `${prefixo}${formatada}${sufixo}`);
       }
     }
 
-    // 3. Substituição de termos conhecidos dentro de sentenças maiores
-    let resultado = textoOriginal;
-    for (const [termoPt, traducoes] of Object.entries(DICIONARIO_GLOBAL)) {
-      if (termoPt.length > 3 && resultado.includes(termoPt)) {
-        resultado = resultado.split(termoPt).join(traducoes[subChave]);
-      }
+    // 4. Tratamento de padrões numéricos dinâmicos (ex: "Últimas 5 interações")
+    const matchInteracoes = conteudo.match(/^últimas?\s+(\d+)\s+interações?$/i);
+    if (matchInteracoes) {
+      const n = matchInteracoes[1];
+      const trad = subChave === "es" 
+        ? `Últimas ${n} interacciones` 
+        : `Last ${n} interactions`;
+      const formatada = conteudo === conteudo.toUpperCase() ? trad.toUpperCase() : trad;
+      return textoOriginal.replace(textoAparado, `${prefixo}${formatada}${sufixo}`);
     }
 
-    return resultado;
+    // 5. Se não encontrou correspondência no dicionário, JAMAIS quebra ou mutila a frase.
+    // Retorna o texto original como um bloco íntegro.
+    return textoOriginal;
   }
 
   /**
-   * Monitora novas adições ao DOM (navegação entre rotas, abertura de modais)
+   * Monitora adições e alterações ao DOM (navegação, re-renders do React, modais)
    */
   private iniciarObserver() {
     this.observer = new MutationObserver(() => {
-      if (!this.ativo) return;
+      if (!this.ativo || this.processandoMutacao) return;
 
       if (this.agendamentoId !== null) {
         cancelAnimationFrame(this.agendamentoId);
       }
 
       this.agendamentoId = requestAnimationFrame(() => {
+        this.processandoMutacao = true;
         this.traduzirTudo();
+        this.processandoMutacao = false;
         this.agendamentoId = null;
       });
     });
 
+    const config: MutationObserverInit = {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    };
+
     if (document.body) {
-      this.observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        characterData: false,
-      });
+      this.observer.observe(document.body, config);
     } else {
       window.addEventListener("DOMContentLoaded", () => {
-        this.observer?.observe(document.body, {
-          childList: true,
-          subtree: true,
-          characterData: false,
-        });
+        this.observer?.observe(document.body, config);
       });
     }
   }
 }
 
 export const tradutorUniversalDOM = new MotorTradutorUniversalDOM();
+
+/**
+ * Função utilitária global para tradução síncrona dentro de componentes React
+ * Garante que qualquer texto passado para cabeçalho, empty state ou widget
+ * seja renderizado no idioma correto sem depender do DOM mutation observer.
+ */
+export function traduzirTextoGlobal(texto?: string | null): string {
+  if (!texto) return texto || "";
+  const idioma = tradutorUniversalDOM.getIdiomaAtivo() || (typeof localStorage !== "undefined" ? localStorage.getItem("printlog_idioma") : "pt-BR") || "pt-BR";
+  if (idioma === "pt-BR") return texto;
+  const subChave: "en" | "es" = idioma.startsWith("es") ? "es" : "en";
+  return tradutorUniversalDOM.traduzirTexto(texto, subChave);
+}

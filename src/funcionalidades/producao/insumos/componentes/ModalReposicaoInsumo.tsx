@@ -5,6 +5,7 @@ import { CampoTexto } from "@/compartilhado/componentes";
 import { CampoMonetario } from "@/compartilhado/componentes";
 import { ArrowUpCircle, TrendingUp, Info, Package, DollarSign, FileText } from "lucide-react";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
+import { formatarMoedaFracionada } from "@/compartilhado/utilitarios/formatadores";
 
 interface ModalReposicaoInsumoProps {
   aberto: boolean;
@@ -109,7 +110,7 @@ export function ModalReposicaoInsumo({ aberto, insumo, aoFechar, aoConfirmar }: 
           <div className="flex items-center gap-2 text-xs text-sky-600 dark:text-sky-400 font-semibold bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg border border-sky-100 dark:border-sky-500/20 animate-in fade-in slide-in-from-top-1">
             <Info size={14} />
             Nesta aquisição, cada unidade sairá por{" "}
-            {custoUnitarioSimulado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.
+            {formatarMoedaFracionada(Math.round(custoUnitarioSimulado * 100))}.
           </div>
         )}
 

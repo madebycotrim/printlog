@@ -2,6 +2,7 @@
 import { RegistroUso } from "../tipos";
 import { History, ArrowDownRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
 
 interface ExtratoConsumoProps {
   historico: RegistroUso[];
@@ -57,7 +58,7 @@ export function ExtratoConsumo({ historico, corMaterial }: ExtratoConsumoProps) 
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                      {new Date(item.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+                      {formatarDataCompleta(item.data)}
                     </span>
                     <h5 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase leading-none py-1">
                       {item.nomePeca}

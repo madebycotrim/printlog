@@ -1,4 +1,5 @@
 import { Shield, Sparkles, Calendar, RotateCcw, Crown, Zap } from "lucide-react";
+import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropsCardPlanoPremium {
     plano: string;
@@ -32,7 +33,7 @@ export function CardPlanoPremium({
         if (!vencimentoPlano) return "---";
 
         const venc = new Date(vencimentoPlano);
-        return venc.toLocaleDateString('pt-BR');
+        return formatarData(venc);
     };
 
     const ehFundador = plano === "FUNDADOR";

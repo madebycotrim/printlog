@@ -6,7 +6,7 @@ import {
   History as HistoryIcon,
 } from "lucide-react";
 import { Insumo, CategoriaInsumo } from "@/funcionalidades/producao/insumos/tipos";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarMoedaFracionada } from "@/compartilhado/utilitarios/formatadores";
 import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 import { createElement } from "react";
 
@@ -118,7 +118,7 @@ export function CardInsumo({
                 <div className="flex flex-col items-end">
                   <div className="flex items-baseline gap-1">
                     <span className="text-[13px] font-black text-sky-500 tabular-nums">
-                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(custoEfetivo / 100)}
+                      {formatarMoedaFracionada(custoEfetivo)}
                     </span>
                     <span className="text-[8px] font-black text-sky-500/70 uppercase tracking-widest">
                       / {insumo.unidadeConsumo}

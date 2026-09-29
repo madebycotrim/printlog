@@ -7,6 +7,7 @@
 import { Plus, Trash2, Package } from "lucide-react";
 import { InsumoProjeto } from "../tipos";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesSeletor {
     selecionados: InsumoProjeto[];
@@ -111,7 +112,7 @@ export function SeletorInsumosSecundarios({ selecionados, aoAbrirArmazem, aoAlte
                             <div className="hidden md:flex flex-col items-end w-32 px-2">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Subtotal</span>
                                 <span className="text-[11px] font-black tabular-nums text-zinc-900 dark:text-white">
-                                    {(item.quantidade * (item.custoUnitarioCentavos / 100)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                    {centavosParaReais(Math.round(item.quantidade * (item.custoUnitarioCentavos || 0)))}
                                 </span>
                             </div>
 
@@ -129,7 +130,7 @@ export function SeletorInsumosSecundarios({ selecionados, aoAbrirArmazem, aoAlte
                         <div className="flex items-center gap-3 px-4 py-2 bg-sky-500/5 border border-sky-500/10 rounded-xl">
                             <span className="text-[9px] font-black uppercase tracking-widest text-sky-600/70 dark:text-sky-500/50">Investimento em Insumos:</span>
                             <span className="text-sm font-black text-zinc-900 dark:text-white tabular-nums">
-                                {selecionados.reduce((acc, i) => acc + (i.quantidade * (i.custoUnitarioCentavos / 100)), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                {centavosParaReais(Math.round(selecionados.reduce((acc, i) => acc + (i.quantidade * (i.custoUnitarioCentavos || 0)), 0)))}
                             </span>
                         </div>
                     </div>

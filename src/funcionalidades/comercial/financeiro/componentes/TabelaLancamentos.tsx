@@ -3,6 +3,7 @@ import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
 import { ArrowUpRight, ArrowDownLeft, Tag, User, Pencil, Trash2, AlertCircle } from "lucide-react";
 import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
 import { motion } from "framer-motion";
+import { centavosParaReais, obterLocaleAtivo } from "@/compartilhado/utilitarios/formatadores";
 
 interface TabelaLancamentosProps {
   lancamentos: LancamentoFinanceiro[];
@@ -13,12 +14,7 @@ interface TabelaLancamentosProps {
 export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLancamentosProps) {
   const { estado: estadoClientes } = useGerenciadorClientes();
   
-  const formatarMoeda = (centavos: number) => {
-    return (centavos / 100).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  };
+  const formatarMoeda = (centavos: number) => centavosParaReais(centavos);
 
   const agruparPorData = () => {
     const grupos: Record<string, LancamentoFinanceiro[]> = {};
@@ -27,19 +23,23 @@ export function TabelaLancamentos({ lancamentos, aoExcluir, aoEditar }: TabelaLa
     const ontem = new Date(hoje);
     ontem.setDate(hoje.getDate() - 1);
 
+    const { lang } = obterLocaleAtivo();
+    const hojeTexto = lang.startsWith("en") ? "Today" : lang.startsWith("es") ? "Hoy" : "Hoje";
+    const ontemTexto = lang.startsWith("en") ? "Yesterday" : lang.startsWith("es") ? "Ayer" : "Ontem";
+
     lancamentos.forEach((l) => {
       const dataObjeto = l.dataCriacao instanceof Date ? l.dataCriacao : new Date(l.dataCriacao);
       const dataL = new Date(dataObjeto);
       dataL.setHours(0, 0, 0, 0);
 
-      let chave = dataObjeto.toLocaleDateString("pt-BR", {
+      let chave = dataObjeto.toLocaleDateString(lang, {
         day: "2-digit",
         month: "long",
         year: "numeric",
       });
 
-      if (dataL.getTime() === hoje.getTime()) chave = "Hoje";
-      else if (dataL.getTime() === ontem.getTime()) chave = "Ontem";
+      if (dataL.getTime() === hoje.getTime()) chave = hojeTexto;
+      else if (dataL.getTime() === ontem.getTime()) chave = ontemTexto;
 
       if (!grupos[chave]) grupos[chave] = [];
       grupos[chave].push(l);

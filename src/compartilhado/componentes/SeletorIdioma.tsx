@@ -11,7 +11,7 @@ interface PropriedadesSeletorIdioma {
 }
 
 export function SeletorIdioma({ variante = "compacto", className = "" }: PropriedadesSeletorIdioma) {
-  const { idiomaAtual, mudarIdioma, idiomas, t } = useIdioma();
+  const { idiomaAtual, mudarIdioma, idiomas, t, i18n } = useIdioma();
   const [aberto, setAberto] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +35,7 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
   // Variante COMPACTA: Ideal para o Cabeçalho (Header)
   if (variante === "compacto") {
     return (
-      <div ref={containerRef} className={`relative ${className}`}>
+      <div ref={containerRef} data-seletor-idioma="true" className={`relative ${className}`}>
         <button
           type="button"
           id="btn-seletor-idioma"
@@ -83,8 +83,16 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
                       onClick={async () => {
                         await mudarIdioma(item.codigo as CodigoIdioma);
                         setAberto(false);
+                        const mensagensSalvo: Record<string, string> = {
+                          "pt-BR": "Preferência salva no seu perfil e sincronizada entre dispositivos.",
+                          "en-US": "Preference saved to your profile and synced across devices.",
+                          "es-ES": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
+                        };
+                        const descricao = mensagensSalvo[item.codigo] || i18n.t("idiomas.salvoNuvem", { lng: item.codigo });
+                        toast.dismiss("toast-seletor-idioma");
                         toast.success(item.rotulo, {
-                          description: t("idiomas.salvoNuvem"),
+                          id: "toast-seletor-idioma",
+                          description: descricao,
                         });
                       }}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all ${
@@ -116,7 +124,7 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
 
   // Variante COMPLETA: Ideal para a Página de Configurações
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div data-seletor-idioma="true" className={`space-y-3 ${className}`}>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {idiomas.map((item) => {
           const ativo = item.codigo === idiomaAtual;
@@ -126,8 +134,16 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
               type="button"
               onClick={async () => {
                 await mudarIdioma(item.codigo as CodigoIdioma);
+                const mensagensSalvo: Record<string, string> = {
+                  "pt-BR": "Preferência salva no seu perfil e sincronizada entre dispositivos.",
+                  "en-US": "Preference saved to your profile and synced across devices.",
+                  "es-ES": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
+                };
+                const descricao = mensagensSalvo[item.codigo] || i18n.t("idiomas.salvoNuvem", { lng: item.codigo });
+                toast.dismiss("toast-seletor-idioma");
                 toast.success(item.rotulo, {
-                  description: t("idiomas.salvoNuvem"),
+                  id: "toast-seletor-idioma",
+                  description: descricao,
                 });
               }}
               className={`relative flex items-center gap-3 p-4 rounded-2xl border text-left transition-all duration-200 ${

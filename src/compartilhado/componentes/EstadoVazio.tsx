@@ -1,5 +1,6 @@
 import { LucideIcon, Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface EstadoVazioProps {
   titulo: string;
@@ -57,10 +58,10 @@ export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoCli
         {/* Tipografia Limpa */}
         <div className="space-y-2.5 mb-8">
           <h3 className="text-xl md:text-2xl font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-            {titulo}
+            {traduzirTextoGlobal(titulo)}
           </h3>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-[340px] mx-auto">
-            {descricao}
+            {traduzirTextoGlobal(descricao)}
           </p>
         </div>
 
@@ -77,7 +78,7 @@ export function EstadoVazio({ titulo, descricao, icone: Icone, textoBotao, aoCli
             className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-medium py-2.5 px-6 rounded-lg transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-sm ring-1 ring-zinc-900/5 dark:ring-white/10 active:scale-[0.98]"
           >
             <Plus size={16} strokeWidth={2} />
-            {textoBotao}
+            {traduzirTextoGlobal(textoBotao)}
           </button>
         )}
       </motion.div>

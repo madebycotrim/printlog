@@ -1,5 +1,6 @@
 import { ArrowDownCircle, ArrowUpCircle, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 import { Insumo } from "../../tipos";
+import { centavosParaReais, formatarMoedaFracionada } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesAbaOperacoes {
   insumo: Insumo;
@@ -35,11 +36,11 @@ export function AbaOperacoesInsumo({ insumo, aoBaixar, aoRepor, corTema = "sky-5
           <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Patrimônio em Estoque</span>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-black text-zinc-900 dark:text-white tabular-nums tracking-tighter">
-              {((insumo.quantidadeAtual * insumo.custoMedioUnidade) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              {centavosParaReais(Math.round(insumo.quantidadeAtual * insumo.custoMedioUnidade))}
             </span>
           </div>
           <span className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-widest">
-            Custo Médio: {(insumo.custoMedioUnidade / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} / {insumo.unidadeMedida.toUpperCase()}
+            Custo Médio: {formatarMoedaFracionada(insumo.custoMedioUnidade)} / {insumo.unidadeMedida.toUpperCase()}
           </span>
         </div>
       </div>

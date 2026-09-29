@@ -1,6 +1,6 @@
 import i18n from "@/configuracoes/i18n";
 
-function obterLocaleAtivo(): { lang: string; currency: string } {
+export function obterLocaleAtivo(): { lang: string; currency: string } {
     const lang = i18n?.language || "pt-BR";
     if (lang.startsWith("en")) return { lang: "en-US", currency: "USD" };
     if (lang.startsWith("es")) return { lang: "es-ES", currency: "EUR" };
@@ -16,6 +16,19 @@ export function centavosParaReais(centavos: number, moedaForcada?: string): stri
     return (centavos / 100).toLocaleString(lang, {
         style: "currency",
         currency: moedaForcada || currency,
+    });
+}
+
+/**
+ * Formata valores que exigem precisão decimal de até 4 dígitos (ex: insumos fracionados).
+ */
+export function formatarMoedaFracionada(centavos: number, digitosMax = 4): string {
+    const { lang, currency } = obterLocaleAtivo();
+    return (centavos / 100).toLocaleString(lang, {
+        style: "currency",
+        currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: digitosMax,
     });
 }
 
@@ -101,6 +114,16 @@ export function formatarDataCompleta(data?: Date | string | number | null): stri
 }
 
 /**
+ * Formata um objeto Date para data e hora local
+ */
+export function formatarDataHora(data?: Date | string | number | null): string {
+    const d = parseDataSegura(data);
+    if (!d) return "—";
+    const { lang } = obterLocaleAtivo();
+    return d.toLocaleString(lang);
+}
+
+/**
  * Retorna o termo correto (singular/plural) baseado na quantidade.
  * Ex: pluralizar(2, "unidade", "unidades") -> "2 unidades"
  */
@@ -131,14 +154,19 @@ export function formatarDataOuRelativa(data?: Date | string | number | null): st
     const ontem = new Date();
     ontem.setDate(hoje.getDate() - 1);
 
-    const dataString = d.toLocaleDateString("pt-BR");
-    const hojeString = hoje.toLocaleDateString("pt-BR");
-    const ontemString = ontem.toLocaleDateString("pt-BR");
+    const { lang } = obterLocaleAtivo();
 
-    const hora = d.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+    const dataString = d.toLocaleDateString(lang);
+    const hojeString = hoje.toLocaleDateString(lang);
+    const ontemString = ontem.toLocaleDateString(lang);
 
-    if (dataString === hojeString) return `Hoje, ${hora}`;
-    if (dataString === ontemString) return `Ontem, ${hora}`;
+    const hora = d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+
+    const hojeTexto = lang.startsWith("en") ? "Today" : lang.startsWith("es") ? "Hoy" : "Hoje";
+    const ontemTexto = lang.startsWith("en") ? "Yesterday" : lang.startsWith("es") ? "Ayer" : "Ontem";
+
+    if (dataString === hojeString) return `${hojeTexto}, ${hora}`;
+    if (dataString === ontemString) return `${ontemTexto}, ${hora}`;
     
     return `${dataString}, ${hora}`;
 }

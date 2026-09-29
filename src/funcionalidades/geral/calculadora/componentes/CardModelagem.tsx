@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PenTool, HelpCircle } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 import { InputBancario, Dica } from "@/compartilhado/componentes/ui";
-import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
+import { extrairValorNumerico, centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface CardModelagemProps {
   tempoModelagem: number; // minutos
@@ -92,9 +92,8 @@ export const CardModelagem = memo(function CardModelagem({
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>
                  <div className="flex items-baseline gap-1">
-                   <span className="text-xs font-black text-muted-foreground">R$</span>
                    <span className="text-lg font-black text-cyan-600 dark:text-cyan-400 tracking-tight leading-none">
-                     {((Math.round((tempoModelagem / 60) * valorHoraModelagem)) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                     {centavosParaReais(Math.round((tempoModelagem / 60) * valorHoraModelagem))}
                    </span>
                  </div>
               </div>

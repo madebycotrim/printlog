@@ -4,6 +4,7 @@ import { obterStatusManutencao } from "@/funcionalidades/producao/impressoras/ut
 import { Notificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
 import { useNavigate } from "react-router-dom";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface PropriedadesWidgetAvisos {
   impressoras: Impressora[];
@@ -33,7 +34,9 @@ export function WidgetAvisos({ impressoras, notificacoes = [], aoAgendarManutenc
            style={{ backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`, backgroundSize: '16px 16px' }} />
 
       <div className="flex justify-between items-center mb-6 relative z-10">
-        <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">Quadro de Avisos</h4>
+        <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">
+          {traduzirTextoGlobal("Quadro de Avisos")}
+        </h4>
         <button className="w-8 h-8 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-primary transition-all active:scale-90 border border-borda-sutil">
           <Plus className="w-4 h-4" />
         </button>
@@ -44,9 +47,9 @@ export function WidgetAvisos({ impressoras, notificacoes = [], aoAgendarManutenc
           <div className="flex flex-col items-center justify-center h-full opacity-20 text-center py-6">
             <AlertTriangle size={32} className="mb-3" />
             <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">
-              Tudo sob controle.
+              {traduzirTextoGlobal("Tudo sob controle.")}
               <br />
-              Nenhum aviso no quadro.
+              {traduzirTextoGlobal("Nenhum aviso no quadro.")}
             </p>
           </div>
         ) : (
@@ -71,7 +74,7 @@ export function WidgetAvisos({ impressoras, notificacoes = [], aoAgendarManutenc
                     {notificacao.mensagem}
                   </div>
                   <button className="mt-3 text-[9px] font-black text-emerald-500 uppercase tracking-[0.15em] hover:text-emerald-400 transition-colors flex items-center gap-1">
-                    VERIFICAR AGORA
+                    {traduzirTextoGlobal("VERIFICAR AGORA")}
                     <div className="w-4 h-px bg-emerald-500/50" />
                   </button>
                 </div>
@@ -89,13 +92,13 @@ export function WidgetAvisos({ impressoras, notificacoes = [], aoAgendarManutenc
                 </div>
                 <div>
                   <div className="text-[11px] font-black text-primary mb-1 group-hover/aviso:text-rose-500 transition-colors uppercase tracking-tight">
-                    Manutenção Necessária
+                    {traduzirTextoGlobal("Manutenção Necessária")}
                   </div>
                   <div className="text-[10px] text-secondary leading-relaxed font-black uppercase tracking-tight">
                     A impressora <span className="text-primary font-black">{imp.nome}</span> atingiu o limite de uso contínuo recomendado.
                   </div>
                   <button className="mt-3 text-[9px] font-black text-rose-400 uppercase tracking-[0.15em] hover:text-rose-300 transition-colors flex items-center gap-1">
-                    AGENDAR AGORA
+                    {traduzirTextoGlobal("AGENDAR AGORA")}
                     <div className="w-4 h-px bg-rose-400/50" />
                   </button>
                 </div>

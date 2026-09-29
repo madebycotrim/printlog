@@ -4,6 +4,7 @@ import { format, parseISO } from "date-fns";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
 import { LancamentoFinanceiro } from "../tipos";
 import { motion } from "framer-motion";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 
 interface GraficoFluxoCaixaProps {
   lancamentos: LancamentoFinanceiro[];
@@ -89,13 +90,13 @@ export function GraficoFluxoCaixa({ lancamentos }: GraficoFluxoCaixaProps) {
               axisLine={false} 
               tickLine={false} 
               tick={{ fontSize: 11, fill: '#a1a1aa' }}
-              tickFormatter={(value) => `R$ ${value}`}
+              tickFormatter={(value) => centavosParaReais(Math.round(value * 100))}
             />
             <Tooltip 
               contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', backgroundColor: 'var(--tw-bg-opacity, #ffffff)' }}
               itemStyle={{ fontSize: 13, fontWeight: 600, padding: '2px 0' }}
               labelStyle={{ fontSize: 11, color: '#a1a1aa', marginBottom: 8, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}
-              formatter={(value: any) => [`R$ ${Number(value ?? 0).toFixed(2)}`, ""]}
+              formatter={(value: any) => [centavosParaReais(Math.round(Number(value ?? 0) * 100)), ""]}
             />
             <Area type="monotone" dataKey="receitas" name="Receitas" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#corReceita)" />
             <Area type="monotone" dataKey="despesas" name="Despesas" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#corDespesa)" />

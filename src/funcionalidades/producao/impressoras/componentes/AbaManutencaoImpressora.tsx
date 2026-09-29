@@ -4,7 +4,7 @@ import { Impressora } from "../tipos";
 import { useManutencao } from "../manutencao/hooks/useManutencao";
 import { MonitorPecas } from "../manutencao/componentes/MonitorPecas";
 import { FormularioManutencao } from "../manutencao/componentes/FormularioManutencao";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PropriedadesAbaManutencao {
@@ -168,7 +168,7 @@ export function AbaManutencaoImpressora({ impressora }: PropriedadesAbaManutenca
                         <div className="flex-1 space-y-2">
                            <div className="flex items-center gap-3">
                               <span className="text-[10px] font-bold text-zinc-400 tabular-nums">
-                                {new Date(m.data).toLocaleDateString('pt-BR')}
+                                {formatarData(m.data)}
                               </span>
                               <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md ${
                                 m.tipo === 'Preventiva' ? 'bg-emerald-500/10 text-emerald-500' : m.tipo === 'Corretiva' ? 'bg-rose-500/10 text-rose-500' : 'bg-sky-500/10 text-sky-500'

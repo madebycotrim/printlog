@@ -2,7 +2,7 @@ import { Pedido } from "../tipos";
 import { 
   User, Cpu, TrendingUp, MessageSquare
 } from "lucide-react";
-import { formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
+import { formatarData, formatarDataCompleta } from "@/compartilhado/utilitarios/formatadores";
 import { useMemo } from "react";
 import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { useGerenciadorClientes } from "@/funcionalidades/comercial/clientes/hooks/useGerenciadorClientes";
@@ -125,7 +125,7 @@ export function AbaEspecificacoesProjeto({ pedido }: PropriedadesAbaEspecificaco
           <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/20 border border-zinc-200/30 dark:border-white/5">
             <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1">Data de Registro</span>
             <span className="text-xs font-black text-zinc-800 dark:text-zinc-250 block mt-1">
-              {new Date(pedido.dataCriacao).toLocaleDateString("pt-BR")}
+              {formatarData(pedido.dataCriacao)}
             </span>
           </div>
         </div>

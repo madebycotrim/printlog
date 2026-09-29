@@ -61,6 +61,8 @@ export function normalizarUFBrasil(val?: string | null): string | null {
 }
 
 
+import { formatarData } from "./formatadores";
+
 export interface DadosLocalizacaoCloudflare {
   sucesso: boolean;
   origem: string;
@@ -95,7 +97,7 @@ export const obterDadosLocalizacaoCloudflare = async (): Promise<DadosLocalizaca
           pais: dados.pais || 'BR',
           fusoHorario: dados.fusoHorario || 'America/Sao_Paulo',
           dataHoraIso: dados.dataHoraIso || new Date().toISOString(),
-          dataHoraFormatada: dados.dataHoraFormatada || new Date().toLocaleDateString('pt-BR'),
+          dataHoraFormatada: dados.dataHoraFormatada || formatarData(new Date()),
         };
       }
     }
@@ -115,7 +117,7 @@ export const obterDadosLocalizacaoCloudflare = async (): Promise<DadosLocalizaca
     pais: 'BR',
     fusoHorario: 'America/Sao_Paulo',
     dataHoraIso: agora.toISOString(),
-    dataHoraFormatada: agora.toLocaleDateString('pt-BR'),
+    dataHoraFormatada: formatarData(agora),
   };
 };
 

@@ -2,6 +2,7 @@ import { Calculator, Clock, UserPlus, Package, Box, Wrench, Plus } from "lucide-
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 /**
  * Interface para as propriedades do DockAcoes.
@@ -84,7 +85,7 @@ export function DockAcoes({
                   className={`flex items-center justify-between w-56 sm:w-60 bg-card/95 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl transition-all shadow-2xl group/btn touch-target active:scale-95 ${coresMap[item.cor]}`}
                 >
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover/btn:text-primary dark:group-hover/btn:text-white transition-colors">
-                    {item.label}
+                    {traduzirTextoGlobal(item.label)}
                   </span>
                   <div className={`p-1.5 rounded-lg bg-current/10 transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-3`}>
                     <item.icone size={18} />

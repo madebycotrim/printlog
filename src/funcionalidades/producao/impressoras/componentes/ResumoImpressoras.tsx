@@ -1,6 +1,6 @@
 import { Printer, Timer, Wrench, DollarSign } from "lucide-react";
 import { CardResumo } from "@/compartilhado/componentes";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, obterLocaleAtivo } from "@/compartilhado/utilitarios/formatadores";
 
 interface PropriedadesResumoImpressoras {
   totalMaquinas: number;
@@ -23,7 +23,7 @@ export function ResumoImpressoras({
 
       <CardResumo
         titulo="Horas de Impressão"
-        valor={horasImpressao.toLocaleString("pt-BR")}
+        valor={horasImpressao.toLocaleString(obterLocaleAtivo().lang)}
         unidade="h"
         icone={Timer}
         cor="emerald"

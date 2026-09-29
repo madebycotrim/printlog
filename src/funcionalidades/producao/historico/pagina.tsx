@@ -7,7 +7,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, A
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 import { servicoRelatorios } from "@/compartilhado/servicos/servicoRelatorios";
 import { servicoExportacao } from "@/compartilhado/servicos/servicoExportacao";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { toast } from "sonner";
 
@@ -40,7 +40,7 @@ export function PaginaHistoricoProducao() {
         valor: (p.valorCentavos / 100).toFixed(2),
         peso: p.pesoGramas,
         tempo: p.tempoMinutos,
-        data: p.dataConclusao?.toLocaleDateString("pt-BR") || p.dataCriacao.toLocaleDateString("pt-BR"),
+        data: p.dataConclusao ? formatarData(p.dataConclusao) : formatarData(p.dataCriacao),
       }));
 
     const colunas = [
@@ -230,7 +230,7 @@ export function PaginaHistoricoProducao() {
                         <div>
                           <p className="text-sm font-black uppercase tracking-tight">{p.descricao}</p>
                           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                            Concluído em: {p.dataConclusao?.toLocaleDateString("pt-BR") || "---"}
+                            Concluído em: {p.dataConclusao ? formatarData(p.dataConclusao) : "---"}
                           </p>
                         </div>
                       </div>

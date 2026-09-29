@@ -25,6 +25,7 @@ import {
   gerarCodigosBackup 
 } from "@/compartilhado/utilitarios/totp";
 import { obterDadosLocalizacaoCloudflare } from "@/compartilhado/utilitarios/tarifas-energia";
+import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { toast } from "sonner";
 
 interface SessaoDispositivo {
@@ -210,7 +211,7 @@ export function CardSeguranca() {
   };
 
   const baixarCodigosBackup = () => {
-    const conteudo = `PRINTLOG - CÓDIGOS DE RECUPERAÇÃO 2FA (TOTP)\nUsuário: ${usuario?.email}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nGuarde em local seguro. Cada código é de uso único caso perca o celular:\n\n${codigosBackup.join('\n')}\n`;
+    const conteudo = `PRINTLOG - CÓDIGOS DE RECUPERAÇÃO 2FA (TOTP)\nUsuário: ${usuario?.email}\nData: ${formatarData(new Date())}\n\nGuarde em local seguro. Cada código é de uso único caso perca o celular:\n\n${codigosBackup.join('\n')}\n`;
     const elemento = document.createElement("a");
     const arquivo = new Blob([conteudo], { type: "text/plain" });
     elemento.href = URL.createObjectURL(arquivo);

@@ -10,6 +10,7 @@ import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes
 import { SeloPlano } from "./ui";
 import { SeletorIdioma } from "./SeletorIdioma";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 type PropriedadesCabecalho = {
   aoAbrirBarraLateral: () => void;
@@ -79,7 +80,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
           <div className="flex flex-col justify-center min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
               <h1 className="text-sm xs:text-base sm:text-xl md:text-[28px] font-black tracking-tight text-primary dark:text-white truncate leading-tight">
-                {dados.titulo}
+                {traduzirTextoGlobal(dados.titulo)}
               </h1>
 
               {participarPrototipos && (
@@ -100,7 +101,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
             </div>
             {dados.subtitulo && (
               <p className="text-xs md:text-sm font-medium text-zinc-500 hidden md:block truncate mt-0.5">
-                {dados.subtitulo}
+                {traduzirTextoGlobal(dados.subtitulo)}
               </p>
             )}
           </div>
@@ -118,7 +119,7 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               />
               <input
                 type="text"
-                placeholder={dados.placeholderBusca || t("cabecalho.buscarPlaceholder")}
+                placeholder={dados.placeholderBusca ? traduzirTextoGlobal(dados.placeholderBusca) : t("cabecalho.buscarPlaceholder")}
                 value={termoBusca}
                 onChange={(e) => setTermoBusca(e.target.value)}
                 className="w-full h-8 md:h-10 pl-4 md:pl-8 pr-5 bg-transparent border-0 border-b-2 border-zinc-100 dark:border-white/10 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-primary dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-primary dark:focus:border-white"
@@ -168,8 +169,8 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                 {dados.segundaAcao.icone && (
                   <dados.segundaAcao.icone size={15} strokeWidth={2.5} className="md:w-[18px] md:h-[18px]" />
                 )}
-                <span className="hidden sm:inline">{dados.segundaAcao.texto}</span>
-                <span className="sm:hidden text-[11px]">{dados.segundaAcao.texto.split(" ")[0]}</span>
+                <span className="hidden sm:inline">{traduzirTextoGlobal(dados.segundaAcao.texto)}</span>
+                <span className="sm:hidden text-[11px]">{traduzirTextoGlobal(dados.segundaAcao.texto).split(" ")[0]}</span>
               </button>
             )}
 
@@ -189,8 +190,8 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
                 }
               >
                 {dados.acao.icone && <dados.acao.icone size={15} strokeWidth={2.5} className="md:w-[18px] md:h-[18px]" />}
-                <span className="hidden sm:inline">{dados.acao.texto}</span>
-                <span className="sm:hidden text-[11px]">{dados.acao.texto.split(" ")[0]}</span>
+                <span className="hidden sm:inline">{traduzirTextoGlobal(dados.acao.texto)}</span>
+                <span className="sm:hidden text-[11px]">{traduzirTextoGlobal(dados.acao.texto).split(" ")[0]}</span>
               </button>
             )}
           </div>

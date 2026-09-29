@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useGerenciadorImpressoras } from "@/funcionalidades/producao/impressoras/hooks/useGerenciadorImpressoras";
 import { servicoPredicaoManutencao } from "./servicos/servicoPredicaoManutencao";
 import { obterCorStatusManutencao } from "@/funcionalidades/producao/impressoras/utilitarios/utilitariosManutencao";
+import { formatarDataCurta } from "@/compartilhado/utilitarios/formatadores";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 
 
@@ -169,7 +170,7 @@ export function PaginaManutencaoPreditiva() {
                             <div>
                               <p className="text-[9px] font-black uppercase tracking-widest">Previsão</p>
                               <p className="text-xs font-black text-primary dark:text-white">
-                                {item.previsaoData?.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                                {item.previsaoData ? formatarDataCurta(item.previsaoData) : "---"}
                               </p>
                             </div>
                           </div>

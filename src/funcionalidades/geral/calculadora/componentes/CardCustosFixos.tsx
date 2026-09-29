@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Wallet, Box } from "lucide-react";
 import { InputBancario } from "@/compartilhado/componentes/ui";
+import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { ItemCustoFixo } from "../tipos";
 
 /**
@@ -88,9 +89,8 @@ export function CardCustosFixos({
               <div className="flex flex-col items-end">
                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Custo Adicional ({textoModo})</span>
                  <div className="flex items-baseline gap-1">
-                   <span className="text-xs font-black text-muted-foreground">R$</span>
                    <span className="text-lg font-black text-pink-600 dark:text-pink-400 tracking-tight leading-none">
-                     {(_cobrarInsumosFixos ? (insumosFixos / 100) : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                     {centavosParaReais(_cobrarInsumosFixos ? insumosFixos : 0)}
                    </span>
                  </div>
               </div>

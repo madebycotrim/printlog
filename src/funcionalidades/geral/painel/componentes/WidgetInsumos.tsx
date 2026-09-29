@@ -2,6 +2,7 @@ import { Box, ArrowRight } from "lucide-react";
 import { Insumo } from "@/funcionalidades/producao/insumos/tipos";
 import { obterIconeInsumo } from "@/funcionalidades/producao/insumos/constantes";
 import { createElement } from "react";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface PropriedadesWidgetInsumos {
   insumos: Insumo[];
@@ -63,14 +64,18 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
 
       <div className="flex justify-between items-center mb-8 relative z-10">
         <div className="flex flex-col">
-          <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">Insumos Críticos</h4>
-          <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Monitor de Reposição</span>
+          <h4 className="text-muted text-[10px] font-black uppercase tracking-[0.2em]">
+            {traduzirTextoGlobal("Insumos Críticos")}
+          </h4>
+          <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
+            {traduzirTextoGlobal("Monitor de Reposição")}
+          </span>
         </div>
         <button
           onClick={aoVerTodos}
           className="group/btn flex items-center gap-2 text-[10px] text-sky-500 font-black hover:opacity-80 transition-all tracking-widest uppercase"
         >
-          REPOR
+          {traduzirTextoGlobal("REPOR")}
           <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
       </div>
@@ -79,7 +84,9 @@ export function WidgetInsumos({ insumos, aoVerTodos }: PropriedadesWidgetInsumos
         {criticos.length === 0 ? (
           <div className="col-span-2 text-center py-8 flex flex-col items-center opacity-20">
             <Box size={24} className="mb-2" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Estoque em dia</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">
+              {traduzirTextoGlobal("Estoque em dia")}
+            </span>
           </div>
         ) : (
           criticos.map((insumo, idx) => {

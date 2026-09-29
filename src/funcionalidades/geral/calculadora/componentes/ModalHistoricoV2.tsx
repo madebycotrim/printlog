@@ -1,6 +1,6 @@
 import { Dialogo } from "@/compartilhado/componentes";
 import { Timer, Trash2, Check, Save } from "lucide-react";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
+import { centavosParaReais, formatarDataHora } from "@/compartilhado/utilitarios/formatadores";
 import { OrcamentoSnapshot } from "../estado/armazemCalculadora";
 import { useState } from "react";
 
@@ -64,7 +64,7 @@ export function ModalHistoricoV2({
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white mb-1">{v.nome}</span>
                     <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                      {new Date(v.data).toLocaleString('pt-BR')} • {centavosParaReais(v.resultado.precoSugerido)}
+                      {formatarDataHora(v.data)} • {centavosParaReais(v.resultado.precoSugerido)}
                       {v.nomeCliente ? ` • Cliente: ${v.nomeCliente}` : ''}
                     </span>
                   </div>
