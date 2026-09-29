@@ -136,12 +136,7 @@ export function CardEstudio({
             <Beaker size={14} strokeWidth={2.5} />
             <span className="text-[10px] font-black uppercase tracking-wider">Lab Ativo</span>
           </div>
-        ) : (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/40 border border-borda-sutil text-muted-foreground">
-            <ShieldCheck size={14} />
-            <span className="text-[10px] font-black uppercase tracking-wider">Modo Seguro</span>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* === PAINEL DE ACESSO BLOQUEADO (FREE) === */}

@@ -62,14 +62,56 @@ class ServicoCambio {
   }
 
   /**
-   * Consulta a API oficial da AwesomeAPI (cotações PTAX do Banco Central)
+   * Consulta as cotações oficiais via backend Cloudflare Edge (/api/cambio)
+   * com fallback direto para AwesomeAPI e contingência estática.
    */
   public async atualizarTaxas(): Promise<TaxasCambio> {
     if (this.buscando) return this.taxas;
     this.buscando = true;
 
+    // 1. Tenta via Cloudflare Pages Function nativo (/api/cambio) - Same Origin ('self'), imune a CSP
+    const controladorEdge = new AbortController();
+    const timeoutEdge = setTimeout(() => controladorEdge.abort(), 3500);
+
+    try {
+      const resposta = await fetch("/api/cambio", {
+        signal: controladorEdge.signal,
+        headers: { Accept: "application/json" },
+      });
+
+      if (resposta.ok) {
+        const dados = await resposta.json();
+        const usdBrl = parseFloat(dados?.USDBRL);
+        const eurBrl = parseFloat(dados?.EURBRL);
+
+        if (usdBrl > 0 && eurBrl > 0) {
+          this.taxas = {
+            USDBRL: usdBrl,
+            EURBRL: eurBrl,
+            atualizadoEm: Date.now(),
+            origem: "online",
+          };
+
+          try {
+            localStorage.setItem(CHAVE_STORAGE_CAMBIO, JSON.stringify(this.taxas));
+          } catch {
+            // LocalStorage indisponível
+          }
+
+          this.notificarOuvintes();
+          this.buscando = false;
+          return this.taxas;
+        }
+      }
+    } catch {
+      // Fallback para AwesomeAPI direto abaixo
+    } finally {
+      clearTimeout(timeoutEdge);
+    }
+
+    // 2. Fallback direto para AwesomeAPI (permitido no CSP em public/_headers)
     const controlador = new AbortController();
-    const timeoutId = setTimeout(() => controlador.abort(), 4000);
+    const timeoutId = setTimeout(() => controlador.abort(), 3500);
 
     try {
       const resposta = await fetch(
@@ -77,32 +119,30 @@ class ServicoCambio {
         { signal: controlador.signal }
       );
 
-      if (!resposta.ok) {
-        throw new Error(`Status de erro da API de câmbio: ${resposta.status}`);
-      }
+      if (resposta.ok) {
+        const dados = await resposta.json();
+        const usdBrl = parseFloat(dados?.USDBRL?.bid);
+        const eurBrl = parseFloat(dados?.EURBRL?.bid);
 
-      const dados = await resposta.json();
-      const usdBrl = parseFloat(dados?.USDBRL?.bid);
-      const eurBrl = parseFloat(dados?.EURBRL?.bid);
+        if (usdBrl > 0 && eurBrl > 0) {
+          this.taxas = {
+            USDBRL: usdBrl,
+            EURBRL: eurBrl,
+            atualizadoEm: Date.now(),
+            origem: "online",
+          };
 
-      if (usdBrl > 0 && eurBrl > 0) {
-        this.taxas = {
-          USDBRL: usdBrl,
-          EURBRL: eurBrl,
-          atualizadoEm: Date.now(),
-          origem: "online",
-        };
+          try {
+            localStorage.setItem(CHAVE_STORAGE_CAMBIO, JSON.stringify(this.taxas));
+          } catch {
+            // LocalStorage indisponível
+          }
 
-        try {
-          localStorage.setItem(CHAVE_STORAGE_CAMBIO, JSON.stringify(this.taxas));
-        } catch {
-          // LocalStorage indisponível ou cheio
+          this.notificarOuvintes();
         }
-
-        this.notificarOuvintes();
       }
     } catch (erro) {
-      console.warn("[ServicoCambio] Não foi possível atualizar taxas de câmbio ao vivo:", erro);
+      console.warn("[ServicoCambio] Utilizando taxas de contingência/cache:", erro);
     } finally {
       clearTimeout(timeoutId);
       this.buscando = false;

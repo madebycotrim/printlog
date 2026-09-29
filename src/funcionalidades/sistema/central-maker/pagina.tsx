@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import { GridWiki } from "./componentes/GridWiki";
 import { SecaoFAQ } from "./componentes/SecaoFAQ";
 import { ModalSuporte } from "./componentes/ModalSuporte";
@@ -6,12 +7,19 @@ import { RodapeLGPD } from "./componentes/RodapeLGPD";
 import { ResultadosBusca } from "./componentes/ResultadosBusca";
 import { BannerExclusividade } from "./componentes/BannerExclusividade";
 import { useCentralMaker } from "./hooks/useCentralMaker";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 /**
  * Central Maker - Hub de inteligência técnica e suporte estratégico.
- * Refatorado para alta manutenibilidade e separação de dados/lógica.
+ * Disponível exclusivamente no idioma Português (pt-BR) por enquanto.
  */
 export function PaginaAjuda() {
+  const { idiomaAtual } = useIdioma();
+
+  if (idiomaAtual !== "pt-BR") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const {
     busca,
     definirBusca,

@@ -1,4 +1,4 @@
-import { Store, Image as ImageIcon, Type, Lock, Zap, Palette, ArrowRight } from "lucide-react";
+import { Store, Image as ImageIcon, Type, Lock, Zap, ArrowRight } from "lucide-react";
 import { CampoDashboard, CabecalhoCard } from "./Compartilhados";
 
 interface PropsCardIdentidade {
@@ -35,15 +35,10 @@ export function CardIdentidade({
                     pendente={pendente}
                 />
 
-                {!eProOuSuperior ? (
+                {!eProOuSuperior && (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
                         <Lock size={13} strokeWidth={2.5} />
                         <span className="text-[10px] font-black uppercase tracking-wider">Exclusivo</span>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500">
-                        <Palette size={13} strokeWidth={2.5} />
-                        <span className="text-[10px] font-black uppercase tracking-wider">Personalizar</span>
                     </div>
                 )}
             </div>
