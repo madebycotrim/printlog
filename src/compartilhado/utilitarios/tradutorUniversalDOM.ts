@@ -17,6 +17,46 @@ interface EntradaDicionario {
 
 // Dicionário extensivo cobrindo todos os módulos do PrintLog
 const DICIONARIO_GLOBAL: Record<string, EntradaDicionario> = {
+  // === AUTENTICAÇÃO E BRANDING ===
+  "Sua Farm,": { en: "Your Print Farm,", es: "Su Print Farm," },
+  "Lucro Real.": { en: "Real Profit.", es: "Beneficio Real." },
+  "Controle total sobre custos, materiais e produção. Deixe o PrintLog calcular enquanto você cria.": {
+    en: "Complete control over costs, materials, and production. Let PrintLog calculate while you create.",
+    es: "Control total sobre costes, materiales y producción. Deje que PrintLog calcule mientras usted crea."
+  },
+  "Precificação automática em segundos": {
+    en: "Automated pricing in seconds",
+    es: "Precios automáticos en segundos"
+  },
+  "Gestão inteligente de filamentos": {
+    en: "Smart filament and inventory management",
+    es: "Gestión inteligente de filamentos"
+  },
+  "Dashboard de performance financeira": {
+    en: "Financial performance dashboard",
+    es: "Panel de rendimiento financiero"
+  },
+  "Segurança e Privacidade": { en: "Security and Privacy", es: "Seguridad y Privacidad" },
+  "Acesse ou Crie sua conta": { en: "Sign In or Create Account", es: "Inicie Sesión o Cree su Cuenta" },
+  "O PrintLog utiliza a autenticação segura do Google e GitHub para login ou cadastro simplificado em poucos cliques.": {
+    en: "PrintLog uses secure Google and GitHub authentication for simple sign-in in just a few clicks.",
+    es: "PrintLog utiliza autenticación segura de Google y GitHub para iniciar sesión o registrarse en pocos clics."
+  },
+  "Continuar com Google": { en: "Continue with Google", es: "Continuar con Google" },
+  "Continuar com GitHub": { en: "Continue with GitHub", es: "Continuar con GitHub" },
+  "Continuar com E-mail": { en: "Continue with Email", es: "Continuar con Correo" },
+  "Seu melhor e-mail corporativo": { en: "Your business email address", es: "Su mejor correo electrónico" },
+  "Ao continuar, você concorda com nossos": { en: "By continuing, you agree to our", es: "Al continuar, usted acepta nuestros" },
+  "Termos de Serviço": { en: "Terms of Service", es: "Términos de Servicio" },
+  "e com a": { en: "and our", es: "y la" },
+  "Política de Privacidade": { en: "Privacy Policy", es: "Política de Privacidad" },
+  "em conformidade com a LGPD (Art. 7º, V).": {
+    en: "in compliance with privacy regulations (GDPR / LGPD).",
+    es: "en conformidad con las normas de privacidad (LGPD)."
+  },
+  "Voltar ao site": { en: "Back to website", es: "Volver al sitio web" },
+  "Preparando sua Farm...": { en: "Preparing your Print Farm...", es: "Preparando su Print Farm..." },
+
   // === AÇÕES E BOTÕES GERAIS ===
   "Salvar": { en: "Save", es: "Guardar" },
   "Salvar Alterações": { en: "Save Changes", es: "Guardar Cambios" },

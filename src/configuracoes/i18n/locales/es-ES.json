@@ -65,6 +65,10 @@
     "descricao": "Elija el idioma de visualización de la interfaz de PrintLog",
     "selecionar": "Seleccionar idioma",
     "salvoNuvem": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
+    "adaptacaoFormatos": "Adaptación Automática de Formatos",
+    "exemploMoeda": "Ejemplo de Moneda:",
+    "exemploData": "Ejemplo de Fecha:",
+    "notaExplicativa": "Al cambiar de idioma, las fechas, monedas y términos operativos se ajustan instantáneamente sin recargar la página y quedan guardados en su navegador.",
     "pt-BR": "Português (Brasil)",
     "en-US": "English (US)",
     "es-ES": "Español"
@@ -82,7 +86,19 @@
     "linkMagicoEnviado": "Enviamos un enlace mágico seguro a",
     "termosUso": "Términos de Servicio",
     "politicaPrivacidade": "Política de Privacidad",
-    "concordanciaTermos": "Al continuar, usted acepta nuestros"
+    "concordanciaTermos": "Al continuar, usted acepta nuestros",
+    "eComA": "y la",
+    "conformidadeLgpd": "en conformidad con las normas de privacidad (LGPD).",
+    "voltarSite": "Volver al sitio web",
+    "branding": {
+      "tituloLinha1": "Su Print Farm,",
+      "tituloLinha2": "Beneficio Real.",
+      "descricao": "Control total sobre costes, materiales y producción. Deje que PrintLog calcule mientras usted crea.",
+      "beneficio1": "Precios automáticos en segundos",
+      "beneficio2": "Gestión inteligente de filamentos",
+      "beneficio3": "Panel de rendimiento financiero",
+      "segurancaPrivacidade": "Seguridad y Privacidad"
+    }
   },
   "dashboard": {
     "saudacao": "¡Hola, {{nome}}! 👋",

@@ -75,14 +75,14 @@ export function PaginaAcesso() {
       <PainelBranding
         titulo={
           <>
-            Sua Farm,
+            {t("autenticacao.branding.tituloLinha1")}
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0ea5e9] to-emerald-400">
-              Lucro Real.
+              {t("autenticacao.branding.tituloLinha2")}
             </span>
           </>
         }
-        descricao="Controle total sobre custos, materiais e produção. Deixe o PrintLog calcular enquanto você cria."
+        descricao={t("autenticacao.branding.descricao")}
         beneficios={
           <>
             <div className="flex items-center gap-3 group">
@@ -90,7 +90,7 @@ export function PaginaAcesso() {
                 <CheckCircle2 size={16} className="text-emerald-500" />
               </div>
               <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
-                Precificação automática em segundos
+                {t("autenticacao.branding.beneficio1")}
               </span>
             </div>
             <div className="flex items-center gap-3 group">
@@ -98,7 +98,7 @@ export function PaginaAcesso() {
                 <CheckCircle2 size={16} className="text-blue-500" />
               </div>
               <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
-                Gestão inteligente de filamentos
+                {t("autenticacao.branding.beneficio2")}
               </span>
             </div>
             <div className="flex items-center gap-3 group">
@@ -106,7 +106,7 @@ export function PaginaAcesso() {
                 <CheckCircle2 size={16} className="text-purple-500" />
               </div>
               <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
-                Dashboard de performance financeira
+                {t("autenticacao.branding.beneficio3")}
               </span>
             </div>
           </>
@@ -225,11 +225,11 @@ export function PaginaAcesso() {
           <a href="/termos-de-servico" className="text-[#0ea5e9] hover:underline">
             {t("autenticacao.termosUso")}
           </a>{" "}
-          e com a{" "}
+          {t("autenticacao.eComA")}{" "}
           <a href="/politica-de-privacidade" className="text-[#0ea5e9] hover:underline">
             {t("autenticacao.politicaPrivacidade")}
           </a>{" "}
-          em conformidade com a LGPD (Art. 7º, V).
+          {t("autenticacao.conformidadeLgpd")}
         </p>
       </div>
     </LayoutAutenticacao>

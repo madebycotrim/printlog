@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 interface PropsPainelBranding {
   titulo: ReactNode;
@@ -14,6 +15,8 @@ export function PainelBranding({
   beneficios,
   largura = "w-1/2",
 }: PropsPainelBranding) {
+  const { t } = useIdioma();
+
   return (
     <div
       className={`hidden lg:flex ${largura} relative flex-col justify-between p-12 overflow-hidden border-r border-white/5 bg-black/20`}
@@ -54,7 +57,7 @@ export function PainelBranding({
           href="/seguranca-e-privacidade"
           className="hover:text-zinc-400 transition-colors"
         >
-          Segurança e Privacidade
+          {t("autenticacao.branding.segurancaPrivacidade")}
         </a>
       </div>
     </div>

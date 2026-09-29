@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { transicaoMolaSuave } from "@/compartilhado/utilitarios/animacoes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 interface PropsLayout {
   children: ReactNode;
@@ -15,10 +16,12 @@ interface PropsLayout {
 export function LayoutAutenticacao({
   children,
   linkVoltar = "/",
-  textoVoltar = "Voltar ao site",
+  textoVoltar,
   larguraMaxima = "max-w-5xl",
   variante = "sky",
 }: PropsLayout) {
+  const { t } = useIdioma();
+  const labelVoltar = textoVoltar || t("autenticacao.voltarSite");
   const cores = {
     sky: {
       gradiente: "from-blue-900/20",
@@ -60,7 +63,7 @@ export function LayoutAutenticacao({
               <ArrowLeft size={14} />
             )}
           </div>
-          {textoVoltar}
+          {labelVoltar}
         </a>
       </nav>
 
