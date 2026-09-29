@@ -13,6 +13,7 @@ import { LimiteDeErro } from "./LimiteDeErro";
 import { ModalAcessibilidade } from "./ModalAcessibilidade";
 import { BarraVocalizacaoFlutuante } from "./BarraVocalizacaoFlutuante";
 import { BannerAvisoGlobal } from "./BannerAvisoGlobal";
+import { tradutorUniversalDOM } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 type PropriedadesLayout = {
   children?: ReactNode;
@@ -50,6 +51,14 @@ export function Layout({ children }: PropriedadesLayout) {
       document.body.classList.remove('modo-desempenho');
     }
   }, [modoDesempenho]);
+
+  // Ao mudar de rota, executa varredura de tradução no novo conteúdo renderizado
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      tradutorUniversalDOM.traduzirTudo();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   const scrollClasse = location.pathname.startsWith("/projetos") ? "overflow-hidden" : "overflow-y-auto";
 

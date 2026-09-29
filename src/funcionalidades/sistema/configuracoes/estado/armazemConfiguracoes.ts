@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { apiConfiguracoes } from "../servicos/apiConfiguracoes";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
+import i18n, { CHAVE_STORAGE_IDIOMA } from "@/configuracoes/i18n";
 
 /**
  * Interface para as configurações operacionais do estúdio.
@@ -95,6 +96,20 @@ export const useArmazemConfiguracoes = create<ArmazemConfiguracoes>()(
         vencimentoPlano: dados.vencimentoPlano,
         calculadoraMeta: dados.calculadoraMeta,
       });
+
+      // Sincroniza idioma salvo na nuvem com o cliente se presente
+      const idiomaSalvoNuvem = dados.calculadoraMeta?.idioma;
+      if (idiomaSalvoNuvem && ["pt-BR", "en-US", "es-ES"].includes(idiomaSalvoNuvem)) {
+        if (idiomaSalvoNuvem !== i18n.language) {
+          i18n.changeLanguage(idiomaSalvoNuvem);
+        }
+        try {
+          localStorage.setItem(CHAVE_STORAGE_IDIOMA, idiomaSalvoNuvem);
+          document.documentElement.lang = idiomaSalvoNuvem;
+        } catch (erroStorage) {
+          console.warn("[configuracoes] Falha ao sincronizar localStorage com idioma do D1:", erroStorage);
+        }
+      }
     } catch (erro) {
       // Se falhar, mantém os valores padrão silenciosamente
       console.warn("[configuracoes] Falha ao carregar do D1, usando valores padrão.", erro);

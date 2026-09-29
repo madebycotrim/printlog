@@ -64,6 +64,7 @@
     "titulo": "Idioma del Sistema",
     "descricao": "Elija el idioma de visualización de la interfaz de PrintLog",
     "selecionar": "Seleccionar idioma",
+    "salvoNuvem": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
     "pt-BR": "Português (Brasil)",
     "en-US": "English (US)",
     "es-ES": "Español"

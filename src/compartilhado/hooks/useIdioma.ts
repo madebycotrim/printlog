@@ -1,6 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { useCallback, useMemo } from "react";
-import { IDIOMAS_SUPORTADOS, CodigoIdioma } from "@/configuracoes/i18n";
+import { IDIOMAS_SUPORTADOS, CodigoIdioma, CHAVE_STORAGE_IDIOMA } from "@/configuracoes/i18n";
+import { autenticacao } from "@/compartilhado/servicos/firebase";
+import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
+import { tradutorUniversalDOM } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function useIdioma() {
   const { t, i18n } = useTranslation();
@@ -20,12 +23,40 @@ export function useIdioma() {
   }, [idiomaAtual]);
 
   /**
-   * Altera o idioma da aplicação e atualiza a tag lang do HTML
+   * Altera o idioma da aplicação, persiste no localStorage e sincroniza no D1
    */
   const mudarIdioma = useCallback(
     async (novoIdioma: CodigoIdioma) => {
+      // 1. Persistência imediata no navegador (localStorage)
+      try {
+        localStorage.setItem(CHAVE_STORAGE_IDIOMA, novoIdioma);
+      } catch (e) {
+        console.warn("[i18n] Erro ao persistir idioma no localStorage:", e);
+      }
+
+      // 2. Mudança reativa no framework i18n e na tag HTML
       await i18n.changeLanguage(novoIdioma);
       document.documentElement.lang = novoIdioma;
+
+      // 3. Aplica tradução dinâmica no DOM de todas as telas
+      tradutorUniversalDOM.definirIdioma(novoIdioma);
+
+      // 4. Persistência na nuvem (Cloudflare D1) se o usuário estiver autenticado
+      try {
+        const uid = autenticacao.currentUser?.uid;
+        if (uid) {
+          const armazem = useArmazemConfiguracoes.getState();
+          const metaAtual = armazem.calculadoraMeta || {};
+          const novaMeta = {
+            ...metaAtual,
+            idioma: novoIdioma,
+          };
+          armazem.definirCalculadoraMeta(novaMeta);
+          await armazem.salvarNoD1(uid);
+        }
+      } catch (err) {
+        console.warn("[i18n] Não foi possível salvar preferência de idioma no D1:", err);
+      }
     },
     [i18n]
   );

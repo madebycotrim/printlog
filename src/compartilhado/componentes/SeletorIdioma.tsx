@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Globe, Check, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { CodigoIdioma } from "@/configuracoes/i18n";
 
@@ -82,6 +83,9 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
                       onClick={async () => {
                         await mudarIdioma(item.codigo as CodigoIdioma);
                         setAberto(false);
+                        toast.success(item.rotulo, {
+                          description: t("idiomas.salvoNuvem"),
+                        });
                       }}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                         ativo
@@ -120,7 +124,12 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
             <button
               key={item.codigo}
               type="button"
-              onClick={() => mudarIdioma(item.codigo as CodigoIdioma)}
+              onClick={async () => {
+                await mudarIdioma(item.codigo as CodigoIdioma);
+                toast.success(item.rotulo, {
+                  description: t("idiomas.salvoNuvem"),
+                });
+              }}
               className={`relative flex items-center gap-3 p-4 rounded-2xl border text-left transition-all duration-200 ${
                 ativo
                   ? "border-primary/50 bg-primary/5 shadow-xs dark:bg-white/5 dark:border-white/30 ring-1 ring-primary/30 dark:ring-white/20"
@@ -147,6 +156,10 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
           );
         })}
       </div>
+      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0" />
+        <span>{t("idiomas.salvoNuvem")}</span>
+      </p>
     </div>
   );
 }

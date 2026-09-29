@@ -64,6 +64,7 @@
     "titulo": "System Language",
     "descricao": "Choose the interface display language for PrintLog",
     "selecionar": "Select language",
+    "salvoNuvem": "Preference saved to your profile and synced across devices.",
     "pt-BR": "Português (Brasil)",
     "en-US": "English (US)",
     "es-ES": "Español"
