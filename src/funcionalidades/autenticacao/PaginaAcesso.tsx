@@ -10,7 +10,7 @@ import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 export function PaginaAcesso() {
   const navegar = useNavigate();
   const localizacao = useLocation();
-  const { loginGoogle, loginGithub, enviarLinkMagicoLogin, usuario, carregando } = useAutenticacao();
+  const { loginGoogle, loginGithub, enviarLinkMagicoLogin, usuario, carregando, exigindo2FA } = useAutenticacao();
   const { t } = useIdioma();
   const [erro, definirErro] = useState<string | null>(null);
   
@@ -23,10 +23,10 @@ export function PaginaAcesso() {
   const deOndeVim = deOndeVimOriginal === "/" ? "/dashboard" : deOndeVimOriginal;
 
   useEffect(() => {
-    if (!carregando && usuario) {
+    if (!carregando && usuario && !exigindo2FA) {
       navegar(deOndeVim, { replace: true });
     }
-  }, [usuario, carregando, navegar, deOndeVim]);
+  }, [usuario, carregando, exigindo2FA, navegar, deOndeVim]);
 
   const entrarComGoogle = async () => {
     try {
@@ -60,7 +60,7 @@ export function PaginaAcesso() {
     }
   };
 
-  if (carregando || usuario) {
+  if (carregando || (usuario && !exigindo2FA)) {
     return (
       <LayoutAutenticacao variante="sky">
         <div className="w-full min-h-[450px] flex items-center justify-center">

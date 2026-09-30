@@ -18,12 +18,27 @@ import {
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 import { 
   gerarSegredoBase32, 
   validarCodigoTotp, 
   gerarUriOtpAuth, 
   gerarCodigosBackup 
 } from "@/compartilhado/utilitarios/totp";
+import {
+  is2FAAtivo,
+  obterCodigosBackup2FA,
+  salvarCodigosBackup2FA,
+  obterDetalhesDispositivoConfiavel,
+  salvarDispositivoConfiavel,
+  removerDispositivoConfiavel,
+  marcarSessaoValidada,
+  limparSessaoValidada,
+  obterChave2FAAtivo,
+  obterChave2FASegredo,
+  obterChave2FABackup,
+} from "@/compartilhado/utilitarios/dispositivoConfiavel";
 import { obterDadosLocalizacaoCloudflare } from "@/compartilhado/utilitarios/tarifas-energia";
 import { formatarData } from "@/compartilhado/utilitarios/formatadores";
 import { toast } from "sonner";
@@ -37,13 +52,11 @@ interface SessaoDispositivo {
   timestamp: number;
 }
 
-const CHAVE_2FA_STATUS = "printlog:2fa_ativo" as const;
-const CHAVE_2FA_SEGREDO = "printlog:2fa_segredo" as const;
-const CHAVE_2FA_BACKUP = "printlog:2fa_codigos_backup" as const;
 const CHAVE_SESSAO_DISPOSITIVO_ID = "printlog:device_session_id" as const;
 
 export function CardSeguranca() {
   const { usuario } = useAutenticacao();
+  const { idiomaAtual } = useIdioma();
 
   // Estados de 2FA
   const [doisFatoresAtivo, setDoisFatoresAtivo] = useState(false);
@@ -57,17 +70,27 @@ export function CardSeguranca() {
   const [copiouSegredo, setCopiouSegredo] = useState(false);
   const [copiouBackup, setCopiouBackup] = useState(false);
   const [carregandoMfa, setCarregandoMfa] = useState(false);
+  const [infoDispositivoConfiavel, setInfoDispositivoConfiavel] = useState<{
+    idDispositivo: string;
+    criadoEm: number;
+    expiraEm: number;
+    diasRestantes: number;
+  } | null>(null);
 
   // Estados de Sessões 100% Reais
   const [desconectandoOutras, setDesconectandoOutras] = useState(false);
   const [localizacao, setLocalizacao] = useState("Local atual");
   const [outrasSessoes, setOutrasSessoes] = useState<SessaoDispositivo[]>([]);
 
-  // Carrega status real do 2FA do armazenamento seguro
+  // Carrega status real do 2FA do armazenamento seguro e detalhes do dispositivo
   useEffect(() => {
-    const statusSalvo = localStorage.getItem(CHAVE_2FA_STATUS) === "true";
-    const segredoSalvo = localStorage.getItem(CHAVE_2FA_SEGREDO);
-    setDoisFatoresAtivo(statusSalvo && !!segredoSalvo);
+    const ativo = is2FAAtivo(usuario?.uid);
+    setDoisFatoresAtivo(ativo);
+    if (ativo) {
+      setInfoDispositivoConfiavel(obterDetalhesDispositivoConfiavel(usuario?.uid));
+    } else {
+      setInfoDispositivoConfiavel(null);
+    }
   }, [usuario]);
 
   // Identificação Real do Dispositivo Atual
@@ -188,7 +211,7 @@ export function CardSeguranca() {
       setModalAtivacaoAberto(true);
     } catch (erro: any) {
       console.error("Erro ao iniciar 2FA:", erro);
-      toast.error("Falha ao gerar chaves criptográficas. Tente novamente.");
+      toast.error(traduzirTextoGlobal("Falha ao gerar chaves criptográficas. Tente novamente."));
     } finally {
       setCarregandoMfa(false);
     }
@@ -204,14 +227,29 @@ export function CardSeguranca() {
         setCopiouBackup(true);
         setTimeout(() => setCopiouBackup(false), 2000);
       }
-      toast.success("Copiado para a área de transferência!");
+      toast.success(traduzirTextoGlobal("Copiado para a área de transferência!"));
     } catch {
-      toast.error("Não foi possível copiar automaticamente.");
+      toast.error(traduzirTextoGlobal("Não foi possível copiar automaticamente."));
     }
   };
 
   const baixarCodigosBackup = () => {
-    const conteudo = `PRINTLOG - CÓDIGOS DE RECUPERAÇÃO 2FA (TOTP)\nUsuário: ${usuario?.email}\nData: ${formatarData(new Date())}\n\nGuarde em local seguro. Cada código é de uso único caso perca o celular:\n\n${codigosBackup.join('\n')}\n`;
+    const ehEn = idiomaAtual?.startsWith("en");
+    const ehEs = idiomaAtual?.startsWith("es");
+    const tituloTxt = ehEn
+      ? "PRINTLOG - 2FA (TOTP) RECOVERY CODES"
+      : ehEs
+      ? "PRINTLOG - CÓDIGOS DE RECUPERACIÓN 2FA (TOTP)"
+      : "PRINTLOG - CÓDIGOS DE RECUPERAÇÃO 2FA (TOTP)";
+    const usuarioTxt = ehEn ? "User:" : ehEs ? "Usuario:" : "Usuário:";
+    const dataTxt = ehEn ? "Date:" : ehEs ? "Fecha:" : "Data:";
+    const avisoTxt = ehEn
+      ? "Store in a safe place. Each code is single-use in case you lose your phone:"
+      : ehEs
+      ? "Guarde en un lugar seguro. Cada código es de un solo uso si pierde su móvil:"
+      : "Guarde em local seguro. Cada código é de uso único caso perca o celular:";
+
+    const conteudo = `${tituloTxt}\n${usuarioTxt} ${usuario?.email}\n${dataTxt} ${formatarData(new Date())}\n\n${avisoTxt}\n\n${codigosBackup.join('\n')}\n`;
     const elemento = document.createElement("a");
     const arquivo = new Blob([conteudo], { type: "text/plain" });
     elemento.href = URL.createObjectURL(arquivo);
@@ -219,14 +257,14 @@ export function CardSeguranca() {
     document.body.appendChild(elemento);
     elemento.click();
     document.body.removeChild(elemento);
-    toast.success("Arquivo de códigos baixado com sucesso!");
+    toast.success(traduzirTextoGlobal("Arquivo de códigos baixado com sucesso!"));
   };
 
   // Validação criptográfica matemática do código de 6 dígitos com janela temporal
   const confirmarAtivacao = async () => {
     const digitosLimpos = codigoConfirmacao.replace(/\D/g, "");
     if (digitosLimpos.length !== 6) {
-      toast.error("Insira o código de 6 dígitos gerado no seu aplicativo autenticador.");
+      toast.error(traduzirTextoGlobal("Insira o código de 6 dígitos gerado no seu aplicativo autenticador."));
       return;
     }
 
@@ -236,22 +274,30 @@ export function CardSeguranca() {
       const valido = await validarCodigoTotp(digitosLimpos, segredoBase32);
 
       if (!valido) {
-        toast.error("Código incorreto ou expirado. Verifique os 6 dígitos gerados pelo seu aplicativo.");
+        toast.error(traduzirTextoGlobal("Código incorreto ou expirado. Verifique os 6 dígitos gerados pelo seu aplicativo."));
         return;
       }
 
-      // Salva de forma segura
-      localStorage.setItem(CHAVE_2FA_STATUS, "true");
-      localStorage.setItem(CHAVE_2FA_SEGREDO, segredoBase32);
-      localStorage.setItem(CHAVE_2FA_BACKUP, JSON.stringify(codigosBackup));
-      sessionStorage.setItem("printlog:2fa_sessao_validada", "true");
+      // Salva de forma segura por UID e globalmente
+      const chaveStatus = obterChave2FAAtivo(usuario?.uid);
+      const chaveSegredo = obterChave2FASegredo(usuario?.uid);
+
+      localStorage.setItem(chaveStatus, "true");
+      localStorage.setItem("printlog:2fa_ativo", "true");
+      localStorage.setItem(chaveSegredo, segredoBase32);
+      localStorage.setItem("printlog:2fa_segredo", segredoBase32);
+      salvarCodigosBackup2FA(codigosBackup, usuario?.uid);
+
+      marcarSessaoValidada(usuario?.uid);
+      salvarDispositivoConfiavel(usuario?.uid, usuario?.email || undefined);
 
       setDoisFatoresAtivo(true);
+      setInfoDispositivoConfiavel(obterDetalhesDispositivoConfiavel(usuario?.uid));
       setPassoAtivacao(3);
-      toast.success("Autenticação em 2 Etapas (Google Authenticator) ativada com sucesso!");
+      toast.success(traduzirTextoGlobal("Autenticação em 2 Etapas (Google Authenticator) ativada com sucesso!"));
     } catch (erro: any) {
       console.error("Erro ao validar 2FA:", erro);
-      toast.error("Erro durante o cálculo criptográfico do código.");
+      toast.error(traduzirTextoGlobal("Erro durante o cálculo criptográfico do código."));
     } finally {
       setCarregandoMfa(false);
     }
@@ -260,16 +306,29 @@ export function CardSeguranca() {
   const desativar2FA = () => {
     setCarregandoMfa(true);
     try {
-      localStorage.removeItem(CHAVE_2FA_STATUS);
-      localStorage.removeItem(CHAVE_2FA_SEGREDO);
-      localStorage.removeItem(CHAVE_2FA_BACKUP);
-      sessionStorage.removeItem("printlog:2fa_sessao_validada");
+      localStorage.removeItem(obterChave2FAAtivo(usuario?.uid));
+      localStorage.removeItem("printlog:2fa_ativo");
+      localStorage.removeItem(obterChave2FASegredo(usuario?.uid));
+      localStorage.removeItem("printlog:2fa_segredo");
+      localStorage.removeItem(obterChave2FABackup(usuario?.uid));
+      localStorage.removeItem("printlog:2fa_codigos_backup");
+
+      limparSessaoValidada(usuario?.uid);
+      removerDispositivoConfiavel(usuario?.uid);
+
       setDoisFatoresAtivo(false);
+      setInfoDispositivoConfiavel(null);
       setModalDesativacaoAberto(false);
-      toast.success("2FA desativado com sucesso.");
+      toast.success(traduzirTextoGlobal("2FA desativado com sucesso."));
     } finally {
       setCarregandoMfa(false);
     }
+  };
+
+  const revogarConfiancaDispositivo = () => {
+    removerDispositivoConfiavel(usuario?.uid);
+    setInfoDispositivoConfiavel(null);
+    toast.success(traduzirTextoGlobal("Confiança deste dispositivo revogada com sucesso."));
   };
 
   const desconectarOutrasSessoes = () => {
@@ -290,7 +349,7 @@ export function CardSeguranca() {
       }
       setOutrasSessoes([]);
       setDesconectandoOutras(false);
-      toast.success("Todas as outras sessões ativas foram desconectadas.");
+      toast.success(traduzirTextoGlobal("Todas as outras sessões ativas foram desconectadas."));
     }, 600);
   };
 
@@ -305,8 +364,8 @@ export function CardSeguranca() {
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
 
       <CabecalhoCard
-        titulo="Segurança & Gestão de Acesso"
-        descricao="Autenticação em duas etapas (2FA) e sessões ativas"
+        titulo={traduzirTextoGlobal("Segurança & Gestão de Acesso")}
+        descricao={traduzirTextoGlobal("Autenticação em duas etapas (2FA) e sessões ativas")}
         icone={ShieldCheck}
         corIcone="text-emerald-500"
       />
@@ -322,28 +381,67 @@ export function CardSeguranca() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-wider text-primary">
-                    Autenticação em 2 Etapas (TOTP)
+                    {traduzirTextoGlobal("Autenticação em 2 Etapas (TOTP)")}
                   </h4>
                   <p className="text-[11px] text-muted-foreground">
-                    Google Authenticator, Authy ou 1Password
+                    {traduzirTextoGlobal("Google Authenticator, Authy ou 1Password")}
                   </p>
                 </div>
               </div>
 
               {doisFatoresAtivo ? (
                 <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
-                  <CheckCircle2 size={12} /> Ativo
+                  <CheckCircle2 size={12} /> {traduzirTextoGlobal("Ativo")}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-zinc-500/10 border border-zinc-500/20 text-zinc-500 text-[10px] font-black uppercase tracking-wider">
-                  Desativado
+                  {traduzirTextoGlobal("Desativado")}
                 </span>
               )}
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Exige um código de segurança de 6 dígitos gerado no seu celular ao fazer login, protegendo sua conta mesmo que sua senha seja comprometida.
+              {traduzirTextoGlobal("Exige um código de segurança de 6 dígitos gerado no seu celular ao fazer login, protegendo sua conta mesmo que sua senha seja comprometida.")}
             </p>
+
+            {/* Informação sobre Dispositivo Confiável */}
+            {doisFatoresAtivo && infoDispositivoConfiavel && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3 text-left">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-emerald-500 truncate">
+                      {traduzirTextoGlobal("Dispositivo confiável ativo neste navegador")}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {traduzirTextoGlobal("Válido por mais")} {infoDispositivoConfiavel.diasRestantes} {traduzirTextoGlobal(infoDispositivoConfiavel.diasRestantes === 1 ? "dia neste navegador" : "dias neste navegador")}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={revogarConfiancaDispositivo}
+                  className="px-2.5 py-1 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 text-[10px] font-bold transition-all shrink-0 cursor-pointer"
+                  title={traduzirTextoGlobal("Revogar confiança deste dispositivo")}
+                >
+                  {traduzirTextoGlobal("Revogar")}
+                </button>
+              </div>
+            )}
+
+            {doisFatoresAtivo && !infoDispositivoConfiavel && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2.5 text-left">
+                <AlertTriangle size={15} className="text-amber-500 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-amber-500">
+                    {traduzirTextoGlobal("Este navegador não está salvo como confiável")}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {traduzirTextoGlobal("O código 2FA será solicitado no próximo login.")}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-2 flex flex-wrap gap-2">
@@ -356,12 +454,12 @@ export function CardSeguranca() {
                 {carregandoMfa ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    Gerando Chaves Seguras...
+                    {traduzirTextoGlobal("Gerando Chaves Seguras...")}
                   </>
                 ) : (
                   <>
                     <KeyRound size={14} />
-                    Ativar 2FA (Recomendado)
+                    {traduzirTextoGlobal("Ativar 2FA (Recomendado)")}
                   </>
                 )}
               </button>
@@ -369,22 +467,22 @@ export function CardSeguranca() {
               <>
                 <button
                   onClick={() => {
-                    const salvos = JSON.parse(localStorage.getItem(CHAVE_2FA_BACKUP) || "[]");
+                    const salvos = obterCodigosBackup2FA(usuario?.uid);
                     setCodigosBackup(salvos);
                     setPassoAtivacao(3);
                     setModalAtivacaoAberto(true);
                   }}
-                  className="h-9 px-3.5 rounded-xl border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm"
+                  className="h-9 px-3.5 rounded-xl border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                 >
                   <Lock size={12} />
-                  Ver Códigos de Backup
+                  {traduzirTextoGlobal("Ver Códigos de Backup")}
                 </button>
                 <button
                   onClick={() => setModalDesativacaoAberto(true)}
                   disabled={carregandoMfa}
-                  className="h-9 px-3.5 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 text-[10px] font-black uppercase tracking-wider transition-all"
+                  className="h-9 px-3.5 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer"
                 >
-                  Desativar 2FA
+                  {traduzirTextoGlobal("Desativar 2FA")}
                 </button>
               </>
             )}
@@ -401,16 +499,16 @@ export function CardSeguranca() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-wider text-primary">
-                    Sessões & Dispositivos
+                    {traduzirTextoGlobal("Sessões & Dispositivos")}
                   </h4>
                   <p className="text-[11px] text-muted-foreground">
-                    Onde sua conta está conectada
+                    {traduzirTextoGlobal("Onde sua conta está conectada")}
                   </p>
                 </div>
               </div>
 
               <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                {outrasSessoes.length === 0 ? "1 ATIVA" : `${1 + outrasSessoes.length} ATIVAS`}
+                {outrasSessoes.length === 0 ? traduzirTextoGlobal("1 ATIVA") : `${1 + outrasSessoes.length} ${traduzirTextoGlobal("ATIVAS")}`}
               </span>
             </div>
 
@@ -425,15 +523,15 @@ export function CardSeguranca() {
                     </p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5 truncate">
                       <Globe size={11} className="shrink-0" />
-                      <span className="truncate">{localizacao}</span>
+                      <span className="truncate">{traduzirTextoGlobal(localizacao)}</span>
                       <span>•</span>
                       <Clock size={11} className="shrink-0" />
-                      <span>Ativo agora</span>
+                      <span>{traduzirTextoGlobal("Ativo agora")}</span>
                     </p>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-black uppercase tracking-wider shrink-0">
-                  Este Dispositivo
+                  {traduzirTextoGlobal("Este Dispositivo")}
                 </span>
               </div>
 
@@ -445,10 +543,10 @@ export function CardSeguranca() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-primary leading-tight">
-                      Nenhuma outra sessão ativa
+                      {traduzirTextoGlobal("Nenhuma outra sessão ativa")}
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Sua conta está conectada exclusivamente neste dispositivo.
+                      {traduzirTextoGlobal("Sua conta está conectada exclusivamente neste dispositivo.")}
                     </p>
                   </div>
                 </div>
@@ -460,7 +558,7 @@ export function CardSeguranca() {
                         {s.dispositivo}
                       </span>
                       <span className="text-[9px] text-muted-foreground flex items-center gap-1">
-                        <Clock size={9} /> {s.ultimoAcesso} · {s.local}
+                        <Clock size={9} /> {traduzirTextoGlobal(s.ultimoAcesso)} · {s.local}
                       </span>
                     </div>
                     <span className="text-[9px] text-muted-foreground font-mono shrink-0">
@@ -484,8 +582,8 @@ export function CardSeguranca() {
             >
               <LogOut size={12} />
               {desconectandoOutras
-                ? "Desconectando..."
-                : "Desconectar de outras sessões"}
+                ? traduzirTextoGlobal("Desconectando...")
+                : traduzirTextoGlobal("Desconectar de outras sessões")}
             </button>
           </div>
         </div>
@@ -504,7 +602,7 @@ export function CardSeguranca() {
             <div className="space-y-5 text-center">
               <div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  1. Abra seu aplicativo autenticador (Google Authenticator, Authy, etc.) e escaneie o código abaixo:
+                  {traduzirTextoGlobal("1. Abra seu aplicativo autenticador (Google Authenticator, Authy, etc.) e escaneie o código abaixo:")}
                 </p>
               </div>
 
@@ -520,7 +618,7 @@ export function CardSeguranca() {
 
               <div className="space-y-1 text-left bg-muted/40 p-3 rounded-xl border border-borda-sutil">
                 <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">
-                  Não consegue escanear? Use a chave manual:
+                  {traduzirTextoGlobal("Não consegue escanear? Use a chave manual:")}
                 </label>
                 <div className="flex items-center justify-between gap-2">
                   <code className="text-xs font-mono font-bold text-primary tracking-wider select-all truncate">
@@ -528,8 +626,8 @@ export function CardSeguranca() {
                   </code>
                   <button
                     onClick={() => copiarTexto(segredoBase32, "segredo")}
-                    className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-primary transition-all shrink-0"
-                    title="Copiar Chave"
+                    className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-primary transition-all shrink-0 cursor-pointer"
+                    title={traduzirTextoGlobal("Copiar Chave")}
                   >
                     {copiouSegredo ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                   </button>
@@ -539,15 +637,15 @@ export function CardSeguranca() {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   onClick={() => setModalAtivacaoAberto(false)}
-                  className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
+                  className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider cursor-pointer"
                 >
-                  Cancelar
+                  {traduzirTextoGlobal("Cancelar")}
                 </button>
                 <button
                   onClick={() => setPassoAtivacao(2)}
-                  className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20"
+                  className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 cursor-pointer"
                 >
-                  Avançar
+                  {traduzirTextoGlobal("Avançar")}
                 </button>
               </div>
             </div>
@@ -557,9 +655,9 @@ export function CardSeguranca() {
           {passoAtivacao === 2 && (
             <div className="space-y-5 text-center">
               <div>
-                <h4 className="text-sm font-bold text-primary">Confirme o código do aplicativo</h4>
+                <h4 className="text-sm font-bold text-primary">{traduzirTextoGlobal("Confirme o código do aplicativo")}</h4>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  Digite os 6 dígitos que aparecem no seu autenticador para validar a sincronização:
+                  {traduzirTextoGlobal("Digite os 6 dígitos que aparecem no seu autenticador para validar a sincronização:")}
                 </p>
               </div>
 
@@ -580,22 +678,22 @@ export function CardSeguranca() {
                 <button
                   onClick={() => setPassoAtivacao(1)}
                   disabled={carregandoMfa}
-                  className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
+                  className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider cursor-pointer"
                 >
-                  Voltar
+                  {traduzirTextoGlobal("Voltar")}
                 </button>
                 <button
                   onClick={confirmarAtivacao}
                   disabled={codigoConfirmacao.length !== 6 || carregandoMfa}
-                  className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                  className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {carregandoMfa ? (
                     <>
                       <Loader2 size={14} className="animate-spin" />
-                      Ativando...
+                      {traduzirTextoGlobal("Ativando...")}
                     </>
                   ) : (
-                    "Confirmar e Ativar"
+                    traduzirTextoGlobal("Confirmar e Ativar")
                   )}
                 </button>
               </div>
@@ -609,9 +707,9 @@ export function CardSeguranca() {
                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-2">
                   <CheckCircle2 size={22} />
                 </div>
-                <h4 className="text-sm font-bold text-primary">Códigos de Recuperação</h4>
+                <h4 className="text-sm font-bold text-primary">{traduzirTextoGlobal("Códigos de Recuperação")}</h4>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  Se você perder seu celular, esses códigos permitirão acessar sua conta. Cada código só funciona 1 vez.
+                  {traduzirTextoGlobal("Se você perder seu celular, esses códigos permitirão acessar sua conta. Cada código só funciona 1 vez.")}
                 </p>
               </div>
 
@@ -626,25 +724,25 @@ export function CardSeguranca() {
               <div className="flex gap-2">
                 <button
                   onClick={() => copiarTexto(codigosBackup.join("\n"), "backup")}
-                  className="flex-1 h-10 rounded-xl border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="flex-1 h-10 rounded-xl border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                 >
                   {copiouBackup ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                  Copiar Códigos
+                  {traduzirTextoGlobal("Copiar Códigos")}
                 </button>
                 <button
                   onClick={baixarCodigosBackup}
-                  className="flex-1 h-10 rounded-xl border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="flex-1 h-10 rounded-xl border border-borda-sutil bg-card text-muted-foreground hover:text-primary text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                 >
                   <Download size={14} />
-                  Baixar (.txt)
+                  {traduzirTextoGlobal("Baixar (.txt)")}
                 </button>
               </div>
 
               <button
                 onClick={() => setModalAtivacaoAberto(false)}
-                className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20"
+                className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 cursor-pointer"
               >
-                Concluir
+                {traduzirTextoGlobal("Concluir")}
               </button>
             </div>
           )}
@@ -664,24 +762,24 @@ export function CardSeguranca() {
           </div>
 
           <div>
-            <h4 className="text-sm font-bold text-primary">Sua conta ficará menos protegida</h4>
+            <h4 className="text-sm font-bold text-primary">{traduzirTextoGlobal("Sua conta ficará menos protegida")}</h4>
             <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-              Ao desativar a autenticação em 2 etapas, apenas sua senha será exigida para entrar na plataforma PrintLog.
+              {traduzirTextoGlobal("Ao desativar a autenticação em 2 etapas, apenas sua senha será exigida para entrar na plataforma PrintLog.")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setModalDesativacaoAberto(false)}
-              className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
+              className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider cursor-pointer"
             >
-              Cancelar
+              {traduzirTextoGlobal("Cancelar")}
             </button>
             <button
               onClick={desativar2FA}
-              className="h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-rose-600/20"
+              className="h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-rose-600/20 cursor-pointer"
             >
-              Confirmar Desativação
+              {traduzirTextoGlobal("Confirmar Desativação")}
             </button>
           </div>
         </div>

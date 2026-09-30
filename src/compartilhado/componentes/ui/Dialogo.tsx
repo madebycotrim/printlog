@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Settings } from "lucide-react";
 import { ReactNode, useEffect, ComponentType } from "react";
 import { createPortal } from "react-dom";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface PropriedadesDialogo {
   aberto: boolean;
@@ -107,17 +108,17 @@ export function Dialogo({
                     </div>
                     <div className="flex flex-col text-left min-w-0">
                       <h3 className="text-xs md:text-sm font-black text-primary tracking-wider uppercase leading-none truncate">
-                        {titulo || "Painel"}
+                        {traduzirTextoGlobal(titulo || "Painel")}
                       </h3>
                       <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1 truncate">
-                        {subtitulo || "Configurações do Sistema"}
+                        {traduzirTextoGlobal(subtitulo || "Configurações do Sistema")}
                       </span>
                     </div>
                   </div>
                   <button
                     onClick={aoFechar}
                     className="w-8 h-8 rounded-lg text-zinc-500 hover:text-primary dark:hover:text-zinc-200 transition-all bg-zinc-100 dark:bg-zinc-900/40 border border-borda-sutil flex items-center justify-center cursor-pointer active:scale-95 shrink-0"
-                    aria-label="Fechar"
+                    aria-label={traduzirTextoGlobal("Fechar")}
                   >
                     <X size={14} />
                   </button>

@@ -2,6 +2,7 @@ import { User, Mail, Lock } from "lucide-react";
 import { CabecalhoCard, CampoDashboard } from "./Compartilhados";
 import { Usuario } from "@/compartilhado/tipos/modelos";
 import { Avatar } from "@/compartilhado/componentes";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 /**
  * Propriedades para o componente CardPerfil.
@@ -38,7 +39,7 @@ export function CardPerfil({
     return (
         <div className="h-full rounded-2xl border border-borda-sutil bg-card p-5 md:p-6 flex flex-col gap-5 relative overflow-hidden group hover:shadow-premium transition-all duration-700">
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
-            <CabecalhoCard titulo="Perfil Maker" descricao="Sua conta de acesso e segurança" icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
+            <CabecalhoCard titulo={traduzirTextoGlobal("Perfil Maker")} descricao={traduzirTextoGlobal("Sua conta de acesso e segurança")} icone={User} corIcone="text-[var(--cor-primaria)]" pendente={pendente} />
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                 <div className="flex flex-col items-center justify-center shrink-0 w-36 rounded-xl p-4 bg-muted/30 border border-borda-sutil gap-3">
@@ -55,10 +56,10 @@ export function CardPerfil({
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">
-                    <CampoDashboard label="Nome no Perfil" valor={nome} aoMudar={definirNome} placeholder="Seu nome maker" icone={User} />
+                    <CampoDashboard label={traduzirTextoGlobal("Nome no Perfil")} valor={nome} aoMudar={definirNome} placeholder={traduzirTextoGlobal("Seu nome maker")} icone={User} />
 
                     <div className="w-full">
-                        <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground ml-1">E-mail de Acesso</label>
+                        <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground ml-1">{traduzirTextoGlobal("E-mail de Acesso")}</label>
                         <div className="h-11 w-full bg-transparent border-b-2 border-borda-sutil flex items-center gap-3">
                             <Mail size={16} className="text-muted-foreground/60" />
                             <span className="truncate text-sm font-semibold text-primary flex-1">
@@ -75,9 +76,9 @@ export function CardPerfil({
                             {(!usuario?.emailVerified && lidarComVerificacaoEmail) && (
                                 <button 
                                     onClick={lidarComVerificacaoEmail} 
-                                    className="shrink-0 text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 hover:text-orange-700 dark:hover:text-orange-400 border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 px-2 py-1.5 rounded-lg transition-all"
+                                    className="shrink-0 text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-500 hover:text-orange-700 dark:hover:text-orange-400 border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 px-2 py-1.5 rounded-lg transition-all cursor-pointer"
                                 >
-                                    Verificar
+                                    {traduzirTextoGlobal("Verificar")}
                                 </button>
                             )}
                         </div>
@@ -88,10 +89,10 @@ export function CardPerfil({
             {!sucessoEmail && (
                 <button
                     onClick={lidarComTrocaSenha}
-                    className="mt-auto h-11 w-full rounded-xl border border-borda-sutil bg-muted/30 text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-primary flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.12em] transition-all shadow-sm active:scale-[0.98]"
+                    className="mt-auto h-11 w-full rounded-xl border border-borda-sutil bg-muted/30 text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-primary flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.12em] transition-all shadow-sm active:scale-[0.98] cursor-pointer"
                 >
                     <Lock size={14} className="text-[var(--cor-primaria)]" />
-                    Redefinir Senha
+                    {traduzirTextoGlobal("Redefinir Senha")}
                 </button>
             )}
 
@@ -101,14 +102,14 @@ export function CardPerfil({
                         <Mail size={16} />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-400">E-mail de Segurança Enviado</p>
-                        <p className="text-[10px] text-emerald-700/70 dark:text-emerald-500/60 mt-0.5">Verifique sua caixa de entrada e spam para redefinir sua credencial.</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-400">{traduzirTextoGlobal("E-mail de Segurança Enviado")}</p>
+                        <p className="text-[10px] text-emerald-700/70 dark:text-emerald-500/60 mt-0.5">{traduzirTextoGlobal("Verifique sua caixa de entrada e spam para redefinir sua credencial.")}</p>
                     </div>
                 </div>
             )}
 
             <p className="mt-4 text-[9px] text-muted-foreground/40 text-center px-6 leading-tight italic uppercase tracking-wider">
-                Finalidade: Seus dados de perfil são utilizados para identificação e acesso à plataforma, conforme Art. 7º, V da LGPD.
+                {traduzirTextoGlobal("Finalidade: Seus dados de perfil são utilizados para identificação e acesso à plataforma, conforme Art. 7º, V da LGPD.")}
             </p>
         </div>
     );

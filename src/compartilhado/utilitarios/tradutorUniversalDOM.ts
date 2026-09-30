@@ -50,6 +50,12 @@ interface PadraoDinamico {
 }
 
 const PADROES_DINAMICOS: PadraoDinamico[] = [
+  // Sessões ativas
+  {
+    regex: /^(\d+)\s+ativas?$/i,
+    en: (m) => `${m[1]} ACTIVE`,
+    es: (m) => `${m[1]} ${m[1] === "1" ? "ACTIVA" : "ACTIVAS"}`,
+  },
   // Interações
   {
     regex: /^últimas?\s+(\d+)\s+interações?$/i,

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 /**
  * Propriedades do componente CardPrivacidade.
@@ -34,7 +35,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
     try {
       navegar("/", { replace: true });
       await excluirConta();
-      toast.success("Sua conta foi excluída com sucesso.");
+      toast.success(traduzirTextoGlobal("Sua conta foi excluída com sucesso."));
     } catch (erro: unknown) {
       const mensagem = erro instanceof Error ? erro.message : "Erro inesperado ao excluir conta.";
       toast.error(mensagem + " Faça login novamente e tente de novo.");
@@ -79,24 +80,24 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none" />
         <CabecalhoCard
-          titulo="Privacidade (LGPD)"
-          descricao="Lei nº 13.709/2018 — Sua privacidade é um direito"
+          titulo={traduzirTextoGlobal("Privacidade (LGPD)")}
+          descricao={traduzirTextoGlobal("Lei nº 13.709/2018 — Sua privacidade é um direito")}
           icone={Shield}
           corIcone="text-rose-500"
         />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Seus dados são tratados com transparência e responsabilidade, conforme nossa{" "}
+            {traduzirTextoGlobal("Seus dados são tratados com transparência e responsabilidade, conforme nossa")}{" "}
             <a
               href="/politica-de-privacidade"
               className="hover:underline font-bold"
               style={{ color: "var(--cor-primaria)" }}
             >
-              Política de Privacidade
+              {traduzirTextoGlobal("Política de Privacidade")}
             </a>
             .<br />
-            Para exercer seus direitos ou tirar dúvidas, fale com nosso DPO:{" "}
+            {traduzirTextoGlobal("Para exercer seus direitos ou tirar dúvidas, fale com nosso DPO:")}{" "}
             <a
               href="mailto:privacidade@printlog.com.br"
               className="font-bold text-primary hover:underline transition-colors"
@@ -108,16 +109,16 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={exportarDadosPessoais}
-              className="h-10 px-4 rounded-xl text-white hover:brightness-110 text-[10px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"
+              className="h-10 px-4 rounded-xl text-white hover:brightness-110 text-[10px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
               style={{ backgroundColor: "var(--cor-primaria)" }}
             >
-              <Download size={13} /> Exportar
+              <Download size={13} /> {traduzirTextoGlobal("Exportar")}
             </button>
             <button
               onClick={abrirModal}
-              className="h-10 px-4 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 text-[10px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap"
+              className="h-10 px-4 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 text-[10px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
             >
-              <Trash2 size={13} /> Excluir Conta
+              <Trash2 size={13} /> {traduzirTextoGlobal("Excluir Conta")}
             </button>
           </div>
         </div>
@@ -140,7 +141,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
                 <p
                   className={`text-[10px] font-bold uppercase tracking-wider ${s <= passo ? "text-rose-600 dark:text-rose-400" : "text-gray-400 dark:text-zinc-600"}`}
                 >
-                  {s === 1 ? "Impacto" : "Confirmação"}
+                  {s === 1 ? traduzirTextoGlobal("Impacto") : traduzirTextoGlobal("Confirmação")}
                 </p>
               </div>
             ))}
@@ -153,19 +154,17 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
                   <AlertTriangle size={24} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">Essa ação é definitiva</h3>
+                  <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">{traduzirTextoGlobal("Essa ação é definitiva")}</h3>
                   <p className="text-xs text-rose-700 dark:text-rose-300 mt-2 leading-relaxed">
-                    Ao confirmar, todos os seus dados — projetos, clientes e histórico de impressões — serão apagados
-                    permanentemente das nossas bases em até 30 dias, salvo os dados que a lei nos obriga a manter.
+                    {traduzirTextoGlobal("Ao confirmar, todos os seus dados — projetos, clientes e histórico de impressões — serão apagados permanentemente das nossas bases em até 30 dias, salvo os dados que a lei nos obriga a manter.")}
                   </p>
                 </div>
               </div>
 
               <p className="text-[11px] text-gray-500 dark:text-zinc-400 text-center leading-relaxed">
-                Manteremos apenas algumas cópias limitadas e estritamente necessárias por obrigações legais, conforme
-                detalhado na nossa{" "}
+                {traduzirTextoGlobal("Manteremos apenas algumas cópias limitadas e estritamente necessárias por obrigações legais, conforme detalhado na nossa")}{" "}
                 <a href="/politica-de-privacidade" className="hover:underline" style={{ color: "var(--cor-primaria)" }}>
-                  Política de Privacidade
+                  {traduzirTextoGlobal("Política de Privacidade")}
                 </a>
                 .
               </p>
@@ -173,24 +172,24 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   onClick={() => definirModalAberto(false)}
-                  className="h-11 rounded-xl bg-muted border border-borda-sutil hover:bg-muted/80 text-xs font-bold text-muted-foreground transition-all font-mono uppercase tracking-wider"
+                  className="h-11 rounded-xl bg-muted border border-borda-sutil hover:bg-muted/80 text-xs font-bold text-muted-foreground transition-all font-mono uppercase tracking-wider cursor-pointer"
                 >
-                  Cancelar
+                  {traduzirTextoGlobal("Cancelar")}
                 </button>
                 <button
                   onClick={() => definirPasso(2)}
-                  className="h-11 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 shadow-sm text-xs font-bold text-white flex items-center justify-center gap-2 transition-all uppercase tracking-wider"
+                  className="h-11 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 shadow-sm text-xs font-bold text-white flex items-center justify-center gap-2 transition-all uppercase tracking-wider cursor-pointer"
                 >
-                  Continuar <Trash2 size={14} />
+                  {traduzirTextoGlobal("Continuar")} <Trash2 size={14} />
                 </button>
               </div>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="text-center px-2">
-                <h3 className="text-sm font-bold text-primary mb-2">Quase lá...</h3>
+                <h3 className="text-sm font-bold text-primary mb-2">{traduzirTextoGlobal("Quase lá...")}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Para sua segurança, confirme pela última vez se deseja encerrar sua conta.
+                  {traduzirTextoGlobal("Para sua segurança, confirme pela última vez se deseja encerrar sua conta.")}
                 </p>
               </div>
 
@@ -202,8 +201,7 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
                   className="mt-0.5 h-4.5 w-4.5 rounded text-zinc-900 dark:text-white focus:ring-zinc-800 dark:focus:ring-white border-gray-300 bg-card dark:border-borda-sutil cursor-pointer transition-all"
                 />
                 <span className="text-xs text-muted-foreground leading-relaxed">
-                  <strong className="text-primary">Concordo:</strong> Entendo que meus dados serão apagados permanentemente (salvo retenções
-                  legais) e quero excluir minha conta.
+                  <strong className="text-primary">{traduzirTextoGlobal("Concordo:")}</strong> {traduzirTextoGlobal("Entendo que meus dados serão apagados permanentemente (salvo retenções legais) e quero excluir minha conta.")}
                 </span>
               </label>
 
@@ -213,20 +211,20 @@ export function CardPrivacidade({ destaque }: PropsCardPrivacidade) {
                     definirPasso(1);
                     definirConfirmouEliminacao(false);
                   }}
-                  className="h-11 rounded-xl bg-muted border border-borda-sutil hover:bg-muted/80 text-xs font-bold text-muted-foreground transition-all uppercase tracking-wider"
+                  className="h-11 rounded-xl bg-muted border border-borda-sutil hover:bg-muted/80 text-xs font-bold text-muted-foreground transition-all uppercase tracking-wider cursor-pointer"
                 >
-                  Voltar
+                  {traduzirTextoGlobal("Voltar")}
                 </button>
                 <button
                   onClick={lidarComEliminacao}
                   disabled={!confirmouEliminacao}
                   className={`h-11 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all uppercase tracking-wider ${
                     confirmouEliminacao
-                      ? "bg-gradient-to-r from-rose-600 to-rose-700 text-white hover:brightness-110 shadow-lg shadow-rose-500/20 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-rose-600 to-rose-700 text-white hover:brightness-110 shadow-lg shadow-rose-500/20 active:scale-[0.98] cursor-pointer"
                       : "bg-gray-100 dark:bg-zinc-800/50 text-gray-400 dark:text-zinc-600 cursor-not-allowed"
                   }`}
                 >
-                  Excluir
+                  {traduzirTextoGlobal("Excluir")}
                 </button>
               </div>
             </div>

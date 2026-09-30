@@ -238,6 +238,19 @@ export const dicionarioSistema: DicionarioTraducao = {
   "Legítimo interesse (Art. 7º, IX):": { en: "Legitimate interest:", es: "Interés legítimo:" },
   "Lei nº 13.709/2018 — Sua privacidade é um direito": { en: "Data Protection Law — Your privacy is a fundamental right", es: "Ley de Protección de Datos — Su privacidad es un derecho" },
   "Lembrar deste dispositivo": { en: "Remember this device", es: "Recordar este dispositivo" },
+  "Lembrar deste dispositivo por 30 dias": { en: "Remember this device for 30 days", es: "Recordar este dispositivo por 30 días" },
+  "Não solicitar código 2FA neste navegador pelos próximos 30 dias": { en: "Do not require 2FA code in this browser for the next 30 days", es: "No solicitar código 2FA en este navegador durante los próximos 30 días" },
+  "Segundo fator confirmado! Dispositivo lembrado por 30 dias.": { en: "Second factor verified! Device remembered for 30 days.", es: "¡Segundo factor confirmado! Dispositivo recordado por 30 días." },
+  "Dispositivo confiável ativo neste navegador": { en: "Trusted device active in this browser", es: "Dispositivo de confianza activo en este navegador" },
+  "Revogar confiança deste dispositivo": { en: "Revoke trust of this device", es: "Revocar confianza de este dispositivo" },
+  "Revogar": { en: "Revoke", es: "Revocar" },
+  "Confiança deste dispositivo revogada com sucesso.": { en: "Trust for this device successfully revoked.", es: "Confianza de este dispositivo revocada con éxito." },
+  "Este navegador não está salvo como confiável": { en: "This browser is not saved as a trusted device", es: "Este navegador no está guardado como dispositivo de confianza" },
+  "O código 2FA será solicitado no próximo login.": { en: "2FA code will be required on next login.", es: "El código 2FA será solicitado en el próximo inicio de sesión." },
+  "Acesso concedido via dispositivo confiável.": { en: "Access granted via trusted device.", es: "Acceso concedido mediante dispositivo de confianza." },
+  "Válido por mais": { en: "Valid for another", es: "Válido por otros" },
+  "dias neste navegador": { en: "days in this browser", es: "días en este navegador" },
+  "dia neste navegador": { en: "day in this browser", es: "día en este navegador" },
   "Licenciamento e Direitos": { en: "Licensing & Rights", es: "Licencias y Derechos" },
   "Limão": { en: "Lime", es: "Lima" },
   "Local Storage": { en: "Local Storage", es: "Almacenamiento Local" },
@@ -421,4 +434,102 @@ export const dicionarioSistema: DicionarioTraducao = {
   "Central Maker & FAQ": { en: "Maker Hub & FAQ", es: "Central Maker y FAQ" },
   "claro": { en: "light", es: "claro" },
   "escuro": { en: "dark", es: "oscuro" },
+
+  // --- Segurança & Gestão de Acesso (2FA, TOTP, Sessões) ---
+  "Configurações do Sistema": { en: "System Settings", es: "Configuración del Sistema" },
+  "Códigos de Recuperação (Backup)": { en: "Recovery Codes (Backup)", es: "Códigos de Recuperación (Respaldo)" },
+  "Configurar Autenticação em 2 Etapas": { en: "Configure Two-Factor Authentication", es: "Configurar Autenticación en 2 Pasos" },
+  "Se você perder seu celular, esses códigos permitirão acessar sua conta. Cada código só funciona 1 vez.": {
+    en: "If you lose your phone, these codes will allow you to access your account. Each code only works once.",
+    es: "Si pierde su teléfono, estos códigos le permitirán acceder a su cuenta. Cada código solo funciona 1 vez.",
+  },
+  "Copiar Códigos": { en: "Copy Codes", es: "Copiar Códigos" },
+  "Baixar (.txt)": { en: "Download (.txt)", es: "Descargar (.txt)" },
+  "Baixar (.TXT)": { en: "Download (.TXT)", es: "Descargar (.TXT)" },
+  "1. Abra seu aplicativo autenticador (Google Authenticator, Authy, etc.) e escaneie o código abaixo:": {
+    en: "1. Open your authenticator app (Google Authenticator, Authy, etc.) and scan the code below:",
+    es: "1. Abra su aplicación autenticadora (Google Authenticator, Authy, etc.) y escanee el código a continuación:",
+  },
+  "Não consegue escanear? Use a chave manual:": {
+    en: "Can't scan? Use the manual key:",
+    es: "¿No puede escanear? Use la clave manual:",
+  },
+  "Digite os 6 dígitos que aparecem no seu autenticador para validar a sincronização:": {
+    en: "Enter the 6 digits displayed in your authenticator to validate synchronization:",
+    es: "Ingrese los 6 dígitos que aparecen en su autenticador para validar la sincronización:",
+  },
+  "Confirmar e Ativar": { en: "Confirm & Enable", es: "Confirmar y Activar" },
+  "Ativando...": { en: "Activating...", es: "Activando..." },
+  "Desativar Autenticação em 2 Etapas?": { en: "Disable Two-Factor Authentication?", es: "¿Desactivar la Autenticación en 2 Pasos?" },
+  "Ao desativar a autenticação em 2 etapas, apenas sua senha será exigida para entrar na plataforma PrintLog.": {
+    en: "By disabling 2-factor authentication, only your password will be required to sign in to the PrintLog platform.",
+    es: "Al desactivar la autenticación en 2 pasos, solo se requerirá su contraseña para ingresar a la plataforma PrintLog.",
+  },
+  "Confirmar Desativação": { en: "Confirm Deactivation", es: "Confirmar Desactivación" },
+
+  "Desativar 2FA": { en: "Disable 2FA", es: "Desactivar 2FA" },
+  "Sessões & Dispositivos": { en: "Sessions & Devices", es: "Sesiones y Dispositivos" },
+  "Onde sua conta está conectada": { en: "Where your account is logged in", es: "Dónde está conectada su cuenta" },
+  "1 ATIVA": { en: "1 ACTIVE", es: "1 ACTIVA" },
+  "ATIVAS": { en: "ACTIVE", es: "ACTIVAS" },
+  "1 Ativa": { en: "1 Active", es: "1 Activa" },
+  "Ativas": { en: "Active", es: "Activas" },
+  "Este Dispositivo": { en: "This Device", es: "Este Dispositivo" },
+  "Local atual": { en: "Current location", es: "Ubicación actual" },
+  "Nenhuma outra sessão ativa": { en: "No other active sessions", es: "Ninguna otra sesión activa" },
+  "Sua conta está conectada exclusivamente neste dispositivo.": {
+    en: "Your account is connected exclusively to this device.",
+    es: "Su cuenta está conectada exclusivamente a este dispositivo.",
+  },
+  "Desconectar de outras sessões": { en: "Disconnect from other sessions", es: "Desconectar de otras sesiones" },
+  "Desconectando...": { en: "Disconnecting...", es: "Desconectando..." },
+  "Copiado para a área de transferência!": { en: "Copied to clipboard!", es: "¡Copiado al portapapeles!" },
+  "Validando...": { en: "Validating...", es: "Validando..." },
+  "Redefinir Senha": { en: "Reset Password", es: "Restablecer Contraseña" },
+  "Verificar": { en: "Verify", es: "Verificar" },
+  "Finalidade: Seus dados de perfil são utilizados para identificação e acesso à plataforma, conforme Art. 7º, V da LGPD.": {
+    en: "Purpose: Your profile data is used for identification and system access, per data protection regulations.",
+    es: "Finalidad: Sus datos de perfil se utilizan para identificación y acceso a la plataforma, conforme a la normativa de datos.",
+  },
+
+  // --- Privacidade & LGPD ---
+  "Excluir Conta": { en: "Delete Account", es: "Eliminar Cuenta" },
+  "Excluir conta": { en: "Delete account", es: "Eliminar cuenta" },
+  "Confirmação final": { en: "Final confirmation", es: "Confirmación final" },
+  "Impacto": { en: "Impact", es: "Impacto" },
+  "Confirmação": { en: "Confirmation", es: "Confirmación" },
+
+  "Ao confirmar, todos os seus dados — projetos, clientes e histórico de impressões — serão apagados permanentemente das nossas bases em até 30 dias, salvo os dados que a lei nos obriga a manter.": {
+    en: "Upon confirmation, all your data — projects, clients and print history — will be permanently deleted from our databases within 30 days, except data required by law.",
+    es: "Al confirmar, todos sus datos — proyectos, clientes e historial de impresión — se eliminarán permanentemente de nuestras bases de datos en un plazo de 30 días, salvo los datos que la ley nos obligue a conservar.",
+  },
+  "Manteremos apenas algumas cópias limitadas e estritamente necessárias por obrigações legais, conforme detalhado na nossa": {
+    en: "We will only retain limited and strictly necessary copies for legal obligations, as detailed in our",
+    es: "Mantendremos únicamente copias limitadas y estrictamente necesarias por obligaciones legales, según se detalla en nuestra",
+  },
+
+  "Entendo que meus dados serão apagados permanentemente (salvo retenções legais) e quero excluir minha conta.": {
+    en: "I understand that my data will be permanently deleted (except legal retentions) and I want to delete my account.",
+    es: "Entiendo que mis datos serán eliminados permanentemente (salvo retenciones legales) y quiero eliminar mi cuenta.",
+  },
+
+  "Seus dados são tratados com transparência e responsabilidade, conforme nossa": {
+    en: "Your data is treated with transparency and responsibility, in accordance with our",
+    es: "Sus datos son tratados con transparencia y responsabilidad, de acuerdo con nuestra",
+  },
+  "Para exercer seus direitos ou tirar dúvidas, fale com nosso DPO:": {
+    en: "To exercise your rights or ask questions, contact our DPO:",
+    es: "Para ejercer sus derechos o resolver dudas, contacte a nuestro DPO:",
+  },
+  "Exportar Dados Pessoais": { en: "Export Personal Data", es: "Exportar Datos Personales" },
+  "Direito à portabilidade dos seus dados em formato JSON (Art. 18, V)": {
+    en: "Right to portability of your data in JSON format",
+    es: "Derecho a la portabilidad de sus datos en formato JSON",
+  },
+  "Exportar JSON": { en: "Export JSON", es: "Exportar JSON" },
+  "Excluir Minha Conta": { en: "Delete My Account", es: "Eliminar Mi Cuenta" },
+  "Eliminação permanente de todos os seus dados e histórico (Art. 18, VI)": {
+    en: "Permanent deletion of all your data and history",
+    es: "Eliminación permanente de todos sus datos e historial",
+  },
 };

@@ -7,13 +7,13 @@ interface RotaProtegidaProps {
 }
 
 export function RotaProtegida({ children }: RotaProtegidaProps) {
-  const { usuario, carregando } = useAutenticacao();
+  const { usuario, carregando, exigindo2FA } = useAutenticacao();
 
   if (carregando) {
     return <Carregamento texto="Verificando Acesso..." />;
   }
 
-  if (!usuario) {
+  if (!usuario || exigindo2FA) {
     return <Navigate to="/autenticacao" state={{ from: window.location.pathname + window.location.search }} replace />;
   }
 

@@ -25,11 +25,24 @@ import {
   MultiFactorResolver,
 } from "firebase/auth";
 import { Dialogo } from "@/compartilhado/componentes";
-import { KeyRound, ShieldAlert } from "lucide-react";
+import { KeyRound, ShieldAlert, Loader2 } from "lucide-react";
 import { autenticacao } from "@/compartilhado/servicos/firebase";
 import { registrar, mascararDadoPessoal } from "@/compartilhado/utilitarios/registrador";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
 import { validarCodigoTotp } from "@/compartilhado/utilitarios/totp";
+import {
+  is2FAAtivo,
+  obterSegredo2FA,
+  obterCodigosBackup2FA,
+  salvarCodigosBackup2FA,
+  verificarDispositivoConfiavel,
+  salvarDispositivoConfiavel,
+  removerDispositivoConfiavel,
+  isSessaoValidada,
+  marcarSessaoValidada,
+  limparSessaoValidada,
+} from "@/compartilhado/utilitarios/dispositivoConfiavel";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 import { toast } from "sonner";
 
 import { Usuario } from "@/compartilhado/tipos/modelos";
@@ -51,6 +64,7 @@ interface ContextoAutenticacaoProps {
   enviarEmailVerificacao: () => Promise<void>;
   recarregarUsuario: () => Promise<void>;
   mfaPendente: boolean;
+  exigindo2FA: boolean;
   resolver2FA: (codigo: string) => Promise<boolean>;
   cancelar2FA: () => void;
 }
@@ -101,9 +115,11 @@ const registrarAceiteTermos = async (uid: string) => {
  */
 export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const [usuario, definirUsuario] = useState<Usuario | null>(null);
+  const [usuarioPendente2FA, setUsuarioPendente2FA] = useState<Usuario | null>(null);
   const [carregando, definirCarregando] = useState(true);
   const [resolverMfa, setResolverMfa] = useState<MultiFactorResolver | null>(null);
   const [exigindo2FA, setExigindo2FA] = useState(false);
+  const [lembrarDispositivo, setLembrarDispositivo] = useState(true);
   const [codigoMfa, setCodigoMfa] = useState("");
   const [resolvendoMfa, setResolvendoMfa] = useState(false);
   const [erroMfa, setErroMfa] = useState<string | null>(null);
@@ -176,7 +192,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         const ehGoogle = user.providerData.some((provedor) => provedor.providerId === "google.com");
         const ehGithub = user.providerData.some((provedor) => provedor.providerId === "github.com");
         
-        const novoUsuario = {
+        const novoUsuario: Usuario = {
           uid: user.uid,
           email: user.email,
           nome: user.displayName,
@@ -188,11 +204,33 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
           versaoTermos: "2026-05-14",
           emailVerified: user.emailVerified,
         };
-        
-        definirUsuario(novoUsuario);
-        usuarioAnteriorRef.current = novoUsuario;
-        logoutIntencionalRef.current = false;
-        carregarConfiguracoes(user.uid);
+
+        const status2FA = is2FAAtivo(user.uid);
+        const confiavel = status2FA && verificarDispositivoConfiavel(user.uid);
+        const sessaoValidada = status2FA && isSessaoValidada(user.uid);
+
+        if (status2FA && !confiavel && !sessaoValidada) {
+          registrar.info(
+            { rastreioId: user.uid, servico: "Autenticacao", evento: "2FA_EXIGIDO" },
+            "Segundo fator TOTP exigido para a conta"
+          );
+          definirUsuario(null);
+          setUsuarioPendente2FA(novoUsuario);
+          setExigindo2FA(true);
+          setLembrarDispositivo(true);
+          setCodigoMfa("");
+          setErroMfa(null);
+        } else {
+          if (status2FA && confiavel) {
+            marcarSessaoValidada(user.uid);
+          }
+          definirUsuario(novoUsuario);
+          setUsuarioPendente2FA(null);
+          setExigindo2FA(false);
+          usuarioAnteriorRef.current = novoUsuario;
+          logoutIntencionalRef.current = false;
+          carregarConfiguracoes(user.uid);
+        }
       } else {
         const logoutFoiIntencional = logoutIntencionalRef.current || localStorage.getItem("printlog_logout_intencional") === "true";
         if (usuarioAnteriorRef.current && !logoutFoiIntencional) {
@@ -201,7 +239,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         }
         
         if (import.meta.env.DEV && !logoutFoiIntencional) {
-          const devUser = {
+          const devUser: Usuario = {
             uid: "dev-user-uid",
             email: "dev@printlog.com",
             nome: "Desenvolvedor Local",
@@ -213,10 +251,31 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
             versaoTermos: "2026-05-14",
             emailVerified: true,
           };
-          definirUsuario(devUser);
-          usuarioAnteriorRef.current = devUser;
+
+          const status2FA = is2FAAtivo(devUser.uid);
+          const confiavel = status2FA && verificarDispositivoConfiavel(devUser.uid);
+          const sessaoValidada = status2FA && isSessaoValidada(devUser.uid);
+
+          if (status2FA && !confiavel && !sessaoValidada) {
+            definirUsuario(null);
+            setUsuarioPendente2FA(devUser);
+            setExigindo2FA(true);
+            setLembrarDispositivo(true);
+            setCodigoMfa("");
+            setErroMfa(null);
+          } else {
+            if (status2FA && confiavel) {
+              marcarSessaoValidada(devUser.uid);
+            }
+            definirUsuario(devUser);
+            setUsuarioPendente2FA(null);
+            setExigindo2FA(false);
+            usuarioAnteriorRef.current = devUser;
+          }
         } else {
           definirUsuario(null);
+          setUsuarioPendente2FA(null);
+          setExigindo2FA(false);
           usuarioAnteriorRef.current = null;
         }
       }
@@ -317,19 +376,26 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         "Login realizado com sucesso via email/senha"
       );
 
-      // Checa se o 2FA está ativo para esta conta
-      const status2FA = localStorage.getItem("printlog:2fa_ativo") === "true";
-      const sessaoValidada = sessionStorage.getItem("printlog:2fa_sessao_validada") === "true";
-      if (status2FA && !sessaoValidada) {
+      // Checa se o 2FA está ativo para esta conta e se o dispositivo já é confiável
+      const uid = credencial.user.uid;
+      const status2FA = is2FAAtivo(uid);
+      const confiavel = status2FA && verificarDispositivoConfiavel(uid);
+      const sessaoValidada = status2FA && isSessaoValidada(uid);
+
+      if (status2FA && !confiavel && !sessaoValidada) {
         setExigindo2FA(true);
+        setLembrarDispositivo(true);
         setCodigoMfa("");
         setErroMfa(null);
+      } else if (status2FA && confiavel) {
+        marcarSessaoValidada(uid);
       }
     } catch (erro: unknown) {
       if ((erro as any)?.code === "auth/multi-factor-auth-required") {
         const resolver = getMultiFactorResolver(autenticacao, erro as any);
         setResolverMfa(resolver);
         setExigindo2FA(true);
+        setLembrarDispositivo(true);
         setCodigoMfa("");
         setErroMfa(null);
         registrar.info(
@@ -351,6 +417,8 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     setResolvendoMfa(true);
     setErroMfa(null);
 
+    const uidAtual = usuario?.uid || usuarioPendente2FA?.uid || autenticacao.currentUser?.uid || "";
+
     try {
       // 1. Se veio via resolver nativo do Firebase Auth
       if (resolverMfa) {
@@ -362,48 +430,103 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
             totpHint.uid,
             digitosLimpos
           );
-          await resolverMfa.resolveSignIn(assertion);
+          const credencialResolvida = await resolverMfa.resolveSignIn(assertion);
+          const uidFinal = credencialResolvida.user?.uid || uidAtual;
+
+          marcarSessaoValidada(uidFinal);
+          if (lembrarDispositivo) {
+            salvarDispositivoConfiavel(uidFinal, credencialResolvida.user?.email || undefined);
+          } else {
+            removerDispositivoConfiavel(uidFinal);
+          }
+
+          if (usuarioPendente2FA) {
+            definirUsuario(usuarioPendente2FA);
+            usuarioAnteriorRef.current = usuarioPendente2FA;
+            carregarConfiguracoes(usuarioPendente2FA.uid);
+            setUsuarioPendente2FA(null);
+          }
+
           setResolverMfa(null);
           setExigindo2FA(false);
           setCodigoMfa("");
-          toast.success("Login com 2FA validado com sucesso!");
+          toast.success(
+            lembrarDispositivo
+              ? traduzirTextoGlobal("Segundo fator confirmado! Dispositivo lembrado por 30 dias.")
+              : traduzirTextoGlobal("Login com 2FA validado com sucesso!")
+          );
           return true;
         }
       }
 
       // 2. Validação matemática oficial TOTP (RFC 6238 com Web Crypto)
-      const segredoSalvo = localStorage.getItem("printlog:2fa_segredo");
+      const segredoSalvo = obterSegredo2FA(uidAtual);
       if (segredoSalvo) {
         const valido = await validarCodigoTotp(digitosLimpos, segredoSalvo);
         if (valido) {
-          sessionStorage.setItem("printlog:2fa_sessao_validada", "true");
+          marcarSessaoValidada(uidAtual);
+          if (lembrarDispositivo) {
+            salvarDispositivoConfiavel(uidAtual, usuarioPendente2FA?.email || usuario?.email || undefined);
+          } else {
+            removerDispositivoConfiavel(uidAtual);
+          }
+
+          if (usuarioPendente2FA) {
+            definirUsuario(usuarioPendente2FA);
+            usuarioAnteriorRef.current = usuarioPendente2FA;
+            carregarConfiguracoes(usuarioPendente2FA.uid);
+            setUsuarioPendente2FA(null);
+          }
+
           setExigindo2FA(false);
           setResolverMfa(null);
           setCodigoMfa("");
-          toast.success("Segundo fator confirmado com sucesso!");
+          toast.success(
+            lembrarDispositivo
+              ? traduzirTextoGlobal("Segundo fator confirmado! Dispositivo lembrado por 30 dias.")
+              : traduzirTextoGlobal("Login com 2FA validado com sucesso!")
+          );
           return true;
         }
 
         // Validação de código de backup / recuperação
-        const backups: string[] = JSON.parse(localStorage.getItem("printlog:2fa_codigos_backup") || "[]");
+        const backups = obterCodigosBackup2FA(uidAtual);
         const codigoFormatado = codigo.trim().toUpperCase();
         if (backups.includes(codigoFormatado)) {
           const restantes = backups.filter((b) => b !== codigoFormatado);
-          localStorage.setItem("printlog:2fa_codigos_backup", JSON.stringify(restantes));
-          sessionStorage.setItem("printlog:2fa_sessao_validada", "true");
+          salvarCodigosBackup2FA(restantes, uidAtual);
+
+          marcarSessaoValidada(uidAtual);
+          if (lembrarDispositivo) {
+            salvarDispositivoConfiavel(uidAtual, usuarioPendente2FA?.email || usuario?.email || undefined);
+          } else {
+            removerDispositivoConfiavel(uidAtual);
+          }
+
+          if (usuarioPendente2FA) {
+            definirUsuario(usuarioPendente2FA);
+            usuarioAnteriorRef.current = usuarioPendente2FA;
+            carregarConfiguracoes(usuarioPendente2FA.uid);
+            setUsuarioPendente2FA(null);
+          }
+
           setExigindo2FA(false);
           setResolverMfa(null);
           setCodigoMfa("");
-          toast.success("Entrada autorizada com código de recuperação!");
+          toast.success(
+            lembrarDispositivo
+              ? traduzirTextoGlobal("Segundo fator confirmado! Dispositivo lembrado por 30 dias.")
+              : traduzirTextoGlobal("Entrada autorizada com código de recuperação!")
+          );
           return true;
         }
       }
 
-      setErroMfa("Código de 6 dígitos incorreto ou expirado. Tente novamente.");
+      setErroMfa(traduzirTextoGlobal("Código de 6 dígitos incorreto ou expirado. Tente novamente."));
       return false;
     } catch (erro: any) {
       registrar.error({ rastreioId: "sistema", servico: "Autenticacao" }, "Falha no 2FA", erro);
-      setErroMfa("Erro ao validar o código. Tente novamente.");
+      setErroMfa(traduzirTextoGlobal("Erro ao validar o código. Tente novamente."));
       return false;
     } finally {
       setResolvendoMfa(false);
@@ -413,6 +536,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
   const cancelar2FA = () => {
     setResolverMfa(null);
     setExigindo2FA(false);
+    setUsuarioPendente2FA(null);
     setCodigoMfa("");
     setErroMfa(null);
     sair(false);
@@ -455,22 +579,27 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
    * Encerra a sessão do usuário.
    */
   const sair = async (mostrarToast = true) => {
-    const uid = usuario?.uid || "desconhecido";
+    const uid = usuario?.uid || usuarioPendente2FA?.uid || "desconhecido";
     try {
       logoutIntencionalRef.current = true;
       localStorage.setItem("printlog_logout_intencional", "true");
+      limparSessaoValidada(uid);
+      setUsuarioPendente2FA(null);
+      setExigindo2FA(false);
       await signOut(autenticacao);
+      definirUsuario(null);
+      usuarioAnteriorRef.current = null;
       registrar.info(
         { rastreioId: uid, servico: "Autenticacao", evento: "LOGOUT" },
         "Sessão encerrada pelo usuário"
       );
       if (mostrarToast) {
-        toast.success("Você foi deslogado com sucesso.");
+        toast.success(traduzirTextoGlobal("Você foi deslogado com sucesso."));
       }
     } catch (erro: unknown) {
       registrar.error({ rastreioId: uid, servico: "Autenticacao", evento: "LOGOUT_FALHA" }, "Erro ao sair", erro);
       if (mostrarToast) {
-        toast.error("Ocorreu um erro ao tentar deslogar.");
+        toast.error(traduzirTextoGlobal("Ocorreu um erro ao tentar deslogar."));
       }
     }
   };
@@ -642,7 +771,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
    * @returns Token JWT ou null se não autenticado
    */
   const buscarToken = async (): Promise<string | null> => {
-    if (!autenticacao.currentUser) return null;
+    if (exigindo2FA || !autenticacao.currentUser) return null;
     try {
       // getIdToken(true) força a atualização se o token estiver perto de expirar
       return await autenticacao.currentUser.getIdToken();
@@ -779,6 +908,7 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
     enviarEmailVerificacao,
     recarregarUsuario,
     mfaPendente: !!resolverMfa,
+    exigindo2FA,
     resolver2FA,
     cancelar2FA,
   };
@@ -792,15 +922,15 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
         <Dialogo
           aberto={exigindo2FA || !!resolverMfa}
           aoFechar={cancelar2FA}
-          titulo="Autenticação em Duas Etapas (2FA)"
-          subtitulo="Sua conta está protegida com Google Authenticator / Authy"
+          titulo={traduzirTextoGlobal("Autenticação em Duas Etapas (2FA)")}
+          subtitulo={traduzirTextoGlobal("Sua conta está protegida com Google Authenticator / Authy")}
           icone={KeyRound}
           larguraMax="max-w-sm"
           corBase="emerald"
         >
-          <div className="p-6 space-y-5 text-center">
+          <div className="p-6 space-y-4 text-center">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Digite o código de 6 dígitos do seu aplicativo autenticador (ou um dos seus códigos de recuperação):
+              {traduzirTextoGlobal("Digite o código de 6 dígitos do seu aplicativo autenticador (ou um dos seus códigos de recuperação):")}
             </p>
 
             <div className="max-w-[200px] mx-auto">
@@ -821,6 +951,24 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
               />
             </div>
 
+            {/* Opção Inteligente: Lembrar deste dispositivo por 30 dias */}
+            <label className="flex items-center justify-start gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/60 border border-borda-sutil/60 cursor-pointer select-none transition-all group text-left">
+              <input
+                type="checkbox"
+                checked={lembrarDispositivo}
+                onChange={(e) => setLembrarDispositivo(e.target.checked)}
+                className="w-4 h-4 rounded border-borda-sutil text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 bg-card cursor-pointer shrink-0"
+              />
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-primary block group-hover:text-emerald-500 transition-colors">
+                  {traduzirTextoGlobal("Lembrar deste dispositivo por 30 dias")}
+                </span>
+                <span className="text-[10px] text-muted-foreground block leading-tight mt-0.5">
+                  {traduzirTextoGlobal("Não solicitar código 2FA neste navegador pelos próximos 30 dias")}
+                </span>
+              </div>
+            </label>
+
             {erroMfa && (
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-left">
                 <ShieldAlert size={16} className="shrink-0" />
@@ -832,16 +980,23 @@ export function ProvedorAutenticacao({ children }: ProvedorAutenticacaoProps) {
               <button
                 onClick={cancelar2FA}
                 disabled={resolvendoMfa}
-                className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider"
+                className="h-11 rounded-xl border border-borda-sutil text-xs font-bold text-muted-foreground hover:bg-muted/40 transition-all uppercase tracking-wider cursor-pointer"
               >
-                Cancelar
+                {traduzirTextoGlobal("Cancelar")}
               </button>
               <button
                 onClick={() => resolver2FA(codigoMfa)}
                 disabled={resolvendoMfa || codigoMfa.trim().length < 6}
-                className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                className="h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold transition-all uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
               >
-                {resolvendoMfa ? "Validando..." : "Confirmar"}
+                {resolvendoMfa ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>{traduzirTextoGlobal("Validando...")}</span>
+                  </>
+                ) : (
+                  traduzirTextoGlobal("Confirmar")
+                )}
               </button>
             </div>
           </div>
