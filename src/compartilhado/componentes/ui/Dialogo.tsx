@@ -79,10 +79,11 @@ export function Dialogo({
           {/* Container Centralizado (Desktop) / Bottom Sheet (Mobile) */}
           <div className={`fixed inset-0 z-[1000] flex items-center justify-center max-md:items-end ${telaCheia ? "p-0" : "p-0 md:p-8"} pointer-events-none`}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 30 }}
+              initial={{ opacity: 0, scale: 0.97, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 30 }}
-              transition={{ type: "spring", stiffness: 450, damping: 32, mass: 0.8 }}
+              exit={{ opacity: 0, scale: 0.97, y: 16 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              style={{ willChange: "transform, opacity" }}
               role="dialog"
               aria-modal="true"
               aria-label={titulo || "Diálogo"}

@@ -21,6 +21,26 @@ const TAGS_IGNORADAS = new Set([
   "CODE",
   "PRE",
   "TEXTAREA",
+  "SVG",
+  "PATH",
+  "DEFS",
+  "MASK",
+  "G",
+  "USE",
+  "RECT",
+  "CIRCLE",
+  "ELLIPSE",
+  "LINE",
+  "svg",
+  "path",
+  "defs",
+  "mask",
+  "g",
+  "use",
+  "rect",
+  "circle",
+  "ellipse",
+  "line",
 ]);
 
 interface PadraoDinamico {
@@ -245,15 +265,18 @@ const PADROES_DINAMICOS_REVERSOS: PadraoDinamicoReverso[] = [
   },
 ];
 
-// Dicionários reversos construídos uma única vez em memória para performance máxima O(1)
+// Dicionários reversos e diretos em memória para performance máxima O(1)
 const DICIONARIO_REVERSO_EN = new Map<string, string>();
 const DICIONARIO_REVERSO_ES = new Map<string, string>();
 const DICIONARIO_REVERSO_EN_LOWER = new Map<string, string>();
 const DICIONARIO_REVERSO_ES_LOWER = new Map<string, string>();
+const DICIONARIO_GLOBAL_LOWER = new Map<string, EntradaDicionario>();
 
 for (const [pt, traducoes] of Object.entries(DICIONARIO_GLOBAL)) {
   const ptLimpo = pt.trim();
   if (!ptLimpo) continue;
+
+  DICIONARIO_GLOBAL_LOWER.set(ptLimpo.toLowerCase(), traducoes);
 
   const en = traducoes.en?.trim();
   const es = traducoes.es?.trim();
@@ -351,11 +374,7 @@ class MotorTradutorUniversalDOM {
           const pai = node.parentElement;
           if (!pai || TAGS_IGNORADAS.has(pai.tagName)) return NodeFilter.FILTER_REJECT;
           if (pai.isContentEditable) return NodeFilter.FILTER_REJECT;
-          if (
-            pai.closest("#btn-seletor-idioma") ||
-            pai.closest('[data-seletor-idioma="true"]') ||
-            pai.closest('[data-sonner-toaster]')
-          ) return NodeFilter.FILTER_REJECT;
+          if (pai.closest("#btn-seletor-idioma, [data-seletor-idioma='true'], [data-sonner-toaster]")) return NodeFilter.FILTER_REJECT;
           const texto = node.textContent?.trim();
           if (!texto || texto.length < 2) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
@@ -426,11 +445,7 @@ class MotorTradutorUniversalDOM {
           const pai = node.parentElement;
           if (!pai || TAGS_IGNORADAS.has(pai.tagName)) return NodeFilter.FILTER_REJECT;
           if (pai.isContentEditable) return NodeFilter.FILTER_REJECT;
-          if (
-            pai.closest("#btn-seletor-idioma") ||
-            pai.closest('[data-seletor-idioma="true"]') ||
-            pai.closest('[data-sonner-toaster]')
-          ) return NodeFilter.FILTER_REJECT;
+          if (pai.closest("#btn-seletor-idioma, [data-seletor-idioma='true'], [data-sonner-toaster]")) return NodeFilter.FILTER_REJECT;
           const texto = node.textContent?.trim();
           if (!texto || texto.length < 2) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
@@ -633,16 +648,15 @@ class MotorTradutorUniversalDOM {
       return textoOriginal.replace(textoAparado, formatada);
     }
 
-    // 2. Busca case-insensitive no texto completo original
+    // 2. Busca case-insensitive no texto completo original (O(1))
     const minusculoCompleto = textoAparado.toLowerCase();
-    for (const [pt, traducoes] of Object.entries(DICIONARIO_GLOBAL)) {
-      if (pt.toLowerCase() === minusculoCompleto) {
-        const subst = traducoes[subChave];
-        const formatada = textoAparado === textoAparado.toUpperCase() && textoAparado.length > 2
-          ? subst.toUpperCase()
-          : subst;
-        return textoOriginal.replace(textoAparado, formatada);
-      }
+    const tradLowerCompleto = DICIONARIO_GLOBAL_LOWER.get(minusculoCompleto);
+    if (tradLowerCompleto) {
+      const subst = tradLowerCompleto[subChave];
+      const formatada = textoAparado === textoAparado.toUpperCase() && textoAparado.length > 2
+        ? subst.toUpperCase()
+        : subst;
+      return textoOriginal.replace(textoAparado, formatada);
     }
 
     // 3. Identificar e extrair decoradores/prefixos e sufixos comuns (ex: "+ ", "-> ", "...", ":", "(-) ", "1. ", "Ex: ")
@@ -680,16 +694,15 @@ class MotorTradutorUniversalDOM {
       return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
     }
 
-    // 5. Busca case-insensitive no conteúdo sem prefixo/sufixo
+    // 5. Busca case-insensitive no conteúdo sem prefixo/sufixo (O(1))
     const minusculo = conteudo.toLowerCase();
-    for (const [pt, traducoes] of Object.entries(DICIONARIO_GLOBAL)) {
-      if (pt.toLowerCase() === minusculo) {
-        const subst = traducoes[subChave];
-        const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
-          ? subst.toUpperCase()
-          : subst;
-        return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
-      }
+    const tradLowerConteudo = DICIONARIO_GLOBAL_LOWER.get(minusculo);
+    if (tradLowerConteudo) {
+      const subst = tradLowerConteudo[subChave];
+      const formatada = conteudo === conteudo.toUpperCase() && conteudo.length > 2
+        ? subst.toUpperCase()
+        : subst;
+      return textoOriginal.replace(textoAparado, `${prefixoAjustado}${formatada}${sufixo}`);
     }
 
     // 6. Tratamento de padrões dinâmicos com variáveis e números intercalados

@@ -442,5 +442,9 @@ export const dicionarioCalculadora: DicionarioTraducao = {
   "Lote": { en: "Batch", es: "Lote" },
   "Peça": { en: "Part", es: "Pieza" },
   "Custo p/": { en: "Cost per", es: "Coste por" },
+  "itens disponíveis": { en: "items available", es: "ítems disponibles" },
+  "item disponível": { en: "item available", es: "ítem disponible" },
+  "itens encontrados": { en: "items found", es: "ítems encontrados" },
+  "item encontrado": { en: "item found", es: "ítem encontrado" },
 };
 

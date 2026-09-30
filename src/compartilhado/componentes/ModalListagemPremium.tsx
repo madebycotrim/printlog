@@ -2,6 +2,7 @@ import { LucideIcon, Search, X } from "lucide-react";
 import { ReactNode } from "react";
 import { Dialogo } from "@/compartilhado/componentes";
 import { EstadoVazio } from "@/compartilhado/componentes";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface PropriedadesModalListagemPremium {
   aberto: boolean;
@@ -71,7 +72,16 @@ export function ModalListagemPremium({
   const corHex = mapasCores[corDestaque] || "sky-500";
 
   return (
-    <Dialogo aberto={aberto} aoFechar={aoFechar} titulo={titulo} icone={IconeTitulo} subtitulo={`${totalResultados} itens disponíveis`} larguraMax={larguraMax} telaCheia={false} semScroll={true}>
+    <Dialogo 
+      aberto={aberto} 
+      aoFechar={aoFechar} 
+      titulo={traduzirTextoGlobal(titulo)} 
+      icone={IconeTitulo} 
+      subtitulo={`${totalResultados} ${traduzirTextoGlobal(totalResultados === 1 ? "item disponível" : "itens disponíveis")}`} 
+      larguraMax={larguraMax} 
+      telaCheia={false} 
+      semScroll={true}
+    >
       <div className={`flex flex-col bg-card ${altura}`}>
         {/* 🔍 Barra de Busca Superior */}
          <div
@@ -87,7 +97,8 @@ export function ModalListagemPremium({
                 type="text"
                 value={termoBusca}
                 onChange={(e) => aoMudarBusca(e.target.value)}
-                placeholder={placeholderBusca}
+                placeholder={traduzirTextoGlobal(placeholderBusca)}
+                autoComplete="off"
                 className="w-full h-full pl-12 pr-4 bg-transparent text-[10px] font-black uppercase tracking-[0.2em] outline-none text-primary dark:text-white placeholder:text-zinc-500"
               />
               {termoBusca && (
@@ -109,9 +120,9 @@ export function ModalListagemPremium({
         </div>
 
         {/* 📦 Área de Conteúdo */}
-        <div className={`flex-1 ${!temResultados ? "overflow-hidden" : "overflow-y-auto"} p-6 scrollbar-thin scrollbar-thumb-borda-sutil dark:scrollbar-thumb-white/5`}>
+        <div className={`flex-1 ${!temResultados ? "overflow-hidden" : "overflow-y-auto overscroll-contain"} p-6 scrollbar-thin scrollbar-thumb-borda-sutil dark:scrollbar-thumb-white/5`}>
           {!temResultados && !loading ? (
-            <EstadoVazio titulo="Sem resultados" descricao={mensagemVazio} icone={iconeVazio || Search} />
+            <EstadoVazio titulo={traduzirTextoGlobal("Sem resultados")} descricao={traduzirTextoGlobal(mensagemVazio)} icone={iconeVazio || Search} />
           ) : (
             children
           )}
@@ -124,10 +135,10 @@ export function ModalListagemPremium({
           <div className="flex items-center gap-2">
             {IconeTitulo && <IconeTitulo size={14} className={`text-${corHex}`} />}
             <span className={`text-[10px] font-black text-${corHex} uppercase tracking-widest`}>
-              {totalResultados} {totalResultados === 1 ? "item encontrado" : "itens encontrados"}
+              {totalResultados} {traduzirTextoGlobal(totalResultados === 1 ? "item encontrado" : "itens encontrados")}
             </span>
           </div>
-          {infoRodape && <p className="text-[10px] font-medium text-zinc-400 italic">{infoRodape}</p>}
+          {infoRodape && <p className="text-[10px] font-medium text-zinc-400 italic">{traduzirTextoGlobal(infoRodape)}</p>}
         </div>
       </div>
     </Dialogo>

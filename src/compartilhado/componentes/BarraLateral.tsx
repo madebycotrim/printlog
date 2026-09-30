@@ -87,7 +87,7 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
     }
   };
 
-  const { t } = useIdioma();
+  const { t, idiomaAtual } = useIdioma();
 
   const grupos: GrupoNavegacao[] = [
     {
@@ -117,7 +117,9 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
       titulo: t("navegacao.grupos.sistema"),
       itens: [
         { nome: t("navegacao.itens.configuracoes"), icone: Settings, caminho: "/configuracoes" },
-        { nome: t("navegacao.itens.centralMaker"), icone: HelpCircle, caminho: "/central-maker" },
+        ...(idiomaAtual.startsWith("pt")
+          ? [{ nome: t("navegacao.itens.centralMaker"), icone: HelpCircle, caminho: "/central-maker" }]
+          : []),
       ],
     },
   ];

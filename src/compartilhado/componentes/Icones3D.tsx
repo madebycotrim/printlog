@@ -76,7 +76,7 @@ export const Carretel = memo(
         className={`relative flex items-center justify-center shrink-0 select-none ${className}`}
         style={{ width: tamanho, height: tamanho }}
       >
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm" preserveAspectRatio="xMidYMid meet">
           <defs>
             {/* GEOMETRIA DOS VAZADOS (MÁSCARAS) */}
             <g id={`furosBase-${idUnico}`}>
@@ -95,12 +95,10 @@ export const Carretel = memo(
                 />
               ))}
             </g>
-            {[0, 1, 2, 3, 4, 5, 6].map((offset) => (
-              <mask key={`mask-${offset}`} id={`mask-${offset}-${idUnico}`}>
-                <rect x="0" y="0" width="100" height="100" fill="white" />
-                <use href={`#furosBase-${idUnico}`} x={zFrontal - offset} y={centroY} fill="black" />
-              </mask>
-            ))}
+            <mask id={`mask-frontal-${idUnico}`}>
+              <rect x="0" y="0" width="100" height="100" fill="white" />
+              <use href={`#furosBase-${idUnico}`} x={zFrontal} y={centroY} fill="black" />
+            </mask>
           </defs>
 
           <g>
@@ -193,24 +191,13 @@ export const Carretel = memo(
                         `}
               fill={corPlasticoLateral}
             />
-            {[6, 5, 4, 3, 2, 1].map((offset) => (
-              <ellipse
-                key={offset}
-                cx={zFrontal - offset}
-                cy={centroY}
-                rx={raioAroX}
-                ry={raioAroY}
-                fill={offset === 6 ? corPlasticoFundo : corPlasticoLateral}
-                mask={`url(#mask-${offset}-${idUnico})`}
-              />
-            ))}
             <ellipse
               cx={zFrontal}
               cy={centroY}
               rx={raioAroX}
               ry={raioAroY}
               fill={corPlasticoFrontal}
-              mask={`url(#mask-0-${idUnico})`}
+              mask={`url(#mask-frontal-${idUnico})`}
             />
 
             {/* Cartoon edge para o aro frontal */}
@@ -222,7 +209,7 @@ export const Carretel = memo(
               fill="none"
               stroke="rgba(255,255,255,0.15)"
               strokeWidth="1.5"
-              mask={`url(#mask-0-${idUnico})`}
+              mask={`url(#mask-frontal-${idUnico})`}
             />
           </g>
         </svg>
