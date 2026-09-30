@@ -161,12 +161,7 @@ export default function PaginaPoliticaCookies() {
                     <td className="p-3">Local Storage</td>
                     <td className="p-3">Layout. Salva o estado de abertura/colapso da barra lateral do menu.</td>
                   </tr>
-                  <tr>
-                    <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog:beta_preferencias</td>
-                    <td className="p-3">printlog.com.br</td>
-                    <td className="p-3">Local Storage</td>
-                    <td className="p-3">Funcional. Lembra as preferências e flags de participação em recursos beta do sistema.</td>
-                  </tr>
+
                   <tr>
                     <td className="p-3 font-mono text-xs text-zinc-900 font-medium">printlog_consentimento_cookies</td>
                     <td className="p-3">printlog.com.br</td>

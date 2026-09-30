@@ -5,10 +5,7 @@ import { RotaProtegida } from "@/configuracoes/RotasProtegidas";
 import { ScrollParaTopo } from "@/compartilhado/utilitarios/ScrollParaTopo";
 import { Carregamento } from "@/compartilhado/componentes";
 import { ProvedorAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-import { ProvedorEstudio } from "@/funcionalidades/beta/multi_estudos/contextos/ContextoEstudio";
-import { ProvedorBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { ToasterPremium } from "@/compartilhado/componentes";
-import { WidgetFeedbackBeta } from "@/funcionalidades/beta/componentes/WidgetFeedbackBeta";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 
 // Landing Page Publica
@@ -124,12 +121,9 @@ export function RoteadorPrincipal() {
 
   return (
     <ProvedorAutenticacao>
-      <ProvedorBeta>
-        <ProvedorEstudio>
-          <ToasterPremium />
-          <WidgetFeedbackBeta />
-          <BrowserRouter>
-            <ScrollParaTopo />
+      <ToasterPremium />
+      <BrowserRouter>
+        <ScrollParaTopo />
             <Suspense fallback={<Carregamento />}>
               <Routes key={idiomaAtual}>
                 <Route path="/" element={<PaginaLanding />} />
@@ -175,8 +169,6 @@ export function RoteadorPrincipal() {
               </Routes>
             </Suspense>
           </BrowserRouter>
-        </ProvedorEstudio>
-      </ProvedorBeta>
     </ProvedorAutenticacao>
   );
 }

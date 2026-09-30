@@ -24,10 +24,7 @@ export function Rodape() {
                   className="h-8 w-auto"
                 />
                 <span className="text-white font-black text-xl tracking-tighter">
-                  PRINTLOG{" "}
-                  <span className="text-[#0ea5e9] text-xs not-italic font-bold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 align-top ml-1 animate-pulse">
-                    BETA
-                  </span>
+                  PRINTLOG
                 </span>
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed max-w-sm">

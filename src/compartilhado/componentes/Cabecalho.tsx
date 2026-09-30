@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { Menu, Search, Beaker, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { MenuNotificacoes } from "./MenuNotificacoes";
 import { useProcessadorNotificacoes } from "../hooks/useProcessadorNotificacoes";
-import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { SeletorIdioma } from "./SeletorIdioma";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
@@ -14,7 +13,6 @@ type PropriedadesCabecalho = {
 
 export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
   const { dados } = useCabecalho();
-  const { participarPrototipos } = useBeta();
   const { t } = useIdioma();
 
   // Inicializa o processador de notificações globais (pedidos atrasados, manutenção, etc.)
@@ -55,13 +53,6 @@ export function Cabecalho({ aoAbrirBarraLateral }: PropriedadesCabecalho) {
               <h1 className="text-sm xs:text-base sm:text-xl md:text-[28px] font-black tracking-tight text-primary dark:text-white truncate leading-tight">
                 {traduzirTextoGlobal(dados.titulo)}
               </h1>
-
-              {participarPrototipos && (
-                <div className="hidden xs:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0">
-                  <Beaker size={10} className="animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-widest">{t("cabecalho.laboratorio")}</span>
-                </div>
-              )}
 
               <div
                 className="hidden md:block w-1.5 h-1.5 rounded-full mb-0.5 shrink-0"

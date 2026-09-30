@@ -12,7 +12,6 @@ import {
   Calculator,
   Layers,
   HelpCircle,
-  Beaker,
   ChevronLeft,
   ChevronRight,
   Terminal,
@@ -20,7 +19,6 @@ import {
 
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
-import { SeletorEstudio } from "@/funcionalidades/beta/multi_estudos/componentes/SeletorEstudio";
 import { Avatar } from "./ui";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";
@@ -46,7 +44,6 @@ type ItemNavegacao = {
   icone: React.ElementType;
   caminho: string;
   exato?: boolean;
-  beta?: boolean;
 };
 
 type GrupoNavegacao = {
@@ -57,7 +54,6 @@ type GrupoNavegacao = {
 export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBarraLateral) {
   const localizacao = useLocation();
   const { usuario, sair } = useAutenticacao();
-  const { participarPrototipos, betaMultiEstudio, resetarTudo } = useBeta();
   const { modoEfetivo } = useContextoTema();
 
   const colapsada = useArmazemConfiguracoes((s) => s.calculadoraMeta?.ui?.sidebarColapsada ?? false);
@@ -195,12 +191,6 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
             )}
           </div>
 
-          {betaMultiEstudio && !colapsada && (
-            <div className="px-4 mb-4">
-              <SeletorEstudio />
-            </div>
-          )}
-
           {/* Navegação Principal */}
           <nav className="flex-1 overflow-y-auto py-2 px-3 space-y-7 custom-scrollbar overflow-x-hidden">
             {grupos.map((grupo) => (
@@ -258,32 +248,12 @@ export function BarraLateral({ abertaMobile = false, aoFechar }: PropriedadesBar
                         {item.nome === "Projetos" && (
                           <BadgeOrcamentos colapsado={colapsada} />
                         )}
-
-                        {!colapsada && item.beta && (
-                          <div className="px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-[8px] font-black text-indigo-500 uppercase tracking-tighter animate-pulse shrink-0">
-                            Lab
-                          </div>
-                        )}
                       </Link>
                     );
                   })}
                 </div>
               </div>
             ))}
-            {participarPrototipos && !colapsada && (
-              <div className="pt-4 border-t border-dashed border-gray-100 dark:border-white/5 space-y-3 mx-2">
-                <div className="flex items-center gap-2 px-2">
-                  <Beaker size={14} className="text-indigo-500" />
-                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Labs Center</span>
-                </div>
-                <button
-                  onClick={() => resetarTudo()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold text-zinc-400 hover:text-rose-500 bg-zinc-50 dark:bg-white/[0.02] border border-borda-sutil hover:border-rose-500/20 transition-all"
-                >
-                  Ocultar Beta
-                </button>
-              </div>
-            )}
           </nav>
 
           {/* User Profile - Rodapé Premium */}

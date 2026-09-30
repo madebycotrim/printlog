@@ -32,9 +32,6 @@ export function PainelBranding({
           />
           <span className="text-xl font-black tracking-tighter text-white">
             PRINTLOG
-            <span className="text-[#0ea5e9] text-[10px] align-top ml-1 font-bold px-1.5 py-0.5 bg-[#0ea5e9]/10 rounded uppercase tracking-wide border border-[#0ea5e9]/10">
-              Beta
-            </span>
           </span>
         </div>
       </div>

@@ -12,7 +12,6 @@ import { auditoria } from "@/compartilhado/utilitarios/Seguranca";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { apiMateriais } from "../servicos/apiMateriais";
 import { toast } from "sonner";
-import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 
 export function useGerenciadorMateriais() {
   // 🎯 SELETORES OTIMIZADOS
@@ -55,7 +54,7 @@ export function useGerenciadorMateriais() {
   const limitePagina = 12;
   const [paginaAtual, definirPaginaAtual] = useState(0);
   const { usuario } = useAutenticacao();
-  const { limiteAlertaEstoque } = useBeta();
+  const limiteAlertaEstoque = 200;
 
   // 🔄 SINCRONIZAÇÃO INICIAL E BUSCA COM D1
   useEffect(() => {
@@ -271,7 +270,7 @@ export function useGerenciadorMateriais() {
     ).length;
 
     return { totalEmbalagens, valorInvestido, alertasBaixoEstoque };
-  }, [materiaisAtivos, limiteAlertaEstoque]);
+  }, [materiaisAtivos]);
 
   // Filtragem e Ordenação
   const materiaisFiltradosOrdenados = useMemo(() => {

@@ -12,19 +12,16 @@ import { CardPerfil } from "./componentes/CardPerfil";
 import { CardAparencia } from "./componentes/CardAparencia";
 import { CardMetricas } from "./componentes/CardMetricas";
 import { CardPrivacidade } from "./componentes/CardPrivacidade";
-import { CardEstudio } from "./componentes/CardEstudio";
 import { CardIdentidade } from "./componentes/CardIdentidade";
 import { CardSeguranca } from "./componentes/CardSeguranca";
 import { CardIdioma } from "./componentes/CardIdioma";
 
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
-import { useBeta } from "@/compartilhado/contextos/ContextoBeta";
 import { useArmazemConfiguracoes } from "./estado/armazemConfiguracoes";
 
 export function PaginaConfiguracoes() {
   const { usuario, atualizarPerfil, recuperarSenha, enviarEmailVerificacao } = useAutenticacao();
   const contextoTema = useContextoTema();
-  const beta = useBeta();
   const config = useArmazemConfiguracoes();
   const { search } = useLocation();
 
@@ -45,15 +42,6 @@ export function PaginaConfiguracoes() {
   const [sucesso, definirSucesso] = useState(false);
   const [enviandoEmail, definirEnviandoEmail] = useState(false);
   const [sucessoLink, definirSucessoLink] = useState(false);
-
-  // Estado Estudio
-  const [participarPrototipos, definirParticiparPrototipos] = useState(beta.participarPrototipos);
-  const [betaMultiEstudio, definirBetaMultiEstudio] = useState(beta.betaMultiEstudio);
-  const [betaOrcamentosMagicos, definirBetaOrcamentosMagicos] = useState(beta.betaOrcamentosMagicos);
-  const [betaEstoqueInteligente, definirBetaEstoqueInteligente] = useState(beta.betaEstoqueInteligente);
-  const [betaSimuladorMargem, definirBetaSimuladorMargem] = useState(beta.betaSimuladorMargem);
-  const [templateOrcamento, definirTemplateOrcamento] = useState(beta.templateOrcamento);
-  const [limiteAlertaEstoque, definirLimiteAlertaEstoque] = useState(beta.limiteAlertaEstoque);
 
   // Estado Inicial da Aparencia para detectar mudancas
   const [inicialAparencia, definirInicialAparencia] = useState({
@@ -111,16 +99,7 @@ export function PaginaConfiguracoes() {
     contextoTema.corPrimaria !== inicialAparencia.cor ||
     contextoTema.fonte !== inicialAparencia.fonte;
 
-  const estudioPendente = 
-    participarPrototipos !== beta.participarPrototipos || 
-    betaMultiEstudio !== beta.betaMultiEstudio || 
-    betaOrcamentosMagicos !== beta.betaOrcamentosMagicos ||
-    betaEstoqueInteligente !== beta.betaEstoqueInteligente ||
-    betaSimuladorMargem !== beta.betaSimuladorMargem ||
-    templateOrcamento !== beta.templateOrcamento ||
-    limiteAlertaEstoque !== beta.limiteAlertaEstoque;
-
-  const totalAlteracoes = [perfilPendente, identidadePendente, aparenciaPendente, estudioPendente].filter(
+  const totalAlteracoes = [perfilPendente, identidadePendente, aparenciaPendente].filter(
     Boolean,
   ).length;
   const temAlteracoes = totalAlteracoes > 0;
@@ -174,15 +153,6 @@ export function PaginaConfiguracoes() {
         fonte: contextoTema.fonte,
       });
 
-      // 4. Salvar Programas Beta
-      beta.definirParticiparPrototipos(participarPrototipos);
-      beta.definirBetaMultiEstudio(betaMultiEstudio);
-      beta.definirBetaOrcamentosMagicos(betaOrcamentosMagicos);
-      beta.definirBetaEstoqueInteligente(betaEstoqueInteligente);
-      beta.definirBetaSimuladorMargem(betaSimuladorMargem);
-      beta.definirTemplateOrcamento(templateOrcamento);
-      beta.definirLimiteAlertaEstoque(limiteAlertaEstoque);
-
       definirSucesso(true);
       // Removido o toast.success para não poluir a tela a cada auto-save
       setTimeout(() => {
@@ -196,8 +166,6 @@ export function PaginaConfiguracoes() {
     }
   }, [
     atualizarPerfil, nome, usuario, config, nomeEstudio, sloganEstudio, logoEstudio, contextoTema,
-    beta, participarPrototipos, betaMultiEstudio, betaOrcamentosMagicos,
-    betaEstoqueInteligente, betaSimuladorMargem, templateOrcamento, limiteAlertaEstoque
   ]);
 
   // Efeito de Auto-save com Debounce de 1 segundo para evitar loops e excesso de requisições
@@ -269,26 +237,6 @@ export function PaginaConfiguracoes() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.22 }}>
           <CardSeguranca />
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.32 }}>
-          <CardEstudio
-            participarPrototipos={participarPrototipos}
-            definirParticiparPrototipos={definirParticiparPrototipos}
-            betaMultiEstudio={betaMultiEstudio}
-            definirBetaMultiEstudio={definirBetaMultiEstudio}
-            betaOrcamentosMagicos={betaOrcamentosMagicos}
-            definirBetaOrcamentosMagicos={definirBetaOrcamentosMagicos}
-            betaEstoqueInteligente={betaEstoqueInteligente}
-            definirBetaEstoqueInteligente={definirBetaEstoqueInteligente}
-            betaSimuladorMargem={betaSimuladorMargem}
-            definirBetaSimuladorMargem={definirBetaSimuladorMargem}
-            templateOrcamento={templateOrcamento}
-            definirTemplateOrcamento={definirTemplateOrcamento}
-            limiteAlertaEstoque={limiteAlertaEstoque}
-            definirLimiteAlertaEstoque={definirLimiteAlertaEstoque}
-            pendente={estudioPendente}
-          />
         </motion.div>
 
         <motion.div id="secao-privacidade" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.4 }}>
