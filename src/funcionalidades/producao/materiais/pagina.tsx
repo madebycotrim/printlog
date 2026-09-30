@@ -15,7 +15,7 @@ import { ModalArquivamentoMaterial } from "./componentes/ModalArquivamentoMateri
 import { ModalReposicaoEstoque } from "./componentes/ModalReposicaoEstoque";
 import { useArmazemInsumos } from "@/funcionalidades/producao/insumos/estado/armazemInsumos";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
-import { useState } from "react";
+import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsumos";
 import { CardPrevisaoEstoqueIA } from "./componentes/CardPrevisaoEstoqueIA";
 import { usePedidos } from "@/funcionalidades/producao/projetos/hooks/usePedidos";
 

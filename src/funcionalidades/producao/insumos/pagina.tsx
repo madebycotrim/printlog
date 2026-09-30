@@ -16,7 +16,7 @@ import { useEffect } from "react";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { useArmazemMateriais } from "@/funcionalidades/producao/materiais/estado/armazemMateriais";
 import { servicoInventario } from "@/compartilhado/servicos/servicoInventario";
-import { useState } from "react";
+import { apiMateriais } from "@/funcionalidades/producao/materiais/servicos/apiMateriais";
 
 export function PaginaInsumos() {
   const { estado, acoes } = useGerenciadorInsumos();

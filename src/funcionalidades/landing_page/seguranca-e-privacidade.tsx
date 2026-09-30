@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { 
   Lock, 
@@ -7,6 +8,7 @@ import {
   Database, 
   Trash2, 
   ArrowRight,
+  ArrowLeft,
   ShieldAlert,
   Scale,
   Zap,
@@ -17,6 +19,9 @@ import {
   Activity
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { SeletorIdioma } from "@/compartilhado/componentes";
+import { tradutorUniversalDOM, traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 /**
  * Página de Segurança e Privacidade - Versão 15.2 (O Guia Sincero)
@@ -31,10 +36,42 @@ const surgir: Variants = {
 
 export default function PaginaSegurancaPrivacidade() {
   const navegar = useNavigate();
+  const { idiomaAtual } = useIdioma();
+
+  useEffect(() => {
+    tradutorUniversalDOM.definirIdioma(idiomaAtual);
+    const timer = setTimeout(() => {
+      tradutorUniversalDOM.traduzirTudo();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [idiomaAtual]);
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-400 font-sans selection:bg-sky-500/30 relative">
       
+      {/* ── Barra Superior de Navegação & Idioma ── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 py-3 px-6">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <button
+            onClick={() => navegar(-1)}
+            className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-xs font-black uppercase tracking-widest group"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <span>{traduzirTextoGlobal("Voltar")}</span>
+          </button>
+
+          <div 
+            onClick={() => navegar("/")} 
+            className="flex items-center gap-2 cursor-pointer group"
+          >
+            <img src="/logo-azul.png" alt="Logo" className="h-6 w-auto" />
+            <span className="text-white font-black text-sm tracking-tighter">PRINTLOG</span>
+          </div>
+
+          <SeletorIdioma variante="compacto" />
+        </div>
+      </nav>
+
       {/* ── Background Atmosférico ── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-sky-500/5 rounded-full blur-[120px]" />
@@ -49,7 +86,7 @@ export default function PaginaSegurancaPrivacidade() {
             animate={{ opacity: 1, scale: 1 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em]"
           >
-            <Shield size={14} /> Privacidade e Respeito
+            <Shield size={14} /> {traduzirTextoGlobal("Privacidade e Respeito")}
           </motion.div>
           
           <motion.h1 
@@ -57,8 +94,8 @@ export default function PaginaSegurancaPrivacidade() {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[0.9]"
           >
-            A VERDADE SOBRE <br />
-            <span className="text-zinc-600">SEUS DADOS.</span>
+            {traduzirTextoGlobal("A VERDADE SOBRE")} <br />
+            <span className="text-zinc-600">{traduzirTextoGlobal("SEUS DADOS.")}</span>
           </motion.h1>
           
           <motion.p 
@@ -67,7 +104,7 @@ export default function PaginaSegurancaPrivacidade() {
             transition={{ delay: 0.1 }}
             className="text-lg text-zinc-500 max-w-2xl mx-auto leading-relaxed"
           >
-            Privacidade não deveria ser um labirinto jurídico. Abaixo, explico de forma direta o que você realmente precisa saber sobre como o PrintLog funciona.
+            {traduzirTextoGlobal("Privacidade não deveria ser um labirinto jurídico. Abaixo, explico de forma direta o que você realmente precisa saber sobre como o PrintLog funciona.")}
           </motion.p>
         </div>
       </header>
@@ -77,7 +114,7 @@ export default function PaginaSegurancaPrivacidade() {
         {/* ── Seção: Resumo do "Juridiquês" ── */}
         <section className="space-y-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">Antes de ler os documentos oficiais</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-white">{traduzirTextoGlobal("Antes de ler os documentos oficiais")}</h2>
             <div className="flex-1 h-px bg-white/5" />
           </div>
 
@@ -86,9 +123,9 @@ export default function PaginaSegurancaPrivacidade() {
               <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400">
                 <Scale size={20} />
               </div>
-              <h4 className="text-white font-bold text-sm uppercase">Quem manda no dado?</h4>
+              <h4 className="text-white font-bold text-sm uppercase">{traduzirTextoGlobal("Quem manda no dado?")}</h4>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                Você. Os orçamentos, custos e projetos são seus. Eu apenas forneço a "caixa" (software) para você guardá-los e processá-los. Se você decidir sair, pode levar tudo ou apagar tudo.
+                {traduzirTextoGlobal("Você. Os orçamentos, custos e projetos são seus. Eu apenas forneço a \"caixa\" (software) para você guardá-los e processá-los. Se você decidir sair, pode levar tudo ou apagar tudo.")}
               </p>
             </div>
 
@@ -96,9 +133,9 @@ export default function PaginaSegurancaPrivacidade() {
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400">
                 <ShieldAlert size={20} />
               </div>
-              <h4 className="text-white font-bold text-sm uppercase">De quem é o risco?</h4>
+              <h4 className="text-white font-bold text-sm uppercase">{traduzirTextoGlobal("De quem é o risco?")}</h4>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                O PrintLog é uma ferramenta de auxílio. Os cálculos são precisos, mas a decisão final do preço de venda e o risco do seu negócio são seus. Eu não garanto lucro, eu garanto a ferramenta.
+                {traduzirTextoGlobal("O PrintLog é uma ferramenta de auxílio. Os cálculos são precisos, mas a decisão final do preço de venda e o risco do seu negócio são seus. Eu não garanto lucro, eu garanto a ferramenta.")}
               </p>
             </div>
 
@@ -106,9 +143,9 @@ export default function PaginaSegurancaPrivacidade() {
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                 <UserCheck size={20} />
               </div>
-              <h4 className="text-white font-bold text-sm uppercase">Por que coletamos?</h4>
+              <h4 className="text-white font-bold text-sm uppercase">{traduzirTextoGlobal("Por que coletamos?")}</h4>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                Pela lei (LGPD), nossa base legal é a "Execução de Contrato". Ou seja, só pegamos seu nome (ou apelido) e e-mail porque sem eles você não conseguiria logar e salvar seus orçamentos. Simples assim.
+                {traduzirTextoGlobal("Pela lei (LGPD), nossa base legal é a \"Execução de Contrato\". Ou seja, só pegamos seu nome (ou apelido) e e-mail porque sem eles você não conseguiria logar e salvar seus orçamentos. Simples assim.")}
               </p>
             </div>
           </div>
@@ -124,9 +161,9 @@ export default function PaginaSegurancaPrivacidade() {
               <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-sky-400">
                 <Lock size={24} />
               </div>
-              <h3 className="text-2xl font-black text-white uppercase tracking-tight">Criptografia AES-256</h3>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight">{traduzirTextoGlobal("Criptografia AES-256")}</h3>
               <p className="text-zinc-500 leading-relaxed max-w-md">
-                Seus orçamentos são protegidos por criptografia AES-256. Isso significa que eles são transformados em códigos ilegíveis no banco de dados e só o seu login consegue "desmontar" essa proteção.
+                {traduzirTextoGlobal("Seus orçamentos são protegidos por criptografia AES-256. Isso significa que eles são transformados em códigos ilegíveis no banco de dados e só o seu login consegue \"desmontar\" essa proteção.")}
               </p>
             </div>
           </motion.section>
@@ -138,9 +175,9 @@ export default function PaginaSegurancaPrivacidade() {
             <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-blue-400">
               <Fingerprint size={24} />
             </div>
-            <h3 className="text-xl font-black text-white uppercase tracking-tight">Login Google</h3>
+            <h3 className="text-xl font-black text-white uppercase tracking-tight">{traduzirTextoGlobal("Login Google")}</h3>
             <p className="text-xs text-zinc-500 leading-relaxed">
-              Delego a segurança da sua senha para o Google. Assim, eu foco em fazer a melhor ferramenta de 3D e eles focam em proteger sua conta com o que há de melhor.
+              {traduzirTextoGlobal("Delego a segurança da sua senha para o Google. Assim, eu foco em fazer a melhor ferramenta de 3D e eles focam em proteger sua conta com o que há de melhor.")}
             </p>
           </motion.section>
         </div>
@@ -148,7 +185,7 @@ export default function PaginaSegurancaPrivacidade() {
         {/* ── Seção: O que NÃO fazemos ── */}
         <section className="space-y-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">Nossa Ética na Prática</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-white">{traduzirTextoGlobal("Nossa Ética na Prática")}</h2>
             <div className="flex-1 h-px bg-white/5" />
           </div>
 
@@ -156,18 +193,18 @@ export default function PaginaSegurancaPrivacidade() {
             <div className="p-8 rounded-[32px] bg-zinc-900/30 border border-white/5 flex gap-6 items-start">
               <Activity className="text-zinc-600 shrink-0" size={24} />
               <div className="space-y-2">
-                <h4 className="text-white font-bold text-sm">Sem Espionagem</h4>
+                <h4 className="text-white font-bold text-sm">{traduzirTextoGlobal("Sem Espionagem")}</h4>
                 <p className="text-xs text-zinc-600 leading-relaxed">
-                  Eu não fico olhando quanto você fatura ou quais são seus clientes. O sistema é automatizado para você, não para mim.
+                  {traduzirTextoGlobal("Eu não fico olhando quanto você fatura ou quais são seus clientes. O sistema é automatizado para você, não para mim.")}
                 </p>
               </div>
             </div>
             <div className="p-8 rounded-[32px] bg-zinc-900/30 border border-white/5 flex gap-6 items-start">
               <Zap className="text-zinc-600 shrink-0" size={24} />
               <div className="space-y-2">
-                <h4 className="text-white font-bold text-sm">Sem Spam ou Venda</h4>
+                <h4 className="text-white font-bold text-sm">{traduzirTextoGlobal("Sem Spam ou Venda")}</h4>
                 <p className="text-xs text-zinc-600 leading-relaxed">
-                  Seu e-mail é sagrado. Nunca vou vendê-lo para terceiros ou te encher de propagandas que você não pediu. E se você observar, o sistema nem tem anúncios; meu foco é 100% na ferramenta.
+                  {traduzirTextoGlobal("Seu e-mail é sagrado. Nunca vou vendê-lo para terceiros ou te encher de propagandas que você não pediu. E se você observar, o sistema nem tem anúncios; meu foco é 100% na ferramenta.")}
                 </p>
               </div>
             </div>
@@ -179,7 +216,7 @@ export default function PaginaSegurancaPrivacidade() {
           variants={surgir} initial="oculto" whileInView="visivel" viewport={{ once: true }}
           className="p-10 rounded-[40px] bg-white/[0.01] border border-white/5 space-y-12"
         >
-          <h3 className="text-xl font-black text-white uppercase tracking-tight text-center">O Ciclo de Vida do seu Dado</h3>
+          <h3 className="text-xl font-black text-white uppercase tracking-tight text-center">{traduzirTextoGlobal("O Ciclo de Vida do seu Dado")}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { t: "1. Cadastro", d: "Nome/Apelido e e-mail via Google.", icon: UserCheck },
@@ -191,8 +228,8 @@ export default function PaginaSegurancaPrivacidade() {
                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-sky-500 mx-auto md:mx-0">
                   <step.icon size={18} />
                 </div>
-                <h4 className="text-white text-[10px] font-black uppercase tracking-widest">{step.t}</h4>
-                <p className="text-[9px] text-zinc-600 leading-relaxed">{step.d}</p>
+                <h4 className="text-white text-[10px] font-black uppercase tracking-widest">{traduzirTextoGlobal(step.t)}</h4>
+                <p className="text-[9px] text-zinc-600 leading-relaxed">{traduzirTextoGlobal(step.d)}</p>
               </div>
             ))}
           </div>
@@ -201,8 +238,8 @@ export default function PaginaSegurancaPrivacidade() {
         {/* ── Documentos Oficiais ── */}
         <section className="space-y-8">
           <div className="text-center space-y-4">
-             <p className="text-xs text-zinc-500 uppercase font-black tracking-widest">Documentação Completa</p>
-             <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">A parte jurídica, sem exageros.</h3>
+             <p className="text-xs text-zinc-500 uppercase font-black tracking-widest">{traduzirTextoGlobal("Documentação Completa")}</p>
+             <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{traduzirTextoGlobal("A parte jurídica, sem exageros.")}</h3>
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
@@ -212,8 +249,8 @@ export default function PaginaSegurancaPrivacidade() {
             >
               <Database size={24} />
               <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter">Política de Privacidade</h3>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">Padrão Formal ABNT <ChevronRight size={14} /></p>
+                <h3 className="text-2xl font-black uppercase tracking-tighter">{traduzirTextoGlobal("Política de Privacidade")}</h3>
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">{traduzirTextoGlobal("Padrão Formal ABNT")} <ChevronRight size={14} /></p>
               </div>
             </button>
             
@@ -223,8 +260,8 @@ export default function PaginaSegurancaPrivacidade() {
             >
               <Scale size={24} />
               <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter">Termos de Serviço</h3>
-                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest flex items-center gap-2">Contrato de Licença <ChevronRight size={14} /></p>
+                <h3 className="text-2xl font-black uppercase tracking-tighter">{traduzirTextoGlobal("Termos de Serviço")}</h3>
+                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest flex items-center gap-2">{traduzirTextoGlobal("Contrato de Licença")} <ChevronRight size={14} /></p>
               </div>
             </button>
           </div>
@@ -233,7 +270,7 @@ export default function PaginaSegurancaPrivacidade() {
         {/* ── Dúvidas Sinceras (FAQ) ── */}
         <section className="space-y-12">
           <div className="text-center">
-            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Respostas Diretas</h3>
+            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">{traduzirTextoGlobal("Respostas Diretas")}</h3>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -245,8 +282,8 @@ export default function PaginaSegurancaPrivacidade() {
             ].map((faq, i) => (
               <div key={i} className="space-y-4 p-8 rounded-3xl bg-white/[0.01] border border-white/5">
                 <MessageCircle size={18} className="text-sky-500 shrink-0" />
-                <h4 className="text-white font-bold text-sm">{faq.q}</h4>
-                <p className="text-xs text-zinc-500 leading-relaxed">{faq.a}</p>
+                <h4 className="text-white font-bold text-sm">{traduzirTextoGlobal(faq.q)}</h4>
+                <p className="text-xs text-zinc-500 leading-relaxed">{traduzirTextoGlobal(faq.a)}</p>
               </div>
             ))}
           </div>
@@ -261,16 +298,16 @@ export default function PaginaSegurancaPrivacidade() {
             <Shield size={32} />
           </div>
           <div className="space-y-4">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Transparência é Tudo.</h2>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{traduzirTextoGlobal("Transparência é Tudo.")}</h2>
             <p className="text-sm text-zinc-500 max-w-xl mx-auto leading-relaxed">
-              Se você leu até aqui, percebeu que não tem segredo. Eu cuido do código e da segurança para você cuidar das suas impressões. Se sobrar alguma dúvida, me chama.
+              {traduzirTextoGlobal("Se você leu até aqui, percebeu que não tem segredo. Eu cuido do código e da segurança para você cuidar das suas impressões. Se sobrar alguma dúvida, me chama.")}
             </p>
           </div>
           <a 
             href="mailto:privacidade@printlog.com.br"
             className="inline-flex px-10 py-5 bg-white text-black font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-sky-400 transition-all active:scale-95"
           >
-            Falar comigo <ArrowRight size={14} className="inline ml-2" />
+            {traduzirTextoGlobal("Falar comigo")} <ArrowRight size={14} className="inline ml-2" />
           </a>
         </motion.section>
 
@@ -278,8 +315,8 @@ export default function PaginaSegurancaPrivacidade() {
 
       <footer className="py-24 border-t border-white/5 bg-[#030303] text-center space-y-4">
         <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest max-w-md mx-auto leading-relaxed">
-          PrintLog © 2026 // Em conformidade com a LGPD (Lei 13.709/2018). <br />
-          Dados protegidos com criptografia e transparência por um desenvolvedor solo.
+          {traduzirTextoGlobal("PrintLog © 2026 // Em conformidade com a LGPD (Lei 13.709/2018).")} <br />
+          {traduzirTextoGlobal("Dados protegidos com criptografia e transparência por um desenvolvedor solo.")}
         </p>
         <div className="flex justify-center gap-1 text-sky-500 opacity-20">
           <Heart size={10} fill="currentColor" />

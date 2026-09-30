@@ -3,6 +3,7 @@ import { Timer, Trash2, Check, Save } from "lucide-react";
 import { centavosParaReais, formatarDataHora } from "@/compartilhado/utilitarios/formatadores";
 import { OrcamentoSnapshot } from "../estado/armazemCalculadora";
 import { useState } from "react";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface ModalHistoricoV2Props {
   aberto: boolean;
@@ -23,8 +24,8 @@ export function ModalHistoricoV2({
       aberto={aberto} 
       aoFechar={aoFechar} 
       larguraMax="max-w-2xl" 
-      titulo="Histórico de Variações"
-      subtitulo="Versões e snapshots salvos"
+      titulo={traduzirTextoGlobal("Histórico de Variações")}
+      subtitulo={traduzirTextoGlobal("Versões e snapshots salvos")}
       icone={Timer}
     >
       <div className="p-6 space-y-5">
@@ -45,18 +46,18 @@ export function ModalHistoricoV2({
             }}
             className="px-6 h-12 bg-sky-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-sky-600 transition-all flex items-center gap-2 shadow-lg shadow-sky-500/20 cursor-pointer"
           >
-            <Save size={14} /> Salvar
+            <Save size={14} /> {traduzirTextoGlobal("Salvar")}
           </button>
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 px-1">Orçamentos Salvos ({historico?.length || 0})</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 px-1">{traduzirTextoGlobal("Orçamentos Salvos")} ({historico?.length || 0})</p>
           
           <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto scrollbar-hide">
             {!historico || historico.length === 0 ? (
               <div className="py-12 border-2 border-dashed border-borda-sutil dark:border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
                 <Timer size={24} className="text-zinc-300 dark:text-gray-300 opacity-50" />
-                <p className="text-[10px] font-bold text-zinc-400 dark:text-gray-400 uppercase">Nenhum snapshot salvo ainda.</p>
+                <p className="text-[10px] font-bold text-zinc-400 dark:text-gray-400 uppercase">{traduzirTextoGlobal("Nenhum snapshot salvo ainda.")}</p>
               </div>
             ) : (
               historico.map((v) => (
@@ -65,7 +66,7 @@ export function ModalHistoricoV2({
                     <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white mb-1">{v.nome}</span>
                     <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                       {formatarDataHora(v.data)} • {centavosParaReais(v.resultado.precoSugerido)}
-                      {v.nomeCliente ? ` • Cliente: ${v.nomeCliente}` : ''}
+                      {v.nomeCliente ? ` • ${traduzirTextoGlobal("Cliente:")} ${v.nomeCliente}` : ''}
                     </span>
                   </div>
                   
@@ -77,7 +78,7 @@ export function ModalHistoricoV2({
                       }}
                       className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-1.5"
                     >
-                      <Check size={12} /> Restaurar
+                      <Check size={12} /> {traduzirTextoGlobal("Restaurar")}
                     </button>
                     <button 
                       onClick={() => aoRemover(v.id)}
@@ -93,7 +94,7 @@ export function ModalHistoricoV2({
         </div>
 
         <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center">
-          * Os snapshots agora ficam salvos na sua nuvem e sincronizados em todos os dispositivos.
+          {traduzirTextoGlobal("* Os snapshots agora ficam salvos na sua nuvem e sincronizados em todos os dispositivos.")}
         </p>
       </div>
     </Dialogo>

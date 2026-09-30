@@ -24,6 +24,8 @@ import { apiInsumos } from "@/funcionalidades/producao/insumos/servicos/apiInsum
 import { apiImpressoras } from "@/funcionalidades/producao/impressoras/servicos/apiImpressoras";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 // Zustand Store 
 import { useArmazemCalculadora } from "./estado/armazemCalculadora";
@@ -64,6 +66,7 @@ import { ModalDetectarTarifa } from "./componentes/ModalDetectarTarifa";
 import { inferirEstadoPorTarifaCentavos, TipoBandeiraTarifaria } from "@/compartilhado/utilitarios/tarifas-energia";
 
 export function PaginaCalculadoraV2() {
+  const { idiomaAtual } = useIdioma();
   const armazem = useArmazemCalculadora();
   const { usuario } = useAutenticacao();
   const config = useArmazemConfiguracoes();
@@ -525,8 +528,8 @@ export function PaginaCalculadoraV2() {
 
   // Inicialização de Títulos e Ações do Cabeçalho
   useDefinirCabecalho(useMemo(() => ({
-    titulo: idEdicao ? "Editando Precificação" : "Calculadora de Custos",
-    subtitulo: "Motor de Orçamentação Avançado",
+    titulo: idEdicao ? traduzirTextoGlobal("Editando Precificação") : traduzirTextoGlobal("Calculadora de Custos"),
+    subtitulo: traduzirTextoGlobal("Motor de Orçamentação Avançado"),
     ocultarBusca: true,
     ocultarNotificacoes: true,
     elementoAcao: (
@@ -534,10 +537,10 @@ export function PaginaCalculadoraV2() {
         <button 
           onClick={() => setModalConfirmarReset(true)}
           className="h-9 px-3 rounded-xl bg-card border border-rose-500/20 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500 transition-all shadow-sm gap-2"
-          title="Limpar Tudo / Resetar"
+          title={traduzirTextoGlobal("Limpar Tudo / Resetar")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-          <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">Resetar</span>
+          <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">{traduzirTextoGlobal("Resetar")}</span>
         </button>
 
         <div className="w-[1px] h-5 bg-borda-sutil mx-1"></div>
@@ -545,18 +548,18 @@ export function PaginaCalculadoraV2() {
         <button 
           onClick={() => {
             setModoAvancado(!modoAvancado);
-            toast.success(modoAvancado ? "Modo Simplificado ativado" : "Modo Avançado ativado!");
+            toast.success(modoAvancado ? traduzirTextoGlobal("Modo Simplificado ativado") : traduzirTextoGlobal("Modo Avançado ativado!"));
           }}
           className={`h-9 px-3 rounded-xl border flex items-center justify-center transition-all shadow-sm gap-2 text-xs font-bold ${
             modoAvancado
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
               : 'bg-card border-borda-sutil text-zinc-400 hover:text-emerald-500 hover:border-emerald-500/30'
           }`}
-          title={modoAvancado ? "Modo Avançado (Exibindo todos os parâmetros)" : "Modo Simplificado (Exibindo apenas o essencial)"}
+          title={modoAvancado ? traduzirTextoGlobal("Modo Avançado (Exibindo todos os parâmetros)") : traduzirTextoGlobal("Modo Simplificado (Exibindo apenas o essencial)")}
         >
           <Sliders size={14} strokeWidth={2.5} />
           <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">
-            {modoAvancado ? "Avançado" : "Simples"}
+            {modoAvancado ? traduzirTextoGlobal("Avançado") : traduzirTextoGlobal("Simples")}
           </span>
         </button>
 
@@ -565,7 +568,7 @@ export function PaginaCalculadoraV2() {
           onClick={() => undo()} 
           disabled={pastStates.length === 0}
           className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-cyan-500 hover:border-cyan-500/30 transition-all disabled:opacity-30 disabled:hover:text-zinc-400 disabled:hover:border-borda-sutil shadow-sm"
-          title="Desfazer (Ctrl+Z)"
+          title={traduzirTextoGlobal("Desfazer (Ctrl+Z)")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
         </button>
@@ -573,7 +576,7 @@ export function PaginaCalculadoraV2() {
           onClick={() => redo()} 
           disabled={futureStates.length === 0} 
           className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-cyan-500 hover:border-cyan-500/30 transition-all disabled:opacity-30 disabled:hover:text-zinc-400 disabled:hover:border-borda-sutil shadow-sm"
-          title="Refazer (Ctrl+Y)"
+          title={traduzirTextoGlobal("Refazer (Ctrl+Y)")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
         </button>
@@ -581,25 +584,25 @@ export function PaginaCalculadoraV2() {
         <button 
           onClick={() => {
             setAutoSalvar(!autoSalvar);
-            toast.success(autoSalvar ? "Salvamento automático desativado" : "Salvamento automático ativado!");
+            toast.success(autoSalvar ? traduzirTextoGlobal("Salvamento automático desativado") : traduzirTextoGlobal("Salvamento automático ativado!"));
           }}
           className={`h-9 px-3 rounded-xl border flex items-center justify-center transition-all shadow-sm gap-2 text-sm font-medium ${autoSalvar ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-500' : 'bg-card border-borda-sutil text-zinc-400 hover:text-cyan-500 hover:border-cyan-500/30'}`}
-          title="Salvamento Automático"
+          title={traduzirTextoGlobal("Salvamento Automático")}
         >
           {autoSalvar ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><polyline points="8 15 12 11 16 15"/></svg>
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
           )}
-          <span className="hidden sm:inline">{autoSalvar ? 'Auto' : 'Manual'}</span>
+          <span className="hidden sm:inline">{autoSalvar ? traduzirTextoGlobal('Auto') : traduzirTextoGlobal('Manual')}</span>
         </button>
         <button 
           onClick={() => {
             armazem.salvarSnapshot(nomeProjeto || "Orçamento sem nome", descricaoProjeto, clienteProjetoId);
-            toast.success("Orçamento salvo na versão 2.0!");
+            toast.success(traduzirTextoGlobal("Orçamento salvo na versão 2.0!"));
           }}
           className="h-9 px-3 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-emerald-500 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all shadow-sm"
-          title="Salvar Manualmente"
+          title={traduzirTextoGlobal("Salvar Manualmente")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         </button>
@@ -607,20 +610,20 @@ export function PaginaCalculadoraV2() {
         <button 
           onClick={() => setModalHistoricoAberto(true)}
           className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-sm"
-          title="Histórico de Versões"
+          title={traduzirTextoGlobal("Histórico de Versões")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </button>
         <button 
           onClick={() => setModalConfigAberto(true)}
           className="h-9 w-9 rounded-xl bg-card border border-borda-sutil flex items-center justify-center text-zinc-400 hover:text-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-sm"
-          title="Configurações da Calculadora"
+          title={traduzirTextoGlobal("Configurações da Calculadora")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
     )
-  }), [idEdicao, pastStates.length, futureStates.length, undo, redo, autoSalvar, modoAvancado]));
+  }), [idEdicao, pastStates.length, futureStates.length, undo, redo, autoSalvar, modoAvancado, idiomaAtual]));
 
   // Handlers para Zustand
   const alternarMaterial = useCallback((id: string) => {

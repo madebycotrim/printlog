@@ -2,6 +2,9 @@ import { useEffect } from "react";
 import { ArrowLeft, Gavel } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "@/compartilhado/estilos/documentos-abnt.css";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { SeletorIdioma } from "@/compartilhado/componentes";
+import { tradutorUniversalDOM, traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 /**
  * Termos de Serviço / EULA - SaaS PrintLog
@@ -10,6 +13,15 @@ import "@/compartilhado/estilos/documentos-abnt.css";
  */
 export default function PaginaTermosUso() {
   const navegar = useNavigate();
+  const { idiomaAtual } = useIdioma();
+
+  useEffect(() => {
+    tradutorUniversalDOM.definirIdioma(idiomaAtual);
+    const timer = setTimeout(() => {
+      tradutorUniversalDOM.traduzirTudo();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [idiomaAtual]);
 
   // Injeção de metatag robots: noindex para evitar punição de conteúdo duplicado no Google
   useEffect(() => {
@@ -43,13 +55,14 @@ export default function PaginaTermosUso() {
       />
 
       <div className="relative z-10">
-        <div className="max-w-[210mm] mx-auto mb-8 no-print">
+        <div className="max-w-[210mm] mx-auto mb-8 no-print flex items-center justify-between">
           <button
             onClick={() => navegar(-1)}
             className="flex items-center gap-2 text-zinc-600 hover:text-sky-600 transition-all font-sans text-xs font-black uppercase tracking-widest"
           >
-            <ArrowLeft size={14} /> Voltar ao Sistema
+            <ArrowLeft size={14} /> {traduzirTextoGlobal("Voltar ao Sistema")}
           </button>
+          <SeletorIdioma variante="compacto" />
         </div>
 
         <article className="max-w-[210mm] mx-auto bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] p-[20mm] md:p-[30mm] text-zinc-800 leading-relaxed text-justify relative overflow-hidden">
@@ -60,7 +73,7 @@ export default function PaginaTermosUso() {
 
           <header className="mb-12 border-b-2 border-zinc-100 pb-8">
             <h1 className="text-2xl font-black text-zinc-900 mb-2 uppercase tracking-tight">
-              Contrato de Licença de Uso de Software (EULA)
+              {traduzirTextoGlobal("Contrato de Licença de Uso de Software (EULA)")}
             </h1>
             <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
               Contrato Ref: PL-TERMS-2026-V3 · Vigência: {dataAtualizacao}
@@ -69,17 +82,17 @@ export default function PaginaTermosUso() {
 
           <section className="space-y-8 text-sm">
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">1. Objeto do Contrato</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("1. Objeto do Contrato")}</h2>
               <p className="mb-4">
                 O presente instrumento regula a licença de uso, em caráter não exclusivo e intransferível, da plataforma <strong>PrintLog</strong>, um ecossistema SaaS (Software as a Service) voltado ao cálculo técnico de custos, precificação de projetos e gestão operacional para manufatura aditiva.
               </p>
               <div className="p-4 bg-zinc-50 rounded-lg border-l-4 border-zinc-400 font-sans italic text-zinc-700">
-                <strong>Em resumo:</strong> Ao criar uma conta, você aceita as regras de funcionamento do PrintLog. A plataforma é uma ferramenta de simulação e auxílio gerencial, não substituindo a tomada de decisão comercial do próprio usuário.
+                <strong>{traduzirTextoGlobal("Em resumo:")}</strong> Ao criar uma conta, você aceita as regras de funcionamento do PrintLog. A plataforma é uma ferramenta de simulação e auxílio gerencial, não substituindo a tomada de decisão comercial do próprio usuário.
               </div>
             </div>
 
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">2. Fornecimento "AS IS" (Como Está) e Disponibilidade</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("2. Fornecimento \"AS IS\" (Como Está) e Disponibilidade")}</h2>
               <p className="mb-4">
                 O software é fornecido no estado em que se encontra ("as is"), sem garantias expressas ou implícitas de qualquer natureza, incluindo adequação a fins comerciais específicos. O PrintLog não oferece Acordos de Nível de Serviço (SLA) de tempo de atividade (uptime) ou garantias de funcionamento ininterrupto, isentando-se de qualquer responsabilidade civil, administrativa ou comercial por indisponibilidade temporária ou prolongada da plataforma.
               </p>
@@ -89,7 +102,7 @@ export default function PaginaTermosUso() {
             </div>
 
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">3. Propriedade Intelectual e Restrições</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("3. Propriedade Intelectual e Restrições")}</h2>
               <p className="mb-4">
                 Todo o código-fonte, arquitetura de banco de dados, fórmulas matemáticas, lógica dos algoritmos e design de interface são de propriedade intelectual exclusiva do desenvolvedor titular do PrintLog. 
               </p>
@@ -105,7 +118,7 @@ export default function PaginaTermosUso() {
             </div>
 
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">4. Isenção Total de Responsabilidade Comercial e Física</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("4. Isenção Total de Responsabilidade Comercial e Física")}</h2>
               <p className="mb-4">
                 O PrintLog opera fornecendo estimativas de simulação com base exclusivamente nos parâmetros cadastrados e imputados pelo próprio usuário. Diante disso, o desenvolvedor/licenciante isenta-se expressa e totalmente de qualquer responsabilidade civil ou financeira, incluindo mas não se limitando a:
               </p>
@@ -121,7 +134,7 @@ export default function PaginaTermosUso() {
             </div>
 
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">5. Planos, Cobrança e Política de Não-Surpresa</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("5. Planos, Cobrança e Política de Não-Surpresa")}</h2>
               <p className="mb-4">
                 O acesso ao PrintLog pode ser disponibilizado em modalidades gratuitas ou planos pagos (assinaturas premium). 
               </p>
@@ -133,14 +146,14 @@ export default function PaginaTermosUso() {
             </div>
 
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">6. Rescisão e Limpeza de Dados</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("6. Rescisão e Limpeza de Dados")}</h2>
               <p className="mb-4">
                 Este contrato vigora por prazo indeterminado. O usuário pode rescindi-lo instantaneamente excluindo sua conta pelo painel. O PrintLog reserva-se o direito de suspender ou excluir sumariamente contas de usuários que descumpram as regras de uso ou cometam fraudes, sem direito a reembolso de períodos vigentes.
               </p>
             </div>
 
             <div>
-              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">7. Modificações, Contato Legal e Foro</h2>
+              <h2 className="font-bold text-zinc-900 mb-4 uppercase tracking-wider">{traduzirTextoGlobal("7. Modificações, Contato Legal e Foro")}</h2>
               <p className="mb-4">
                 Estes Termos de Uso podem ser revisados periodicamente. Alterações significativas serão notificadas diretamente no painel de controle do sistema. O uso contínuo da plataforma após as alterações constitui aceitação tácita dos novos termos.
               </p>
@@ -159,12 +172,12 @@ export default function PaginaTermosUso() {
           <footer className="mt-20 pt-12 border-t border-zinc-100 text-[10px] text-zinc-600 font-mono text-center space-y-1">
             <p>CONTRATO DE ADESÃO DIGITAL EXCLUSIVAMENTE ACEITO VIA CLIQUE · PRINTLOG © {new Date().getFullYear()}</p>
             <p>REVISADO SEGUNDO O CÓDIGO CIVIL E A LEI DO SOFTWARE (LEI Nº 9.609/98)</p>
-            <p className="text-[9px] text-zinc-600 mt-2">Última atualização: {dataAtualizacao}</p>
+            <p className="text-[9px] text-zinc-600 mt-2">{traduzirTextoGlobal("Última atualização:")} {dataAtualizacao}</p>
           </footer>
         </article>
 
         <div className="max-w-[210mm] mx-auto mt-8 text-center text-[10px] text-zinc-600 font-sans uppercase tracking-[0.2em] no-print">
-          Fim do Documento
+          {traduzirTextoGlobal("Fim do Documento")}
         </div>
       </div>
     </div>

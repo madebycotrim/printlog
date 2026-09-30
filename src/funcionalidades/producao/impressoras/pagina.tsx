@@ -11,11 +11,8 @@ import { ModalAposentarImpressora } from "./componentes/ModalAposentarImpressora
 import { motion, AnimatePresence } from "framer-motion";
 import { EstadoVazio } from "@/compartilhado/componentes";
 import { variantesContainerLista, variantesItemLista } from "@/compartilhado/utilitarios/animacoes";
-import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
-
 export function PaginaImpressoras() {
   const { estado, acoes } = useGerenciadorImpressoras();
-  const { usuario } = useAutenticacao();
 
   const tentarNovaMaquina = () => {
     acoes.abrirEditar();

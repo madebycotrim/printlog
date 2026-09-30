@@ -10,6 +10,7 @@ import {
   calcularTarifaComBandeira
 } from "@/compartilhado/utilitarios/tarifas-energia";
 import { toast } from "sonner";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface Props {
   aberto: boolean;
@@ -115,7 +116,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
         {passo === 'consentimento' ? (
           <>
             <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center leading-relaxed">
-              Detectamos automaticamente sua localização via backend Cloudflare para carregar a tarifa residencial da distribuidora do seu estado somada à bandeira selecionada.
+              {traduzirTextoGlobal("Detectamos automaticamente sua localização via backend Cloudflare para carregar a tarifa residencial da distribuidora do seu estado somada à bandeira selecionada.")}
             </p>
             {erro && <p className="text-[10px] text-red-500 text-center font-bold">{erro}</p>}
             <div className="flex flex-col gap-2.5 mt-1">
@@ -129,21 +130,21 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
                 ) : (
                   <MapPin size={16} />
                 )}
-                {detectando ? 'Buscando Localização...' : 'Sim, detectar Estado pelo IP'}
+                {detectando ? traduzirTextoGlobal("Buscando Localização...") : traduzirTextoGlobal("Sim, detectar Estado pelo IP")}
               </button>
               <button
                 onClick={() => setPasso('selecao')}
                 disabled={detectando}
                 className="w-full h-11 bg-muted/50 hover:bg-muted text-primary dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center cursor-pointer border border-borda-sutil"
               >
-                Não, escolher Estado manualmente
+                {traduzirTextoGlobal("Não, escolher Estado manualmente")}
               </button>
             </div>
           </>
         ) : (
           <>
             <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center">
-              Selecione o seu Estado abaixo para aplicar a tarifa média correspondente com a bandeira selecionada.
+              {traduzirTextoGlobal("Selecione o seu Estado abaixo para aplicar a tarifa média correspondente com a bandeira selecionada.")}
             </p>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
               {Object.entries(TARIFAS_KWH_POR_ESTADO).map(([uf, tarifaBase]) => {
@@ -171,7 +172,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
               onClick={() => setPasso('consentimento')}
               className="text-[9px] font-bold text-zinc-400 hover:text-primary dark:hover:text-white text-center uppercase tracking-wider"
             >
-              ← Voltar para detecção automática
+              {traduzirTextoGlobal("← Voltar para detecção automática")}
             </button>
           </>
         )}

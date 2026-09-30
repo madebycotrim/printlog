@@ -140,4 +140,10 @@ export const dicionarioComercial: DicionarioTraducao = {
   "Vinculado a Pedido": { en: "Linked to Order", es: "Vinculado a Pedido" },
   "Vincular Cliente (Opcional)": { en: "Link Customer (Optional)", es: "Vincular Cliente (Opcional)" },
   "Volume Produzido": { en: "Produced Volume", es: "Volumen Producido" },
+  "Recém Cadastrados": { en: "Recently Registered", es: "Recién Registrados" },
+  "Ordem Alfabética": { en: "Alphabetical Order", es: "Orden Alfabético" },
+  "Maior Faturamento (LTV)": { en: "Highest Revenue (LTV)", es: "Mayor Facturación (LTV)" },
+  "Remover Cliente?": { en: "Remove Client?", es: "¿Eliminar Cliente?" },
+  "Dados do Cliente": { en: "Client Details", es: "Datos del Cliente" },
+  "Maior Valor": { en: "Highest Value", es: "Mayor Valor" },
 };

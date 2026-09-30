@@ -6,8 +6,11 @@ import { PaginaFila } from "./fila/pagina";
 import { PaginaLinhaDoTempo } from "./historico/PaginaLinhaDoTempo";
 
 import { useState, useEffect } from "react";
+import { useIdioma } from "@/compartilhado/hooks/useIdioma";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 export function PaginaProducao() {
+  useIdioma();
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -60,7 +63,7 @@ export function PaginaProducao() {
                 size={14} 
                 className={`transition-transform duration-200 ${ativo ? "scale-105 text-sky-500 dark:text-sky-400" : "text-zinc-400 dark:text-zinc-500"}`} 
               />
-              <span>{aba.rotulo}</span>
+              <span>{traduzirTextoGlobal(aba.rotulo)}</span>
             </button>
           );
         })}
