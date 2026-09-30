@@ -42,22 +42,6 @@ export function Cabecalho() {
             </span>
           </div>
 
-          {/* Navegação Central (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-8">
-            <button 
-              onClick={() => document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
-            >
-              {traduzirTextoGlobal("Benefícios")}
-            </button>
-            <button 
-              onClick={() => document.getElementById('centro-comando')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
-            >
-              {traduzirTextoGlobal("Demonstração")}
-            </button>
-          </nav>
-
           {/* Ações Desktop */}
           <div className="hidden lg:flex items-center gap-4">
             <SeletorIdioma variante="compacto" />
@@ -117,20 +101,7 @@ export function Cabecalho() {
         <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => definirMenuMobileAberto(false)} />
 
         <div className="relative h-full flex flex-col items-center justify-center gap-8 p-6">
-          <nav className="flex flex-col items-center gap-6 mb-4">
-            <button 
-              onClick={() => { document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
-              className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
-            >
-              {traduzirTextoGlobal("Benefícios")}
-            </button>
-            <button 
-              onClick={() => { document.getElementById('centro-comando')?.scrollIntoView({ behavior: 'smooth' }); definirMenuMobileAberto(false); }}
-              className="text-xl font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
-            >
-              {traduzirTextoGlobal("Demonstração")}
-            </button>
-          </nav>
+
 
           <div className="w-full max-w-xs mb-2">
             <SeletorIdioma variante="completo" />

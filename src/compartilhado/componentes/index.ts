@@ -16,3 +16,4 @@ export * from "./ModalAcessibilidade";
 export * from "./BarraVocalizacaoFlutuante";
 export * from "./BannerAvisoGlobal";
 export * from "./SeletorIdioma";
+export * from "./BandeiraPais";

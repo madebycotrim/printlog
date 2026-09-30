@@ -9,9 +9,11 @@ export function Rodape() {
   return (
     <>
       {/* Rodapé */}
-      <footer className="bg-black py-12 border-t border-zinc-900 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent"></div>
-        <div className="absolute bottom-0 left-1/3 w-[500px] h-[200px] bg-sky-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+      <footer className="bg-black py-12 border-t border-zinc-900 relative">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent"></div>
+          <div className="absolute bottom-0 left-1/3 w-[500px] h-[200px] bg-sky-500/5 blur-[100px] rounded-full"></div>
+        </div>
 
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row justify-between gap-12 mb-8">
@@ -87,7 +89,7 @@ export function Rodape() {
             </div>
 
             <div className="flex items-center gap-4">
-              <SeletorIdioma variante="compacto" />
+              <SeletorIdioma variante="compacto" direcao="cima" />
               <a
                 href="https://madebycotrim.com.br"
                 target="_blank"

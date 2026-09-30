@@ -4,15 +4,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { CodigoIdioma } from "@/configuracoes/i18n";
+import { BandeiraPais } from "./BandeiraPais";
 
 interface PropriedadesSeletorIdioma {
   variante?: "compacto" | "completo";
+  direcao?: "auto" | "cima" | "baixo";
   className?: string;
 }
 
-export function SeletorIdioma({ variante = "compacto", className = "" }: PropriedadesSeletorIdioma) {
+export function SeletorIdioma({
+  variante = "compacto",
+  direcao = "auto",
+  className = "",
+}: PropriedadesSeletorIdioma) {
   const { idiomaAtual, mudarIdioma, idiomas, t, i18n } = useIdioma();
   const [aberto, setAberto] = useState(false);
+  const [abrirParaCima, setAbrirParaCima] = useState(direcao === "cima");
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Fecha o dropdown ao clicar fora
@@ -30,12 +37,54 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
     };
   }, [aberto]);
 
+  // Posicionamento inteligente adaptável (cima vs baixo) e detecção de viewport
+  useEffect(() => {
+    if (!aberto || !containerRef.current) return;
+
+    if (direcao === "cima") {
+      setAbrirParaCima(true);
+      return;
+    }
+    if (direcao === "baixo") {
+      setAbrirParaCima(false);
+      return;
+    }
+
+    function recalcularPosicao() {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const espacoAbaixo = window.innerHeight - rect.bottom;
+      const espacoAcima = rect.top;
+      const alturaMinima = 230;
+
+      if (espacoAbaixo < alturaMinima && espacoAcima > espacoAbaixo) {
+        setAbrirParaCima(true);
+      } else {
+        setAbrirParaCima(false);
+      }
+    }
+
+    recalcularPosicao();
+
+    window.addEventListener("scroll", recalcularPosicao, { passive: true });
+    window.addEventListener("resize", recalcularPosicao);
+
+    return () => {
+      window.removeEventListener("scroll", recalcularPosicao);
+      window.removeEventListener("resize", recalcularPosicao);
+    };
+  }, [aberto, direcao]);
+
   const idiomaSelecionado = idiomas.find((i) => i.codigo === idiomaAtual) || idiomas[0];
 
-  // Variante COMPACTA: Ideal para o Cabeçalho (Header)
+  // Variante COMPACTA: Ideal para o Cabeçalho (Header) e Rodapé (Footer)
   if (variante === "compacto") {
     return (
-      <div ref={containerRef} data-seletor-idioma="true" className={`relative ${className}`}>
+      <div
+        ref={containerRef}
+        data-seletor-idioma="true"
+        className={`relative ${aberto ? "z-[9999]" : "z-20"} ${className}`}
+      >
         <button
           type="button"
           id="btn-seletor-idioma"
@@ -45,10 +94,11 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
           onClick={() => setAberto((prev) => !prev)}
           className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl border border-borda-sutil bg-card/60 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-300 transition-all duration-200 text-xs font-bold shadow-xs active:scale-95"
         >
-          <span className="text-sm leading-none" role="img" aria-hidden="true">
-            {idiomaSelecionado.bandeira}
-          </span>
-          <span className="hidden sm:inline uppercase text-[10px] tracking-wider text-zinc-500 dark:text-zinc-400">
+          <BandeiraPais
+            codigo={idiomaSelecionado.codigo}
+            className="w-4 h-2.5 rounded-[2px] shadow-xs shrink-0 ring-1 ring-black/10 dark:ring-white/15"
+          />
+          <span className="uppercase text-[10px] font-black tracking-wider text-zinc-600 dark:text-zinc-300">
             {idiomaSelecionado.codigo.split("-")[0]}
           </span>
           <ChevronDown
@@ -60,12 +110,16 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
         <AnimatePresence>
           {aberto && (
             <motion.div
-              initial={{ opacity: 0, y: -6, scale: 0.96 }}
+              initial={{ opacity: 0, y: abrirParaCima ? 8 : -8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.96 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              exit={{ opacity: 0, y: abrirParaCima ? 8 : -8, scale: 0.96 }}
+              transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
               role="listbox"
-              className="absolute right-0 mt-1.5 w-44 rounded-2xl bg-card/95 backdrop-blur-xl border border-borda-sutil shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-1.5 z-50 overflow-hidden"
+              className={`absolute right-0 w-48 rounded-2xl bg-card/95 dark:bg-zinc-950/95 backdrop-blur-2xl border border-borda-sutil dark:border-zinc-800 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.8)] py-1.5 z-[9999] overflow-hidden ${
+                abrirParaCima
+                  ? "bottom-full mb-2 origin-bottom-right"
+                  : "top-full mt-2 origin-top-right"
+              }`}
             >
               <div className="px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-zinc-400 border-b border-borda-sutil/60 flex items-center gap-1.5">
                 <Globe size={11} />
@@ -101,8 +155,11 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
                           : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-base leading-none">{item.bandeira}</span>
+                      <div className="flex items-center gap-2.5">
+                        <BandeiraPais
+                          codigo={item.codigo}
+                          className="w-5 h-3.5 rounded-[2px] shadow-xs shrink-0 ring-1 ring-black/10 dark:ring-white/15"
+                        />
                         <div className="flex flex-col text-left">
                           <span className="leading-tight">{item.rotulo}</span>
                           <span className="text-[9px] text-zinc-400 font-normal leading-tight">
@@ -152,9 +209,10 @@ export function SeletorIdioma({ variante = "compacto", className = "" }: Proprie
                   : "border-borda-sutil bg-card hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]"
               }`}
             >
-              <span className="text-2xl leading-none" role="img" aria-hidden="true">
-                {item.bandeira}
-              </span>
+              <BandeiraPais
+                codigo={item.codigo}
+                className="w-8 h-5.5 rounded-[3px] shadow-sm shrink-0 ring-1 ring-black/10 dark:ring-white/15"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight">
                   {item.rotulo}
