@@ -19,6 +19,7 @@ import {
 
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { ehAdmin } from "@/compartilhado/constantes/admin";
 import { Avatar } from "./ui";
 import { useContextoTema } from "@/configuracoes/tema/tema_provider";
 import { useArmazemConfiguracoes } from "@/funcionalidades/sistema/configuracoes/estado/armazemConfiguracoes";

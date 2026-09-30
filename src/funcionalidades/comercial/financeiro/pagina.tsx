@@ -2,7 +2,6 @@ import { Plus, ReceiptText, Search, FileBarChart } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
-import { centavosParaReais } from "@/compartilhado/utilitarios/formatadores";
 import { ResumoFinanceiroComponente } from "./componentes/ResumoFinanceiro";
 import { GraficoFluxoCaixa } from "./componentes/GraficoFluxoCaixa";
 import { TabelaLancamentos } from "./componentes/TabelaLancamentos";
