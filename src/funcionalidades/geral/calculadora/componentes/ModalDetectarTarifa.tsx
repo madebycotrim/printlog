@@ -69,7 +69,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
         setErro(null);
         aoFechar();
       }}
-      titulo={passo === 'consentimento' ? "Tarifa de Energia Inteligente" : "Selecionar Estado"}
+      titulo={passo === 'consentimento' ? traduzirTextoGlobal("Tarifa de Energia Inteligente") : traduzirTextoGlobal("Selecionar Estado")}
       icone={passo === 'consentimento' ? Zap : MapPin}
       larguraMax="max-w-lg"
     >
@@ -79,9 +79,9 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-white flex items-center gap-1.5">
               <Flame size={13} className="text-amber-500" />
-              Bandeira Tarifária ANEEL (Sobretaxa de Estiagem)
+              {traduzirTextoGlobal("Bandeira Tarifária ANEEL (Sobretaxa de Estiagem)")}
             </span>
-            <span className="text-[9px] font-bold text-zinc-400">Oficial ANEEL</span>
+            <span className="text-[9px] font-bold text-zinc-400">{traduzirTextoGlobal("Oficial ANEEL")}</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -105,7 +105,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
                     </span>
                   </div>
                   <span className="text-[8px] font-bold text-zinc-500">
-                    {info.adicionalCentavos === 0 ? 'Sem taxa extra' : `+R$ ${info.adicionalReais.toFixed(3)}/kWh`}
+                    {info.adicionalCentavos === 0 ? traduzirTextoGlobal("Sem taxa extra") : `+${traduzirTextoGlobal("R$")} ${info.adicionalReais.toFixed(3)}/kWh`}
                   </span>
                 </button>
               );
@@ -162,7 +162,7 @@ export function ModalDetectarTarifa({ aberto, aoFechar, aoAplicarTarifa, estadoA
                   >
                     <span>{uf}</span>
                     <span className={`text-[8px] font-bold ${selecionado ? 'text-white/80' : 'text-zinc-400'}`}>
-                      R$ {tarifaFinal.toFixed(2)}
+                      {traduzirTextoGlobal("R$")} {tarifaFinal.toFixed(2)}
                     </span>
                   </button>
                 );

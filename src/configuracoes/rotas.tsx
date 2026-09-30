@@ -126,7 +126,12 @@ export function RoteadorPrincipal() {
         <ScrollParaTopo />
             <Suspense fallback={<Carregamento />}>
               <Routes key={idiomaAtual}>
+                {/* Landing Page (Suporte a SEO Internacional) */}
                 <Route path="/" element={<PaginaLanding />} />
+                <Route path="/en" element={<PaginaLanding idiomaUrl="en-US" />} />
+                <Route path="/es" element={<PaginaLanding idiomaUrl="es-ES" />} />
+                <Route path="/pt" element={<Navigate to="/" replace />} />
+
                 <Route path="/seguranca-e-privacidade" element={<SegurancaPrivacidade />} />
                 <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
                 <Route path="/politica-de-cookies" element={<PoliticaCookies />} />

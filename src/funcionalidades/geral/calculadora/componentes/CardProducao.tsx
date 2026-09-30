@@ -3,6 +3,7 @@ import { useState, memo } from "react";
 import { ContadorAnimado, InputBancario } from "@/compartilhado/componentes/ui";
 import { extrairValorNumerico } from "@/compartilhado/utilitarios/formatadores";
 import { NOMES_ESTADOS, BANDEIRAS_TARIFARIAS, TipoBandeiraTarifaria } from "@/compartilhado/utilitarios/tarifas-energia";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 interface CardProducaoProps {
   tempo: number;
@@ -58,8 +59,8 @@ export const CardProducao = memo(function CardProducao({
             <Zap size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black uppercase tracking-wider text-primary">Produção e Impressão</span>
-            <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">Metricas de tempo e hardware</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary">{traduzirTextoGlobal("Produção e Impressão")}</span>
+            <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">{traduzirTextoGlobal("Metricas de tempo e hardware")}</span>
           </div>
         </div>
 
@@ -88,7 +89,7 @@ export const CardProducao = memo(function CardProducao({
           <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3 sm:gap-4">
             <div>
               <label className="block h-4 text-[10px] font-black uppercase text-muted-foreground mb-2">
-                {modoEntrada === 'projeto' ? 'Quantos Projetos?' : 'Quantas Peças?'}
+                {traduzirTextoGlobal(modoEntrada === 'projeto' ? 'Quantos Projetos?' : 'Quantas Peças?')}
               </label>
               <div className="relative flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner overflow-hidden">
                 <button 
@@ -124,7 +125,7 @@ export const CardProducao = memo(function CardProducao({
 
             <div>
               <label className="block h-4 text-xs font-black uppercase text-muted-foreground mb-2">
-                {modoEntrada === 'lote' ? "Tempo de Produção (Lote)" : modoEntrada === 'projeto' ? "Tempo de Produção (Projeto)" : "Tempo de Produção (Peça)"}
+                {traduzirTextoGlobal(modoEntrada === 'lote' ? "Tempo de Produção (Lote)" : modoEntrada === 'projeto' ? "Tempo de Produção (Projeto)" : "Tempo de Produção (Peça)")}
               </label>
               <div className="flex items-center gap-1.5">
                 <div className="relative flex-1 flex items-center h-11 rounded-xl bg-muted/40 dark:bg-zinc-800/40 border border-borda-sutil focus-within:border-emerald-500/40 transition-all shadow-inner">
@@ -160,7 +161,7 @@ export const CardProducao = memo(function CardProducao({
                     }} 
                     className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                   />
-                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">MIN</span>
+                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">{traduzirTextoGlobal("MIN")}</span>
                 </div>
 
                 <span className="text-zinc-400 font-bold">:</span>
@@ -179,7 +180,7 @@ export const CardProducao = memo(function CardProducao({
                     }} 
                     className="w-full h-11 pl-2 pr-6 sm:pl-4 sm:pr-8 bg-transparent outline-none font-black text-sm text-center text-primary dark:text-white" 
                   />
-                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">SEG</span>
+                  <span className="absolute right-2 sm:right-2.5 font-black text-[10px] text-zinc-400 uppercase tracking-wider select-none">{traduzirTextoGlobal("SEG")}</span>
                 </div>
               </div>
             </div>
@@ -189,11 +190,11 @@ export const CardProducao = memo(function CardProducao({
             <div className="flex flex-col group">
               <div className="flex items-center justify-between h-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <label className="block text-xs font-black uppercase text-muted-foreground">Energia (R$)</label>
+                  <label className="block text-xs font-black uppercase text-muted-foreground">{traduzirTextoGlobal("Energia (R$)")}</label>
                 </div>
                 <div
                   onClick={() => setCobrarEnergia(!cobrarEnergia)}
-                  title={cobrarEnergia ? "Clique para desativar cobrança de energia" : "Clique para ativar cobrança de energia"}
+                  title={cobrarEnergia ? traduzirTextoGlobal("Clique para desativar cobrança de energia") : traduzirTextoGlobal("Clique para ativar cobrança de energia")}
                   className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase flex items-center gap-0.5 w-fit cursor-pointer transition-all hover:scale-105 active:scale-95 ${!cobrarEnergia
                       ? "bg-zinc-500/10 border-borda-sutil text-zinc-500 opacity-60"
                       : "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-500"
@@ -219,12 +220,12 @@ export const CardProducao = memo(function CardProducao({
               </div>
               <div
                 onClick={() => setCobrarEnergia(!cobrarEnergia)}
-                title={cobrarEnergia ? "Clique para desativar cobrança de energia" : "Clique para ativar cobrança de energia"}
+                title={cobrarEnergia ? traduzirTextoGlobal("Clique para desativar cobrança de energia") : traduzirTextoGlobal("Clique para ativar cobrança de energia")}
                 className={`w-full h-11 px-4 rounded-xl flex items-center border cursor-pointer transition-all shadow-inner ${!cobrarEnergia ? 'bg-muted/20 border-borda-sutil opacity-40 grayscale' :
                     impressoraAtiva ? 'bg-muted/40 dark:bg-zinc-800/40 border-emerald-500/20 group-hover:border-emerald-500/40' : 'bg-muted/40 dark:bg-zinc-800/40 border-borda-sutil group-hover:border-emerald-500/30'
                   }`}
               >
-                <span className="text-muted-foreground font-black text-xs mr-2 select-none">R$</span>
+                <span className="text-muted-foreground font-black text-xs mr-2 select-none">{traduzirTextoGlobal("R$")}</span>
                 <span className={`font-black text-sm w-full text-center ${!cobrarEnergia ? 'line-through text-zinc-400 dark:text-gray-400' : impressoraAtiva ? 'text-emerald-600 dark:text-emerald-500' : 'text-primary dark:text-white'}`}>
                   <ContadorAnimado valor={cobrarEnergia ? custoEnergia : 0} prefixo="" />
                 </span>
@@ -232,15 +233,15 @@ export const CardProducao = memo(function CardProducao({
             </div>
             <div className="flex flex-col">
               <div className="flex items-center justify-between h-4 mb-2">
-                <label className="block text-xs font-black uppercase text-muted-foreground">kWh (R$)</label>
+                <label className="block text-xs font-black uppercase text-muted-foreground">{traduzirTextoGlobal("kWh (R$)")}</label>
                 <button
                   type="button"
                   onClick={lidarComDeteccao}
                   className="flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase transition-all active:scale-95 bg-muted/40 border-borda-sutil text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shadow-xs"
                   title={
                     estadoTarifa 
-                      ? `Tarifa baseada em ${NOMES_ESTADOS[estadoTarifa] || estadoTarifa} (${estadoTarifa})${bandeiraTarifaria ? ` • ${BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.nome}` : ''}. Clique para alterar.`
-                      : "Auto-detectar tarifa pelo IP ou escolher Estado"
+                      ? `${traduzirTextoGlobal("Tarifa baseada em")} ${NOMES_ESTADOS[estadoTarifa] || estadoTarifa} (${estadoTarifa})${bandeiraTarifaria ? ` • ${BANDEIRAS_TARIFARIAS[bandeiraTarifaria]?.nome}` : ''}. ${traduzirTextoGlobal("Clique para alterar.")}`
+                      : traduzirTextoGlobal("Auto-detectar tarifa pelo IP ou escolher Estado")
                   }
                 >
                   {estadoTarifa ? (
@@ -262,12 +263,12 @@ export const CardProducao = memo(function CardProducao({
                         </span>
                       )}
                       <span className="text-zinc-400/60 dark:text-zinc-600 font-normal">·</span>
-                      <span className="hover:underline">Ajustar</span>
+                      <span className="hover:underline">{traduzirTextoGlobal("Ajustar")}</span>
                     </>
                   ) : (
                     <>
                       <Sparkles size={10} />
-                      <span>Auto-ajuste</span>
+                      <span>{traduzirTextoGlobal("Auto-ajuste")}</span>
                     </>
                   )}
                 </button>
@@ -289,7 +290,7 @@ export const CardProducao = memo(function CardProducao({
                     ⚠️
                   </div>
                   <span className="text-[9px] font-bold text-amber-600 dark:text-amber-500 leading-tight">
-                    Custo alto. A média no Brasil é R$ 0,90. Verifique sua conta de luz.
+                    {traduzirTextoGlobal("Custo alto. A média no Brasil é R$ 0,90. Verifique sua conta de luz.")}
                   </span>
                 </div>
               )}
@@ -300,3 +301,4 @@ export const CardProducao = memo(function CardProducao({
     </div>
   );
 });
+

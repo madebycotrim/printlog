@@ -7,6 +7,7 @@ import { memo, useState, useRef, useEffect } from "react";
 import { ContadorAnimado } from "@/compartilhado/componentes/ui";
 import { useArmazemNotificacoes } from "@/compartilhado/estado/armazemNotificacoes";
 import { TipoNotificacao, CategoriaNotificacao } from "@/compartilhado/tipos/notificacoes";
+import { traduzirTextoGlobal } from "@/compartilhado/utilitarios/tradutorUniversalDOM";
 
 const MAPA_CORES_FILAMENTO: Record<string, string> = {
   verde: '#10b981',
@@ -229,9 +230,9 @@ export const PainelResultados = memo(function PainelResultados({
                   </div>
                   
                   <div className="flex items-center justify-center gap-3 text-[8.5px] font-black text-sky-500 dark:text-sky-400/90 uppercase tracking-widest bg-sky-500/10 dark:bg-sky-500/10 px-3 py-1.5 rounded-full border border-sky-500/20">
-                    {pesoAcumulado > 0 && <span>R$ {(precoPorGrama / 100).toFixed(2)}/g</span>}
+                    {pesoAcumulado > 0 && <span>{traduzirTextoGlobal("R$")} {(precoPorGrama / 100).toFixed(2)}/g</span>}
                     {pesoAcumulado > 0 && tempoCalculado > 0 && <span className="w-1 h-1 rounded-full bg-sky-500/30" />}
-                    {tempoCalculado > 0 && <span>R$ {(precoPorHora / 100).toFixed(2)}/h</span>}
+                    {tempoCalculado > 0 && <span>{traduzirTextoGlobal("R$")} {(precoPorHora / 100).toFixed(2)}/h</span>}
                   </div>
 
                   {calculo.lucroLiquido <= 100 ? (

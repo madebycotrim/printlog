@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Globe, Check, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useIdioma } from "@/compartilhado/hooks/useIdioma";
 import { CodigoIdioma } from "@/configuracoes/i18n";
@@ -21,6 +22,8 @@ export function SeletorIdioma({
   const [aberto, setAberto] = useState(false);
   const [abrirParaCima, setAbrirParaCima] = useState(direcao === "cima");
   const containerRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Fecha o dropdown ao clicar fora
   useEffect(() => {
@@ -74,6 +77,37 @@ export function SeletorIdioma({
       window.removeEventListener("resize", recalcularPosicao);
     };
   }, [aberto, direcao]);
+
+  // Executa troca de idioma e sincroniza rota internacional se estiver na Landing Page
+  const lidarTrocaIdioma = async (codigo: CodigoIdioma, rotulo: string) => {
+    await mudarIdioma(codigo);
+    setAberto(false);
+
+    // Se estiver na Landing Page (/ ou /en ou /es ou /pt), sincroniza a URL correspondente
+    const caminho = location.pathname;
+    const rotasLanding = ["/", "/en", "/es", "/pt"];
+    if (rotasLanding.includes(caminho)) {
+      if (codigo === "en-US" && caminho !== "/en") {
+        navigate("/en", { replace: true });
+      } else if (codigo === "es-ES" && caminho !== "/es") {
+        navigate("/es", { replace: true });
+      } else if (codigo === "pt-BR" && caminho !== "/") {
+        navigate("/", { replace: true });
+      }
+    }
+
+    const mensagensSalvo: Record<string, string> = {
+      "pt-BR": "Preferência salva no seu perfil e sincronizada entre dispositivos.",
+      "en-US": "Preference saved to your profile and synced across devices.",
+      "es-ES": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
+    };
+    const descricao = mensagensSalvo[codigo] || i18n.t("idiomas.salvoNuvem", { lng: codigo });
+    toast.dismiss("toast-seletor-idioma");
+    toast.success(rotulo, {
+      id: "toast-seletor-idioma",
+      description: descricao,
+    });
+  };
 
   const idiomaSelecionado = idiomas.find((i) => i.codigo === idiomaAtual) || idiomas[0];
 
@@ -134,21 +168,7 @@ export function SeletorIdioma({
                       key={item.codigo}
                       role="option"
                       aria-selected={ativo}
-                      onClick={async () => {
-                        await mudarIdioma(item.codigo as CodigoIdioma);
-                        setAberto(false);
-                        const mensagensSalvo: Record<string, string> = {
-                          "pt-BR": "Preferência salva no seu perfil e sincronizada entre dispositivos.",
-                          "en-US": "Preference saved to your profile and synced across devices.",
-                          "es-ES": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
-                        };
-                        const descricao = mensagensSalvo[item.codigo] || i18n.t("idiomas.salvoNuvem", { lng: item.codigo });
-                        toast.dismiss("toast-seletor-idioma");
-                        toast.success(item.rotulo, {
-                          id: "toast-seletor-idioma",
-                          description: descricao,
-                        });
-                      }}
+                      onClick={() => lidarTrocaIdioma(item.codigo as CodigoIdioma, item.rotulo)}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                         ativo
                           ? "bg-primary/10 text-primary font-bold dark:bg-white/10 dark:text-white"
@@ -189,20 +209,7 @@ export function SeletorIdioma({
             <button
               key={item.codigo}
               type="button"
-              onClick={async () => {
-                await mudarIdioma(item.codigo as CodigoIdioma);
-                const mensagensSalvo: Record<string, string> = {
-                  "pt-BR": "Preferência salva no seu perfil e sincronizada entre dispositivos.",
-                  "en-US": "Preference saved to your profile and synced across devices.",
-                  "es-ES": "Preferencia guardada en su perfil y sincronizada entre dispositivos.",
-                };
-                const descricao = mensagensSalvo[item.codigo] || i18n.t("idiomas.salvoNuvem", { lng: item.codigo });
-                toast.dismiss("toast-seletor-idioma");
-                toast.success(item.rotulo, {
-                  id: "toast-seletor-idioma",
-                  description: descricao,
-                });
-              }}
+              onClick={() => lidarTrocaIdioma(item.codigo as CodigoIdioma, item.rotulo)}
               className={`relative flex items-center gap-3 p-4 rounded-2xl border text-left transition-all duration-200 ${
                 ativo
                   ? "border-primary/50 bg-primary/5 shadow-xs dark:bg-white/5 dark:border-white/30 ring-1 ring-primary/30 dark:ring-white/20"
