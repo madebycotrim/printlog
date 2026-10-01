@@ -26,6 +26,7 @@ export function ehUrlSegura(url: unknown): boolean {
 
   // Rejeita esquemas executáveis
   if (
+    // eslint-disable-next-line no-script-url
     limpa.startsWith("javascript:") ||
     limpa.startsWith("data:") ||
     limpa.startsWith("vbscript:") ||

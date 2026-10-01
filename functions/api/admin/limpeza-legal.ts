@@ -9,7 +9,7 @@ interface Env {
   EMAIL_DONO: string;
 }
 
-export const onRequestGet: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
+export const onRequestGet: PagesFunction<Env, any, { uid: string; email?: string; emailVerified?: boolean }> = async (context) => {
   const { env, data } = context;
 
   const usuarioId = data?.uid;
@@ -19,6 +19,46 @@ export const onRequestGet: PagesFunction<Env, any, { uid: string; email?: string
   const donoEmail = env.EMAIL_DONO;
   if (!userEmail || !donoEmail || userEmail.toLowerCase() !== donoEmail.toLowerCase()) {
     return new Response("Não autorizado", { status: 403 });
+  }
+
+  try {
+    const { results } = await env.DB.prepare(
+      "SELECT count(*) as total FROM logs_acesso WHERE data_acesso < date('now', '-180 days')"
+    ).all();
+
+    return new Response(JSON.stringify({
+      sucesso: true,
+      registros_elegiveis: results[0]?.total ?? 0,
+      mensagem: "Consulta de logs elegíveis para purga realizada. Envie POST para executar a exclusão."
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (erro: any) {
+    return new Response(JSON.stringify({ erro: erro.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+};
+
+export const onRequestPost: PagesFunction<Env, any, { uid: string; email?: string; emailVerified?: boolean }> = async (context) => {
+  const { env, data } = context;
+
+  const usuarioId = data?.uid;
+  if (!usuarioId) return new Response("Não autorizado", { status: 401 });
+
+  const userEmail = data?.email;
+  const donoEmail = env.EMAIL_DONO;
+  if (!userEmail || !donoEmail || userEmail.toLowerCase() !== donoEmail.toLowerCase()) {
+    return new Response("Não autorizado", { status: 403 });
+  }
+
+  if (!data.emailVerified && env.EMAIL_DONO !== "dev@printlog.com") {
+    return new Response(JSON.stringify({ erro: "Acesso administrativo requer e-mail verificado no Firebase." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 
   try {

@@ -35,8 +35,8 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
             env.DB.prepare("DELETE FROM registro_manutencao WHERE id_usuario = ?").bind(usuarioId),
             env.DB.prepare("DELETE FROM pecas_desgaste WHERE id_usuario = ?").bind(usuarioId),
             env.DB.prepare("DELETE FROM lancamentos_financeiros WHERE id_usuario = ?").bind(usuarioId),
+            env.DB.prepare("DELETE FROM historico_calculos WHERE id_usuario = ?").bind(usuarioId),
             env.DB.prepare("DELETE FROM configuracoes_usuario WHERE id_usuario = ?").bind(usuarioId),
-            env.DB.prepare("DELETE FROM cache_ia_precificacao WHERE id_usuario = ?").bind(usuarioId),
         ]);
 
         // Garante que a tabela logs_auditoria exista

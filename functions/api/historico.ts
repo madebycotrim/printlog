@@ -31,7 +31,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             ).bind(usuarioId).all();
 
             const historico = results.map((row: any) => ({
-                id: row.id,
+                id: row.id === `rascunho_${usuarioId}` ? "rascunho_ativo" : row.id,
                 nome: row.nome,
                 criadoEm: row.criadoEm,
                 dados: JSON.parse(row.dadosJson)
@@ -49,10 +49,26 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             const dadosJson = JSON.stringify(body.dados);
             const criadoEm = new Date().toISOString();
 
-            // INSERT OR REPLACE para permitir a sobreposição do rascunho_ativo
+            const isRascunho = id === "rascunho_ativo";
+            const idDb = isRascunho ? `rascunho_${usuarioId}` : id;
+
+            if (!isRascunho && body.id) {
+                const itemExistente = await env.DB.prepare(
+                    "SELECT id_usuario FROM historico_calculos WHERE id = ?"
+                ).bind(idDb).first<{ id_usuario: string }>();
+
+                if (itemExistente && itemExistente.id_usuario !== usuarioId) {
+                    return new Response(JSON.stringify({ erro: "Não autorizado a alterar este recurso" }), {
+                        status: 403,
+                        headers: { "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            // INSERT OR REPLACE para permitir a sobreposição do rascunho_ativo isolado por usuário
             await env.DB.prepare(
                 "INSERT OR REPLACE INTO historico_calculos (id, id_usuario, nome, dados_json, criado_em) VALUES (?, ?, ?, ?, ?)"
-            ).bind(id, usuarioId, nome, dadosJson, criadoEm).run();
+            ).bind(idDb, usuarioId, nome, dadosJson, criadoEm).run();
 
             return new Response(JSON.stringify({ sucesso: true, id }), {
                 headers: { "Content-Type": "application/json" }
@@ -65,9 +81,11 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
 
             if (!id) return new Response("ID não informado", { status: 400 });
 
+            const idDb = id === "rascunho_ativo" ? `rascunho_${usuarioId}` : id;
+
             await env.DB.prepare(
                 "DELETE FROM historico_calculos WHERE id = ? AND id_usuario = ?"
-            ).bind(id, usuarioId).run();
+            ).bind(idDb, usuarioId).run();
 
             return new Response(JSON.stringify({ sucesso: true }), {
                 headers: { "Content-Type": "application/json" }

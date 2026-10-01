@@ -44,6 +44,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         if (metodo === "POST") {
             const dados = await request.json() as any;
             const idParaUsar = dados.id || crypto.randomUUID();
+
+            if (dados.id) {
+                const itemExistente = await env.DB.prepare(
+                    "SELECT id_usuario FROM pecas_desgaste WHERE id = ?"
+                ).bind(dados.id).first<{ id_usuario: string }>();
+                if (itemExistente && itemExistente.id_usuario !== usuarioId) {
+                    return new Response(JSON.stringify({ erro: "Não autorizado a alterar este recurso" }), {
+                        status: 403,
+                        headers: { "Content-Type": "application/json" }
+                    });
+                }
+            }
             
             await env.DB.prepare(`
                 INSERT INTO pecas_desgaste (
@@ -55,6 +67,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     vida_util_minutos = excluded.vida_util_minutos,
                     horas_uso_atual_minutos = excluded.horas_uso_atual_minutos,
                     data_ultima_troca = excluded.data_ultima_troca
+                WHERE pecas_desgaste.id_usuario = excluded.id_usuario
             `).bind(
                 idParaUsar, usuarioId, dados.idImpressora, dados.nome, 
                 dados.vidaUtilMinutos || 0, dados.horasUsoAtualMinutos || 0,

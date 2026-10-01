@@ -169,12 +169,15 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                     const novoHorimetro = Math.max(0, (impressora.horimetro_total_minutos || 0) + tempoEfetivo);
                     
                     let custoEnergiaCentavos = 0;
-                    const potencia = extras.configuracoes?.potenciaWatts || impressora.potencia_watts || 0;
+                    const paramsCalc = extras.configuracoes?.snapshot?.parametros || extras.configuracoes || {};
+                    const potencia = paramsCalc.potenciaWatts || impressora.potencia_watts || 0;
                     if (potencia > 0) {
                         const consumoKw = potencia / 1000;
                         const horas = tempoEfetivo / 60;
-                        const precoKwh = extras.configuracoes?.precoKwh || 0;
-                        custoEnergiaCentavos = Math.round(consumoKw * horas * precoKwh);
+                        const precoKwhCentavos = paramsCalc.precoKwhCentavos !== undefined
+                            ? Number(paramsCalc.precoKwhCentavos)
+                            : (paramsCalc.precoKwh ? Math.round(Number(paramsCalc.precoKwh) * 100) : 0);
+                        custoEnergiaCentavos = Math.round(consumoKw * horas * precoKwhCentavos);
                     }
 
                     const novoCustoEnergia = (impressora.custo_energia_centavos || 0) + custoEnergiaCentavos;
@@ -235,6 +238,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                     }
                     historico.push({
                         id: crypto.randomUUID(),
+                        idPedido: idPedido,
                         data: new Date().toISOString(),
                         descricao: descDescripto,
                         valorCentavos: valorCentavos,
@@ -319,11 +323,15 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                                 ).bind(novoPeso, matId, usuarioId)
                             );
 
-                            // Deleta os registros de uso criados para este pedido
+                            // Deleta apenas o registro de uso mais recente correspondente a este pedido
                             batchQueries.push(
-                                env.DB.prepare(
-                                    "DELETE FROM historico_uso_materiais WHERE id_material = ? AND id_usuario = ? AND nome_peca = ?"
-                                ).bind(matId, usuarioId, descDescripto)
+                                env.DB.prepare(`
+                                    DELETE FROM historico_uso_materiais WHERE id IN (
+                                        SELECT id FROM historico_uso_materiais 
+                                        WHERE id_material = ? AND id_usuario = ? AND nome_peca = ?
+                                        ORDER BY data DESC LIMIT 1
+                                    )
+                                `).bind(matId, usuarioId, descDescripto)
                             );
                         }
                     }
@@ -352,11 +360,15 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                                 ).bind(novaQtd, insId, usuarioId)
                             );
 
-                            // Deleta as movimentações geradas na conclusão
+                            // Deleta apenas a movimentação mais recente gerada para esta conclusão
                             batchQueries.push(
-                                env.DB.prepare(
-                                    "DELETE FROM movimentacoes_insumo WHERE insumo_id = ? AND id_usuario = ? AND observacao = ?"
-                                ).bind(insId, usuarioId, `Conclusão do pedido: ${descDescripto}`)
+                                env.DB.prepare(`
+                                    DELETE FROM movimentacoes_insumo WHERE id IN (
+                                        SELECT id FROM movimentacoes_insumo 
+                                        WHERE insumo_id = ? AND id_usuario = ? AND observacao = ?
+                                        ORDER BY data DESC LIMIT 1
+                                    )
+                                `).bind(insId, usuarioId, `Conclusão do pedido: ${descDescripto}`)
                             );
                         }
                     }
@@ -373,12 +385,15 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                     const novoHorimetro = Math.max(0, (impressora.horimetro_total_minutos || 0) - tempoEfetivo);
                     
                     let custoEnergiaCentavos = 0;
-                    const potencia = extras.configuracoes?.potenciaWatts || impressora.potencia_watts || 0;
+                    const paramsCalc = extras.configuracoes?.snapshot?.parametros || extras.configuracoes || {};
+                    const potencia = paramsCalc.potenciaWatts || impressora.potencia_watts || 0;
                     if (potencia > 0) {
                         const consumoKw = potencia / 1000;
                         const horas = tempoEfetivo / 60;
-                        const precoKwh = extras.configuracoes?.precoKwh || 0;
-                        custoEnergiaCentavos = Math.round(consumoKw * horas * precoKwh);
+                        const precoKwhCentavos = paramsCalc.precoKwhCentavos !== undefined
+                            ? Number(paramsCalc.precoKwhCentavos)
+                            : (paramsCalc.precoKwh ? Math.round(Number(paramsCalc.precoKwh) * 100) : 0);
+                        custoEnergiaCentavos = Math.round(consumoKw * horas * precoKwhCentavos);
                     }
 
                     const novoCustoEnergia = Math.max(0, (impressora.custo_energia_centavos || 0) - custoEnergiaCentavos);
@@ -429,7 +444,12 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                             historico = typeof cliente.historico === 'string' ? JSON.parse(cliente.historico) : cliente.historico;
                         } catch(e) { console.warn("Erro ao fazer parse do historico do cliente para reversão:", e); }
                     }
-                    historico = historico.filter((h: any) => h.descricao !== descDescripto);
+                    const idxReversao = historico.findIndex(
+                        (h: any) => (h.idPedido && h.idPedido === idPedido) || h.descricao === descDescripto
+                    );
+                    if (idxReversao !== -1) {
+                        historico.splice(idxReversao, 1);
+                    }
 
                     batchQueries.push(
                         env.DB.prepare(`

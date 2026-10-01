@@ -196,12 +196,15 @@ class ServicoPedidos {
         const novoHorimetro = Math.max(0, (imp.horimetroTotalMinutos || 0) + tempoEfetivo);
         
         let custoPedidoCentavos = 0;
-        const potencia = pedido.configuracoes?.potenciaWatts || imp.potenciaWatts || 0;
+        const paramsCalc = (pedido.configuracoes as any)?.snapshot?.parametros || pedido.configuracoes || {};
+        const potencia = paramsCalc.potenciaWatts || imp.potenciaWatts || 0;
         if (potencia > 0) {
           const consumoKw = potencia / 1000;
           const horas = tempoEfetivo / 60;
-          const precoKwh = pedido.configuracoes?.precoKwh || 0;
-          custoPedidoCentavos = Math.round(consumoKw * horas * precoKwh);
+          const precoKwhCentavos = paramsCalc.precoKwhCentavos !== undefined
+            ? Number(paramsCalc.precoKwhCentavos)
+            : (paramsCalc.precoKwh ? Math.round(Number(paramsCalc.precoKwh) * 100) : 0);
+          custoPedidoCentavos = Math.round(consumoKw * horas * precoKwhCentavos);
         }
 
         const novoCustoEnergia = (imp.custoEnergiaCentavos || 0) + custoPedidoCentavos;
@@ -346,12 +349,15 @@ class ServicoPedidos {
         const novoHorimetro = Math.max(0, (imp.horimetroTotalMinutos || 0) - tempoEfetivo);
         
         let custoPedidoCentavos = 0;
-        const potencia = pedido.configuracoes?.potenciaWatts || imp.potenciaWatts || 0;
+        const paramsCalc = (pedido.configuracoes as any)?.snapshot?.parametros || pedido.configuracoes || {};
+        const potencia = paramsCalc.potenciaWatts || imp.potenciaWatts || 0;
         if (potencia > 0) {
           const consumoKw = potencia / 1000;
           const horas = tempoEfetivo / 60;
-          const precoKwh = pedido.configuracoes?.precoKwh || 0;
-          custoPedidoCentavos = Math.round(consumoKw * horas * precoKwh);
+          const precoKwhCentavos = paramsCalc.precoKwhCentavos !== undefined
+            ? Number(paramsCalc.precoKwhCentavos)
+            : (paramsCalc.precoKwh ? Math.round(Number(paramsCalc.precoKwh) * 100) : 0);
+          custoPedidoCentavos = Math.round(consumoKw * horas * precoKwhCentavos);
         }
 
         const novoCustoEnergia = Math.max(0, (imp.custoEnergiaCentavos || 0) - custoPedidoCentavos);

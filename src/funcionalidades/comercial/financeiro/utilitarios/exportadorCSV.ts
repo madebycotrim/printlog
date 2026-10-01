@@ -1,6 +1,7 @@
 import { LancamentoFinanceiro } from "../tipos";
 import { format, parseISO } from "date-fns";
 import { TipoLancamentoFinanceiro } from "@/compartilhado/tipos/modelos";
+import { sanitizarCampoCSV } from "@/compartilhado/utilitarios/sanitizacaoCsv";
 
 /**
  * Utilitário para exportar lançamentos financeiros em formato CSV compatível com Excel / Google Sheets.
@@ -14,11 +15,17 @@ export function exportarLancamentosCSV(lancamentos: LancamentoFinanceiro[]) {
     const dataObj = typeof l.dataCriacao === 'string' ? parseISO(l.dataCriacao) : new Date(l.dataCriacao);
     const dataFormatada = format(dataObj, "dd/MM/yyyy HH:mm");
     const tipo = l.tipo === TipoLancamentoFinanceiro.ENTRADA ? "Receita" : "Despesa";
-    const categoria = (l.categoria || "Geral").replace(/"/g, '""');
-    const descricao = (l.descricao || "").replace(/"/g, '""');
+    const categoria = l.categoria || "Geral";
+    const descricao = l.descricao || "";
     const valorReais = (l.valorCentavos / 100).toFixed(2).replace('.', ',');
 
-    return `"${dataFormatada}","${tipo}","${categoria}","${descricao}","${valorReais}"`;
+    return [
+      sanitizarCampoCSV(dataFormatada),
+      sanitizarCampoCSV(tipo),
+      sanitizarCampoCSV(categoria),
+      sanitizarCampoCSV(descricao),
+      sanitizarCampoCSV(valorReais),
+    ].join(",");
   });
 
   const conteudoCSV = "\uFEFF" + [cabecalhos.join(","), ...linhas].join("\n");

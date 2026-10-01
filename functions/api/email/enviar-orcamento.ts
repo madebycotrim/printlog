@@ -1,6 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 import { aplicarHeadersCors } from "../utilitarios/cors";
 import { escaparHtml, ehUrlSegura } from "../utilitarios/sanitizacao";
+import { verificarRateLimit } from "../utilitarios/rate-limit";
 
 interface Env {
   RESEND_API_KEY: string;
@@ -22,23 +23,73 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
     });
   }
 
+  // Prevenção de Abuso e Esgotamento de Cota Resend
+  const ip = request.headers.get("cf-connecting-ip") || usuarioId;
+  const limitCheck = verificarRateLimit(`${usuarioId}:${ip}`, "email-orcamento", 15, 60_000);
+  if (!limitCheck.permitido) {
+    headers.set("Content-Type", "application/json");
+    headers.set("Retry-After", String(limitCheck.segundosParaReset));
+    return new Response(
+      JSON.stringify({ error: "Limite de envios de e-mail atingido. Aguarde alguns instantes." }),
+      { status: 429, headers }
+    );
+  }
+
   try {
     const corpo = await request.json() as any;
     const { emailDestino, linkMagico } = corpo;
-    const nomeCliente = escaparHtml(corpo.nomeCliente);
-    const nomeEstudio = escaparHtml(corpo.nomeEstudio);
-    const nomeProjeto = escaparHtml(corpo.nomeProjeto);
-    const valorTotal = escaparHtml(corpo.valorTotal);
 
-    if (!emailDestino || !linkMagico || !nomeEstudio) {
+    // Sanitização estrita contra CRLF injection em headers/From/Subject
+    const nomeCliente = escaparHtml(corpo.nomeCliente ? String(corpo.nomeCliente).replace(/[\r\n]+/g, " ").trim() : "");
+    const nomeEstudioRaw = (corpo.nomeEstudio ? String(corpo.nomeEstudio).replace(/[\r\n]+/g, " ").trim() : "");
+    const nomeEstudio = escaparHtml(nomeEstudioRaw);
+    const nomeEstudioFrom = nomeEstudioRaw.replace(/[<>"'\\]/g, ""); // Seguro para o header From
+    const nomeProjeto = escaparHtml(corpo.nomeProjeto ? String(corpo.nomeProjeto).replace(/[\r\n]+/g, " ").trim() : "");
+    const valorTotal = escaparHtml(corpo.valorTotal ? String(corpo.valorTotal).replace(/[\r\n]+/g, " ").trim() : "");
+
+    if (!emailDestino || !linkMagico || !nomeEstudioRaw) {
       return new Response(JSON.stringify({ error: "Faltam campos obrigatórios." }), {
         status: 400,
         headers,
       });
     }
 
-    if (!ehUrlSegura(linkMagico)) {
-      return new Response(JSON.stringify({ error: "Link de orçamento inválido ou inseguro." }), {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (typeof emailDestino !== "string" || !emailRegex.test(emailDestino.trim())) {
+      return new Response(JSON.stringify({ error: "E-mail de destino inválido." }), {
+        status: 400,
+        headers,
+      });
+    }
+
+    // Valida que o link mágico aponte estritamente para rotas de orçamento do PrintLog
+    const validarLinkOrcamento = (link: string, reqUrl: string): boolean => {
+      if (typeof link !== "string" || !link.trim() || !ehUrlSegura(link)) return false;
+      const limpa = link.trim();
+      if (limpa.startsWith("/o/") || limpa.startsWith("/orcamento/")) return true;
+
+      try {
+        const urlObj = new URL(limpa);
+        const reqObj = new URL(reqUrl);
+        if (urlObj.protocol !== "https:" && urlObj.protocol !== "http:") return false;
+        if (!urlObj.pathname.startsWith("/o/") && !urlObj.pathname.startsWith("/orcamento")) return false;
+
+        const host = urlObj.hostname.toLowerCase();
+        const allowedHosts = [
+          reqObj.hostname.toLowerCase(),
+          "printlog.com.br",
+          "www.printlog.com.br",
+          "localhost",
+          "127.0.0.1",
+        ];
+        return allowedHosts.includes(host) || host.endsWith(".pages.dev");
+      } catch {
+        return false;
+      }
+    };
+
+    if (!validarLinkOrcamento(linkMagico, request.url)) {
+      return new Response(JSON.stringify({ error: "Link de orçamento inválido ou não autorizado." }), {
         status: 400,
         headers,
       });
@@ -46,7 +97,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
 
     const resendApiKey = env.RESEND_API_KEY;
 
-    const subject = `Seu orçamento de impressão 3D está pronto - ${nomeEstudio}`;
+    const subject = `Seu orçamento de impressão 3D está pronto - ${nomeEstudioFrom || "PrintLog"}`;
     const htmlBody = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <h2 style="color: #0ea5e9;">Olá${nomeCliente ? ", " + nomeCliente : ""}!</h2>
@@ -80,10 +131,8 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // IMPORTANTE: O "from" deve ser um domínio verificado no Resend.
-        // Enquanto o domínio não estiver verificado, o Resend usa "onboarding@resend.dev" para testes.
-        from: `${nomeEstudio} via PrintLog <onboarding@resend.dev>`,
-        to: emailDestino,
+        from: `${nomeEstudioFrom || "Ateliê"} via PrintLog <onboarding@resend.dev>`,
+        to: emailDestino.trim(),
         subject: subject,
         html: htmlBody,
       }),
@@ -107,7 +156,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
       headers,
     });
   }
-}
+};
 
 export const onRequestOptions: PagesFunction = async (context) => {
   const headers = aplicarHeadersCors(new Headers(), context.request, "POST, OPTIONS");

@@ -1,3 +1,4 @@
+import { verificarRateLimit } from "./utilitarios/rate-limit";
 /// <reference types="@cloudflare/workers-types" />
 
 /**
@@ -51,6 +52,15 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
 
     if (request.method !== "POST") return new Response("Método não permitido", { status: 405 });
 
+    const ip = request.headers.get("cf-connecting-ip") || "127.0.0.1";
+    const limitCheck = verificarRateLimit(ip, `ia-preco:${usuarioId}`, 20, 60_000);
+    if (!limitCheck.permitido) {
+        return new Response(JSON.stringify({ erro: "Muitas requisições de IA em sequência. Aguarde alguns instantes." }), {
+            status: 429,
+            headers: { "Content-Type": "application/json", "Retry-After": String(limitCheck.segundosParaReset) }
+        });
+    }
+
     try {
         const dados = await request.json() as DadosPrecificacao;
         
@@ -61,8 +71,8 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         const tempoH = Math.round(((dados.tempoMinutos || 0) / 60) * 10) / 10;
 
         // 1. GERAÇÃO DA CHAVE DE CACHE (Baseada em custos, tempo e materiais)
-        const hashInputs = `${Math.round(custoTotal * 10)}_${dados.lucroDesejadoPercentual}_${Math.round(dados.tempoMinutos || 0)}_${qtd}_${dados.tipoCliente || 'B2C'}`;
-        const cacheKey = `v3_${hashInputs}`;
+        const hashInputs = `${Math.round(custoTotal * 10)}_${dados.lucroDesejadoPercentual}_${Math.round(dados.tempoMinutos || 0)}_${qtd}_${dados.tipoCliente || "B2C"}_${encodeURIComponent((dados.nomePeca || "").trim().toLowerCase())}`;
+        const cacheKey = `v3_${usuarioId}_${hashInputs}`;
 
         // 2. TENTA BUSCAR NO CACHE DO D1 (Economia de Neurons)
         try {

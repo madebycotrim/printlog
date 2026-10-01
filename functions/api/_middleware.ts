@@ -117,6 +117,7 @@ async function verifyFirebaseToken(
   return {
     uid: payload.sub,
     email: payload.email,
+    emailVerified: Boolean(payload.email_verified),
   };
 }
 
@@ -124,13 +125,14 @@ async function verifyFirebaseToken(
  * Middleware Global - Autenticação, Privacidade e Conformidade
  * Versão Corrigida: Evita erros 500 ao tratar o ciclo de vida da Resposta.
  */
-export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid: string; email?: string; emailVerified?: boolean }> = async (context) => {
     const { request, env, next } = context;
     const url = new URL(request.url);
 
     // Inicializa dados para evitar undefined em cascata
     context.data.uid = "";
     context.data.email = "";
+    context.data.emailVerified = false;
 
     // 0. Bloqueio de Sobrecarga de Payload (Mitigação de DoS e exaustão de Isolate - Máx 2MB)
     const tamanhoCorpo = request.headers.get("content-length");
@@ -157,6 +159,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 const verified = await verifyFirebaseToken(token, projectId);
                 context.data.uid = verified.uid;
                 context.data.email = verified.email || "";
+                context.data.emailVerified = verified.emailVerified;
                 authenticated = true;
             } catch (e: any) {
                 console.warn("[Middleware] Falha ao verificar JWT:", e.message);

@@ -99,6 +99,17 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
         const dados = await request.json() as any;
         const id = dados.id || crypto.randomUUID();
 
+        // Blindagem IDOR: Se o ID foi informado pelo cliente, valida que pertence ao usuário
+        if (dados.id) {
+            const existente = await env.DB.prepare("SELECT id_usuario FROM materiais WHERE id = ?").bind(dados.id).first() as any;
+            if (existente && existente.id_usuario !== usuarioId) {
+                return new Response(JSON.stringify({ erro: "Acesso negado: o material informado pertence a outro usuário." }), { 
+                    status: 403, 
+                    headers: { "Content-Type": "application/json" } 
+                });
+            }
+        }
+
         await env.DB.prepare(`
             INSERT INTO materiais (
                 id, id_usuario, tipo, nome, tipo_material, fabricante,
@@ -116,6 +127,7 @@ export const onRequestPost: PagesFunction<Env, any, { uid: string }> = async (co
                 estoque_unidades = excluded.estoque_unidades,
                 peso_restante_gramas = excluded.peso_restante_gramas,
                 arquivado = excluded.arquivado
+            WHERE materiais.id_usuario = excluded.id_usuario
         `).bind(
             id, 
             usuarioId, 

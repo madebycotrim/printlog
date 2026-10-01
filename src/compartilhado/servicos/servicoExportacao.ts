@@ -5,6 +5,7 @@
  */
 
 import { registrar } from "@/compartilhado/utilitarios/registrador";
+import { sanitizarCampoCSV } from "@/compartilhado/utilitarios/sanitizacaoCsv";
 
 export const servicoExportacao = {
   /**
@@ -16,10 +17,7 @@ export const servicoExportacao = {
       const cabecalho = colunas.map((c) => c.rotulo).join(";");
       const linhas = dados.map((item) =>
         colunas
-          .map((c) => {
-            const valor = item[c.chave];
-            return typeof valor === "string" ? `"${valor}"` : valor;
-          })
+          .map((c) => sanitizarCampoCSV(item[c.chave]))
           .join(";"),
       );
 

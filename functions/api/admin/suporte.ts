@@ -12,7 +12,7 @@ const SchemaResponderChamado = z.object({
   novoStatus: z.enum(["aberto", "em_analise", "respondido", "resolvido", "fechado"]),
 });
 
-export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid: string; email?: string; emailVerified?: boolean }> = async (context) => {
   const { env, request, data } = context;
 
   // Verificação de Identidade Admin
@@ -30,6 +30,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
     return new Response(JSON.stringify({ erro: "Acesso restrito ao administrador" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (!data.emailVerified && env.EMAIL_DONO !== "dev@printlog.com") {
+    return new Response(JSON.stringify({ erro: "Acesso administrativo requer e-mail verificado no Firebase." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
     });
   }
 

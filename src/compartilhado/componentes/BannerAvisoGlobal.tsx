@@ -114,6 +114,7 @@ export function BannerAvisoGlobal() {
     const urlLimpa = aviso.linkUrl.trim();
     // Bloqueia protocolos executáveis ou esquemas perigosos
     if (
+      // eslint-disable-next-line no-script-url
       urlLimpa.toLowerCase().startsWith("javascript:") ||
       urlLimpa.toLowerCase().startsWith("data:") ||
       urlLimpa.toLowerCase().startsWith("vbscript:") ||

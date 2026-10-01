@@ -79,14 +79,14 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
             }), { headers: { "Content-Type": "application/json" } });
         }
 
-        // PUT — Upsert das configurações (cria ou atualiza)
-        // O plano pode ser atualizado para 'FUNDADOR' através de promoções.
+        // PUT — Upsert das configurações (cria ou atualiza preferências operacionais)
+        // O plano NÃO pode ser alterado por esta rota; alterações de plano são restritas ao admin ou checkout.
         if (metodo === "PUT") {
             const dados = await request.json() as any;
 
             await env.DB.prepare(`
                 INSERT INTO configuracoes_usuario (id_usuario, email, custo_energia, hora_maquina, hora_operador, margem_lucro, nome_estudio, slogan_estudio, logo_estudio, plano, ciclo_pagamento, atualizado_em, calculadora_meta)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'FREE', 'MENSAL', ?, ?)
                 ON CONFLICT(id_usuario) DO UPDATE SET
                     email          = excluded.email,
                     custo_energia  = excluded.custo_energia,
@@ -96,21 +96,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                     nome_estudio   = excluded.nome_estudio,
                     slogan_estudio = excluded.slogan_estudio,
                     logo_estudio   = excluded.logo_estudio,
-                    plano          = excluded.plano,
                     calculadora_meta = excluded.calculadora_meta,
                     atualizado_em  = excluded.atualizado_em
             `).bind(
                 usuarioId,
                 emailUsuario,
-                dados.custoEnergia,
-                dados.horaMaquina,
-                dados.horaOperador,
-                dados.margemLucro,
-                dados.nomeEstudio || "",
-                dados.sloganEstudio || "",
-                dados.logoEstudio || "",
-                dados.plano || "FREE",
-                "MENSAL",
+                dados.custoEnergia || "R$ 0,00",
+                dados.horaMaquina || "R$ 0,00",
+                dados.horaOperador || "R$ 0,00",
+                dados.margemLucro || "0,00%",
+                String(dados.nomeEstudio || "").slice(0, 100),
+                String(dados.sloganEstudio || "").slice(0, 150),
+                String(dados.logoEstudio || "").slice(0, 2048),
                 new Date().toISOString(),
                 dados.calculadoraMeta ? JSON.stringify(dados.calculadoraMeta) : null
             ).run();

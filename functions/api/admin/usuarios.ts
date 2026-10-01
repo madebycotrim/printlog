@@ -21,7 +21,7 @@ const calcularVencimento = (ciclo: string, dataBase: Date = new Date()) => {
     return data.toISOString();
 };
 
-export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid: string; email?: string; emailVerified?: boolean }> = async (context) => {
     const { env, data, request } = context;
 
     // 1. Verificação de Identidade (Middleware JWT já validou que o usuário existe no Firebase)
@@ -32,6 +32,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
     const donoEmail = (env.EMAIL_DONO || "").trim().toLowerCase();
     if (!userEmail || !donoEmail || userEmail !== donoEmail) {
         return new Response("Não autorizado", { status: 403 });
+    }
+
+    if (!data.emailVerified && env.EMAIL_DONO !== "dev@printlog.com") {
+        return new Response(JSON.stringify({ erro: "Acesso administrativo requer e-mail verificado no Firebase." }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" }
+        });
     }
 
     const metodo = request.method;
@@ -214,7 +221,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
                 env.DB.prepare("DELETE FROM registro_manutencao WHERE id_usuario = ?").bind(idUsuario),
                 env.DB.prepare("DELETE FROM pecas_desgaste WHERE id_usuario = ?").bind(idUsuario),
                 env.DB.prepare("DELETE FROM lancamentos_financeiros WHERE id_usuario = ?").bind(idUsuario),
-                env.DB.prepare("DELETE FROM cache_ia_precificacao WHERE id_usuario = ?").bind(idUsuario),
+                env.DB.prepare("DELETE FROM historico_calculos WHERE id_usuario = ?").bind(idUsuario),
                 env.DB.prepare("DELETE FROM configuracoes_usuario WHERE id_usuario = ?").bind(idUsuario),
             ]).catch(async () => {
                 // Fallback caso alguma tabela opcional ainda não exista no D1

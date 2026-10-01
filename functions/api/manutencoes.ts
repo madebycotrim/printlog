@@ -84,6 +84,18 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
         if (metodo === "POST") {
             const dados = await request.json() as any;
             const novoId = dados.id || crypto.randomUUID();
+
+            if (dados.id) {
+                const itemExistente = await env.DB.prepare(
+                    "SELECT id_usuario FROM registro_manutencao WHERE id = ?"
+                ).bind(dados.id).first<{ id_usuario: string }>();
+                if (itemExistente && itemExistente.id_usuario !== usuarioId) {
+                    return new Response(JSON.stringify({ erro: "Não autorizado a alterar este recurso" }), {
+                        status: 403,
+                        headers: { "Content-Type": "application/json" }
+                    });
+                }
+            }
             
             // Garantimos que todos os campos do tipo RegistroManutencao sejam persistidos
             await env.DB.prepare(`
@@ -102,6 +114,7 @@ export const onRequest: PagesFunction<Env, any, { uid: string }> = async (contex
                     pecas_trocadas = excluded.pecas_trocadas,
                     responsavel = excluded.responsavel,
                     horas_maquina_atualmente = excluded.horas_maquina_atualmente
+                WHERE registro_manutencao.id_usuario = excluded.id_usuario
             `).bind(
                 novoId, 
                 usuarioId, 

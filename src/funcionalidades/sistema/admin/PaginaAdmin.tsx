@@ -28,6 +28,7 @@ import {
 import { useDefinirCabecalho } from "@/compartilhado/contextos/ContextoCabecalho";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
 import { ehAdmin, EMAIL_DONO } from "@/compartilhado/constantes/admin";
+import { sanitizarCampoCSV } from "@/compartilhado/utilitarios/sanitizacaoCsv";
 import { PlanoUsuario } from "@/compartilhado/tipos/modelos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
 import { toast } from "sonner";
@@ -275,7 +276,7 @@ export function PaginaAdmin() {
 
     setExecutandoLimpeza(true);
     try {
-      const res = await servicoBaseApi.get<{ sucesso: boolean; detalhes?: { registros_removidos?: number } }>(
+      const res = await servicoBaseApi.post<{ sucesso: boolean; detalhes?: { registros_removidos?: number } }>(
         "/api/admin/limpeza-legal"
       );
       const removidos = res?.detalhes?.registros_removidos ?? 0;
@@ -297,13 +298,13 @@ export function PaginaAdmin() {
     const linhas = usuarios.map((u) => {
       const emailFinal = modoPrivacidade && u.email ? mascararEmailAdmin(u.email) : (u.email || "");
       return [
-        `"${emailFinal}"`,
-        `"${u.id_usuario}"`,
-        `"${(u.nome_estudio || "").replace(/"/g, '""')}"`,
-        `"${u.plano}"`,
-        `"${u.ciclo_pagamento || ""}"`,
-        `"${u.vencimento_plano || ""}"`,
-        `"${u.atualizado_em || ""}"`
+        sanitizarCampoCSV(emailFinal),
+        sanitizarCampoCSV(u.id_usuario),
+        sanitizarCampoCSV(u.nome_estudio || ""),
+        sanitizarCampoCSV(u.plano),
+        sanitizarCampoCSV(u.ciclo_pagamento || ""),
+        sanitizarCampoCSV(u.vencimento_plano || ""),
+        sanitizarCampoCSV(u.atualizado_em || "")
       ];
     });
 

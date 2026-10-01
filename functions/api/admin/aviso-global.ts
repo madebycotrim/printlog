@@ -14,7 +14,7 @@ interface DadosAviso {
   ativo: boolean;
 }
 
-export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }> = async (context) => {
+export const onRequest: PagesFunction<Env, any, { uid: string; email?: string; emailVerified?: boolean }> = async (context) => {
   const { env, data, request } = context;
 
   // 1. Verificação de Identidade (Middleware JWT já validou que o usuário existe no Firebase)
@@ -25,6 +25,13 @@ export const onRequest: PagesFunction<Env, any, { uid: string; email?: string }>
   const donoEmail = (env.EMAIL_DONO || "").trim().toLowerCase();
   if (!userEmail || !donoEmail || userEmail !== donoEmail) {
     return new Response("Não autorizado", { status: 403 });
+  }
+
+  if (!data.emailVerified && env.EMAIL_DONO !== "dev@printlog.com") {
+    return new Response(JSON.stringify({ erro: "Acesso administrativo requer e-mail verificado no Firebase." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 
   const metodo = request.method;

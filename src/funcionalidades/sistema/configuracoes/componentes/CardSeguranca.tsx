@@ -15,6 +15,7 @@ import {
   Clock,
   Loader2
 } from "lucide-react";
+import QRCode from "qrcode";
 import { CabecalhoCard } from "./Compartilhados";
 import { Dialogo } from "@/compartilhado/componentes";
 import { useAutenticacao } from "@/funcionalidades/autenticacao/contextos/ContextoAutenticacao";
@@ -353,9 +354,31 @@ export function CardSeguranca() {
     }, 600);
   };
 
-  // URL otpauth para gerar QR Code
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+
+  // URL otpauth para gerar QR Code com privacidade local
   const otpAuthUrl = qrCodeOtpAuthUri || `otpauth://totp/PrintLog:${encodeURIComponent(usuario?.email || 'maker')}?secret=${segredoBase32}&issuer=PrintLog`;
-  const qrCodeImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(otpAuthUrl)}&margin=10`;
+
+  useEffect(() => {
+    let ativo = true;
+    if (otpAuthUrl) {
+      QRCode.toDataURL(otpAuthUrl, {
+        width: 180,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#ffffff",
+        },
+      })
+        .then((url) => {
+          if (ativo) setQrCodeDataUrl(url);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      ativo = false;
+    };
+  }, [otpAuthUrl]);
 
 
 
@@ -608,11 +631,17 @@ export function CardSeguranca() {
 
               <div className="flex justify-center">
                 <div className="p-3 bg-white rounded-2xl border border-borda-sutil shadow-md inline-block">
-                  <img
-                    src={qrCodeImgUrl}
-                    alt="QR Code TOTP"
-                    className="w-44 h-44 object-contain rounded-lg"
-                  />
+                  {qrCodeDataUrl ? (
+                    <img
+                      src={qrCodeDataUrl}
+                      alt="QR Code TOTP"
+                      className="w-44 h-44 object-contain rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-44 h-44 flex items-center justify-center">
+                      <Loader2 size={24} className="animate-spin text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
               </div>
 

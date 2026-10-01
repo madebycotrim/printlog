@@ -96,8 +96,11 @@ export const servicoFinanceiroAvancado = {
         ) || 0;
 
         if (tempoEfetivo > 0) {
-          let potenciaWatts = p.configuracoes?.potenciaWatts || 0;
-          let precoKwh = p.configuracoes?.precoKwh || configCustoEnergia;
+          const paramsCalc = (p.configuracoes as any)?.snapshot?.parametros || p.configuracoes || {};
+          let potenciaWatts = paramsCalc.potenciaWatts || 0;
+          let precoKwhCentavos = paramsCalc.precoKwhCentavos !== undefined
+            ? Number(paramsCalc.precoKwhCentavos)
+            : (paramsCalc.precoKwh ? Math.round(Number(paramsCalc.precoKwh) * 100) : configCustoEnergia);
           let valorCompraCentavos = 0;
 
           if (p.idImpressora) {
@@ -112,7 +115,7 @@ export const servicoFinanceiroAvancado = {
 
           const kw = potenciaWatts / 1000;
           const horas = tempoEfetivo / 60;
-          custoEnergiaCentavos += horas * kw * precoKwh;
+          custoEnergiaCentavos += horas * kw * precoKwhCentavos;
 
           if (valorCompraCentavos > 0) {
             depreciacaoCentavos += (tempoEfetivo / 300000) * valorCompraCentavos;

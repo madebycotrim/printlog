@@ -17,6 +17,7 @@
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
+    "@types/qrcode": "^1.5.5",
     "date-fns": "^4.1.0",
     "firebase": "^12.9.0",
     "framer-motion": "^12.34.0",
@@ -25,6 +26,7 @@
     "i18next-browser-languagedetector": "^8.2.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.563.0",
+    "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.2",
@@ -39,10 +41,10 @@
   },
   "overrides": {
     "websocket-driver": "0.7.5",
-    "@grpc/grpc-js": "1.9.16",
+    "@grpc/grpc-js": "^1.14.5",
     "react-router": "8.3.0",
     "protobufjs": "7.6.5",
-    "dompurify": "3.4.12"
+    "dompurify": "3.4.16"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260417.1",

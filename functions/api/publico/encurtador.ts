@@ -1,4 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
+import { verificarRateLimit } from "../utilitarios/rate-limit";
 
 interface Env {
   DB: D1Database;
@@ -8,13 +9,28 @@ export const onRequest: PagesFunction<Env, any, { uid?: string }> = async (conte
   const { env, request } = context;
   const metodo = request.method;
   const url = new URL(request.url);
+  const ip = request.headers.get("cf-connecting-ip") || "127.0.0.1";
 
   // === GET: Busca a URL original pelo ID encurtado ===
   if (metodo === "GET") {
-    const id = url.searchParams.get("id");
-    if (!id) {
+    const limitCheck = verificarRateLimit(ip, "publico-encurtador-get", 60, 60_000);
+    if (!limitCheck.permitido) {
       return new Response(
-        JSON.stringify({ erro: "ID não fornecido" }),
+        JSON.stringify({ erro: "Muitas requisições. Aguarde um momento." }),
+        { 
+          status: 429, 
+          headers: { 
+            "Content-Type": "application/json",
+            "Retry-After": String(limitCheck.segundosParaReset)
+          } 
+        }
+      );
+    }
+
+    const id = url.searchParams.get("id");
+    if (!id || typeof id !== "string" || id.length > 32) {
+      return new Response(
+        JSON.stringify({ erro: "ID não fornecido ou inválido" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -22,7 +38,7 @@ export const onRequest: PagesFunction<Env, any, { uid?: string }> = async (conte
     try {
       const registro = await env.DB.prepare(
         "SELECT url_original FROM links_encurtados WHERE id = ?"
-      ).bind(id).first() as any;
+      ).bind(id.trim()).first() as any;
 
       if (!registro) {
         return new Response(
@@ -55,10 +71,24 @@ export const onRequest: PagesFunction<Env, any, { uid?: string }> = async (conte
       );
     }
 
+    const limitCheck = verificarRateLimit(`${usuarioId}:${ip}`, "publico-encurtador-post", 20, 60_000);
+    if (!limitCheck.permitido) {
+      return new Response(
+        JSON.stringify({ erro: "Limite de criação de links atingido. Aguarde alguns instantes." }),
+        { 
+          status: 429, 
+          headers: { 
+            "Content-Type": "application/json",
+            "Retry-After": String(limitCheck.segundosParaReset)
+          } 
+        }
+      );
+    }
+
     try {
       const { url: urlOriginal } = await request.json() as { url: string };
 
-      if (!urlOriginal) {
+      if (!urlOriginal || typeof urlOriginal !== "string") {
         return new Response(
           JSON.stringify({ erro: "URL original não fornecida" }),
           { status: 400, headers: { "Content-Type": "application/json" } }
@@ -90,7 +120,7 @@ export const onRequest: PagesFunction<Env, any, { uid?: string }> = async (conte
 
       while (existe && tentativas < 10) {
         crypto.getRandomValues(bufferAleatorio);
-        id = Array.from(bufferAleatorio, (byte) => caracteres[byte % caracteres.length]).join(""); // 6 caracteres alfanuméricos
+        id = Array.from(bufferAleatorio, (byte) => caracteres[byte % caracteres.length]).join("");
         const registro = await env.DB.prepare(
           "SELECT id FROM links_encurtados WHERE id = ?"
         ).bind(id).first();

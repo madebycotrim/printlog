@@ -157,25 +157,26 @@ export function PaginaOrcamentoPublico() {
     (maoDeObraCusto * pesosDistribuicao.maodeobra) +
     (custoInsumosTotal * pesosDistribuicao.insumo);
 
-  const obterFatorExtra = (custo: number, peso: number) => {
-    if (margemLucroLiquido <= 0 || baseFatorCalculo <= 0) {
-      const divisor = somaCustosOperacionais || 1;
-      const fatorFallback = precoEmCentavos / divisor;
-      return custo * fatorFallback - custo;
-    }
-    return margemLucroLiquido * ((custo * peso) / baseFatorCalculo);
-  };
-
-  const calcularPrecoFinalItem = (custo: number, peso: number) => {
-    const valorSoma = custo + obterFatorExtra(custo, peso);
-    return Math.max(0, valorSoma);
-  };
 
   const formatarPrecoCentavos = (centavos: number) => {
     return (centavos / 100).toFixed(2).replace('.', ',');
   };
 
-  const itensProposta = useMemo(() => {
+  const itensProposta = (() => {
+    const obterFatorExtra = (custo: number, peso: number) => {
+      if (margemLucroLiquido <= 0 || baseFatorCalculo <= 0) {
+        const divisor = somaCustosOperacionais || 1;
+        const fatorFallback = precoEmCentavos / divisor;
+        return custo * fatorFallback - custo;
+      }
+      return margemLucroLiquido * ((custo * peso) / baseFatorCalculo);
+    };
+
+    const calcularPrecoFinalItem = (custo: number, peso: number) => {
+      const valorSoma = custo + obterFatorExtra(custo, peso);
+      return Math.max(0, valorSoma);
+    };
+
     const lista = [];
     
     // Item 1
@@ -253,7 +254,7 @@ export function PaginaOrcamentoPublico() {
     }
 
     return lista;
-  }, [maoDeObraCusto, maquinaCusto, custoMateriaisTotal, custoInsumosTotal, tempoMinutos, materiais, insumos]);
+  })();
 
   if (!dados) {
     return (
