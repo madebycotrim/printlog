@@ -132,21 +132,21 @@ export const servicoBaseApi = {
     return this.requisicao<T>(caminho, { method: "GET" });
   },
 
-  post<T>(caminho: string, dados: unknown): Promise<T> {
+  post<T>(caminho: string, dados: unknown = {}): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "POST",
       body: JSON.stringify(this.limparUndefined(dados)),
     });
   },
 
-  put<T>(caminho: string, dados: unknown): Promise<T> {
+  put<T>(caminho: string, dados: unknown = {}): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "PUT",
       body: JSON.stringify(this.limparUndefined(dados)),
     });
   },
 
-  patch<T>(caminho: string, dados: unknown): Promise<T> {
+  patch<T>(caminho: string, dados: unknown = {}): Promise<T> {
     return this.requisicao<T>(caminho, {
       method: "PATCH",
       body: JSON.stringify(this.limparUndefined(dados)),

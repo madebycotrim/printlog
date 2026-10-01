@@ -45,7 +45,7 @@ export function AbaCustosProjeto({ pedido }: PropriedadesAbaCustos) {
           </div>
         </div>
 
-        {pedido.configuracoes?.quantidade > 1 && (
+        {typeof pedido.configuracoes?.quantidade === "number" && pedido.configuracoes.quantidade > 1 && (
           <span className="text-[10px] font-black px-3 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg uppercase tracking-wider">
             {centavosParaReais(Math.round(pedido.valorCentavos / pedido.configuracoes.quantidade))} /un
           </span>

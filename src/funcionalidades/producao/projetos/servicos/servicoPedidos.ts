@@ -23,16 +23,16 @@ class ServicoPedidos {
   async buscarPedidos(usuarioId: string): Promise<Pedido[]> {
     const pedidos = await apiPedidos.buscarTodos(usuarioId);
     
-    const processados = pedidos.map((p: any) => ({
+    const processados: Pedido[] = pedidos.map((p) => ({
       ...p,
-      status: String(p.status || '')
+      status: (String(p.status || '')
         .toLowerCase()
         .trim()
         .replace(/\s+/g, '_')
-        .replace('pendente', StatusPedido.A_FAZER) || StatusPedido.A_FAZER,
-      dataCriacao: new Date(p.data_criacao || p.dataCriacao),
-      dataConclusao: p.data_conclusao ? new Date(p.data_conclusao) : p.dataConclusao ? new Date(p.dataConclusao) : undefined,
-      prazoEntrega: (p.prazo_entrega || p.prazoEntrega) ? new Date(p.prazo_entrega || p.prazoEntrega) : undefined,
+        .replace('pendente', StatusPedido.A_FAZER) || StatusPedido.A_FAZER) as StatusPedido,
+      dataCriacao: p.dataCriacao instanceof Date ? p.dataCriacao : new Date(p.dataCriacao),
+      dataConclusao: p.dataConclusao ? (p.dataConclusao instanceof Date ? p.dataConclusao : new Date(p.dataConclusao)) : undefined,
+      prazoEntrega: p.prazoEntrega ? (p.prazoEntrega instanceof Date ? p.prazoEntrega : new Date(p.prazoEntrega)) : undefined,
     }));
 
     const agora = new Date();
@@ -56,14 +56,15 @@ class ServicoPedidos {
   }
 
   async criarPedido(dados: CriarPedidoInput, usuarioId: string): Promise<Pedido> {
-    const id = (dados as any).id || crypto.randomUUID();
+    const id = dados.id || crypto.randomUUID();
     const dataCriacao = new Date();
     
     const novoPedido: Pedido = {
       ...dados,
       id,
       idUsuario: usuarioId,
-      status: StatusPedido.A_FAZER,
+      status: dados.status || StatusPedido.A_FAZER,
+      valorCentavos: dados.valorCentavos,
       dataCriacao,
       idCliente: dados.idCliente ? String(dados.idCliente) : "",
     };
@@ -74,19 +75,29 @@ class ServicoPedidos {
 
   async atualizarPedido(dados: AtualizarPedidoInput, usuarioId: string): Promise<Pedido> {
     const novoStatus = dados.status;
-    let dataConclusao = (dados as any).dataConclusao;
+    let dataConclusao = dados.dataConclusao ? new Date(dados.dataConclusao) : undefined;
 
     if (novoStatus === StatusPedido.CONCLUIDO && !dataConclusao) {
-      dataConclusao = new Date().toISOString();
+      dataConclusao = new Date();
     }
 
-    const payload = { ...dados, dataConclusao, idUsuario: usuarioId, limparDataConclusao: false };
+    const payload: AtualizarPedidoInput = {
+      ...dados,
+      dataConclusao,
+    };
     await apiPedidos.atualizar(payload, usuarioId);
     
     return {
+      descricao: "",
+      valorCentavos: 0,
       ...dados,
-      dataConclusao: dataConclusao ? new Date(dataConclusao) : undefined
-    } as any;
+      id: dados.id,
+      idUsuario: usuarioId,
+      idCliente: dados.idCliente ? String(dados.idCliente) : "",
+      status: dados.status || StatusPedido.A_FAZER,
+      dataCriacao: dados.prazoEntrega instanceof Date ? dados.prazoEntrega : new Date(),
+      dataConclusao,
+    };
   }
 
   /**
@@ -135,14 +146,18 @@ class ServicoPedidos {
       };
     }
 
-    const payload: any = { id, status: novoStatus };
-    return this.atualizarPedido(payload, usuarioId);
+    const payload: AtualizarPedidoInput = { id, status: novoStatus };
+    await this.atualizarPedido(payload, usuarioId);
+    return {
+      ...pedidoNorm,
+      status: novoStatus,
+    };
   }
 
   // ───────────────────────────────────────────────────────────────────────────
   // LIQUIDAÇÃO DE CONCLUSÃO LOCAL (ZUSTAND APENAS)
   // ───────────────────────────────────────────────────────────────────────────
-  private async liquidarConclusaoLocal(pedido: any): Promise<void> {
+  private async liquidarConclusaoLocal(pedido: Pedido): Promise<void> {
     const tempoEfetivo = pedido.tempoMinutos || (
       pedido.configuracoes 
         ? ((pedido.configuracoes.tempoHoras || 0) * 60 + (pedido.configuracoes.tempoMinutos || 0))
@@ -152,7 +167,7 @@ class ServicoPedidos {
     // 1. Desconto de Materiais
     if (pedido.materiais && pedido.materiais.length > 0) {
       for (const mat of pedido.materiais) {
-        const matId = mat.idMaterial || mat.id;
+        const matId = mat.idMaterial;
         useArmazemMateriais.getState().abaterPeso(
           matId,
           mat.quantidadeGasta || 0,
@@ -165,7 +180,7 @@ class ServicoPedidos {
     // 2. Desconto de Insumos Secundários
     if (pedido.insumosSecundarios && pedido.insumosSecundarios.length > 0) {
       for (const ins of pedido.insumosSecundarios) {
-        const insId = ins.idInsumo || ins.id;
+        const insId = ins.idInsumo;
         const insumoEstoque = useArmazemInsumos.getState().insumos.find(i => i.id === insId);
         if (insumoEstoque) {
           const novaQtd = Math.max(0, (insumoEstoque.quantidadeAtual || 0) - ins.quantidade);
@@ -196,7 +211,7 @@ class ServicoPedidos {
         const novoHorimetro = Math.max(0, (imp.horimetroTotalMinutos || 0) + tempoEfetivo);
         
         let custoPedidoCentavos = 0;
-        const paramsCalc = (pedido.configuracoes as any)?.snapshot?.parametros || pedido.configuracoes || {};
+        const paramsCalc = pedido.configuracoes?.snapshot?.parametros || pedido.configuracoes || {};
         const potencia = paramsCalc.potenciaWatts || imp.potenciaWatts || 0;
         if (potencia > 0) {
           const consumoKw = potencia / 1000;
@@ -295,7 +310,7 @@ class ServicoPedidos {
   // ───────────────────────────────────────────────────────────────────────────
   // REVERSÃO DE CONCLUSÃO LOCAL (ZUSTAND APENAS)
   // ───────────────────────────────────────────────────────────────────────────
-  private async reverterConclusaoLocal(pedido: any): Promise<void> {
+  private async reverterConclusaoLocal(pedido: Pedido): Promise<void> {
     const tempoEfetivo = pedido.tempoMinutos || (
       pedido.configuracoes 
         ? ((pedido.configuracoes.tempoHoras || 0) * 60 + (pedido.configuracoes.tempoMinutos || 0))
@@ -305,7 +320,7 @@ class ServicoPedidos {
     // 1. Estornar desconto de materiais (devolver gramas ao estoque)
     if (pedido.materiais && pedido.materiais.length > 0) {
       for (const mat of pedido.materiais) {
-        const matId = mat.idMaterial || mat.id;
+        const matId = mat.idMaterial;
         useArmazemMateriais.getState().abaterPeso(
           matId,
           -(mat.quantidadeGasta || 0),
@@ -318,7 +333,7 @@ class ServicoPedidos {
     // 2. Estornar desconto de insumos (devolver ao estoque)
     if (pedido.insumosSecundarios && pedido.insumosSecundarios.length > 0) {
       for (const ins of pedido.insumosSecundarios) {
-        const insId = ins.idInsumo || ins.id;
+        const insId = ins.idInsumo;
         const insumoEstoque = useArmazemInsumos.getState().insumos.find(i => i.id === insId);
         if (insumoEstoque) {
           const qtdDevolvida = (insumoEstoque.quantidadeAtual || 0) + ins.quantidade;
@@ -349,7 +364,7 @@ class ServicoPedidos {
         const novoHorimetro = Math.max(0, (imp.horimetroTotalMinutos || 0) - tempoEfetivo);
         
         let custoPedidoCentavos = 0;
-        const paramsCalc = (pedido.configuracoes as any)?.snapshot?.parametros || pedido.configuracoes || {};
+        const paramsCalc = pedido.configuracoes?.snapshot?.parametros || pedido.configuracoes || {};
         const potencia = paramsCalc.potenciaWatts || imp.potenciaWatts || 0;
         if (potencia > 0) {
           const consumoKw = potencia / 1000;
@@ -368,7 +383,7 @@ class ServicoPedidos {
         const novoRoi = custoCompra > 0 ? Math.round(((novaReceita - custoCompra) / custoCompra) * 100) : 0;
 
         let historico = imp.historicoProducao || [];
-        historico = historico.filter((r: any) => r.idProtocolo !== pedido.id);
+        historico = historico.filter((r) => r.idProtocolo !== pedido.id);
 
         const atualizadas = impressoras.map(i => i.id === pedido.idImpressora ? {
           ...i,

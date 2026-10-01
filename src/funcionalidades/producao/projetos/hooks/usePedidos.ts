@@ -95,18 +95,26 @@ export function usePedidos() {
     if (!pedidoOriginal) return;
 
     // ⚡️ OTIMISTA
-    atualizarPedidoNoEstado(dados.id, dados as any);
+    const dadosOtimistas: Partial<Pedido> = {
+      ...dados,
+      idCliente: dados.idCliente ? String(dados.idCliente) : undefined,
+      dataConclusao: dados.dataConclusao
+        ? (dados.dataConclusao instanceof Date ? dados.dataConclusao : new Date(dados.dataConclusao))
+        : undefined,
+    };
+    atualizarPedidoNoEstado(dados.id, dadosOtimistas);
 
     try {
       const atualizado = await servicoPedidos.atualizarPedido(dados, usuarioId);
       atualizarPedidoNoEstado(dados.id, atualizado);
       toast.success("Pedido atualizado!");
       return atualizado;
-    } catch (erro: any) {
+    } catch (erro: unknown) {
       // 🔙 ROLLBACK
       atualizarPedidoNoEstado(dados.id, pedidoOriginal);
       registrar.error({ rastreioId: dados.id, servico: "Projetos" }, "Erro ao atualizar pedido", erro);
-      toast.error(erro.mensagem || "Erro ao atualizar pedido. Alteração revertida.");
+      const mensagem = erro instanceof Error ? erro.message : "Erro ao atualizar pedido. Alteração revertida.";
+      toast.error(mensagem);
       throw erro;
     }
   };

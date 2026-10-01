@@ -277,7 +277,7 @@ export function PaginaAdmin() {
     setExecutandoLimpeza(true);
     try {
       const res = await servicoBaseApi.post<{ sucesso: boolean; detalhes?: { registros_removidos?: number } }>(
-        "/api/admin/limpeza-legal"
+        "/api/admin/limpeza-legal", {}
       );
       const removidos = res?.detalhes?.registros_removidos ?? 0;
       toast.success(`Limpeza legal concluída! ${removidos} registro(s) com mais de 180 dias foram purgados.`);

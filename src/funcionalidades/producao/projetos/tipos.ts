@@ -23,6 +23,42 @@ export interface ItemPosProcesso {
   valor: number;
 }
 
+export interface ParametrosCalculoPedido {
+  potenciaWatts?: number;
+  precoKwhCentavos?: number;
+  precoKwh?: number;
+  tempoHoras?: number;
+  tempoMinutos?: number;
+  tempoMinutosMaquina?: number;
+  [chave: string]: unknown;
+}
+
+export interface SnapshotCalculoPedido {
+  id?: string;
+  data?: string;
+  nome?: string;
+  descricao?: string;
+  clienteId?: string;
+  parametros?: ParametrosCalculoPedido;
+  resultado?: unknown;
+  [chave: string]: unknown;
+}
+
+export interface ConfiguracoesPedido {
+  snapshot?: SnapshotCalculoPedido;
+  potenciaWatts?: number;
+  potencia?: number;
+  precoKwhCentavos?: number;
+  precoKwh?: number;
+  tempoHoras?: number;
+  tempoMinutos?: number;
+  quantidade?: number;
+  maoDeObra?: number;
+  depreciacaoHora?: number;
+  margem?: number;
+  [chave: string]: unknown;
+}
+
 export interface Pedido {
   id: string;
   idUsuario: string;
@@ -42,7 +78,7 @@ export interface Pedido {
   insumosSecundarios?: InsumoProjeto[]; // Novo campo v9.0
   materiais?: MaterialProjeto[]; // Detalhado para abate de estoque
   posProcesso?: ItemPosProcesso[]; // Novo campo v10.0
-  configuracoes?: any; // Baú técnico para restauração total da calculadora
+  configuracoes?: ConfiguracoesPedido; // Baú técnico para restauração total da calculadora
   dataInicioAgendada?: string;
   posicaoFila?: number;
   codigoRastreio?: string;
@@ -50,6 +86,7 @@ export interface Pedido {
 }
 
 export interface CriarPedidoInput {
+  id?: string;
   idCliente?: string | null;
   descricao: string;
   status?: StatusPedido;
@@ -63,7 +100,7 @@ export interface CriarPedidoInput {
   insumosSecundarios?: InsumoProjeto[];
   materiais?: MaterialProjeto[];
   posProcesso?: ItemPosProcesso[];
-  configuracoes?: any;
+  configuracoes?: ConfiguracoesPedido;
   dataInicioAgendada?: string;
   posicaoFila?: number;
   codigoRastreio?: string;

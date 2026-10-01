@@ -1,6 +1,6 @@
-import { Pedido } from "../tipos";
+import { Pedido, CriarPedidoInput, AtualizarPedidoInput } from "../tipos";
 import { servicoBaseApi } from "@/compartilhado/servicos/servicoBaseApi";
-import { criarPedidoSchema, atualizarPedidoSchema, CriarPedidoInput, AtualizarPedidoInput } from "../esquemas";
+import { criarPedidoSchema, atualizarPedidoSchema } from "../esquemas";
 import { useArmazemPedidos } from "../estado/armazemPedidos";
 
 /**

@@ -21,6 +21,7 @@ const itemPosProcessoSchema = z.object({
 });
 
 export const criarPedidoSchema = z.object({
+  id: z.string().optional(),
   idCliente: z.string().optional().nullable().or(z.literal("")),
   descricao: z.string().min(1),
   status: z.nativeEnum(StatusPedido).optional(),
@@ -34,7 +35,7 @@ export const criarPedidoSchema = z.object({
   insumosSecundarios: z.array(insumoProjetoSchema).optional(),
   materiais: z.array(materialProjetoSchema).optional(),
   posProcesso: z.array(itemPosProcessoSchema).optional(),
-  configuracoes: z.any().optional(),
+  configuracoes: z.record(z.string(), z.unknown()).optional(),
   dataInicioAgendada: z.string().optional(),
   posicaoFila: z.number().optional(),
   codigoRastreio: z.string().optional(),
